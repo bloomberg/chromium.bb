@@ -20,7 +20,7 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
   // ExtensionInstallUI implementation:
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon) OVERRIDE;
-  virtual void OnInstallFailure(const string16& error) OVERRIDE;
+  virtual void OnInstallFailure(const CrxInstallerError& error) OVERRIDE;
   virtual void SetSkipPostInstallUI(bool skip_ui) OVERRIDE;
   virtual void SetUseAppInstalledBubble(bool use_bubble) OVERRIDE;
 

@@ -348,7 +348,7 @@ void ExtensionInstallPrompt::OnInstallSuccess(const Extension* extension,
   install_ui_->OnInstallSuccess(extension, &icon_);
 }
 
-void ExtensionInstallPrompt::OnInstallFailure(const string16& error) {
+void ExtensionInstallPrompt::OnInstallFailure(const CrxInstallerError& error) {
   install_ui_->OnInstallFailure(error);
 }
 

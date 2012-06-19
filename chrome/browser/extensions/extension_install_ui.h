@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "chrome/browser/extensions/crx_installer_error.h"
 
 class Browser;
 class SkBitmap;
@@ -31,7 +32,7 @@ class ExtensionInstallUI {
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon) = 0;
   // Called when an extension failed to install.
-  virtual void OnInstallFailure(const string16& error) = 0;
+  virtual void OnInstallFailure(const CrxInstallerError& error) = 0;
 
   // Whether or not to show the default UI after completing the installation.
   virtual void SetSkipPostInstallUI(bool skip_ui) = 0;

@@ -5,10 +5,12 @@
 #include "chrome/browser/extensions/extension_install_ui_default.h"
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,6 +43,47 @@ using extensions::Extension;
 namespace {
 
 bool disable_failure_ui_for_tests = false;
+
+// Helper class to put up an infobar when installation fails.
+class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  ErrorInfobarDelegate(InfoBarTabHelper* infobar_helper,
+                       Browser* browser,
+                       const CrxInstallerError& error)
+      : ConfirmInfoBarDelegate(infobar_helper),
+        browser_(browser),
+        error_(error) {
+  }
+
+ private:
+  virtual string16 GetMessageText() const OVERRIDE {
+    return error_.message();
+  }
+
+  virtual int GetButtons() const OVERRIDE {
+    return BUTTON_OK;
+  }
+
+  virtual string16 GetLinkText() const OVERRIDE {
+    // TODO(aa): Return the learn more link once we have the help article
+    // posted.
+    // return error_.type() == CrxInstallerError::ERROR_OFF_STORE ?
+    //    l10n_util::GetStringUTF16(IDS_LEARN_MORE) : ASCIIToUTF16("");
+    return ASCIIToUTF16("");
+  }
+
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE {
+    browser::NavigateParams params(browser_,
+                                   GURL("http://www.google.com/"),
+                                   content::PAGE_TRANSITION_LINK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    browser::Navigate(&params);
+    return false;
+  }
+
+  Browser* browser_;
+  CrxInstallerError error_;
+};
 
 }  // namespace
 
@@ -100,15 +143,19 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                                         current_profile);
 }
 
-void ExtensionInstallUIDefault::OnInstallFailure(const string16& error) {
+void ExtensionInstallUIDefault::OnInstallFailure(
+    const CrxInstallerError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;
 
   Browser* browser = browser::FindLastActiveWithProfile(browser_->profile());
-  browser::ShowMessageBox(browser ? browser->window()->GetNativeWindow() : NULL,
-      l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE), error,
-      browser::MESSAGE_BOX_TYPE_WARNING);
+  TabContents* tab_contents = browser->GetActiveTabContents();
+  if (!tab_contents)
+    return;
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  infobar_helper->AddInfoBar(
+      new ErrorInfobarDelegate(infobar_helper, browser, error));
 }
 
 void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {

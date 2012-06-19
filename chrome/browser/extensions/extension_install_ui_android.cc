@@ -11,7 +11,8 @@ void ExtensionInstallUIAndroid::OnInstallSuccess(const Extension* extension,
   NOTIMPLEMENTED();
 }
 
-void ExtensionInstallUIAndroid::OnInstallFailure(const string16& error) {
+void ExtensionInstallUIAndroid::OnInstallFailure(
+    const CrxInstallerError& error) {
   NOTIMPLEMENTED();
 }
 

@@ -16,7 +16,7 @@ class ExtensionInstallUIAndroid : public ExtensionInstallUI {
   // ExtensionInstallUI implementation:
   virtual void OnInstallSuccess(const extensions::Extension* extension,
                                 SkBitmap* icon);
-  virtual void OnInstallFailure(const string16& error);
+  virtual void OnInstallFailure(const CrxInstallerError& error);
   virtual void SetSkipPostInstallUI(bool skip_ui);
 
  private:

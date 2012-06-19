@@ -245,6 +245,7 @@
         'browser/extensions/convert_web_app.h',
         'browser/extensions/crx_installer.cc',
         'browser/extensions/crx_installer.h',
+        'browser/extensions/crx_installer_error.h',
         'browser/extensions/default_apps.cc',
         'browser/extensions/default_apps.h',
         'browser/extensions/default_apps_trial.cc',

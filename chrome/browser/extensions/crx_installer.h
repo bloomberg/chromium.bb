@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -186,7 +187,7 @@ class CrxInstaller
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
-  bool AllowInstall(const extensions::Extension* extension, string16* error);
+  CrxInstallerError AllowInstall(const extensions::Extension* extension);
 
   // SandboxedExtensionUnpackerClient
   virtual void OnUnpackFailure(const string16& error_message) OVERRIDE;
@@ -208,8 +209,8 @@ class CrxInstaller
   void CompleteInstall();
 
   // Result reporting.
-  void ReportFailureFromFileThread(const string16& error);
-  void ReportFailureFromUIThread(const string16& error);
+  void ReportFailureFromFileThread(const CrxInstallerError& error);
+  void ReportFailureFromUIThread(const CrxInstallerError& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
   void NotifyCrxInstallComplete(const extensions::Extension* extension);

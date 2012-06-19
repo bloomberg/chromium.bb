@@ -47,8 +47,8 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
     did_succeed_ = true;
     MessageLoopForUI::current()->Quit();
   }
-  void OnInstallFailure(const string16& error) {
-    error_ = error;
+  void OnInstallFailure(const CrxInstallerError& error) {
+    error_ = error.message();
     MessageLoopForUI::current()->Quit();
   }
 

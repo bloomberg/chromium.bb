@@ -172,7 +172,7 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
   scoped_refptr<Extension> extension =
       ConvertUserScriptToExtension(source_file_, download_url_, &error);
   if (!extension) {
-    ReportFailureFromFileThread(error);
+    ReportFailureFromFileThread(CrxInstallerError(error));
     return;
   }
 
@@ -202,36 +202,34 @@ void CrxInstaller::ConvertWebAppOnFileThread(
   OnUnpackSuccess(extension->path(), extension->path(), NULL, extension);
 }
 
-bool CrxInstaller::AllowInstall(const Extension* extension,
-                                string16* error) {
+CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(error);
 
   // Make sure the expected ID matches if one was supplied or if we want to
   // bypass the prompt.
   if ((approved_ || !expected_id_.empty()) &&
       expected_id_ != extension->id()) {
-    *error = l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALL_UNEXPECTED_ID,
-                                        ASCIIToUTF16(expected_id_),
-                                        ASCIIToUTF16(extension->id()));
-    return false;
+    return CrxInstallerError(
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALL_UNEXPECTED_ID,
+                                   ASCIIToUTF16(expected_id_),
+                                   ASCIIToUTF16(extension->id())));
   }
 
   if (expected_version_.get() &&
       !expected_version_->Equals(*extension->version())) {
-    *error = l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
-        ASCIIToUTF16(expected_version_->GetString()),
-        ASCIIToUTF16(extension->version()->GetString()));
-    return false;
+    return CrxInstallerError(
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
+            ASCIIToUTF16(expected_version_->GetString()),
+            ASCIIToUTF16(extension->version()->GetString())));
   }
 
   // Make sure the manifests match if we want to bypass the prompt.
   if (approved_ &&
       (!expected_manifest_.get() ||
        !expected_manifest_->Equals(original_manifest_.get()))) {
-    *error = l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID);
-    return false;
+    return CrxInstallerError(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));
   }
 
   // The checks below are skipped for themes and external installs.
@@ -239,11 +237,11 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   // and other uses of install_source_ that are no longer needed now that the
   // SandboxedExtensionUnpacker sets extension->location.
   if (extension->is_theme() || Extension::IsExternalLocation(install_source_))
-    return true;
+    return CrxInstallerError();
 
   if (!extensions_enabled_) {
-    *error = l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_NOT_ENABLED);
-    return false;
+    return CrxInstallerError(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_NOT_ENABLED));
   }
 
   if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
@@ -270,13 +268,15 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       } else {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallDisallowed,
                                   NumOffStoreInstallDecision);
-        *error = l10n_util::GetStringUTF16(
-            IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
         // Don't delete source in this case so that the user can install
         // manually if they want.
         delete_source_ = false;
         did_handle_successfully_ = false;
-        return false;
+
+        return CrxInstallerError(
+            CrxInstallerError::ERROR_OFF_STORE,
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE));
       }
     }
   }
@@ -289,10 +289,10 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
     if (!download_url_.SchemeIsFile() &&
         apps_require_extension_mime_type_ &&
         original_mime_type_ != Extension::kMimeType) {
-      *error = l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_INSTALL_INCORRECT_APP_CONTENT_TYPE,
-          ASCIIToUTF16(Extension::kMimeType));
-      return false;
+      return CrxInstallerError(
+          l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_INSTALL_INCORRECT_APP_CONTENT_TYPE,
+              ASCIIToUTF16(Extension::kMimeType)));
     }
 
     // If the client_ is NULL, then the app is either being installed via
@@ -303,10 +303,10 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       // from the gallery.
       // TODO(erikkay) Apply this rule for paid extensions and themes as well.
       if (extension->UpdatesFromGallery()) {
-        *error = l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
-            l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
-        return false;
+        return CrxInstallerError(
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
+                l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
       }
 
       // For self-hosted apps, verify that the entire extent is on the same
@@ -320,15 +320,15 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       for (URLPatternSet::const_iterator i = patterns.begin();
            i != patterns.end(); ++i) {
         if (!pattern.MatchesHost(i->host())) {
-          *error = l10n_util::GetStringUTF16(
-              IDS_EXTENSION_INSTALL_INCORRECT_INSTALL_HOST);
-          return false;
+          return CrxInstallerError(
+              l10n_util::GetStringUTF16(
+                  IDS_EXTENSION_INSTALL_INCORRECT_INSTALL_HOST));
         }
       }
     }
   }
 
-  return true;
+  return CrxInstallerError();
 }
 
 void CrxInstaller::OnUnpackFailure(const string16& error_message) {
@@ -341,7 +341,7 @@ void CrxInstaller::OnUnpackFailure(const string16& error_message) {
                             install_cause(),
                             extension_misc::NUM_INSTALL_CAUSES);
 
-  ReportFailureFromFileThread(error_message);
+  ReportFailureFromFileThread(CrxInstallerError(error_message));
 }
 
 void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
@@ -369,8 +369,8 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // the temp dir.
   unpacked_extension_root_ = extension_dir;
 
-  string16 error;
-  if (!AllowInstall(extension, &error)) {
+  CrxInstallerError error = AllowInstall(extension);
+  if (error.type() != CrxInstallerError::ERROR_NONE) {
     ReportFailureFromFileThread(error);
     return;
   }
@@ -398,14 +398,15 @@ void CrxInstaller::ConfirmInstall() {
     VLOG(1) << "This extension: " << extension_->id()
             << " is blacklisted. Install failed.";
     ReportFailureFromUIThread(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_INSTALL_BLACKLISTED));
+        CrxInstallerError(
+            l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_INSTALL_BLACKLISTED)));
     return;
   }
 
   string16 error;
   if (!ExtensionSystem::Get(profile_)->management_policy()->UserMayLoad(
       extension_, &error)) {
-    ReportFailureFromUIThread(error);
+    ReportFailureFromUIThread(CrxInstallerError(error));
     return;
   }
 
@@ -415,9 +416,11 @@ void CrxInstaller::ConfirmInstall() {
       GetHostedAppByOverlappingWebExtent(extension_->web_extent());
   if (overlapping_extension &&
       overlapping_extension->id() != extension_->id()) {
-    ReportFailureFromUIThread(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_OVERLAPPING_WEB_EXTENT,
-        UTF8ToUTF16(overlapping_extension->name())));
+    ReportFailureFromUIThread(
+        CrxInstallerError(
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_OVERLAPPING_WEB_EXTENT,
+                UTF8ToUTF16(overlapping_extension->name()))));
     return;
   }
 
@@ -474,7 +477,8 @@ void CrxInstaller::CompleteInstall() {
         Version::GetVersionFromString(current_version_));
     if (current_version->CompareTo(*(extension_->version())) > 0) {
       ReportFailureFromFileThread(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_DOWNGRADE_VERSION));
+          CrxInstallerError(
+              l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_DOWNGRADE_VERSION)));
       return;
     }
   }
@@ -493,8 +497,9 @@ void CrxInstaller::CompleteInstall() {
       install_directory_);
   if (version_dir.empty()) {
     ReportFailureFromFileThread(
-        l10n_util::GetStringUTF16(
-            IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED));
+        CrxInstallerError(
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED)));
     return;
   }
 
@@ -516,29 +521,31 @@ void CrxInstaller::CompleteInstall() {
   ReportSuccessFromFileThread();
 }
 
-void CrxInstaller::ReportFailureFromFileThread(const string16& error) {
+void CrxInstaller::ReportFailureFromFileThread(const CrxInstallerError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&CrxInstaller::ReportFailureFromUIThread, this, error)))
+          base::Bind(&CrxInstaller::ReportFailureFromUIThread, this, error))) {
     NOTREACHED();
+  }
 }
 
-void CrxInstaller::ReportFailureFromUIThread(const string16& error) {
+void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   content::NotificationService* service =
       content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   content::Source<CrxInstaller>(this),
-                  content::Details<const string16>(&error));
+                  content::Details<const string16>(&error.message()));
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.
   //
   // TODO(aa): Need to go through unit tests and clean them up too, probably get
   // rid of this line.
-  ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
+  ExtensionErrorReporter::GetInstance()->ReportError(
+      error.message(), false);  // quiet
 
   if (client_)
     client_->OnInstallFailure(error);

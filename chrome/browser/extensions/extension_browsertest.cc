@@ -241,7 +241,7 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
 
-  virtual void OnInstallFailure(const string16& error) {}
+  virtual void OnInstallFailure(const CrxInstallerError& error) {}
 };
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {

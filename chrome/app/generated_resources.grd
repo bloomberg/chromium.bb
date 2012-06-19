@@ -4446,7 +4446,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Expected ID "<ph name="EXPECTED_ID">$1<ex>bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb</ex></ph>", but ID was "<ph name="NEW_ID">$2<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>".
       </message>
       <message name="IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE" desc="Error displayed during installation of an extension when installation is not allowed from the current site.">
-        Extensions, apps, and user scripts cannot be installed from this web site.
+        Extensions, apps, and user scripts cannot be added from this web site.
       </message>
       <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION" desc="Error displayed during installation of a side-loaded app, extension, or theme when the version of the referenced extension does not match the version the developer declared during registration.">
         Expected version "<ph name="EXPECTED_VERSION">$1<ex>2.0</ex></ph>", but version was "<ph name="NEW_ID">$2<ex>1.0</ex></ph>".

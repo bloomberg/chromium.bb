@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -205,7 +206,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
                                 SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
-  virtual void OnInstallFailure(const string16& error);
+  virtual void OnInstallFailure(const CrxInstallerError& error);
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(const gfx::Image& image,
