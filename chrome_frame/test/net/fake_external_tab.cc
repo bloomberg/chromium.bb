@@ -239,7 +239,7 @@ void FilterDisabledTests() {
 
     // These tests are disabled as the rely on functionality provided by
     // Chrome's HTTP stack like the ability to set the proxy for a URL, etc.
-    "URLRequestTestHTTP.ProxyTunnelRedirectTest",
+    "URLRequestTestHTTP.FLAKY_ProxyTunnelRedirectTest",
     "URLRequestTestHTTP.UnexpectedServerAuthTest",
 
     // This test is disabled as it expects an empty UA to be echoed back from
