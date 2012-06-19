@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,7 @@ class HostVarTrackerTest : public PpapiUnittest {
 TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PluginInstance> instance2(
-      PluginInstance::Create1_0(delegate(), module(),
-                                GetMockInterface(PPP_INSTANCE_INTERFACE_1_0)));
+      PluginInstance::Create(delegate(), module()));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make an object var.

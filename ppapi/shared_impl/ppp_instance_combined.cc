@@ -7,6 +7,27 @@
 
 namespace ppapi {
 
+// static
+PPP_Instance_Combined* PPP_Instance_Combined::Create(
+    base::Callback<const void*(const char*)> get_interface_func) {
+  // Try 1.1.
+  const void* ppp_instance = get_interface_func.Run(PPP_INSTANCE_INTERFACE_1_1);
+  if (ppp_instance) {
+    const PPP_Instance_1_1* ppp_instance_1_1 =
+        static_cast<const PPP_Instance_1_1*>(ppp_instance);
+    return new PPP_Instance_Combined(*ppp_instance_1_1);
+  }
+  // Failing that, try 1.0.
+  ppp_instance = get_interface_func.Run(PPP_INSTANCE_INTERFACE_1_0);
+  if (ppp_instance) {
+    const PPP_Instance_1_0* ppp_instance_1_0 =
+        static_cast<const PPP_Instance_1_0*>(ppp_instance);
+    return new PPP_Instance_Combined(*ppp_instance_1_0);
+  }
+  // No supported PPP_Instance version found.
+  return NULL;
+}
+
 PPP_Instance_Combined::PPP_Instance_Combined(
     const PPP_Instance_1_0& instance_if)
     : did_change_view_1_0_(instance_if.DidChangeView) {

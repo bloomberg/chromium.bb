@@ -87,6 +87,12 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // ownership of the given pointer, even in the failure case.
   void InitAsProxied(PluginDelegate::OutOfProcessProxy* out_of_process_proxy);
 
+  // Initializes this module for the given NaCl proxy. This takes
+  // ownership of the given pointer, even in the failure case.
+  void InitAsProxiedNaCl(
+      PluginDelegate::OutOfProcessProxy* out_of_process_proxy,
+      PP_Instance instance);
+
   static const PPB_Core* GetCore();
 
   // Returns a pointer to the local GetInterface function for retrieving

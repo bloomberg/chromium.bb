@@ -96,15 +96,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
     public base::SupportsWeakPtr<PluginInstance>,
     public ::ppapi::PPB_Instance_Shared {
  public:
-  // Create and return a PluginInstance object which supports the
-  // given version.
-  static PluginInstance* Create1_0(PluginDelegate* delegate,
-                                   PluginModule* module,
-                                   const void* ppp_instance_if_1_0);
-  static PluginInstance* Create1_1(PluginDelegate* delegate,
-                                   PluginModule* module,
-                                   const void* ppp_instance_if_1_1);
-
+  // Create and return a PluginInstance object which supports the most recent
+  // version of PPP_Instance possible by querying the given get_plugin_interface
+  // function. If the plugin does not support any valid PPP_Instance interface,
+  // returns NULL.
+  static PluginInstance* Create(PluginDelegate* delegate, PluginModule* module);
   // Delete should be called by the WebPlugin before this destructor.
   virtual ~PluginInstance();
 
@@ -405,6 +401,12 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
 
+  // Reset this instance as proxied. Resets cached interfaces to point to the
+  // proxy and re-sends DidCreate, DidChangeView, and HandleDocumentLoad (if
+  // necessary).
+  // This is for use with the NaCl proxy.
+  bool ResetAsProxied();
+
  private:
   // See the static Create functions above for creating PluginInstance objects.
   // This constructor is private so that we can hide the PPP_Instance_Combined
@@ -513,11 +515,12 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // same as the default values.
   bool sent_initial_did_change_view_;
 
-  // Set to true when we've scheduled an asynchronous DidChangeView update for
-  // the purposes of consolidating updates. When this is set, code should
-  // update the view_data_ but not send updates. It will be cleared once the
-  // asynchronous update has been sent out.
-  bool suppress_did_change_view_;
+  // We use a weak ptr factory for scheduling DidChangeView events so that we
+  // can tell whether updates are pending and consolidate them. When there's
+  // already a weak ptr pending (HasWeakPtrs is true), code should update the
+  // view_data_ but not send updates. This also allows us to cancel scheduled
+  // view change events.
+  base::WeakPtrFactory<PluginInstance> view_change_weak_ptr_factory_;
 
   // The current device context for painting in 2D or 3D.
   scoped_refptr< ::ppapi::Resource> bound_graphics_;
@@ -537,11 +540,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
+  const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
   const PPP_MouseLock* plugin_mouse_lock_interface_;
-  const PPP_InputEvent* plugin_input_event_interface_;
-  const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
+  const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
   const PPP_TextInput_Dev* plugin_textinput_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
@@ -651,6 +654,15 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // The Flash proxy is associated with the instance.
   PPB_Flash_Impl flash_impl_;
+
+  // We store the arguments so we can re-send them if we are reset to talk to
+  // NaCl via the IPC NaCl proxy.
+  std::vector<std::string> argn_;
+  std::vector<std::string> argv_;
+
+  // This is NULL unless HandleDocumentLoad has called. In that case, we store
+  // the pointer so we can re-send it later if we are reset to talk to NaCl.
+  scoped_refptr<PPB_URLLoader_Impl> document_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

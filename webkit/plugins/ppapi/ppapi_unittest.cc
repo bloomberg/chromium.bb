@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,10 +82,7 @@ void PpapiUnittest::SetUp() {
   ASSERT_TRUE(module_->InitAsInternalPlugin(entry_points));
 
   // Initialize the mock instance.
-  instance_ = PluginInstance::Create1_0(
-      delegate_.get(),
-      module(),
-      GetMockInterface(PPP_INSTANCE_INTERFACE_1_0));
+  instance_ = PluginInstance::Create(delegate_.get(), module());
 
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -15,8 +16,12 @@ namespace ppapi {
 // necessary.
 struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
  public:
-  explicit PPP_Instance_Combined(const PPP_Instance_1_0& instance_if);
-  explicit PPP_Instance_Combined(const PPP_Instance_1_1& instance_if);
+  // Create a PPP_Instance_Combined. Uses the given |get_interface_func| to
+  // query the plugin and find the most recent version of the PPP_Instance
+  // interface. If the plugin doesn't support any PPP_Instance interface,
+  // returns NULL.
+  static PPP_Instance_Combined* Create(
+      base::Callback<const void*(const char*)> get_plugin_if);
 
   PP_Bool DidCreate(PP_Instance instance,
                     uint32_t argc,
@@ -37,6 +42,9 @@ struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
   PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader);
 
  private:
+  explicit PPP_Instance_Combined(const PPP_Instance_1_0& instance_if);
+  explicit PPP_Instance_Combined(const PPP_Instance_1_1& instance_if);
+
   // For version 1.0, DidChangeView will be NULL, and DidChangeView_1_0 will
   // be set below.
   PPP_Instance_1_1 instance_1_1_;

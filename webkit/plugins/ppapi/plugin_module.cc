@@ -495,6 +495,25 @@ void PluginModule::InitAsProxied(
   out_of_process_proxy_.reset(out_of_process_proxy);
 }
 
+void PluginModule::InitAsProxiedNaCl(
+    PluginDelegate::OutOfProcessProxy* out_of_process_proxy,
+    PP_Instance instance) {
+  InitAsProxied(out_of_process_proxy);
+  // InitAsProxied (for the trusted/out-of-process case) initializes only the
+  // module, and one or more instances are added later. In this case, the
+  // PluginInstance was already created as in-process, so we missed the proxy
+  // AddInstance step and must do it now.
+  out_of_process_proxy_->AddInstance(instance);
+
+  // In NaCl, we need to tell the instance to reset itself as proxied. This will
+  // clear cached interface pointers and send DidCreate (etc) to the plugin
+  // side of the proxy.
+  PluginInstance* plugin_instance = host_globals->GetInstance(instance);
+  if (!plugin_instance)
+    return;
+  plugin_instance->ResetAsProxied();
+}
+
 // static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;
@@ -506,14 +525,7 @@ PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
 }
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
-  PluginInstance* instance(NULL);
-  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_1);
-  if (ppp_instance) {
-    instance = PluginInstance::Create1_1(delegate, this, ppp_instance);
-  } else if ((ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_0))) {
-    instance = PluginInstance::Create1_0(delegate, this, ppp_instance);
-  }
-
+  PluginInstance* instance = PluginInstance::Create(delegate, this);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;

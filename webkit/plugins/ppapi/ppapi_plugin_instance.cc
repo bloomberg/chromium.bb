@@ -101,9 +101,10 @@
 
 using base::StringPrintf;
 using ppapi::InputEventData;
-using ppapi::PPB_InputEvent_Shared;
 using ppapi::PpapiGlobals;
+using ppapi::PPB_InputEvent_Shared;
 using ppapi::PPB_View_Shared;
+using ppapi::PPP_Instance_Combined;
 using ppapi::ScopedPPResource;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
@@ -281,30 +282,29 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
   return true;
 }
 
+// Convert the given vector to an array of C-strings. The strings in the
+// returned vector are only guaranteed valid so long as the vector of strings
+// is not modified.
+scoped_array<const char*> StringVectorToArgArray(
+    const std::vector<std::string>& vector) {
+  scoped_array<const char*> array(new const char*[vector.size()]);
+  for (size_t i = 0; i < vector.size(); ++i)
+    array[i] = vector[i].c_str();
+  return array.Pass();
+}
+
 }  // namespace
 
 // static
-PluginInstance* PluginInstance::Create1_0(PluginDelegate* delegate,
-                                          PluginModule* module,
-                                          const void* ppp_instance_if_1_0) {
-  const PPP_Instance_1_0* instance =
-      static_cast<const PPP_Instance_1_0*>(ppp_instance_if_1_0);
-  return new PluginInstance(
-      delegate,
-      module,
-      new ::ppapi::PPP_Instance_Combined(*instance));
-}
-
-// static
-PluginInstance* PluginInstance::Create1_1(PluginDelegate* delegate,
-                                          PluginModule* module,
-                                          const void* ppp_instance_if_1_1) {
-  const PPP_Instance_1_1* instance =
-      static_cast<const PPP_Instance_1_1*>(ppp_instance_if_1_1);
-  return new PluginInstance(
-      delegate,
-      module,
-      new ::ppapi::PPP_Instance_Combined(*instance));
+PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
+                                       PluginModule* module) {
+  base::Callback<const void*(const char*)> get_plugin_interface_func =
+      base::Bind(&PluginModule::GetPluginInterface, module);
+  PPP_Instance_Combined* ppp_instance_combined =
+      PPP_Instance_Combined::Create(get_plugin_interface_func);
+  if (!ppp_instance_combined)
+    return NULL;
+  return new PluginInstance(delegate, module, ppp_instance_combined);
 }
 
 PluginInstance::PluginInstance(
@@ -318,17 +318,17 @@ PluginInstance::PluginInstance(
       container_(NULL),
       full_frame_(false),
       sent_initial_did_change_view_(false),
-      suppress_did_change_view_(false),
+      view_change_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
       resource_creation_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       plugin_find_interface_(NULL),
+      plugin_input_event_interface_(NULL),
       plugin_messaging_interface_(NULL),
       plugin_mouse_lock_interface_(NULL),
-      plugin_input_event_interface_(NULL),
-      plugin_private_interface_(NULL),
       plugin_pdf_interface_(NULL),
+      plugin_private_interface_(NULL),
       plugin_selection_interface_(NULL),
       plugin_textinput_interface_(NULL),
       plugin_zoom_interface_(NULL),
@@ -497,22 +497,21 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
   plugin_url_ = plugin_url;
   full_frame_ = full_frame;
 
-  size_t argc = 0;
-  scoped_array<const char*> argn(new const char*[arg_names.size()]);
-  scoped_array<const char*> argv(new const char*[arg_names.size()]);
-  for (size_t i = 0; i < arg_names.size(); ++i) {
-    argn[argc] = arg_names[i].c_str();
-    argv[argc] = arg_values[i].c_str();
-    argc++;
-  }
-
+  argn_ = arg_names;
+  argv_ = arg_values;
+  scoped_array<const char*> argn_array(StringVectorToArgArray(argn_));
+  scoped_array<const char*> argv_array(StringVectorToArgArray(argv_));
   return PP_ToBool(instance_interface_->DidCreate(pp_instance(),
-                                                  argc,
-                                                  argn.get(),
-                                                  argv.get()));
+                                                  argn_.size(),
+                                                  argn_array.get(),
+                                                  argv_array.get()));
 }
 
 bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
+  if (!document_loader_)
+    document_loader_ = loader;
+  DCHECK(loader == document_loader_.get());
+
   return PP_ToBool(instance_interface_->HandleDocumentLoad(
       pp_instance(), loader->pp_resource()));
 }
@@ -1056,17 +1055,21 @@ bool PluginInstance::PluginHasFocus() const {
 
 void PluginInstance::ScheduleAsyncDidChangeView(
     const ::ppapi::ViewData& previous_view) {
-  if (suppress_did_change_view_)
+  if (view_change_weak_ptr_factory_.HasWeakPtrs())
     return;  // Already scheduled.
-  suppress_did_change_view_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&PluginInstance::SendAsyncDidChangeView,
-                            this, previous_view));
+                            view_change_weak_ptr_factory_.GetWeakPtr(),
+                            previous_view));
 }
 
 void PluginInstance::SendAsyncDidChangeView(const ViewData& previous_view) {
-  DCHECK(suppress_did_change_view_);
-  suppress_did_change_view_ = false;
+  // The bound callback that owns the weak pointer is still valid until after
+  // this function returns. SendDidChangeView checks HasWeakPtrs, so we need to
+  // invalidate them here.
+  // NOTE: If we ever want to have more than one pending callback, it should
+  // use a different factory, or we should have a different strategy here.
+  view_change_weak_ptr_factory_.InvalidateWeakPtrs();
   SendDidChangeView(previous_view);
 }
 
@@ -1075,7 +1078,7 @@ void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
   if (module()->is_crashed())
     return;
 
-  if (suppress_did_change_view_ ||
+  if (view_change_weak_ptr_factory_.HasWeakPtrs() ||
       (sent_initial_did_change_view_ && previous_view.Equals(view_data_)))
     return;  // Nothing to update.
 
@@ -2087,6 +2090,52 @@ PP_Var PluginInstance::GetPluginInstanceURL(
     PP_URLComponents_Dev* components) {
   return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_,
                                                         components);
+}
+
+bool PluginInstance::ResetAsProxied() {
+  base::Callback<const void*(const char*)> get_plugin_interface_func =
+      base::Bind(&PluginModule::GetPluginInterface, module_.get());
+  PPP_Instance_Combined* ppp_instance_combined =
+      PPP_Instance_Combined::Create(get_plugin_interface_func);
+  if (!ppp_instance_combined) {
+    // The proxy must support at least one usable PPP_Instance interface.
+    NOTREACHED();
+    return false;
+  }
+  instance_interface_.reset(ppp_instance_combined);
+  // Clear all PPP interfaces we may have cached.
+  plugin_find_interface_ = NULL;
+  plugin_input_event_interface_ = NULL;
+  plugin_messaging_interface_ = NULL;
+  plugin_mouse_lock_interface_ = NULL;
+  plugin_pdf_interface_ = NULL;
+  plugin_private_interface_ = NULL;
+  plugin_selection_interface_ = NULL;
+  plugin_textinput_interface_ = NULL;
+  plugin_zoom_interface_ = NULL;
+
+  // Re-send the DidCreate event via the proxy.
+  scoped_array<const char*> argn_array(StringVectorToArgArray(argn_));
+  scoped_array<const char*> argv_array(StringVectorToArgArray(argv_));
+  if (!instance_interface_->DidCreate(pp_instance(), argn_.size(),
+                                      argn_array.get(), argv_array.get()))
+    return false;
+
+  // Use a ViewData that looks like the initial DidChangeView event for the
+  // "previous" view.
+  ::ppapi::ViewData empty_view;
+  empty_view.is_page_visible = delegate_->IsPageVisible();
+  // Clear sent_initial_did_change_view_ and cancel any pending DidChangeView
+  // event. This way, SendDidChangeView will send the "current" view
+  // immediately (before other events like HandleDocumentLoad).
+  sent_initial_did_change_view_ = false;
+  view_change_weak_ptr_factory_.InvalidateWeakPtrs();
+  SendDidChangeView(empty_view);
+
+  // If we received HandleDocumentLoad, re-send it now via the proxy.
+  if (document_loader_)
+    HandleDocumentLoad(document_loader_.get());
+  return true;
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

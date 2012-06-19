@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_fullscreen.h"
@@ -144,16 +145,8 @@ PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher)
     // the interface, we want to say it supports the 1.1 version since we'll
     // convert it here. This magic conversion code is hardcoded into
     // PluginDispatcher::OnMsgSupportsInterface.
-    const PPP_Instance* instance = static_cast<const PPP_Instance*>(
-        dispatcher->local_get_interface()(PPP_INSTANCE_INTERFACE));
-    if (instance) {
-      combined_interface_.reset(new PPP_Instance_Combined(*instance));
-    } else {
-      const PPP_Instance_1_0* instance_1_0 =
-          static_cast<const PPP_Instance_1_0*>(
-              dispatcher->local_get_interface()(PPP_INSTANCE_INTERFACE_1_0));
-      combined_interface_.reset(new PPP_Instance_Combined(*instance_1_0));
-    }
+    combined_interface_.reset(PPP_Instance_Combined::Create(
+        base::Bind(dispatcher->local_get_interface())));
   }
 }
 
