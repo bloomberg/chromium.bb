@@ -228,7 +228,7 @@ def GetToolchainsForBoard(board):
   returns the list of toolchain tuples for the given board
   """
   cmd = [CROS_OVERLAY_LIST_CMD]
-  if board == 'all':
+  if board == 'all' or board == 'sdk':
     cmd.append('--all_boards')
   else:
     # TODO(vapier):
@@ -242,7 +242,27 @@ def GetToolchainsForBoard(board):
   overlays = cros_build_lib.RunCommand(
       cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
 
-  return GetTuplesForOverlays(overlays)
+  toolchains = GetTuplesForOverlays(overlays)
+  if board == 'sdk':
+    toolchains = FilterToolchains(toolchains, 'sdk', True)
+  return toolchains
+
+
+def FilterToolchains(targets, key, value):
+  """Filter out targets based on their attributes.
+
+  args:
+    targets - dict of toolchains
+    key - metadata to examine
+    value - expected value for metadata
+
+  returns a dict where all targets whose metadata key does not match value
+  have been deleted.
+  """
+  for target, metadata in targets.items():
+    if metadata[key] != value:
+      del targets[target]
+  return targets
 
 
 def GetInstalledPackageVersions(target, package):
@@ -605,6 +625,10 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
     targets_wanted = set(targets_wanted)
     if targets_wanted == set(['all']):
       targets = alltargets
+    elif targets_wanted == set(['sdk']):
+      # Filter out all the non-sdk toolchains as we don't want to mess
+      # with those in all of our builds.
+      targets = FilterToolchains(alltargets, 'sdk', True)
     else:
       # Verify user input.
       nonexistant = []
@@ -616,11 +640,6 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
       if nonexistant:
         cros_build_lib.Die('Invalid targets: ' + ','.join(nonexistant))
 
-    # Filter out all the non-sdk toolchains as we don't want to mess
-    # with those in all of our builds.
-    for target in targets.keys():
-      if not targets[target]['sdk']:
-        del targets[target]
     # Now re-add any targets that might be from this board.  This is
     # to allow unofficial boards to declare their own toolchains.
     for board in boards_wanted:
@@ -665,9 +684,9 @@ def main(argv):
                     action='store_true', dest='deleteold', default=False,
                     help=('Unmerge deprecated packages.'))
   parser.add_option('-t', '--targets',
-                    dest='targets', default='all',
+                    dest='targets', default='sdk',
                     help=('Comma separated list of tuples. '
-                          'Special keyword \'host\' is allowed. Default: all.'))
+                          'Special keyword \'host\' is allowed. Default: sdk.'))
   parser.add_option('--include-boards',
                     dest='include_boards', default='',
                     help=('Comma separated list of boards whose toolchains we'
