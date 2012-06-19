@@ -138,7 +138,7 @@ class FileBrowserNotifications::NotificationMessage {
             ash::switches::kAshNotifyDisabled)) {
       const gfx::ImageSkia& icon =
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              GetIconId(type_));
+              IDR_FILES_APP_ICON);
       notification_id_ = DesktopNotificationService::AddIconNotification(
           GURL(), GetTitle(type_), message, icon,
           new Delegate(host->AsWeakPtr(), notification_id_), profile_);

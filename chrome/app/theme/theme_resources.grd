@@ -539,6 +539,7 @@
         <include name="IDR_VOLUME_BUBBLE_UP_ICON" file="default_100_percent/volume_up_icon.png" type="BINDATA" />
         <include name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="default_100_percent/volume_down_icon.png" type="BINDATA" />
         <include name="IDR_VOLUME_BUBBLE_MUTE_ICON" file="default_100_percent/volume_mute_icon.png" type="BINDATA" />
+	<include name="IDR_FILES_APP_ICON" file="default_100_percent/files_app_icon.png" type="BINDATA" />
       </if>
 
       <!-- Images only used by Ash. -->
