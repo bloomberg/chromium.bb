@@ -19,13 +19,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 
 // TODO(akalin): Add tests here that exercise the whole
@@ -61,10 +61,7 @@ class ProfileSyncServiceTest : public testing::Test {
 
     // We need to set the user agent before the backend host can call
     // webkit_glue::GetUserAgent().
-    chrome::VersionInfo version_info;
-    std::string product("Chrome/");
-    product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
-    webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(product),
+    webkit_glue::SetUserAgent(content::GetContentClient()->GetUserAgent(),
                               false);
   }
 

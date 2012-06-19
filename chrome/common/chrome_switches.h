@@ -347,6 +347,10 @@ extern const char kWindowPosition[];
 extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
 
+#if defined(OS_ANDROID)
+extern const char kTabletUi[];
+#endif
+
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
 extern const char kDisableGData[];

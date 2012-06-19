@@ -100,6 +100,8 @@
         'browser/accessibility/accessibility_events.h',
         'browser/accessibility/invert_bubble_prefs.cc',
         'browser/accessibility/invert_bubble_prefs.h',
+        'browser/android/chrome_startup_flags.cc',
+        'browser/android/chrome_startup_flags.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_mac.h',

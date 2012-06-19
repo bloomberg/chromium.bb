@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <sys/utsname.h>
 #endif
 
+#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
@@ -18,6 +19,14 @@
 
 // Generated
 #include "webkit_version.h"  // NOLINT
+
+#if defined(OS_ANDROID)
+namespace {
+
+base::LazyInstance<std::string>::Leaky g_os_info = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+#endif
 
 namespace webkit_glue {
 
@@ -43,7 +52,7 @@ std::string BuildOSCpuInfo() {
                                                &os_minor_version,
                                                &os_bugfix_version);
 #endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -92,6 +101,9 @@ std::string BuildOSCpuInfo() {
       os_major_version,
       os_minor_version,
       os_bugfix_version
+#elif defined(OS_ANDROID)
+      "Android %s",
+      g_os_info.Get().c_str()
 #else
       "%s %s",
       unixinfo.sysname,  // e.g. Linux
@@ -118,6 +130,8 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
       "Macintosh; ";
 #elif defined(USE_X11)
       "X11; ";           // strange, but that's what Firefox uses
+#elif defined(OS_ANDROID)
+      "Linux; ";
 #else
       "Unknown; ";
 #endif
@@ -142,5 +156,10 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
   return user_agent;
 }
 
-}  // namespace webkit_glue
+#if defined(OS_ANDROID)
+void SetUserAgentOSInfo(const std::string& os_info) {
+  g_os_info.Get() = os_info;
+}
+#endif
 
+}  // namespace webkit_glue

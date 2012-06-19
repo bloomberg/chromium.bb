@@ -20,6 +20,7 @@
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
 #include "grit/common_resources.h"
@@ -402,6 +403,12 @@ std::string ChromeContentClient::GetUserAgent() const {
   chrome::VersionInfo version_info;
   std::string product("Chrome/");
   product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
+#if defined(OS_ANDROID)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kTabletUi)) {
+    product += " Mobile";
+  }
+#endif
   return webkit_glue::BuildUserAgentFromProduct(product);
 }
 

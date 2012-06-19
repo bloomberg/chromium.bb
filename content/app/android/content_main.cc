@@ -8,16 +8,12 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-#include "content/common/android/user_agent.h"
-#endif
+#include "content/app/android/user_agent.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "jni/content_main_jni.h"
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
 #include "webkit/glue/user_agent.h"
-#endif
 
 using base::LazyInstance;
 using content::ContentMainRunner;
@@ -51,9 +47,7 @@ static jint Start(JNIEnv* env, jclass clazz) {
     base::debug::WaitForDebugger(24*60*60, false);
   }
 
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  webkit_glue::InitUserAgent(GetUserAgentOSInfo());
-#endif
+  webkit_glue::SetUserAgentOSInfo(content::GetUserAgentOSInfo());
 
   DCHECK(!g_content_runner.Get().get());
   g_content_runner.Get().reset(ContentMainRunner::Create());

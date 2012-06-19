@@ -1287,6 +1287,11 @@ const char kWindowSize[]                    = "window-size";
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
+#if defined(OS_ANDROID)
+// Use the tablet specific UI components when available.
+const char kTabletUi[]                      = "tablet-ui";
+#endif
+
 #if defined(OS_CHROMEOS)
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";

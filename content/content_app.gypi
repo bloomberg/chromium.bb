@@ -20,6 +20,8 @@
     'app/android/library_loader_hooks.cc',
     'app/android/sandboxed_process_service.cc',
     'app/android/sandboxed_process_service.h',
+    'app/android/user_agent.cc',
+    'app/android/user_agent.h',
     'app/content_main.cc',
     'app/content_main_runner.cc',
     'app/startup_helper_win.cc',

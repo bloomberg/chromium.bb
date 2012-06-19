@@ -8,6 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "content/app/android/content_main.h"
 #include "content/app/android/sandboxed_process_service.h"
+#include "content/app/android/user_agent.h"
 #include "content/browser/android/android_browser_process.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/content_view_impl.h"
@@ -35,6 +36,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "SurfaceCallback", content::RegisterSurfaceCallback },
   { "TouchPoint", content::RegisterTouchPoint },
   { "TraceEvent", RegisterTraceEvent },
+  { "UserAgent", content::RegisterUserAgent },
 };
 
 bool RegisterJni(JNIEnv* env) {
