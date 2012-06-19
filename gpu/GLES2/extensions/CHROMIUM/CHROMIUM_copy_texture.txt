@@ -23,7 +23,12 @@ Overview
     glCopyTexImage2D command.  A new function is exported,
     glCopyTextureCHROMIUM, that performs the same copy operation as
     glCopyTexImage2D, while respecting the pixel-storage modifiers
-    UNPACK_FLIP_Y_CHROMIUM and GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM.
+    UNPACK_FLIP_Y_CHROMIUM, GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM and
+    GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM.
+
+    If GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM and 
+    GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM are enabled.  Then no alpha
+    processing occurs.  This is the equivalent of having neither flag set.
 
     The extension also supports copying BGRA textures, which is not explicitly
     granted by EXT_texture_format_BGRA8888.

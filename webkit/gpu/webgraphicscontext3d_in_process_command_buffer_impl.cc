@@ -1621,8 +1621,8 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
-DELEGATE_TO_GL_5(copyTextureCHROMIUM, CopyTextureCHROMIUM, WGC3Denum,
-                 WebGLId, WebGLId, WGC3Dint, WGC3Denum)
+DELEGATE_TO_GL_5(copyTextureCHROMIUM, CopyTextureCHROMIUM, WGC3Denum, WGC3Duint,
+                 WGC3Duint, WGC3Dint, WGC3Denum)
 
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     onCreateGrGLInterface() {

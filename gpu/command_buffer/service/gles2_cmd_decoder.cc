@@ -1389,8 +1389,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // unpack flip y as last set by glPixelStorei
   bool unpack_flip_y_;
 
-  // unpack premultiply alpha as last set by glPixelStorei
+  // unpack (un)premultiply alpha as last set by glPixelStorei
   bool unpack_premultiply_alpha_;
+  bool unpack_unpremultiply_alpha_;
 
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
@@ -1905,6 +1906,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       unpack_alignment_(4),
       unpack_flip_y_(false),
       unpack_premultiply_alpha_(false),
+      unpack_unpremultiply_alpha_(false),
       attrib_0_buffer_id_(0),
       attrib_0_buffer_matches_value_(true),
       attrib_0_size_(0),
@@ -3836,6 +3838,24 @@ bool GLES2DecoderImpl::GetHelper(
         } else {
           *params = 0;
         }
+      }
+      return true;
+    case GL_UNPACK_FLIP_Y_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = unpack_flip_y_;
+      }
+      return true;
+    case GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = unpack_premultiply_alpha_;
+      }
+      return true;
+    case GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = unpack_unpremultiply_alpha_;
       }
       return true;
     default:
@@ -6369,6 +6389,9 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
     case GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM:
         unpack_premultiply_alpha_ = (param != 0);
         return error::kNoError;
+    case GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM:
+        unpack_unpremultiply_alpha_ = (param != 0);
+        return error::kNoError;
     default:
         break;
   }
@@ -8829,7 +8852,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   copy_texture_CHROMIUM_->DoCopyTexture(target, source_info->service_id(),
                                         dest_info->service_id(), level,
                                         unpack_flip_y_,
-                                        unpack_premultiply_alpha_);
+                                        unpack_premultiply_alpha_,
+                                        unpack_unpremultiply_alpha_);
   glViewport(viewport_x_, viewport_y_, viewport_width_, viewport_height_);
 
   // Restore all of the state touched by the extension.

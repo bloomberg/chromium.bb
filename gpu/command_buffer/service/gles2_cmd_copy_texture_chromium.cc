@@ -27,33 +27,51 @@ const GLfloat kTextureCoords[] = { 0.0f, 0.0f,
                                    1.0f, 1.0f,
                                    0.0f, 1.0f };
 
-const int kNumShaders = 5;
+const int kNumShaders = 7;
 enum ShaderId {
   VERTEX_SHADER_POS_TEX,
   FRAGMENT_SHADER_TEX,
   FRAGMENT_SHADER_TEX_FLIP_Y,
   FRAGMENT_SHADER_TEX_PREMULTIPLY_ALPHA,
-  FRAGMENT_SHADER_TEX_PREMULTIPLY_ALPHA_FLIP_Y
+  FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA,
+  FRAGMENT_SHADER_TEX_PREMULTIPLY_ALPHA_FLIP_Y,
+  FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA_FLIP_Y
 };
 
 enum ProgramId {
   PROGRAM_COPY_TEXTURE,
   PROGRAM_COPY_TEXTURE_FLIP_Y,
   PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA,
-  PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIPY
+  PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA,
+  PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIPY,
+  PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIPY
 };
 
 // Returns the correct program to evaluate the copy operation for
 // the CHROMIUM_flipy and premultiply alpha pixel store settings.
-ProgramId GetProgram(bool flip_y, bool premultiply_alpha) {
+ProgramId GetProgram(bool flip_y, bool premultiply_alpha,
+                     bool unpremultiply_alpha) {
+  // If both pre-multiply and unpremultiply are requested, then perform no
+  // alpha manipulation.
+  if (premultiply_alpha && unpremultiply_alpha) {
+    premultiply_alpha = false;
+    unpremultiply_alpha = false;
+  }
+
   if (flip_y && premultiply_alpha)
     return PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIPY;
+
+  if (flip_y && unpremultiply_alpha)
+    return PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIPY;
 
   if (flip_y)
     return PROGRAM_COPY_TEXTURE_FLIP_Y;
 
   if (premultiply_alpha)
     return PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA;
+
+  if (unpremultiply_alpha)
+    return PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA;
 
   return PROGRAM_COPY_TEXTURE;
 }
@@ -91,6 +109,15 @@ const char* GetShaderSource(ShaderId shader) {
           gl_FragColor = texture2D(u_texSampler, v_uv.st);
           gl_FragColor.rgb *= gl_FragColor.a;
         });
+    case FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA:
+      return SHADER(
+        uniform sampler2D u_texSampler;
+        varying vec2 v_uv;
+        void main(void) {
+          gl_FragColor = texture2D(u_texSampler, v_uv.st);
+          if (gl_FragColor.a > 0.0)
+            gl_FragColor.rgb /= gl_FragColor.a;
+        });
     case FRAGMENT_SHADER_TEX_PREMULTIPLY_ALPHA_FLIP_Y:
       return SHADER(
         uniform sampler2D u_texSampler;
@@ -98,6 +125,15 @@ const char* GetShaderSource(ShaderId shader) {
         void main(void) {
           gl_FragColor = texture2D(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));
           gl_FragColor.rgb *= gl_FragColor.a;
+        });
+    case FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA_FLIP_Y:
+      return SHADER(
+        uniform sampler2D u_texSampler;
+        varying vec2 v_uv;
+        void main(void) {
+          gl_FragColor = texture2D(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));
+          if (gl_FragColor.a > 0.0)
+            gl_FragColor.rgb /= gl_FragColor.a;
         });
     default:
       return 0;
@@ -184,13 +220,14 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
     GLuint dest_id,
     GLint level,
     bool flip_y,
-    bool premultiply_alpha) {
+    bool premultiply_alpha,
+    bool unpremultiply_alpha) {
   if (!initialized_) {
     DLOG(ERROR) << "CopyTextureCHROMIUM: Uninitialized manager.";
     return;
   }
 
-  GLuint program = GetProgram(flip_y, premultiply_alpha);
+  GLuint program = GetProgram(flip_y, premultiply_alpha, unpremultiply_alpha);
   glUseProgram(programs_[program]);
 
 #ifndef NDEBUG

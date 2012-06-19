@@ -18,7 +18,8 @@ class CopyTextureCHROMIUMResourceManager {
   void Destroy();
 
   void DoCopyTexture(GLenum target, GLuint source_id, GLuint dest_id,
-                     GLint level, bool flip_y, bool premultiply_alpha);
+                     GLint level, bool flip_y, bool premultiply_alpha,
+                     bool unpremultiply_alpha);
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
@@ -27,7 +28,7 @@ class CopyTextureCHROMIUMResourceManager {
  private:
   bool initialized_;
 
-  static const int kNumPrograms = 4;
+  static const int kNumPrograms = 6;
   GLuint programs_[kNumPrograms];
   GLuint buffer_ids_[2];
   GLuint framebuffer_;
