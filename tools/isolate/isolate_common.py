@@ -70,9 +70,24 @@ def classify_files(files):
   Arguments:
   - files: list of files names to generate a dictionary out of.
   """
-  files = list(files)
-  tracked = sorted(f for f in files if not f.endswith('/') and ' ' not in f)
-  untracked = sorted(f for f in files if f.endswith('/') or ' ' in f)
+  # These directories are not guaranteed to be always present on every builder.
+  OPTIONAL_DIRECTORIES = (
+    'test/data/plugin',
+    'third_party/WebKit/LayoutTests',
+  )
+
+  tracked = []
+  untracked = []
+  for filepath in sorted(files):
+    if (not filepath.endswith('/') and
+        ' ' not in filepath and
+        not any(i in filepath for i in OPTIONAL_DIRECTORIES)):
+      # A file, without whitespace, in a non-optional directory.
+      tracked.append(filepath)
+    else:
+      # Anything else.
+      untracked.append(filepath)
+
   variables = {}
   if tracked:
     variables[KEY_TRACKED] = tracked
