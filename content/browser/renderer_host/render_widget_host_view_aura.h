@@ -238,6 +238,9 @@ class RenderWidgetHostViewAura
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
 
+  // Converts |rect| from window coordinate to screen coordinate.
+  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
+
   // The model object.
   content::RenderWidgetHostImpl* host_;
 

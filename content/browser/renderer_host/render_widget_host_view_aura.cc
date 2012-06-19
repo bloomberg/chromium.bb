@@ -809,8 +809,7 @@ bool RenderWidgetHostViewAura::CanComposeInline() const {
   return can_compose_inline_;
 }
 
-gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
-  const gfx::Rect rect = selection_start_rect_.Union(selection_end_rect_);
+gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
   gfx::Point origin = rect.origin();
   gfx::Point end = gfx::Point(rect.right(), rect.bottom());
 
@@ -827,12 +826,17 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
                    end.y() - origin.y());
 }
 
+gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
+  const gfx::Rect rect = selection_start_rect_.Union(selection_end_rect_);
+  return ConvertRectToScreen(rect);
+}
+
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(uint32 index,
                                                              gfx::Rect* rect) {
   DCHECK(rect);
   if (index >= composition_character_bounds_.size())
     return false;
-  *rect = composition_character_bounds_[index];
+  *rect = ConvertRectToScreen(composition_character_bounds_[index]);
   return true;
 }
 
