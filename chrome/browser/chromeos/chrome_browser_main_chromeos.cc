@@ -78,6 +78,13 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
+namespace {
+
+// Username for stub login when not running on ChromeOS.
+const char kStubUsername[] = "stub-user@example.com";
+
+}
+
 class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
@@ -229,12 +236,27 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 // content::BrowserMainParts and ChromeBrowserMainExtraParts overrides ---------
 
 void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
+  CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
+
   if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
-    CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kDisableSync);
     singleton_command_line->AppendSwitch(switches::kDisableExtensions);
     browser_defaults::bookmarks_enabled = false;
+  }
+
+  // If we're not running on ChromeOS, and are not showing the login manager
+  // or attempting a command line login, login with a stub user.
+  if (!base::chromeos::IsRunningOnChromeOS() &&
+      !parsed_command_line().HasSwitch(switches::kLoginManager) &&
+      !parsed_command_line().HasSwitch(switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(switches::kGuestSession)) {
+    singleton_command_line->AppendSwitchASCII(switches::kLoginUser,
+                                              kStubUsername);
+    if (parameters().ui_task) {  // ui_task is non-NULL when running tests.
+      singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
+                                                "test-user");
+    }
   }
 
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();

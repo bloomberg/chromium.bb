@@ -68,9 +68,6 @@ namespace {
 // depends on that and it's hard to figure out what).
 const char kGuestUser[] = "";
 
-// Stub user email (for test paths).
-const char kStubUser[] = "stub-user@example.com";
-
 // Names of nodes with info about user image.
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
@@ -80,9 +77,6 @@ const char kWallpaperIndexNodeName[] = "index";
 
 const int kThumbnailWidth = 128;
 const int kThumbnailHeight = 80;
-
-// Index of the default image used for the |kStubUser| user.
-const int kStubDefaultImageIndex = 0;
 
 // Delay betweeen user login and attempt to update user's profile image.
 const long kProfileImageDownloadDelayMs = 10000;
@@ -203,18 +197,7 @@ UserManagerImpl::UserManagerImpl()
       observed_sync_service_(NULL),
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
-  // If we're not running on ChromeOS, and are not showing the login manager
-  // or attempting a command line login? Then login the stub user.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!base::chromeos::IsRunningOnChromeOS() &&
-      !command_line->HasSwitch(switches::kLoginManager) &&
-      !command_line->HasSwitch(switches::kLoginPassword) &&
-      !command_line->HasSwitch(switches::kGuestSession)) {
-    StubUserLoggedIn();
-  }
-
   MigrateWallpaperData();
-
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
@@ -238,14 +221,6 @@ const UserList& UserManagerImpl::GetUsers() const {
 
 void UserManagerImpl::UserLoggedIn(const std::string& email,
                                    bool browser_restart) {
-  // Remove the stub user if it is still around.
-  if (logged_in_user_) {
-    DCHECK(IsLoggedInAsStub());
-    delete logged_in_user_;
-    logged_in_user_ = NULL;
-    is_current_user_ephemeral_ = false;
-  }
-
   if (email == kGuestUser) {
     GuestUserLoggedIn();
     return;
@@ -358,13 +333,6 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
   NotifyOnLogin();
 }
 
-void UserManagerImpl::StubUserLoggedIn() {
-  is_current_user_ephemeral_ = true;
-  logged_in_user_ = new User(kStubUser, false);
-  logged_in_user_->SetImage(UserImage(GetDefaultImage(kStubDefaultImageIndex)),
-                            kStubDefaultImageIndex);
-}
-
 void UserManagerImpl::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -380,10 +348,6 @@ void UserManagerImpl::InitializeWallpaper() {
             SetDefaultWallpaper(ash::GetSolidColorIndex());
       }
     }
-    return;
-  } else if (IsLoggedInAsStub()) {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(ash::GetInvalidWallpaperIndex());
     return;
   }
   UserSelected(GetLoggedInUser().email());
@@ -664,7 +628,7 @@ void UserManagerImpl::Observe(int type,
           base::Unretained(this)));
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
-      if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsStub()) {
+      if (IsUserLoggedIn() && !IsLoggedInAsGuest()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
             profile == ProfileManager::GetDefaultProfile()) {
@@ -682,7 +646,7 @@ void UserManagerImpl::Observe(int type,
 }
 
 void UserManagerImpl::OnStateChanged() {
-  DCHECK(IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsStub());
+  DCHECK(IsUserLoggedIn() && !IsLoggedInAsGuest());
   AuthError::State state = observed_sync_service_->GetAuthError().state();
   if (state != AuthError::NONE &&
       state != AuthError::CONNECTION_FAILED &&
@@ -925,8 +889,8 @@ bool UserManagerImpl::AreEphemeralUsersEnabled() const {
 }
 
 bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
-  // The guest user always is ephemeral.
-  if (email == kGuestUser)
+  // The guest and stub user always are ephemeral.
+  if (email == kGuestUser || email == kStubUser)
     return true;
 
   // The currently logged-in user is ephemeral iff logged in as ephemeral.
@@ -1044,13 +1008,6 @@ void UserManagerImpl::GetLoggedInUserWallpaperProperties(
     int* index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(logged_in_user_);
-
-  if (IsLoggedInAsStub()) {
-    *type = current_user_wallpaper_type_ = User::DEFAULT;
-    *index = current_user_wallpaper_index_ = ash::GetInvalidWallpaperIndex();
-    return;
-  }
-
   GetUserWallpaperProperties(GetLoggedInUser().email(), type, index);
 }
 

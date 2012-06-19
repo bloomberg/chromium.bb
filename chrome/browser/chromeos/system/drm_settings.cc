@@ -106,8 +106,7 @@ void ToggleDrm(bool enable) {
 
   // Don't generate files as a guest, demo user, or a stub.
   if (user_manager->IsLoggedInAsGuest() ||
-      user_manager->IsLoggedInAsDemoUser() ||
-      user_manager->IsLoggedInAsStub())
+      user_manager->IsLoggedInAsDemoUser())
     return;
 
   // The user email address is included in the hash to keep the identifier
