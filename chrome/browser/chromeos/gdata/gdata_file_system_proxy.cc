@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -250,20 +249,6 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
                    std::vector<base::FileUtilProxy::Entry>(),
                    false));
-    return;
-  }
-
-  // File paths with type GDATA_SEARH_PATH_QUERY are virtual path reserved for
-  // displaying gdata content search results. They are formatted so their base
-  // name equals to search query. So to get their contents, we have to kick off
-  // content search.
-  if (util::GetSearchPathStatus(file_path) == util::GDATA_SEARCH_PATH_QUERY) {
-    file_system_->Search(
-        file_path.BaseName().value(),
-        gdata::SearchCallback(),
-        base::Bind(&GDataFileSystemProxy::OnReadDirectory,
-                   this,
-                   callback));
     return;
   }
 

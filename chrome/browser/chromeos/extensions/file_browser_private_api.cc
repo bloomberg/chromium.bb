@@ -2158,8 +2158,7 @@ void SearchDriveFunction::OnFileSystemOpened(
 
   system_service->file_system()->Search(
       query_,
-      base::Bind(&SearchDriveFunction::OnSearch, this),
-      gdata::ReadDirectoryCallback());
+      base::Bind(&SearchDriveFunction::OnSearch, this));
 }
 
 void SearchDriveFunction::OnSearch(

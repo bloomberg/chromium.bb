@@ -396,7 +396,6 @@ void GDataDirectory::RemoveChildDirectories() {
 
 GDataRootDirectory::GDataRootDirectory()
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
-      fake_search_directory_(new GDataDirectory(NULL, NULL)),
       largest_changestamp_(0), serialized_size_(0) {
   title_ = kGDataRootDirectory;
   SetFileNameFromTitle();
@@ -430,54 +429,6 @@ void GDataRootDirectory::RemoveEntryFromResourceMap(GDataEntry* entry) {
   resource_map_.erase(entry->resource_id());
 }
 
-bool GDataRootDirectory::ModifyFindEntryParamsForSearchPath(
-    const FilePath& file_path,
-    std::vector<FilePath::StringType>* components,
-    GDataDirectory** current_dir,
-    FilePath* directory_path) {
-  DCHECK(current_dir);
-  DCHECK(components);
-  // |components| should contain at least 4 members.
-  // "drive", ".search", query_name and query_result_name. Additionally,
-  // if query result is a directory, it may contain subdirectories and files,
-  // in which case the number of components may be bigger than 4.
-  DCHECK_GT(components->size(), 3u);
-  DCHECK(components->at(0) == "drive" && components->at(1) == ".search");
-
-  FilePath::StringType resource_id;
-  FilePath::StringType file_name;
-  if (!util::ParseSearchFileName((*components)[3], &resource_id, &file_name))
-    return false;
-
-  GDataEntry* file_entry = GetEntryByResourceId(resource_id);
-  if (!file_entry)
-    return false;
-
-  // We should continue search from the entry's parent dir (|current_dir|), so
-  // we have to ammend |components| to be relative to the |current_dir|
-  // (including the dir itself).
-  // We continue the search with the entry's parent instead of the entry itself
-  // to make sure that the returned file really has the name |file_name|. Note
-  // that we may end up with finding an entry even if entry with |resource_id|
-  // has a name different from |file_name|. This is intended, and enables us to
-  // test that new file name is unique (in file manager) when renaming the
-  // entry.
-  DCHECK(file_entry->parent());
-  *current_dir = file_entry->parent();
-
-  if ((*current_dir)->parent()) {
-    *directory_path = (*current_dir)->parent()->GetFilePath();
-  } else {
-    *directory_path = FilePath();
-  }
-
-  // Remove "drive/.search" from path.
-  components->erase(components->begin(), components->begin() + 2);
-  (*components)[0] = (*current_dir)->file_name();
-  (*components)[1] = file_name;
-  return true;
-}
-
 void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
                                          const FindEntryCallback& callback) {
   // GDataFileSystem has already locked.
@@ -488,25 +439,6 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
 
   GDataDirectory* current_dir = this;
   FilePath directory_path;
-
-  util::GDataSearchPathType path_type =
-      util::GetSearchPathStatusForPathComponents(components);
-
-  if (path_type == util::GDATA_SEARCH_PATH_ROOT ||
-      path_type == util::GDATA_SEARCH_PATH_QUERY) {
-    callback.Run(base::PLATFORM_FILE_OK, fake_search_directory_.get());
-    return;
-  }
-
-  // If the path is under search path, we have to modify paremeters for finding
-  // the entry.
-  if (path_type != util::GDATA_SEARCH_PATH_INVALID) {
-    if (!ModifyFindEntryParamsForSearchPath(file_path,
-             &components, &current_dir, &directory_path)) {
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
-      return;
-    }
-  }
 
   for (size_t i = 0; i < components.size() && current_dir; i++) {
     directory_path = directory_path.Append(current_dir->file_name());

@@ -332,18 +332,12 @@ class GDataFileSystemInterface {
   virtual void RequestDirectoryRefresh(const FilePath& file_path) = 0;
 
   // Does server side content search for |search_query|.
-  // Search results will be returned in two ways:
-  // 1' As list of results' |SearchResultInfo| structs, which contains file's
-  //    path and is_directory flag. This is done using |search_callback|.
-  // 2' As gdata entries in temp directory proto, and their
-  //    title/file_name will be formatted |<resource_id>.<original_file_name>|.
-  //    This will be returned via |callback|.
+  // Search results will be returned as a list of results' |SearchResultInfo|
+  // structs, which contains file's path and is_directory flag.
   //
-  // TODO(tbarzic): Get rid of 2' once we're ready.
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void Search(const std::string& search_query,
-                      const SearchCallback& search_callback,
-                      const ReadDirectoryCallback& callback) = 0;
+                      const SearchCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
@@ -382,8 +376,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const FindEntryCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
-                      const SearchCallback& search_callback,
-                      const ReadDirectoryCallback& callback) OVERRIDE;
+                      const SearchCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const FilePath& remote_src_file_path,
       const FilePath& local_dest_file_path,
@@ -575,8 +568,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // |LoadFeedFromServer|.
   // |params| params used for getting document feed for content search.
   // |error| error code returned by |LoadFeedFromServer|.
-  void OnSearch(const SearchCallback& search_callback,
-                const ReadDirectoryCallback& callback,
+  void OnSearch(const SearchCallback& callback,
                 GetDocumentsParams* params,
                 base::PlatformFileError error);
 
@@ -1076,8 +1068,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
-                             const SearchCallback& search_callback,
-                             const ReadDirectoryCallback& callback);
+                             const SearchCallback& callback);
   void OpenFileOnUIThread(const FilePath& file_path,
                           const OpenFileCallback& callback);
   void CloseFileOnUIThread(const FilePath& file_path,
