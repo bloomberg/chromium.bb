@@ -58,12 +58,12 @@ all_tests=(
   lkgm_manager_unittest.py
   manifest_version_unittest.py
   patch_unittest.py
-  prebuilt_unittest.py
   remote_try_unittest.py
   repository_unittest.py
   validation_pool_unittest.py
   "../scripts/cros_mark_as_stable_unittest.py yes"
   "../scripts/cros_mark_chrome_as_stable_unittest.py yes"
+  "../scripts/upload_prebuilts_unittest.py"
 )
 if [ $# -eq 0 ]; then
   set -- "${all_tests[@]}"

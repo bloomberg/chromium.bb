@@ -605,14 +605,14 @@ def AddPackagesForPrebuilt(filename):
   """Add list of packages for upload.
 
   Process a file that lists all the packages that can be uploaded to the
-  package prebuilt bucket and generates the command line args for prebuilt.py.
+  package prebuilt bucket and generates the command line args for upload_prebuilts.
 
   Args:
     filename: file with the package full name (category/name-version), one
               package per line.
 
   Returns:
-    A list of parameters for prebuilt.py. For example:
+    A list of parameters for upload_prebuilts. For example:
     ['--packages=net-misc/dhcp', '--packages=app-admin/eselect-python']
   """
   try:
@@ -653,21 +653,21 @@ def UploadPrebuilts(buildroot, board, private_bucket, category,
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     binhost_bucket: bucket for uploading prebuilt packages. If it equals None
                     then the default bucket is used.
-    binhost_key: key parameter to pass onto prebuilt.py. If it equals None then
-                 chrome_rev is used to select a default key.
-    binhost_base_url: base url for prebuilt.py. If None the parameter
+    binhost_key: key parameter to pass onto upload_prebuilts. If it equals
+                 None, then chrome_rev is used to select a default key.
+    binhost_base_url: base url for upload_prebuilts. If None the parameter
                       --binhost-base-url is absent.
-    git_sync: boolean that enables --git-sync prebuilt.py parameter.
+    git_sync: boolean that enables --git-sync upload_prebuilts parameter.
     use_binhost_package_file: use the File that contains the packages to upload
                               to the binhost. If it equals False then all
                               packages are selected.
-    extra_args: Extra args to send to prebuilt.py.
+    extra_args: Extra args to send to upload_prebuilts.
   """
   if extra_args is None:
     extra_args = []
 
-  cwd = os.path.dirname(os.path.realpath(__file__))
-  cmd = ['./prebuilt.py',
+  cwd = constants.CHROMITE_BIN_DIR
+  cmd = ['./upload_prebuilts',
          '--build-path', buildroot,
          '--prepend-version', category]
 

@@ -11,9 +11,9 @@ import sys
 import tempfile
 import unittest
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
-import prebuilt
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
+from chromite.scripts import upload_prebuilts as prebuilt
 from chromite.lib import cros_build_lib
 from chromite.lib import binpkg
 
@@ -490,7 +490,7 @@ class TestMain(unittest.TestCase):
         mox.IgnoreArg(), options.key, options.git_sync,
         options.sync_binhost_conf, options.upload_board_tarball)
     self.mox.ReplayAll()
-    prebuilt.main()
+    prebuilt.main([])
 
 if __name__ == '__main__':
   unittest.main()

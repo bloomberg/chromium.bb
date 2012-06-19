@@ -268,7 +268,7 @@ _settings = dict(
 #                --list.
   description=None,
 
-# git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
+# git_sync -- Boolean that enables parameter --git-sync for upload_prebuilts.
   git_sync=False,
 
 # board_specific_configs -- A mapping from boards in the boards array to
@@ -286,12 +286,12 @@ _settings = dict(
 #                   None the default buckets are used.
   binhost_bucket=None,
 
-# binhost_key -- Parameter --key for prebuilt.py. If it equals None the default
-#                values are used, which depend on the build type.
+# binhost_key -- Parameter --key for upload_prebuilts. If it equals None, the
+#                default values are used, which depend on the build type.
   binhost_key=None,
 
-# binhost_base_url -- Parameter --binhost-base-url for prebuilt.py. If it equals
-#                     None default value is used.
+# binhost_base_url -- Parameter --binhost-base-url for upload_prebuilts. If it
+#                     equals None, the default value is used.
   binhost_base_url=None,
 
 # Upload dev installer prebuilts.

@@ -12,10 +12,10 @@ To read more about prebuilts/binhost binary packages please refer to:
 http://goto/chromeos-prebuilts
 
 Example of uploading prebuilt amd64 host files to Google Storage:
-./prebuilt.py -p /b/cbuild/build -s -u gs://chromeos-prebuilt
+upload_prebuilts -p /b/cbuild/build -s -u gs://chromeos-prebuilt
 
 Example of uploading x86-dogfood binhosts to Google Storage:
-./prebuilt.py -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
+upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 
 """
 
@@ -25,10 +25,6 @@ import optparse
 import os
 import sys
 import tempfile
-
-if __name__ == '__main__':
-  import constants
-  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_background as bg
 from chromite.lib import cros_build_lib
@@ -183,9 +179,10 @@ def _GsUpload(local_file, remote_file, acl):
     cmd = [binpkg.GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
     acl_cmd = [binpkg.GSUTIL_BIN, 'setacl', acl, remote_file]
 
-  cros_build_lib.RunCommandWithRetries(_RETRIES, cmd, print_cmd=False,
-                                       sleep=_SLEEP_TIME)
-
+  cros_build_lib.RunCommandWithRetries(_RETRIES, cmd, print_cmd=True,
+                                       sleep=_SLEEP_TIME,
+                                       redirect_stdout=True,
+                                       redirect_stderr=True)
   if acl_cmd:
     # Apply the passed in ACL xml file to the uploaded object.
     cros_build_lib.RunCommandWithRetries(_RETRIES, acl_cmd, print_cmd=False,
@@ -643,7 +640,8 @@ def ParseOptions():
     Usage(parser, 'Error: If you are using --skip-upload, you must specify a '
                   'version number using --set-version.')
   if args:
-    Usage(parser, 'Error: invalid arguments passed to prebuilt.py: %r' % args)
+    Usage(parser, 'Error: invalid arguments passed to upload_prebuilts: '
+                  '%r' % args)
 
   target = None
   if options.board:
@@ -683,7 +681,7 @@ def ParseOptions():
 
   return options, target
 
-def main():
+def main(_argv):
   # Set umask to a sane value so that files created as root are readable.
   os.umask(022)
 
@@ -725,6 +723,3 @@ def main():
     uploader.SyncBoardPrebuilts(version, options.key, options.git_sync,
                                 options.sync_binhost_conf,
                                 options.upload_board_tarball)
-
-if __name__ == '__main__':
-  main()

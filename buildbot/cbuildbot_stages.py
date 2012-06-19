@@ -1502,10 +1502,10 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 
   @classmethod
   def _AddOptionsForSlave(cls, builder, board):
-    """Inner helper method to add prebuilt.py args for a slave builder.
+    """Inner helper method to add upload_prebuilts args for a slave builder.
 
     Returns:
-      An array of options to add to prebuilt.py array that allow a master
+      An array of options to add to upload_prebuilts array that allow a master
       to submit prebuilt conf modifications on behalf of a slave.
     """
     args = []
@@ -1575,8 +1575,8 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
         # so only once so as to ensure it doesn't try to update the same file
         # more than once. As multiple boards can be built on the same builder,
         # we arbitrarily decided to update the binhost conf files when we run
-        # prebuilt.py for the last board. The other boards are treated as slave
-        # boards.
+        # upload_prebuilts for the last board. The other boards are treated as
+        # slave boards.
         if self._build_config['master'] and board == self._boards[-1]:
           unified_master = self._build_config['unified_manifest_version']
           generated_args.append('--sync-binhost-conf')

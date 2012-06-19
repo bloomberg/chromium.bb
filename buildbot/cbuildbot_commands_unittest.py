@@ -194,11 +194,10 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testUploadPublicPrebuilts(self):
     """Test _UploadPrebuilts with a public location."""
-    buildnumber = 4
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In(constants.PFQ_TYPE))
-    cros_build_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
+    cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, False,
                              constants.PFQ_TYPE, None)
@@ -206,11 +205,10 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testUploadPrivatePrebuilts(self):
     """Test _UploadPrebuilts with a private location."""
-    buildnumber = 4
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In(constants.PFQ_TYPE))
-    cros_build_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
+    cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, True,
                              constants.PFQ_TYPE, None)
@@ -218,11 +216,10 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testChromePrebuilts(self):
     """Test _UploadPrebuilts for Chrome prebuilts."""
-    buildnumber = 4
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In(constants.CHROME_PFQ_TYPE))
-    cros_build_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
+    cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
     self.mox.ReplayAll()
     commands.UploadPrebuilts(self._buildroot, self._test_board, False,
                              constants.CHROME_PFQ_TYPE, 'tot')
