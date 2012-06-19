@@ -15,6 +15,7 @@
 using WebKit::WebCanvas;
 using WebKit::WebColor;
 using WebKit::WebRect;
+using WebKit::WebSize;
 
 namespace webkit_glue {
 
@@ -979,6 +980,21 @@ void WebThemeEngineImpl::paintProgressBar(
   ui::NativeTheme::instance()->Paint(canvas, ui::NativeTheme::kProgressBar,
                                       ui::NativeTheme::kNormal, gfx_rect,
                                       extra);
+}
+
+WebSize WebThemeEngineImpl::getSize(int part) {
+  switch (part) {
+    case SBP_ARROWBTN: {
+      gfx::Size size = ui::NativeTheme::instance()->GetPartSize(
+          ui::NativeTheme::kScrollbarUpArrow,
+          ui::NativeTheme::kNormal,
+          ui::NativeTheme::ExtraParams());
+      return WebSize(size.width(), size.height());
+    }
+    default:
+      NOTREACHED() << "Unhandled part: " << part;
+  }
+  return WebSize();
 }
 
 }  // namespace webkit_glue
