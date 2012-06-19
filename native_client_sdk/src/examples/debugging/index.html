@@ -93,18 +93,17 @@
 <h2>How the example works</h2>
 <p>This example shows how to trap an untrusted exception (such as a illegal 
 memory reference in the NEXE).  This debugging technique can only be used
-for development since it requires several command-line switches, environment
-variables, and a special version of the Native Client plugin.  The test works
-by loading the module and communicating with it through PostMessage.  Messages
-from the module are sent to the Status line and/or the Log window in the page.
-Four seconds after the module is loaded, the JavaScript on this page sends a
-'BOOM' message to the module that causes the module to  dereference an illegal
-location in memory.</p>
+for development since it requires several command-line switches, and 
+environment variables.  The test works by loading the module and communicating
+with it through PostMessage.  Messages from the module are sent to the Status
+line and/or the Log window in the page. Four seconds after the module is
+loaded, the JavaScript on this page sends a 'BOOM' message to the module that
+causes the module to  dereference an illegal location in memory.</p>
 
 <p>If your setup is correct (you launched Chrome with the appropriate
 command-line arguments and environment variables), the Log window bellow should
-show the that the crash dump facilities are turn on. When the crash data
-arrives from the module, the data is forwarded to the HTTP server, which drives
+show that the crash dump facilities are turn on. When the crash data arrives
+from the module, the data is forwarded to the HTTP server, which drives
 a decoder and sends back a stack trace to the web page.</p>
 
 <p>If setup incorrectly, the NaCl module may or may not load.  If the module 
@@ -118,14 +117,14 @@ would normally send.
 In one terminal window, to start the server:
 <ul>
 <li>Set the CHROME_PATH environment variable to the fully qualified path of your
-cChrome executable.</li>
+Chrome executable.</li>
 <li>From the example directory type: <b>make RUN</b></li>
 </ul>
 In another terminal window, to automatically start Chrome with the correct
 environment variables and command-line switches:
 <ul>
 <li>Set the CHROME_PATH environment variable to the fully qualified path of your
-cChrome executable.</li>
+Chrome executable.</li>
 <li>From the example directory type: <b>make TRACE</b></li>
 </ul>
 
