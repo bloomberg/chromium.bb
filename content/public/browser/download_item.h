@@ -175,7 +175,7 @@ class CONTENT_EXPORT DownloadItem {
 
   // Called by the delegate after it delayed opening the download in
   // DownloadManagerDelegate::ShouldOpenDownload.
-  virtual void DelayedDownloadOpened() = 0;
+  virtual void DelayedDownloadOpened(bool auto_opened) = 0;
 
   // Called when all data has been saved. Only has display effects.
   virtual void OnAllDataSaved(int64 size, const std::string& final_hash) = 0;

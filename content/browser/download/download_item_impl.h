@@ -126,7 +126,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
                               const std::string& hash_state) OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
   virtual void MarkAsComplete() OVERRIDE;
-  virtual void DelayedDownloadOpened() OVERRIDE;
+  virtual void DelayedDownloadOpened(bool auto_opened) OVERRIDE;
   virtual void OnAllDataSaved(
       int64 size, const std::string& final_hash) OVERRIDE;
   virtual void OnDownloadedFileRemoved() OVERRIDE;

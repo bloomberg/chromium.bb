@@ -30,7 +30,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD3(UpdateProgress, void(int64, int64, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
-  MOCK_METHOD0(DelayedDownloadOpened, void());
+  MOCK_METHOD1(DelayedDownloadOpened, void(bool));
   MOCK_METHOD2(OnAllDataSaved, void(int64, const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   MOCK_METHOD0(MaybeCompleteDownload, void());

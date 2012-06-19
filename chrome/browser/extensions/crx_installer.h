@@ -166,6 +166,8 @@ class CrxInstaller
     page_ordinal_ = page_ordinal;
   }
 
+  bool did_handle_successfully() const { return did_handle_successfully_; }
+
   Profile* profile() { return profile_; }
 
  private:
@@ -326,6 +328,13 @@ class CrxInstaller
 
   // Whether to allow off store installation.
   OffStoreInstallAllowReason off_store_install_allow_reason_;
+
+  // Whether the installation was handled successfully. This is used to
+  // indicate to the client whether the file should be removed and any UI
+  // initiating the installation can be removed. This is different than whether
+  // there was an error; if there was an error that rejects installation we
+  // still consider the installation 'handled'.
+  bool did_handle_successfully_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

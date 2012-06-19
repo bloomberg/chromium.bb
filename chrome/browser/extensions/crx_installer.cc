@@ -98,7 +98,8 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       allow_silent_install_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS),
-      off_store_install_allow_reason_(OffStoreInstallDisallowed) {
+      off_store_install_allow_reason_(OffStoreInstallDisallowed),
+      did_handle_successfully_(true) {
   if (!approval)
     return;
 
@@ -271,6 +272,10 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
                                   NumOffStoreInstallDecision);
         *error = l10n_util::GetStringUTF16(
             IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
+        // Don't delete source in this case so that the user can install
+        // manually if they want.
+        delete_source_ = false;
+        did_handle_successfully_ = false;
         return false;
       }
     }

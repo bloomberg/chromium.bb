@@ -336,7 +336,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
 
   if (ShouldOpenWithWebIntents(item)) {
     OpenWithWebIntent(item);
-    item->DelayedDownloadOpened();
+    item->DelayedDownloadOpened(true /* did_open */);
     return false;
   }
 
@@ -589,13 +589,14 @@ void ChromeDownloadManagerDelegate::Observe(
                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                     source);
 
-  CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
+  scoped_refptr<CrxInstaller> installer =
+      content::Source<CrxInstaller>(source).ptr();
   int download_id = crx_installers_[installer];
-  crx_installers_.erase(installer);
+  crx_installers_.erase(installer.get());
 
   DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
   if (item)
-    item->DelayedDownloadOpened();
+    item->DelayedDownloadOpened(installer->did_handle_successfully());
 }
 
 void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
