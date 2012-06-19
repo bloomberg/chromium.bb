@@ -374,6 +374,12 @@ bool PbufferGLSurfaceEGL::Initialize() {
     return false;
   }
 
+  if (size_.GetArea() == 0) {
+    LOG(ERROR) << "Error: surface has zero area "
+               << size_.width() << " x " << size_.height();
+    return false;
+  }
+
   const EGLint pbuffer_attribs[] = {
     EGL_WIDTH, size_.width(),
     EGL_HEIGHT, size_.height(),
