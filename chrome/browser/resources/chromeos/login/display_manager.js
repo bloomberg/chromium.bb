@@ -87,7 +87,8 @@ cr.define('cr.ui.login', function() {
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
         var currentStepId = this.screens_[this.currentStep_];
-        if (currentStepId == SCREEN_GAIA_SIGNIN) {
+        if (currentStepId == SCREEN_GAIA_SIGNIN ||
+            currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
         } else if (currentStepId == SCREEN_OOBE_NETWORK ||
                    currentStepId == SCREEN_OOBE_EULA) {
