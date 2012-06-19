@@ -35,6 +35,7 @@ class WebIntentPickerModel;
   scoped_nsobject<NSButton> closeButton_;
   scoped_nsobject<NSMutableArray> intentButtons_;
   scoped_nsobject<NSView> flipView_;
+  scoped_nsobject<NSTextField> inlineDispositionTitleField_;
 }
 - (IBAction)installExtension:(id)sender;
 
@@ -52,6 +53,9 @@ class WebIntentPickerModel;
 // Sets the action string of the picker, e.g.,
 // "Which service should be used for sharing?".
 - (void)setActionString:(NSString*)actionString;
+
+// Sets the service title for inline disposition.
+- (void)setInlineDispositionTitle:(NSString*)title;
 
 // Stop displaying throbber. Called when extension isntallation is complete.
 - (void)stopThrobber;

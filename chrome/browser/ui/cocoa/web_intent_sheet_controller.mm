@@ -27,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/gfx/image/image.h"
 
 using content::OpenURLParams;
@@ -37,6 +38,9 @@ namespace {
 // The width of the window, in view coordinates. The height will be
 // determined by the content.
 const CGFloat kWindowWidth = 400;
+
+// The maximum width in view units of a suggested extension's title link.
+const int kTitleLinkMaxWidth = 130;
 
 // The width of a service button, in view coordinates.
 const CGFloat kServiceButtonWidth = 300;
@@ -468,6 +472,9 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
       model_ = picker->model();
     intentButtons_.reset([[NSMutableArray alloc] init]);
 
+    inlineDispositionTitleField_.reset([[NSTextField alloc] init]);
+    ConfigureTextFieldAsLabel(inlineDispositionTitleField_);
+
     flipView_.reset([[WebIntentsContentView alloc] init]);
     [flipView_ setAutoresizingMask:NSViewMinYMargin];
     [[[self window] contentView] setSubviews:
@@ -484,6 +491,11 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   if (picker_)
     picker_->OnCancelled();
   [self closeSheet];
+}
+
+- (void)chooseAnotherService:(id)sender {
+  if (picker_)
+    picker_->OnChooseAnotherService();
 }
 
 // Handle keyDown events, specifically ESC.
@@ -509,16 +521,17 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (void)setInlineDispositionFrameSize:(NSSize)inlineContentSize {
   DCHECK(contents_);
 
+  NSView* webContentView = contents_->web_contents()->GetNativeView();
+
   // Compute container size to fit all elements, including padding.
   NSSize containerSize = inlineContentSize;
-  containerSize.height += 2 * kFramePadding;
-  containerSize.width += 2 * kFramePadding + kFramePadding + kCloseButtonSize;
+  containerSize.height += [webContentView frame].origin.y + kFramePadding;
+  containerSize.width += 2 * kFramePadding;
 
   // Ensure minimum container width.
   containerSize.width = std::max(kWindowWidth, containerSize.width);
 
   // Resize web contents.
-  NSView* webContentView = contents_->web_contents()->GetNativeView();
   [webContentView setFrameSize:inlineContentSize];
 
   // Position close button.
@@ -671,6 +684,44 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   return NSHeight(frame);
 }
 
+- (CGFloat)addAnotherServiceLinkToSubviews:(NSMutableArray*)subviews
+                                  atOffset:(CGFloat)offset {
+
+  NSRect textFrame = NSMakeRect(kFramePadding, offset, kTextWidth, 1);
+  [inlineDispositionTitleField_ setFrame:textFrame];
+  [subviews addObject:inlineDispositionTitleField_];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:inlineDispositionTitleField_];
+  textFrame = [inlineDispositionTitleField_ frame];
+
+  if (model_->GetSuggestedExtensionCount()) {
+    NSRect frame = NSMakeRect(
+        NSMaxX(textFrame) + kFramePadding, offset,
+        kTitleLinkMaxWidth, 1);
+    NSString* string = l10n_util::GetNSStringWithFixup(
+        IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE);
+    scoped_nsobject<NSButton> button(CreateHyperlinkButton(string, frame));
+    [[button cell] setControlSize:NSRegularControlSize];
+    [button setTarget:self];
+    [button setAction:@selector(chooseAnotherService:)];
+    [subviews addObject:button];
+
+    // Call size-to-fit to fixup for the localized string.
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:button];
+
+    // And finally, make sure the link and the title are horizontally centered.
+    frame = [button frame];
+    CGFloat height = std::max(NSHeight(textFrame), NSHeight(frame));
+    frame.origin.y += (height - NSHeight(frame)) / 2.0;
+    frame.size.height = height;
+    textFrame.origin.y += (height - NSHeight(textFrame)) / 2.0;
+    textFrame.size.height = height;
+    [button setFrame:frame];
+    [inlineDispositionTitleField_ setFrame:textFrame];
+  }
+
+  return NSHeight(textFrame);
+}
+
 // Add a single button for a specific service
 - (CGFloat)addServiceButton:(NSString*)title
                  withImage:(NSImage*)image
@@ -716,6 +767,9 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   NSMutableArray* subviews = [NSMutableArray array];
 
   if (contents_) {
+    offset += [self addAnotherServiceLinkToSubviews:subviews
+                                           atOffset:offset];
+    offset += kFramePadding;
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
     [self addCloseButtonToSubviews:subviews];
   } else {
@@ -777,6 +831,16 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
             actionTextField_];
   [actionTextField_ setFrame: textFrame];
+}
+
+- (void)setInlineDispositionTitle:(NSString*)title {
+  NSFont* nsfont = [inlineDispositionTitleField_ font];
+  gfx::Font font(
+      base::SysNSStringToUTF8([nsfont fontName]), [nsfont pointSize]);
+  NSString* elidedTitle = base::SysUTF16ToNSString(ui::ElideText(
+        base::SysNSStringToUTF16(title),
+        font, kTitleLinkMaxWidth, ui::ELIDE_AT_END));
+  [inlineDispositionTitleField_ setStringValue:elidedTitle];
 }
 
 - (void)stopThrobber {
