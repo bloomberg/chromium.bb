@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/string_util.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -23,8 +24,10 @@ namespace {
 void SetAppIdAndIconForWindow(const string16& app_id,
                               const string16& app_icon,
                               HWND hwnd) {
-  // This functionality is only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+  // This functionality is only available on Win7+. It also doesn't make sense
+  // to do this for Chrome Metro.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
+      base::win::IsMetroProcess())
     return;
   base::win::ScopedComPtr<IPropertyStore> pps;
   HRESULT result = SHGetPropertyStoreForWindow(
