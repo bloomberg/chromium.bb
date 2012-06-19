@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_unittest_base.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_backend.h"
@@ -203,7 +204,8 @@ class TopSitesTest : public HistoryUnitTestBase {
   CancelableRequestConsumer* consumer() { return &consumer_; }
   TestingProfile* profile() {return profile_.get();}
   HistoryService* history_service() {
-    return profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    return HistoryServiceFactory::GetForProfile(profile_.get(),
+                                                Profile::EXPLICIT_ACCESS);
   }
 
   MostVisitedURLList GetPrepopulatePages() {
@@ -1212,7 +1214,8 @@ TEST_F(TopSitesUnloadTest, UnloadHistoryTest) {
   profile()->CreateHistoryService(false, false);
   profile()->CreateTopSites();
   profile()->BlockUntilTopSitesLoaded();
-  profile()->GetHistoryService(Profile::EXPLICIT_ACCESS)->UnloadBackend();
+  HistoryServiceFactory::GetForProfile(
+      profile(), Profile::EXPLICIT_ACCESS)->UnloadBackend();
   profile()->BlockUntilHistoryProcessesPendingRequests();
 }
 
@@ -1239,7 +1242,8 @@ TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
       chrome::NOTIFICATION_TOP_SITES_LOADED,
       content::Source<Profile>(profile()));
   profile()->CreateTopSites();
-  profile()->GetHistoryService(Profile::EXPLICIT_ACCESS)->UnloadBackend();
+  HistoryServiceFactory::GetForProfile(
+      profile(), Profile::EXPLICIT_ACCESS)->UnloadBackend();
   profile()->BlockUntilHistoryProcessesPendingRequests();
   observer.Wait();
 }

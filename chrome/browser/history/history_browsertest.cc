@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -103,7 +104,8 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   HistoryService* GetHistoryService() {
-    return GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    return HistoryServiceFactory::GetForProfile(GetProfile(),
+                                                Profile::EXPLICIT_ACCESS);
   }
 
   std::vector<GURL> GetHistoryContents() {

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites_backend.h"
 #include "chrome/browser/history/top_sites_cache.h"
@@ -172,7 +173,8 @@ void TopSites::Init(const FilePath& db_name) {
                  base::Unretained(this)));
 
   // History may have already finished loading by the time we're created.
-  HistoryService* history = profile_->GetHistoryServiceWithoutCreating();
+  HistoryService* history =
+      HistoryServiceFactory::GetForProfileIfExists(profile_);
   if (history && history->backend_loaded()) {
     if (history->needs_top_sites_migration())
       MigrateFromHistory();
@@ -302,11 +304,12 @@ void TopSites::MigrateFromHistory() {
   }
 
   history_state_ = HISTORY_MIGRATING;
-  profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->ScheduleDBTask(
-      new LoadThumbnailsFromHistoryTask(
-          this,
-          num_results_to_request_from_history()),
-      &history_consumer_);
+  HistoryServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS)->ScheduleDBTask(
+          new LoadThumbnailsFromHistoryTask(
+              this,
+              num_results_to_request_from_history()),
+          &history_consumer_);
 }
 
 void TopSites::FinishHistoryMigration(const ThumbnailMigration& data) {
@@ -480,7 +483,8 @@ CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
   if (!profile_)
     return 0;
 
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
   if (hs) {
     return hs->QueryMostVisitedURLs(
@@ -848,7 +852,7 @@ void TopSites::OnHistoryMigrationWrittenToDisk(TopSitesBackend::Handle handle) {
     return;
 
   HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (history)
     history->OnTopSitesReady();
 }
@@ -887,7 +891,7 @@ void TopSites::OnGotMostVisitedThumbnails(
       top_sites_state_ = TOP_SITES_LOADED_WAITING_FOR_HISTORY;
       // Ask for history just in case it hasn't been loaded yet. When history
       // finishes loading we'll do migration and/or move to loaded.
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
     }
   }
 }

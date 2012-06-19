@@ -6,6 +6,7 @@
 
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 using history::HistoryBackend;
@@ -27,7 +28,8 @@ AndroidHistoryProviderService::QueryHistoryAndBookmarks(
     const QueryCallback& callback) {
   QueryRequest* request = new QueryRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::QueryHistoryAndBookmarks, NULL, request,
@@ -47,7 +49,8 @@ AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
     const UpdateCallback& callback) {
   UpdateRequest* request = new UpdateRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::UpdateHistoryAndBookmarks, NULL, request, row,
@@ -66,7 +69,8 @@ AndroidHistoryProviderService::DeleteHistoryAndBookmarks(
     const DeleteCallback& callback) {
   DeleteRequest* request = new DeleteRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::DeleteHistoryAndBookmarks, NULL, request,
@@ -84,7 +88,8 @@ AndroidHistoryProviderService::InsertHistoryAndBookmark(
     const InsertCallback& callback) {
   InsertRequest* request = new InsertRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::InsertHistoryAndBookmark, NULL, request, values);
@@ -102,7 +107,8 @@ AndroidHistoryProviderService::DeleteHistory(
     const DeleteCallback& callback) {
   DeleteRequest* request = new DeleteRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::DeleteHistory, NULL, request, selection,
@@ -122,7 +128,8 @@ AndroidHistoryProviderService::MoveStatement(
     const MoveStatementCallback& callback) {
   MoveStatementRequest* request = new MoveStatementRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::MoveStatement, NULL, request, statement,
@@ -135,7 +142,8 @@ AndroidHistoryProviderService::MoveStatement(
 
 void AndroidHistoryProviderService::CloseStatement(
     history::AndroidStatement* statement) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->ScheduleAndForget(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::CloseStatement, statement);
@@ -151,7 +159,8 @@ AndroidHistoryProviderService::InsertSearchTerm(
     const InsertCallback& callback) {
   InsertRequest* request = new InsertRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::InsertSearchTerm, NULL, request, row);
@@ -170,7 +179,8 @@ AndroidHistoryProviderService::UpdateSearchTerms(
     const UpdateCallback& callback) {
   UpdateRequest* request = new UpdateRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::UpdateSearchTerms, NULL, request, row, selection,
@@ -189,7 +199,8 @@ AndroidHistoryProviderService::DeleteSearchTerms(
     const DeleteCallback& callback) {
   DeleteRequest* request = new DeleteRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::DeleteSearchTerms, NULL, request, selection,
@@ -210,7 +221,8 @@ AndroidHistoryProviderService::QuerySearchTerms(
     const QueryCallback& callback) {
   QueryRequest* request = new QueryRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
     hs->Schedule(HistoryService::PRIORITY_NORMAL,
             &HistoryBackend::QuerySearchTerms, NULL, request, projections,

@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -35,7 +36,8 @@ class RedirectTest : public InProcessBrowserTest {
 
   std::vector<GURL> GetRedirects(const GURL& url) {
     HistoryService* history_service =
-        browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                             Profile::EXPLICIT_ACCESS);
 
     // Schedule a history query for redirects. The response will be sent
     // asynchronously from the callback the history system uses to notify us

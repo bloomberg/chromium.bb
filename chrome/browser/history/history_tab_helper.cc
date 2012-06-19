@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
@@ -169,7 +170,8 @@ HistoryService* HistoryTabHelper::GetHistoryService() {
   if (profile->IsOffTheRecord())
     return NULL;
 
-  return profile->GetHistoryService(Profile::IMPLICIT_ACCESS);
+  return HistoryServiceFactory::GetForProfile(profile,
+                                              Profile::IMPLICIT_ACCESS);
 }
 
 void HistoryTabHelper::WebContentsDestroyed(WebContents* tab) {
@@ -180,7 +182,8 @@ void HistoryTabHelper::WebContentsDestroyed(WebContents* tab) {
   if (profile->IsOffTheRecord())
     return;
 
-  HistoryService* hs = profile->GetHistoryService(Profile::IMPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (hs) {
     NavigationEntry* entry = tab->GetController().GetLastCommittedEntry();
     if (entry) {

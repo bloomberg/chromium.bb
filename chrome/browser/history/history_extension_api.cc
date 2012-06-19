@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -238,7 +239,9 @@ bool GetVisitsHistoryFunction::RunAsyncImpl() {
   if (!GetUrlFromValue(value, &url))
     return false;
 
-  HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           Profile::EXPLICIT_ACCESS);
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
                &cancelable_consumer_,
@@ -292,7 +295,9 @@ bool SearchHistoryFunction::RunAsyncImpl() {
                                                  &options.max_count));
   }
 
-  HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text, options, &cancelable_consumer_,
                    base::Bind(&SearchHistoryFunction::SearchComplete,
                               base::Unretained(this)));
@@ -327,7 +332,9 @@ bool AddUrlHistoryFunction::RunImpl() {
   if (!GetUrlFromValue(value, &url))
     return false;
 
-  HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           Profile::EXPLICIT_ACCESS);
   hs->AddPage(url, history::SOURCE_EXTENSION);
 
   SendResponse(true);
@@ -345,7 +352,9 @@ bool DeleteUrlHistoryFunction::RunImpl() {
   if (!GetUrlFromValue(value, &url))
     return false;
 
-  HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           Profile::EXPLICIT_ACCESS);
   hs->DeleteURL(url);
 
   SendResponse(true);
@@ -366,7 +375,9 @@ bool DeleteRangeHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(GetTimeFromValue(value, &end_time));
 
   std::set<GURL> restrict_urls;
-  HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
       begin_time,
@@ -384,7 +395,9 @@ void DeleteRangeHistoryFunction::DeleteComplete() {
 
 bool DeleteAllHistoryFunction::RunAsyncImpl() {
   std::set<GURL> restrict_urls;
-  HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile(),
+                                           Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       restrict_urls,
       base::Time::UnixEpoch(),     // From the beginning of the epoch.

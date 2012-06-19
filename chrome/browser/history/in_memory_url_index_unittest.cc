@@ -18,6 +18,7 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/url_index_private_data.h"
@@ -230,7 +231,8 @@ void InMemoryURLIndexTest::SetUp() {
   profile_.BlockUntilBookmarkModelLoaded();
   profile_.BlockUntilHistoryProcessesPendingRequests();
   HistoryService* history_service =
-      profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(&profile_,
+                                           Profile::EXPLICIT_ACCESS);
   ASSERT_TRUE(history_service);
   HistoryBackend* backend = history_service->history_backend_.get();
   history_database_ = backend->db();

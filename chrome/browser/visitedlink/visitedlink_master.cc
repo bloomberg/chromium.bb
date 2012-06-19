@@ -25,6 +25,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -786,7 +787,9 @@ bool VisitedLinkMaster::RebuildTableFromHistory() {
 
   HistoryService* history_service = history_service_override_;
   if (!history_service && profile_) {
-    history_service = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    history_service =
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
   }
 
   if (!history_service) {

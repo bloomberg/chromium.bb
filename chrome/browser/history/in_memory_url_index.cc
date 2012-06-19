@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -244,7 +245,8 @@ void InMemoryURLIndex::OnCacheLoadDone(
       return;
     content::BrowserThread::PostBlockingPoolTask(
         FROM_HERE, base::Bind(DeleteCacheFile, path));
-    HistoryService* service = profile_->GetHistoryServiceWithoutCreating();
+    HistoryService* service =
+        HistoryServiceFactory::GetForProfileIfExists(profile_);
     if (service && service->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {
@@ -258,7 +260,8 @@ void InMemoryURLIndex::OnCacheLoadDone(
 
 void InMemoryURLIndex::ScheduleRebuildFromHistory() {
   HistoryService* service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           Profile::EXPLICIT_ACCESS);
   service->ScheduleDBTask(
       new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(
           this, languages_, scheme_whitelist_),
