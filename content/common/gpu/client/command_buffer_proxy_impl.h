@@ -16,6 +16,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
@@ -67,6 +68,8 @@ class CommandBufferProxyImpl
   virtual bool EnsureBackbuffer() OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
+  virtual bool SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
   virtual void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
           callback) OVERRIDE;
@@ -105,6 +108,10 @@ class CommandBufferProxyImpl
   GpuChannelHost* channel() const { return channel_; }
 
  private:
+  typedef std::map<int32, gpu::Buffer> TransferBufferMap;
+  typedef std::map<int, scoped_refptr<GpuVideoDecodeAcceleratorHost> > Decoders;
+  typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
+
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
   // verify that the context has not been lost.
@@ -117,17 +124,16 @@ class CommandBufferProxyImpl
   void OnEchoAck();
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
   void OnSetMemoryAllocation(const GpuMemoryAllocationForRenderer& allocation);
+  void OnSignalSyncPointAck(uint32 id);
 
   // Try to read an updated copy of the state from shared memory.
   void TryUpdateState();
 
   // Local cache of id to transfer buffer mapping.
-  typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
 
   // Zero or more video decoder hosts owned by this proxy, keyed by their
   // decoder_route_id.
-  typedef std::map<int, scoped_refptr<GpuVideoDecodeAcceleratorHost> > Decoders;
   Decoders video_decoder_hosts_;
 
   // The last cached state received from the service.
@@ -154,6 +160,10 @@ class CommandBufferProxyImpl
       memory_allocation_changed_callback_;
 
   GpuConsoleMessageCallback console_message_callback_;
+
+  // Tasks to be invoked in SignalSyncPoint responses.
+  uint32 next_signal_id_;
+  SignalTaskMap signal_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

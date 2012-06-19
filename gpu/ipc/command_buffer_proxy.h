@@ -48,6 +48,11 @@ class GPU_EXPORT CommandBufferProxy : public gpu::CommandBuffer {
   // it, or gets destroyed.
   virtual void WaitSyncPoint(uint32) = 0;
 
+  // Makes this command buffer invoke a task when a sync point is reached, or
+  // the command buffer that inserted that sync point is destroyed.
+  virtual bool SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) = 0;
+
   // Register a callback to invoke whenever we recieve a new memory allocation.
   virtual void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&

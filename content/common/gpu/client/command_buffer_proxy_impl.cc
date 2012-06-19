@@ -33,7 +33,8 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       channel_(channel),
       route_id_(route_id),
       flush_count_(0),
-      last_put_offset_(-1) {
+      last_put_offset_(-1),
+      next_signal_id_(0) {
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
@@ -57,6 +58,8 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetMemoryAllocation,
                         OnSetMemoryAllocation);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPointAck,
+                        OnSignalSyncPointAck);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -117,6 +120,14 @@ void CommandBufferProxyImpl::OnSetMemoryAllocation(
     const GpuMemoryAllocationForRenderer& allocation) {
   if (!memory_allocation_changed_callback_.is_null())
     memory_allocation_changed_callback_.Run(allocation);
+}
+
+void CommandBufferProxyImpl::OnSignalSyncPointAck(uint32 id) {
+  SignalTaskMap::iterator it = signal_tasks_.find(id);
+  DCHECK(it != signal_tasks_.end());
+  base::Closure callback = it->second;
+  signal_tasks_.erase(it);
+  callback.Run();
 }
 
 void CommandBufferProxyImpl::SetChannelErrorCallback(
@@ -424,6 +435,24 @@ uint32 CommandBufferProxyImpl::InsertSyncPoint() {
 
 void CommandBufferProxyImpl::WaitSyncPoint(uint32 sync_point) {
   Send(new GpuCommandBufferMsg_WaitSyncPoint(route_id_, sync_point));
+}
+
+bool CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,
+                                             const base::Closure& callback) {
+  if (last_state_.error != gpu::error::kNoError) {
+    return false;
+  }
+
+  uint32 signal_id = next_signal_id_++;
+  if (!Send(new GpuCommandBufferMsg_SignalSyncPoint(route_id_,
+                                                    sync_point,
+                                                    signal_id))) {
+    return false;
+  }
+
+  signal_tasks_.insert(std::make_pair(signal_id, callback));
+
+  return true;
 }
 
 bool CommandBufferProxyImpl::SetParent(

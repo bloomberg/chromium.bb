@@ -214,6 +214,8 @@ class GpuCommandBufferStub
   void OnRetireSyncPoint(uint32 sync_point);
   void OnWaitSyncPoint(uint32 sync_point);
   void OnSyncPointRetired();
+  void OnSignalSyncPoint(uint32 sync_point, uint32 id);
+  void OnSignalSyncPointAck(uint32 id);
 
   void OnSetClientHasMemoryAllocationChangedCallback(bool);
 

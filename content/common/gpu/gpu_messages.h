@@ -462,6 +462,17 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_RetireSyncPoint,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_WaitSyncPoint,
                     uint32 /* sync_point */)
 
+// Makes this command buffer signal when a sync point is reached, by sending
+// back a GpuCommandBufferMsg_SignalSyncPointAck message with the same
+// signal_id.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalSyncPoint,
+                    uint32 /* sync_point */,
+                    uint32 /* signal_id */)
+
+// Response to GpuCommandBufferMsg_SignalSyncPoint.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalSyncPointAck,
+                    uint32 /* signal_id */)
+
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.

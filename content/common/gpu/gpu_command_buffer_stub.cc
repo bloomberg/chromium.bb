@@ -141,6 +141,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnRetireSyncPoint)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_WaitSyncPoint,
                         OnWaitSyncPoint)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPoint,
+                        OnSignalSyncPoint)
     IPC_MESSAGE_HANDLER(
         GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
         OnSetClientHasMemoryAllocationChangedCallback)
@@ -655,6 +657,19 @@ void GpuCommandBufferStub::OnSyncPointRetired() {
                            "GpuCommandBufferStub", this);
   }
   OnReschedule();
+}
+
+void GpuCommandBufferStub::OnSignalSyncPoint(uint32 sync_point, uint32 id) {
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  manager->sync_point_manager()->AddSyncPointCallback(
+      sync_point,
+      base::Bind(&GpuCommandBufferStub::OnSignalSyncPointAck,
+                 this->AsWeakPtr(),
+                 id));
+}
+
+void GpuCommandBufferStub::OnSignalSyncPointAck(uint32 id) {
+  Send(new GpuCommandBufferMsg_SignalSyncPointAck(route_id_, id));
 }
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(

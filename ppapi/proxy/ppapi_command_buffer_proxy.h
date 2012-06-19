@@ -38,6 +38,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   virtual bool EnsureBackbuffer() OVERRIDE;
   virtual uint32 InsertSyncPoint() OVERRIDE;
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
+  virtual bool SignalSyncPoint(uint32 sync_point,
+                               const base::Closure& callback) OVERRIDE;
   virtual void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
           callback) OVERRIDE;
