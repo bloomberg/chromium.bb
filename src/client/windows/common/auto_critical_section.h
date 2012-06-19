@@ -63,8 +63,8 @@ class AutoCriticalSection {
   // the critical seciton has been entered already.
   void Release() {
     assert(taken_);
-    LeaveCriticalSection(cs_);
     taken_ = false;
+    LeaveCriticalSection(cs_);
   }
 
  private:
