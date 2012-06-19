@@ -5,6 +5,8 @@
 
 """A list of known bad NEXEs and CRXs in the corpus."""
 
+import os
+
 import corpus_utils
 
 

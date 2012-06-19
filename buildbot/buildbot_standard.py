@@ -102,13 +102,17 @@ def SetupContextVars(context):
   context['off_trunk'] = context['branch'] not in ['native_client', '']
 
 
-def ValidatorTest(context, architecture, validator):
-  Command(context,
-      cmd=[sys.executable,
-        'tests/abi_corpus/validator_regression_test.py',
-        '--keep-going',
-        '--validator', validator,
-        '--arch', architecture])
+def ValidatorTest(context, architecture, validator, warn_only=False):
+  cmd=[
+      sys.executable,
+      'tests/abi_corpus/validator_regression_test.py',
+      '--keep-going',
+      '--validator', validator,
+      '--arch', architecture
+  ]
+  if warn_only:
+    cmd.append('--warn-only')
+  Command(context, cmd=cmd)
 
 
 def BuildScript(status, context):
@@ -252,11 +256,11 @@ def BuildScript(status, context):
     with Step('validator_regression_test dfa x86-32', status,
         halt_on_fail=False):
       ValidatorTest(
-          context, 'x86-32', 'dfa_validator32/dfa_ncval')
+          context, 'x86-32', 'dfa_validator32/dfa_ncval', warn_only=True)
     with Step('validator_regression_test dfa x86-64', status,
         halt_on_fail=False):
       ValidatorTest(
-          context, 'x86-64', 'dfa_validator64/dfa_ncval')
+          context, 'x86-64', 'dfa_validator64/dfa_ncval', warn_only=True)
 
     with Step('validator_regression_test ragel x86-32', status,
         halt_on_fail=False):

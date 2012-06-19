@@ -70,32 +70,16 @@ def DownloadFileFromCorpus(src_path, dst_filename):
   GsutilCopySilent('gs://nativeclient-snaps/%s' % src_path, dst_filename)
 
 
-def DownloadCorpusCRXList(list_filename):
-  """Download list of all crx files in test corpus.
+def DownloadCorpusList(list_filename):
+  """Download list of all files in test corpus.
 
   Args:
     list_filename: destination filename (kept around for debugging).
   Returns:
-    List of CRXs.
+    List of files.
   """
   DownloadFileFromCorpus('naclapps.all', list_filename)
   fh = open(list_filename)
-  filenames = fh.read().splitlines()
-  fh.close()
-  crx_filenames = [f for f in filenames if f.endswith('.crx')]
-  return crx_filenames
-
-
-def DownloadNexeList(filename):
-  """Download list of NEXEs.
-
-  Args:
-    filename: destination filename.
-  Returns:
-    List of NEXEs.
-  """
-  DownloadFileFromCorpus('naclapps.list', filename)
-  fh = open(filename)
   filenames = fh.read().splitlines()
   fh.close()
   return filenames
@@ -229,7 +213,7 @@ def PrimeCache(cache_dir, filename):
       Sha1Digest(dpath) != Sha1FromFilename(filename)):
     # Try to make the directory, fail is ok, let the download fail instead.
     try:
-      os.makedirs(os.path.basename(dpath))
+      os.makedirs(os.path.dirname(dpath))
     except OSError:
       pass
     DownloadFileFromCorpus(filename, dpath)
@@ -269,7 +253,7 @@ def ExtractFromCache(cache_dir, source, dest):
     if info.filename.endswith('/'):
       continue
     # Do not support absolute paths or paths containing ..
-    if not os.path.isabs(info.filename) or '..' in info.filename:
+    if os.path.isabs(info.filename) or '..' in info.filename:
       raise Exception('Unacceptable zip filename %s' % info.filename)
     tpath = os.path.join(dest, info.filename)
     tdir = os.path.dirname(tpath)

@@ -90,7 +90,8 @@ def TestApps(options, work_dir):
   app_path = os.path.join(work_dir, 'app_temp')
 
   list_filename = os.path.join(work_dir, 'naclapps.all')
-  filenames = corpus_utils.DownloadCorpusCRXList(list_filename)
+  filenames = corpus_utils.DownloadCorpusList(list_filename)
+  filenames = [f for f in filenames if f.endswith('.crx')]
   progress = corpus_utils.Progress(len(filenames))
   for filename in filenames:
     progress.Tally()

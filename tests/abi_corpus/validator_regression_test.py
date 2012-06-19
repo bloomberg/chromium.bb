@@ -40,7 +40,7 @@ def ValidateNexe(options, path, src_path, expect_pass):
       print 'Validating: %s' % path
       print 'From: %s' % src_path
       print 'Size: %d' % os.path.getsize(path)
-      print 'SHA1: %s' % corpus_utils.Sha1FromFilename(path)
+      print 'SHA1: %s' % corpus_utils.Sha1FromFilename(src_path)
       print 'Validator: %s' % options.validator
       print 'Unexpected return code: %s' % process.returncode
       print '>>> STDOUT'
@@ -50,7 +50,7 @@ def ValidateNexe(options, path, src_path, expect_pass):
       print '-' * 70
     else:
       print 'Unexpected return code %d on sha1: %s' % (
-          process.returncode, corpus_utils.Sha1FromFilename(path))
+          process.returncode, corpus_utils.Sha1FromFilename(src_path))
     return False
   return True
 
@@ -63,8 +63,9 @@ def TestValidators(options, work_dir):
     work_dir: directory to operate in.
   """
   nexe_filename = os.path.join(work_dir, 'test.nexe')
-  list_filename = os.path.join(work_dir, 'naclapps.list')
-  filenames = corpus_utils.DownloadNexeList(list_filename)
+  list_filename = os.path.join(work_dir, 'naclapps.all')
+  filenames = corpus_utils.DownloadCorpusList(list_filename)
+  filenames = [f for f in filenames if f.endswith('.nexe') or f.endswith('.so')]
   progress = corpus_utils.Progress(len(filenames))
   for filename in filenames:
     progress.Tally()
@@ -91,7 +92,7 @@ def TestValidators(options, work_dir):
         os.remove(nexe_filename)
       except OSError:
         print 'ERROR - unable to remove %s' % nexe_filename
-  progress.Summary(warn_only=True)
+  progress.Summary(warn_only=options.warn_only)
 
 
 def Main():
@@ -110,6 +111,9 @@ def Main():
   parser.add_option(
       '--arch', dest='architecture',
       help='architecture of validator')
+  parser.add_option(
+      '--warn-only', dest='warn_only', default=False,
+      action='store_true', help='only warn on failure')
   parser.add_option(
       '-v', '--verbose', dest='verbose', default=False, action='store_true',
       help='run in verbose mode')
