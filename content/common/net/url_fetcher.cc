@@ -10,20 +10,6 @@
 
 namespace content {
 
-namespace URLFetcher {
-
-// We have to mark the definition as CONTENT_EXPORT, too, as the
-// declaration isn't visible from here (since it's protected by an
-// #ifdef).
-CONTENT_EXPORT net::URLFetcher* Create(
-    const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
-  return net::URLFetcher::Create(url, request_type, d);
-}
-
-}  // namespace URLFetcher
-
 namespace {
 
 base::SupportsUserData::Data* CreateURLRequestUserData(

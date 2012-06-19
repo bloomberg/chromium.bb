@@ -8,14 +8,6 @@
 
 #include "content/common/content_export.h"
 
-// TODO(akalin): Remove this block once rlz is updated to use
-// url_fetcher.h from net/.
-#ifdef RLZ_LIB_FINANCIAL_PING_H_
-
-#include "net/url_request/url_fetcher.h"
-
-#endif
-
 class GURL;
 
 namespace net {
@@ -23,21 +15,6 @@ class URLFetcher;
 }  // namespace
 
 namespace content {
-
-// TODO(akalin): Remove this block once rlz is updated to use
-// url_fetcher.h from net/.
-#ifdef RLZ_LIB_FINANCIAL_PING_H_
-
-namespace URLFetcher {
-
-CONTENT_EXPORT net::URLFetcher* Create(
-    const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d);
-
-}  // namespace URLFetcher
-
-#endif  // RLZ_LIB_FINANCIAL_PING_H_
 
 // Mark URLRequests started by the URLFetcher to stem from the given render
 // view.
