@@ -188,7 +188,6 @@ class Arm32DecoderState : DecoderState {
   const Multiply Multiply_instance_;
   const PackSatRev PackSatRev_instance_;
   const Roadblock Roadblock_instance_;
-  const SatAddSub SatAddSub_instance_;
   const StoreBasedMemoryDoubleRtBits0To3 StoreBasedMemoryDoubleRtBits0To3_instance_;
   const StoreBasedMemoryRtBits0To3 StoreBasedMemoryRtBits0To3_instance_;
   const StoreCoprocessor StoreCoprocessor_instance_;

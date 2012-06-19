@@ -49,7 +49,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Multiply_instance_()
   , PackSatRev_instance_()
   , Roadblock_instance_()
-  , SatAddSub_instance_()
   , StoreBasedMemoryDoubleRtBits0To3_instance_()
   , StoreBasedMemoryRtBits0To3_instance_()
   , StoreCoprocessor_instance_()
@@ -1002,7 +1001,7 @@ const ClassDecoder& Arm32DecoderState::decode_sat_add_sub(
 {
   UNREFERENCED_PARAMETER(insn);
   if (true)
-    return SatAddSub_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   // Catch any attempt to fall though ...
   return not_implemented_;

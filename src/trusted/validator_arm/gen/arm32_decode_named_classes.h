@@ -239,10 +239,28 @@ class Binary3RegisterOpAltB_Qadd8_Rule_126_A1_P254
   virtual ~Binary3RegisterOpAltB_Qadd8_Rule_126_A1_P254() {}
 };
 
+class Binary3RegisterOpAltB_Qadd_Rule_124_A1_P250
+    : public Binary3RegisterOpAltB {
+ public:
+  virtual ~Binary3RegisterOpAltB_Qadd_Rule_124_A1_P250() {}
+};
+
 class Binary3RegisterOpAltB_Qasx_Rule_127_A1_P256
     : public Binary3RegisterOpAltB {
  public:
   virtual ~Binary3RegisterOpAltB_Qasx_Rule_127_A1_P256() {}
+};
+
+class Binary3RegisterOpAltB_Qdadd_Rule_128_A1_P258
+    : public Binary3RegisterOpAltB {
+ public:
+  virtual ~Binary3RegisterOpAltB_Qdadd_Rule_128_A1_P258() {}
+};
+
+class Binary3RegisterOpAltB_Qdsub_Rule_129_A1_P260
+    : public Binary3RegisterOpAltB {
+ public:
+  virtual ~Binary3RegisterOpAltB_Qdsub_Rule_129_A1_P260() {}
 };
 
 class Binary3RegisterOpAltB_Qsax_Rule_130_A1_P262
@@ -261,6 +279,12 @@ class Binary3RegisterOpAltB_Qsub8_Rule_133_A1_P268
     : public Binary3RegisterOpAltB {
  public:
   virtual ~Binary3RegisterOpAltB_Qsub8_Rule_133_A1_P268() {}
+};
+
+class Binary3RegisterOpAltB_Qsub_Rule_131_A1_P264
+    : public Binary3RegisterOpAltB {
+ public:
+  virtual ~Binary3RegisterOpAltB_Qsub_Rule_131_A1_P264() {}
 };
 
 class Binary3RegisterOpAltB_Sadd16_Rule_148_A1_P296
@@ -947,12 +971,6 @@ class Roadblock_None
   virtual ~Roadblock_None() {}
 };
 
-class SatAddSub_None
-    : public SatAddSub {
- public:
-  virtual ~SatAddSub_None() {}
-};
-
 class Store2RegisterImm12Op_Str_Rule_194_A1_P384
     : public Store2RegisterImm12Op {
  public:
@@ -1355,10 +1373,28 @@ class Defs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254
   virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254() {}
 };
 
+class Defs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250
+    : public Defs12To15CondsDontCareRnRdRmNotPc {
+ public:
+  virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250() {}
+};
+
 class Defs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256
     : public Defs12To15CondsDontCareRnRdRmNotPc {
  public:
   virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256() {}
+};
+
+class Defs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258
+    : public Defs12To15CondsDontCareRnRdRmNotPc {
+ public:
+  virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258() {}
+};
+
+class Defs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260
+    : public Defs12To15CondsDontCareRnRdRmNotPc {
+ public:
+  virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260() {}
 };
 
 class Defs12To15CondsDontCareRnRdRmNotPc_Qsax_Rule_130_A1_P262
@@ -1377,6 +1413,12 @@ class Defs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268
     : public Defs12To15CondsDontCareRnRdRmNotPc {
  public:
   virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268() {}
+};
+
+class Defs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264
+    : public Defs12To15CondsDontCareRnRdRmNotPc {
+ public:
+  virtual ~Defs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264() {}
 };
 
 class Defs12To15CondsDontCareRnRdRmNotPc_Sadd16_Rule_148_A1_P296
@@ -2600,6 +2642,19 @@ class NamedBinary3RegisterOpAltB_Qadd8_Rule_126_A1_P254
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qadd8_Rule_126_A1_P254);
 };
 
+class NamedBinary3RegisterOpAltB_Qadd_Rule_124_A1_P250
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary3RegisterOpAltB_Qadd_Rule_124_A1_P250()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltB Qadd_Rule_124_A1_P250")
+  {}
+  virtual ~NamedBinary3RegisterOpAltB_Qadd_Rule_124_A1_P250() {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltB_Qadd_Rule_124_A1_P250 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qadd_Rule_124_A1_P250);
+};
+
 class NamedBinary3RegisterOpAltB_Qasx_Rule_127_A1_P256
     : public NamedClassDecoder {
  public:
@@ -2611,6 +2666,32 @@ class NamedBinary3RegisterOpAltB_Qasx_Rule_127_A1_P256
  private:
   nacl_arm_dec::Binary3RegisterOpAltB_Qasx_Rule_127_A1_P256 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qasx_Rule_127_A1_P256);
+};
+
+class NamedBinary3RegisterOpAltB_Qdadd_Rule_128_A1_P258
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary3RegisterOpAltB_Qdadd_Rule_128_A1_P258()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltB Qdadd_Rule_128_A1_P258")
+  {}
+  virtual ~NamedBinary3RegisterOpAltB_Qdadd_Rule_128_A1_P258() {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltB_Qdadd_Rule_128_A1_P258 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qdadd_Rule_128_A1_P258);
+};
+
+class NamedBinary3RegisterOpAltB_Qdsub_Rule_129_A1_P260
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary3RegisterOpAltB_Qdsub_Rule_129_A1_P260()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltB Qdsub_Rule_129_A1_P260")
+  {}
+  virtual ~NamedBinary3RegisterOpAltB_Qdsub_Rule_129_A1_P260() {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltB_Qdsub_Rule_129_A1_P260 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qdsub_Rule_129_A1_P260);
 };
 
 class NamedBinary3RegisterOpAltB_Qsax_Rule_130_A1_P262
@@ -2650,6 +2731,19 @@ class NamedBinary3RegisterOpAltB_Qsub8_Rule_133_A1_P268
  private:
   nacl_arm_dec::Binary3RegisterOpAltB_Qsub8_Rule_133_A1_P268 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qsub8_Rule_133_A1_P268);
+};
+
+class NamedBinary3RegisterOpAltB_Qsub_Rule_131_A1_P264
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary3RegisterOpAltB_Qsub_Rule_131_A1_P264()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltB Qsub_Rule_131_A1_P264")
+  {}
+  virtual ~NamedBinary3RegisterOpAltB_Qsub_Rule_131_A1_P264() {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltB_Qsub_Rule_131_A1_P264 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltB_Qsub_Rule_131_A1_P264);
 };
 
 class NamedBinary3RegisterOpAltB_Sadd16_Rule_148_A1_P296
@@ -4134,19 +4228,6 @@ class NamedRoadblock_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedRoadblock_None);
 };
 
-class NamedSatAddSub_None
-    : public NamedClassDecoder {
- public:
-  inline NamedSatAddSub_None()
-    : NamedClassDecoder(decoder_, "SatAddSub None")
-  {}
-  virtual ~NamedSatAddSub_None() {}
-
- private:
-  nacl_arm_dec::SatAddSub_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSatAddSub_None);
-};
-
 class NamedStore2RegisterImm12Op_Str_Rule_194_A1_P384
     : public NamedClassDecoder {
  public:
@@ -5018,6 +5099,19 @@ class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254);
 };
 
+class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250()
+    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qadd_Rule_124_A1_P250")
+  {}
+  virtual ~NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250() {}
+
+ private:
+  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250);
+};
+
 class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256
     : public NamedClassDecoder {
  public:
@@ -5029,6 +5123,32 @@ class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256
  private:
   nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256);
+};
+
+class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258()
+    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qdadd_Rule_128_A1_P258")
+  {}
+  virtual ~NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258() {}
+
+ private:
+  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258);
+};
+
+class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260()
+    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qdsub_Rule_129_A1_P260")
+  {}
+  virtual ~NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260() {}
+
+ private:
+  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260);
 };
 
 class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsax_Rule_130_A1_P262
@@ -5068,6 +5188,19 @@ class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268
  private:
   nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268);
+};
+
+class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264()
+    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qsub_Rule_131_A1_P264")
+  {}
+  virtual ~NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264() {}
+
+ private:
+  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264);
 };
 
 class NamedDefs12To15CondsDontCareRnRdRmNotPc_Sadd16_Rule_148_A1_P296

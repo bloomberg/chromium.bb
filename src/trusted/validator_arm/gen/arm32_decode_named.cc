@@ -1297,8 +1297,17 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_unsigne
 const NamedClassDecoder& NamedArm32DecoderState::decode_sat_add_sub(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if (true)
-    return SatAddSub_None_instance_;
+  if ((insn.Bits() & 0x00600000) == 0x00000000 /* op(22:21) == 00 */)
+    return Binary3RegisterOpAltB_Qadd_Rule_124_A1_P250_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)
+    return Binary3RegisterOpAltB_Qsub_Rule_131_A1_P264_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op(22:21) == 10 */)
+    return Binary3RegisterOpAltB_Qdadd_Rule_128_A1_P258_instance_;
+
+  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */)
+    return Binary3RegisterOpAltB_Qdsub_Rule_129_A1_P260_instance_;
 
   // Catch any attempt to fall through...
   return not_implemented_;

@@ -348,12 +348,39 @@ class Binary3RegisterOpAltBTester_Qadd8_Rule_126_A1_P254_RegsNotPc
   {}
 };
 
+class Binary3RegisterOpAltBTester_Qadd_Rule_124_A1_P250_RegsNotPc
+    : public Binary3RegisterOpAltBTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBTester_Qadd_Rule_124_A1_P250_RegsNotPc()
+    : Binary3RegisterOpAltBTesterRegsNotPc(
+      state_.Binary3RegisterOpAltB_Qadd_Rule_124_A1_P250_instance_)
+  {}
+};
+
 class Binary3RegisterOpAltBTester_Qasx_Rule_127_A1_P256_RegsNotPc
     : public Binary3RegisterOpAltBTesterRegsNotPc {
  public:
   Binary3RegisterOpAltBTester_Qasx_Rule_127_A1_P256_RegsNotPc()
     : Binary3RegisterOpAltBTesterRegsNotPc(
       state_.Binary3RegisterOpAltB_Qasx_Rule_127_A1_P256_instance_)
+  {}
+};
+
+class Binary3RegisterOpAltBTester_Qdadd_Rule_128_A1_P258_RegsNotPc
+    : public Binary3RegisterOpAltBTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBTester_Qdadd_Rule_128_A1_P258_RegsNotPc()
+    : Binary3RegisterOpAltBTesterRegsNotPc(
+      state_.Binary3RegisterOpAltB_Qdadd_Rule_128_A1_P258_instance_)
+  {}
+};
+
+class Binary3RegisterOpAltBTester_Qdsub_Rule_129_A1_P260_RegsNotPc
+    : public Binary3RegisterOpAltBTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBTester_Qdsub_Rule_129_A1_P260_RegsNotPc()
+    : Binary3RegisterOpAltBTesterRegsNotPc(
+      state_.Binary3RegisterOpAltB_Qdsub_Rule_129_A1_P260_instance_)
   {}
 };
 
@@ -381,6 +408,15 @@ class Binary3RegisterOpAltBTester_Qsub8_Rule_133_A1_P268_RegsNotPc
   Binary3RegisterOpAltBTester_Qsub8_Rule_133_A1_P268_RegsNotPc()
     : Binary3RegisterOpAltBTesterRegsNotPc(
       state_.Binary3RegisterOpAltB_Qsub8_Rule_133_A1_P268_instance_)
+  {}
+};
+
+class Binary3RegisterOpAltBTester_Qsub_Rule_131_A1_P264_RegsNotPc
+    : public Binary3RegisterOpAltBTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBTester_Qsub_Rule_131_A1_P264_RegsNotPc()
+    : Binary3RegisterOpAltBTesterRegsNotPc(
+      state_.Binary3RegisterOpAltB_Qsub_Rule_131_A1_P264_instance_)
   {}
 };
 
@@ -1804,11 +1840,35 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
+       Binary3RegisterOpAltBTester_Qadd_Rule_124_A1_P250_RegsNotPc_cccc00010000nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBTester_Qadd_Rule_124_A1_P250_RegsNotPc baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010000nnnndddd00000101mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBTester_Qasx_Rule_127_A1_P256_RegsNotPc_cccc01100010nnnndddd11110011mmmm_Test) {
   Binary3RegisterOpAltBTester_Qasx_Rule_127_A1_P256_RegsNotPc baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11110011mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Binary3RegisterOpAltBTester_Qdadd_Rule_128_A1_P258_RegsNotPc_cccc00010100nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBTester_Qdadd_Rule_128_A1_P258_RegsNotPc baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010100nnnndddd00000101mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Binary3RegisterOpAltBTester_Qdsub_Rule_129_A1_P260_RegsNotPc_cccc00010110nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBTester_Qdsub_Rule_129_A1_P260_RegsNotPc baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010110nnnndddd00000101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
@@ -1833,6 +1893,14 @@ TEST_F(Arm32DecoderStateTests,
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11111111mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Binary3RegisterOpAltBTester_Qsub_Rule_131_A1_P264_RegsNotPc_cccc00010010nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBTester_Qsub_Rule_131_A1_P264_RegsNotPc baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010nnnndddd00000101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
