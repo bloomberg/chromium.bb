@@ -1,6 +1,6 @@
 {
   "name": "unload test",
-  "description": "Tests that the onBackgroundPageUnloadingSoon event works",
+  "description": "Tests that the onSuspend event works",
   "version": "1",
   "manifest_version": 2,
   "permissions": ["tabs", "experimental"],

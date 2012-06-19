@@ -206,9 +206,9 @@
             <a href="#global-events">Events</a>
             <ol>
               <li>
-                <a href="#event-onBackgroundPageUnloadingSoon">onBackgroundPageUnloadingSoon</a>
-              </li><li>
                 <a href="#event-onInstalled">onInstalled</a>
+              </li><li>
+                <a href="#event-onSuspend">onSuspend</a>
               </li>
             </ol>
           </li>
@@ -250,7 +250,7 @@
                   <span>chrome.runtime.getBackgroundPage</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Retrieves the JavaScript 'window' object for the background page running inside the current extension. If the background page is transient, the system will ensure it is loaded before calling the callback. If there is no background page, an error is set.</p>
+                <p>Retrieves the JavaScript 'window' object for the background page running inside the current extension. If the background page is an event page, the system will ensure it is loaded before calling the callback. If there is no background page, an error is set.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -333,22 +333,6 @@
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onBackgroundPageUnloadingSoon"></a>
-              <h4>onBackgroundPageUnloadingSoon</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.runtime.</span><span>onBackgroundPageUnloadingSoon</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
-              </div>
-              <div class="description">
-                <p>Sent to the transient background page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete.</p>
-                <!-- LISTENER PARAMETERS -->
-                <!-- EXTRA PARAMETERS -->
-                <!-- LISTENER RETURN VALUE -->
-                <dl>
-                </dl>
-              </div> <!-- /description -->
-               <!-- /description -->
-            </div><div class="apiItem">
               <a name="event-onInstalled"></a>
               <h4>onInstalled</h4>
               <div class="summary">
@@ -357,6 +341,22 @@
               </div>
               <div class="description">
                 <p>Fired when the extension is first installed.</p>
+                <!-- LISTENER PARAMETERS -->
+                <!-- EXTRA PARAMETERS -->
+                <!-- LISTENER RETURN VALUE -->
+                <dl>
+                </dl>
+              </div> <!-- /description -->
+               <!-- /description -->
+            </div><div class="apiItem">
+              <a name="event-onSuspend"></a>
+              <h4>onSuspend</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.runtime.</span><span>onSuspend</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
+              </div>
+              <div class="description">
+                <p>Sent to the event page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete.</p>
                 <!-- LISTENER PARAMETERS -->
                 <!-- EXTRA PARAMETERS -->
                 <!-- LISTENER RETURN VALUE -->

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 chrome.browserAction.setTitle({title: "Failure"});
-chrome.runtime.onBackgroundPageUnloadingSoon.addListener(
-    function() {
-      chrome.browserAction.setTitle({title: "Success"});
-    });
+chrome.runtime.onSuspend.addListener(function() {
+  chrome.browserAction.setTitle({title: "Success"});
+});

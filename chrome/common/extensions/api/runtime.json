@@ -10,7 +10,7 @@
       {
         "name": "getBackgroundPage",
         "type": "function",
-        "description": "Retrieves the JavaScript 'window' object for the background page running inside the current extension. If the background page is transient, the system will ensure it is loaded before calling the callback. If there is no background page, an error is set.",
+        "description": "Retrieves the JavaScript 'window' object for the background page running inside the current extension. If the background page is an event page, the system will ensure it is loaded before calling the callback. If there is no background page, an error is set.",
         "parameters": [
           {
             "type": "function",
@@ -38,9 +38,9 @@
         "description": "Fired when the extension is first installed."
       },
       {
-        "name": "onBackgroundPageUnloadingSoon",
+        "name": "onSuspend",
         "type": "function",
-        "description": "Sent to the transient background page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete."
+        "description": "Sent to the event page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete."
       }
     ]
   }

@@ -79,8 +79,7 @@ chrome.alarms.onAlarm.addListener(function() {
   alert("Time's up!");
 });
 
-chrome.runtime.onBackgroundPageUnloadingSoon.addListener(
-    function() {
+chrome.runtime.onSuspend.addListener(function() {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     // After the unload event listener runs, the page will unload, so any
     // asynchronous callbacks will not fire.
