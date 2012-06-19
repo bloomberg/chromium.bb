@@ -34,14 +34,6 @@ struct NaClApp;
 struct NaClAppThread;
 
 /*
- * This function should be called before the debug server has started
- * to prevent a debugger from attaching and failing to retrieve
- * information about the App (NEXE) that is running.  This function is
- * safe to call even if debugging has not been enabled.
- */
-void NaClDebugSetAppInfo(struct NaClApp *app) NO_THROW;
-
-/*
  * This function must be called each time we start a new App thread by the
  * by the untrusted thread itself as early as possible.  The function will
  * notifying the debuging stub of it's existance, and preparing the thread
