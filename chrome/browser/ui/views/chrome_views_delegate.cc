@@ -24,10 +24,13 @@
 #include "chrome/browser/app_icon_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/shell.h"
-#elif defined(USE_AURA)
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #endif
 
 namespace {
@@ -163,9 +166,12 @@ int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
 #if defined(USE_AURA)
 views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
     views::NativeWidgetAura* native_widget) {
-#if !defined(USE_ASH)
-  return new views::DesktopNativeWidgetHelperAura(native_widget);
-#else
+  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
+#if defined(USE_ASH)
+  if (!browser::ShouldOpenAshOnStartup())
+#endif
+    return new views::DesktopNativeWidgetHelperAura(native_widget);
+#if defined(USE_ASH)
   return NULL;
 #endif
 }
