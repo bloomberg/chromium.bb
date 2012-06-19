@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -103,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
   ui_test_utils::WaitForHistoryToLoad(
-      browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS));
+      HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                           Profile::EXPLICIT_ACCESS));
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
@@ -266,7 +268,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
   ui_test_utils::WaitForHistoryToLoad(
-      browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS));
+      HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                           Profile::EXPLICIT_ACCESS));
 
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 

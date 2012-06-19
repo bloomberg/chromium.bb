@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -225,7 +226,8 @@ GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
                                             string16 term,
                                             int visit_count) {
   HistoryService* history =
-      profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(&profile_,
+                                           Profile::EXPLICIT_ACCESS);
   GURL search(t_url->url_ref().ReplaceSearchTerms(term,
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   static base::Time last_added_time;
@@ -500,9 +502,9 @@ TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
                                 ASCIIToUTF16("docs.google.com"), 1);
 
   // Add the term as a url.
-  profile_.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPageWithDetails(
-      GURL("http://docs.google.com"), string16(), 1, 1, base::Time::Now(),
-      false, history::SOURCE_BROWSED);
+  HistoryServiceFactory::GetForProfile(&profile_, Profile::EXPLICIT_ACCESS)->
+      AddPageWithDetails(GURL("http://docs.google.com"), string16(), 1, 1,
+                         base::Time::Now(), false, history::SOURCE_BROWSED);
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteMatch wyt_match;

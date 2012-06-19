@@ -17,6 +17,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -534,7 +535,7 @@ void HistoryURLProvider::RunAutocompletePasses(
   if (!profile_)
     return;
   HistoryService* const history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!history_service)
     return;
 

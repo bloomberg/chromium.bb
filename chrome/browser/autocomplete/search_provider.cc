@@ -25,6 +25,7 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -392,7 +393,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   default_history_results_.clear();
 
   HistoryService* const history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   history::URLDatabase* url_db = history_service ?
       history_service->InMemoryDatabase() : NULL;
   if (!url_db)

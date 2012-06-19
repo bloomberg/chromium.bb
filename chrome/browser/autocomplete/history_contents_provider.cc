@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -66,7 +67,8 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       (input.type() == AutocompleteInput::FORCED_QUERY) ||
       !profile_ ||
       // The history service or bookmark bar model must exist.
-      !(profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) ||
+      !(HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS) ||
         profile_->GetBookmarkModel())) {
     Stop();
     return;
@@ -129,7 +131,8 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
 
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     HistoryService* history =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
     if (history) {
       done_ = false;
 

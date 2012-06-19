@@ -20,6 +20,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1292,7 +1293,9 @@ void TemplateURLService::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
                                                      const GURL& url,
                                                      const string16& term) {
   HistoryService* history = profile_  ?
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           Profile::EXPLICIT_ACCESS) :
+      NULL;
   if (!history)
     return;
   history->SetKeywordSearchTermsForURL(url, t_url->id(), term);
@@ -1794,7 +1797,7 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
     return;
 
   HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!history)
     return;
 

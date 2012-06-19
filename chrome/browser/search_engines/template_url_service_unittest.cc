@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -1058,7 +1059,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
 
   // Add a visit that matches the url of the keyword.
   HistoryService* history =
-      test_util_.profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(test_util_.profile(),
+                                           Profile::EXPLICIT_ACCESS);
   history->AddPage(
       GURL(t_url->url_ref().ReplaceSearchTerms(ASCIIToUTF16("blah"),
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),

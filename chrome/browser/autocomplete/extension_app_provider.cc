@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -206,7 +207,7 @@ int ExtensionAppProvider::CalculateRelevance(AutocompleteInput::Type type,
   // provider (boost is between 200-400).
   double type_count_boost = 0;
   HistoryService* const history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   history::URLDatabase* url_db = history_service ?
       history_service->InMemoryDatabase() : NULL;
   if (url_db) {

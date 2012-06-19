@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -65,7 +66,8 @@ class HistoryContentsProviderTest : public testing::Test,
     profile_->CreateHistoryService(false, false);
 
     HistoryService* history_service =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(profile_.get(),
+                                             Profile::EXPLICIT_ACCESS);
 
     // Populate history.
     for (size_t i = 0; i < arraysize(test_entries); i++) {

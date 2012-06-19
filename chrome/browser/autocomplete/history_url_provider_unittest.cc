@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -189,7 +190,9 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
 void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_.reset(new TestingProfile());
   profile_->CreateHistoryService(true, no_db);
-  history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  history_service_ =
+      HistoryServiceFactory::GetForProfile(profile_.get(),
+                                           Profile::EXPLICIT_ACCESS);
 
   autocomplete_ = new HistoryURLProvider(this, profile_.get(), "en-US,en,ko");
 

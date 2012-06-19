@@ -8,6 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +40,9 @@ void ExtensionAppProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateHistoryService(true, false);
   profile_->BlockUntilHistoryProcessesPendingRequests();
-  history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  history_service_ =
+      HistoryServiceFactory::GetForProfile(profile_.get(),
+                                           Profile::EXPLICIT_ACCESS);
 
   app_provider_ = new ExtensionAppProvider(NULL, profile_.get());
 
