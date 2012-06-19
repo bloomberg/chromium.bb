@@ -883,8 +883,10 @@ load_all_cursors_from_dir(const char *path, int size,
 			continue;
 
 		f = fopen(full, "r");
-		if (!f)
+		if (!f) {
+			free(full);
 			continue;
+		}
 
 		images = XcursorFileLoadImages(f, size);
 
@@ -894,6 +896,7 @@ load_all_cursors_from_dir(const char *path, int size,
 		}
 
 		fclose (f);
+		free(full);
 	}
 
 	closedir(dir);
