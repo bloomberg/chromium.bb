@@ -18,7 +18,6 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
-#include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/resource_type.h"
@@ -26,6 +25,10 @@
 namespace base {
 class ListValue;
 class Value;
+}
+
+namespace net {
+class BoundNetLog;
 }
 
 namespace extension_web_request_api_helpers {
@@ -71,20 +74,6 @@ struct EventResponseDelta {
 };
 
 typedef std::list<linked_ptr<EventResponseDelta> > EventResponseDeltas;
-
-// Container for NetLog events that shall be reported.
-struct EventLogEntry {
-  net::NetLog::EventType event_type;
-  scoped_refptr<net::NetLog::EventParameters> params;
-
-  EventLogEntry(net::NetLog::EventType event_type,
-                const scoped_refptr<net::NetLog::EventParameters>& params);
-  ~EventLogEntry();
-
-  // Allow implicit copy and assignment.
-};
-
-typedef std::list<EventLogEntry> EventLogEntries;
 
 // Comparison operator that returns true if the extension that caused
 // |a| was installed after the extension that caused |b|.
@@ -142,7 +131,7 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
 void MergeCancelOfResponses(
     const EventResponseDeltas& deltas,
     bool* canceled,
-    EventLogEntries* event_log_entries);
+    const net::BoundNetLog* net_log);
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
@@ -150,14 +139,14 @@ void MergeOnBeforeRequestResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries);
+    const net::BoundNetLog* net_log);
 // Modifies the headers in |request_headers| according to |deltas|. Conflicts
 // are tried to be resolved.
 void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries);
+    const net::BoundNetLog* net_log);
 // Stores a copy of |original_response_header| into |override_response_headers|
 // that is modified according to |deltas|. If |deltas| does not instruct to
 // modify the response headers, |override_response_headers| remains empty.
@@ -166,7 +155,7 @@ void MergeOnHeadersReceivedResponses(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries);
+    const net::BoundNetLog* net_log);
 // Merge the responses of blocked onAuthRequired handlers. The first
 // registered listener that supplies authentication credentials in a response,
 // if any, will have its authentication credentials used. |request| must be
@@ -177,7 +166,7 @@ bool MergeOnAuthRequiredResponses(
     const EventResponseDeltas& deltas,
     net::AuthCredentials* auth_credentials,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries);
+    const net::BoundNetLog* net_log);
 
 // Returns true if requests for |url| shall not be reported to extensions.
 bool HideRequestForURL(const GURL& url);

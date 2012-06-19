@@ -44,7 +44,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1314,13 +1313,12 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
 
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
   std::set<std::string> conflicting_extensions;
-  helpers::EventLogEntries event_log_entries;
 
   bool canceled = false;
   helpers::MergeCancelOfResponses(
       blocked_request.response_deltas,
       &canceled,
-      &event_log_entries);
+      blocked_request.net_log);
 
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
@@ -1328,14 +1326,14 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
         blocked_request.response_deltas,
         blocked_request.new_url,
         &conflicting_extensions,
-        &event_log_entries);
+        blocked_request.net_log);
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
         blocked_request.response_deltas,
         blocked_request.request_headers,
         &conflicting_extensions,
-        &event_log_entries);
+        blocked_request.net_log);
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
@@ -1343,7 +1341,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
         blocked_request.original_response_headers.get(),
         blocked_request.override_response_headers,
         &conflicting_extensions,
-        &event_log_entries);
+        blocked_request.net_log);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());
@@ -1351,16 +1349,11 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
        blocked_request.response_deltas,
        blocked_request.auth_credentials,
        &conflicting_extensions,
-       &event_log_entries);
+       blocked_request.net_log);
   } else {
     NOTREACHED();
   }
 
-  for (helpers::EventLogEntries::const_iterator i =
-           event_log_entries.begin();
-       i != event_log_entries.end(); ++i) {
-    blocked_request.net_log->AddEvent(i->event_type, i->params);
-  }
   if (!conflicting_extensions.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI,

@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/net_log.h"
 #include "net/http/http_util.h"
 
 namespace extension_web_request_api_helpers {
@@ -62,71 +64,41 @@ EventResponseDelta::~EventResponseDelta() {
 }
 
 
-EventLogEntry::EventLogEntry(
-    net::NetLog::EventType event_type,
-    const scoped_refptr<net::NetLog::EventParameters>& params)
-    : event_type(event_type),
-      params(params) {
+// Creates a NetLog callback the returns a Value with the ID of the extension
+// that caused an event.  |delta| must remain valid for the lifetime of the
+// callback.
+net::NetLog::ParametersCallback CreateNetLogExtensionIdCallback(
+    const EventResponseDelta* delta) {
+  return net::NetLog::StringCallback("extension_id", &delta->extension_id);
 }
 
-EventLogEntry::~EventLogEntry() {
+// Creates NetLog parameters to indicate that an extension modified a request.
+// Caller takes ownership of returned value.
+Value* NetLogModificationCallback(
+    const EventResponseDelta* delta,
+    net::NetLog::LogLevel log_level) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("extension_id", delta->extension_id);
+
+  ListValue* modified_headers = new ListValue();
+  net::HttpRequestHeaders::Iterator modification(
+      delta->modified_request_headers);
+  while (modification.GetNext()) {
+    std::string line = modification.name() + ": " + modification.value();
+    modified_headers->Append(Value::CreateStringValue(line));
+  }
+  dict->Set("modified_headers", modified_headers);
+
+  ListValue* deleted_headers = new ListValue();
+  for (std::vector<std::string>::const_iterator key =
+           delta->deleted_request_headers.begin();
+       key != delta->deleted_request_headers.end();
+       ++key) {
+    deleted_headers->Append(Value::CreateStringValue(*key));
+  }
+  dict->Set("deleted_headers", deleted_headers);
+  return dict;
 }
-
-
-// NetLog parameter to indicate the ID of the extension that caused an event.
-class NetLogExtensionIdParameter : public net::NetLog::EventParameters {
- public:
-  explicit NetLogExtensionIdParameter(const std::string& extension_id)
-      : extension_id_(extension_id) {}
-
-  virtual base::Value* ToValue() const OVERRIDE {
-    DictionaryValue* dict = new DictionaryValue();
-    dict->SetString("extension_id", extension_id_);
-    return dict;
-  }
-
- protected:
-  virtual ~NetLogExtensionIdParameter() {}
-
- private:
-  const std::string extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetLogExtensionIdParameter);
-};
-
-
-// NetLog parameter to indicate that an extension modified a request.
-class NetLogModificationParameter : public NetLogExtensionIdParameter {
- public:
-  explicit NetLogModificationParameter(const std::string& extension_id)
-      : NetLogExtensionIdParameter(extension_id) {}
-
-  virtual base::Value* ToValue() const OVERRIDE {
-    Value* parent = NetLogExtensionIdParameter::ToValue();
-    DCHECK(parent->IsType(Value::TYPE_DICTIONARY));
-    DictionaryValue* dict = static_cast<DictionaryValue*>(parent);
-    dict->Set("modified_headers", modified_headers_.DeepCopy());
-    dict->Set("deleted_headers", deleted_headers_.DeepCopy());
-    return dict;
-  }
-
-  void DeletedHeader(const std::string& key) {
-    deleted_headers_.Append(Value::CreateStringValue(key));
-  }
-
-  void ModifiedHeader(const std::string& key, const std::string& value) {
-    modified_headers_.Append(Value::CreateStringValue(key + ": " + value));
-  }
-
- private:
-  virtual ~NetLogModificationParameter() {}
-
-  ListValue modified_headers_;
-  ListValue deleted_headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetLogModificationParameter);
-};
-
 
 bool InDecreasingExtensionInstallationTimeOrder(
     const linked_ptr<EventResponseDelta>& a,
@@ -278,16 +250,14 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
 void MergeCancelOfResponses(
     const EventResponseDeltas& deltas,
     bool* canceled,
-    EventLogEntries* event_log_entries) {
+    const net::BoundNetLog* net_log) {
   for (EventResponseDeltas::const_iterator i = deltas.begin();
        i != deltas.end(); ++i) {
     if ((*i)->cancel) {
       *canceled = true;
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_ABORTED_REQUEST,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*i)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(i->get()));
       break;
     }
   }
@@ -304,7 +274,7 @@ static bool MergeOnBeforeRequestResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries,
+    const net::BoundNetLog* net_log,
     bool consider_only_cancel_scheme_urls) {
   bool redirected = false;
 
@@ -321,18 +291,14 @@ static bool MergeOnBeforeRequestResponsesHelper(
     if (!redirected || *new_url == (*delta)->new_url) {
       *new_url = (*delta)->new_url;
       redirected = true;
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_REDIRECTED_REQUEST,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       conflicting_extensions->insert((*delta)->extension_id);
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
     }
   }
   return redirected;
@@ -342,12 +308,12 @@ void MergeOnBeforeRequestResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries) {
+    const net::BoundNetLog* net_log) {
 
   // First handle only redirects to data:// URLs and about:blank. These are a
   // special case as they represent a way of cancelling a request.
   if (MergeOnBeforeRequestResponsesHelper(
-          deltas, new_url, conflicting_extensions, event_log_entries, true)) {
+          deltas, new_url, conflicting_extensions, net_log, true)) {
     // If any extension cancelled a request by redirecting to a data:// URL or
     // about:blank, we don't consider the other redirects.
     return;
@@ -355,14 +321,14 @@ void MergeOnBeforeRequestResponses(
 
   // Handle all other redirects.
   MergeOnBeforeRequestResponsesHelper(
-            deltas, new_url, conflicting_extensions, event_log_entries, false);
+            deltas, new_url, conflicting_extensions, net_log, false);
 }
 
 void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries) {
+    const net::BoundNetLog* net_log) {
   EventResponseDeltas::const_iterator delta;
 
   // Here we collect which headers we have removed or set to new values
@@ -377,9 +343,6 @@ void MergeOnBeforeSendHeadersResponses(
         (*delta)->deleted_request_headers.empty()) {
       continue;
     }
-
-    scoped_refptr<NetLogModificationParameter> log(
-        new NetLogModificationParameter((*delta)->extension_id));
 
     // Check whether any modification affects a request header that
     // has been modified differently before. As deltas is sorted by decreasing
@@ -430,33 +393,28 @@ void MergeOnBeforeSendHeadersResponses(
         // Record which keys were changed.
         net::HttpRequestHeaders::Iterator modification(
             (*delta)->modified_request_headers);
-        while (modification.GetNext()) {
+        while (modification.GetNext())
           set_headers.insert(modification.name());
-          log->ModifiedHeader(modification.name(), modification.value());
-        }
       }
 
       // Perform all deletions and record which keys were deleted.
       {
         std::vector<std::string>::iterator key;
         for (key = (*delta)->deleted_request_headers.begin();
-            key != (*delta)->deleted_request_headers.end();
+             key != (*delta)->deleted_request_headers.end();
              ++key) {
           request_headers->RemoveHeader(*key);
           removed_headers.insert(*key);
-          log->DeletedHeader(*key);
         }
       }
-      EventLogEntry log_entry(
-          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS, log);
-      event_log_entries->push_back(log_entry);
+      net_log->AddEvent(
+          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS,
+          base::Bind(&NetLogModificationCallback, delta->get()));
     } else {
       conflicting_extensions->insert((*delta)->extension_id);
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
     }
   }
 }
@@ -473,7 +431,7 @@ void MergeOnHeadersReceivedResponses(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries) {
+    const net::BoundNetLog* net_log) {
   EventResponseDeltas::const_iterator delta;
 
   // Here we collect which headers we have removed or added so far due to
@@ -534,18 +492,14 @@ void MergeOnHeadersReceivedResponses(
           (*override_response_headers)->AddHeader(i->first + ": " + i->second);
         }
       }
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS,
-          make_scoped_refptr(
-              new NetLogModificationParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       conflicting_extensions->insert((*delta)->extension_id);
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
     }
   }
 }
@@ -554,7 +508,7 @@ bool MergeOnAuthRequiredResponses(
     const EventResponseDeltas& deltas,
     net::AuthCredentials* auth_credentials,
     std::set<std::string>* conflicting_extensions,
-    EventLogEntries* event_log_entries) {
+    const net::BoundNetLog* net_log) {
   CHECK(auth_credentials);
   bool credentials_set = false;
 
@@ -569,17 +523,13 @@ bool MergeOnAuthRequiredResponses(
         auth_credentials->password() != (*delta)->auth_credentials->password();
     if (credentials_set && different) {
       conflicting_extensions->insert((*delta)->extension_id);
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
     } else {
-      EventLogEntry log_entry(
+      net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS,
-          make_scoped_refptr(
-              new NetLogExtensionIdParameter((*delta)->extension_id)));
-      event_log_entries->push_back(log_entry);
+          CreateNetLogExtensionIdCallback(delta->get()));
       *auth_credentials = *(*delta)->auth_credentials;
       credentials_set = true;
     }
