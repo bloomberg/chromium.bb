@@ -1,5 +1,5 @@
 @echo off
-:: Copyright (c) 2011 The Chromium Authors. All rights reserved.
+:: Copyright (c) 2012 The Chromium Authors. All rights reserved.
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
@@ -122,8 +122,9 @@ echo Installing python ...
 if exist "%WIN_TOOLS_ROOT_DIR%\python_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_bin"
 call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_26 "%WIN_TOOLS_ROOT_DIR%\python_bin"
 if errorlevel 1 goto :PYTHON_FAIL
-:: Create the batch file.
+:: Create the batch files.
 call copy /y "%~dp0python.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
+call copy /y "%~dp0pylint.new.bat" "%WIN_TOOLS_ROOT_DIR%\pylint.bat" 1>nul
 set ERRORLEVEL=0
 goto :END
 

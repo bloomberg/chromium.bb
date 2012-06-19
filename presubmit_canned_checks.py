@@ -227,7 +227,7 @@ def CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api,
   return outputs
 
 
-def _ReportErrorFileAndLine(filename, line_num, line):
+def _ReportErrorFileAndLine(filename, line_num, dummy_line):
   """Default error formatter for _FindNewViolationsOfRule."""
   return '%s, line %s' % (filename, line_num)
 
@@ -622,7 +622,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
               disabled_warnings=None):
   """Run pylint on python files.
 
-  The default white_list enforces looking only a *.py files.
+  The default white_list enforces looking only at *.py files.
   """
   white_list = tuple(white_list or ('.*\.py$',))
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
@@ -640,62 +640,45 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   if disabled_warnings:
     extra_args.extend(['-d', ','.join(disabled_warnings)])
 
-  # On certain pylint/python version combination, running pylint throws a lot of
-  # warning messages.
-  import warnings
-  warnings.filterwarnings('ignore', category=DeprecationWarning)
-  try:
-    files = _FetchAllFiles(input_api, white_list, black_list)
-    if not files:
-      return []
-    # Now that at least one python file was modified and all the python files
-    # were listed, try to run pylint.
-    try:
-      from pylint import lint
-      from pylint.utils import UnknownMessage
-      input_api.logging.debug(
-          'Using pylint v%s from %s' % (lint.version, lint.__file__))
-    except ImportError:
-      if input_api.platform == 'win32':
-        return [output_api.PresubmitNotifyResult(
-          'Warning: Can\'t run pylint because it is not installed. Please '
-          'install manually\n'
-          'Cannot do static analysis of python files.')]
-      return [output_api.PresubmitError(
-          'Please install pylint with "sudo apt-get install python-setuptools; '
-          'sudo easy_install pylint"\n'
-          'or visit http://pypi.python.org/pypi/setuptools.\n'
-          'Cannot do static analysis of python files.')]
-
-    def run_lint(files):
-      try:
-        lint.Run(files + extra_args)
-        assert False
-      except SystemExit, e:
-        # pylint has the bad habit of calling sys.exit(), trap it here.
-        return e.code
-      except UnknownMessage, e:
-        return 'Please upgrade pylint: %s' % e
-
-    result = None
-    if not input_api.verbose:
-      result = run_lint(sorted(files))
-    else:
-      for filename in sorted(files):
-        print('Running pylint on %s' % filename)
-        result = run_lint([filename]) or result
-    if isinstance(result, basestring):
-      return [error_type(result)]
-    elif result:
-      return [error_type('Fix pylint errors first.')]
+  files = _FetchAllFiles(input_api, white_list, black_list)
+  if not files:
     return []
-  finally:
-    warnings.filterwarnings('default', category=DeprecationWarning)
+
+  # Copy the system path to the environment so pylint can find the right
+  # imports.
+  env = input_api.environ.copy()
+  import sys
+  env['PYTHONPATH'] = input_api.os_path.pathsep.join(sys.path)
+
+  def run_lint(files):
+    # We can't import pylint directly due to licensing issues, so we run
+    # it in another process. Windows needs help running python files so we
+    # explicitly specify the interpreter to use.
+    command = [input_api.python_executable,
+               input_api.os_path.join(_HERE, 'third_party', 'pylint.py')]
+    try:
+      return input_api.subprocess.call(command + files + extra_args)
+    except OSError:
+      return 'Pylint failed!'
+
+  result = None
+  if not input_api.verbose:
+    result = run_lint(sorted(files))
+  else:
+    for filename in sorted(files):
+      print('Running pylint on %s' % filename)
+      result = run_lint([filename]) or result
+  if isinstance(result, basestring):
+    return [error_type(result)]
+  elif result:
+    return [error_type('Fix pylint errors first.')]
+  return []
 
 
 # TODO(dpranke): Get the host_url from the input_api instead
-def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
-                                 owner):
+def CheckRietveldTryJobExecution(dummy_input_api, dummy_output_api,
+                                 dummy_host_url, dummy_platforms,
+                                 dummy_owner):
   # Temporarily 'fix' the check while the Rietveld API is being upgraded to
   # something sensible.
   return []

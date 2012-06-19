@@ -4,6 +4,7 @@
 # Ignore the batch files produced by the Windows bootstrapping.
 /git.bat
 /gitk.bat
+/pylint.bat
 /python
 /python.bat
 /ssh.bat
@@ -21,7 +22,6 @@
 # Ignore locations where third-party tools are placed during bootstrapping.
 /python_bin
 /git_bin
-/site-packages-py*
 /svn_bin
 
 # Ignore unittest related files.

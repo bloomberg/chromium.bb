@@ -13,10 +13,8 @@ import StringIO
 import sys
 import time
 
-# TODO(maruel): Include inside depot_tools.
-from pylint import lint
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT)
 
 from testing_support.super_mox import mox, SuperMoxTestBase
 
@@ -2136,13 +2134,17 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 0)
 
   def testCannedRunPylint(self):
-    # lint.Run() always calls sys.exit()...
-    lint.Run = lambda x: sys.exit(0)
     input_api = self.MockInputApi(None, True)
+    input_api.environ = self.mox.CreateMock(os.environ)
+    input_api.environ.copy().AndReturn({})
     input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn(True)
     input_api.PresubmitLocalPath().AndReturn('/foo')
     input_api.PresubmitLocalPath().AndReturn('/foo')
     input_api.os_walk('/foo').AndReturn([('/foo', [], ['file1.py'])])
+    pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
+    pylintrc = os.path.join(_ROOT, 'pylintrc')
+    input_api.subprocess.call(
+        ['pyyyyython', pylint, 'file1.py', '--rcfile=%s' % pylintrc])
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPylint(
