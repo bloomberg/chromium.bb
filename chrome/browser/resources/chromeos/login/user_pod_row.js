@@ -649,9 +649,6 @@ cr.define('login', function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         this.podsWithPendingImages_.push(pod);
       }
-
-      // Set titles for the pods. The title will show up as a tooltip.
-      updateTitles();
     },
 
     /**
