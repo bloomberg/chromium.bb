@@ -100,6 +100,9 @@ def Main(args):
          '--build-dir=',
          '--',
          nacl_integration_script,
+         # TODO(ncbray) re-enable.
+         # https://code.google.com/p/chromium/issues/detail?id=133568
+         '--disable_glibc',
          '--disable_tests=%s' % ','.join(tests_to_disable)]
   cmd += args
   sys.stdout.write('Running %s\n' % ' '.join(cmd))
