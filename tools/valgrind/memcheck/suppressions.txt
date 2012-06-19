@@ -5615,6 +5615,20 @@
    fun:vp8_dequant_idct_add_uv_block_sse2
    fun:vp8cx_encode_inter_macroblock
 }
+{
+   bug_133449
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions28RulesRegistryStorageDelegate4InitEP7ProfilePNS_22RulesRegistryWithCacheERKSs
+   fun:_ZN10extensions20RulesRegistryService30RegisterDefaultRulesRegistriesEv
+   fun:_ZN19ExtensionSystemImpl6Shared4InitEb
+   fun:_ZN19ExtensionSystemImpl4InitEb
+   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
+   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
+   fun:_ZN14ProfileManager10AddProfileEP7Profile
+   fun:_ZN14ProfileManager10GetProfileERK8FilePath
+   fun:_ZN14ProfileManager18GetLastUsedProfileERK8FilePath
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
