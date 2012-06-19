@@ -105,6 +105,10 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
     return 0;
   }
 
+  function parentPath(path) {
+    return path.substring(0, path.lastIndexOf('/'));
+  }
+
   // We invoke this after each async callback to see if we've received all
   // the expected callbacks.  If so, we're done.
   function areWeThereYet() {
@@ -121,11 +125,12 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
     }
   }
 
-  function tallyEntry(entry) {
+  function tallyEntry(entry, originalSourcePath) {
+    entry.originalSourcePath = originalSourcePath;
     if (entry.isDirectory) {
       dirEntries.push(entry);
       if (recurse) {
-        recurseDirectory(entry);
+        recurseDirectory(entry, originalSourcePath);
       }
     } else {
       fileEntries.push(entry);
@@ -138,7 +143,7 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
     }
   }
 
-  function recurseDirectory(dirEntry) {
+  function recurseDirectory(dirEntry, originalSourcePath) {
     pendingSubdirectories++;
 
     util.forEachDirEntry(dirEntry, function(entry) {
@@ -147,13 +152,13 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
           pendingSubdirectories--;
           areWeThereYet();
         } else {
-          tallyEntry(entry);
+          tallyEntry(entry, originalSourcePath);
         }
     });
   }
 
   for (var i = 0; i < entries.length; i++) {
-    tallyEntry(entries[i]);
+    tallyEntry(entries[i], parentPath(entries[i].fullPath));
   }
 
   areWeThereYet();

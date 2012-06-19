@@ -321,7 +321,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
       if (entry != null) {
         results.entries.push(entry);
         added++;
-        if (added == total && results.sourceDirEntry != null)
+        if (added == total)
           onComplete();
       }
     }
@@ -350,13 +350,29 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
     util.getFiles(self.root_, {create: false}, files, onEntryFound,
                   onPathError);
   }
-if (!clipboard.sourceDir)
-  onSourceEntryFound();
-else
-  self.root_.getDirectory(clipboard.sourceDir,
-                          {create: false},
-                          onSourceEntryFound,
-                          onPathError);
+
+  if (clipboard.sourceDir) {
+    this.root_.getDirectory(clipboard.sourceDir,
+                            {create: false},
+                            onSourceEntryFound,
+                            onPathError);
+  } else {
+    onSourceEntryFound(null);
+  }
+};
+
+/**
+ * Checks if source and target are on the same root.
+ *
+ * @param {DirectoryEntry} sourceEntry An entry from the source.
+ * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
+ * @return {boolean} Whether source and target dir are on the same root.
+ */
+FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
+                                                  targetDirEntry,
+                                                  targetOnGData) {
+  return DirectoryModel.getRootPath(sourceEntry.fullPath) ==
+         DirectoryModel.getRootPath(targetDirEntry.fullPath);
 };
 
 /**
@@ -371,8 +387,9 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
   var self = this;
   var copyTask = new FileCopyManager.Task(sourceDirEntry, targetDirEntry);
   if (deleteAfterCopy) {
-    if (DirectoryModel.getRootPath(sourceDirEntry.fullPath) ==
-            DirectoryModel.getRootPath(targetDirEntry.fullPath)) {
+    // |sourecDirEntry| may be null, so let's check the root for the first of
+    // the entries scheduled to be copied.
+    if (this.isOnSameRoot(entries[0], targetDirEntry)) {
       copyTask.move = true;
     } else {
       copyTask.deleteAfterCopy = true;
@@ -509,7 +526,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     return;
   }
 
-  var sourcePath = task.sourceDirEntry.fullPath;
+  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
+  var sourcePath = sourceEntry.originalSourcePath;
   if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
     // We found an entry in the list that is not relative to the base source
     // path, something is wrong.
