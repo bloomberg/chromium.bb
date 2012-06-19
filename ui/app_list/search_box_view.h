@@ -44,6 +44,7 @@ class SearchBoxView : public views::View,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
 
  private:
   // Updates model text and selection model with current Textfield info.

@@ -191,4 +191,11 @@ bool ContentsView::OnKeyPressed(const views::KeyEvent& event) {
   return false;
 }
 
+bool ContentsView::OnMouseWheel(const views::MouseWheelEvent& event) {
+  if (show_state_ == SHOW_APPS)
+    return GetAppsGridView(view_model_.get())->OnMouseWheel(event);
+
+  return false;
+}
+
 }  // namespace app_list

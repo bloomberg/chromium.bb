@@ -23,6 +23,12 @@ const int kPagePadding = 40;
 const int kPreferredTileWidth = 88;
 const int kPreferredTileHeight = 98;
 
+// Max extra column padding space in pixels for invalid page transition.
+const int kMaxExtraColPaddingForInvalidTransition = 80;
+
+const int kMinMouseWheelToSwitchPage = 20;
+const int kMinHorizVelocityToSwitchPage = 1100;
+
 }  // namespace
 
 namespace app_list {
@@ -117,13 +123,14 @@ void AppsGridView::Layout() {
   const int current_page = pagination_model_->selected_page();
   const PaginationModel::Transition& transition =
       pagination_model_->transition();
-  int transition_offset = 0;
-  if (transition.target_page >= 0) {
-    transition_offset = transition.progress * page_width;
-    // Transition to right means negative offset.
-    if (transition.target_page > current_page)
-      transition_offset = -transition_offset;
-  }
+  const bool is_valid =
+      pagination_model_->is_valid_page(transition.target_page);
+
+  // Transition to right means negative offset.
+  const int dir = transition.target_page > current_page ? -1 : 1;
+  const int transition_offset = is_valid ?
+      transition.progress * page_width * dir :
+      transition.progress * kMaxExtraColPaddingForInvalidTransition * dir;
 
   const int first_visible_index = current_page * tiles_per_page();
   const int last_visible_index = (current_page + 1) * tiles_per_page() - 1;
@@ -139,8 +146,16 @@ void AppsGridView::Layout() {
       x_offset = page_width;
 
     int page = i / tiles_per_page();
-    if (page == current_page || page == transition.target_page)
-      x_offset += transition_offset;
+    if (is_valid) {
+      if (page == current_page || page == transition.target_page)
+        x_offset += transition_offset;
+    } else {
+      const int col = i % cols_;
+      if (transition_offset > 0)
+        x_offset += transition_offset * col;
+      else
+        x_offset += transition_offset * (cols_ - col - 1);
+    }
 
     gfx::Rect adjusted_slot(tile_slot);
     adjusted_slot.Offset(x_offset, 0);
@@ -154,6 +169,37 @@ void AppsGridView::Layout() {
       tile_slot.set_y(tile_slot.y() + tile_size.height());
     }
   }
+}
+
+ui::GestureStatus AppsGridView::OnGestureEvent(
+    const views::GestureEvent& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      pagination_model_->StartScroll();
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      // event.details.scroll_x() > 0 means moving contents to right. That is,
+      // transitioning to previous page.
+      pagination_model_->UpdateScroll(
+          event.details().scroll_x() / GetContentsBounds().width());
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_END:
+      pagination_model_->EndScroll();
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_SCROLL_FLING_START: {
+      if (fabs(event.details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
+        pagination_model_->SelectPageRelative(
+            event.details().velocity_x() < 0 ? 1 : -1,
+            true);
+        return ui::GESTURE_STATUS_CONSUMED;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 bool AppsGridView::OnKeyPressed(const views::KeyEvent& event) {
@@ -211,6 +257,15 @@ bool AppsGridView::OnKeyReleased(const views::KeyEvent& event) {
     handled = GetItemViewAtIndex(selected_item_index_)->OnKeyReleased(event);
 
   return handled;
+}
+
+bool AppsGridView::OnMouseWheel(const views::MouseWheelEvent& event) {
+  if (abs(event.offset()) > kMinMouseWheelToSwitchPage) {
+    pagination_model_->SelectPageRelative(event.offset() > 0 ? -1 : 1, true);
+    return true;
+  }
+
+  return false;
 }
 
 void AppsGridView::OnPaintFocusBorder(gfx::Canvas* canvas) {

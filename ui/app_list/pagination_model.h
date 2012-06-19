@@ -56,8 +56,24 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   // Selects a page. |animate| is true if the transition should be animated.
   void SelectPage(int page, bool animate);
 
+  // Selects a page by relative |delta|.
+  void SelectPageRelative(int delta, bool animate);
+
   void SetTransition(const Transition& transition);
   void SetTransitionDuration(int duration_ms);
+
+  // Starts a scroll transition. If there is a running transition animation,
+  // cancels it but keeps the transition info.
+  void StartScroll();
+
+  // Updates transition progress from |delta|. |delta| > 0 means transit to
+  // previous page (moving pages to the right). |delta| < 0 means transit
+  // to next page (moving pages to the left).
+  void UpdateScroll(double delta);
+
+  // Ends the current scroll transition. If transition progress > 0.5, finishes
+  // it. Otherwise, reverses it.
+  void EndScroll();
 
   void AddObserver(PaginationModelObserver* observer);
   void RemoveObserver(PaginationModelObserver* observer);
@@ -66,11 +82,32 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   int selected_page() const { return selected_page_; }
   const Transition& transition() const { return transition_; }
 
+  bool is_valid_page(int page) const {
+    return page >= 0 && page < total_pages_;
+  }
+
  private:
   void NotifySelectedPageChanged(int old_selected, int new_selected);
   void NotifyTransitionChanged();
 
+  bool has_transition() const {
+    return transition_.target_page != -1 || transition_.progress != 0;
+  }
+
+  void clear_transition() {
+    SetTransition(Transition(-1, 0));
+  }
+
+  // Calculates a target page number by combining current page and |delta|.
+  // When there is no transition, current page is the currently selected page.
+  // If there is a transition, current page is the transition target page or the
+  // pending transition target page. When current page + |delta| goes beyond
+  // valid range and |selected_page_| is at the range ends, invalid page number
+  // -1 or |total_pages_| is returned to indicate the situation.
+  int CalculateTargetPage(int delta) const;
+
   void StartTranstionAnimation(int target_page);
+  void CreateTransitionAnimation();
   void ResetTranstionAnimation();
 
   // ui::AnimationDelegate overrides:

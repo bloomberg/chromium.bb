@@ -86,6 +86,13 @@ void SearchBoxView::Layout() {
   search_box_->SetBoundsRect(edit_frame);
 }
 
+bool SearchBoxView::OnMouseWheel(const views::MouseWheelEvent& event) {
+  if (contents_view_)
+    contents_view_->OnMouseWheel(event);
+
+  return false;
+}
+
 void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
   model_->RemoveObserver(this);

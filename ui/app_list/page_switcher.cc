@@ -216,7 +216,8 @@ void PageSwitcher::TransitionChanged() {
   }
 
   GetButtonByIndex(buttons_, current_page)->SetSelectedRange(remaining);
-  GetButtonByIndex(buttons_, target_page)->SetSelectedRange(progress);
+  if (model_->is_valid_page(target_page))
+    GetButtonByIndex(buttons_, target_page)->SetSelectedRange(progress);
 }
 
 }  // namespace app_list

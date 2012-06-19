@@ -55,6 +55,7 @@ class ContentsView : public views::View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
 
   ShowState show_state_;
 
