@@ -76,19 +76,16 @@
 
 namespace {
 
-static void CheckSingleThreaded(const std::string& process_type) {
+static bool IsSingleThreaded() {
   // Possibly racy, but it's ok because this is more of a debug check to catch
   // new threaded situations arising during development.
   int num_threads =
     file_util::CountFilesCreatedAfter(FilePath("/proc/self/task"),
                                       base::Time::UnixEpoch());
 
-  // We pass the check if we don't know ( == 0), because the setuid sandbox
+  // We pass the test if we don't know ( == 0), because the setuid sandbox
   // will prevent /proc access in some contexts.
-  DCHECK((num_threads == 1 || num_threads == 0)) << "Counted "
-                                                 << num_threads << " threads "
-                                                 << "in " << process_type
-                                                 << ".";
+  return num_threads == 1 || num_threads == 0;
 }
 
 static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
@@ -420,20 +417,32 @@ namespace content {
 
 void InitializeSandbox() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
   if (command_line.HasSwitch(switches::kNoSandbox) ||
       command_line.HasSwitch(switches::kDisableSeccompFilterSandbox))
     return;
 
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+  // No matter what, InitializeSandbox() should always be called before threads
+  // are started.
+  // Note: IsSingleThreaded() will be true if /proc is not accessible!
+  if (!IsSingleThreaded()) {
+    std::string error_message = "InitializeSandbox() called with multiple "
+                                "threads in process " + process_type;
+    // TODO(jln): change this into a CHECK() once we are more comfortable it
+    // does not trigger.
+    // On non-DEBUG build, we still log an error
+    LOG(ERROR) << error_message;
+    return;
+  }
+
   if (process_type == switches::kGpuProcess &&
       !ShouldEnableGPUSandbox())
     return;
 
   if (!CanUseSeccompFilters())
     return;
-
-  CheckSingleThreaded(process_type);
 
   std::vector<struct sock_filter> program;
   EmitPreamble(&program);
