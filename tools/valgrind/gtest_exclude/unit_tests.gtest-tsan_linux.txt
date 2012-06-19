@@ -1,5 +1,0 @@
-# These tests time out on linux-tsan bot. crbug.com/133171
-HistoryURLProviderTest.*
-HistoryContentsProviderTest.*
-SearchProviderTest.*
-ShortcutsProviderTest.CalculateScore
