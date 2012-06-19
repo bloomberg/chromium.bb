@@ -1378,7 +1378,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
   BasicTextOperationsTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordBySpace) {
+// http://crbug.com/131179
+#if defined(OS_LINUX)
+#define MAYBE_AcceptKeywordBySpace DISABLED_AcceptKeywordBySpace
+#else
+#define MAYBE_AcceptKeywordBySpace AcceptKeywordBySpace
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   AcceptKeywordBySpaceTest();
 }
 
@@ -1386,7 +1393,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
   NonSubstitutingKeywordTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
+// http://crbug.com/131179
+#if defined(OS_LINUX)
+#define MAYBE_DeleteItem DISABLED_DeleteItem
+#else
+#define MAYBE_DeleteItem DeleteItem
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DeleteItem) {
   DeleteItemTest();
 }
 
