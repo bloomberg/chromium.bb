@@ -494,7 +494,6 @@ void ObjectProxy::LogMethodCallFailure(
     return;
   LOG(ERROR) << "Failed to call method: "
              << interface_name << "." << method_name
-             << ": object_path= " << object_path_.value()
              << ": " << error_name << ": " << error_message;
 }
 

@@ -79,13 +79,13 @@ void NetworkLibraryImplStub::Init() {
   Network* ethernet = new EthernetNetwork("eth1");
   ethernet->set_name("Fake Ethernet");
   ethernet->set_is_active(true);
-  ethernet->set_connected();
+  ethernet->set_connected(true);
   AddStubNetwork(ethernet, PROFILE_SHARED);
 
   WifiNetwork* wifi1 = new WifiNetwork("wifi1");
   wifi1->set_name("Fake WiFi1");
   wifi1->set_strength(100);
-  wifi1->set_connected();
+  wifi1->set_connected(true);
   wifi1->set_encryption(SECURITY_NONE);
   AddStubNetwork(wifi1, PROFILE_SHARED);
 
@@ -163,7 +163,7 @@ void NetworkLibraryImplStub::Init() {
   CellularNetwork* cellular1 = new CellularNetwork("cellular1");
   cellular1->set_name("Fake Cellular 1");
   cellular1->set_strength(100);
-  cellular1->set_connected();
+  cellular1->set_connected(true);
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular1->set_payment_url(std::string("http://www.google.com"));
   cellular1->set_usage_url(std::string("http://www.google.com"));
@@ -249,7 +249,7 @@ void NetworkLibraryImplStub::Init() {
   WimaxNetwork* wimax2 = new WimaxNetwork("wimax2");
   wimax2->set_name("Fake WiMAX Open");
   wimax2->set_strength(50);
-  wimax2->set_connected();
+  wimax2->set_connected(true);
   wimax2->set_passphrase_required(false);
   AddStubNetwork(wimax2, PROFILE_NONE);
 
@@ -408,7 +408,7 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
   }
 
   // Set connected state.
-  network->set_connected();
+  network->set_connected(true);
   network->set_connection_started(false);
 
   // Make the connected network the highest priority network.
@@ -424,7 +424,7 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
       other->priority_order_++;
     if (other->type() == network->type()) {
       other->set_is_active(false);
-      other->set_disconnected();
+      other->set_connected(false);
     }
   }
 
@@ -640,7 +640,7 @@ void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
   // Update the network state here since no network manager in stub impl.
   Network* modify_network = const_cast<Network*>(network);
   modify_network->set_is_active(false);
-  modify_network->set_disconnected();
+  modify_network->set_connected(false);
   if (network == active_wifi_)
     active_wifi_ = NULL;
   else if (network == active_cellular_)

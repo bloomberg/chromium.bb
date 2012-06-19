@@ -283,12 +283,12 @@ TEST_F(NetworkLibraryStubTest, NetworkLibraryAccessors) {
   WifiNetwork* wifi2 = cros_->FindWifiNetworkByPath("wifi2");
   ASSERT_NE(static_cast<const Network*>(NULL), wifi2);
   Network::TestApi test_wifi2(wifi2);
-  test_wifi2.SetConnecting();
+  test_wifi2.SetConnecting(true);
   // Set cellular1->connecting for these tests.
   CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
   Network::TestApi test_cellular1(cellular1);
-  test_cellular1.SetConnecting();
+  test_cellular1.SetConnecting(true);
 
   // Ethernet
   ASSERT_NE(static_cast<const EthernetNetwork*>(NULL),

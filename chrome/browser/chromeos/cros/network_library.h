@@ -299,14 +299,11 @@ class Network {
   class TestApi {
    public:
     explicit TestApi(Network* network) : network_(network) {}
-    void SetConnected() {
-      network_->set_connected();
+    void SetConnected(bool connected) {
+      network_->set_connected(connected);
     }
-    void SetConnecting() {
-      network_->set_connecting();
-    }
-    void SetDisconnected() {
-      network_->set_disconnected();
+    void SetConnecting(bool connecting) {
+      network_->set_connecting(connecting);
     }
    private:
     Network* network_;
@@ -410,8 +407,7 @@ class Network {
             state == STATE_PORTAL);
   }
   static bool IsConnectingState(ConnectionState state) {
-    return (state == STATE_CONNECT_REQUESTED ||
-            state == STATE_ASSOCIATION ||
+    return (state == STATE_ASSOCIATION ||
             state == STATE_CONFIGURATION ||
             state == STATE_CARRIER);
   }
@@ -524,14 +520,11 @@ class Network {
   }
   void set_name(const std::string& name) { name_ = name; }
   void set_mode(ConnectionMode mode) { mode_ = mode; }
-  void set_connecting() {
-    state_ = STATE_CONNECT_REQUESTED;
+  void set_connecting(bool connecting) {
+    state_ = (connecting ? STATE_ASSOCIATION : STATE_IDLE);
   }
-  void set_connected() {
-    state_ = STATE_ONLINE;
-  }
-  void set_disconnected() {
-    state_ = STATE_IDLE;
+  void set_connected(bool connected) {
+    state_ = (connected ? STATE_ONLINE : STATE_IDLE);
   }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_connection_started(bool started) { connection_started_ = started; }

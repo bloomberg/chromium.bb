@@ -344,7 +344,6 @@ void OnGetService(const NetworkPropertiesCallback& callback,
                   DBusMethodCallStatus call_status,
                   const dbus::ObjectPath& service_path) {
   if (call_status == DBUS_METHOD_CALL_SUCCESS) {
-    VLOG(1) << "OnGetServiceService: " << service_path.value();
     DBusThreadManager::Get()->GetFlimflamServiceClient()->GetProperties(
         service_path, base::Bind(&RunCallbackWithDictionaryValue,
                                  callback,

@@ -842,7 +842,7 @@ void NetworkLibraryImplBase::NetworkConnectStart(
   // In order to be certain to trigger any notifications, set the connecting
   // state locally and notify observers. Otherwise there might be a state
   // change without a forced notify.
-  network->set_connecting();
+  network->set_connecting(true);
   // Distinguish between user-initiated connection attempts
   // and auto-connect.
   network->set_connection_started(true);
