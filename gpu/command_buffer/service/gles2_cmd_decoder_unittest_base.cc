@@ -190,6 +190,117 @@ void GLES2DecoderTestBase::InitDecoder(
           max_viewport_dims, max_viewport_dims + arraysize(max_viewport_dims)))
       .RetiresOnSaturation();
 
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, LineWidth(1.0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_BLEND))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BlendColor(0.0f, 0.0, 0.0f, 0.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BlendFunc(GL_ONE, GL_ZERO))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BlendEquation(GL_ADD))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0, 0.0f, 0.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(true, true, true, true))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_CULL_FACE))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CullFace(GL_BACK))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthFunc(GL_LESS))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthRange(0.0f, 1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_DEPTH_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Enable(GL_DITHER))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FrontFace(GL_CCW))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, LineWidth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 4))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PolygonOffset(0.0f, 0.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_POLYGON_OFFSET_FILL))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, SampleCoverage(1.0, false))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Scissor(
+      kViewportX, kViewportY, kViewportWidth, kViewportHeight))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_STENCIL_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilFunc(GL_ALWAYS, 0, 0xFFFFFFFFU))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilOp(GL_KEEP, GL_KEEP, GL_KEEP))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, 0xFFFFFFFFU))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, 0xFFFFFFFFU))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, 4))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindRenderbufferEXT(GL_RENDERBUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
