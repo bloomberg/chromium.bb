@@ -681,6 +681,7 @@ cr.define('options', function() {
       this.resetPage_('sync-setup-login');
       $('sync-setup-login').hidden = false;
       this.allowEmptyPassword_ = false;
+      this.captchaChallengeActive_ = false;
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');
