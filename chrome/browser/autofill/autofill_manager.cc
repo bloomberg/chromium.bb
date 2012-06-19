@@ -198,11 +198,12 @@ AutofillManager::AutofillManager(TabContents* tab_contents)
   RegisterWithSyncService();
   registrar_.Init(tab_contents->profile()->GetPrefs());
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);
+  notification_registrar_.Add(this,
+      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::Source<TabContents>(tab_contents));
 }
 
 AutofillManager::~AutofillManager() {
-  if (sync_service_ && sync_service_->HasObserver(this))
-    sync_service_->RemoveObserver(this);
 }
 
 // static
@@ -233,10 +234,8 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
 void AutofillManager::RegisterWithSyncService() {
   ProfileSyncService* temp_sync_service =
       ProfileSyncServiceFactory::GetForProfile(tab_contents_->profile());
-  if (temp_sync_service) {
-    sync_service_ = temp_sync_service->AsWeakPtr();
-    sync_service_->AddObserver(this);
-  }
+  if (temp_sync_service)
+    temp_sync_service->AddObserver(this);
 }
 
 void AutofillManager::SendPasswordGenerationStateToRenderer(
@@ -252,13 +251,16 @@ void AutofillManager::SendPasswordGenerationStateToRenderer(
 void AutofillManager::UpdatePasswordGenerationState(
     content::RenderViewHost* host,
     bool new_renderer) {
-  if (!sync_service_)
-    return;
+  ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(
+      tab_contents_->profile());
 
-  syncable::ModelTypeSet sync_set = sync_service_->GetPreferredDataTypes();
-  bool password_sync_enabled =
-      sync_service_->HasSyncSetupCompleted() &&
+  bool password_sync_enabled = false;
+  if (service) {
+    syncable::ModelTypeSet sync_set = service->GetPreferredDataTypes();
+    password_sync_enabled =
+      service->HasSyncSetupCompleted() &&
       sync_set.Has(syncable::PASSWORDS);
+  }
 
   bool password_manager_enabled =
       tab_contents_->password_manager()->IsSavingEnabled();
@@ -288,11 +290,22 @@ void AutofillManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string* pref = content::Details<std::string>(details).ptr();
-  DCHECK(*pref == prefs::kPasswordGenerationEnabled);
-  UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+    std::string* pref = content::Details<std::string>(details).ptr();
+    DCHECK(prefs::kPasswordGenerationEnabled == *pref);
+    UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
+  } else if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
+    if (ProfileSyncServiceFactory::HasProfileSyncService(
+          tab_contents_->profile())) {
+      ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(
+          tab_contents_->profile());
+      if (service->HasObserver(this))
+        service->RemoveObserver(this);
+    }
+  } else {
+    NOTREACHED();
+  }
 }
 
 void AutofillManager::OnStateChanged() {

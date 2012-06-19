@@ -26,6 +26,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class AutofillExternalDelegate;
@@ -364,11 +365,12 @@ class AutofillManager : public content::NotificationObserver,
   // spam the renderer with messages during startup when the sync state
   // is changing rapidly.
   bool password_generation_enabled_;
-  // The ProfileSyncService associated with this tab. This may be NULL in
-  // testing.
-  base::WeakPtr<ProfileSyncService> sync_service_;
   // Listens for changes to the 'enabled' state for password generation.
   PrefChangeRegistrar registrar_;
+  // Listens for TabContents destruction to avoid using pointer during
+  // destruction.
+  content::NotificationRegistrar notification_registrar_;
+
   // To be passed to the password generation UI to generate the password.
   scoped_ptr<autofill::PasswordGenerator> password_generator_;
 

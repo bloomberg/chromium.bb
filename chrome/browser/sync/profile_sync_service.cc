@@ -350,7 +350,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
   backend_unrecoverable_error_handler_.reset(
     new browser_sync::BackendUnrecoverableErrorHandler(
-        MakeWeakHandle(AsWeakPtr())));
+        MakeWeakHandle(weak_factory_.GetWeakPtr())));
 
   backend_->Initialize(
       this,

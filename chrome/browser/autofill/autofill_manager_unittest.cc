@@ -25,6 +25,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
@@ -701,10 +702,6 @@ class AutofillManagerTest : public TabContentsTestHarness {
 
     process()->sink().ClearMessages();
     return true;
-  }
-
-  ProfileSyncService* GetProfileSyncService() {
-    return autofill_manager_->sync_service_;
   }
 
  protected:
@@ -2930,7 +2927,8 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
 
   // Sync some things, but not passwords. Shouldn't send anything since
   // password generation is disabled by default.
-  ProfileSyncService* sync_service = GetProfileSyncService();
+  ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
+      profile());
   sync_service->SetSyncSetupCompleted();
   syncable::ModelTypeSet preferred_set;
   preferred_set.Put(syncable::EXTENSIONS);
@@ -2980,7 +2978,8 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
   // Always set password sync enabled so we can test the behavior of password
   // generation.
   profile()->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
-  ProfileSyncService* sync_service = GetProfileSyncService();
+  ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
+      profile());
   sync_service->SetSyncSetupCompleted();
   syncable::ModelTypeSet preferred_set;
   preferred_set.Put(syncable::PASSWORDS);
