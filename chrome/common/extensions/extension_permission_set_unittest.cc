@@ -544,7 +544,6 @@ TEST(ExtensionPermissionsTest, HasLessPrivilegesThan) {
     { "scopes3", true },  // none -> scope1
   };
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     scoped_refptr<Extension> old_extension(
         LoadManifest("allow_silent_upgrade",
@@ -756,7 +755,6 @@ TEST(ExtensionPermissionsTest, GetWarningMessages_Plugins) {
 
 TEST(ExtensionPermissionsTest, GetWarningMessages_AudioVideo) {
   // Both audio and video present.
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "audio-video.json");
   ExtensionPermissionSet* set =

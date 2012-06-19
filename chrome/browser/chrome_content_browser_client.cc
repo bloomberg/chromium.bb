@@ -758,7 +758,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaCl,
       switches::kEnableNaClIPCProxy,
       switches::kEnablePasswordGeneration,
-      switches::kEnablePlatformApps,
       switches::kEnableWatchdog,
       switches::kExperimentalSpellcheckerFeatures,
       switches::kMemoryProfiling,
@@ -783,7 +782,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       switches::kAllowHTTPBackgroundPage,
       switches::kEnableExperimentalExtensionApis,
-      switches::kEnablePlatformApps,
       switches::kWhitelistedExtensionID,
     };
 

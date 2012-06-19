@@ -168,7 +168,6 @@ extern const char kDisableSyncTabs[];
 extern const char kEnableNpnHttpOnly[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordGeneration[];
-extern const char kEnablePlatformApps[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];

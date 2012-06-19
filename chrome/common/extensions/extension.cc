@@ -3726,12 +3726,6 @@ bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
   if (!is_platform_app())
     return true;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePlatformApps)) {
-    *utf8_error = errors::kPlatformAppFlagRequired;
-    return false;
-  }
-
   if (!has_background_page()) {
     *utf8_error = errors::kBackgroundRequiredForPlatformApps;
     return false;

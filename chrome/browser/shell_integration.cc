@@ -80,10 +80,8 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   // during launch.
   if (!extension_app_id.empty()) {
     new_cmd_line.AppendSwitchASCII(switches::kAppId, extension_app_id);
-    if (is_platform_app) {
-      new_cmd_line.AppendSwitch(switches::kEnablePlatformApps);
+    if (is_platform_app)
       new_cmd_line.AppendSwitch(switches::kEnableExperimentalExtensionApis);
-    }
   } else {
     // Use '--app=url' instead of just 'url' to launch the browser with minimal
     // chrome.

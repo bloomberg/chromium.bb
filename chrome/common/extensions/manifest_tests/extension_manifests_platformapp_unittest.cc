@@ -14,12 +14,6 @@
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, PlatformApps) {
-  // A minimal platform app.
-  LoadAndExpectError("init_valid_platform_app.json",
-                     errors::kPlatformAppFlagRequired);
-
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
-
   scoped_refptr<extensions::Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
@@ -101,19 +95,9 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
                        errors::kExperimentalFlagRequired);
   }
 
-  // Now try again with experimental flag set.
+  // Now try again with the experimental flag set.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
-    const char* api_name = kPlatformAppExperimentalApis[i];
-    FilePath file_path = temp_dir.path().AppendASCII(api_name);
-    LoadAndExpectError(file_path.MaybeAsASCII().c_str(),
-                       errors::kPlatformAppFlagRequired);
-  }
-
-  // Finally, we should succeed with both experimental and platform-app flags
-  // set.
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
     const char* api_name = kPlatformAppExperimentalApis[i];
     FilePath file_path = temp_dir.path().AppendASCII(api_name);

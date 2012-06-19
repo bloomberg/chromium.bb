@@ -295,9 +295,7 @@ void PlatformAppApiTest::SetUpCommandLine(CommandLine* command_line) {
 
   // If someone is using this class, we're going to insist on management of the
   // relevant flags. If these flags are already set, die.
-  DCHECK(!command_line->HasSwitch(switches::kEnablePlatformApps));
   DCHECK(!command_line->HasSwitch(switches::kEnableExperimentalExtensionApis));
 
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  command_line->AppendSwitch(switches::kEnablePlatformApps);
 }

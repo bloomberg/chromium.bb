@@ -24,7 +24,6 @@ namespace utils = extension_function_test_utils;
 void PlatformAppBrowserTest::SetUpCommandLine(
     CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kEnablePlatformApps);
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
 }
 

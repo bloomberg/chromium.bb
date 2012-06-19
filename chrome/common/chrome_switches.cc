@@ -586,9 +586,6 @@ const char kEnablePanels[]                  = "enable-panels";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
-// Enables advanced app capabilities.
-const char kEnablePlatformApps[]            = "enable-platform-apps";
-
 // Enables content settings based on host *and* plug-in in the user
 // preferences.
 const char kEnableResourceContentSettings[] =
