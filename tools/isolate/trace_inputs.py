@@ -778,10 +778,11 @@ class Strace(ApiBase):
       RE_RESUMED = re.compile(r'^<\.\.\. ([^ ]+) resumed> (.+)$')
       # A process received a signal.
       RE_SIGNAL = re.compile(r'^--- SIG[A-Z]+ .+ ---')
-      # A process didn't handle a signal.
-      RE_KILLED = re.compile(r'^\+\+\+ killed by ([A-Z]+) \+\+\+$')
-      # A call was canceled.
-      RE_UNAVAILABLE = re.compile(r'\)\s+= \? <unavailable>$')
+      # A process didn't handle a signal. Ignore any junk appearing before,
+      # because the process was forcibly killed so it won't open any new file.
+      RE_KILLED = re.compile(r'^.*\+\+\+ killed by ([A-Z]+) \+\+\+$')
+      # A call was canceled. Ignore any prefix.
+      RE_UNAVAILABLE = re.compile(r'^.*\)\s*= \? <unavailable>$')
       # Happens when strace fails to even get the function name.
       UNNAMED_FUNCTION = '????'
 
