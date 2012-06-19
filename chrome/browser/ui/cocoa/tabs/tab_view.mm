@@ -253,6 +253,7 @@ const CGFloat kRapidCloseDist = 2.5;
   NSRect rect = [self bounds];
   NSBezierPath* path = [self bezierPathForRect:rect];
 
+  BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
   BOOL selected = [self state];
   // Don't draw the window/tab bar background when selected, since the tab
   // background overlay drawn over it (see below) will be fully opaque.
@@ -274,11 +275,11 @@ const CGFloat kRapidCloseDist = 2.5;
       [backgroundImageColor set];
       [path fill];
     } else {
-      // Use the window's background color rather than |[NSColor
-      // windowBackgroundColor]|, which gets confused by the fullscreen window.
-      // (The result is the same for normal, non-fullscreen windows.)
-      [[[self window] backgroundColor] set];
-      [path fill];
+      CGFloat grey = active ? 0.8 : 0.9;
+      scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
+          initWithStartingColor:[NSColor colorWithCalibratedWhite:grey alpha:1]
+            endingColor:[NSColor colorWithCalibratedWhite:0.9 * grey alpha:1]]);
+      [gradient drawInBezierPath:path angle:270];
 
       gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
       NSGraphicsContext* context = [NSGraphicsContext currentContext];
@@ -292,8 +293,7 @@ const CGFloat kRapidCloseDist = 2.5;
     }
   }
 
-  BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
-  CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : 0.2;
+  CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : (active ? 0.2 : 0.15);
   borderAlpha /= lineWidth;
 
   NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
@@ -359,24 +359,16 @@ const CGFloat kRapidCloseDist = 2.5;
     if (themeProvider && themeProvider->UsingDefaultTheme()) {
       NSAffineTransform* highlightTransform = [NSAffineTransform transform];
       [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
-      if (selected) {
-        scoped_nsobject<NSBezierPath> highlightPath([path copy]);
-        [highlightPath transformUsingAffineTransform:highlightTransform];
-        [highlightColor setStroke];
-        [highlightPath setLineWidth:lineWidth];
-        [highlightPath stroke];
-        highlightTransform = [NSAffineTransform transform];
-        [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
-        [highlightPath transformUsingAffineTransform:highlightTransform];
-        [highlightPath stroke];
-      } else {
-        NSBezierPath* topHighlightPath =
-            [self topHighlightBezierPathForRect:[self bounds]];
-        [topHighlightPath transformUsingAffineTransform:highlightTransform];
-        [highlightColor setStroke];
-        [topHighlightPath setLineWidth:lineWidth];
-        [topHighlightPath stroke];
-      }
+
+      scoped_nsobject<NSBezierPath> highlightPath([path copy]);
+      [highlightPath transformUsingAffineTransform:highlightTransform];
+      [highlightColor setStroke];
+      [highlightPath setLineWidth:lineWidth];
+      [highlightPath stroke];
+      highlightTransform = [NSAffineTransform transform];
+      [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
+      [highlightPath transformUsingAffineTransform:highlightTransform];
+      [highlightPath stroke];
     }
   }
 
