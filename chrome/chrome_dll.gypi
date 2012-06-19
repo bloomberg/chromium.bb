@@ -271,7 +271,6 @@
                 'app/nibs/MainMenu.xib',
                 'app/nibs/Notification.xib',
                 'app/nibs/OneClickSigninBubble.xib',
-                'app/nibs/OneClickSigninDialog.xib',
                 'app/nibs/Panel.xib',
                 'app/nibs/PreviewableContents.xib',
                 'app/nibs/SaveAccessoryView.xib',
