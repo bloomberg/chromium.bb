@@ -5,6 +5,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 
 #include "ash/wm/shadow_types.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -35,6 +36,12 @@ DragImageView::DragImageView() : views::ImageView() {
 
   // We are owned by the DragDropController.
   set_owned_by_client();
+
+  // The drag image we receive is already drawn scaled to device scale factor.
+  // Hence we do not need our layer to apply device scale again.
+  aura::Window* window = widget_->GetNativeView();
+  if (window && window->layer())
+    window->layer()->set_scale_content(false);
 }
 
 DragImageView::~DragImageView() {
