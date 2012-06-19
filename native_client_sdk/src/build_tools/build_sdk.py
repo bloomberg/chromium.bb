@@ -188,9 +188,11 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(ppapi, 'c', 'dev'))
 
   # Run the generator to overwrite IDL files
-  buildbot_common.Run([sys.executable, 'generator.py', '--wnone', '--cgen',
-       '--release=M' + pepper_ver, '--verbose', '--dstroot=%s/c' % ppapi],
-       cwd=os.path.join(PPAPI_DIR, 'generators'))
+  generator_args = [sys.executable, 'generator.py', '--wnone', '--cgen',
+      '--verbose', '--dstroot=%s/c' % ppapi]
+  if pepper_ver:
+    generator_args.append('--release=M' + pepper_ver)
+  buildbot_common.Run(generator_args, cwd=os.path.join(PPAPI_DIR, 'generators'))
 
   # Remove private and trusted interfaces
   buildbot_common.RemoveDir(os.path.join(ppapi, 'c', 'private'))
@@ -467,7 +469,7 @@ def main(args):
 
   if not skip_build:
     BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
-    InstallHeaders(os.path.join(pepperdir, 'src'), pepper_ver, 'libs')
+    InstallHeaders(os.path.join(pepperdir, 'src'), None, 'libs')
 
   if not skip_build:
     buildbot_common.BuildStep('Copy make OS helpers')
