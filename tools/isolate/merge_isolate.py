@@ -19,6 +19,8 @@ import sys
 
 from isolate_common import pretty_print, KEY_TRACKED, KEY_UNTRACKED
 
+DEFAULT_OSES = ['linux', 'mac', 'win']
+
 
 def union(lhs, rhs):
   """Merges two compatible datastructures composed of dict/list/set."""
@@ -303,7 +305,7 @@ def convert_map_to_gyp(values, oses):
   return out
 
 
-def load_gyp(value, file_comment):
+def load_gyp(value, file_comment, default_oses):
   """Parses one gyp skeleton and returns a Configs() instance.
 
   |value| is the loaded dictionary that was defined in the gyp file.
@@ -342,6 +344,7 @@ def load_gyp(value, file_comment):
   # Scan to get the list of OSes.
   conditions = value.get('conditions', [])
   oses = set(re.match(r'OS==\"([a-z]+)\"', c[0]).group(1) for c in conditions)
+  oses = oses.union(default_oses)
   configs = Configs(oses, file_comment)
 
   # Global level variables.
@@ -357,7 +360,7 @@ def load_gyp(value, file_comment):
   return configs
 
 
-def load_gyps(items):
+def load_gyps(items, default_oses):
   """Parses each gyp file and returns the merged results.
 
   It only loads what load_gyp() can process.
@@ -367,12 +370,13 @@ def load_gyps(items):
     dirs:  dict(dirame, set(OS where this dirname is a dependency))
     oses:  set(all the OSes referenced)
     """
-  configs = Configs([], None)
+  configs = Configs(default_oses, None)
   for item in items:
     logging.debug('loading %s' % item)
     with open(item, 'r') as f:
       content = f.read()
-    new_config = load_gyp(eval_content(content), extract_comment(content))
+    new_config = load_gyp(
+        eval_content(content), extract_comment(content), default_oses)
     logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))
     configs = union(configs, new_config)
   logging.debug('Total OSes: %s' % ','.join(k for k in configs.per_os if k))
@@ -395,6 +399,9 @@ def main(args=None):
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
   parser.add_option(
       '-o', '--output', help='Output to file instead of stdout')
+  parser.add_option(
+      '--os', default=','.join(DEFAULT_OSES),
+      help='Inject the list of OSes, default: %default')
 
   options, args = parser.parse_args(args)
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
@@ -402,10 +409,10 @@ def main(args=None):
         level=level,
         format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
 
-  configs = load_gyps(args)
+  configs = load_gyps(args, options.os.split(','))
   data = convert_map_to_gyp(*reduce_inputs(*invert_map(configs.flatten())))
   if options.output:
-    with open(options.output, 'w') as f:
+    with open(options.output, 'wb') as f:
       print_all(configs.file_comment, data, f)
   else:
     print_all(configs.file_comment, data, sys.stdout)
