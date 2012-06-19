@@ -610,7 +610,10 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
   HRESULT hr = SHOpenWithDialog(NULL, &open_as_info);
   DLOG_IF(WARNING, FAILED(hr)) << "Failed to set as default " << protocol
       << " handler; hr=0x" << std::hex << hr;
-  return SUCCEEDED(hr);
+  if (FAILED(hr))
+    return false;
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+  return true;
 }
 
 // Launches the Windows 7 and Windows 8 application association dialog, which
