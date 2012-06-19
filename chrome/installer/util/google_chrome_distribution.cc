@@ -434,7 +434,7 @@ string16 GoogleChromeDistribution::GetAlternateApplicationName() {
   return alt_product_name;
 }
 
-string16 GoogleChromeDistribution::GetBrowserAppId() {
+string16 GoogleChromeDistribution::GetBaseAppId() {
   return kBrowserAppId;
 }
 

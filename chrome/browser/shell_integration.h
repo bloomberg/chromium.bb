@@ -123,15 +123,19 @@ class ShellIntegration {
       bool is_platform_app);
 
 #if defined(OS_WIN)
-  // Generates Win7 app id for given app name and profile path. The returned app
-  // id is in the format of "|app_name|[.<profile_id>]". "profile_id" is
-  // appended when user override the default value.
-  static string16 GetAppId(const string16& app_name,
-                           const FilePath& profile_path);
+  // Generates an application user model ID (AppUserModelId) for a given app
+  // name and profile path. The returned app id is in the format of
+  // "|app_name|[.<profile_id>]". "profile_id" is appended when user override
+  // the default value.
+  // Note: If the app has an installation specific suffix (e.g. on user-level
+  // Chrome installs), |app_name| should already be suffixed, this method will
+  // then further suffix it with the profile id as described above.
+  static string16 GetAppModelIdForProfile(const string16& app_name,
+                                          const FilePath& profile_path);
 
-  // Generates Win7 app id for Chromium by calling GetAppId with
-  // chrome::kBrowserAppID as app_name.
-  static string16 GetChromiumAppId(const FilePath& profile_path);
+  // Generates an application user model ID (AppUserModelId) for Chromium by
+  // calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
+  static string16 GetChromiumModelIdForProfile(const FilePath& profile_path);
 
   // Returns the path to the Chromium icon. This is used to specify the icon
   // to use for the taskbar group on Win 7.

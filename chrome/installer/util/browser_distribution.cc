@@ -161,7 +161,7 @@ string16 BrowserDistribution::GetAlternateApplicationName() {
   return L"The Internet";
 }
 
-string16 BrowserDistribution::GetBrowserAppId() {
+string16 BrowserDistribution::GetBaseAppId() {
   return L"Chromium";
 }
 

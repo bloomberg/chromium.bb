@@ -533,7 +533,15 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   // Delete Software\Classes\Chrome (Same comment as above applies for this too)
   string16 chrome_app_id(ShellUtil::kRegClasses);
   chrome_app_id.push_back(FilePath::kSeparators[0]);
-  chrome_app_id.append(dist->GetBrowserAppId());
+  if (browser_entry_suffix.empty()) {
+    // An unsuffixed appid used to be registered on some user-level install
+    // (dev-channel 21.0.1171.0). Make sure it gets cleaned up here.
+    // Note: this couldn't be cleaned on update as a currently running old
+    // chrome might still be using the unsuffixed appid when the registration
+    // update steps run.
+    InstallUtil::DeleteRegistryKey(root, chrome_app_id + dist->GetBaseAppId());
+  }
+  chrome_app_id.append(ShellUtil::GetBrowserModelId(dist, chrome_exe.value()));
   InstallUtil::DeleteRegistryKey(root, chrome_app_id);
 
   // Delete all Start Menu Internet registrations that refer to this Chrome.

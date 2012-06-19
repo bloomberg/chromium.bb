@@ -206,7 +206,7 @@ bool CreatePlatformShortcut(
   // Generates app id from web app url and profile path.
   std::string app_name =
       web_app::GenerateApplicationNameFromInfo(shortcut_info);
-  string16 app_id = ShellIntegration::GetAppId(
+  string16 app_id = ShellIntegration::GetAppModelIdForProfile(
       UTF8ToUTF16(app_name), profile_path);
 
   FilePath shortcut_to_pin;

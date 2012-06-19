@@ -293,10 +293,12 @@ bool GetExpectedAppId(const FilePath& chrome_exe,
     app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
         command_line.GetSwitchValueASCII(switches::kAppId)));
   } else {
-    app_name = BrowserDistribution::GetDistribution()->GetBrowserAppId();
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    app_name = ShellUtil::GetBrowserModelId(dist, chrome_exe.value());
   }
 
-  expected_app_id->assign(ShellIntegration::GetAppId(app_name, profile_path));
+  expected_app_id->assign(
+      ShellIntegration::GetAppModelIdForProfile(app_name, profile_path));
   return true;
 }
 
@@ -550,24 +552,27 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return ff_default;
 }
 
-string16 ShellIntegration::GetAppId(const string16& app_name,
-                                    const FilePath& profile_path) {
-  string16 app_id(app_name);
-
-  string16 profile_id(GetProfileIdFromPath(profile_path));
-  if (!profile_id.empty()) {
-    app_id += L".";
-    app_id += profile_id;
-  }
-
-  // App id should be less than 128 chars.
-  DCHECK(app_id.length() < 128);
-  return app_id;
+string16 ShellIntegration::GetAppModelIdForProfile(
+    const string16& app_name,
+    const FilePath& profile_path) {
+  std::vector<string16> components;
+  components.push_back(app_name);
+  const string16 profile_id(GetProfileIdFromPath(profile_path));
+  if (!profile_id.empty())
+    components.push_back(profile_id);
+  return ShellUtil::BuildAppModelId(components);
 }
 
-string16 ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
-  return GetAppId(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
-                  profile_path);
+string16 ShellIntegration::GetChromiumModelIdForProfile(
+    const FilePath& profile_path) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return dist->GetBaseAppId();
+  }
+  return GetAppModelIdForProfile(
+      ShellUtil::GetBrowserModelId(dist, chrome_exe.value()), profile_path);
 }
 
 string16 ShellIntegration::GetChromiumIconPath() {
@@ -597,6 +602,12 @@ void ShellIntegration::MigrateChromiumShortcuts() {
 
 bool ShellIntegration::ActivateMetroChrome() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const string16 app_id(dist->GetBrowserAppId());
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return false;
+  }
+  const string16 app_id(
+      ShellUtil::GetBrowserModelId(dist, chrome_exe.value()));
   return ActivateApplication(app_id);
 }

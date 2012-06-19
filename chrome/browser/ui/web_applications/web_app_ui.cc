@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -248,7 +249,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   CheckExistingShortcuts();
   if (!shortcut_files_.empty()) {
     // Generates app id from web app url and profile path.
-    std::wstring app_id = ShellIntegration::GetAppId(
+    string16 app_id = ShellIntegration::GetAppModelIdForProfile(
         UTF8ToWide(web_app::GenerateApplicationNameFromURL(shortcut_info_.url)),
         profile_path_);
 

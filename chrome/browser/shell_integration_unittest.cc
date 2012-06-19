@@ -365,27 +365,31 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
   }
 }
 #elif defined(OS_WIN)
-TEST(ShellIntegrationTest, GetChromiumAppIdTest) {
+TEST(ShellIntegrationTest, GetAppModelIdForProfileTest) {
+  const string16 base_app_id(
+      BrowserDistribution::GetDistribution()->GetBaseAppId());
+
   // Empty profile path should get chrome::kBrowserAppID
   FilePath empty_path;
-  EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
-            ShellIntegration::GetChromiumAppId(empty_path));
+  EXPECT_EQ(base_app_id,
+            ShellIntegration::GetAppModelIdForProfile(base_app_id, empty_path));
 
   // Default profile path should get chrome::kBrowserAppID
   FilePath default_user_data_dir;
   chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
   FilePath default_profile_path =
       default_user_data_dir.AppendASCII(chrome::kInitialProfile);
-  EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
-            ShellIntegration::GetChromiumAppId(default_profile_path));
+  EXPECT_EQ(base_app_id,
+            ShellIntegration::GetAppModelIdForProfile(base_app_id,
+                                                      default_profile_path));
 
   // Non-default profile path should get chrome::kBrowserAppID joined with
   // profile info.
   FilePath profile_path(FILE_PATH_LITERAL("root"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
-  EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId() +
-            L".udd.UserDataTest",
-            ShellIntegration::GetChromiumAppId(profile_path));
+  EXPECT_EQ(base_app_id + L".udd.UserDataTest",
+            ShellIntegration::GetAppModelIdForProfile(base_app_id,
+                                                      profile_path));
 }
 #endif

@@ -44,7 +44,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual string16 GetAlternateApplicationName() OVERRIDE;
 
-  virtual string16 GetBrowserAppId() OVERRIDE;
+  virtual string16 GetBaseAppId() OVERRIDE;
 
   virtual string16 GetInstallSubDir() OVERRIDE;
 

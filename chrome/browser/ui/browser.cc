@@ -534,8 +534,9 @@ void Browser::InitBrowserWindow() {
   // name.  See http://crbug.com/7028.
   ui::win::SetAppIdForWindow(
       is_app() && !is_type_panel() ?
-      ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
-      ShellIntegration::GetChromiumAppId(profile_->GetPath()),
+      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name_),
+                                                profile_->GetPath()) :
+      ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath()),
       window()->GetNativeWindow());
 
   if (is_type_panel()) {

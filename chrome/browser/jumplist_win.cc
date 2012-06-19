@@ -513,7 +513,7 @@ bool JumpList::AddObserver(Profile* profile) {
   if (!tab_restore_service)
     return false;
 
-  app_id_ = ShellIntegration::GetChromiumAppId(profile->GetPath());
+  app_id_ = ShellIntegration::GetChromiumModelIdForProfile(profile->GetPath());
   icon_dir_ = profile->GetPath().Append(chrome::kJumpListIconDirname);
   profile_ = profile;
   history::TopSites* top_sites = profile_->GetTopSites();

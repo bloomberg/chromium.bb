@@ -218,6 +218,8 @@ extern const wchar_t kChromeChannelDev[];
 extern const wchar_t kChromeChannelBeta[];
 extern const wchar_t kChromeChannelStable[];
 
+extern const size_t kMaxAppModelIdLength;
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_

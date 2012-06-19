@@ -136,7 +136,7 @@ class RegistryEntry {
     string16 delegate_command(ShellUtil::GetChromeDelegateCommand(chrome_exe));
     // For user-level installs: entries for the app id and DelegateExecute verb
     // handler will be in HKCU; thus we do not need a suffix on those entries.
-    string16 app_id(dist->GetBrowserAppId());
+    string16 app_id(ShellUtil::GetBrowserModelId(dist, chrome_exe));
     string16 delegate_guid;
     // TODO(grt): remove HasDelegateExecuteHandler when the exe is ever-present;
     // see also install_worker.cc's AddDelegateExecuteWorkItems.
@@ -663,7 +663,7 @@ void RemoveBadWindows8RegistrationIfNeeded(
     // suffix.
     const string16 installation_suffix(
         ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe));
-    const string16 app_id(dist->GetBrowserAppId());
+    const string16 app_id(ShellUtil::GetBrowserModelId(dist, chrome_exe));
 
     // <root hkey>\Software\Classes\<app_id>
     string16 key(ShellUtil::kRegClasses);
@@ -1074,6 +1074,62 @@ string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
   return app_name;
 }
 
+string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
+                                      const string16& chrome_exe) {
+  string16 app_id(dist->GetBaseAppId());
+  string16 suffix;
+  if (InstallUtil::IsPerUserInstall(chrome_exe.c_str()) &&
+      !GetUserSpecificRegistrySuffix(&suffix)) {
+    NOTREACHED();
+  }
+  // There is only one component (i.e. the suffixed appid) in this case, but it
+  // is still necessary to go through the appid constructor to make sure the
+  // returned appid is truncated if necessary.
+  std::vector<string16> components(1, app_id.append(suffix));
+  return BuildAppModelId(components);
+}
+
+string16 ShellUtil::BuildAppModelId(
+    const std::vector<string16>& components) {
+  DCHECK_GT(components.size(), 0U);
+
+  // Find the maximum numbers of characters allowed in each component
+  // (accounting for the dots added between each component).
+  const size_t available_chars =
+      installer::kMaxAppModelIdLength - (components.size() - 1);
+  const size_t max_component_length = available_chars / components.size();
+
+  // |max_component_length| should be at least 2; otherwise the truncation logic
+  // below breaks.
+  if (max_component_length < 2U) {
+    NOTREACHED();
+    return (*components.begin()).substr(0, installer::kMaxAppModelIdLength);
+  }
+
+  string16 app_id;
+  app_id.reserve(installer::kMaxAppModelIdLength);
+  for (std::vector<string16>::const_iterator it = components.begin();
+       it != components.end(); ++it) {
+    if (it != components.begin())
+      app_id.push_back(L'.');
+
+    const string16& component = *it;
+    DCHECK(!component.empty());
+    if (component.length() > max_component_length) {
+      // Append a shortened version of this component. Cut in the middle to try
+      // to avoid losing the unique parts of this component (which are usually
+      // at the beginning or end for things like usernames and paths).
+      app_id.append(component.c_str(), 0, max_component_length / 2);
+      app_id.append(component.c_str(),
+                    component.length() - ((max_component_length + 1) / 2),
+                    string16::npos);
+    } else {
+      app_id.append(component);
+    }
+  }
+  return app_id;
+}
+
 // static
 bool ShellUtil::CanMakeChromeDefaultUnattended() {
   return base::win::GetVersion() < base::win::VERSION_WIN8;
@@ -1437,24 +1493,25 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                                      const string16& icon_path,
                                      int icon_index,
                                      uint32 options) {
-  string16 chrome_path = FilePath(chrome_exe).DirName().value();
+  const FilePath chrome_path(FilePath(chrome_exe).DirName());
 
-  FilePath prefs_path(chrome_path);
-  prefs_path = prefs_path.AppendASCII(installer::kDefaultMasterPrefs);
-  installer::MasterPreferences prefs(prefs_path);
+  installer::MasterPreferences prefs(
+      chrome_path.AppendASCII(installer::kDefaultMasterPrefs));
   if (FilePath::CompareEqualIgnoreCase(icon_path, chrome_exe)) {
     prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
                  &icon_index);
   }
 
+  const string16 app_id(GetBrowserModelId(dist, chrome_exe));
+
   return file_util::CreateOrUpdateShortcutLink(
       chrome_exe.c_str(),
       shortcut.c_str(),
-      chrome_path.c_str(),
+      chrome_path.value().c_str(),
       arguments.c_str(),
       description.c_str(),
       icon_path.c_str(),
       icon_index,
-      dist->GetBrowserAppId().c_str(),
+      app_id.c_str(),
       ConvertShellUtilShortcutOptionsToFileUtil(options));
 }

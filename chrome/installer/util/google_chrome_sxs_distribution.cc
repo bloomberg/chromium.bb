@@ -35,7 +35,7 @@ string16 GoogleChromeSxSDistribution::GetAppShortCutName() {
   return shortcut_name;
 }
 
-string16 GoogleChromeSxSDistribution::GetBrowserAppId() {
+string16 GoogleChromeSxSDistribution::GetBaseAppId() {
   return kBrowserAppId;
 }
 

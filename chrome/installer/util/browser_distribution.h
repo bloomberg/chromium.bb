@@ -79,7 +79,11 @@ class BrowserDistribution {
 
   virtual string16 GetAlternateApplicationName();
 
-  virtual string16 GetBrowserAppId();
+  // Returns the unsuffixed appid of this program.
+  // The AppUserModelId is a property of Windows programs.
+  // IMPORTANT: This should only be called by ShellUtil::GetAppId as the appid
+  // should be suffixed in all scenarios.
+  virtual string16 GetBaseAppId();
 
   virtual string16 GetInstallSubDir();
 

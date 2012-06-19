@@ -204,8 +204,8 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
       extension->id());
   ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppId(UTF8ToWide(app_name),
-      profile->GetPath()),
+      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name),
+                                                profile->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
   OnViewWasResized();

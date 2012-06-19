@@ -242,6 +242,20 @@ class ShellUtil {
   static string16 GetApplicationName(BrowserDistribution* dist,
                                      const string16& chrome_exe);
 
+  // Returns the AppUserModelId for |dist|. This identifier is unconditionally
+  // suffixed with the user id for user-level installs (in contrast to other
+  // registration entries which are suffix as described in
+  // GetCurrentInstallationSuffix() above).
+  static string16 GetBrowserModelId(BrowserDistribution* dist,
+                                    const string16& chrome_exe);
+
+  // Returns an AppUserModelId composed of each member of |components| separated
+  // by dots.
+  // The returned appid is guaranteed to be no longer than
+  // chrome::kMaxAppModelIdLength (some of the components might have been
+  // shortened to enforce this).
+  static string16 BuildAppModelId(const std::vector<string16>& components);
+
   // Returns true if Chrome can make itself the default browser without relying
   // on the Windows shell to prompt the user. This is the case for versions of
   // Windows prior to Windows 8.

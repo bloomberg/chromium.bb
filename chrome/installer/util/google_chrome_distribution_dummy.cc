@@ -46,7 +46,7 @@ string16 GoogleChromeDistribution::GetAlternateApplicationName() {
   return string16();
 }
 
-string16 GoogleChromeDistribution::GetBrowserAppId() {
+string16 GoogleChromeDistribution::GetBaseAppId() {
   NOTREACHED();
   return string16();
 }
