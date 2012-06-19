@@ -1191,7 +1191,8 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
       tab_contents->web_contents()->GetURL(),
       tab_contents->web_contents()->GetTitle(),
       tab_contents->favicon_tab_helper()->GetFavicon(),
-      data);
+      data,
+      sender->GetWidget());
 }
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,

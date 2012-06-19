@@ -61,6 +61,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -940,9 +941,10 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       views::TextButton* button = GetBookmarkButton(i);
-      gfx::Canvas canvas(button->size(), false);
-      button->PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
-      drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
+      scoped_ptr<gfx::Canvas> canvas(
+          views::GetCanvasForDragImage(button->GetWidget(), button->size()));
+      button->PaintButton(canvas.get(), views::TextButton::PB_FOR_DRAG);
+      drag_utils::SetDragImageOnDataObject(*canvas, button->size(), press_pt,
                                            data);
       WriteBookmarkDragData(model_->bookmark_bar_node()->GetChild(i), data);
       return;

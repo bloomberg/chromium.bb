@@ -2524,7 +2524,8 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
     SkBitmap favicon;
     if (is_all_selected)
       model_->GetDataForURLExport(&url, &title, &favicon);
-    button_drag_utils::SetURLAndDragImage(url, title, favicon, &data);
+    button_drag_utils::SetURLAndDragImage(url, title, favicon, &data,
+                                          native_view_host_->GetWidget());
     supported_modes |= DROPEFFECT_LINK;
     content::RecordAction(UserMetricsAction("Omnibox_DragURL"));
   } else {
