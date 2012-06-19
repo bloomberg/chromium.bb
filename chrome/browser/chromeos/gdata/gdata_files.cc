@@ -147,6 +147,12 @@ GDataEntry* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   if (doc->is_file()) {
     file->file_info_.size = doc->file_size();
     file->file_md5_ = doc->file_md5();
+
+    // The resumable-edit-media link should only be present for regualar
+    // files as hosted documents are not uploadable.
+    const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_EDIT_MEDIA);
+    if (upload_link)
+      file->upload_url_ = upload_link->href();
   } else {
     // ... a hosted document.
     // Attach .g<something> extension to hosted documents so we can special
@@ -570,6 +576,14 @@ bool GDataFile::FromProto(const GDataFileProto& proto) {
   id_ = proto.id();
   file_md5_ = proto.file_md5();
   document_extension_ = proto.document_extension();
+  // Reject older protobuf that does not contain the upload URL.  This URL is
+  // necessary for uploading dirty files (ex. updating existing files).
+  if (!proto.has_upload_url()) {
+    LOG(ERROR) << "Incompatible proto detected (no upload URL): "
+               << proto.gdata_entry().title();
+    return false;
+  }
+  upload_url_ = GURL(proto.upload_url());
   is_hosted_document_ = proto.is_hosted_document();
 
   return true;
@@ -586,19 +600,15 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
   proto->set_id(id_);
   proto->set_file_md5(file_md5_);
   proto->set_document_extension(document_extension_);
+  // The upload URL must be stored even if it's empty, as this is used to
+  // detect older protobuf. See FromProto() above.
+  proto->set_upload_url(upload_url_.spec());
   proto->set_is_hosted_document(is_hosted_document_);
 }
 
 bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
 
-  if (!GDataEntry::FromProto(proto.gdata_entry()))
-    return false;
-
-  start_feed_url_ = GURL(proto.start_feed_url());
-  next_feed_url_ = GURL(proto.next_feed_url());
-  upload_url_ = GURL(proto.upload_url());
-  origin_ = ContentOrigin(proto.origin());
   for (int i = 0; i < proto.child_files_size(); ++i) {
     scoped_ptr<GDataFile> file(new GDataFile(this, root_));
     if (!file->FromProto(proto.child_files(i))) {
@@ -615,6 +625,16 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
     }
     AddEntry(dir.release());
   }
+
+  // The states of the directory should be updated after children are
+  // handled successfully, so that incomplete states are not left.
+  if (!GDataEntry::FromProto(proto.gdata_entry()))
+    return false;
+
+  start_feed_url_ = GURL(proto.start_feed_url());
+  next_feed_url_ = GURL(proto.next_feed_url());
+  upload_url_ = GURL(proto.upload_url());
+  origin_ = ContentOrigin(proto.origin());
 
   return true;
 }

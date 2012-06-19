@@ -42,6 +42,9 @@ message GDataFileProto {
   optional string id = 7;
   optional string file_md5 = 8;
   optional string document_extension = 9;
+  // This is "resumable-edit-media" URL, used to update an existing file.
+  // See https://developers.google.com/google-apps/documents-list/
+  optional string upload_url = 11;
   optional bool is_hosted_document = 10;
 }
 
@@ -50,6 +53,7 @@ message GDataDirectoryProto {
   optional GDataEntryProto gdata_entry = 1;
   optional string start_feed_url = 3;
   optional string next_feed_url = 4;
+  // This is "resumable-create-media" URL, used to upload a new file.
   optional string upload_url = 5;
   optional uint32 origin = 6;
   repeated GDataDirectoryProto child_directories = 7;

@@ -216,6 +216,7 @@ class GDataFile : public GDataEntry {
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& alternate_url() const { return alternate_url_; }
+  const GURL& upload_url() const { return upload_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& etag() const { return etag_; }
   const std::string& id() const { return id_; }
@@ -235,6 +236,9 @@ class GDataFile : public GDataEntry {
   DocumentEntry::EntryKind kind_;
   GURL thumbnail_url_;
   GURL alternate_url_;
+  // Upload url, corresponds to resumable-edit-media link, used for updating
+  // the content of the file.
+  GURL upload_url_;
   std::string content_mime_type_;
   std::string etag_;
   std::string id_;
