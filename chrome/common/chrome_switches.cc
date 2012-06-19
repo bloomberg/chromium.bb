@@ -1013,9 +1013,6 @@ const char kPrerenderModeSwitchValueEnabled[] = "enabled";
 //   prefetch_only: No prerendering, but enables prefetching.
 const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 
-// Prints the pages on the screen.
-const char kPrint[]                         = "print";
-
 // Outputs the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";
