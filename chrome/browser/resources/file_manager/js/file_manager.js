@@ -1950,7 +1950,7 @@ FileManager.prototype = {
     var fileName = this.document_.createElement('div');
     fileName.className = 'filename-label';
 
-    fileName.textContent = this.getDisplayName_(entry);
+    fileName.textContent = entry.name;
 
     return fileName;
   };
@@ -2973,12 +2973,18 @@ FileManager.prototype = {
   };
 
   /**
-   * Does preprocessing of url list to open before calling |doOpenGallery_|.
+   * Opens provided urls in the gallery.
    *
-   * @param {Array.<string>} urls List of urls to open in the gallery.
+   * @param {string} selectedUrl Url of the item that should initially be
+   *     selected.
+   * @param {Array.<string>} urls List of all the urls that will be shown in
+   *     the gallery.
    */
   FileManager.prototype.openGallery_ = function(urls) {
+    var self = this;
+
     var singleSelection = urls.length == 1;
+
     var selectedUrl;
     if (singleSelection && FileType.isImage(urls[0])) {
       // Single image item selected. Pass to the Gallery as a selected.
@@ -2993,33 +2999,6 @@ FileManager.prototype = {
       // Pass just the selected items, select the first entry.
       selectedUrl = urls[0];
     }
-
-    // TODO(tbarzic): There's probably a better way to do this.
-    if (this.directoryModel_.isOnGDataSearchDir()) {
-      var self = this;
-      var gdataRootUrl = this.directoryModel_.getCurrentRootDirEntry().toURL();
-      util.resolveGDataSearchUrls([selectedUrl], gdataRootUrl,
-        function(resolved) {
-          util.resolveGDataSearchUrls(urls, gdataRootUrl,
-              self.doOpenGallery_.bind(self, singleSelection, resolved[0]));
-      });
-      return;
-    }
-    this.doOpenGallery_(singleSelection, selectedUrl, urls);
-  };
-
-  /**
-   * Opens provided urls in the gallery.
-   *
-   * @param {string} selectedUrl Url of the item that should initially be
-   *     selected.
-   * @param {Array.<string>} urls List of all the urls that will be shown in
-   *     the gallery.
-   */
-  FileManager.prototype.doOpenGallery_ = function(singleSelection,
-                                                  selectedUrl,
-                                                  urls) {
-    var self = this;
 
     var galleryFrame = this.document_.createElement('iframe');
     galleryFrame.className = 'overlay-pane';
@@ -3236,21 +3215,12 @@ FileManager.prototype = {
         this.directoryModel_.getCurrentDirEntry().toURL();
   };
 
-  /**
-   * Return URL of the search directory, current directory or null.
-   */
-  FileManager.prototype.getSearchOrCurrentDirectoryURL = function() {
-    return this.directoryModel_ &&
-        this.directoryModel_.getSearchOrCurrentDirEntry().toURL();
-  };
-
   FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
     if (!force) {
       var self = this;
       var msg;
       if (entries.length == 1) {
-        var entryName = this.getDisplayName_(entries[0]);
-        msg = strf('CONFIRM_DELETE_ONE', entryName);
+        msg = strf('CONFIRM_DELETE_ONE', entries[0].name);
       } else {
         msg = strf('CONFIRM_DELETE_SOME', entries.length);
       }
@@ -3310,10 +3280,10 @@ FileManager.prototype = {
       // We dont want to change the string during preview panel animating away.
       return;
     } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
-      text = this.getDisplayName_(selection.entries[0]);
+      text = selection.entries[0].name;
       if (selection.showBytes) text += ', ' + bytes;
     } else if (selection.fileCount == 0 && selection.directoryCount == 1) {
-      text = this.getDisplayName_(selection.entries[0]);
+      text = selection.entries[0].name;
     } else if (selection.directoryCount == 0) {
       text = strf('MANY_FILES_SELECTED', selection.fileCount, bytes);
       // TODO(dgozman): change the string to not contain ", $2".
@@ -3381,10 +3351,6 @@ FileManager.prototype = {
     }
     // Clear, so we never do this again.
     this.params_.defaultPath = '';
-  };
-
-  FileManager.prototype.getDisplayName_ = function(entry) {
-    return this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
   };
 
   /**
@@ -3527,9 +3493,7 @@ FileManager.prototype = {
   };
 
   /**
-   * Executes directory action (i.e. changes directory). If new directory is a
-   * search result directory, we'll have to calculate its real path before we
-   * actually do the operation.
+   * Executes directory action (i.e. changes directory).
    *
    * @param {DirectoryEntry} entry Directory entry to which directory should be
    *                               changed.
@@ -3542,19 +3506,8 @@ FileManager.prototype = {
     } else if (mountError == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
       return this.showButter(str('UNSUPPORTED_FILESYSTEM_WARNING'));
     }
-    if (!DirectoryModel.isGDataSearchPath(entry.fullPath))
-      return this.directoryModel_.changeDirectory(entry.fullPath);
 
-    // If we are under gdata search path, the real entries file path may be
-    // different from |entry.fullPath|.
-    var self = this;
-    chrome.fileBrowserPrivate.getPathForDriveSearchResult(entry.toURL(),
-      function(path) {
-        // |path| may be undefined if there was an error. If that is the case,
-        // change to the original file path.
-        var changeToPath = path;
-        self.directoryModel_.changeDirectory(changeToPath);
-      });
+    return this.directoryModel_.changeDirectory(entry.fullPath);
   };
 
   /**
@@ -3735,9 +3688,7 @@ FileManager.prototype = {
       return;
 
     function onError(err) {
-      var entryName = this.getDisplayName_(entry);
-      nameNode.textContent = entryName;
-      this.alert.show(strf('ERROR_RENAMING', entryName,
+      this.alert.show(strf('ERROR_RENAMING', entry.name,
                            getFileErrorString(err.code)));
     }
 
@@ -3750,7 +3701,7 @@ FileManager.prototype = {
       if (!exists) {
         this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
       } else {
-        nameNode.textContent = this.getDisplayName_(entry);
+        nameNode.textContent = entry.name;
         var message = isFile ? 'FILE_ALREADY_EXISTS' :
                                'DIRECTORY_ALREADY_EXISTS';
         this.alert.show(strf(message, newName));
@@ -4118,7 +4069,7 @@ FileManager.prototype = {
    * Performs preprocessing if needed (e.g. for GData).
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
-  FileManager.prototype.doSelectFilesAndClose_ = function(selection) {
+  FileManager.prototype.selectFilesAndClose_ = function(selection) {
     if (!this.isOnGData()) {
       setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
       return;
@@ -4220,25 +4171,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Does selection urls list preprocessing and calls |doSelectFilesAndClose_|.
-   *
-   * @param {Object} selection Contains urls, filterIndex and multiple fields.
-   */
-  FileManager.prototype.selectFilesAndClose_ = function(selection) {
-    if (this.directoryModel_.isOnGDataSearchDir()) {
-      var self = this;
-      var gdataRootUrl = this.directoryModel_.getCurrentRootDirEntry().toURL();
-      util.resolveGDataSearchUrls(selection.urls, gdataRootUrl,
-          function(resolved) {
-            selection.urls = resolved;
-            self.doSelectFilesAndClose_(selection);
-          });
-      return;
-    }
-    this.doSelectFilesAndClose_(selection);
-  };
-
-  /**
    * Handle a click of the ok button.
    *
    * The ok button has different UI labels depending on the type of dialog, but
@@ -4247,13 +4179,13 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    var currentDirUrl = this.getSearchOrCurrentDirectoryURL();
-
-    if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
-      currentDirUrl += '/';
-
     var self = this;
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+      var currentDirUrl = this.getCurrentDirectoryURL();
+
+      if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
+        currentDirUrl += '/';
+
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
       var filename = this.filenameInput_.value;

@@ -57,14 +57,6 @@ function DirectoryModel(root, singleSelection,
   this.volumeManager_ = volumeManager;
 
   /**
-   * Directory in which search results are displayed. Not null iff search
-   * results are being displayed.
-   * @private
-   * @type {Entry}
-   */
-  this.searchDirEntry_ = null;
-
-  /**
    * Is search in progress.
    * @private
    * @type {boolean}
@@ -113,21 +105,6 @@ DirectoryModel.GDATA_DIRECTORY = 'drive';
 DirectoryModel.fakeGDataEntry_ = {
   fullPath: '/' + DirectoryModel.GDATA_DIRECTORY
 };
-
-/**
- * Root path used for displaying gdata content search results.
- * Search results will be shown in directory 'GDATA_SEARCH_ROOT_PATH/query'.
- *
- * @const
- * @type {string}
- */
-DirectoryModel.GDATA_SEARCH_ROOT_PATH = '/drive/.search';
-
-/**
- * @const
- * @type {Array.<string>}
- */
-DirectoryModel.GDATA_SEARCH_ROOT_COMPONENTS = ['', 'drive', '.search'];
 
 /**
  * DirectoryModel extends cr.EventTarget.
@@ -231,14 +208,7 @@ DirectoryModel.prototype.isSearching = function() {
 };
 
 /**
- * @return {boolean} True if we are currently showing search results.
- */
-DirectoryModel.prototype.isOnGDataSearchDir = function() {
-  return this.getSearchOrCurrentDirEntry() != this.getCurrentDirEntry();
-};
-
-/**
- * @param {strin} path Path to check.
+ * @param {string} path Path to check.
  * @return {boolean} True if the |path| is read only.
  */
 DirectoryModel.prototype.isPathReadOnly = function(path) {
@@ -280,16 +250,6 @@ DirectoryModel.prototype.setFilterHidden = function(value) {
  */
 DirectoryModel.prototype.getCurrentDirEntry = function() {
   return this.currentDirEntry_;
-};
-
-/**
- * If search results are being displayed, returns search directory, else returns
- * current directory.
- *
- * @return {DirectoryEntry} search or directory entry.
- */
-DirectoryModel.prototype.getSearchOrCurrentDirEntry = function() {
-  return this.searchDirEntry_ || this.currentDirEntry_;
 };
 
 /**
@@ -485,31 +445,57 @@ DirectoryModel.prototype.rescan = function() {
  */
 DirectoryModel.prototype.createScanner_ = function(list, successCallback) {
   var self = this;
-  function onSuccess() {
-    self.scanFailures_ = 0;
-    successCallback();
+
+  /**
+   * Runs pending scan if there is one.
+   *
+   * @return {boolean} Did pending scan exist.
+   */
+  function maybeRunPendingScan() {
     if (self.pendingScan_) {
       self.runningScan_ = self.pendingScan_;
       self.pendingScan_ = null;
       self.runningScan_.run();
-    } else {
-      self.runningScan_ = null;
+      return true;
     }
+    self.runningScan_ = null;
+    return false;
+  }
+
+  function onSuccess() {
+    successCallback();
+    self.scanFailures_ = 0;
+    maybeRunPendingScan();
   }
 
   function onFailure() {
     self.scanFailures_++;
+
+    if (maybeRunPendingScan())
+      return;
+
     if (self.scanFailures_ <= 1)
       self.rescanLater();
   }
 
-  return new DirectoryModel.Scanner(
-      this.getSearchOrCurrentDirEntry(),
-      list,
-      onSuccess,
-      onFailure,
-      this.prefetchCacheForSorting_.bind(this),
-      this.filters_);
+  if (!this.isSearching() ||
+      this.getCurrentRootType() != DirectoryModel.RootType.GDATA) {
+    return new DirectoryModel.Scanner(
+        this.getCurrentDirEntry(),
+        list,
+        onSuccess,
+        onFailure,
+        this.prefetchCacheForSorting_.bind(this),
+        this.filters_);
+  } else {
+    return new DirectoryModel.GDataSearchScanner(
+        this.searchQuery_,
+        list,
+        onSuccess,
+        onFailure,
+        this.prefetchCacheForSorting_.bind(this),
+        this.filters_);
+  }
 };
 
 /**
@@ -554,6 +540,11 @@ DirectoryModel.prototype.scan_ = function(callback) {
     clearTimeout(this.rescanTimeout_);
     this.rescanTimeout_ = 0;
   }
+
+  if (this.pendingScan_) {
+    this.pendingScan_ = null;
+  }
+
   if (this.runningScan_) {
     this.runningScan_.cancel();
     this.runningScan_ = null;
@@ -584,38 +575,6 @@ DirectoryModel.prototype.prefetchCacheForSorting_ = function(entries,
   } else {
     callback();
   }
-};
-
-/**
- * Gets name that should be displayed in the UI for the entry.
- * @param {string} path Full path of the entry whose display name we are
- *                      getting.
- * @param {string} defaultName Default name to use if no name is calculated.
- * @return {string} Name to be used for display.
- */
-DirectoryModel.prototype.getDisplayName = function(path, defaultName) {
-  var searchResultName = util.getFileAndDisplayNameForGDataSearchResult(path);
-  return searchResultName ? searchResultName.displayName : defaultName;
-};
-
-/**
- * Creates file name that should be used as a new file name in filesystem
- * operations while renaming. If the given entry is not a gdata search result
- * entry, |displayName| will be used.
- *
- * @private
- * @param {Entry} entry Entry which is being renamed.
- * @param {string} displayName The new file name provided by user.
- * @return {string} File name that should be used in renaming filesystem
- *                 operations.
- */
-DirectoryModel.prototype.getEntryNameForRename_ = function(entry, displayName) {
-  // If we are renaming gdata search result, we'll have to format newName to
-  // use in file system operation like: <resource_id>.<file_name>.
-  var searchResultName =
-      util.getFileAndDisplayNameForGDataSearchResult(entry.fullPath);
-  return searchResultName ? searchResultName.resourceId + '.' + displayName :
-                            displayName;
 };
 
 /**
@@ -655,19 +614,17 @@ DirectoryModel.prototype.deleteEntries = function(entries, opt_callback) {
  * @param {string} name Filename.
  */
 DirectoryModel.prototype.onEntryChanged = function(name) {
-  var currentEntry = this.getSearchOrCurrentDirEntry();
-  if (currentEntry != this.currentDirEntry_)
-    return;
+  var currentEntry = this.getCurrentDirEntry();
   var dm = this.fileList_;
   var self = this;
 
   function onEntryFound(entry) {
     // Do nothing if current directory changed during async operations.
-    if (self.getSearchOrCurrentDirEntry() != currentEntry)
+    if (self.getCurrentDirEntry() != currentEntry)
       return;
     self.prefetchCacheForSorting_([entry], function() {
       // Do nothing if current directory changed during async operations.
-      if (self.getSearchOrCurrentDirEntry() != currentEntry)
+      if (self.getCurrentDirEntry() != currentEntry)
         return;
 
       var index = self.findIndexByName_(name);
@@ -711,11 +668,11 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
 /**
  * Rename the entry in the filesystem and update the file list.
  * @param {Entry} entry Entry to rename.
- * @param {string} newDisplayName New name.
+ * @param {string} newName New name.
  * @param {function} errorCallback Called on error.
  * @param {function} opt_successCallback Called on success.
  */
-DirectoryModel.prototype.renameEntry = function(entry, newDisplayName,
+DirectoryModel.prototype.renameEntry = function(entry, newName,
                                                 errorCallback,
                                                 opt_successCallback) {
   var self = this;
@@ -732,27 +689,31 @@ DirectoryModel.prototype.renameEntry = function(entry, newDisplayName,
     });
   }
 
-  var newEntryName = this.getEntryNameForRename_(entry, newDisplayName);
-  entry.moveTo(this.getSearchOrCurrentDirEntry(), newEntryName, onSuccess,
-               errorCallback);
+  function onParentFound(parentEntry) {
+    entry.moveTo(parentEntry, newName, onSuccess, errorCallback);
+  }
+
+  entry.getParent(onParentFound, errorCallback);
 };
 
 /**
  * Checks if current directory contains a file or directory with this name.
  * @param {string} entry Entry to which newName will be given.
- * @param {string} displayName Name to check.
+ * @param {string} name Name to check.
  * @param {function(boolean, boolean?)} callback Called when the result's
  *     available. First parameter is true if the entry exists and second
  *     is true if it's a file.
  */
-DirectoryModel.prototype.doesExist = function(entry, displayName, callback) {
-  var entryName = this.getEntryNameForRename_(entry, displayName);
+DirectoryModel.prototype.doesExist = function(entry, name, callback) {
+  function onParentFound(parentEntry) {
+    util.resolvePath(parentEntry, name,
+        function(foundEntry) {
+          callback(true, foundEntry.isFile);
+        },
+        callback.bind(window, false));
+  }
 
-  util.resolvePath(this.getSearchOrCurrentDirEntry(), entryName,
-      function(entry) {
-        callback(true, entry.isFile);
-      },
-      callback.bind(window, false));
+  entry.getParent(onParentFound, callback.bind(window, false));
 };
 
 /**
@@ -794,15 +755,7 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * @param {string} path New current directory path.
  */
 DirectoryModel.prototype.changeDirectory = function(path) {
-  var targetPath = path;
-  // We should not be changing directory to gdata search path. If we do, default
-  // to gdata root.
-  if (DirectoryModel.isGDataSearchPath(path)) {
-    console.error('Attempt to change directory to search path.');
-    targetPath = '/' + DirectoryModel.GDATA_DIRECTORY;
-  }
-
-  this.resolveDirectory(targetPath, function(directoryEntry) {
+  this.resolveDirectory(path, function(directoryEntry) {
     this.changeDirectoryEntry_(false, directoryEntry);
   }.bind(this), function(error) {
     console.error('Error changing directory to ' + path + ': ', error);
@@ -1311,19 +1264,10 @@ DirectoryModel.prototype.search = function(query,
   if (this.getRootType() == DirectoryModel.RootType.GDATA &&
       !this.isOffline()) {
     var self = this;
-    // Create shadow directory which will contain search results.
-    this.root_.getDirectory(DirectoryModel.createGDataSearchPath(query),
-        {create: false},
-        function(dir) {
-          self.searchDirEntry_ = dir;
-          self.rescanSoon();
-        },
-        function() {
-          self.isSearching_ = false;
-        });
+    this.searchQuery_ = query;
+    this.rescanSoon();
   } else {
     var queryLC = query.toLowerCase();
-    this.searchDirEntry_ = this.currentDirEntry_;
     this.addFilter(
         'searchbox',
         function(e) {
@@ -1340,7 +1284,7 @@ DirectoryModel.prototype.search = function(query,
 DirectoryModel.prototype.clearSearch_ = function() {
   if (!this.isSearching_)
     return;
-  this.searchDirEntry_ = null;
+  this.searchQuery_ = null;
   this.isSearching_ = false;
   // This will trigger rescan.
   this.removeFilter('searchbox');
@@ -1418,28 +1362,6 @@ DirectoryModel.isRootPath = function(path) {
   if (path[path.length - 1] == '/')
     path = path.substring(0, path.length - 1);
   return DirectoryModel.getRootPath(path) == path;
-};
-
-/**
- * Checks if the provided path is under gdata search.
- *
- * @param {string} path Path to be tested.
- * @return {boolean} Is the path gdata search path.
- */
-DirectoryModel.isGDataSearchPath = function(path) {
-  return path == DirectoryModel.GDATA_SEARCH_ROOT_PATH ||
-         path.indexOf(DirectoryModel.GDATA_SEARCH_ROOT_PATH + '/') == 0;
-};
-
-/**
- * Creates directory path in which gdata content search results for |query|
- * should be displayed.
- *
- * @param {string} query Search query.
- * @return {string} Virtual directory path for search results.
- */
-DirectoryModel.createGDataSearchPath = function(query) {
-  return DirectoryModel.GDATA_SEARCH_ROOT_PATH + '/' + query;
 };
 
 /**
@@ -1544,6 +1466,87 @@ DirectoryModel.Scanner.prototype.recordMetrics_ = function() {
       '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {
     metrics.recordMediumCount('DownloadsCount', this.list_.length);
   }
+};
+
+/**
+ * @constructor
+ * @extends cr.EventTarget
+ * @param {string} query Query to use in search.
+ * @param {Array.<Entry>|cr.ui.ArrayDataModel} list Target to put the files.
+ * @param {function} successCallback Callback to call when (and if) scan
+ *     successfully completed.
+ * @param {function} errorCallback Callback to call in case of IO error.
+ * @param {function(Array.<Entry>):void, Function)} preprocessChunk
+ *     Callback to preprocess each chunk of files.
+ * @param {Object.<string, function(Entry):Boolean>} filters The map of filters
+ *     for file entries.
+ */
+DirectoryModel.GDataSearchScanner = function(query, list, successCallback,
+    errorCallback, preprocessChunk, filters) {
+  this.query_ = query;
+  this.cancelled_ = false;
+  this.list_ = list;
+  this.filters_ = filters;
+  this.preprocessChunk_ = preprocessChunk;
+  this.successCallback_ = successCallback;
+  this.errorCallback_ = errorCallback;
+};
+
+/**
+ * Extends EventTarget.
+ */
+DirectoryModel.GDataSearchScanner.prototype.__proto__ =
+    cr.EventTarget.prototype;
+
+/**
+ * Cancel scanner.
+ */
+DirectoryModel.GDataSearchScanner.prototype.cancel = function() {
+  this.cancelled_ = true;
+};
+
+/**
+ * Start scanner.
+ */
+DirectoryModel.GDataSearchScanner.prototype.run = function() {
+  chrome.fileBrowserPrivate.searchGData(this.query_,
+                                        this.onChunkComplete_.bind(this));
+};
+
+/**
+ * @private
+ * @param {Array.<Entry>} entries File list.
+ */
+DirectoryModel.GDataSearchScanner.prototype.onChunkComplete_ =
+    function(entries) {
+  if (this.cancelled_)
+    return;
+
+  if (!entries) {
+    this.errorCallback_();
+    return;
+  }
+
+  if (entries.length == 0) {
+    this.successCallback_();
+    return;
+  }
+
+  // Splice takes the to-be-spliced-in array as individual parameters,
+  // rather than as an array, so we need to perform some acrobatics...
+  var spliceArgs = [].slice.call(entries);
+
+  for (var filterName in this.filters_) {
+    spliceArgs = spliceArgs.filter(this.filters_[filterName]);
+  }
+
+  var self = this;
+  self.preprocessChunk_(spliceArgs, function() {
+    spliceArgs.unshift(0, 0);  // index, deleteCount
+    self.list_.splice.apply(self.list_, spliceArgs);
+
+    self.successCallback_();
+  });
 };
 
 /**
