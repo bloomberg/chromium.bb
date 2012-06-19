@@ -97,8 +97,8 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
                                            NEW_FOREGROUND_TAB);
 #else
   TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForController(
-          &web_ui()->GetWebContents()->GetController(), NULL);
+      TabRestoreServiceDelegate::FindDelegateForWebContents(
+          web_ui()->GetWebContents());
   if (!delegate)
     return;
   WindowOpenDisposition disposition =

@@ -2800,7 +2800,7 @@ void Browser::CreateHistoricalTab(TabContents* contents) {
 
   // We only create historical tab entries for tabbed browser windows.
   if (service && CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    service->CreateHistoricalTab(&contents->web_contents()->GetController(),
+    service->CreateHistoricalTab(contents->web_contents(),
         tab_strip_model_->GetIndexOfTabContents(contents));
   }
 }

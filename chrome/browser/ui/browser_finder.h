@@ -59,15 +59,7 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window);
 
 // Find the browser containing |web_contents| or NULL if none is found.
 // |web_contents| must not be NULL.
-Browser* FindBrowserWithWebContents(content::WebContents* web_contents);
-
-// Returns the Browser which contains the tab with the given
-// NavigationController, also filling in |index| (if valid) with the tab's index
-// in the tab strip.  Returns NULL if not found.  This call is O(N) in the
-// number of tabs.
-Browser* FindBrowserForController(
-    const content::NavigationController* controller,
-    int* index);
+Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 
 // Identical in behavior to BrowserList::GetLastActive(), except that the most
 // recently open browser owned by |profile| is returned. If none exist, returns

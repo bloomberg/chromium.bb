@@ -96,22 +96,16 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
 }
 
 // static
-TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateForController(
-    const NavigationController* controller,
-    int* index) {
-  Browser* browser = browser::FindBrowserForController(controller, index);
-  if (browser)
-    return browser->tab_restore_service_delegate();
-  else
-    return NULL;
+TabRestoreServiceDelegate*
+    TabRestoreServiceDelegate::FindDelegateForWebContents(
+        const WebContents* contents) {
+  Browser* browser = browser::FindBrowserWithWebContents(contents);
+  return browser ? browser->tab_restore_service_delegate() : NULL;
 }
 
 // static
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateWithID(
     SessionID::id_type desired_id) {
   Browser* browser = browser::FindBrowserWithID(desired_id);
-  if (browser)
-    return browser->tab_restore_service_delegate();
-  else
-    return NULL;
+  return browser ? browser->tab_restore_service_delegate() : NULL;
 }

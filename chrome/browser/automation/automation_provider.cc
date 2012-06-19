@@ -472,12 +472,10 @@ bool AutomationProvider::Send(IPC::Message* msg) {
 
 Browser* AutomationProvider::FindAndActivateTab(
     NavigationController* controller) {
-  int tab_index;
-  Browser* browser = browser::FindBrowserForController(controller, &tab_index);
-  if (browser)
-    browser->ActivateTabAt(tab_index, true);
-
-  return browser;
+  content::WebContentsDelegate* d = controller->GetWebContents()->GetDelegate();
+  if (d)
+    d->ActivateContents(controller->GetWebContents());
+  return browser::FindBrowserWithWebContents(controller->GetWebContents());
 }
 
 void AutomationProvider::HandleFindRequest(

@@ -64,10 +64,9 @@ class TabRestoreServiceDelegate {
   static TabRestoreServiceDelegate* Create(Profile* profile,
                                            const std::string& app_name);
 
-  // see browser::FindBrowserForController
-  static TabRestoreServiceDelegate* FindDelegateForController(
-      const content::NavigationController* controller,
-      int* index);
+  // see browser::FindBrowserForWebContents
+  static TabRestoreServiceDelegate* FindDelegateForWebContents(
+      const content::WebContents* contents);
 
   // see browser::FindBrowserWithID
   static TabRestoreServiceDelegate* FindDelegateWithID(

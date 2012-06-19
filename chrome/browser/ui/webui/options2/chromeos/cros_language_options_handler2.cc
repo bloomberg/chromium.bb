@@ -215,8 +215,8 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
 void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
-  Browser* browser = browser::FindBrowserForController(
-      &web_ui()->GetWebContents()->GetController(), NULL);
+  Browser* browser = browser::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }

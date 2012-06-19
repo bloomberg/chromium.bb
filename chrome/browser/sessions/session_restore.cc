@@ -262,10 +262,10 @@ void TabLoader::LoadNextTab() {
       max_parallel_tab_loads_ = tabs_loading_.size();
     tabs_to_load_.pop_front();
     tab->LoadIfNecessary();
-    if (tab->GetWebContents()) {
-      int tab_index;
-      Browser* browser = browser::FindBrowserForController(tab, &tab_index);
-      if (browser && browser->active_index() != tab_index) {
+    content::WebContents* contents = tab->GetWebContents();
+    if (contents) {
+      Browser* browser = browser::FindBrowserWithWebContents(contents);
+      if (browser && browser->GetActiveWebContents() != contents) {
         // By default tabs are marked as visible. As only the active tab is
         // visible we need to explicitly tell non-active tabs they are hidden.
         // Without this call non-active tabs are not marked as backgrounded.
@@ -273,7 +273,7 @@ void TabLoader::LoadNextTab() {
         // NOTE: We need to do this here rather than when the tab is added to
         // the Browser as at that time not everything has been created, so that
         // the call would do nothing.
-        tab->GetWebContents()->WasHidden();
+        contents->WasHidden();
       }
     }
   }

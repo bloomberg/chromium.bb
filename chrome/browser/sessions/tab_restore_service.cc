@@ -219,18 +219,18 @@ void TabRestoreService::RemoveObserver(TabRestoreServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void TabRestoreService::CreateHistoricalTab(NavigationController* tab,
+void TabRestoreService::CreateHistoricalTab(content::WebContents* contents,
                                             int index) {
   if (restoring_)
     return;
 
   TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForController(tab, NULL);
+      TabRestoreServiceDelegate::FindDelegateForWebContents(contents);
   if (closing_delegates_.find(delegate) != closing_delegates_.end())
     return;
 
   scoped_ptr<Tab> local_tab(new Tab());
-  PopulateTab(local_tab.get(), index, delegate, tab);
+  PopulateTab(local_tab.get(), index, delegate, &contents->GetController());
   if (local_tab->navigations.empty())
     return;
 
