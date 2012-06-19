@@ -307,8 +307,15 @@
       # So one-click infobar tests do tno apply to chromeos.
       '-infobars.OneClickInfobarTest',
       # Multi-profile doesn't apply to chromeos yet.
+      '-bookmarks.BookmarksTest.testAddBookmarkInMultiProfile',  
+      '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfile',
+      '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfile',
+      '-bookmarks.BookmarksTest.testAddBookmarksInMultiProfileIncognito',
+      '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfileIncognito',
+      '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfileIncognito',
+      '-bookmarks.BookmarksTest.testSearchBookmarksInMultiProfile',
       '-multiprofile',
-      '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
+      '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',      
       # These require a custom setup on ChromeOS and have their own suite for
       # this platform.
       '-policy',

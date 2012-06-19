@@ -3049,3 +3049,54 @@ void WindowMaximizedObserver::Observe(
 }
 #endif  // defined(OS_LINUX)
 
+BrowserOpenedWithExistingProfileNotificationObserver::
+    BrowserOpenedWithExistingProfileNotificationObserver(
+        AutomationProvider* automation,
+        IPC::Message* reply_message,
+        int num_loads)
+        : automation_(automation->AsWeakPtr()),
+          reply_message_(reply_message),
+          new_window_id_(extension_misc::kUnknownWindowId),
+          num_loads_(num_loads) {
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                 content::NotificationService::AllBrowserContextsAndSources());
+}
+
+BrowserOpenedWithExistingProfileNotificationObserver::
+    ~BrowserOpenedWithExistingProfileNotificationObserver() {
+}
+
+void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
+    // Store the new browser ID and continue waiting for NOTIFICATION_LOAD_STOP.
+    new_window_id_ = ExtensionTabUtil::GetWindowId(
+        content::Source<Browser>(source).ptr());
+  } else if (type == content::NOTIFICATION_LOAD_STOP) {
+    // Only consider if the loaded tab is in the new window.
+    NavigationController* controller =
+        content::Source<NavigationController>(source).ptr();
+    TabContents* tab = TabContents::FromWebContents(
+        controller->GetWebContents());
+    int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
+    if (window_id == new_window_id_ && --num_loads_ == 0) {
+      if (automation_) {
+        AutomationJSONReply(automation_, reply_message_.release())
+            .SendSuccess(NULL);
+      }
+      delete this;
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+

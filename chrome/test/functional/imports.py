@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -110,15 +110,16 @@ class ImportsTest(pyauto.PyUITest):
         os.path.join(self.DataDir(), 'import', 'safari', 'mac.zip'),
         self._safari_profiles_path)
 
-  def _CheckForBookmarks(self, bookmark_titles, bookmark_bar):
+  def _CheckForBookmarks(self, bookmark_titles, bookmark_bar, window_index=0):
     """Checks that the given bookmarks exist.
 
     Args:
       bookmark_titles: A set of bookmark title strings.
       bookmark_bar: True if the bookmarks are part of the bookmark bar.
                     False otherwise.
+      window_index: The window index, default is 0.
     """
-    bookmarks = self.GetBookmarkModel()
+    bookmarks = self.GetBookmarkModel(window_index)
     if bookmark_bar:
       node = bookmarks.BookmarkBar()
     else:
@@ -163,13 +164,13 @@ class ImportsTest(pyauto.PyUITest):
       self.assertTrue([x for x in passwords if x['username_value'] == username])
 
   def _CheckDefaults(self, bookmarks, history, passwords, home_page,
-                     search_engines):
+                     search_engines, window_index=0):
     """Checks the defaults for each of the possible import items.
 
     All arguments are True if they should be checked, False otherwise."""
     if bookmarks:
-      self._CheckForBookmarks(self._bookmark_bar_items, True)
-      self._CheckForBookmarks(self._bookmark_folder_items, False)
+      self._CheckForBookmarks(self._bookmark_bar_items, True, window_index)
+      self._CheckForBookmarks(self._bookmark_folder_items, False, window_index)
     if history:
       self._CheckForHistory(self._history_items)
     if passwords:
@@ -194,15 +195,32 @@ class ImportsTest(pyauto.PyUITest):
     return True
 
   def _ImportFromFirefox(self, bookmarks, history, passwords, home_page,
-                         search_engines):
+                         search_engines, window_index=0):
     """Verify importing individual Firefox data through preferences"""
     if not self._CanRunFirefoxTests():
       logging.warn('Not running firefox import tests.')
       return
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, self._to_import)
+    self.ImportSettings('Mozilla Firefox', False, self._to_import, window_index)
     self._CheckDefaults(bookmarks, history, passwords, home_page,
-                        search_engines)
+                        search_engines, window_index)
+
+  def _GetProfilePath(self):
+    """Get profile paths when multiprofile windows are open.
+
+    Returns:
+      profile: Path for multiprofiles.
+    """
+    profiles_list = self.GetMultiProfileInfo()['profiles']
+    profile1_path = profile2_path = default_path = None
+    for profile in profiles_list:
+      if profile['path'].find('Profile 1') != -1:
+        profile1_path = profile['path']
+      elif profile['path'].find('Profile 2') != -1:
+        profile2_path = profile['path']
+      elif profile['path'].find('Default') != -1:
+        default_path = profile['path']
+    return default_path, profile1_path, profile2_path
 
   # Tests.
   def testFirefoxImportFromPrefs(self):
@@ -330,6 +348,37 @@ class ImportsTest(pyauto.PyUITest):
         self._bookmark_bar_items + self._bookmark_folder_items))
     self.assertEqual(num_history_orig, len(self.GetHistoryInfo().History()))
     self.assertEqual(num_passwords_orig, len(self.GetSavedPasswords()))
+
+  def testFireFoxImportBookmarksMultiProfile(self):
+    """Verify importing Firefox bookmarks through preferences.
+
+    Bookmarks are imported from Firefox through the preferences for multiple
+    profiles."""
+    # Create new profile, import bookmarks from firefox.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._ImportFromFirefox(bookmarks=True, history=False,
+                            passwords=False, home_page=False,
+                            search_engines=False, window_index=1)
+    # Create new profile, add 'BING', 'DB' as bookmark.
+    self.OpenNewBrowserWindowWithNewProfile()
+    bookmarks = self.GetBookmarkModel(2)
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, 'BING', 'http://www.bing.com/', 2)
+    self.AddBookmarkURL(bar_id, 0, 'DB', 'http://www.oracle.com/', 2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Launch profile2.
+    self.OpenProfileWindow(path=profile2_path)
+    # Verify bookmark imported from firefox 'GoogleNews' in
+    # profile2 is not present.
+    bookmarks = self.GetBookmarkModel(1)
+    node = bookmarks.FindByTitle('GoogleNews')
+    self.assertEqual(0, len(node))
+    # Assert if 'BING' is present.
+    node = bookmarks.FindByTitle('BING')
+    self.assertEqual(1, len(node))
 
 
 if __name__ == '__main__':

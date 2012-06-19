@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -475,6 +475,228 @@ class BookmarksTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(
         lambda: self.FindInPage('GoogleNews', tab_index=0)['match_count'],
                 expect_retval=1))
+
+  def _AddBookmark(self, keyword, url, windex=0):
+    """Add Bookmark to the page and verify if it is added.
+
+    Args:
+      keyword: Name for bookmarked url.
+      url: URL of the page to be bookmarked.
+      windex: The window index, default is 0.
+    """
+    bookmarks = self.GetBookmarkModel(windex)
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, keyword, url, windex)
+    self.assertTrue(self.GetBookmarkModel(windex))
+
+  def _GetProfilePath(self):
+    """Get profile paths when multiprofile windows are open.
+
+    Returns:
+      profile: Path for multiprofiles(Default, Profile1, Profile2).
+    """
+    profiles_list = self.GetMultiProfileInfo()['profiles']
+    profile1_path = profile2_path = default_path = None
+    for profile in profiles_list:
+      if 'Profile 1' in profile['path']:
+        profile1_path = profile['path']
+      elif 'Profile 2' in profile['path']:
+        profile2_path = profile['path']
+      elif 'Default' in profile['path']:
+        default_path = profile['path']
+    return default_path, profile1_path, profile2_path
+
+  def _AssertBookmark(self, keyword, url, windex=0):
+    """Assert bookmark present.
+
+    Args:
+      keyword: Name for bookmarked url.
+      url: URL of the page to be bookmarked.
+      windex: The window index, default is 0.
+    """
+    bookmarks = self.GetBookmarkModel(windex)
+    node = bookmarks.FindByTitle(keyword)
+    self.assertEqual(1, len(node))
+    self._VerifyBookmarkURL(node[0], keyword, url)
+
+  def testAddBookmarkInMultiProfile(self):
+    """Verify adding Bookmarks in multiprofile.
+
+    Adding bookmarks in one profile should not affect other profiles.
+    """
+    # Add 'GoogleNews' as bookmark in profile 1.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # Add 'YouTube' as bookmark in profile 2.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('YouTube', 'http://www.youtube.com/', windex=2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Launch profile1, verify bookmark 'GoogleNews'.
+    self.OpenProfileWindow(path=profile1_path)
+    self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # Launch profile1, verify bookmark 'YouTube'.
+    self.OpenProfileWindow(path=profile2_path)
+    self._AssertBookmark('YouTube', 'http://www.youtube.com/', windex=2)
+
+  def testRemoveBookmarksInMultiProfile(self):
+    """Verify removing Bookmarks in multiprofile.
+
+    Removing bookmark in one profile should not affect other profiles.
+    """
+    # Add 'GoogleNews' as bookmark in profile 1.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # Confirm, then remove.
+    self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    node = self.GetBookmarkModel(1).FindByTitle('GoogleNews')
+    self.RemoveBookmark(node[0]['id'], 1)
+    # Add 'GoogleNews' also as bookmark in profile 2.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Confirm removal in profile1
+    self.OpenProfileWindow(path=profile1_path)
+    bookmarks = self.GetBookmarkModel(windex=1)
+    node = bookmarks.FindByTitle('GoogleNews')
+    self.assertEqual(0, len(node))
+    # Verify profile2 still has bookmark.
+    self.OpenProfileWindow(path=profile2_path)
+    self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=2)
+
+  def testEditBookmarksInMultiProfile(self):
+    """Verify editing Bookmarks in multiprofile.
+
+    Changing bookmark in one profile should not affect other profiles.
+    """
+    # Add 'GoogleNews' as bookmark in profile 1.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # Change a title and URL.
+    bookmarks = self.GetBookmarkModel(windex=1)
+    nodes = bookmarks.FindByTitle('GoogleNews')
+    self.assertEqual(1, len(nodes))
+    self.SetBookmarkTitle(nodes[0]['id'], 'YouTube', 1)
+    self.SetBookmarkURL(nodes[0]['id'], 'http://www.youtube.com', 1)
+    # Add 'GoogleNews' as bookmark in profile 2.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Confirm bookmark change in profile1.
+    self.OpenProfileWindow(path=profile1_path)
+    self._AssertBookmark('YouTube', 'http://www.youtube.com/', windex=1)
+    # Confirm profile2 bookmark is still same 'GoogleNews'.
+    self.OpenProfileWindow(path=profile2_path)
+    self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=2)
+
+  def testAddBookmarksInMultiProfileIncognito(self):
+    """Verify adding Bookmarks for incognito window in multiprofile."""
+    # Add 'YouTube' as bookmark in default profile
+    self._AddBookmark('YouTube', 'http://www.youtube.com/')
+    # Add 'GoogleNews' as bookmark in profile 1.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Lauch incognito window, add bookmark 'BING'
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    bar_id = self.GetBookmarkModel(2).BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, 'BING','http://www.bing.com/', 2)
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Switch to profile 1, verify 'BING' is not added.
+    self.OpenProfileWindow(path=profile1_path)
+    bookmarks = self.GetBookmarkModel(windex=1)
+    node = bookmarks.FindByTitle('BING')
+    self.assertEqual(0, len(node))
+
+  def testRemoveBookmarksInMultiProfileIncognito(self):
+    """Verify removing Bookmarks in for incognito window in multiprofile."""
+    # Add 'GoogleNews' as bookmark in default profile.
+    self._AddBookmark('GoogleNews', 'http://news.google.com/')
+    # Add 'GoogleNews' as bookmark in profile 1.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # launch incognito
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    # Confirm, then remove.
+    self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=2)
+    bookmarks = self.GetBookmarkModel(windex=2)
+    nodes = bookmarks.FindByTitle('GoogleNews')
+    self.RemoveBookmark(nodes[0]['id'], 2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Verify profile1 still has bookmark.
+    self.OpenProfileWindow(path=profile1_path)
+    bookmarks = self.GetBookmarkModel(windex=1)
+    node = bookmarks.FindByTitle('GoogleNews')
+    self.assertEqual(1, len(node))
+
+  def testEditBookmarksInMultiProfileIncognito(self):
+    """Verify changing Bookmarks in for incognito window in multiprofile."""
+    # Add 'GoogleNews' as bookmark in default profile.
+    self._AddBookmark('GoogleNews', 'http://news.google.com/')
+    # Add 'GoogleNews' as bookmark in profile 1.
+    self.OpenNewBrowserWindowWithNewProfile()
+    self._AddBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # Launch incognito
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    # Change a title and URL to 'YouTube'.
+    bookmarks = self.GetBookmarkModel(windex=2)
+    nodes = bookmarks.FindByTitle('GoogleNews')
+    self.assertEqual(1, len(nodes))
+    self.SetBookmarkTitle(nodes[0]['id'], 'YouTube', 2)
+    self.SetBookmarkURL(nodes[0]['id'], 'http://www.youtube.com', 2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Launch profile1, verify bookmark is same as before.
+    self.OpenProfileWindow(path=profile1_path)
+    self._AssertBookmark('GoogleNews', 'http://news.google.com/', windex=1)
+    # Launch default, verify bookmark is changed to 'YouTube'.
+    self.OpenProfileWindow(path=default_path)
+    self._AssertBookmark('YouTube', 'http://www.youtube.com/')
+
+  def testSearchBookmarksInMultiProfile(self):
+    """Verify user can not search bookmarks in other profile."""
+    # Add 'GoogleNews', 'Youtube' as bookmarks in default profile.
+    self.OpenNewBrowserWindowWithNewProfile()
+    bookmarks = self.GetBookmarkModel(windex=1)
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, 'GoogleNews',
+                       'http://news.google.com/', 1)
+    self.AddBookmarkURL(bar_id, 1, 'YouTube', 'http://www.youtube.com/',1)
+    # Add 'BING', 'DB' as bookmarks to profile1
+    self.OpenNewBrowserWindowWithNewProfile()
+    bookmarks = self.GetBookmarkModel(windex=2)
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, 'BING', 'http://www.bing.com/', 2)
+    self.AddBookmarkURL(bar_id, 0, 'DB', 'http://www.oracle.com/', 2)
+    default_path, profile1_path, profile2_path = self._GetProfilePath()
+    # Close profile1/profile2 windows.
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    # Search 'BING' in default profile.
+    self.OpenProfileWindow(path=profile1_path)
+    bookmarks = self.GetBookmarkModel(windex=1)
+    node = bookmarks.FindByTitle('BING')
+    self.assertEqual(0, len(node))
+    # Search 'DB' in profile 1.
+    self.OpenProfileWindow(path=profile2_path)
+    bookmarks = self.GetBookmarkModel(windex=2)
+    node = bookmarks.FindByTitle('GoogleNews')
+    self.assertEqual(0, len(node))
 
 
 if __name__ == '__main__':

@@ -1952,6 +1952,29 @@ class WindowMaximizedObserver : public content::NotificationObserver {
 };
 #endif  // defined(OS_LINUX)
 
+// Wait for a new browser window to get created (for an existing profile).
+// Useful when reopening a multi-profile window.
+class BrowserOpenedWithExistingProfileNotificationObserver
+    : public content::NotificationObserver {
+ public:
+  BrowserOpenedWithExistingProfileNotificationObserver(
+      AutomationProvider* automation,
+      IPC::Message* reply_message,
+      int num_loads);
+  virtual ~BrowserOpenedWithExistingProfileNotificationObserver();
 
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details);
+ private:
+  content::NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  int new_window_id_;
+  int num_loads_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      BrowserOpenedWithExistingProfileNotificationObserver);
+};
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

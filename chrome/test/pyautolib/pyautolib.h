@@ -146,10 +146,11 @@ class PyUITestBase : public UITestBase {
   // Wait for the bookmark bar animation to complete.
   // If |wait_for_open| is true, wait for it to open.
   // If |wait_for_open| is false, wait for it to close.
-  bool WaitForBookmarkBarVisibilityChange(bool wait_for_open);
+  bool WaitForBookmarkBarVisibilityChange(bool wait_for_open,
+                                          int window_index = 0);
 
   // Get the bookmarks as a JSON string.  Internal method.
-  std::string _GetBookmarksAsJSON();
+  std::string _GetBookmarksAsJSON(int window_index = 0);
 
   // Editing of the bookmark model.  Bookmarks are referenced by id.
   // The id is a std::wstring, not an int64, for convenience, since
@@ -159,16 +160,19 @@ class PyUITestBase : public UITestBase {
   // is unnecessary.  URLs are strings and not GURLs for a similar reason.
   // Bookmark or group (folder) creation:
   bool AddBookmarkGroup(std::wstring& parent_id, int index,
-                        std::wstring& title);
+                        std::wstring& title, int window_index = 0);
   bool AddBookmarkURL(std::wstring& parent_id, int index,
-                      std::wstring& title, std::wstring& url);
+                      std::wstring& title, std::wstring& url,
+                      int window_index = 0);
   // Bookmark editing:
   bool ReparentBookmark(std::wstring& id, std::wstring& new_parent_id,
-                        int index);
-  bool SetBookmarkTitle(std::wstring& id, std::wstring& title);
-  bool SetBookmarkURL(std::wstring& id, std::wstring& url);
+                        int index, int window_index = 0);
+  bool SetBookmarkTitle(std::wstring& id, std::wstring& title,
+                        int window_index = 0);
+  bool SetBookmarkURL(std::wstring& id, std::wstring& url,
+                      int window_index = 0);
   // Finally, bookmark deletion:
-  bool RemoveBookmark(std::wstring& id);
+  bool RemoveBookmark(std::wstring& id, int window_index = 0);
 
   // Get a handle to browser window at the given index, or NULL on failure.
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
@@ -208,7 +212,7 @@ class PyUITestBase : public UITestBase {
 
  private:
   // Gets the current state of the bookmark bar. Returns false if it failed.
-  bool GetBookmarkBarState(bool* visible, bool* detached);
+  bool GetBookmarkBarState(bool* visible, bool* detached, int window_index = 0);
 
   // Enables PostTask to main thread.
   // Should be shared across multiple instances of PyUITestBase so that this

@@ -223,9 +223,10 @@ int PyUITestBase::GetBrowserWindowCount() {
   return num_windows;
 }
 
-bool PyUITestBase::GetBookmarkBarState(bool* visible, bool* detached) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::GetBookmarkBarState(bool* visible,
+                                       bool* detached,
+                                       int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -254,9 +255,9 @@ bool PyUITestBase::IsBookmarkBarDetached() {
   return detached;
 }
 
-bool PyUITestBase::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::WaitForBookmarkBarVisibilityChange(bool wait_for_open,
+                                                      int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -269,9 +270,8 @@ bool PyUITestBase::WaitForBookmarkBarVisibilityChange(bool wait_for_open) {
   return completed;
 }
 
-std::string PyUITestBase::_GetBookmarksAsJSON() {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+std::string PyUITestBase::_GetBookmarksAsJSON(int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return NULL;
@@ -281,10 +281,11 @@ std::string PyUITestBase::_GetBookmarksAsJSON() {
   return s;
 }
 
-bool PyUITestBase::AddBookmarkGroup(std::wstring& parent_id, int index,
-                                    std::wstring& title) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::AddBookmarkGroup(std::wstring& parent_id,
+                                    int index,
+                                    std::wstring& title,
+                                    int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -292,10 +293,12 @@ bool PyUITestBase::AddBookmarkGroup(std::wstring& parent_id, int index,
   return browser_proxy->AddBookmarkGroup(StringToId(parent_id), index, title);
 }
 
-bool PyUITestBase::AddBookmarkURL(std::wstring& parent_id, int index,
-                                  std::wstring& title, std::wstring& url) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::AddBookmarkURL(std::wstring& parent_id,
+                                  int index,
+                                  std::wstring& title,
+                                  std::wstring& url,
+                                  int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -305,10 +308,11 @@ bool PyUITestBase::AddBookmarkURL(std::wstring& parent_id, int index,
                                        GURL(WideToUTF8(url)));
 }
 
-bool PyUITestBase::ReparentBookmark(
-    std::wstring& id, std::wstring& new_parent_id, int index) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::ReparentBookmark(std::wstring& id,
+                                    std::wstring& new_parent_id,
+                                    int index,
+                                    int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -318,9 +322,10 @@ bool PyUITestBase::ReparentBookmark(
                                          index);
 }
 
-bool PyUITestBase::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::SetBookmarkTitle(std::wstring& id,
+                                    std::wstring& title,
+                                    int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -328,9 +333,10 @@ bool PyUITestBase::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
   return browser_proxy->SetBookmarkTitle(StringToId(id), title);
 }
 
-bool PyUITestBase::SetBookmarkURL(std::wstring& id, std::wstring& url) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::SetBookmarkURL(std::wstring& id,
+                                  std::wstring& url,
+                                  int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -338,9 +344,8 @@ bool PyUITestBase::SetBookmarkURL(std::wstring& id, std::wstring& url) {
   return browser_proxy->SetBookmarkURL(StringToId(id), GURL(WideToUTF8(url)));
 }
 
-bool PyUITestBase::RemoveBookmark(std::wstring& id) {
-  scoped_refptr<BrowserProxy> browser_proxy =
-      GetBrowserWindow(0);  // Window doesn't matter.
+bool PyUITestBase::RemoveBookmark(std::wstring& id, int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;

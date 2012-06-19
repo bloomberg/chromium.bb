@@ -115,6 +115,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_events.h"
@@ -1201,6 +1202,47 @@ void TestingAutomationProvider::OpenNewBrowserWindowOfType(
     browser->window()->Show();
 }
 
+void TestingAutomationProvider::OpenProfileWindow(
+    base::DictionaryValue* args, IPC::Message* reply_message) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  FilePath::StringType path;
+  if (!args->GetString("path", &path)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing arg: 'path'");
+    return;
+  }
+  Profile* profile = profile_manager->GetProfileByPath(FilePath(path));
+  if (!profile) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Invalid profile path: %s", path.c_str()));
+    return;
+  }
+  int num_loads;
+  if (!args->GetInteger("num_loads", &num_loads)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing arg: 'num_loads'");
+    return;
+  }
+  Browser* browser = browser::FindTabbedBrowser(profile, false);
+  if (browser) {
+    // Already have browser.  Need to just activate.
+    ProfileManager::FindOrCreateNewWindowForProfile(
+            profile,
+            browser::startup::IS_NOT_PROCESS_STARTUP,
+            browser::startup::IS_NOT_FIRST_RUN,
+            0);
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+  } else {
+    new BrowserOpenedWithExistingProfileNotificationObserver(
+        this, reply_message, num_loads);
+    ProfileManager::FindOrCreateNewWindowForProfile(
+            profile,
+            browser::startup::IS_NOT_PROCESS_STARTUP,
+            browser::startup::IS_NOT_FIRST_RUN,
+            0);
+  }
+}
+
 void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,
                                                     bool* success,
                                                     int* handle) {
@@ -1742,6 +1784,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile;
   handler_map["GetMultiProfileInfo"] =
       &TestingAutomationProvider::GetMultiProfileInfo;
+  handler_map["OpenProfileWindow"] =
+      &TestingAutomationProvider::OpenProfileWindow;
   handler_map["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
   handler_map["GetPolicyDefinitionList"] =

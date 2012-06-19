@@ -298,6 +298,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetMultiProfileInfo(
       base::DictionaryValue* args,
       IPC::Message* reply_message);
+  // Open a new browser window for an existing profile.
+  // Uses the JSON interface for input/output.
+  void OpenProfileWindow(
+      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.

@@ -1057,13 +1057,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       raise JSONInterfaceError(ret_dict['error'])
     return ret_dict
 
-  def GetBookmarkModel(self):
+  def GetBookmarkModel(self, windex=0):
     """Return the bookmark model as a BookmarkModel object.
 
     This is a snapshot of the bookmark model; it is not a proxy and
     does not get updated as the bookmark model changes.
     """
-    bookmarks_as_json = self._GetBookmarksAsJSON()
+    bookmarks_as_json = self._GetBookmarksAsJSON(windex)
     if bookmarks_as_json == None:
       raise JSONInterfaceError('Could not resolve browser proxy.')
     return bookmark_model.BookmarkModel(bookmarks_as_json)
@@ -2075,6 +2075,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'with_ui': with_ui,
         'windex': windex,
     }
+
     if from_webstore:
       cmd_dict['from_webstore'] = True
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)['id']
@@ -2608,7 +2609,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     finally:
       shutil.rmtree(tempdir, ignore_errors=True)
 
-  def ImportSettings(self, import_from, first_run, import_items):
+  def ImportSettings(self, import_from, first_run,
+                    import_items, windex=0):
     """Import the specified import items from the specified browser.
 
     Implements the features available in the "Import Settings" part of the
@@ -2629,6 +2631,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     Strings that can be in the list are:
                     HISTORY, FAVORITES, PASSWORDS, SEARCH_ENGINES, HOME_PAGE,
                     ALL (note: COOKIES is not supported by the browser yet)
+      windex: window index, defaults to 0.
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
@@ -2638,7 +2642,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'first_run': first_run,
       'import_items': import_items
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def ClearBrowsingData(self, to_remove, time_period):
     """Clear the specified browsing data. Implements the features available in
@@ -2757,7 +2761,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def SetTheme(self, crx_file_path):
+  def SetTheme(self, crx_file_path, windex=0):
     """Installs the given theme synchronously.
 
     A theme file is a file with a .crx suffix, like an extension.  The theme
@@ -2773,7 +2777,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    return self.InstallExtension(crx_file_path, True)
+    return self.InstallExtension(crx_file_path, True, windex)
 
   def WaitUntilDownloadedThemeSet(self, theme_name):
     """Waits until the theme has been set.
@@ -2805,7 +2809,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def GetThemeInfo(self):
+  def GetThemeInfo(self, windex=0):
     """Get info about theme.
 
     This includes info about the theme name, its colors, images, etc.
@@ -2831,7 +2835,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {
       'command': 'GetThemeInfo',
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def GetActiveNotifications(self):
     """Gets a list of the currently active/shown HTML5 notifications.
@@ -3944,6 +3948,27 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'OpenNewBrowserWindowWithNewProfile'
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def OpenProfileWindow(self, path, num_loads=1):
+   """Open browser window for an existing profile.
+
+   This is equivalent to picking a profile from the multi-profile menu.
+
+   Multi-profile should be enabled and the requested profile should already
+   exist. If a window for the given profile already exists, it'll merely get
+   activated. Use OpenNewBrowserWindowWithNewProfile() to create a new profile.
+
+   Args:
+     path: profile path of the profile to be opened.
+     num_loads: the number of loads to wait for, when a new browser window
+                is created.  Useful when restoring a window with many tabs.
+   """
+   cmd_dict = {  # Prepare command for the json interface
+    'command': 'OpenProfileWindow',
+    'path': path,
+    'num_loads': num_loads,
+   }
+   return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
   def GetMultiProfileInfo(self):
     """Fetch info about all multi-profile users.
