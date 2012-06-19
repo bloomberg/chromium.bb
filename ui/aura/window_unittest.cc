@@ -16,6 +16,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
@@ -321,6 +322,111 @@ TEST_F(WindowTest, ConvertPointToWindow) {
   gfx::Point test_point = reference_point;
   Window::ConvertPointToWindow(NULL, w1.get(), &test_point);
   EXPECT_EQ(reference_point, test_point);
+}
+
+TEST_F(WindowTest, MoveCursorTo) {
+  scoped_ptr<Window> w1(
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+  scoped_ptr<Window> w11(
+      CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(5, 5, 100, 100), w1.get()));
+  scoped_ptr<Window> w111(
+      CreateTestWindow(SK_ColorCYAN, 111, gfx::Rect(5, 5, 75, 75), w11.get()));
+  scoped_ptr<Window> w1111(
+      CreateTestWindow(SK_ColorRED, 1111, gfx::Rect(5, 5, 50, 50), w111.get()));
+
+  RootWindow* root = root_window();
+  root->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("10,10", root->last_mouse_location().ToString());
+  w1->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("20,20", root->last_mouse_location().ToString());
+  w11->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("25,25", root->last_mouse_location().ToString());
+  w111->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("30,30", root->last_mouse_location().ToString());
+  w1111->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("35,35", root->last_mouse_location().ToString());
+}
+
+// Test Window::ConvertPointToWindow() with transform to root_window.
+TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
+  RootWindow* root = root_window();
+  ui::Transform transform;
+  transform.ConcatScale(2, 5);
+  transform.ConcatRotate(90.0f);
+  transform.ConcatTranslate(100, 100);
+  root->SetTransform(transform);
+  root->MoveCursorTo(gfx::Point(10, 10));
+#if !defined(OS_WIN)
+  // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
+  EXPECT_EQ("50,120", root->QueryMouseLocationForTest().ToString());
+#endif
+  EXPECT_EQ("10,10", root->last_mouse_location().ToString());
+}
+
+// Tests Window::ConvertPointToWindow() with transform to non-root windows.
+TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
+  scoped_ptr<Window> w1(
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+
+  RootWindow* root = root_window();
+  ui::Transform transform1;
+  transform1.ConcatScale(2, 2);
+  w1->SetTransform(transform1);
+  w1->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("30,30", root->last_mouse_location().ToString());
+
+  ui::Transform transform2;
+  transform2.ConcatTranslate(-10, 20);
+  w1->SetTransform(transform2);
+  w1->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("10,40", root->last_mouse_location().ToString());
+
+  ui::Transform transform3;
+  transform3.ConcatRotate(90.0f);
+  w1->SetTransform(transform3);
+  w1->MoveCursorTo(gfx::Point(5, 5));
+  EXPECT_EQ("5,15", root->last_mouse_location().ToString());
+
+  ui::Transform transform4;
+  transform4.ConcatScale(2, 5);
+  transform4.ConcatRotate(90.0f);
+  transform4.ConcatTranslate(100, 100);
+  w1->SetTransform(transform4);
+  w1->MoveCursorTo(gfx::Point(10, 10));
+  EXPECT_EQ("60,130", root->last_mouse_location().ToString());
+}
+
+// Test Window::ConvertPointToWindow() with complex transforms to both root and
+// non-root windows.
+TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
+  scoped_ptr<Window> w1(
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500), NULL));
+  scoped_ptr<Window> w11(
+      CreateTestWindow(SK_ColorGREEN, 11, gfx::Rect(5, 5, 100, 100), w1.get()));
+  scoped_ptr<Window> w111(
+      CreateTestWindow(SK_ColorCYAN, 111, gfx::Rect(5, 5, 75, 75), w11.get()));
+  scoped_ptr<Window> w1111(
+      CreateTestWindow(SK_ColorRED, 1111, gfx::Rect(5, 5, 50, 50), w111.get()));
+
+  RootWindow* root = root_window();
+  ui::Transform transform;
+  transform.ConcatScale(0.3f, 0.5f);
+  transform.ConcatRotate(10.0f);
+  transform.ConcatTranslate(10, 20);
+
+  root->SetTransform(transform);
+  w1->SetTransform(transform);
+  w11->SetTransform(transform);
+  w111->SetTransform(transform);
+  w1111->SetTransform(transform);
+
+  w1111->MoveCursorTo(gfx::Point(10, 10));
+
+#if !defined(OS_WIN)
+  // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
+  EXPECT_EQ("11,47", root->QueryMouseLocationForTest().ToString());
+#endif
+  EXPECT_EQ("20,53", root->last_mouse_location().ToString());
 }
 
 TEST_F(WindowTest, HitTest) {

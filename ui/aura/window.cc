@@ -408,6 +408,14 @@ void Window::ConvertPointToWindow(const Window* source,
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
 }
 
+void Window::MoveCursorTo(const gfx::Point& point_in_window) {
+  RootWindow* root_window = GetRootWindow();
+  DCHECK(root_window);
+  gfx::Point point_in_root(point_in_window);
+  ConvertPointToWindow(this, root_window, &point_in_root);
+  root_window->MoveCursorTo(point_in_root);
+}
+
 gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
   return delegate_ ? delegate_->GetCursor(point) : gfx::kNullCursor;
 }
