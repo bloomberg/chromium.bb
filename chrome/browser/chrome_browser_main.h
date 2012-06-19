@@ -237,7 +237,7 @@ void RecordBreakpadStatusUMA(MetricsService* metrics);
 void WarnAboutMinimumSystemRequirements();
 
 // Records the time from our process' startup to the present time in
-// the UMA histogram |metric_name|.
+// the Startup.BrowserMessageLoopStartTime UMA histogram.
 void RecordBrowserStartupTime();
 
 // Records a time value to an UMA histogram in the context of the

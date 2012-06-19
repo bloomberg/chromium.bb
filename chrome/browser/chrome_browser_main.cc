@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/process_info.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -2001,6 +2002,19 @@ void ChromeBrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
 }
 
 // Misc ------------------------------------------------------------------------
+
+void RecordBrowserStartupTime() {
+// CurrentProcessInfo::CreationTime() is currently only implemented on Mac and
+// Windows.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  const base::Time *process_creation_time =
+      base::CurrentProcessInfo::CreationTime();
+
+  if (process_creation_time)
+    RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
+        base::Time::Now() - *process_creation_time);
+#endif // OS_MACOSX || OS_WIN
+}
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.
 void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {

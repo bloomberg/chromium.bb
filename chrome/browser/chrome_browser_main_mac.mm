@@ -5,8 +5,6 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
-#include <sys/sysctl.h>
-#include <sys/time.h>
 
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -14,7 +12,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -56,23 +53,6 @@ const int kKeychainReauthorizeAtUpdateMaxTries = 3;
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
   metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
-}
-
-void RecordBrowserStartupTime() {
-  int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
-  size_t len = 0;
-  if (sysctl(mib, arraysize(mib), NULL, &len, NULL, 0) < 0)
-    return;
-
-  scoped_ptr_malloc<struct kinfo_proc>
-      proc(static_cast<struct kinfo_proc*>(malloc(len)));
-  if (sysctl(mib, arraysize(mib), proc.get(), &len, NULL, 0) < 0)
-    return;
-  base::Time process_creation_time =
-      base::Time::FromTimeVal(proc->kp_proc.p_un.__p_starttime);
-
-  RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
-      base::Time::Now() - process_creation_time);
 }
 
 void WarnAboutMinimumSystemRequirements() {

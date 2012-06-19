@@ -99,17 +99,6 @@ void WarnAboutMinimumSystemRequirements() {
   }
 }
 
-void RecordBrowserStartupTime() {
-  // Calculate the time that has elapsed from our own process creation.
-  FILETIME creation_time = {};
-  FILETIME ignore = {};
-  ::GetProcessTimes(::GetCurrentProcess(), &creation_time, &ignore, &ignore,
-      &ignore);
-
-  RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
-      base::Time::Now() - base::Time::FromFileTime(creation_time));
-}
-
 void ShowCloseBrowserFirstMessageBox() {
   const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   const string16 message = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
