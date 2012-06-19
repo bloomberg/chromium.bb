@@ -530,6 +530,9 @@
           'test/data/extensions/unpacked/symlinks_allowed/manifest.json',
           'test/data/firefox3_pref.js',
           'test/data/firefox3_pref_pac_url.js',
+          'test/data/page_cycler/abort_expected',
+          'test/data/page_cycler/about_url',
+          'test/data/page_cycler/errors_expected',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/shared/',
