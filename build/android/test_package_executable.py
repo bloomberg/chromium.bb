@@ -73,14 +73,14 @@ class TestPackageExecutable(TestPackage):
       logging.info('NATIVE_COVERAGE_DEPTH_STRIP is not defined: '
                    'No native coverage.')
       return ''
-    export_string = 'export GCOV_PREFIX="/data/local/gcov"\n'
+    export_string = 'export GCOV_PREFIX="/data/local/tmp/gcov"\n'
     export_string += 'export GCOV_PREFIX_STRIP=%s\n' % depth
     return export_string
 
   def GetAllTests(self):
     """Returns a list of all tests available in the test suite."""
     all_tests = self.adb.RunShellCommand(
-        '/data/local/%s --gtest_list_tests' % self.test_suite_basename)
+        '/data/local/tmp/%s --gtest_list_tests' % self.test_suite_basename)
     return self._ParseGTestListTests(all_tests)
 
   def CreateTestRunnerScript(self, gtest_filter, test_arguments):
@@ -94,9 +94,9 @@ class TestPackageExecutable(TestPackage):
     sh_script_file = tempfile.NamedTemporaryFile()
     # We need to capture the exit status from the script since adb shell won't
     # propagate to us.
-    sh_script_file.write('cd /data/local\n'
+    sh_script_file.write('cd /data/local/tmp\n'
                          '%s'
-                         '%s /data/local/%s --gtest_filter=%s %s\n'
+                         '%s /data/local/tmp/%s --gtest_filter=%s %s\n'
                          'echo $? > %s' %
                          (self._AddNativeCoverageExports(),
                           tool_wrapper, self.test_suite_basename,
@@ -105,7 +105,7 @@ class TestPackageExecutable(TestPackage):
     sh_script_file.flush()
     cmd_helper.RunCmd(['chmod', '+x', sh_script_file.name])
     self.adb.PushIfNeeded(sh_script_file.name,
-                          '/data/local/chrome_test_runner.sh')
+                          '/data/local/tmp/chrome_test_runner.sh')
     logging.info('Conents of the test runner script: ')
     for line in open(sh_script_file.name).readlines():
       logging.info('  ' + line.rstrip())
@@ -117,7 +117,7 @@ class TestPackageExecutable(TestPackage):
       A TestResults object.
     """
     args = ['adb', '-s', self.device, 'shell', 'sh',
-            '/data/local/chrome_test_runner.sh']
+            '/data/local/tmp/chrome_test_runner.sh']
     logging.info(args)
     p = pexpect.spawn(args[0], args[1:], logfile=sys.stdout)
     return self._WatchTestOutput(p)
@@ -149,7 +149,7 @@ class TestPackageExecutable(TestPackage):
           shutil.copy(self.test_suite, self.symbols_dir)
         strip = os.environ['STRIP']
         cmd_helper.RunCmd([strip, self.test_suite, '-o', target_name])
-    test_binary = '/data/local/' + self.test_suite_basename
+    test_binary = '/data/local/tmp/' + self.test_suite_basename
     self.adb.PushIfNeeded(target_name, test_binary)
 
     if self.test_suite_basename == 'ui_unittests':
