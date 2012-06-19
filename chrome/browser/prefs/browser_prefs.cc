@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -151,7 +150,6 @@ void RegisterLocalState(PrefService* local_state) {
   Browser::RegisterPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
-  NewTabPageHandler::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
   UpgradeDetector::RegisterPrefs(local_state);
 #endif

@@ -181,27 +181,6 @@ cr.define('ntp', function() {
       // The anchor node won't be updated until updateLogin is called so don't
       // show the bubble yet.
       shouldShowLoginBubble = true;
-    } else if (loadTimeData.valueExists('ntp4_intro_message')) {
-      infoBubble = new cr.ui.Bubble;
-      infoBubble.anchorNode = newTabView.mostVisitedPage.navigationDot;
-      infoBubble.setArrowLocation(cr.ui.ArrowLocation.BOTTOM_START);
-      infoBubble.handleCloseEvent = function() {
-        this.hide();
-        chrome.send('introMessageDismissed');
-      };
-
-      var bubbleContent = $('ntp4-intro-bubble-contents');
-      infoBubble.content = bubbleContent;
-
-      bubbleContent.querySelector('div > div').innerHTML =
-          loadTimeData.getString('ntp4_intro_message');
-
-      var learnMoreLink = bubbleContent.querySelector('a');
-      learnMoreLink.href = loadTimeData.getString('ntp4_intro_url');
-      learnMoreLink.onclick = infoBubble.hide.bind(infoBubble);
-
-      infoBubble.show();
-      chrome.send('introMessageSeen');
     }
 
     var loginContainer = getRequiredElement('login-container');

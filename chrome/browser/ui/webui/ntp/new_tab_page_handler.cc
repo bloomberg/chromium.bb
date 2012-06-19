@@ -23,12 +23,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-static const int kIntroDisplayMax = 10;
-
-// The URL of a knowledge-base article about the new NTP.
-static const char kNtp4IntroURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
-
 static const char kDefaultPageTypeHistogram[] =
     "NewTabPage.DefaultPageType";
 
@@ -65,12 +59,6 @@ void NewTabPageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("pageSelected",
       base::Bind(&NewTabPageHandler::HandlePageSelected,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("introMessageDismissed",
-      base::Bind(&NewTabPageHandler::HandleIntroMessageDismissed,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("introMessageSeen",
-      base::Bind(&NewTabPageHandler::HandleIntroMessageSeen,
                  base::Unretained(this)));
 }
 
@@ -119,29 +107,10 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
   }
 }
 
-void NewTabPageHandler::HandleIntroMessageDismissed(const ListValue* args) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetInteger(prefs::kNtp4IntroDisplayCount, kIntroDisplayMax + 1);
-  Notify(chrome::NTP4_INTRO_PREF_CHANGED);
-}
-
-void NewTabPageHandler::HandleIntroMessageSeen(const ListValue* args) {
-  PrefService* prefs = g_browser_process->local_state();
-  int intro_displays = prefs->GetInteger(prefs::kNtp4IntroDisplayCount);
-  prefs->SetInteger(prefs::kNtp4IntroDisplayCount, intro_displays + 1);
-  Notify(chrome::NTP4_INTRO_PREF_CHANGED);
-}
-
 // static
 void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
   // TODO(estade): should be syncable.
   prefs->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID,
-                             PrefService::UNSYNCABLE_PREF);
-}
-
-// static
-void NewTabPageHandler::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNtp4IntroDisplayCount, 0,
                              PrefService::UNSYNCABLE_PREF);
 }
 
@@ -156,34 +125,6 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
   int shown_page = prefs->GetInteger(prefs::kNtpShownPage);
   values->SetInteger("shown_page_type", shown_page & ~INDEX_MASK);
   values->SetInteger("shown_page_index", shown_page & INDEX_MASK);
-
-#if !defined(USE_AURA)
-  // Only show intro bubble for non-aura build.
-
-  PrefService* local_state = g_browser_process->local_state();
-  int intro_displays = local_state->GetInteger(prefs::kNtp4IntroDisplayCount);
-  // This preference used to exist in profile, so check the profile if it has
-  // not been set in local state yet.
-  if (!intro_displays) {
-    prefs->RegisterIntegerPref(prefs::kNtp4IntroDisplayCount, 0,
-                               PrefService::UNSYNCABLE_PREF);
-    intro_displays = prefs->GetInteger(prefs::kNtp4IntroDisplayCount);
-    if (intro_displays)
-      local_state->SetInteger(prefs::kNtp4IntroDisplayCount, intro_displays);
-  }
-  if (intro_displays <= kIntroDisplayMax) {
-    values->SetString("ntp4_intro_message",
-                      l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
-    values->SetString("ntp4_intro_url", kNtp4IntroURL);
-  }
-#endif
-}
-
-// static
-void NewTabPageHandler::DismissIntroMessage(PrefService* prefs) {
-  prefs->SetInteger(prefs::kNtp4IntroDisplayCount, kIntroDisplayMax + 1);
-  // No need to send notification to update resource cache, because this method
-  // is only called during startup before the ntp resource cache is constructed.
 }
 
 void NewTabPageHandler::Notify(chrome::NotificationType notification_type) {

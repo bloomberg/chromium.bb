@@ -383,10 +383,6 @@ enum NotificationType {
   // details are NoDetails.
   NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
 
-  // The number of times that NTP4 bubble is shown has been changed. The NTP
-  // resource cache has to be refreshed to remove the NTP4 bubble.
-  NTP4_INTRO_PREF_CHANGED,
-
   // Autocomplete ------------------------------------------------------------
 
   // Sent by the autocomplete controller when done.  The source is the

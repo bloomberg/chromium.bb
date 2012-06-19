@@ -31,14 +31,6 @@ class NewTabPageHandler : public content::WebUIMessageHandler {
   // Callback for "pageSelected".
   void HandlePageSelected(const ListValue* args);
 
-  // Callback for "introMessageDismissed". This is called when the close button
-  // on the ntp4 bubble is clicked or when a NavDot is clicked.
-  void HandleIntroMessageDismissed(const ListValue* args);
-
-  // Callback for "handleIntroMessageSeen". No arguments. Called when the intro
-  // message is displayed.
-  void HandleIntroMessageSeen(const ListValue* args);
-
   // Register NTP per-profile preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -47,9 +39,6 @@ class NewTabPageHandler : public content::WebUIMessageHandler {
 
   // Registers values (strings etc.) for the page.
   static void GetLocalizedValues(Profile* profile, DictionaryValue* values);
-
-  // Permanently dismiss the ntp4 bubble for new users.
-  static void DismissIntroMessage(PrefService* prefs);
 
  private:
   // Tracks the number of times the user has switches pages (for UMA).

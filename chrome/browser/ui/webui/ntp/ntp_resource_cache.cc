@@ -186,8 +186,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                      ThemeServiceFactory::GetForProfile(profile)));
   registrar_.Add(this, chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NTP4_INTRO_PREF_CHANGED,
-                 content::NotificationService::AllSources());
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -250,8 +248,7 @@ void NTPResourceCache::Observe(int type,
     new_tab_html_ = NULL;
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
-  } else if (chrome::NOTIFICATION_PREF_CHANGED == type ||
-             chrome::NTP4_INTRO_PREF_CHANGED == type) {
+  } else if (chrome::NOTIFICATION_PREF_CHANGED == type) {
     // A change occurred to one of the preferences we care about, so flush the
     // cache.
     new_tab_incognito_html_ = NULL;
