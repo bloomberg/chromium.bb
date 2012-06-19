@@ -2263,45 +2263,6 @@ bool GLES2DecoderImpl::Initialize(
   viewport_max_width_ = viewport_params[0];
   viewport_max_height_ = viewport_params[1];
 
-  // Set all the default state because some GL drivers get it wrong.
-  glActiveTexture(GL_TEXTURE0 + active_texture_unit_);
-  glLineWidth(1.0);
-  EnableDisable(GL_BLEND, enable_blend_);
-  glBlendColor(0.0f, 0.0, 0.0f, 0.0f);
-  glBlendFunc(GL_ONE, GL_ZERO);
-  glBlendEquation(GL_ADD);
-  glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
-  glClearColor(clear_red_, clear_green_, clear_blue_, clear_alpha_);
-  glColorMask(mask_red_, mask_green_, mask_blue_, mask_alpha_);
-  EnableDisable(GL_CULL_FACE, enable_cull_face_);
-  glCullFace(GL_BACK);
-  glClearDepth(clear_depth_);
-  glDepthFunc(GL_LESS);
-  glDepthRange(0.0f, 1.0f);
-  EnableDisable(GL_DEPTH_TEST, enable_depth_test_);
-  glEnable(GL_DITHER);
-  glFrontFace(GL_CCW);
-  glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
-  glLineWidth(1.0f);
-  glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
-  glPolygonOffset(0.0f, 0.0f);
-  glDisable(GL_POLYGON_OFFSET_FILL);
-  glSampleCoverage(1.0, false);
-  glScissor(viewport_x_, viewport_y_, viewport_width_, viewport_height_);
-  EnableDisable(GL_SCISSOR_TEST, enable_scissor_test_);
-  EnableDisable(GL_STENCIL_TEST, enable_stencil_test_);
-  glClearStencil(clear_stencil_);
-  glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFFU);
-  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-  glStencilMaskSeparate(GL_FRONT, mask_stencil_front_);
-  glStencilMaskSeparate(GL_BACK, mask_stencil_back_);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
-
-  DoBindBuffer(GL_ARRAY_BUFFER, 0);
-  DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  DoBindFramebuffer(GL_FRAMEBUFFER, 0);
-  DoBindRenderbuffer(GL_RENDERBUFFER, 0);
-
   return true;
 }
 
