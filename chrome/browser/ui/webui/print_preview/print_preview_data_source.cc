@@ -165,14 +165,16 @@ void PrintPreviewDataSource::Init() {
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
-  add_resource_path("images/printer.png",
-                    IDR_PRINT_PREVIEW_IMAGES_PRINTER);
-  add_resource_path("images/printer_shared.png",
-                      IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED);
-  add_resource_path("images/google_promoted_printer_32.png",
-                    IDR_PRINT_PREVIEW_IMAGES_GOOGLE_PROMOTED_PRINTER_32);
-  add_resource_path("images/mobile_32.png",
-                    IDR_PRINT_PREVIEW_IMAGES_MOBILE_32);
+  add_resource_path("images/printer_24.png",
+                    IDR_PRINT_PREVIEW_IMAGES_PRINTER_24);
+  add_resource_path("images/printer_shared_24.png",
+                    IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED_24);
+  add_resource_path("images/service_printer_24.png",
+                    IDR_PRINT_PREVIEW_IMAGES_SERVICE_PRINTER_24);
+  add_resource_path("images/mobile_printer_24.png",
+                    IDR_PRINT_PREVIEW_IMAGES_MOBILE_PRINTER_24);
+  add_resource_path("images/mobile_printer_shared_24.png",
+                    IDR_PRINT_PREVIEW_IMAGES_MOBILE_PRINTER_SHARED_24);
   set_default_resource(IDR_PRINT_PREVIEW_HTML);
 }
 

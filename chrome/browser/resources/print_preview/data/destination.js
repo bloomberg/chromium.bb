@@ -149,11 +149,12 @@ cr.define('print_preview', function() {
    * @private
    */
   Destination.IconUrl_ = {
-    CLOUD: 'images/printer.png',
-    CLOUD_SHARED: 'images/printer_shared.png',
-    LOCAL: 'images/printer.png',
-    MOBILE: 'images/mobile_32.png',
-    GOOGLE_PROMOTED: 'images/google_promoted_printer_32.png'
+    CLOUD: 'images/printer_24.png',
+    CLOUD_SHARED: 'images/printer_shared_24.png',
+    LOCAL: 'images/printer_24.png',
+    MOBILE: 'images/mobile_printer_24.png',
+    MOBILE_SHARED: 'images/mobile_printer_shared_24.png',
+    GOOGLE_PROMOTED: 'images/service_printer_24.png'
   };
 
   Destination.prototype = {
@@ -275,8 +276,10 @@ cr.define('print_preview', function() {
         return Destination.IconUrl_.GOOGLE_PROMOTED;
       } else if (this.isLocal) {
         return Destination.IconUrl_.LOCAL;
-      } else if (this.type_ == Destination.Type.MOBILE) {
+      } else if (this.type_ == Destination.Type.MOBILE && this.isOwned_) {
         return Destination.IconUrl_.MOBILE;
+      } else if (this.type_ == Destination.Type.MOBILE) {
+        return Destination.IconUrl_.MOBILE_SHARED;
       } else if (this.isOwned_) {
         return Destination.IconUrl_.CLOUD;
       } else {
