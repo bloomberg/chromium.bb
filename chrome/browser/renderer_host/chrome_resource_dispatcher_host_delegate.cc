@@ -278,6 +278,12 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     ResourceType::Type resource_type) {
+  // Don't attempt to append headers to requests that have already started.
+  // TODO(stevet): Remove this once we've resolved the request ordering issues
+  // in crbug.com/128048.
+  if (request->is_pending())
+    return;
+
   // Note our criteria for attaching Chrome experiment headers:
   // 1. We only transmit to *.google.<TLD> domains. NOTE that this use of
   //    google_util helpers to check this does not guarantee that the URL is
