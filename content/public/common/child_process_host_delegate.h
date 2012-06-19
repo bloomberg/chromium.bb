@@ -24,9 +24,6 @@ class ChildProcessHostDelegate : public IPC::Channel::Listener {
   // it's ok to shutdown, when really it's not.
   CONTENT_EXPORT virtual bool CanShutdown();
 
-  // Notifies the derived class that we told the child process to kill itself.
-  virtual void ShutdownStarted() {}
-
   // Called when the child process unexpected closes the IPC channel. Delegates
   // would normally delete the object in this case.
   virtual void OnChildDisconnected() {}

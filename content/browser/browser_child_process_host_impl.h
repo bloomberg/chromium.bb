@@ -85,7 +85,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl :
   // ChildProcessHostDelegate implementation:
   virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDisconnected() OVERRIDE;
-  virtual void ShutdownStarted() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

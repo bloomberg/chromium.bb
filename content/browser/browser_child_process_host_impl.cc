@@ -313,13 +313,6 @@ bool BrowserChildProcessHostImpl::Send(IPC::Message* message) {
   return child_process_host_->Send(message);
 }
 
-void BrowserChildProcessHostImpl::ShutdownStarted() {
-  // Must remove the process from the list now, in case it gets used for a
-  // new instance before our watcher tells us that the process terminated.
-  g_child_process_list.Get().remove(this);
-}
-
-
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
   if (!child_process_->GetHandle()) {
     delete delegate_;  // Will delete us
