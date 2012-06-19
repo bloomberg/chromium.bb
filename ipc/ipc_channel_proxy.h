@@ -128,12 +128,6 @@ class IPC_EXPORT ChannelProxy : public Sender {
                Listener* listener,
                base::MessageLoopProxy* ipc_thread_loop);
 
-  // Creates an uninitialized channel proxy. Init must be called to receive
-  // or send any messages. This two-step setup allows message filters to be
-  // added before any messages are sent or received.
-  ChannelProxy(Listener* listener,
-               base::MessageLoopProxy* ipc_thread_loop);
-
   virtual ~ChannelProxy();
 
   // Initializes the channel proxy. Only call this once to initialize a channel
