@@ -1130,6 +1130,8 @@ string16 ShellUtil::BuildAppModelId(
       app_id.append(component);
     }
   }
+  // No spaces are allowed in the AppUserModelId according to MSDN.
+  ReplaceChars(app_id, L" ", L"_", &app_id);
   return app_id;
 }
 
