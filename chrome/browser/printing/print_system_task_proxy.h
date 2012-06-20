@@ -63,9 +63,6 @@ class PrintSystemTaskProxy
 #if defined(UNIT_TEST) && defined(USE_CUPS)
   FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectDuplexModeCUPS);
   FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS);
-
-  // Only used for testing.
-  PrintSystemTaskProxy();
 #endif
 
 #if defined(USE_CUPS)

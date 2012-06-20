@@ -315,12 +315,6 @@ PrintSystemTaskProxy::PrintSystemTaskProxy(
       has_logged_printers_count_(has_logged_printers_count) {
 }
 
-#if defined(UNIT_TEST) && defined(USE_CUPS)
-// Only used for testing.
-PrintSystemTaskProxy::PrintSystemTaskProxy() {
-}
-#endif
-
 PrintSystemTaskProxy::~PrintSystemTaskProxy() {
 }
 
