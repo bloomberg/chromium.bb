@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -291,11 +292,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   /* Load the integrated runtime (IRT) library. */
   NaClLoadIrt(nap, args->irt_fd);
 
-  /*
-   * Enable debugging if requested.
-   */
-  nap->enable_debug_stub = args->enable_debug_stub;
-
   free(args);
   args = NULL;
 
@@ -307,6 +303,11 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   if (!NaClAppLaunchServiceThreads(nap)) {
     fprintf(stderr, "Launch service threads failed\n");
     goto done;
+  }
+  if (args->enable_debug_stub) {
+    if (!NaClDebugInit(nap)) {
+      goto done;
+    }
   }
   if (!NaClCreateMainThread(nap, ac, av,
                             NaClEnvCleanserEnvironment(&env_cleanser))) {

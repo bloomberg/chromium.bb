@@ -39,6 +39,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -193,6 +194,7 @@ int main(int  argc,
   int                           debug_mode_ignore_validator = 0;
   int                           skip_qualification = 0;
   int                           handle_signals = 0;
+  int                           enable_debug_stub = 0;
   int                           enable_exception_handling = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
@@ -300,7 +302,7 @@ int main(int  argc,
 
       case 'g':
         handle_signals = 1;
-        nap->enable_debug_stub = 1;
+        enable_debug_stub = 1;
         break;
 
       case 'h':
@@ -814,6 +816,11 @@ int main(int  argc,
   if (!NaClAppLaunchServiceThreads(nap)) {
     fprintf(stderr, "Launch service threads failed\n");
     goto done;
+  }
+  if (enable_debug_stub) {
+    if (!NaClDebugInit(nap)) {
+      goto done;
+    }
   }
   if (!NaClCreateMainThread(nap,
                             argc - optind,

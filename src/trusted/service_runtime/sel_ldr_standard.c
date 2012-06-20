@@ -36,7 +36,6 @@
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
 #include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
@@ -743,15 +742,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   }
   if (NULL == envv_len && 0 != envc) {
     goto cleanup;
-  }
-
-  if (nap->enable_debug_stub) {
-    /*
-     * Enable the debug stub.
-     */
-    if (!NaClDebugInit(nap)) {
-      goto cleanup;
-    }
   }
 
   size = 0;
