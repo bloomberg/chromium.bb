@@ -445,8 +445,6 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 	if (weston_surface_is_mapped(surface))
 		weston_surface_assign_output(surface);
-
-	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 WL_EXPORT void
