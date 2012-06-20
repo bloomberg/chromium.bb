@@ -772,6 +772,9 @@
         'isolate_dependency_untracked': [
           '../content/test/data/dom_storage/',
           '../third_party/WebKit/LayoutTests/fast/js/resources/',
+          '../third_party/WebKit/LayoutTests/fast/workers/resources/',
+          '../third_party/WebKit/LayoutTests/fast/workers/worker-messageport-expected.txt',
+          '../third_party/WebKit/LayoutTests/fast/workers/worker-messageport.html',
           '../third_party/WebKit/LayoutTests/media/audio-constructor-expected.txt',
           '../third_party/WebKit/LayoutTests/media/audio-constructor-preload-expected.txt',
           '../third_party/WebKit/LayoutTests/media/audio-constructor-preload.html',
