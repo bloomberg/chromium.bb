@@ -1,10 +1,21 @@
 <div id="pageData-name" class="pageData">Manifest Version</div>
 
+<style type="text/css">
+#schedule h3 {
+  margin-bottom:0;
+}
+
+#schedule p {
+  margin-top:0;
+  margin-bottom:1em;
+}
+</style>
+
 <p>
   Extensions, themes, and applications are simply bundles of resources, wrapped
   up with a <a href="manifest.html"><code>manifest.json</code></a> file that
   describes the package's contents. The format of this file is generally stable,
-  but occasionally breaking changes must be made to address specific issues.
+  but occasionally breaking changes must be made to address important issues.
   Developers should specify which version of the manifest specification their
   package targets by setting a <code>manifest_version</code> key in their
   manifests.
@@ -13,7 +24,7 @@
 <h2>Current Version</h2>
 
 <p>
-  When targeting Chrome 18 and above, developers should specify
+  Developers should currently specify
   <strong><code>'manifest_version': 2</code></strong>:
 </p>
 
@@ -24,25 +35,54 @@
 }</pre>
 
 <p>
-  Manifest version 1 is <em>deprecated</em> in Chrome 18 and above, but version
-  2 is not yet <em>required</em>. Extensions, applications, and themes that
-  aren't ready to make the jump to the new manifest version in Chrome 18 can
-  either explicitly specify version <code>1</code>, or leave the key off
-  entirely.
+  Manifest version 1 was <em>deprecated</em> in Chrome 18, and support will
+  be phased out according to the following schedule.
 </p>
 
-<p>
-  At some point in the future, support for manifest version 1 will be removed.
-  Ample warning will be provided, beginning with warnings when loading unpacked
-  version 1 extensions, and escalating from there over time.
-</p>
+<h2>Manifest version 1 support schedule</h2>
 
-<p class="caution">
-  Setting <code>manifest_version</code> 2 in Chrome 17 or lower is not
-  recommended. If your extension needs to work in older versions of Chrome,
-  stick with version 1 for the moment. We'll give you ample warning before
-  version 1 stops working.
-</p>
+<div id="schedule">
+<h3>Chrome 21</h3>
+<p><em>Beta: Early July 2012;
+  Stable: Mid-August 2012</em></p>
+<ul>
+  <li>The Web Store will block updating items to manifest version 1.
+  <li>The Web Store will allow updates to existing manifest version 1 items.
+</ul>
+
+<h3>Chrome 23</h3>
+<p><em>Beta: Late September 2012;
+  Stable: Early November 2012</em></p>
+<ul>
+  <li>The Web Store will block updates to manifest version 1 items.
+  <li>Chrome will stop packaging manifest version 1 items (or loading
+    them for development).
+</ul>
+
+<h3>First Quarter 2013</h3>
+<ul>
+  <li>The Web Store will remove manifest version 1 items from the wall,
+    search results, and category pages.
+  <li>Notice emails will be sent to all developers with manifest
+    version 1 items still in the store reminding them that these
+    items will be unpublished and providing update instructions.
+</ul>
+
+<h3>Second Quarter 2013</h3>
+<ul>
+  <li>The Web Store will unpublish all manifest version 1 items.
+  <li>Final notice emails will be sent to developers with manifest
+    version 1 items still in the Web Store.
+  <li>Chrome will continue to load and run installed manifest
+    version 1 items.
+</ul>
+
+<h3>Third Quarter 2013</h3>
+<ul>
+  <li>Chrome will stop loading or running manifest
+    version 1 items.
+</ul>
+</div>
 
 <h2>Changes between version 1 and 2</h2>
 
