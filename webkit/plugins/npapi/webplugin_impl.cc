@@ -275,6 +275,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
       return false;
 
     container->setPlugin(replacement_plugin);
+    destroy();
     return true;
   }
 
