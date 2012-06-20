@@ -13,6 +13,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/icon_cache.h"
+#include "ui/app_list/pagination_model.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -58,7 +59,10 @@ views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, public:
 
-AppListController::AppListController() : is_visible_(false), view_(NULL) {
+AppListController::AppListController()
+    : pagination_model_(new app_list::PaginationModel),
+      is_visible_(false),
+      view_(NULL) {
   app_list::IconCache::CreateInstance();
   Shell::GetInstance()->AddShellObserver(this);
 }
@@ -89,6 +93,7 @@ void AppListController::SetVisible(bool visible) {
     view->InitAsBubble(
         Shell::GetPrimaryRootWindowController()->GetContainer(
             kShellWindowId_AppListContainer),
+        pagination_model_.get(),
         Shell::GetInstance()->launcher()->GetAppListButtonView(),
         GetBubbleArrowLocation());
     SetView(view);

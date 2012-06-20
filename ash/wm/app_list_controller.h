@@ -19,6 +19,7 @@
 
 namespace app_list {
 class AppListView;
+class PaginationModel;
 }
 
 namespace aura {
@@ -101,6 +102,8 @@ class AppListController : public aura::EventFilter,
 
   // LauncherIconObserver overrides:
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;
+
+  scoped_ptr<app_list::PaginationModel> pagination_model_;
 
   // Whether we should show or hide app list widget.
   bool is_visible_;

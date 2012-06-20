@@ -32,7 +32,6 @@ const int kInnerPadding = 1;
 
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
-      pagination_model_(new PaginationModel),
       bubble_border_(NULL),
       search_box_view_(NULL),
       contents_view_(NULL) {
@@ -45,6 +44,7 @@ AppListView::~AppListView() {
 
 void AppListView::InitAsBubble(
     gfx::NativeView parent,
+    PaginationModel* pagination_model,
     views::View* anchor,
     views::BubbleBorder::ArrowLocation arrow_location) {
   set_background(NULL);
@@ -57,7 +57,7 @@ void AppListView::InitAsBubble(
   search_box_view_ = new SearchBoxView(this);
   AddChildView(search_box_view_);
 
-  contents_view_ = new ContentsView(this, pagination_model_.get());
+  contents_view_ = new ContentsView(this, pagination_model);
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);
