@@ -47,6 +47,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -574,16 +575,12 @@ void InternetOptionsHandler::DisableWimaxCallback(const ListValue* args) {
 void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
   if (!web_ui())
     return;
-  Browser* browser = browser::FindBrowserWithFeature(
-      Profile::FromWebUI(web_ui()), Browser::FEATURE_TABSTRIP);
-  if (!browser)
-    return;
 
   const chromeos::CellularNetwork* cellular = cros_->cellular_network();
   if (!cellular)
     return;
 
-  browser->OpenURL(content::OpenURLParams(
+  web_ui()->GetWebContents()->OpenURL(content::OpenURLParams(
       cellular->GetAccountInfoUrl(), content::Referrer(),
       NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false));

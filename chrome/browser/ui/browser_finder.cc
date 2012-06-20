@@ -121,17 +121,6 @@ Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
                                         match_original_profiles);
 }
 
-Browser* FindBrowserWithFeature(Profile* profile,
-                                Browser::WindowFeature feature) {
-  Browser* browser = FindBrowserMatching(
-      BrowserList::begin_last_active(), BrowserList::end_last_active(),
-      profile, feature, kMatchCanSupportWindowFeature);
-  // Fall back to a forward scan of all Browsers if no active one was found.
-  return browser ? browser :
-      FindBrowserMatching(BrowserList::begin(), BrowserList::end(), profile,
-                          feature, kMatchCanSupportWindowFeature);
-}
-
 Browser* FindBrowserWithProfile(Profile* profile) {
   return FindAnyBrowser(profile, false);
 }

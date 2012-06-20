@@ -37,14 +37,6 @@ Browser* FindOrCreateTabbedBrowser(Profile* profile);
 // additional information.
 Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles);
 
-// Find an existing browser window that can provide the specified type (this
-// uses Browser::CanSupportsWindowFeature, not
-// Browser::SupportsWindowFeature). This searches in the order of last
-// activation. Only browsers that have been active can be returned. Returns
-// NULL if no such browser currently exists.
-Browser* FindBrowserWithFeature(Profile* profile,
-                                Browser::WindowFeature feature);
-
 // Find an existing browser window with the provided profile. Searches in the
 // order of last activation. Only browsers that have been active can be
 // returned. Returns NULL if no such browser currently exists.
