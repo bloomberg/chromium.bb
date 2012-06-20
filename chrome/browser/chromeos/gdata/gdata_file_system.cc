@@ -830,9 +830,13 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     // Load root feed from this disk cache. Upon completion, kick off server
     // fetching.
     root_->set_origin(INITIALIZING);
-    LoadRootFeedFromCache(true,  // should_load_from_server
-                          search_file_path,
-                          callback);
+    LoadRootFeedFromCache(
+        true,  // should_load_from_server
+        search_file_path,
+        // This is the initial load, hence we'll notify when it's done.
+        base::Bind(&GDataFileSystem::RunAndNotifyInitialLoadFinished,
+                   ui_weak_ptr_,
+                   callback));
     return;
   }
 
@@ -933,8 +937,6 @@ void GDataFileSystem::OnGetAccountMetadata(
   if (!changes_detected) {
     if (!callback.is_null())
       FindEntryByPathSyncOnUIThread(search_file_path, callback);
-
-    NotifyInitialLoadFinished();
     return;
   }
 
@@ -2543,7 +2545,6 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
     if (root_->ParseFromString(params->proto)) {
       root_->set_last_serialized(params->last_modified);
       root_->set_serialized_size(params->proto.size());
-      NotifyInitialLoadFinished();
       local_changestamp = root_->largest_changestamp();
     } else {
       params->load_error = base::PLATFORM_FILE_ERROR_FAILED;
@@ -2949,7 +2950,6 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   DVLOG(1) << "Updating directory with a feed";
 
   bool is_delta_feed = start_changestamp != 0;
-  bool should_notify_initial_load = root_->origin() == INITIALIZING;
 
   root_->set_origin(origin);
 
@@ -2970,9 +2970,6 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
       is_delta_feed,
       is_delta_feed ? delta_feed_changestamp : root_feed_changestamp,
       &file_map);
-
-  if (should_notify_initial_load)
-    NotifyInitialLoadFinished();
 
   // Shouldn't record histograms when processing delta feeds.
   if (!is_delta_feed) {
@@ -3195,50 +3192,34 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
 }
 
 void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
-  DVLOG(1) << "Content changed of " << directory_path.value();
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::NotifyDirectoryChanged,
-                   ui_weak_ptr_,
-                   directory_path));
-    return;
-  }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "Content changed of " << directory_path.value();
   // Notify the observers that content of |directory_path| has been changed.
   FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(directory_path));
 }
 
-void GDataFileSystem::NotifyInitialLoadFinished() {
-  DVLOG(1) << "Initial load finished";
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::NotifyInitialLoadFinished, ui_weak_ptr_));
-    return;
-  }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Notify the observers that root directory has been initialized.
-  FOR_EACH_OBSERVER(Observer, observers_, OnInitialLoadFinished());
-}
-
 void GDataFileSystem::NotifyDocumentFeedFetched(int num_accumulated_entries) {
-  DVLOG(1) << "Document feed fetched: " << num_accumulated_entries;
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::NotifyDocumentFeedFetched,
-                   ui_weak_ptr_,
-                   num_accumulated_entries));
-    return;
-  }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "Document feed fetched: " << num_accumulated_entries;
   // Notify the observers that a document feed is fetched.
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnDocumentFeedFetched(num_accumulated_entries));
+}
+
+void GDataFileSystem::RunAndNotifyInitialLoadFinished(
+    const FindEntryCallback& callback,
+    base::PlatformFileError error,
+    GDataEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "Initial load finished";
+  if (!callback.is_null())
+    callback.Run(error, entry);
+
+  // Notify the observers that root directory has been initialized.
+  FOR_EACH_OBSERVER(Observer, observers_, OnInitialLoadFinished());
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
