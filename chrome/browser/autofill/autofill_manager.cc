@@ -292,9 +292,9 @@ void AutofillManager::Observe(
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref = content::Details<std::string>(details).ptr();
+  std::string* pref = content::Details<std::string>(details).ptr();
     DCHECK(prefs::kPasswordGenerationEnabled == *pref);
-    UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
+  UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
   } else if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     if (ProfileSyncServiceFactory::HasProfileSyncService(
           tab_contents_->profile())) {
@@ -680,8 +680,7 @@ void AutofillManager::OnShowAutofillDialog() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = browser::FindLastActiveWithProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
 #endif  // #if defined(OS_ANDROID)
@@ -739,8 +738,7 @@ void AutofillManager::OnShowPasswordGenerationPopup(
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = browser::FindLastActiveWithProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
   password_generator_.reset(new autofill::PasswordGenerator(max_length));
   browser->window()->ShowPasswordGenerationBubble(
       bounds, password_generator_.get(), form);

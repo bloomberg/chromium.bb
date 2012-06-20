@@ -212,8 +212,8 @@ void OmniboxSearchHint::ShowInfoBar() {
 }
 
 void OmniboxSearchHint::ShowEnteringQuery() {
-  LocationBar* location_bar = browser::FindLastActiveWithProfile(
-      tab_->profile())->window()->GetLocationBar();
+  LocationBar* location_bar = browser::FindBrowserWithWebContents(
+      tab_->web_contents())->window()->GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetLocationEntry();
   location_bar->FocusLocation(true);
   omnibox_view->SetUserText(
