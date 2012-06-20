@@ -35,9 +35,11 @@
 
 #include <wayland-client.h>
 
+#include "../shared/config-parser.h"
 #include "window.h"
 
 static int option_fullscreen;
+static char *option_font = "mono";
 
 #define MOD_SHIFT	0x01
 #define MOD_ALT		0x02
@@ -2310,13 +2312,13 @@ terminal_create(struct display *display, int fullscreen)
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);
 	cairo_set_font_size(cr, 14);
-	cairo_select_font_face (cr, "mono",
+	cairo_select_font_face (cr, option_font,
 				CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_BOLD);
 	terminal->font_bold = cairo_get_scaled_font (cr);
 	cairo_scaled_font_reference(terminal->font_bold);
 
-	cairo_select_font_face (cr, "mono",
+	cairo_select_font_face (cr, option_font,
 				CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_NORMAL);
 	terminal->font_normal = cairo_get_scaled_font (cr);
@@ -2381,8 +2383,18 @@ terminal_run(struct terminal *terminal, const char *path)
 	return 0;
 }
 
+static const struct config_key terminal_config_keys[] = {
+	{ "font", CONFIG_KEY_STRING, &option_font },
+};
+
+static const struct config_section config_sections[] = {
+	{ "terminal",
+	  terminal_config_keys, ARRAY_LENGTH(terminal_config_keys) },
+};
+
 static const struct weston_option terminal_options[] = {
 	{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &option_fullscreen },
+	{ WESTON_OPTION_STRING, "font", 0, &option_font },
 };
 
 int main(int argc, char *argv[])
@@ -2390,6 +2402,13 @@ int main(int argc, char *argv[])
 	struct display *d;
 	struct terminal *terminal;
 	const char *shell;
+	char *config_file;
+
+	config_file = config_file_path("weston.ini");
+	parse_config_file(config_file,
+			  config_sections, ARRAY_LENGTH(config_sections),
+			  NULL);
+	free(config_file);
 
 	argc = parse_options(terminal_options,
 			     ARRAY_LENGTH(terminal_options), argc, argv);
