@@ -24,6 +24,12 @@ class ContentViewImpl : public ContentView,
                   WebContents* web_contents);
   virtual void Destroy(JNIEnv* env, jobject obj);
 
+  // --------------------------------------------------------------------------
+  // Methods called from native code
+  // --------------------------------------------------------------------------
+
+  WebContents* web_contents() const { return web_contents_; }
+
  private:
   // NotificationObserver implementation.
   virtual void Observe(int type,
