@@ -266,6 +266,7 @@
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="statusbar_network_bars_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN" file="statusbar_vpn_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN_BADGE" file="statusbar_network_vpn_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON" file="action_box_button.png" />
