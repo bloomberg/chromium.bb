@@ -1915,7 +1915,11 @@ keyboard_repeat_func(struct task *task, uint32_t events)
 	struct window *window = input->keyboard_focus;
 	uint64_t exp;
 
-	read(input->repeat_timer_fd, &exp, sizeof (uint64_t));
+	if (read(input->repeat_timer_fd, &exp, sizeof exp) != sizeof exp)
+		/* If we change the timer between the fd becoming
+		 * readable and getting here, there'll be nothing to
+		 * read and we get EAGAIN. */
+		return;
 
 	if (window && window->key_handler) {
 		(*window->key_handler)(window, input, input->repeat_time,
@@ -3293,7 +3297,8 @@ display_add_input(struct display *d, uint32_t id)
 
 	input->pointer_surface = wl_compositor_create_surface(d->compositor);
 
-	input->repeat_timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
+	input->repeat_timer_fd = timerfd_create(CLOCK_MONOTONIC,
+						TFD_CLOEXEC | TFD_NONBLOCK);
 	input->repeat_task.run = keyboard_repeat_func;
 	display_watch_fd(d, input->repeat_timer_fd,
 			 EPOLLIN, &input->repeat_task);
