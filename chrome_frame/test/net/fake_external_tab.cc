@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
@@ -237,9 +238,9 @@ void FilterDisabledTests() {
     "URLRequestTest.CancelTest_During_OnGetCookies",
     "URLRequestTest.CancelTest_During_OnSetCookie",
 
-    // These tests are disabled as the rely on functionality provided by
+    // These tests are disabled as they rely on functionality provided by
     // Chrome's HTTP stack like the ability to set the proxy for a URL, etc.
-    "URLRequestTestHTTP.FLAKY_ProxyTunnelRedirectTest",
+    "URLRequestTestHTTP.ProxyTunnelRedirectTest",
     "URLRequestTestHTTP.UnexpectedServerAuthTest",
 
     // This test is disabled as it expects an empty UA to be echoed back from
@@ -298,6 +299,19 @@ void FilterDisabledTests() {
   for (int i = 0; i < arraysize(disabled_tests); ++i) {
     if (i > 0)
       filter += ":";
+
+    // If the rule has the form TestSuite.TestCase, also filter out
+    // TestSuite.FLAKY_TestCase . This way the exclusion rules above
+    // don't need to be updated when a test is marked flaky.
+    base::StringPiece test_name(disabled_tests[i]);
+    size_t dot_index = test_name.find('.');
+    if (dot_index != base::StringPiece::npos &&
+        dot_index + 1 < test_name.size()) {
+      test_name.substr(0, dot_index).AppendToString(&filter);
+      filter += ".FLAKY_";
+      test_name.substr(dot_index + 1).AppendToString(&filter);
+      filter += ":";
+    }
     filter += disabled_tests[i];
   }
 
