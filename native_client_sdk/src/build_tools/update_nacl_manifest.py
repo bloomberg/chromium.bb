@@ -10,6 +10,7 @@ in manifest.
 import buildbot_common
 import csv
 import manifest_util
+import optparse
 import os
 import posixpath
 import re
@@ -159,8 +160,11 @@ class Delegate(object):
 
 
 class RealDelegate(Delegate):
-  def __init__(self):
-    pass
+  def __init__(self, gsutil=None):
+    if gsutil:
+      self.gsutil = gsutil
+    else:
+      self.gsutil = buildbot_common.GetGsutil()
 
   def GetRepoManifest(self):
     """See Delegate.GetRepoManifest"""
@@ -213,7 +217,7 @@ class RealDelegate(Delegate):
           operation such as ls, cp or cat.
     Returns:
       The stdout from the process."""
-    cmd = [buildbot_common.GetGsutil()] + list(args)
+    cmd = [self.gsutil] + list(args)
     if stdin:
       stdin_pipe = subprocess.PIPE
     else:
@@ -537,7 +541,12 @@ def Run(delegate, platforms):
 
 
 def main(args):
-  delegate = RealDelegate()
+  parser = optparse.OptionParser()
+  parser.add_option('--gsutil', help='path to gsutil', dest='gsutil',
+      default=None)
+  options, args = parser.parse_args(args[1:])
+
+  delegate = RealDelegate(options.gsutil)
   Run(delegate, ('mac', 'win', 'linux'))
 
 
