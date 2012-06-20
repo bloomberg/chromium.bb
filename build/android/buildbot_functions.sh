@@ -13,6 +13,28 @@ JOBS="${JOBS:-4}"
 # Clobber build?  Overridden by bots with BUILDBOT_CLOBBER.
 NEED_CLOBBER="${NEED_CLOBBER:-0}"
 
+
+# Parse named arguments passed into the annotator script
+# and assign them global variable names.
+function bb_parse_args {
+  while [[ $1 ]]; do
+    case "$1" in
+      --factory-properties=*)
+        FACTORY_PROPERTIES="$(echo "$1" | sed 's/^[^=]*=//')"
+        ;;
+      --build-properties=*)
+        BUILD_PROPERTIES="$(echo "$1" | sed 's/^[^=]*=//')"
+        ;;
+      *)
+        echo "@@@STEP_WARNINGS@@@"
+        echo "Warning, unparsed input argument: '$1'"
+        ;;
+    esac
+    shift
+  done
+}
+
+
 # Setup environment for Android build.
 # Called from bb_baseline_setup.
 # Moved to top of file so it is easier to find.
@@ -30,6 +52,7 @@ function bb_install_build_deps {
   if [[ -f "$script" ]]; then
     "$script"
   else
+    echo "@@@STEP_WARNINGS@@@"
     echo "Cannot find $script; why?"
   fi
 }
@@ -41,10 +64,17 @@ function bb_force_bot_green_and_exit {
 }
 
 # Basic setup for all bots to run after a source tree checkout.
-# $1: source root.
+# Args:
+#   $1: source root.
+#   $2 and beyond: key value pairs which are parsed by bb_parse_args.
 function bb_baseline_setup {
   echo "@@@BUILD_STEP cd into source root@@@"
   SRC_ROOT="$1"
+  # Remove SRC_ROOT param
+  shift
+
+  bb_parse_args "$@"
+
   if [ ! -d "${SRC_ROOT}" ] ; then
     echo "Please specify a valid source root directory as an arg"
     echo '@@@STEP_FAILURE@@@'
@@ -77,7 +107,7 @@ function bb_baseline_setup {
 
   # Setting up a new bot?  Must do this before envsetup.sh
   if [ ! -d "${ANDROID_NDK_ROOT}" ] ; then
-    bb_install_build_deps $1
+    bb_install_build_deps $SRC_ROOT
   fi
 
   echo "@@@BUILD_STEP Configure with envsetup.sh@@@"
@@ -238,4 +268,28 @@ function bb_run_tests {
 function bb_run_apk_tests {
   echo "@@@BUILD_STEP Run APK Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose --apk=True
+}
+
+# Zip and archive a build.
+function bb_zip_build {
+  echo "@@@BUILD_STEP Zip build@@@"
+  python ../../../../scripts/slave/zip_build.py \
+    --src-dir "$SRC_ROOT" \
+    --factory-properties "$FACTORY_PROPERTIES" \
+    --build-properties "$BUILD_PROPERTIES"
+}
+
+# Download and extract a build.
+function bb_extract_build {
+  echo "@@@BUILD_STEP Download and extract build@@@"
+  if [[ -z $FACTORY_PROPERTIES || -z $BUILD_PROPERTIES ]]; then
+    return 1
+  fi
+
+  python ../../../../scripts/slave/extract_build.py \
+    --build-dir "$SRC_ROOT" \
+    --build-output-dir "out" \
+    --target Release \
+    --factory-properties "$FACTORY_PROPERTIES" \
+    --build-properties "$BUILD_PROPERTIES"
 }

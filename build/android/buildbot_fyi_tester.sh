@@ -3,8 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# Buildbot annotator script for the FYI waterfall.  Compile,
-# experimental compile, run tests, ...
+# Buildbot annotator script for a FYI waterfall tester.
+# Downloads and extracts a build from the builder and runs tests.
 
 # SHERIFF: there should be no need to disable this bot.
 # The FYI waterfall does not close the tree.
@@ -14,6 +14,5 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_install_build_deps "$BB_SRC_ROOT"
-bb_compile
-bb_compile_experimental
-bb_run_tests
+bb_extract_build
+bb_run_apk_tests
