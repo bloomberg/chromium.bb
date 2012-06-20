@@ -125,9 +125,6 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 const char kAutomationReinitializeOnChannelError[] =
     "automation-reinitialize-on-channel-error";
 
-// Enables the browser plugin only in a platform app.
-const char kBrowserPluginPlatformApps[] = "platform-apps-only";
-
 // Use the (in-progress) refactor of desktop Panel windows which does not
 // require a Browser. Flag will be removed after refactor is ready to replace
 // existing BrowserWindow Panels.

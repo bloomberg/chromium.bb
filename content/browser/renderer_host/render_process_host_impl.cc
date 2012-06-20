@@ -643,7 +643,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // renderer is not run in the sandbox.
     switches::kAuditAllHandles,
     switches::kAuditHandles,
-    switches::kBrowserPlugin,
     switches::kChromeFrame,
     switches::kDisable3DAPIs,
     switches::kDisableAcceleratedCompositing,

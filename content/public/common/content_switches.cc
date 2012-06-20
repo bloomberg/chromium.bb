@@ -29,15 +29,6 @@ const char kBrowserAssertTest[]             = "assert-test";
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 
-// Browser plugin control name
-const char kBrowserPlugin[]                 = "browser-plugin";
-
-// Disable the plugin entirely
-const char kBrowserPluginDisabled[]         = "disabled";
-
-// Enable the plugin in all cases
-const char kBrowserPluginEnabled[]          = "enabled";
-
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 

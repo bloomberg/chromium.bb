@@ -313,12 +313,8 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   std::string actual_mime_type;
   std::string orig_mime_type = params.mimeType.utf8();
 
-  std::string browser_plugin_switch = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kBrowserPlugin);
   if (orig_mime_type == content::kBrowserPluginMimeType &&
-      (browser_plugin_switch == switches::kBrowserPluginEnabled ||
-       (browser_plugin_switch == switches::kBrowserPluginPlatformApps &&
-        ExtensionHelper::Get(render_view)->view_type() == VIEW_TYPE_APP_SHELL)))
+      ExtensionHelper::Get(render_view)->view_type() == VIEW_TYPE_APP_SHELL)
       return false;
 
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
