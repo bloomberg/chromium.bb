@@ -55,7 +55,7 @@ DOMBoundBrowserObject::~DOMBoundBrowserObject() {
   STLDeleteContainerPointers(properties_.begin(), properties_.end());
 }
 
-WebUIBindings::WebUIBindings(IPC::Message::Sender* sender, int routing_id)
+WebUIBindings::WebUIBindings(IPC::Sender* sender, int routing_id)
     : sender_(sender), routing_id_(routing_id) {
   BindCallback("send", base::Bind(&WebUIBindings::Send,
                                   base::Unretained(this)));

@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_PPP_MOUSE_LOCK_PROXY_H_
 #define PPAPI_PROXY_PPP_MOUSE_LOCK_PROXY_H_
 
+#include "base/compiler_specific.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/proxy/interface_proxy.h"

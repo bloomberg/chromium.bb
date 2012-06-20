@@ -40,7 +40,7 @@ class CONTENT_EXPORT InputEventFilter
   // is true, then a ViewHostMsg_HandleInputEvent_ACK will not be generated,
   // leaving that responsibility up to the eventual handler on the main thread.
   //
-  InputEventFilter(IPC::Channel::Listener* main_listener,
+  InputEventFilter(IPC::Listener* main_listener,
                    base::MessageLoopProxy* target_loop,
                    const Handler& handler);
 
@@ -72,11 +72,11 @@ class CONTENT_EXPORT InputEventFilter
                          bool processed);
 
   scoped_refptr<base::MessageLoopProxy> main_loop_;
-  IPC::Channel::Listener* main_listener_;
+  IPC::Listener* main_listener_;
 
   // The sender_ only gets invoked on the thread corresponding to io_loop_.
   scoped_refptr<base::MessageLoopProxy> io_loop_;
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
 
   // The handler_ only gets Run on the thread corresponding to target_loop_.
   scoped_refptr<base::MessageLoopProxy> target_loop_;

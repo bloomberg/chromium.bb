@@ -100,8 +100,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
       OVERRIDE;
-  virtual void AddRoute(int32 routing_id,
-                        IPC::Channel::Listener* listener) OVERRIDE;
+  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual int GenerateRoutingID() OVERRIDE;
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;

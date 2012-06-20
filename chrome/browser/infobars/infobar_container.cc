@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"

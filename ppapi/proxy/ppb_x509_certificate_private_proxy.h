@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PPB_X509_CERTIFICATE_PRIVATE_PROXY_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"

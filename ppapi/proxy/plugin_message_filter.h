@@ -7,8 +7,9 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ppapi/c/pp_instance.h"
 
 namespace ppapi {
@@ -20,7 +21,7 @@ namespace proxy {
 // There is one instance of this class for each renderer channel (same as for
 // the PluginDispatchers).
 class PluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
-                            public IPC::Message::Sender {
+                            public IPC::Sender {
  public:
   // The input is a pointer to a set that will be used to uniquify PP_Instances
   // across all renderer channels. The same pointer should be passed to each
@@ -30,12 +31,12 @@ class PluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual ~PluginMessageFilter();
 
   // MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnFilterRemoved();
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterRemoved() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Message::Sender implementation.
-  virtual bool Send(IPC::Message* msg);
+  // IPC::Sender implementation.
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
   void OnMsgReserveInstanceId(PP_Instance instance, bool* usable);

@@ -411,8 +411,7 @@ scoped_refptr<base::MessageLoopProxy>
   return ChildProcess::current()->io_message_loop_proxy();
 }
 
-void RenderThreadImpl::AddRoute(int32 routing_id,
-                                IPC::Channel::Listener* listener) {
+void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
   widget_count_++;
   return ChildThread::AddRoute(routing_id, listener);
 }

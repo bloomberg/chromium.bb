@@ -54,7 +54,7 @@ class RenderWidgetFullscreenPepper :
       CreateContext3D() OVERRIDE;
   virtual MouseLockDispatcher* GetMouseLockDispatcher() OVERRIDE;
 
-  // IPC::Channel::Listener implementation. This overrides the implementation
+  // IPC::Listener implementation. This overrides the implementation
   // in RenderWidgetFullscreen.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 

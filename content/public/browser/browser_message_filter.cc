@@ -98,7 +98,7 @@ base::TaskRunner* BrowserMessageFilter::OverrideTaskRunnerForMessage(
 }
 
 bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
-                                                IPC::Message::Sender* sender) {
+                                                IPC::Sender* sender) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // On Windows there's a potential deadlock with sync messsages going in
   // a circle from browser -> plugin -> renderer -> browser.

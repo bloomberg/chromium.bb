@@ -6,8 +6,8 @@
 #define PPAPI_PROXY_INTERFACE_PROXY_H_
 
 #include "base/basictypes.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -18,8 +18,7 @@ namespace proxy {
 
 class Dispatcher;
 
-class InterfaceProxy : public IPC::Channel::Listener,
-                       public IPC::Message::Sender {
+class InterfaceProxy : public IPC::Listener, public IPC::Sender {
  public:
   // Factory function type for interfaces. Ownership of the returned pointer
   // is transferred to the caller.
@@ -47,10 +46,10 @@ class InterfaceProxy : public IPC::Channel::Listener,
 
   Dispatcher* dispatcher() const { return dispatcher_; }
 
-  // IPC::Message::Sender implementation.
+  // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg);
 
-  // Sub-classes must implement IPC::Channel::Listener which contains this:
+  // Sub-classes must implement IPC::Listener which contains this:
   //virtual bool OnMessageReceived(const IPC::Message& msg);
 
  protected:

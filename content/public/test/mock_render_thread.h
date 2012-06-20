@@ -45,8 +45,7 @@ class MockRenderThread : public RenderThread {
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
       OVERRIDE;
-  virtual void AddRoute(int32 routing_id,
-                        IPC::Channel::Listener* listener) OVERRIDE;
+  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual int GenerateRoutingID() OVERRIDE;
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
@@ -143,7 +142,7 @@ class MockRenderThread : public RenderThread {
   // We only keep track of one Widget, we learn its pointer when it
   // adds a new route.  We do not keep track of Widgets created with
   // OnMsgCreateWindow.
-  IPC::Channel::Listener* widget_;
+  IPC::Listener* widget_;
 
   // Routing id that will be assigned to a CreateWindow Widget.
   int32 new_window_routing_id_;

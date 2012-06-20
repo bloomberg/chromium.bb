@@ -16,6 +16,8 @@
 #include "chrome/common/automation_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"

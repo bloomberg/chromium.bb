@@ -32,14 +32,14 @@ class PluginChannelHost : public NPChannelBase {
 
   virtual int GenerateRouteID() OVERRIDE;
 
-  void AddRoute(int route_id, IPC::Channel::Listener* listener,
+  void AddRoute(int route_id, IPC::Listener* listener,
                 NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
   // NPChannelBase override:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // IPC::Channel::Listener override
+  // IPC::Listener override
   virtual void OnChannelError() OVERRIDE;
 
   static void SetListening(bool flag);
@@ -65,7 +65,7 @@ class PluginChannelHost : public NPChannelBase {
 
   // Keep track of all the registered WebPluginDelegeProxies to
   // inform about OnChannelError
-  typedef base::hash_map<int, IPC::Channel::Listener*> ProxyMap;
+  typedef base::hash_map<int, IPC::Listener*> ProxyMap;
   ProxyMap proxies_;
 
   // An IPC MessageFilter that can be told to filter out all messages. This is

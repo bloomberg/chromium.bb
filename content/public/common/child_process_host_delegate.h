@@ -9,12 +9,12 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 
 namespace content {
 
 // Interface that all users of ChildProcessHost need to provide.
-class ChildProcessHostDelegate : public IPC::Channel::Listener {
+class ChildProcessHostDelegate : public IPC::Listener {
  public:
   virtual ~ChildProcessHostDelegate() {}
 

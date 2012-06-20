@@ -70,7 +70,7 @@ class InputEventRecorder {
   std::vector<Record> records_;
 };
 
-class IPCMessageRecorder : public IPC::Channel::Listener {
+class IPCMessageRecorder : public IPC::Listener {
  public:
   virtual bool OnMessageReceived(const IPC::Message& message) {
     messages_.push_back(message);

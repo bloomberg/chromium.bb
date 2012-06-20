@@ -6,7 +6,9 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_OBSERVER_H_
 #pragma once
 
-#include "ipc/ipc_channel.h"
+#include "base/compiler_specific.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -18,8 +20,8 @@ class RenderViewHostImpl;
 
 // An observer API implemented by classes which want to filter IPC messages from
 // RenderViewHost.
-class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
-                                              public IPC::Message::Sender {
+class CONTENT_EXPORT RenderViewHostObserver : public IPC::Listener,
+                                              public IPC::Sender {
  public:
 
  protected:
@@ -40,10 +42,10 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   // Notifies that a navigation is starting.
   virtual void Navigate(const GURL& url);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // IPC::Message::Sender implementation.
+  // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   RenderViewHost* render_view_host() const;

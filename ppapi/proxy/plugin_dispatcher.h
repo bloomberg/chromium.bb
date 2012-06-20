@@ -108,7 +108,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   virtual bool IsPlugin() const;
   virtual bool Send(IPC::Message* msg);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 

@@ -391,7 +391,7 @@ class RenderViewImpl : public RenderWidget,
   // supported PPAPI plug-ins.
   bool HasIMETextFocus();
 
-  // IPC::Channel::Listener implementation -------------------------------------
+  // IPC::Listener implementation ----------------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 

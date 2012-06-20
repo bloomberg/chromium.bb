@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/image/image.h"
 

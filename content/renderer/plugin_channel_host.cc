@@ -151,7 +151,7 @@ int PluginChannelHost::GenerateRouteID() {
 }
 
 void PluginChannelHost::AddRoute(int route_id,
-                                 IPC::Channel::Listener* listener,
+                                 IPC::Listener* listener,
                                  NPObjectBase* npobject) {
   NPChannelBase::AddRoute(route_id, listener, npobject);
 

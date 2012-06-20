@@ -7,8 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 
 class RenderViewImpl;
@@ -31,8 +33,8 @@ class RenderView;
 
 // Base class for objects that want to filter incoming IPCs, and also get
 // notified of changes to the frame.
-class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
-                                          public IPC::Message::Sender {
+class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
+                                          public IPC::Sender {
  public:
   // By default, observers will be deleted when the RenderView goes away.  If
   // they want to outlive it, they can override this function.
@@ -82,14 +84,14 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   virtual void Navigate(const GURL& url) {}
   virtual void ClosePage() {}
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  protected:
   explicit RenderViewObserver(RenderView* render_view);
   virtual ~RenderViewObserver();
 
-  // IPC::Message::Sender implementation.
+  // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   RenderView* render_view();

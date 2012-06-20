@@ -11,7 +11,7 @@
 #include "base/process_util.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
 
@@ -32,8 +32,8 @@ namespace content {
 // Interface that represents the browser side of the browser <-> renderer
 // communication channel. There will generally be one RenderProcessHost per
 // renderer process.
-class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
-                                         public IPC::Channel::Listener {
+class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
+                                         public IPC::Listener {
  public:
   typedef IDMap<RenderProcessHost>::iterator iterator;
   typedef IDMap<RenderWidgetHost>::const_iterator RenderWidgetHostsIterator;

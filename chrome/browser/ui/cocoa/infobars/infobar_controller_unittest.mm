@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

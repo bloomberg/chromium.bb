@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"

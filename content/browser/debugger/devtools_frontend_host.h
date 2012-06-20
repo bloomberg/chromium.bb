@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 

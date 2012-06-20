@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"

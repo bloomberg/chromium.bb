@@ -7,7 +7,7 @@
 #pragma once
 
 #include "content/common/content_export.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 // A DOMBoundBrowserObject is a backing for some object bound to the window
@@ -39,8 +39,7 @@ class DOMBoundBrowserObject : public webkit_glue::CppBoundClass {
 // delegate.
 class WebUIBindings : public DOMBoundBrowserObject {
  public:
-  WebUIBindings(IPC::Message::Sender* sender,
-                int routing_id);
+  WebUIBindings(IPC::Sender* sender, int routing_id);
   virtual ~WebUIBindings();
 
  private:
@@ -48,7 +47,7 @@ class WebUIBindings : public DOMBoundBrowserObject {
   void Send(const webkit_glue::CppArgumentList& args,
             webkit_glue::CppVariant* result);
 
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
   int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIBindings);

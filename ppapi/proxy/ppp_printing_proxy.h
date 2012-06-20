@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_PPP_PRINTING_PROXY_H_
 #define PPAPI_PROXY_PPP_PRINTING_PROXY_H_
 
+#include <string>
 #include <vector>
 
 #include "ppapi/c/dev/ppp_printing_dev.h"

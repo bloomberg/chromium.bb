@@ -74,8 +74,8 @@ class PluginInstance;
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
 class CONTENT_EXPORT RenderWidget
-    : public IPC::Channel::Listener,
-      public IPC::Message::Sender,
+    : public IPC::Listener,
+      public IPC::Sender,
       NON_EXPORTED_BASE(virtual public WebKit::WebWidgetClient),
       public base::RefCounted<RenderWidget> {
  public:
@@ -111,10 +111,10 @@ class CONTENT_EXPORT RenderWidget
   bool is_fullscreen() const { return is_fullscreen_; }
   bool is_hidden() const { return is_hidden_; }
 
-  // IPC::Channel::Listener
+  // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  // IPC::Message::Sender
+  // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // WebKit::WebWidgetClient

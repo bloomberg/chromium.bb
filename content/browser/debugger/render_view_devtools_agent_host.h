@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_view_host_observer.h"

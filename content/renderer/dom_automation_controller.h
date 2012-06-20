@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
 #pragma once
 
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 /* DomAutomationController class:
@@ -110,12 +110,12 @@ class DomAutomationController : public webkit_glue::CppBoundClass {
 
   void set_routing_id(int routing_id) { routing_id_ = routing_id; }
 
-  void set_message_sender(IPC::Message::Sender* sender) {
+  void set_message_sender(IPC::Sender* sender) {
     sender_ = sender;
   }
 
  private:
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
 
   // Refer to the comments at the top of the file for more details.
   int routing_id_;  // routing id to be used by first channel.

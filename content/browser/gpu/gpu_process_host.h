@@ -30,6 +30,10 @@ struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 class BrowserChildProcessHostImpl;
 
+namespace IPC {
+struct ChannelHandle;
+}
+
 class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
                        public IPC::Message::Sender,
                        public base::NonThreadSafe {

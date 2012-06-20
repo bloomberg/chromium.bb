@@ -260,9 +260,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Called to notify the RenderWidget that it has been resized.
   virtual void WasResized() = 0;
 
-  // Access to the implementation's
-  // IPC::Channel::Listener::OnMessageReceived.  Intended only for
-  // test code.
+  // Access to the implementation's IPC::Listener::OnMessageReceived. Intended
+  // only for test code.
 
   // Add a keyboard listener that can handle key presses without requiring
   // focus.

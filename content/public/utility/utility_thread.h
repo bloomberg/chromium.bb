@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -16,7 +16,7 @@
 
 namespace content {
 
-class CONTENT_EXPORT UtilityThread : public IPC::Message::Sender {
+class CONTENT_EXPORT UtilityThread : public IPC::Sender {
  public:
   // Returns the one utility thread for this process.  Note that this can only
   // be accessed when running on the utility thread itself.

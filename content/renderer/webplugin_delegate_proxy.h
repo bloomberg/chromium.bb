@@ -52,8 +52,8 @@ class WebPlugin;
 // the plugin process.
 class WebPluginDelegateProxy
     : public webkit::npapi::WebPluginDelegate,
-      public IPC::Channel::Listener,
-      public IPC::Message::Sender,
+      public IPC::Listener,
+      public IPC::Sender,
       public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
   WebPluginDelegateProxy(const std::string& mime_type,
@@ -105,11 +105,11 @@ class WebPluginDelegateProxy
   virtual void ImeCompositionCompleted(const string16& text, int plugin_id);
 #endif
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   virtual void SendJavaScriptStream(const GURL& url,

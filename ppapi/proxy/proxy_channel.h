@@ -7,8 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
@@ -25,8 +26,8 @@ namespace ppapi {
 namespace proxy {
 
 class PPAPI_PROXY_EXPORT ProxyChannel
-    : public IPC::Channel::Listener,
-      public IPC::Message::Sender {
+    : public IPC::Listener,
+      public IPC::Sender {
  public:
   class PPAPI_PROXY_EXPORT Delegate {
    public:
@@ -67,11 +68,11 @@ class PPAPI_PROXY_EXPORT ProxyChannel
       base::PlatformFile handle,
       bool should_close_source);
 
-  // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* msg);
+  // IPC::Sender implementation.
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // IPC::Channel::Listener implementation.
-  virtual void OnChannelError();
+  // IPC::Listener implementation.
+  virtual void OnChannelError() OVERRIDE;
 
   // Will be NULL in some unit tests and if the remote side has crashed.
   IPC::SyncChannel* channel() const {

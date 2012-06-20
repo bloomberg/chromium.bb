@@ -105,7 +105,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual void OnResponseStarted(
       net::URLRequest* request,
       ResourceResponse* response,
-      IPC::Message::Sender* sender);
+      IPC::Sender* sender);
 
   // Informs the delegate that a request has been redirected.
   virtual void OnRequestRedirected(

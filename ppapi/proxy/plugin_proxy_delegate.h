@@ -14,8 +14,8 @@ class PPAPI_PROXY_EXPORT PluginProxyDelegate {
  public:
   virtual ~PluginProxyDelegate() {}
 
-  // Sends the given message to the browser. Identical semantics to
-  // IPC::Message::Sender interface.
+  // Sends the given message to the browser. Identical semantics to IPC::Sender
+  // interface.
   virtual bool SendToBrowser(IPC::Message* msg) = 0;
 
   // Returns the language code of the current UI language.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 
+#include "base/logging.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"

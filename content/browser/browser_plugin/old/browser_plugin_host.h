@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -16,6 +17,10 @@
 #include "ui/gfx/size.h"
 
 class WebContentsImpl;
+
+namespace IPC {
+struct ChannelHandle;
+}
 
 namespace content {
 

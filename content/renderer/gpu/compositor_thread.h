@@ -26,7 +26,7 @@ class CompositorThread {
  public:
   // |main_listener| refers to the central IPC message listener that lives on
   // the main thread, where all incoming IPC messages are first handled.
-  explicit CompositorThread(IPC::Channel::Listener* main_listener);
+  explicit CompositorThread(IPC::Listener* main_listener);
   ~CompositorThread();
 
   // This MessageFilter should be added to allow input events to be redirected

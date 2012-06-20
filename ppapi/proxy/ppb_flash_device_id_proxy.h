@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PPB_FLASH_DEVICE_ID_PROXY_H_
 #define PPAPI_PROXY_PPB_FLASH_DEVICE_ID_PROXY_H_
 
+#include <string>
+
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 

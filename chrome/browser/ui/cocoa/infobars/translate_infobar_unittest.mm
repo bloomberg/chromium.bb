@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"

@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 
 class CommandLine;
 class FilePath;
@@ -24,7 +24,7 @@ struct ChildProcessData;
 
 // This represents child processes of the browser process, i.e. plugins. They
 // will get terminated at browser shutdown.
-class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Message::Sender {
+class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
  public:
   // Used to create a child process host. The delegate must outlive this object.
   static BrowserChildProcessHost* Create(

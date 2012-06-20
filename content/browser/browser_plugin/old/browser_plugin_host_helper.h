@@ -8,7 +8,9 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "ipc/ipc_channel_handle.h"
 
 namespace gfx {
 class Size;

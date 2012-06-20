@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/sad_tab_helper.h"
 
+#include "base/logging.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"

@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/logging.h"
 #import "base/mac/cocoa_protocols.h"
 #import "base/memory/scoped_nsobject.h"
 #include "content/public/browser/web_contents.h"

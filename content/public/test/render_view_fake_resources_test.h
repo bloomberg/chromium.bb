@@ -49,7 +49,7 @@
 #include "base/message_loop.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockRenderProcess;
@@ -64,10 +64,10 @@ class WebHistoryItem;
 namespace content {
 
 class RenderViewFakeResourcesTest : public ::testing::Test,
-                                    public IPC::Channel::Listener,
+                                    public IPC::Listener,
                                     public RenderViewVisitor {
  public:
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // RenderViewVisitor implementation.

@@ -10,7 +10,7 @@
 
 using WebKit::WebInputEvent;
 
-InputEventFilter::InputEventFilter(IPC::Channel::Listener* main_listener,
+InputEventFilter::InputEventFilter(IPC::Listener* main_listener,
                                    base::MessageLoopProxy* target_loop,
                                    const Handler& handler)
     : main_loop_(base::MessageLoopProxy::current()),

@@ -81,7 +81,7 @@ class CompositorThread::InputHandlerWrapper
 
 //------------------------------------------------------------------------------
 
-CompositorThread::CompositorThread(IPC::Channel::Listener* main_listener)
+CompositorThread::CompositorThread(IPC::Listener* main_listener)
     : thread_("Compositor") {
   filter_ =
       new InputEventFilter(main_listener,

@@ -7,13 +7,12 @@
 #pragma once
 
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 
 namespace content {
 
 // Interface that all users of BrowserChildProcessHost need to provide.
-class CONTENT_EXPORT BrowserChildProcessHostDelegate
-    : public IPC::Channel::Listener {
+class CONTENT_EXPORT BrowserChildProcessHostDelegate : public IPC::Listener {
  public:
   virtual ~BrowserChildProcessHostDelegate() {}
 

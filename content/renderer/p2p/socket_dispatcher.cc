@@ -18,7 +18,7 @@ namespace content {
 class P2PSocketDispatcher::AsyncMessageSender
     : public base::RefCountedThreadSafe<AsyncMessageSender> {
  public:
-  explicit AsyncMessageSender(IPC::Message::Sender* message_sender)
+  explicit AsyncMessageSender(IPC::Sender* message_sender)
       : message_loop_(base::MessageLoopProxy::current()),
         message_sender_(message_sender) {
   }
@@ -44,7 +44,7 @@ class P2PSocketDispatcher::AsyncMessageSender
   }
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  IPC::Message::Sender* message_sender_;
+  IPC::Sender* message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncMessageSender);
 };

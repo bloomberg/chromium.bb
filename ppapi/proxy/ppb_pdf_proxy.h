@@ -5,6 +5,8 @@
 #ifndef PPAPI_PPB_PDF_PROXY_H_
 #define PPAPI_PPB_PDF_PROXY_H_
 
+#include <string>
+
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/host_resource.h"

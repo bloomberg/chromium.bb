@@ -10,8 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
 class ChildThread;
@@ -22,7 +23,7 @@ class ChildThread;
 // happen via the WebMessagePortChannel, and the WebSharedWorker instance will
 // be freed.
 class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
-                             private IPC::Channel::Listener {
+                             private IPC::Listener {
  public:
   // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
   WebSharedWorkerProxy(ChildThread* child_thread,
@@ -50,7 +51,7 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual void clientDestroyed();
 
  private:
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Returns true if the worker is running (can send messages to it).

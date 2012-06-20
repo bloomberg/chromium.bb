@@ -6,8 +6,9 @@
 #define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_H_
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
@@ -39,7 +40,7 @@ namespace content {
 
 class RenderViewVisitor;
 
-class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
+class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
   // Returns the RenderView containing the given WebView.
   static RenderView* FromWebView(WebKit::WebView* webview);
