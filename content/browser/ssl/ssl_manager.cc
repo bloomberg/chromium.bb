@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
@@ -17,9 +15,11 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/common/ssl_status.h"
 #include "net/url_request/url_request.h"
 
@@ -158,7 +158,7 @@ void SSLManager::Observe(int type,
       break;
     case content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE:
       DidLoadFromMemoryCache(
-          content::Details<LoadFromMemoryCacheDetails>(details).ptr());
+          content::Details<content::LoadFromMemoryCacheDetails>(details).ptr());
       break;
     case content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED:
       DidChangeSSLInternalState();
@@ -168,18 +168,19 @@ void SSLManager::Observe(int type,
   }
 }
 
-void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
+void SSLManager::DidLoadFromMemoryCache(
+    content::LoadFromMemoryCacheDetails* details) {
   // Simulate loading this resource through the usual path.
   // Note that we specify SUB_RESOURCE as the resource type as WebCore only
   // caches sub-resources.
   // This resource must have been loaded with no filtering because filtered
   // resouces aren't cachable.
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
-      details->url(),
+      details->url,
       ResourceType::SUB_RESOURCE,
-      details->pid(),
-      details->ssl_cert_id(),
-      details->ssl_cert_status()));
+      details->pid,
+      details->cert_id,
+      details->cert_status));
 
   // Simulate loading this resource through the usual path.
   policy()->OnRequestStarted(info.get());

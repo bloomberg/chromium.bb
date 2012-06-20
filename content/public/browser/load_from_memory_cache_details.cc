@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/load_from_memory_cache_details.h"
+#include "content/public/browser/load_from_memory_cache_details.h"
+
+namespace content {
 
 LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     const GURL& url,
@@ -12,14 +14,16 @@ LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     const std::string& http_method,
     const std::string& mime_type,
     ResourceType::Type resource_type)
-    : url_(url),
-      pid_(pid),
-      cert_id_(cert_id),
-      cert_status_(cert_status),
-      http_method_(http_method),
-      mime_type_(mime_type),
-      resource_type_(resource_type) {
+    : url(url),
+      pid(pid),
+      cert_id(cert_id),
+      cert_status(cert_status),
+      http_method(http_method),
+      mime_type(mime_type),
+      resource_type(resource_type) {
 }
 
 LoadFromMemoryCacheDetails::~LoadFromMemoryCacheDetails() {
 }
+
+}  // namespace content

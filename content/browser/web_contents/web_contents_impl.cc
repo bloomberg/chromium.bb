@@ -26,7 +26,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
-#include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -48,6 +47,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
@@ -1937,14 +1937,14 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   int connection_status = 0;
   content::DeserializeSecurityInfo(security_info, &cert_id, &cert_status,
                                    &security_bits, &connection_status);
-  LoadFromMemoryCacheDetails details(url, GetRenderProcessHost()->GetID(),
-                                     cert_id, cert_status, http_method,
-                                     mime_type, resource_type);
+  content::LoadFromMemoryCacheDetails details(
+      url, GetRenderProcessHost()->GetID(), cert_id, cert_status, http_method,
+      mime_type, resource_type);
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
       content::Source<NavigationController>(&controller_),
-      content::Details<LoadFromMemoryCacheDetails>(&details));
+      content::Details<content::LoadFromMemoryCacheDetails>(&details));
 }
 
 void WebContentsImpl::OnDidDisplayInsecureContent() {
