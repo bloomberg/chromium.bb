@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/common/content_settings.h"
 
 class PrefValueMap;
 
@@ -353,6 +354,31 @@ class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);
+};
+
+// Handles the (deprecated) ClearSiteDataOnExit policy.
+// TODO(mnissler): Remove the policy eventually (http://crbug.com/133291).
+class ClearSiteDataOnExitPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  ClearSiteDataOnExitPolicyHandler();
+  virtual ~ClearSiteDataOnExitPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  // Checks whether the clear site data policy is enabled in |policies|.
+  bool ClearSiteDataEnabled(const PolicyMap& policies);
+
+  // Checks |policies| for the cookies setting and returns it in
+  // |content_setting|. Returns true if the setting is found, false if not.
+  static bool GetContentSetting(const PolicyMap& policies,
+                                ContentSetting* content_setting);
+
+  DISALLOW_COPY_AND_ASSIGN(ClearSiteDataOnExitPolicyHandler);
 };
 
 // Handles RestoreOnStartup policy.

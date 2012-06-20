@@ -743,19 +743,18 @@
         'dynamic_refresh': True,
         'can_be_recommended': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 65,
-      'caption': '''Clear site data on browser shutdown''',
-      'desc': '''This policy is an override for the "Clear cookies and other site data when I close my browser" content settings option.
+      'caption': '''Clear site data on browser shutdown (deprecated)''',
+      'desc': '''This policy is an override for the "Clear cookies and other site data when I close my browser" content settings option that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> supported prior to version 21.
 
-      When set to enabled <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will delete all locally stored data from the browser when it is shut down.
+      This policy exists only for backward-compatibility and will go away in the future. The recommended way to clear site data on exit on version 21 and later is to configure the DefaultCookiesSetting policy to session-only.
 
-      If set to disabled site data will not be cleared on exit.
+      If this policy is enabled it will be translated to the appropriate policy setting for the DefaultCookiesSetting policy, setting it to session-only if the DefaultCookiesSetting policy is not configured or set to Allow.
 
-      If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the default which is to preserve site data on shut down and the user will be able to change this.
-
-      If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not clear cookies or other data relevant to restoring the previous browsing session completely.''',
-      'label': '''Clear site data on browser shutdown''',
+      If this policy is disabled or left unconfigured the policy for storing site data is determined by the DefaultCookiesSetting policy.''',
+      'label': '''Clear site data on browser shutdown (deprecated)''',
     },
     {
       'name': 'Proxy',
@@ -1387,6 +1386,11 @@
               'name': 'BlockCookies',
               'value': 2,
               'caption': '''Do not allow any site to set local data'''
+            },
+            {
+              'name': 'SessionOnly',
+              'value': 4,
+              'caption': '''Keep cookies for the duration of the session.'''
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],

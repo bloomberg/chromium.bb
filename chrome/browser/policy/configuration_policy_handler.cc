@@ -25,7 +25,6 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -1094,6 +1093,71 @@ void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetValue(prefs::kManagedDefaultJavaScriptSetting,
                     Value::CreateIntegerValue(setting));
   }
+}
+
+// ClearSiteDataOnExitPolicyHandler implementation -----------------------------
+
+ClearSiteDataOnExitPolicyHandler::ClearSiteDataOnExitPolicyHandler()
+    : TypeCheckingPolicyHandler(key::kClearSiteDataOnExit,
+                                Value::TYPE_BOOLEAN) {
+}
+
+ClearSiteDataOnExitPolicyHandler::~ClearSiteDataOnExitPolicyHandler() {
+}
+
+bool ClearSiteDataOnExitPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
+  if (ClearSiteDataEnabled(policies) &&
+      GetContentSetting(policies, &content_setting) &&
+      content_setting == CONTENT_SETTING_ALLOW) {
+    errors->AddError(key::kDefaultCookiesSetting,
+                     IDS_POLICY_OVERRIDDEN,
+                     policy_name());
+  }
+
+  return TypeCheckingPolicyHandler::CheckPolicySettings(policies, errors);
+}
+
+void ClearSiteDataOnExitPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  if (ClearSiteDataEnabled(policies)) {
+    ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
+    if (!GetContentSetting(policies, &content_setting) ||
+        content_setting == CONTENT_SETTING_ALLOW) {
+      prefs->SetValue(
+          prefs::kManagedDefaultCookiesSetting,
+          Value::CreateIntegerValue(CONTENT_SETTING_SESSION_ONLY));
+    }
+  }
+}
+
+bool ClearSiteDataOnExitPolicyHandler::ClearSiteDataEnabled(
+    const PolicyMap& policies) {
+  const base::Value* value = NULL;
+  PolicyErrorMap errors;
+  bool clear_site_data = false;
+
+  return (CheckAndGetValue(policies, &errors, &value) &&
+          value &&
+          value->GetAsBoolean(&clear_site_data) &&
+          clear_site_data);
+}
+
+// static
+bool ClearSiteDataOnExitPolicyHandler::GetContentSetting(
+    const PolicyMap& policies,
+    ContentSetting* content_setting) {
+  const base::Value* value = policies.GetValue(key::kDefaultCookiesSetting);
+  int setting = CONTENT_SETTING_DEFAULT;
+  if (value && value->GetAsInteger(&setting)) {
+    *content_setting = static_cast<ContentSetting>(setting);
+    return true;
+  }
+
+  return false;
 }
 
 // RestoreOnStartupPolicyHandler implementation --------------------------------

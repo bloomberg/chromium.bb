@@ -240,8 +240,6 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kInstantEnabled),
         PolicyAndPref(key::kDisablePluginFinder,
                       prefs::kDisablePluginFinder),
-        PolicyAndPref(key::kClearSiteDataOnExit,
-                      prefs::kClearSiteDataOnExit),
         PolicyAndPref(key::kDefaultBrowserSettingEnabled,
                       prefs::kDefaultBrowserSettingEnabled),
         PolicyAndPref(key::kDisable3DAPIs,
