@@ -1894,7 +1894,7 @@ keyboard_repeat_func(struct task *task, uint32_t events)
 
 	read(input->repeat_timer_fd, &exp, sizeof (uint64_t));
 
-	if (window->key_handler) {
+	if (window && window->key_handler) {
 		(*window->key_handler)(window, input, input->repeat_time,
 				       input->repeat_key, input->repeat_sym,
 				       WL_KEYBOARD_KEY_STATE_PRESSED,
