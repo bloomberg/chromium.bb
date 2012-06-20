@@ -287,7 +287,7 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
       web_view_(NULL),
       is_fullscreen_(false),
       use_custom_frame_(
-          win_params.frame == ShellWindow::CreateParams::FRAME_CUSTOM) {
+          win_params.frame == ShellWindow::CreateParams::FRAME_NONE) {
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;

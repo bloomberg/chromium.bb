@@ -41,7 +41,7 @@ class ShellWindow : public content::NotificationObserver,
   struct CreateParams {
     enum Frame {
       FRAME_CHROME, // Chrome-style window frame.
-      FRAME_CUSTOM, // Chromeless frame.
+      FRAME_NONE, // Frameless window.
     };
 
     CreateParams();

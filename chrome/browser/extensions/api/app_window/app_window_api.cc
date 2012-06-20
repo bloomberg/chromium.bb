@@ -22,7 +22,7 @@ namespace Create = app_window::Create;
 
 namespace extensions {
 
-const char kCustomFrameOption[] = "custom";
+const char kNoneFrameOption[] = "none";
 
 bool AppWindowCreateFunction::RunImpl() {
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
@@ -46,8 +46,8 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.bounds.set_y(*options->top.get());
 
     if (options->frame.get()) {
-      create_params.frame = *options->frame == kCustomFrameOption ?
-          ShellWindow::CreateParams::FRAME_CUSTOM :
+      create_params.frame = *options->frame == kNoneFrameOption ?
+          ShellWindow::CreateParams::FRAME_NONE :
           ShellWindow::CreateParams::FRAME_CHROME;
     }
 

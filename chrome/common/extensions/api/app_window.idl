@@ -23,7 +23,7 @@
     // Window type: 'panel' or 'shell' (defaults to 'shell')
     DOMString? type;
 
-    // Frame type: 'custom' or 'chrome' (defaults to 'chrome')
+    // Frame type: 'none' or 'chrome' (defaults to 'chrome')
     DOMString? frame;
   };
 
