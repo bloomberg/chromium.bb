@@ -307,8 +307,8 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 				} else {
 					p = output_run(p, prev, run);
 					run = 1;
-					prev = delta;
 				}
+				prev = delta;
 			}
 		}
 
