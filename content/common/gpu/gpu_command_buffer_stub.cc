@@ -91,14 +91,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // Echo, which just sends an IPC).
   if (decoder_.get() &&
       message.type() != GpuCommandBufferMsg_Echo::ID) {
-    if (!decoder_->MakeCurrent()) {
-      DLOG(ERROR) << "Context lost because MakeCurrent failed.";
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
-      command_buffer_->SetParseError(gpu::error::kLostContext);
-      if (gfx::GLContext::LosesAllContextsOnContextLost())
-        channel_->LoseAllContexts();
+    if (!MakeCurrent())
       return false;
-    }
   }
 
   // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
@@ -167,16 +161,8 @@ bool GpuCommandBufferStub::HasMoreWork() {
 }
 
 void GpuCommandBufferStub::PollWork() {
-  if (decoder_.get()) {
-    if (!decoder_->MakeCurrent()) {
-      DLOG(ERROR) << "Context lost because MakeCurrent failed.";
-      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
-      command_buffer_->SetParseError(gpu::error::kLostContext);
-      if (gfx::GLContext::LosesAllContextsOnContextLost())
-        channel_->LoseAllContexts();
-      return;
-    }
-  }
+  if (decoder_.get() && !MakeCurrent())
+    return;
   if (scheduler_.get())
     scheduler_->PollUnscheduleFences();
 }
@@ -212,6 +198,17 @@ void GpuCommandBufferStub::OnReschedule() {
   }
 
   channel_->OnScheduled();
+}
+
+bool GpuCommandBufferStub::MakeCurrent() {
+  if (decoder_->MakeCurrent())
+    return true;
+  DLOG(ERROR) << "Context lost because MakeCurrent failed.";
+  command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+  command_buffer_->SetParseError(gpu::error::kLostContext);
+  if (gfx::GLContext::LosesAllContextsOnContextLost())
+    channel_->LoseAllContexts();
+  return false;
 }
 
 void GpuCommandBufferStub::Destroy() {
@@ -742,7 +739,9 @@ const GpuCommandBufferStubBase::SurfaceState&
 void GpuCommandBufferStub::SetMemoryAllocation(
     const GpuMemoryAllocation& allocation) {
   Send(new GpuCommandBufferMsg_SetMemoryAllocation(route_id_, allocation));
-  if (!surface_)
+  // This can be called outside of OnMessageReceived, so the context needs to be
+  // made current before calling methods on the surface.
+  if (!surface_ || !MakeCurrent())
     return;
   surface_->SetFrontbufferAllocation(allocation.suggest_have_frontbuffer);
 }

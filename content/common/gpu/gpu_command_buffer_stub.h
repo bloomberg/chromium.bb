@@ -174,6 +174,7 @@ class GpuCommandBufferStub
   void SetPreemptByCounter(scoped_refptr<gpu::RefCountedCounter> counter);
 
  private:
+  bool MakeCurrent();
   void Destroy();
 
   // Cleans up and sends reply if OnInitialize failed.
