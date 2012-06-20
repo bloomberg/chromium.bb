@@ -296,6 +296,8 @@ class NewTabButton : public views::ImageButton {
 #if defined(OS_WIN) && !defined(USE_AURA)
   void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
 #endif
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
   void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
@@ -360,6 +362,14 @@ void NewTabButton::OnMouseReleased(const views::MouseEvent& event) {
   views::ImageButton::OnMouseReleased(event);
 }
 #endif
+
+ui::GestureStatus NewTabButton::OnGestureEvent(
+    const views::GestureEvent& event) {
+  // Consume all gesture events here so that the parent (BaseTab) does not
+  // start consuming gestures.
+  views::ImageButton::OnGestureEvent(event);
+  return ui::GESTURE_STATUS_CONSUMED;
+}
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   SkBitmap image = GetBitmap();

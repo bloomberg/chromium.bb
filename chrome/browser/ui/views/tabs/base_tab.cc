@@ -83,6 +83,14 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     parent()->OnMouseExited(event);
   }
 
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE {
+    // Consume all gesture events here so that the parent (BaseTab) does not
+    // start consuming gestures.
+    ImageButton::OnGestureEvent(event);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
  private:
   BaseTab* tab_;
 
