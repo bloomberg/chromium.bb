@@ -1063,8 +1063,6 @@
         'browser/chromeos/bluetooth/bluetooth_service_record_unittest.cc',
         'browser/chromeos/bluetooth/bluetooth_utils_unittest.cc',
         'browser/chromeos/cros/cros_network_functions_unittest.cc',
-        'browser/chromeos/cros/mock_chromeos_network.cc',
-        'browser/chromeos/cros/mock_chromeos_network.h',
         'browser/chromeos/cros/network_constants.h',
         'browser/chromeos/cros/network_library.cc',
         'browser/chromeos/cros/network_library.h',

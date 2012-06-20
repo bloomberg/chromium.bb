@@ -70,9 +70,6 @@ struct WifiAccessPoint {
 
 typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
 
-// Enables/Disables Libcros network functions.
-void SetLibcrosNetworkFunctionsEnabled(bool enabled);
-
 // Activates the cellular modem specified by |service_path| with carrier
 // specified by |carrier|.
 // |carrier| is NULL or an empty string, this will activate with the currently
