@@ -9,6 +9,10 @@
 #define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
 #pragma once
 
+#if defined(OS_CHROMEOS)
+#error "Use the ChromeOS-specific implementation instead."
+#endif
+
 #include <map>
 #include <set>
 #include <string>

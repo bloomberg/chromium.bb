@@ -12,9 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
 
+#if !defined(OS_CHROMEOS)
 namespace chrome {
 class MediaDeviceNotificationsLinux;
 }
+#endif
 
 class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
  public:
@@ -26,8 +28,10 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
   virtual void PreProfileInit() OVERRIDE;
 
  private:
+#if !defined(OS_CHROMEOS)
   scoped_refptr<chrome::MediaDeviceNotificationsLinux>
       media_device_notifications_linux_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);
 };

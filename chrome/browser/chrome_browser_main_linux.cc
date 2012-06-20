@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/media_gallery/media_device_notifications_linux.h"
+#endif
 
 #if defined(USE_LINUX_BREAKPAD)
 #include <stdlib.h>
@@ -87,10 +89,12 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
     InitCrashReporter();
 #endif
 
+#if !defined(OS_CHROMEOS)
   const FilePath kDefaultMtabPath("/etc/mtab");
   media_device_notifications_linux_ =
       new chrome::MediaDeviceNotificationsLinux(kDefaultMtabPath);
   media_device_notifications_linux_->Init();
+#endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }

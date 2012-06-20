@@ -1763,7 +1763,7 @@
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/display_settings_provider_win_unittest.cc',
         'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',
-	'browser/ui/panels/panel_cocoa_unittest.mm',
+        'browser/ui/panels/panel_cocoa_unittest.mm',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/select_file_dialog_unittest.cc',
@@ -2133,6 +2133,8 @@
         }],
         ['chromeos==1', {
           'sources/': [
+            ['exclude', '^browser/media_gallery/media_device_notifications_linux_unittest.cc'],
+
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
