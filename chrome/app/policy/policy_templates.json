@@ -1114,7 +1114,7 @@
           'caption': '''Configure extension, app, and user script install sources''',
           'desc': '''Allows you to specify which URLs are allowed to install extensions, apps, and themes.
 
-          Starting in Chrome 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and Chrome would offer to install the file after a few warnings. After Chrome 21, such files must be downloaded an dragged onto the Chrome settings page. This setting allows specific URLs to have the old, easier installation flow.
+          Starting in Chrome 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and Chrome would offer to install the file after a few warnings. After Chrome 21, such files must be downloaded and dragged onto the Chrome settings page. This setting allows specific URLs to have the old, easier installation flow.
 
           Each item in this list is an extension-style match pattern (see http://code.google.com/chrome/extensions/match_patterns.html). Users will be able to easily install items from any URL that matches an item in this list.
 
