@@ -344,15 +344,6 @@ base::StringPiece ResourceBundle::GetRawDataResource(
       delegate_->GetRawDataResource(resource_id, scale_factor, &data))
     return data;
 
-  // TODO(tony): Firm up locking for or constraints of calling
-  // ReloadLocaleResources() and how to CHECK for misuse.
-  if (!locale_resources_data_.get()) {
-    LOG(ERROR) << "!locale_resources_data_.get()";
-    NOTREACHED();
-  } else if (locale_resources_data_->GetStringPiece(resource_id, &data)) {
-    return data;
-  }
-
   if (scale_factor != ui::SCALE_FACTOR_100P) {
     for (size_t i = 0; i < data_packs_.size(); i++) {
       if (data_packs_[i]->GetScaleFactor() == scale_factor &&
