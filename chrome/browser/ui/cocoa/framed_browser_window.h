@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,18 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 
 // Calls the superclass's implementation of |-toggleFullScreen:|.
 - (void)toggleSystemFullScreen;
+
+// Draws the window theme into the specified rect. Returns whether a theme was
+// drawn (whether incognito or full pattern theme; an overlay image doesn't
+// count).
++ (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
+                           forView:(NSView*)view
+                            bounds:(NSRect)bounds
+                            offset:(NSPoint)offset
+              forceBlackBackground:(BOOL)forceBlackBackground;
+
+// Gets the color to draw title text.
+- (NSColor*)titleColor;
 
 @end
 

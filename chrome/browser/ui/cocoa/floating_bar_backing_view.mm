@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 
 #include "base/mac/mac_util.h"
-#import "chrome/browser/ui/cocoa/browser_frame_view.h"
+#import "chrome/browser/ui/cocoa/framed_browser_window.h"
 
 @implementation FloatingBarBackingView
 
@@ -20,11 +20,11 @@
   NSRectFill(rect);
 
   // TODO(rohitrao): Don't assume -22 here.
-  [BrowserFrameView drawWindowThemeInDirtyRect:rect
-                                       forView:self
-                                        bounds:[self bounds]
-                                        offset:NSMakePoint(0, -22)
-                          forceBlackBackground:YES];
+  [FramedBrowserWindow drawWindowThemeInDirtyRect:rect
+                                          forView:self
+                                           bounds:[self bounds]
+                                           offset:NSMakePoint(0, -22)
+                             forceBlackBackground:YES];
 
 }
 

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-// BrowserFrameView is a class whose methods we swizzle into NSGrayFrame
+// CustomFrameView is a class whose methods we swizzle into NSGrayFrame
 // on 10.7 and below, or NSThemeFrame on 10.8 and above, so that we can
 // support custom frame drawing. This is used with a textured window so that
 // AppKit does not draw a title bar.
@@ -42,18 +42,15 @@
 // easiest and safest method of achieving our goals. We do the best we can to
 // check that everything is safe, and attempt to fallback gracefully if it is
 // not.
-@interface BrowserFrameView : NSView
 
-// Draws the window theme into the specified rect. Returns whether a theme was
-// drawn (whether incognito or full pattern theme; an overlay image doesn't
-// count).
-+ (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
-                           forView:(NSView*)view
-                            bounds:(NSRect)bounds
-                            offset:(NSPoint)offset
-              forceBlackBackground:(BOOL)forceBlackBackground;
+@interface NSWindow (CustomFrameView)
 
-// Gets the color to draw title text.
-+ (NSColor*)titleColorForThemeView:(NSView*)view;
+// To define custom window drawing behaviour, override this method on an
+// NSWindow subclass. Call the default method (on super) to draw the
+// default frame.
+// NOTE: Always call the default implementation (even if you just immediately
+// draw over it), otherwise the top-left and top-right corners of the window
+// won't be drawn correctly.
+- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
 
 @end
