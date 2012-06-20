@@ -89,22 +89,25 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
 }
 
 void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
+  // Copy the URL since DeleteMatchesWithURLs() will invalidate |match|.
+  GURL url(match.destination_url);
+
   // When a user deletes a match, he probably means for the URL to disappear out
   // of history entirely. So nuke all shortcuts that map to this URL.
-  std::set<GURL> url;
-  url.insert(match.destination_url);
+  std::set<GURL> urls;
+  urls.insert(url);
   // Immediately delete matches and shortcuts with the URL, so we can update the
   // controller synchronously.
-  DeleteShortcutsWithURLs(url);
-  DeleteMatchesWithURLs(url);
+  DeleteShortcutsWithURLs(urls);
+  DeleteMatchesWithURLs(urls);  // NOTE: |match| is now dead!
 
   // Delete the match from the history DB. This will eventually result in a
   // second call to DeleteShortcutsWithURLs(), which is harmless.
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
 
-  DCHECK(history_service && match.destination_url.is_valid());
-  history_service->DeleteURL(match.destination_url);
+  DCHECK(history_service && url.is_valid());
+  history_service->DeleteURL(url);
 }
 
 ShortcutsProvider::~ShortcutsProvider() {
