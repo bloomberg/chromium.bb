@@ -357,14 +357,18 @@ const CGFloat kRapidCloseDist = 2.5;
 
     // Draw the top inner highlight within the tab if using the default theme.
     if (themeProvider && themeProvider->UsingDefaultTheme()) {
+      [highlightColor setStroke];
+      scoped_nsobject<NSBezierPath> highlightPath([path copy]);
+      [highlightPath setLineWidth:lineWidth];
+
+      if (!selected)
+        NSRectClip(NSOffsetRect(rect, 0, 2 * lineWidth));
+
       NSAffineTransform* highlightTransform = [NSAffineTransform transform];
       [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
-
-      scoped_nsobject<NSBezierPath> highlightPath([path copy]);
       [highlightPath transformUsingAffineTransform:highlightTransform];
-      [highlightColor setStroke];
-      [highlightPath setLineWidth:lineWidth];
       [highlightPath stroke];
+
       highlightTransform = [NSAffineTransform transform];
       [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
       [highlightPath transformUsingAffineTransform:highlightTransform];
