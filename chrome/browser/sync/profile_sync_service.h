@@ -105,6 +105,46 @@ class EncryptedData;
 //      in some intermediate state.  Those finer-grained intermediate states
 //      are differentiated by the DataTypeController state.
 //
+// Sync Configuration:
+//
+//   Sync configuration is accomplished via the following APIs:
+//    * OnUserChoseDatatypes(): Set the data types the user wants to sync.
+//    * SetDecryptionPassphrase(): Attempt to decrypt the user's encrypted data
+//        using the passed passphrase.
+//    * SetEncryptionPassphrase(): Re-encrypt the user's data using the passed
+//        passphrase.
+//
+//   Additionally, the current sync configuration can be fetched by calling
+//    * GetRegisteredDataTypes()
+//    * GetPreferredDataTypes()
+//    * IsUsingSecondaryPassphrase()
+//    * EncryptEverythingEnabled()
+//    * IsPassphraseRequired()/IsPassphraseRequiredForDecryption()
+//
+//   The "sync everything" state cannot be read from ProfileSyncService, but
+//   is instead pulled from SyncPrefs.HasKeepEverythingSynced().
+//
+// Initial sync setup:
+//
+//   For privacy reasons, it is usually desirable to avoid syncing any data
+//   types until the user has finished setting up sync. There are two APIs
+//   that control the initial sync download:
+//
+//    * SetSyncSetupCompleted()
+//    * SetSetupInProgress()
+//
+//   SetSyncSetupCompleted() should be called once the user has finished setting
+//   up sync at least once on their account. SetSetupInProgress(true) should be
+//   called while the user is actively configuring their account, and then
+//   SetSetupInProgress(false) should be called when configuration is complete.
+//   When SetSyncSetupCompleted() == false, but SetSetupInProgress(true) has
+//   been called, then the sync engine knows not to download any user data.
+//
+//   When initial sync is complete, the UI code should call
+//   SetSyncSetupCompleted() followed by SetSetupInProgress(false) - this will
+//   tell the sync engine that setup is completed and it can begin downloading
+//   data from the sync server.
+//
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
                            public browser_sync::UnrecoverableErrorHandler,
@@ -139,6 +179,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MAX_SYNC_EVENT_CODE
   };
 
+  // Defines the type of behavior the sync engine should use. If configured for
+  // AUTO_START, the sync engine will automatically call SetSyncSetupCompleted()
+  // and start downloading data types as soon as sync credentials are available
+  // (a signed-in username and a "chromiumsync" token).
+  // If configured for MANUAL_START, sync will not start until the user
+  // completes sync setup, at which point the UI makes an explicit call to
+  // SetSyncSetupCompleted().
   enum StartBehavior {
     AUTO_START,
     MANUAL_START,
