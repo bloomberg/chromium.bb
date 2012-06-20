@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -62,15 +63,33 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   }
 
  protected:
+  // Returns the current device scale of the view.
+  // TODO(pkotwicz): Remove this once scale factor can be queried from canvas.
+  float GetCurrentDeviceScale();
+
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
-  virtual gfx::ImageSkia GetImageToPaint();
+  // |scale| is the scale at which the view is painted and the scale
+  // which should be used when mutating ImageSkias.
+  virtual gfx::ImageSkia GetImageToPaint(float scale);
+
+  // Updates button background for |scale|.
+  void UpdateButtonBackground(float scale);
 
   // The images used to render the different states of this button.
   gfx::ImageSkia images_[BS_COUNT];
 
-  // The background image.
-  gfx::ImageSkia background_image_;
+  // Information necessary to generate background image.
+  struct BackgroundImageGenerationInfo {
+    BackgroundImageGenerationInfo();
+    ~BackgroundImageGenerationInfo();
+
+    SkColor src_color_;
+    gfx::ImageSkia src_image_;
+    gfx::ImageSkia src_mask_;
+    gfx::ImageSkia result_;
+  };
+  BackgroundImageGenerationInfo background_image_;
 
   // Image to draw on top of normal / hot / pushed image.  Usually empty.
   gfx::ImageSkia overlay_image_;

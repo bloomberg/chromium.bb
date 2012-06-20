@@ -149,32 +149,39 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
     return ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-// Generates a single empty vpn image for blending.
-const SkBitmap& GetEmptyVpnBadge() {
-  static SkBitmap* empty_vpn_badge = NULL;
-  if (empty_vpn_badge == NULL) {
-    empty_vpn_badge = new SkBitmap();
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* vpn_badge = rb.GetImageSkiaNamed(kVpnBadgeId);
-    empty_vpn_badge->setConfig(SkBitmap::kARGB_8888_Config,
-                               vpn_badge->width(),
-                               vpn_badge->height());
-    empty_vpn_badge->allocPixels();
-    empty_vpn_badge->eraseARGB(0, 0, 0, 0);
+// Blend source image with a black image to fade the image.
+const gfx::ImageSkia GenerateFadedImage(gfx::ImageSkia source,
+                                        gfx::ImageSkia empty_image,
+                                        double alpha) {
+  gfx::ImageSkia faded_image;
+  const std::vector<SkBitmap>& bitmaps = source.bitmaps();
+  for (size_t i = 0; i < bitmaps.size(); ++i) {
+    SkBitmap bitmap = bitmaps[i];
+    float bitmap_scale = source.GetScaleAtIndex(i);
+    float empty_bitmap_scale;
+    SkBitmap empty_bitmap = empty_image.GetBitmapForScale(bitmap_scale,
+        &empty_bitmap_scale);
+    if (empty_bitmap_scale != bitmap_scale) {
+      empty_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                             bitmap.width(),
+                             bitmap.height());
+      empty_bitmap.allocPixels();
+      empty_bitmap.eraseARGB(0, 0, 0, 0);
+      empty_image.AddBitmapForScale(empty_bitmap, bitmap_scale);
+    }
+    SkBitmap faded_bitmap = SkBitmapOperations::CreateBlendedBitmap(
+        empty_bitmap, bitmap, alpha);
+    faded_image.AddBitmapForScale(faded_bitmap, bitmap_scale);
   }
-  return *empty_vpn_badge;
+  return faded_image;
 }
 
-const gfx::ImageSkia GetVpnResource(int resource_id) {
+const SkBitmap GetVpnResource(int resource_id) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* ethernet_icon = rb.GetImageSkiaNamed(resource_id);
-  gfx::Canvas canvas(
-      gfx::Size(ethernet_icon->width(), ethernet_icon->height()), false);
-  canvas.DrawImageInt(*ethernet_icon, 0, 0);
   const gfx::ImageSkia* vpn_badge = rb.GetImageSkiaNamed(kVpnBadgeId);
-  int y = ethernet_icon->height() - vpn_badge->height();
-  canvas.DrawImageInt(*vpn_badge, kBadgeLeftX, y);
-  return canvas.ExtractBitmap();
+  return NetworkMenuIcon::GenerateImageFromComponents(
+      *ethernet_icon, NULL, NULL, vpn_badge, NULL);
 }
 
 }  // namespace
@@ -616,7 +623,7 @@ void NetworkMenuIcon::SetConnectingIconAndText() {
     gfx::ImageSkia source =
         GetImage(image_type, index + 1, resource_color_theme_);
     images[index] =
-        new gfx::ImageSkia(NetworkMenuIcon::GenerateConnectingBitmap(source));
+        new gfx::ImageSkia(NetworkMenuIcon::GenerateConnectingImage(source));
   }
   icon_->set_icon(*images[index]);
   icon_->SetBadges(connecting_network_);
@@ -682,8 +689,9 @@ void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
       // Even though this is the only place we use vpn_connecting_badge_,
       // it is important that this is a member variable since we set a
       // pointer to it and access that pointer in icon_->GenerateImage().
-      vpn_connecting_badge_ = SkBitmapOperations::CreateBlendedBitmap(
-          GetEmptyVpnBadge(), *vpn_badge, animation);
+      static gfx::ImageSkia empty_image;
+      vpn_connecting_badge_ = GenerateFadedImage(*vpn_badge, empty_image,
+          animation);
       icon_->set_bottom_left_badge(&vpn_connecting_badge_);
     }
   }
@@ -738,6 +746,10 @@ void NetworkMenuIcon::SetDisconnectedIconAndText() {
 // Static functions for generating network icon images:
 
 // This defines how we assemble a network icon.
+// Currently we iterate over all the available resolutions in |icon|. This will
+// be wrong once we dynamically load image resolutions.
+// TODO(pkotwicz): Figure out what to do when a new image resolution becomes
+// available.
 const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
     const gfx::ImageSkia& icon,
     const gfx::ImageSkia* top_left_badge,
@@ -779,20 +791,10 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
 }
 
 // We blend connecting icons with a black image to generate a faded icon.
-const SkBitmap NetworkMenuIcon::GenerateConnectingBitmap(
+const gfx::ImageSkia NetworkMenuIcon::GenerateConnectingImage(
     const gfx::ImageSkia& source) {
-  CR_DEFINE_STATIC_LOCAL(SkBitmap, empty_badge, ());
-  if (empty_badge.empty()) {
-    empty_badge.setConfig(SkBitmap::kARGB_8888_Config,
-                          source.width(),
-                          source.height());
-    empty_badge.allocPixels();
-    empty_badge.eraseARGB(0, 0, 0, 0);
-  }
-  DCHECK(empty_badge.width() == source.width());
-  DCHECK(empty_badge.height() == source.height());
-  return SkBitmapOperations::CreateBlendedBitmap(
-      empty_badge, source, kConnectingImageAlpha);
+  CR_DEFINE_STATIC_LOCAL(gfx::ImageSkia, empty_badge, ());
+  return GenerateFadedImage(source, empty_badge, kConnectingImageAlpha);
 }
 
 // Generates and caches an icon image for a network's current state.
@@ -802,9 +804,6 @@ const gfx::ImageSkia NetworkMenuIcon::GetImage(const Network* network,
   // Maintain a static (global) icon map. Note: Icons are never destroyed;
   // it is assumed that a finite and reasonable number of network icons will be
   // created during a session.
-
-  // TODO(pkotwicz): Invalidate cache when a new image resolution becomes
-  // avaiable.
 
   typedef std::map<std::string, NetworkIcon*> NetworkIconMap;
   static NetworkIconMap* icon_map_dark = NULL;
