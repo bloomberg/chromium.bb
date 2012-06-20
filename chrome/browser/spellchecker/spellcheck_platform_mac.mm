@@ -241,8 +241,8 @@ void FillSuggestionList(const string16& wrong_word,
   DHISTOGRAM_TIMES("Spellcheck.SuggestTime",
                    base::Histogram::DebugNow() - debug_begin_time);
 
-  for (int i = 0; i < static_cast<int>([guesses count]); i++) {
-    if (i < SpellCheckCommon::kMaxSuggestions) {
+  for (int i = 0; i < static_cast<int>([guesses count]); ++i) {
+    if (i < chrome::spellcheck_common::kMaxSuggestions) {
       optional_suggestions->push_back(base::SysNSStringToUTF16(
                                       [guesses objectAtIndex:i]));
     }

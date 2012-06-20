@@ -71,7 +71,7 @@ int SpellCheckHost::GetSpellCheckLanguages(
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
        i != accept_languages.end(); ++i) {
     std::string language =
-        SpellCheckCommon::GetCorrespondingSpellCheckLanguage(*i);
+        chrome::spellcheck_common::GetCorrespondingSpellCheckLanguage(*i);
     if (!language.empty() &&
         std::find(languages->begin(), languages->end(), language) ==
         languages->end()) {

@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostBrowserTest, DeleteCorruptedBDICT) {
   FilePath dict_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir));
   FilePath bdict_path =
-      SpellCheckCommon::GetVersionedFileName("en-US", dict_dir);
+      chrome::spellcheck_common::GetVersionedFileName("en-US", dict_dir);
 
   size_t actual = file_util::WriteFile(bdict_path,
       reinterpret_cast<const char*>(kCorruptedBDICT),

@@ -18,7 +18,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
-
 namespace {
 
 FilePath GetHunspellDirectory() {
@@ -52,7 +51,8 @@ class SpellCheckTest : public testing::Test {
     FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
     base::PlatformFile file = base::CreatePlatformFile(
-        SpellCheckCommon::GetVersionedFileName(language, hunspell_directory),
+        chrome::spellcheck_common::GetVersionedFileName(language,
+            hunspell_directory),
         base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL, NULL);
     spell_check_->Init(
         file, std::vector<std::string>(), language);

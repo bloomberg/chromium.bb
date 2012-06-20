@@ -132,7 +132,7 @@ DictionaryValue* LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {
 DictionaryValue* LanguageOptionsHandlerCommon::GetSpellCheckLanguageCodeSet() {
   DictionaryValue* dictionary = new DictionaryValue();
   std::vector<std::string> spell_check_languages;
-  SpellCheckCommon::SpellCheckLanguages(&spell_check_languages);
+  chrome::spellcheck_common::SpellCheckLanguages(&spell_check_languages);
   for (size_t i = 0; i < spell_check_languages.size(); ++i) {
     dictionary->SetBoolean(spell_check_languages[i], true);
   }

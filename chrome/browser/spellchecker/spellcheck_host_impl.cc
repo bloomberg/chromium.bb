@@ -44,7 +44,7 @@ FilePath GetFirstChoiceFilePath(const std::string& language) {
 
   FilePath dict_dir;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
-  return SpellCheckCommon::GetVersionedFileName(language, dict_dir);
+  return chrome::spellcheck_common::GetVersionedFileName(language, dict_dir);
 }
 
 #if defined(OS_WIN)

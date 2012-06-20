@@ -245,15 +245,18 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
     return autocorrect_word;  // Return the empty string.
 
   int word_length = static_cast<int>(word.size());
-  if (word_length < 2 || word_length > SpellCheckCommon::kMaxAutoCorrectWordSize)
+  if (word_length < 2 ||
+      word_length > chrome::spellcheck_common::kMaxAutoCorrectWordSize)
     return autocorrect_word;
 
   if (InitializeIfNeeded())
     return autocorrect_word;
 
-  char16 misspelled_word[SpellCheckCommon::kMaxAutoCorrectWordSize + 1];
+  char16 misspelled_word[
+      chrome::spellcheck_common::kMaxAutoCorrectWordSize + 1];
   const char16* word_char = word.c_str();
-  for (int i = 0; i <= SpellCheckCommon::kMaxAutoCorrectWordSize; i++) {
+  for (int i = 0; i <= chrome::spellcheck_common::kMaxAutoCorrectWordSize;
+       ++i) {
     if (i >= word_length)
       misspelled_word[i] = 0;
     else
@@ -453,8 +456,8 @@ void SpellCheck::FillSuggestionList(
       hunspell_->suggest(&suggestions, UTF16ToUTF8(wrong_word).c_str());
 
   // Populate the vector of WideStrings.
-  for (int i = 0; i < number_of_suggestions; i++) {
-    if (i < SpellCheckCommon::kMaxSuggestions)
+  for (int i = 0; i < number_of_suggestions; ++i) {
+    if (i < chrome::spellcheck_common::kMaxSuggestions)
       optional_suggestions->push_back(UTF8ToUTF16(suggestions[i]));
     free(suggestions[i]);
   }

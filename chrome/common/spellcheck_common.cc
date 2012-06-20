@@ -6,7 +6,8 @@
 
 #include "base/file_path.h"
 
-namespace SpellCheckCommon {
+namespace chrome {
+namespace spellcheck_common {
 
 static const struct {
   // The language.
@@ -177,4 +178,5 @@ void SpellCheckLanguages(std::vector<std::string>* languages) {
   }
 }
 
-}  // namespace SpellCheckCommon
+}  // namespace spellcheck_common
+}  // namespace chrome
