@@ -191,6 +191,17 @@ while read name id comment ; do
 	END
 	fi
       fi
+      if [[ "$name" == ppapi19 ]] || [[ "$name" == ppapi20 ]]; then
+	  patch -p0 <<-END
+	--- native_client/tools/Makefile
+	+++ native_client/tools/Makefile
+	@@ -154,2 +154,2 @@
+	-NEWLIB_VERSION = 1.18.0
+	-NACL_NEWLIB_GIT_BASE = 65e6baefeb2874011001c2f843cf3083e771b62f
+	+NEWLIB_VERSION = 1.20.0
+	+NACL_NEWLIB_GIT_BASE = 151b2c72fb87849bbc6e3ef569718c6344eed2e6
+	END
+      fi
       patch -p0 <<-END
 	--- native_client/buildbot/buildbot_lib.py
 	+++ native_client/buildbot/buildbot_lib.py
@@ -313,7 +324,7 @@ while read name id comment ; do
 	    ) < "$1"
 	  fi
 	) done
-	if [[ "$name" != ppapi1* ]]; then
+	if [[ "$name" != ppapi1[456789] ]]; then
 	  patch -p0 <<-END
 	--- native_client/tools/SRC/gdb/gdb/doc/Makefile.in
 	+++ native_client/tools/SRC/gdb/gdb/doc/Makefile.in
