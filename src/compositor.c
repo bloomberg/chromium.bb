@@ -180,11 +180,17 @@ weston_client_launch(struct weston_compositor *compositor,
 }
 
 static void
+update_shm_texture(struct weston_surface *surface);
+
+static void
 surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *es =
 		container_of(listener, struct weston_surface, 
 			     buffer_destroy_listener);
+
+	if (es->buffer && wl_buffer_is_shm(es->buffer))
+		update_shm_texture(es);
 
 	es->buffer = NULL;
 }
