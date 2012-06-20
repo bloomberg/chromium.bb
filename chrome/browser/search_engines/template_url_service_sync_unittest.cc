@@ -1584,13 +1584,6 @@ TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedAndReplaced) {
   const TemplateURL* default_search = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
 
-  // Change kSyncedDefaultSearchProviderGUID to a GUID that does not exist in
-  // the model yet. Ensure that the default has not changed in any way.
-  profile_a()->GetTestingPrefService()->SetString(
-      prefs::kSyncedDefaultSearchProviderGUID, "newdefault");
-
-  ASSERT_EQ(default_search, model()->GetDefaultSearchProvider());
-
   // Delete the old default. This will change the default to the next available
   // (turl2), but should not affect the synced preference.
   SyncChangeList changes1;
@@ -1600,6 +1593,15 @@ TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedAndReplaced) {
 
   EXPECT_EQ(1U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   EXPECT_EQ("key2", model()->GetDefaultSearchProvider()->sync_guid());
+  EXPECT_EQ("key1", profile_a()->GetTestingPrefService()->GetString(
+      prefs::kSyncedDefaultSearchProviderGUID));
+
+  // Change kSyncedDefaultSearchProviderGUID to a GUID that does not exist in
+  // the model yet. Ensure that the default has not changed in any way.
+  profile_a()->GetTestingPrefService()->SetString(
+      prefs::kSyncedDefaultSearchProviderGUID, "newdefault");
+
+  ASSERT_EQ("key2", model()->GetDefaultSearchProvider()->sync_guid());
   EXPECT_EQ("newdefault", profile_a()->GetTestingPrefService()->GetString(
       prefs::kSyncedDefaultSearchProviderGUID));
 
