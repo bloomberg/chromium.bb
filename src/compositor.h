@@ -172,6 +172,7 @@ struct weston_output {
 	int dirty;
 	struct wl_list read_pixels_list;
 	struct wl_signal frame_signal;
+	uint32_t frame_time;
 
 	char *make, *model;
 	uint32_t subpixel;

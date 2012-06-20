@@ -1142,8 +1142,7 @@ weston_output_finish_frame(struct weston_output *output, int msecs)
 		wl_display_get_event_loop(compositor->wl_display);
 	int fd;
 
-	wl_signal_emit(&output->frame_signal, &msecs);
-
+	output->frame_time = msecs;
 	if (output->repaint_needed) {
 		weston_output_repaint(output, msecs);
 		return;
@@ -2870,6 +2869,8 @@ WL_EXPORT void
 weston_output_do_read_pixels(struct weston_output *output)
 {
 	struct weston_read_pixels *r, *next;
+
+	wl_signal_emit(&output->frame_signal, &output->frame_time);
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	wl_list_for_each_safe(r, next, &output->read_pixels_list, link) {

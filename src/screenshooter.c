@@ -275,11 +275,6 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	r = pixman_region32_rectangles(&damage, &n);
 	if (n == 0)
 		return;
-	if (recorder->count++ == 0)
-		/* The first callback gives us the frame immediately
-		 * before the weston_output_damage() call, and
-		 * typically doesn't give us a full frame of damage.*/
-		return;
 
 	header.msecs = msecs;
 	header.nrects = n;
