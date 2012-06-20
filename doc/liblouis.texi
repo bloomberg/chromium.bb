@@ -2114,9 +2114,12 @@ the @code{mode} parameter the space-bounded characters containing the
 cursor will be translated in computer braille. If the
 @code{compbrlLeftCursor} bit is set only the characters to the left of
 the cursor will be in computer braille. This bit overrides
-@code{compbrlAtCursor}. The @code{ucBrl} (Unicode Braille) bit is used
-by @code{lou_charToDots} and @code{lou_translate}.  It causes the dot
+@code{compbrlAtCursor}.
+When the @code{dotsIO} bit is set, during translation, produce output as dot patterns. During
+back-translation accept input as dot patterns. Which dot patterns are produced is dependant on the dis file being used.
+The @code{ucBrl} (Unicode Braille) bit is used by @code{lou_charToDots} and @code{lou_translate}.  It causes the dot
 patterns to be Unicode Braille rather than the liblouis representation.
+Note that you will not notice any change when setting @code{ucBrl}  unless @code{dotsIO} is also set.
 @code{lou_dotsToChar} and @code{lou_backTranslate} recognize Unicode
 braille automatically.
 
