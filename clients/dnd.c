@@ -590,7 +590,7 @@ dnd_create(struct display *display)
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;
 
-	widget_schedule_resize(dnd->widget, width, height);
+	frame_set_child_size(dnd->widget, width, height);
 
 	return dnd;
 }

@@ -363,6 +363,8 @@ widget_schedule_redraw(struct widget *widget);
 
 struct widget *
 frame_create(struct window *window, void *data);
+void
+frame_set_child_size(struct widget *widget, int child_width, int child_height);
 
 void
 input_set_pointer_image(struct input *input, int pointer);

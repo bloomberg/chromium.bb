@@ -1692,6 +1692,29 @@ frame_create(struct window *window, void *data)
 	return frame->child;
 }
 
+void
+frame_set_child_size(struct widget *widget, int child_width, int child_height)
+{
+	struct display *display = widget->window->display;
+	struct theme *t = display->theme;
+	int decoration_width, decoration_height;
+	int width, height;
+
+	if (widget->window->type != TYPE_FULLSCREEN) {
+		decoration_width = (t->width + t->margin) * 2;
+		decoration_height = t->width +
+			t->titlebar_height + t->margin * 2;
+
+		width = child_width + decoration_width;
+		height = child_height + decoration_height;
+	} else {
+		width = child_width;
+		height = child_height;
+	}
+
+	window_schedule_resize(widget->window, width, height);
+}
+
 static void
 frame_destroy(struct frame *frame)
 {

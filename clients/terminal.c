@@ -804,7 +804,8 @@ terminal_resize(struct terminal *terminal, int columns, int rows)
 	m = 2 * terminal->margin;
 	width = columns * terminal->extents.max_x_advance + m;
 	height = rows * terminal->extents.height + m;
-	widget_schedule_resize(terminal->widget, width, height);
+
+	frame_set_child_size(terminal->widget, width, height);
 }
 
 struct color_scheme DEFAULT_COLORS = {
@@ -2338,7 +2339,7 @@ terminal_create(struct display *display, int fullscreen)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
-	window_schedule_resize(terminal->window, 500, 400);
+	terminal_resize(terminal, 80, 25);
 
 	return terminal;
 }
