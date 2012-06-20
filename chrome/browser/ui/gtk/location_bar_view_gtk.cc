@@ -1876,12 +1876,13 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       ExtensionPopupGtk::Show(
           page_action_->GetPopupUrl(current_tab_id_),
           owner_->browser_,
-          event_box_.get());
+          event_box_.get(),
+          ExtensionPopupGtk::SHOW);
       break;
 
     case LocationBarController::ACTION_SHOW_CONTEXT_MENU:
       context_menu_model_ =
-          new ExtensionContextMenuModel(extension, owner_->browser_);
+          new ExtensionContextMenuModel(extension, owner_->browser_, this);
       context_menu_.reset(
           new MenuGtk(NULL, context_menu_model_.get()));
       context_menu_->PopupForWidget(sender, event->button, event->time);
@@ -1932,4 +1933,13 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnGtkAccelerator(
   GdkEventButton event = {};
   event.button = 1;
   return view->OnButtonPressed(view->widget(), &event);
+}
+
+void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
+    ExtensionAction* action) {
+  ExtensionPopupGtk::Show(
+      action->GetPopupUrl(current_tab_id_),
+      owner_->browser_,
+      event_box_.get(),
+      ExtensionPopupGtk::SHOW_AND_INSPECT);
 }

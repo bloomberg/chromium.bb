@@ -23,14 +23,15 @@ class ExtensionPopupGtk : public content::NotificationObserver,
                           public BubbleDelegateGtk,
                           public ExtensionViewGtk::Container {
  public:
-  ExtensionPopupGtk(Browser* browser,
-                    ExtensionHost* host,
-                    GtkWidget* anchor);
-  virtual ~ExtensionPopupGtk();
+  enum ShowAction {
+    SHOW,
+    SHOW_AND_INSPECT
+  };
 
   static void Show(const GURL& url,
                    Browser* browser,
-                   GtkWidget* anchor);
+                   GtkWidget* anchor,
+                   ShowAction show_action);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -67,6 +68,12 @@ class ExtensionPopupGtk : public content::NotificationObserver,
   static const int kMaxHeight;
 
  private:
+  ExtensionPopupGtk(Browser* browser,
+                    ExtensionHost* host,
+                    GtkWidget* anchor,
+                    ShowAction show_action);
+  virtual ~ExtensionPopupGtk();
+
   // Shows the popup widget. Called after loading completes.
   void ShowPopup();
 

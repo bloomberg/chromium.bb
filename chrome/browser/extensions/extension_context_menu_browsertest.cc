@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, PolicyDisablesItems) {
   ASSERT_TRUE(extension != NULL);
 
   scoped_refptr<ExtensionContextMenuModel> menu(
-      new ExtensionContextMenuModel(extension, browser()));
+      new ExtensionContextMenuModel(extension, browser(), NULL));
 
   ExtensionSystem::Get(
       browser()->profile())->management_policy()->UnregisterAllProviders();

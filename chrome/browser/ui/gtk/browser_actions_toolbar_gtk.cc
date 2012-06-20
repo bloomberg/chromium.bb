@@ -93,6 +93,7 @@ using ui::SimpleMenuModel;
 
 class BrowserActionButton : public content::NotificationObserver,
                             public ImageLoadingTracker::Observer,
+                            public ExtensionContextMenuModel::PopupDelegate,
                             public MenuGtk::Delegate {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
@@ -254,7 +255,7 @@ class BrowserActionButton : public content::NotificationObserver,
       return NULL;
 
     context_menu_model_ =
-        new ExtensionContextMenuModel(extension_, toolbar_->browser());
+        new ExtensionContextMenuModel(extension_, toolbar_->browser(), this);
     context_menu_.reset(
         new MenuGtk(this, context_menu_model_.get()));
     return context_menu_.get();
@@ -272,7 +273,8 @@ class BrowserActionButton : public content::NotificationObserver,
       case ExtensionToolbarModel::ACTION_NONE:
         break;
       case ExtensionToolbarModel::ACTION_SHOW_POPUP:
-        ExtensionPopupGtk::Show(popup_url, browser, widget);
+        ExtensionPopupGtk::Show(popup_url, browser, widget,
+                                ExtensionPopupGtk::SHOW);
         break;
     }
   }
@@ -292,6 +294,13 @@ class BrowserActionButton : public content::NotificationObserver,
     // is executed, then stop showing the overflow menu.
     if (toolbar_->overflow_menu_.get())
       toolbar_->overflow_menu_->Cancel();
+  }
+
+  // ExtensionContextMenuModel::PopupDelegate implementation.
+  virtual void InspectPopup(ExtensionAction* action) {
+    GURL popup_url = action->GetPopupUrl(toolbar_->GetCurrentTabId());
+    ExtensionPopupGtk::Show(popup_url, toolbar_->browser(), widget(),
+                            ExtensionPopupGtk::SHOW_AND_INSPECT);
   }
 
   void SetImage(GdkPixbuf* image) {
@@ -795,7 +804,8 @@ void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
     case ExtensionToolbarModel::ACTION_NONE:
       break;
     case ExtensionToolbarModel::ACTION_SHOW_POPUP:
-      ExtensionPopupGtk::Show(popup_url, browser(), chevron());
+      ExtensionPopupGtk::Show(popup_url, browser(), chevron(),
+                              ExtensionPopupGtk::SHOW);
       break;
   }
 }

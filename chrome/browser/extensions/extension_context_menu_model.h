@@ -34,10 +34,31 @@ class ExtensionContextMenuModel
     HIDE,
     DISABLE,
     UNINSTALL,
-    MANAGE
+    MANAGE,
+    INSPECT_POPUP
   };
 
-  // Creates a menu model for the given extension action.
+  // Delegate to handle showing an ExtensionAction popup.
+  class PopupDelegate {
+   public:
+    // Called when the user selects the menu item which requests that the
+    // popup be shown and inspected.
+    virtual void InspectPopup(ExtensionAction* action) = 0;
+
+   protected:
+    virtual ~PopupDelegate() {}
+  };
+
+  // Creates a menu model for the given extension action. If
+  // prefs::kExtensionsUIDeveloperMode is enabled then a menu item
+  // will be shown for "Inspect Popup" which, when selected, will cause
+  // ShowPopupForDevToolsWindow() to be called on |delegate|.
+  ExtensionContextMenuModel(const extensions::Extension* extension,
+                            Browser* browser,
+                            PopupDelegate* delegate);
+
+  // Create a menu model for the given extension action, without support
+  // for the "Inspect Popup" command.
   ExtensionContextMenuModel(const extensions::Extension* extension,
                             Browser* browser);
 
@@ -57,7 +78,7 @@ class ExtensionContextMenuModel
   friend class base::RefCounted<ExtensionContextMenuModel>;
   virtual ~ExtensionContextMenuModel();
 
-  void InitCommonCommands();
+  void InitMenu(const extensions::Extension* extension);
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
@@ -72,6 +93,9 @@ class ExtensionContextMenuModel
   Browser* browser_;
 
   Profile* profile_;
+
+  // The delegate which handles the 'inspect popup' menu command (or NULL).
+  PopupDelegate* delegate_;
 
   // Keeps track of the extension uninstall dialog.
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;

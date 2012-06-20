@@ -41,14 +41,15 @@ const int ExtensionPopupGtk::kMaxHeight = 600;
 
 ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
                                      ExtensionHost* host,
-                                     GtkWidget* anchor)
+                                     GtkWidget* anchor,
+                                     ShowAction show_action)
     : browser_(browser),
       bubble_(NULL),
       host_(host),
       anchor_(anchor),
-      being_inspected_(false),
       weak_factory_(this) {
   host_->view()->SetContainer(this);
+  being_inspected_ = show_action == SHOW_AND_INSPECT;
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
@@ -65,8 +66,10 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
   registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
                  content::Source<Profile>(host->profile()));
 
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
-                 content::Source<Profile>(host->profile()));
+  if (!being_inspected_) {
+    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+                   content::Source<Profile>(host->profile()));
+  }
 }
 
 ExtensionPopupGtk::~ExtensionPopupGtk() {
@@ -74,7 +77,7 @@ ExtensionPopupGtk::~ExtensionPopupGtk() {
 
 // static
 void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
-    GtkWidget* anchor) {
+    GtkWidget* anchor, ShowAction show_action) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
@@ -83,7 +86,7 @@ void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
 
   ExtensionHost* host = manager->CreatePopupHost(url, browser);
   // This object will delete itself when the bubble is closed.
-  new ExtensionPopupGtk(browser, host, anchor);
+  new ExtensionPopupGtk(browser, host, anchor, show_action);
 }
 
 void ExtensionPopupGtk::Observe(int type,
@@ -161,6 +164,9 @@ void ExtensionPopupGtk::ShowPopup() {
     return;
   }
 
+  if (being_inspected_)
+    DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
+
   // Only one instance should be showing at a time. Get rid of the old one, if
   // any. Typically, |current_extension_popup_| will be NULL, but it can be
   // non-NULL if a browser action button is clicked while another extension
@@ -180,7 +186,8 @@ void ExtensionPopupGtk::ShowPopup() {
                             NULL,
                             host_->view()->native_view(),
                             arrow_location,
-                            BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,
+                            being_inspected_ ? 0 :
+                                BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,
                             GtkThemeService::GetFrom(browser_->profile()),
                             this);
 }
