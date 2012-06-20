@@ -334,6 +334,10 @@ NetworkSmsHandler::~NetworkSmsHandler() {
 }
 
 void NetworkSmsHandler::Init() {
+  // TODO(stevenjb): This code needs to monitor changes to Manager.Network
+  // so that devices added after Init() is called get added to device_handlers_.
+  // See: crbug.com/133416.
+
   // Request network manager properties so that we can get the list of devices.
   DBusThreadManager::Get()->GetFlimflamManagerClient()->GetProperties(
       base::Bind(&NetworkSmsHandler::ManagerPropertiesCallback,
@@ -381,6 +385,7 @@ void NetworkSmsHandler::ManagerPropertiesCallback(
     (*iter)->GetAsString(&device_path);
     if (!device_path.empty()) {
       // Request device properties.
+      VLOG(1) << "GetDeviceProperties: " << device_path;
       DBusThreadManager::Get()->GetFlimflamDeviceClient()->GetProperties(
           dbus::ObjectPath(device_path),
           base::Bind(&NetworkSmsHandler::DevicePropertiesCallback,
@@ -394,8 +399,10 @@ void NetworkSmsHandler::DevicePropertiesCallback(
     const std::string& device_path,
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS)
+  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    LOG(ERROR) << "NetworkSmsHandler: ERROR: " << call_status;
     return;
+  }
 
   std::string device_type;
   if (!properties.GetStringWithoutPathExpansion(

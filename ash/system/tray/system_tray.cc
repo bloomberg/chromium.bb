@@ -187,6 +187,7 @@ void SystemTray::CreateItems() {
   network_observer_ = tray_network;
   power_status_observers_.AddObserver(tray_power);
   power_status_observers_.AddObserver(tray_settings);
+  sms_observer_ = tray_sms;
   update_observer_ = tray_update;
   user_observer_ = tray_user;
 

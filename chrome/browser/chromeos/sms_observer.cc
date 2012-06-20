@@ -4,6 +4,11 @@
 
 #include "chrome/browser/chromeos/sms_observer.h"
 
+#include "ash/ash_switches.h"
+#include "ash/shell.h"
+#include "ash/system/network/sms_observer.h"
+#include "ash/system/tray/system_tray.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
@@ -110,14 +115,25 @@ void SmsObserver::OnNewMessage(const char* modem_device_path,
   if (!*message->text)
     return;
 
-  SystemNotification note(
-      profile_,
-      "incoming _sms.chromeos",
-      IDR_NOTIFICATION_SMS,
-      l10n_util::GetStringFUTF16(
-          IDS_SMS_NOTIFICATION_TITLE, UTF8ToUTF16(message->number)));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshNotifyDisabled)) {
+    SystemNotification note(
+        profile_,
+        "incoming _sms.chromeos",
+        IDR_NOTIFICATION_SMS,
+        l10n_util::GetStringFUTF16(
+            IDS_SMS_NOTIFICATION_TITLE, UTF8ToUTF16(message->number)));
 
-  note.Show(UTF8ToUTF16(message->text), true, false);
+    note.Show(UTF8ToUTF16(message->text), true, false);
+    return;
+  }
+
+  // Add an Ash SMS notification. TODO(stevenjb): Replace this code with
+  // NetworkSmsHandler when fixed: crbug.com/133416.
+  base::DictionaryValue dict;
+  dict.SetString(ash::kSmsNumberKey, message->number);
+  dict.SetString(ash::kSmsTextKey, message->text);
+  ash::Shell::GetInstance()->system_tray()->sms_observer()->AddMessage(dict);
 }
 
 }  // namespace chromeos

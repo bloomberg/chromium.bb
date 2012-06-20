@@ -50,13 +50,10 @@ void ProfileStartup(Profile* profile, bool process_startup) {
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
         AddUserActionObserver(network_message_observer);
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshNotifyDisabled)) {
-      static chromeos::SmsObserver* sms_observer =
-          new chromeos::SmsObserver(profile);
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-          AddNetworkManagerObserver(sms_observer);
-    }
+    static chromeos::SmsObserver* sms_observer =
+        new chromeos::SmsObserver(profile);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+        AddNetworkManagerObserver(sms_observer);
 
     profile->SetupChromeOSEnterpriseExtensionObserver();
   }

@@ -32,6 +32,7 @@ class DriveObserver;
 class IMEObserver;
 class LocaleObserver;
 class NetworkObserver;
+class SmsObserver;
 class PowerStatusObserver;
 class UpdateObserver;
 class UserObserver;
@@ -140,6 +141,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   ObserverList<PowerStatusObserver>& power_status_observers() {
     return power_status_observers_;
   }
+  SmsObserver* sms_observer() const {
+    return sms_observer_;
+  }
   UpdateObserver* update_observer() const {
     return update_observer_;
   }
@@ -228,6 +232,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   LocaleObserver* locale_observer_;
   NetworkObserver* network_observer_;
   ObserverList<PowerStatusObserver> power_status_observers_;
+  SmsObserver* sms_observer_;
   UpdateObserver* update_observer_;
   UserObserver* user_observer_;
 

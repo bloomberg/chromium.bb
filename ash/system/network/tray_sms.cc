@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources_standard.h"
 #include "grit/ui_resources_standard.h"
@@ -28,10 +27,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/network/network_sms_handler.h"
-#endif
-
 namespace {
 
 // Min height of the list of messages in the popup.
@@ -39,103 +34,20 @@ const int kMessageListMinHeight = 200;
 // Top/bottom padding of the text items.
 const int kPaddingVertical = 10;
 
+bool GetMessageFromDictionary(const base::DictionaryValue* message,
+                              std::string* number,
+                              std::string* text) {
+  if (!message->GetStringWithoutPathExpansion(ash::kSmsNumberKey, number))
+    return false;
+  if (!message->GetStringWithoutPathExpansion(ash::kSmsTextKey, text))
+    return false;
+  return true;
+}
+
 }  // namespace
 
 namespace ash {
 namespace internal {
-
-class SmsObserverBase {
- public:
-  explicit SmsObserverBase(TraySms* tray) : tray_(tray) {}
-  virtual ~SmsObserverBase() {}
-
-  virtual bool GetMessageFromDictionary(const base::DictionaryValue* message,
-                                        std::string* number,
-                                        std::string* text) {
-    return false;
-  }
-
-  virtual void RequestUpdate() {
-  }
-
-  void RemoveMessage(size_t index) {
-    if (index < messages_.GetSize())
-      messages_.Remove(index, NULL);
-  }
-
-  const base::ListValue& messages() const { return messages_; }
-
- protected:
-  base::ListValue messages_;
-  TraySms* tray_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SmsObserverBase);
-};
-
-#if defined(OS_CHROMEOS)
-
-class TraySms::SmsObserver : public SmsObserverBase,
-                             public chromeos::NetworkSmsHandler::Observer {
- public:
-  explicit SmsObserver(TraySms* tray) : SmsObserverBase(tray) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAshNotifyDisabled))
-      return;
-    sms_handler_.reset(new chromeos::NetworkSmsHandler());
-    sms_handler_->AddObserver(this);
-    sms_handler_->Init();
-  }
-
-  virtual ~SmsObserver() {
-    if (sms_handler_.get())
-      sms_handler_->RemoveObserver(this);
-  }
-
-  // Overridden from SmsObserverBase
-  virtual bool GetMessageFromDictionary(const base::DictionaryValue* message,
-                                        std::string* number,
-                                        std::string* text) OVERRIDE {
-    if (!message->GetStringWithoutPathExpansion(
-            chromeos::NetworkSmsHandler::kNumberKey, number))
-      return false;
-    if (!message->GetStringWithoutPathExpansion(
-            chromeos::NetworkSmsHandler::kTextKey, text))
-      return false;
-    return true;
-  }
-
-  // Requests an immediate check for new messages.
-  virtual void RequestUpdate() OVERRIDE {
-    if (sms_handler_.get())
-      sms_handler_->RequestUpdate();
-  }
-
-  // Overridden from chromeos::NetworkSmsHandler::Observer
-  virtual void MessageReceived(const base::DictionaryValue& message) {
-    messages_.Append(message.DeepCopy());
-    tray_->Update(true);
-  }
-
- private:
-  scoped_ptr<chromeos::NetworkSmsHandler> sms_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(SmsObserver);
-};
-
-#else  // OS_CHROMEOS
-
-class TraySms::SmsObserver : public SmsObserverBase {
- public:
-  explicit SmsObserver(TraySms* tray) : SmsObserverBase(tray) {
-  }
-  virtual ~SmsObserver() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SmsObserver);
-};
-
-#endif  // OS_CHROMEOS
 
 class TraySms::SmsDefaultView : public TrayItemMore {
  public:
@@ -150,8 +62,7 @@ class TraySms::SmsDefaultView : public TrayItemMore {
   virtual ~SmsDefaultView() {}
 
   void Update() {
-    int message_count =
-        static_cast<int>(tray_->sms_observer()->messages().GetSize());
+    int message_count = tray_->messages().GetSize();
     string16 label = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_SMS_MESSAGES, base::IntToString16(message_count));
     SetLabel(label);
@@ -203,7 +114,7 @@ class TraySms::SmsMessageView : public views::View,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    tray_->sms_observer()->RemoveMessage(index_);
+    tray_->RemoveMessage(index_);
     tray_->Update(false);
   }
 
@@ -295,7 +206,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
 
  private:
   void UpdateMessageList() {
-    const base::ListValue& messages = tray_->sms_observer()->messages();
+    const base::ListValue& messages = tray_->messages();
     scroll_content()->RemoveAllChildViews(true);
     for (size_t index = 0; index < messages.GetSize(); ++index) {
       base::DictionaryValue* message = NULL;
@@ -304,8 +215,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
         continue;
       }
       std::string number, text;
-      if (!tray_->sms_observer()->GetMessageFromDictionary(
-              message, &number, &text)) {
+      if (!GetMessageFromDictionary(message, &number, &text)) {
         LOG(ERROR) << "Error parsing SMS message";
         continue;
       }
@@ -357,7 +267,7 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
 
   // Overridden from TrayNotificationView:
   virtual void OnClose() OVERRIDE {
-    tray_->sms_observer()->RemoveMessage(message_index_);
+    tray_->RemoveMessage(message_index_);
     tray_->HideNotificationView();
   }
 
@@ -372,7 +282,6 @@ TraySms::TraySms()
     : default_(NULL),
       detailed_(NULL),
       notification_(NULL) {
-  sms_observer_.reset(new SmsObserver(this));
 }
 
 TraySms::~TraySms() {
@@ -380,17 +289,15 @@ TraySms::~TraySms() {
 
 views::View* TraySms::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
-  sms_observer()->RequestUpdate();
   default_ = new SmsDefaultView(this);
-  default_->SetVisible(!sms_observer()->messages().empty());
+  default_->SetVisible(!messages_.empty());
   return default_;
 }
 
 views::View* TraySms::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
-  sms_observer()->RequestUpdate();
   HideNotificationView();
-  if (sms_observer()->messages().empty())
+  if (messages_.empty())
     return NULL;
   detailed_ = new SmsDetailedView(this);
   return detailed_;
@@ -417,24 +324,33 @@ void TraySms::DestroyNotificationView() {
   notification_ = NULL;
 }
 
+void TraySms::AddMessage(const base::DictionaryValue& message) {
+  messages_.Append(message.DeepCopy());
+  Update(true);
+}
+
 bool TraySms::GetLatestMessage(size_t* index,
                                std::string* number,
                                std::string* text) {
-  const base::ListValue& messages = sms_observer()->messages();
-  if (messages.empty())
+  if (messages_.empty())
     return false;
   DictionaryValue* message;
-  size_t message_index = messages.GetSize() - 1;
-  if (!messages.GetDictionary(message_index, &message))
+  size_t message_index = messages_.GetSize() - 1;
+  if (!messages_.GetDictionary(message_index, &message))
     return false;
-  if (!sms_observer()->GetMessageFromDictionary(message, number, text))
+  if (!GetMessageFromDictionary(message, number, text))
     return false;
   *index = message_index;
   return true;
 }
 
+void TraySms::RemoveMessage(size_t index) {
+  if (index < messages_.GetSize())
+    messages_.Remove(index, NULL);
+}
+
 void TraySms::Update(bool notify) {
-  if (sms_observer()->messages().empty()) {
+  if (messages_.empty()) {
     if (default_)
       default_->SetVisible(false);
     if (detailed_)

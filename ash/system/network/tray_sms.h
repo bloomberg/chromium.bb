@@ -8,13 +8,15 @@
 
 #include <string>
 
+#include "ash/system/network/sms_observer.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 
 namespace ash {
 namespace internal {
 
-class TraySms : public SystemTrayItem {
+class TraySms : public SystemTrayItem,
+                public SmsObserver {
  public:
   TraySms();
   virtual ~TraySms();
@@ -28,27 +30,32 @@ class TraySms : public SystemTrayItem {
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;
 
+  // Overridden from SmsObserver.
+  virtual void AddMessage(const base::DictionaryValue& message) OVERRIDE;
+
  protected:
   class SmsDefaultView;
   class SmsDetailedView;
   class SmsMessageView;
   class SmsNotificationView;
-  class SmsObserver;
 
   // Gets the most recent message. Returns false if no messages or unable to
   // retrieve the numebr and text from the message.
   bool GetLatestMessage(size_t* index, std::string* number, std::string* text);
 
+  // Removes message at |index| from message list.
+  void RemoveMessage(size_t index);
+
   // Called when sms messages have changed (by tray::SmsObserver).
   void Update(bool notify);
 
-  SmsObserver* sms_observer() const { return sms_observer_.get(); }
+  base::ListValue& messages() { return messages_; }
 
  private:
   SmsDefaultView* default_;
   SmsDetailedView* detailed_;
   SmsNotificationView* notification_;
-  scoped_ptr<SmsObserver> sms_observer_;
+  base::ListValue messages_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySms);
 };
