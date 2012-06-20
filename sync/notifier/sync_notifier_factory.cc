@@ -12,7 +12,7 @@
 #include "sync/notifier/p2p_notifier.h"
 #include "sync/notifier/sync_notifier.h"
 
-namespace sync_notifier {
+namespace csync {
 namespace {
 
 SyncNotifier* CreateDefaultSyncNotifier(
@@ -73,4 +73,4 @@ SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
                                    client_info_);
 #endif
 }
-}  // namespace sync_notifier
+}  // namespace csync

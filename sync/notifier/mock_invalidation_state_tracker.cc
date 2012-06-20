@@ -4,9 +4,9 @@
 
 #include "sync/notifier/mock_invalidation_state_tracker.h"
 
-namespace sync_notifier {
+namespace csync {
 
 MockInvalidationStateTracker::MockInvalidationStateTracker() {}
 MockInvalidationStateTracker::~MockInvalidationStateTracker() {}
 
-}  // namespace sync_notifier
+}  // namespace csync

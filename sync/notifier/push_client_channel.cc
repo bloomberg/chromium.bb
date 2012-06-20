@@ -8,7 +8,7 @@
 #include "google/cacheinvalidation/v2/client_gateway.pb.h"
 #include "jingle/notifier/listener/push_client.h"
 
-namespace sync_notifier {
+namespace csync {
 
 namespace {
 
@@ -156,4 +156,4 @@ bool PushClientChannel::DecodeMessage(
   return true;
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

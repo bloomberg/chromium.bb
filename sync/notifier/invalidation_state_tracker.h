@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace sync_notifier {
+namespace csync {
 
 typedef std::map<syncable::ModelType, int64> InvalidationVersionMap;
 
@@ -39,6 +39,6 @@ class InvalidationStateTracker {
   virtual ~InvalidationStateTracker() {}
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_INVALIDATION_STATE_TRACKER_H_

@@ -13,7 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_notifier::InvalidationVersionMap;
+using csync::InvalidationVersionMap;
 
 namespace browser_sync {
 

@@ -9,7 +9,7 @@
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 
-namespace sync_notifier {
+namespace csync {
 
 enum IncomingNotificationSource {
   // The server is notifying us that one or more datatypes have stale data.
@@ -38,6 +38,6 @@ class SyncNotifierObserver {
   virtual ~SyncNotifierObserver() {}
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_

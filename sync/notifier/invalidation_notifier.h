@@ -30,7 +30,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace sync_notifier {
+namespace csync {
 
 // This class must live on the IO thread.
 class InvalidationNotifier
@@ -107,6 +107,6 @@ class InvalidationNotifier
   DISALLOW_COPY_AND_ASSIGN(InvalidationNotifier);
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_INVALIDATION_NOTIFIER_H_

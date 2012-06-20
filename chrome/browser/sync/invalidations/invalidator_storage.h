@@ -30,7 +30,7 @@ namespace browser_sync {
 // services.  For now this is still tied to sync while we refactor, so minimize
 // churn and keep it here.
 class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
-                           public sync_notifier::InvalidationStateTracker {
+                           public csync::InvalidationStateTracker {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no setter
   // methods should be called. Does not own |pref_service|.
@@ -41,7 +41,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   void Clear();
 
   // InvalidationStateTracker implementation.
-  virtual sync_notifier::InvalidationVersionMap GetAllMaxVersions() const
+  virtual csync::InvalidationVersionMap GetAllMaxVersions() const
       OVERRIDE;
   virtual void SetMaxVersion(syncable::ModelType model_type,
                              int64 max_version) OVERRIDE;
@@ -60,8 +60,8 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
 
   // Helpers to convert between InvalidationVersionMap <--> DictionaryValue.
   static void DeserializeMap(const base::DictionaryValue* max_versions_dict,
-                             sync_notifier::InvalidationVersionMap* map);
-  static void SerializeMap(const sync_notifier::InvalidationVersionMap& map,
+                             csync::InvalidationVersionMap* map);
+  static void SerializeMap(const csync::InvalidationVersionMap& map,
                            base::DictionaryValue* to_dict);
 
   // May be NULL.

@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/sync_notifier_observer.h"
 
-namespace sync_notifier {
+namespace csync {
 
 const char* kSyncP2PNotificationChannel = "http://www.google.com/chrome/sync";
 
@@ -289,4 +289,4 @@ void P2PNotifier::SendNotificationData(
   push_client_->SendNotification(notification);
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

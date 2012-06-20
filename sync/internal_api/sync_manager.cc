@@ -133,7 +133,7 @@ const unsigned int kMaxMessageSizeToRecord = 5 * 1024;
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::IPAddressObserver,
       public browser_sync::Cryptographer::Observer,
-      public sync_notifier::SyncNotifierObserver,
+      public csync::SyncNotifierObserver,
       public JsBackend,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
@@ -205,7 +205,7 @@ class SyncManager::SyncInternal
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
-            sync_notifier::SyncNotifier* sync_notifier,
+            csync::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             TestingMode testing_mode,
             Encryptor* encryptor,
@@ -323,10 +323,10 @@ class SyncManager::SyncInternal
   // SyncNotifierObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
-      sync_notifier::NotificationsDisabledReason reason) OVERRIDE;
+      csync::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
-      sync_notifier::IncomingNotificationSource source) OVERRIDE;
+      csync::IncomingNotificationSource source) OVERRIDE;
 
   void AddObserver(SyncManager::Observer* observer);
   void RemoveObserver(SyncManager::Observer* observer);
@@ -568,7 +568,7 @@ class SyncManager::SyncInternal
   scoped_ptr<SyncScheduler> scheduler_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
-  scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
+  scoped_ptr<csync::SyncNotifier> sync_notifier_;
 
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.
@@ -721,7 +721,7 @@ bool SyncManager::Init(
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
-    sync_notifier::SyncNotifier* sync_notifier,
+    csync::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     TestingMode testing_mode,
     Encryptor* encryptor,
@@ -867,7 +867,7 @@ bool SyncManager::SyncInternal::Init(
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
-    sync_notifier::SyncNotifier* sync_notifier,
+    csync::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     TestingMode testing_mode,
     Encryptor* encryptor,
@@ -2282,9 +2282,9 @@ void SyncManager::SyncInternal::OnNotificationsEnabled() {
 }
 
 void SyncManager::SyncInternal::OnNotificationsDisabled(
-    sync_notifier::NotificationsDisabledReason reason) {
+    csync::NotificationsDisabledReason reason) {
   DVLOG(1) << "Notifications disabled with reason "
-           << sync_notifier::NotificationsDisabledReasonToString(reason);
+           << csync::NotificationsDisabledReasonToString(reason);
   allstatus_.SetNotificationsEnabled(false);
   if (scheduler()) {
     scheduler()->set_notifications_enabled(false);
@@ -2303,9 +2303,9 @@ void SyncManager::SyncInternal::OnNotificationsDisabled(
 
 void SyncManager::SyncInternal::OnIncomingNotification(
     const syncable::ModelTypePayloadMap& type_payloads,
-    sync_notifier::IncomingNotificationSource source) {
+    csync::IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (source == sync_notifier::LOCAL_NOTIFICATION) {
+  if (source == csync::LOCAL_NOTIFICATION) {
     if (scheduler()) {
       scheduler()->ScheduleNudgeWithPayloadsAsync(
           TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
@@ -2337,7 +2337,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
           syncable::ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
-    details.SetString("source", (source == sync_notifier::LOCAL_NOTIFICATION) ?
+    details.SetString("source", (source == csync::LOCAL_NOTIFICATION) ?
         "LOCAL_NOTIFICATION" : "REMOTE_NOTIFICATION");
     js_event_handler_.Call(FROM_HERE,
                            &JsEventHandler::HandleJsEvent,
@@ -2420,7 +2420,7 @@ void SyncManager::SimulateEnableNotificationsForTest() {
 void SyncManager::SimulateDisableNotificationsForTest(int reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->OnNotificationsDisabled(
-      static_cast<sync_notifier::NotificationsDisabledReason>(reason));
+      static_cast<csync::NotificationsDisabledReason>(reason));
 }
 
 void SyncManager::TriggerOnIncomingNotificationForTest(
@@ -2431,7 +2431,7 @@ void SyncManager::TriggerOnIncomingNotificationForTest(
           std::string());
 
   data_->OnIncomingNotification(model_types_with_payloads,
-                                sync_notifier::REMOTE_NOTIFICATION);
+                                csync::REMOTE_NOTIFICATION);
 }
 
 const char* ConnectionStatusToString(ConnectionStatus status) {

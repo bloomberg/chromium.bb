@@ -26,7 +26,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace sync_notifier {
+namespace csync {
 
 class NonBlockingInvalidationNotifier
     : public SyncNotifier,
@@ -81,6 +81,6 @@ class NonBlockingInvalidationNotifier
   DISALLOW_COPY_AND_ASSIGN(NonBlockingInvalidationNotifier);
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_NON_BLOCKING_INVALIDATION_NOTIFIER_H_

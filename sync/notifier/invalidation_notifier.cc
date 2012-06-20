@@ -14,7 +14,7 @@
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
-namespace sync_notifier {
+namespace csync {
 
 InvalidationNotifier::InvalidationNotifier(
     scoped_ptr<notifier::PushClient> push_client,
@@ -105,7 +105,7 @@ void InvalidationNotifier::OnInvalidate(
   FOR_EACH_OBSERVER(
       SyncNotifierObserver, observers_,
       OnIncomingNotification(type_payloads,
-                             sync_notifier::REMOTE_NOTIFICATION));
+                             csync::REMOTE_NOTIFICATION));
 }
 
 void InvalidationNotifier::OnNotificationsEnabled() {
@@ -121,4 +121,4 @@ void InvalidationNotifier::OnNotificationsDisabled(
                     OnNotificationsDisabled(reason));
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

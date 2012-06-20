@@ -11,7 +11,7 @@
 #include "sync/notifier/sync_notifier_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace sync_notifier {
+namespace csync {
 
 class MockSyncNotifierObserver : public SyncNotifierObserver {
  public:
@@ -25,6 +25,6 @@ class MockSyncNotifierObserver : public SyncNotifierObserver {
                     IncomingNotificationSource));
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_MOCK_SYNC_NOTIFIER_OBSERVER_H_

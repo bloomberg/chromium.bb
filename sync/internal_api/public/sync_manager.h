@@ -37,9 +37,9 @@ class SyncSessionSnapshot;
 }  // namespace sessions
 }  // namespace browser_sync
 
-namespace sync_notifier {
+namespace csync {
 class SyncNotifier;
-}  // namespace sync_notifier
+}  // namespace csync
 
 namespace sync_pb {
 class EncryptedData;
@@ -383,7 +383,7 @@ class SyncManager {
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
-            sync_notifier::SyncNotifier* sync_notifier,
+            csync::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             TestingMode testing_mode,
             browser_sync::Encryptor* encryptor,

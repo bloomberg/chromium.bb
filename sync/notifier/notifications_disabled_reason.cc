@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace sync_notifier {
+namespace csync {
 
 const char* NotificationsDisabledReasonToString(
     NotificationsDisabledReason reason) {

@@ -20,7 +20,7 @@ class ObjectId;
 
 }  // namespace invalidation
 
-namespace sync_notifier {
+namespace csync {
 
 void RunAndDeleteClosure(invalidation::Closure* task);
 
@@ -35,6 +35,6 @@ std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 std::string InvalidationToString(
     const invalidation::Invalidation& invalidation);
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_INVALIDATION_UTIL_H_

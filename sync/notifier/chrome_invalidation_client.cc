@@ -25,7 +25,7 @@ const char kApplicationName[] = "chrome-sync";
 
 }  // namespace
 
-namespace sync_notifier {
+namespace csync {
 
 ChromeInvalidationClient::Listener::~Listener() {}
 
@@ -356,4 +356,4 @@ void ChromeInvalidationClient::OnIncomingNotification(
   // Do nothing, since this is already handled by |invalidation_client_|.
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

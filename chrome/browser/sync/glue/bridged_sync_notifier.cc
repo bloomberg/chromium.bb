@@ -10,7 +10,7 @@ namespace browser_sync {
 
 BridgedSyncNotifier::BridgedSyncNotifier(
     ChromeSyncNotificationBridge* bridge,
-    sync_notifier::SyncNotifier* delegate)
+    csync::SyncNotifier* delegate)
     : bridge_(bridge), delegate_(delegate) {
   DCHECK(bridge_);
 }
@@ -19,14 +19,14 @@ BridgedSyncNotifier::~BridgedSyncNotifier() {
 }
 
 void BridgedSyncNotifier::AddObserver(
-    sync_notifier::SyncNotifierObserver* observer) {
+    csync::SyncNotifierObserver* observer) {
   if (delegate_.get())
    delegate_->AddObserver(observer);
   bridge_->AddObserver(observer);
 }
 
 void BridgedSyncNotifier::RemoveObserver(
-    sync_notifier::SyncNotifierObserver* observer) {
+    csync::SyncNotifierObserver* observer) {
   bridge_->RemoveObserver(observer);
   if (delegate_.get())
     delegate_->RemoveObserver(observer);

@@ -705,10 +705,10 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(const browser_sync::SyncProtocolError&));  // NOLINT
 };
 
-class SyncNotifierMock : public sync_notifier::SyncNotifier {
+class SyncNotifierMock : public csync::SyncNotifier {
  public:
-  MOCK_METHOD1(AddObserver, void(sync_notifier::SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(sync_notifier::SyncNotifierObserver*));
+  MOCK_METHOD1(AddObserver, void(csync::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(csync::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials,
@@ -869,13 +869,13 @@ class SyncManagerTest : public testing::Test,
   }
 
   void SyncNotifierAddObserver(
-      sync_notifier::SyncNotifierObserver* sync_notifier_observer) {
+      csync::SyncNotifierObserver* sync_notifier_observer) {
     EXPECT_EQ(NULL, sync_notifier_observer_);
     sync_notifier_observer_ = sync_notifier_observer;
   }
 
   void SyncNotifierRemoveObserver(
-      sync_notifier::SyncNotifierObserver* sync_notifier_observer) {
+      csync::SyncNotifierObserver* sync_notifier_observer) {
     EXPECT_EQ(sync_notifier_observer_, sync_notifier_observer);
     sync_notifier_observer_ = NULL;
   }
@@ -940,7 +940,7 @@ class SyncManagerTest : public testing::Test,
   SyncManager sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
-  sync_notifier::SyncNotifierObserver* sync_notifier_observer_;
+  csync::SyncNotifierObserver* sync_notifier_observer_;
   int update_enabled_types_call_count_;
 };
 
@@ -1264,17 +1264,17 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
 
   sync_manager_.SimulateEnableNotificationsForTest();
   sync_manager_.SimulateDisableNotificationsForTest(
-      sync_notifier::TRANSIENT_NOTIFICATION_ERROR);
+      csync::TRANSIENT_NOTIFICATION_ERROR);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
   sync_manager_.SimulateEnableNotificationsForTest();
   sync_manager_.SimulateDisableNotificationsForTest(
-      sync_notifier::TRANSIENT_NOTIFICATION_ERROR);
+      csync::TRANSIENT_NOTIFICATION_ERROR);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
   sync_manager_.SimulateEnableNotificationsForTest();
   sync_manager_.SimulateDisableNotificationsForTest(
-      sync_notifier::TRANSIENT_NOTIFICATION_ERROR);
+      csync::TRANSIENT_NOTIFICATION_ERROR);
 
   // Should trigger the replies.
   PumpLoop();

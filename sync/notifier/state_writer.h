@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace sync_notifier {
+namespace csync {
 
 class StateWriter {
  public:

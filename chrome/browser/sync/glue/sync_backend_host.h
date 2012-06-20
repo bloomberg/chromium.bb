@@ -295,7 +295,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
         const sync_api::SyncCredentials& credentials,
         ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
-        sync_notifier::SyncNotifierFactory* sync_notifier_factory,
+        csync::SyncNotifierFactory* sync_notifier_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
         sync_api::SyncManager::TestingMode testing_mode,
@@ -314,7 +314,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
     sync_api::SyncCredentials credentials;
     ChromeSyncNotificationBridge* const chrome_sync_notification_bridge;
-    sync_notifier::SyncNotifierFactory* const sync_notifier_factory;
+    csync::SyncNotifierFactory* const sync_notifier_factory;
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
@@ -489,7 +489,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // chrome events.
   ChromeSyncNotificationBridge chrome_sync_notification_bridge_;
 
-  sync_notifier::SyncNotifierFactory sync_notifier_factory_;
+  csync::SyncNotifierFactory sync_notifier_factory_;
 
   ChromeExtensionsActivityMonitor extensions_activity_monitor_;
 

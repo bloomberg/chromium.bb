@@ -13,7 +13,7 @@
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_notifier.h"
 
-namespace sync_notifier {
+namespace csync {
 
 class NonBlockingInvalidationNotifier::Core
     : public base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>,
@@ -275,4 +275,4 @@ void NonBlockingInvalidationNotifier::OnIncomingNotification(
                     OnIncomingNotification(type_payloads, source));
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

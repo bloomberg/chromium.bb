@@ -27,7 +27,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace sync_notifier {
+namespace csync {
 
 class ChromeLogger : public invalidation::Logger {
  public:
@@ -146,6 +146,6 @@ class ChromeSystemResources : public invalidation::SystemResources {
   PushClientChannel push_client_channel_;
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_

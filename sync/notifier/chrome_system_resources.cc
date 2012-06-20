@@ -18,7 +18,7 @@
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_util.h"
 
-namespace sync_notifier {
+namespace csync {
 
 ChromeLogger::ChromeLogger() {}
 ChromeLogger::~ChromeLogger() {}
@@ -250,4 +250,4 @@ ChromeScheduler* ChromeSystemResources::listener_scheduler() {
   return listener_scheduler_.get();
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

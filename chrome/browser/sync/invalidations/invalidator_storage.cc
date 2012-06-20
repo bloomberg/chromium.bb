@@ -11,7 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
-using sync_notifier::InvalidationVersionMap;
+using csync::InvalidationVersionMap;
 
 namespace browser_sync {
 

@@ -17,7 +17,7 @@
 #include "sync/notifier/invalidation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_notifier {
+namespace csync {
 namespace {
 
 syncable::ModelType ObjectIdToModelType(

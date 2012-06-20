@@ -20,7 +20,7 @@
 // For invalidation::InvalidationListener::RegistrationState.
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 
-namespace sync_notifier {
+namespace csync {
 
 using ::invalidation::InvalidationListener;
 
@@ -171,6 +171,6 @@ class RegistrationManager : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(RegistrationManager);
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_REGISTRATION_MANAGER_H_

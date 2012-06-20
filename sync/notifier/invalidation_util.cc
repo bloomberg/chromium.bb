@@ -9,7 +9,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
 
-namespace sync_notifier {
+namespace csync {
 
 void RunAndDeleteClosure(invalidation::Closure* task) {
   task->Run();
@@ -55,4 +55,4 @@ std::string InvalidationToString(
   return ss.str();
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

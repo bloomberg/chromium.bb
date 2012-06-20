@@ -34,7 +34,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace sync_notifier {
+namespace csync {
 
 using invalidation::InvalidationListener;
 
@@ -156,6 +156,6 @@ class ChromeInvalidationClient
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_

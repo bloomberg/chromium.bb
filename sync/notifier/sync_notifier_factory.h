@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
-namespace sync_notifier {
+namespace csync {
 
 class SyncNotifier;
 
@@ -44,6 +44,6 @@ class SyncNotifierFactory {
       invalidation_state_tracker_;
 };
 
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_FACTORY_H_

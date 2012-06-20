@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_notifier {
+namespace csync {
 
 namespace {
 
@@ -127,4 +127,4 @@ TEST_F(InvalidationNotifierTest, MigrateState) {
 
 }  // namespace
 
-}  // namespace sync_notifier
+}  // namespace csync

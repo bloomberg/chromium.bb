@@ -13,7 +13,7 @@
 
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace sync_notifier {
+namespace csync {
 class SyncNotifierObserver;
 
 class SyncNotifier {
@@ -50,6 +50,6 @@ class SyncNotifier {
   virtual void SendNotification(
       syncable::ModelTypeSet changed_types) = 0;
 };
-}  // namespace sync_notifier
+}  // namespace csync
 
 #endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_H_

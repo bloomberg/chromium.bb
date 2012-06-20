@@ -17,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_notifier {
+namespace csync {
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -332,4 +332,4 @@ TEST_F(ChromeInvalidationClientTest, StateChangesAuthError) {
   client_.Ready(NULL);
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

@@ -14,7 +14,7 @@
 
 class Profile;
 
-namespace sync_notifier {
+namespace csync {
 class SyncNotifierObserver;
 }  // namespace
 
@@ -35,8 +35,8 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
   void UpdateEnabledTypes(const syncable::ModelTypeSet enabled_types);
 
   // These can be called on any thread.
-  virtual void AddObserver(sync_notifier::SyncNotifierObserver* observer);
-  virtual void RemoveObserver(sync_notifier::SyncNotifierObserver* observer);
+  virtual void AddObserver(csync::SyncNotifierObserver* observer);
+  virtual void RemoveObserver(csync::SyncNotifierObserver* observer);
 
   // NotificationObserver implementation. Called on UI thread.
   virtual void Observe(int type,
@@ -49,7 +49,7 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
 
   // Because [Add/Remove]Observer can be called from any thread, we need a
   // thread-safe observerlist.
-  scoped_refptr<ObserverListThreadSafe<sync_notifier::SyncNotifierObserver> >
+  scoped_refptr<ObserverListThreadSafe<csync::SyncNotifierObserver> >
       observers_;
 };
 

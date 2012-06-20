@@ -38,7 +38,7 @@ using content::BrowserThread;
 // so we don't have to worry about possible thread safety issues within
 // GTest/GMock.
 class FakeSyncNotifierObserverIO
-    : public sync_notifier::SyncNotifierObserver {
+    : public csync::SyncNotifierObserver {
  public:
   FakeSyncNotifierObserverIO(
       ChromeSyncNotificationBridge* bridge,
@@ -58,10 +58,10 @@ class FakeSyncNotifierObserverIO
   // SyncNotifierObserver implementation.
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
-      sync_notifier::IncomingNotificationSource source) OVERRIDE {
+      csync::IncomingNotificationSource source) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notification_count_++;
-    if (source != sync_notifier::LOCAL_NOTIFICATION) {
+    if (source != csync::LOCAL_NOTIFICATION) {
       LOG(ERROR) << "Received notification with wrong source.";
       received_improper_notification_ = true;
     }
@@ -74,7 +74,7 @@ class FakeSyncNotifierObserverIO
     NOTREACHED();
   }
   virtual void OnNotificationsDisabled(
-      sync_notifier::NotificationsDisabledReason reason) OVERRIDE {
+      csync::NotificationsDisabledReason reason) OVERRIDE {
     NOTREACHED();
   }
 
@@ -192,10 +192,10 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
 TEST_F(ChromeSyncNotificationBridgeTest, LocalNotification) {
   syncable::ModelTypePayloadMap payload_map;
   payload_map[syncable::SESSIONS] = "";
-  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  StrictMock<csync::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer,
               OnIncomingNotification(payload_map,
-                                     sync_notifier::LOCAL_NOTIFICATION));
+                                     csync::LOCAL_NOTIFICATION));
   bridge_.AddObserver(&observer);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                              payload_map);
@@ -209,10 +209,10 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotification) {
 TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotification) {
   syncable::ModelTypePayloadMap payload_map;
   payload_map[syncable::BOOKMARKS] = "";
-  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  StrictMock<csync::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer,
               OnIncomingNotification(payload_map,
-                                     sync_notifier::REMOTE_NOTIFICATION));
+                                     csync::REMOTE_NOTIFICATION));
   bridge_.AddObserver(&observer);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              payload_map);
@@ -229,10 +229,10 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotificationEmptyPayloadMap) {
   const syncable::ModelTypePayloadMap enabled_types_payload_map =
       syncable::ModelTypePayloadMapFromEnumSet(enabled_types, std::string());
 
-  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  StrictMock<csync::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer,
               OnIncomingNotification(enabled_types_payload_map,
-                                     sync_notifier::LOCAL_NOTIFICATION));
+                                     csync::LOCAL_NOTIFICATION));
   bridge_.AddObserver(&observer);
   // Set enabled types on the bridge.
   bridge_.UpdateEnabledTypes(enabled_types);
@@ -251,10 +251,10 @@ TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotificationEmptyPayloadMap) {
   const syncable::ModelTypePayloadMap enabled_types_payload_map =
       syncable::ModelTypePayloadMapFromEnumSet(enabled_types, std::string());
 
-  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  StrictMock<csync::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer,
               OnIncomingNotification(enabled_types_payload_map,
-                                     sync_notifier::REMOTE_NOTIFICATION));
+                                     csync::REMOTE_NOTIFICATION));
   bridge_.AddObserver(&observer);
   // Set enabled types on the bridge.
   bridge_.UpdateEnabledTypes(enabled_types);

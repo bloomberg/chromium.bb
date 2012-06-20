@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 
-namespace sync_notifier {
+namespace csync {
 
 RegistrationManager::PendingRegistrationInfo::PendingRegistrationInfo() {}
 
@@ -272,4 +272,4 @@ bool RegistrationManager::IsTypeRegistered(
       invalidation::InvalidationListener::REGISTERED;
 }
 
-}  // namespace sync_notifier
+}  // namespace csync

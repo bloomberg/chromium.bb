@@ -1039,8 +1039,8 @@ name=http://crbug.com/79933 (2)
 *!TestURLRequestContextGetter::GetURLRequestContext
 *!notifier::SingleLoginAttempt::SingleLoginAttempt
 *!notifier::Login::StartConnection
-*!sync_notifier::InvalidationNotifier::UpdateCredentials
-*!sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+*!csync::InvalidationNotifier::UpdateCredentials
+*!csync::NonBlockingInvalidationNotifier::Core::UpdateCredentials
 
 LEAK
 name=http://crbug.com/79933 (3)

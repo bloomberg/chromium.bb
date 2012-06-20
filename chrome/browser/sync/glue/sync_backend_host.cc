@@ -312,7 +312,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
-          base::WeakPtr<sync_notifier::InvalidationStateTracker>()),
+          base::WeakPtr<csync::InvalidationStateTracker>()),
       frontend_(NULL) {
 }
 
@@ -839,7 +839,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
     const sync_api::SyncCredentials& credentials,
     ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
-    sync_notifier::SyncNotifierFactory* sync_notifier_factory,
+    csync::SyncNotifierFactory* sync_notifier_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     sync_api::SyncManager::TestingMode testing_mode,

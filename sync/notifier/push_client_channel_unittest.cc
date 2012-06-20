@@ -12,7 +12,7 @@
 #include "jingle/notifier/listener/notification_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_notifier {
+namespace csync {
 namespace {
 
 class PushClientChannelTest : public ::testing::Test {
@@ -250,4 +250,4 @@ TEST_F(PushClientChannelTest, PersistedMessageState) {
 }
 
 }  // namespace
-}  // namespace sync_notifier
+}  // namespace csync
