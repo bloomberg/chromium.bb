@@ -683,6 +683,13 @@ bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
   // reasons as well as to support unit tests, which do not have an underlying
   // ResourceLoaderBridge implementation.
 
+#if defined(OS_ANDROID)
+  // For compatibility reasons on Android we need to expose top-level data://
+  // to the browser.
+  if (request_.targetType() == WebURLRequest::TargetIsMainFrame)
+    return false;
+#endif
+
   if (request_.targetType() != WebURLRequest::TargetIsMainFrame &&
       request_.targetType() != WebURLRequest::TargetIsSubframe)
     return true;
