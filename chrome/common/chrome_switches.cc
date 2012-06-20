@@ -1287,9 +1287,6 @@ const char kTabletUi[]                      = "tablet-ui";
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 
-// Enables Libcros.
-const char kEnableLibcros[]                = "enable-libcros";
-
 // Enables new OOBE/sign in design.
 extern const char kEnableNewOobe[]         = "enable-new-oobe";
 
