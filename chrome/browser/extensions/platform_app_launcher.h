@@ -9,6 +9,10 @@
 class CommandLine;
 class Profile;
 
+namespace webkit_glue {
+struct WebIntentData;
+}
+
 namespace extensions {
 
 class Extension;
@@ -19,6 +23,14 @@ class Extension;
 void LaunchPlatformApp(Profile* profile,
                        const Extension* extension,
                        const CommandLine* command_line);
+
+// Launches the platform app |extension| with the supplied web intent. Creates
+// appropriate launch data for the |web_intent_data| field present. |extension|
+// and |profile| must not be NULL.
+void LaunchPlatformAppWithWebIntent(
+    Profile* profile,
+    const Extension* extension,
+    const webkit_glue::WebIntentData& web_intent_data);
 
 }  // namespace extensions
 

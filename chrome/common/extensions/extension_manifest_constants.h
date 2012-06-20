@@ -220,8 +220,10 @@ namespace extension_manifest_errors {
   extern const char kInvalidInputComponentType[];
   extern const char kInvalidIntent[];
   extern const char kInvalidIntentDisposition[];
+  extern const char kInvalidIntentDispositionInPlatformApp[];
   extern const char kInvalidIntentHref[];
   extern const char kInvalidIntentHrefEmpty[];
+  extern const char kInvalidIntentHrefInPlatformApp[];
   extern const char kInvalidIntentHrefOldAndNewKey[];
   extern const char kInvalidIntentPageInHostedApp[];
   extern const char kInvalidIntents[];

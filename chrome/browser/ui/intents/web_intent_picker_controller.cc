@@ -10,6 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
@@ -254,6 +256,20 @@ void WebIntentPickerController::Observe(
 
 void WebIntentPickerController::OnServiceChosen(const GURL& url,
                                                 Disposition disposition) {
+  ExtensionService* service = tab_contents_->profile()->GetExtensionService();
+  DCHECK(service);
+  const extensions::Extension* extension = service->GetInstalledApp(url);
+  if (extension && extension->is_platform_app()) {
+    extensions::LaunchPlatformAppWithWebIntent(tab_contents_->profile(),
+        extension, intents_dispatcher_->GetIntent());
+    // TODO(benwells): hook up return pathway to allow platform app to post
+    // success or failure.
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_REPLY_SUCCESS, string16());
+    ClosePicker();
+    return;
+  }
+
   switch (disposition) {
     case WebIntentPickerModel::DISPOSITION_INLINE:
       // Set the model to inline disposition. It will notify the picker which

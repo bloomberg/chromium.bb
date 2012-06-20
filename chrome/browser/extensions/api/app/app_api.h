@@ -11,6 +11,10 @@
 class Profile;
 class GURL;
 
+namespace webkit_glue {
+struct WebIntentData;
+}
+
 namespace extensions {
 
 class Extension;
@@ -61,6 +65,14 @@ class AppEventRouter {
       const string16& action,
       const std::string& file_system_id,
       const FilePath& base_name);
+
+  // Dispatches the onLaunched event to the app implemented by |extension|
+  // running in |profile|. The event parameter launchData will have a field
+  // called intent, populated by |web_intent_data|.
+  static void DispatchOnLaunchedEventWithWebIntent(
+      Profile* profile,
+      const Extension* extension,
+      const webkit_glue::WebIntentData web_intent_data);
 };
 
 }  // namespace extensions

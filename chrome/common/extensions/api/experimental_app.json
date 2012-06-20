@@ -93,7 +93,7 @@
             "properties": {
               "intent": {
                 "type": "object",
-                "description": "File being opened in the form of a WebIntents intent object.",
+                "description": "A WebIntents intent object.",
                 "properties": {
                   "action": {
                     "type": "string",
@@ -101,15 +101,11 @@
                   },
                   "type": {
                     "type": "string",
-                    "description": "The MIME type of the file being opened."
+                    "description": "The MIME type of the data."
                   },
                   "data": {
-                    "type": "object",
-                    "isInstanceOf": "FileEntry",
-                    "description": "A FileEntry for the file being opened.",
-                    "additionalProperties": {
-                      "type": "any"
-                    }
+                    "type": "any",
+                    "description": "Data associated with the intent."
                   },
                   "postResult": {
                     "type": "function",

@@ -78,6 +78,8 @@
         'renderer/extensions/context_menus_custom_bindings.h',
         'renderer/extensions/event_bindings.cc',
         'renderer/extensions/event_bindings.h',
+        'renderer/extensions/experimental.app_custom_bindings.cc',
+        'renderer/extensions/experimental.app_custom_bindings.h',
         'renderer/extensions/experimental.usb_custom_bindings.cc',
         'renderer/extensions/experimental.usb_custom_bindings.h',
         'renderer/extensions/extension_custom_bindings.cc',

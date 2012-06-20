@@ -1923,10 +1923,15 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
     }
   }
 
-  // If we still don't have an href, the manifest is malformed.
+  // If there still is not an  href, the manifest is malformed, unless this is a
+  // platform app in which case the href should not be present.
   if (href.empty() && !is_platform_app()) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidIntentHrefEmpty, action_name);
+    return false;
+  } else if (!href.empty() && is_platform_app()) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidIntentHrefInPlatformApp, action_name);
     return false;
   }
 
@@ -1940,7 +1945,9 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
       return false;
     }
     service.service_url = service_url;
-  } else if (!is_platform_app()) {
+  } else if (is_platform_app()) {
+    service.service_url = GetBackgroundURL();
+  } else {
     // We do not allow absolute intent URLs in non-hosted apps.
     if (service_url.is_valid()) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
@@ -1957,6 +1964,11 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
   }
 
   if (intent_service.HasKey(keys::kIntentDisposition)) {
+    if (is_platform_app()) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidIntentDispositionInPlatformApp, action_name);
+      return false;
+    }
     if (!intent_service.GetString(keys::kIntentDisposition, &value) ||
         (value != values::kIntentDispositionWindow &&
          value != values::kIntentDispositionInline)) {

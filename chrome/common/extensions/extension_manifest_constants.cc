@@ -271,10 +271,16 @@ const char kInvalidIntent[] =
     "Invalid value for intents[*]";
 const char kInvalidIntentDisposition[] =
     "Invalid value for intents[*].disposition";
+const char kInvalidIntentDispositionInPlatformApp[] =
+    "Invalid value for intents[*].disposition. Platform apps cannot specify "
+    "a disposition";
 const char kInvalidIntentHref[] =
     "Invalid value for intents[*].href";
 const char kInvalidIntentHrefEmpty[] =
     "Missing value for intents[*].href";
+const char kInvalidIntentHrefInPlatformApp[] =
+    "Invalid value for intents[*].href. Platform apps cannot specifiy a "
+    "URL for intents";
 const char kInvalidIntentHrefOldAndNewKey[] =
     "intents[*]: Key \"*\" is deprecated.  Key \"*\" has the same meaning. "
     "You can not use both.";

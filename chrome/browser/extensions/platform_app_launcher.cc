@@ -25,6 +25,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
@@ -34,12 +35,17 @@ namespace {
 
 const char kViewIntent[] = "http://webintents.org/view";
 
-class PlatformAppLauncher
-    : public base::RefCountedThreadSafe<PlatformAppLauncher> {
+// Class to handle launching of platform apps with command line information.
+// An instance of this class is created for each launch. The lifetime of these
+// instances is managed by reference counted pointers. As long as an instance
+// has outstanding tasks on a message queue it will be retained; once all
+// outstanding tasks are completed it will be deleted.
+class PlatformAppCommandLineLauncher
+    : public base::RefCountedThreadSafe<PlatformAppCommandLineLauncher> {
  public:
-  PlatformAppLauncher(Profile* profile,
-                      const Extension* extension,
-                      const CommandLine* command_line)
+  PlatformAppCommandLineLauncher(Profile* profile,
+                                 const Extension* extension,
+                                 const CommandLine* command_line)
       : profile_(profile),
         extension_(extension),
         command_line_(command_line) {}
@@ -53,13 +59,14 @@ class PlatformAppLauncher
 
     FilePath file_path(command_line_->GetArgs()[0]);
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-        &PlatformAppLauncher::GetMimeTypeAndLaunch, this, file_path));
+            &PlatformAppCommandLineLauncher::GetMimeTypeAndLaunch,
+            this, file_path));
   }
 
  private:
-  friend class base::RefCountedThreadSafe<PlatformAppLauncher>;
+  friend class base::RefCountedThreadSafe<PlatformAppCommandLineLauncher>;
 
-  virtual ~PlatformAppLauncher() {}
+  virtual ~PlatformAppCommandLineLauncher() {}
 
   void LaunchWithNoLaunchData() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -74,7 +81,7 @@ class PlatformAppLauncher
         file_util::DirectoryExists(file_path)) {
       LOG(WARNING) << "No file exists with path " << file_path.value();
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-          &PlatformAppLauncher::LaunchWithNoLaunchData, this));
+              &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
       return;
     }
 
@@ -83,13 +90,13 @@ class PlatformAppLauncher
     if (!net::GetMimeTypeFromFile(file_path, &mime_type)) {
       LOG(WARNING) << "Could not obtain MIME type for " << file_path.value();
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-          &PlatformAppLauncher::LaunchWithNoLaunchData, this));
+              &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
       return;
     }
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &PlatformAppLauncher::LaunchWithMimeTypeAndPath, this, file_path,
-        mime_type));
+            &PlatformAppCommandLineLauncher::LaunchWithMimeTypeAndPath,
+            this, file_path, mime_type));
   }
 
   void LaunchWithMimeTypeAndPath(const FilePath& file_path,
@@ -119,23 +126,24 @@ class PlatformAppLauncher
       return;
     }
 
-    // We need to grant access to the file for the process associated with the
-    // extension. To do this we need the ExtensionHost. This might not be
+    // Access needs to be granted to the file for the process associated with
+    // the extension. To do this the ExtensionHost is needed. This might not be
     // available, or it might be in the process of being unloaded, in which case
-    // we can use the lazy background task queue to load the extension and then
+    // the lazy background task queue is used to load the extension and then
     // call back to us.
     extensions::LazyBackgroundTaskQueue* queue =
         ExtensionSystem::Get(profile_)->lazy_background_task_queue();
     if (queue->ShouldEnqueueTask(profile_, extension_)) {
-      queue->AddPendingTask(profile_, extension_->id(),
-          base::Bind(&PlatformAppLauncher::GrantAccessToFileAndLaunch,
+      queue->AddPendingTask(profile_, extension_->id(), base::Bind(
+              &PlatformAppCommandLineLauncher::GrantAccessToFileAndLaunch,
               this, file_path, mime_type));
       return;
     }
 
-    ExtensionProcessManager* pm =
+    ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(profile_)->process_manager();
-    ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_->id());
+    ExtensionHost* host =
+        process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);
     GrantAccessToFileAndLaunch(file_path, mime_type, host);
   }
@@ -154,9 +162,9 @@ class PlatformAppLauncher
     int renderer_id = host->render_process_host()->GetID();
 
     // Granting read file permission to allow reading file content.
-    // If the renderer already has permission to read these paths, we don't
-    // regrant, as this would overwrite any other permissions which the renderer
-    // may already have.
+    // If the renderer already has permission to read these paths, it is not
+    // regranted, as this would overwrite any other permissions which the
+    // renderer may already have.
     if (!policy->CanReadFile(renderer_id, file_path))
       policy->GrantReadFile(renderer_id, file_path);
 
@@ -177,11 +185,92 @@ class PlatformAppLauncher
         file_path.BaseName());
   }
 
+  // The profile the app should be run in.
   Profile* profile_;
+  // The extension providing the app.
   const Extension* extension_;
+  // The command line to be passed through to the app, or NULL.
   const CommandLine* command_line_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformAppLauncher);
+  DISALLOW_COPY_AND_ASSIGN(PlatformAppCommandLineLauncher);
+};
+
+// Class to handle launching of platform apps with WebIntent data that is being
+// passed in a a blob.
+// An instance of this class is created for each launch. The lifetime of these
+// instances is managed by reference counted pointers. As long as an instance
+// has outstanding tasks on a message queue it will be retained; once all
+// outstanding tasks are completed it will be deleted.
+class PlatformAppBlobIntentLauncher
+    : public base::RefCountedThreadSafe<PlatformAppBlobIntentLauncher> {
+ public:
+  PlatformAppBlobIntentLauncher(Profile* profile,
+                                const Extension* extension,
+                                const webkit_glue::WebIntentData& data)
+      : profile_(profile),
+        extension_(extension),
+        data_(data) {}
+
+  void Launch() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    // Access needs to be granted to the file for the process associated with
+    // the extension. To do this the ExtensionHost is needed. This might not be
+    // available, or it might be in the process of being unloaded, in which case
+    // the lazy background task queue is used to load the extension and then
+    // call back to us.
+    extensions::LazyBackgroundTaskQueue* queue =
+        ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+    if (queue->ShouldEnqueueTask(profile_, extension_)) {
+      queue->AddPendingTask(profile_, extension_->id(), base::Bind(
+              &PlatformAppBlobIntentLauncher::GrantAccessToFileAndLaunch,
+              this));
+      return;
+    }
+
+    ExtensionProcessManager* process_manager =
+        ExtensionSystem::Get(profile_)->process_manager();
+    ExtensionHost* host =
+        process_manager->GetBackgroundHostForExtension(extension_->id());
+    DCHECK(host);
+    GrantAccessToFileAndLaunch(host);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<PlatformAppBlobIntentLauncher>;
+
+  virtual ~PlatformAppBlobIntentLauncher() {}
+
+  void GrantAccessToFileAndLaunch(ExtensionHost* host) {
+    // If there was an error loading the app page, |host| will be NULL.
+    if (!host) {
+      LOG(ERROR) << "Could not load app page for " << extension_->id();
+      return;
+    }
+
+    content::ChildProcessSecurityPolicy* policy =
+        content::ChildProcessSecurityPolicy::GetInstance();
+    int renderer_id = host->render_process_host()->GetID();
+
+    // Granting read file permission to allow reading file content.
+    // If the renderer already has permission to read these paths, it is not
+    // regranted, as this would overwrite any other permissions which the
+    // renderer may already have.
+    if (!policy->CanReadFile(renderer_id, data_.blob_file))
+      policy->GrantReadFile(renderer_id, data_.blob_file);
+
+    extensions::AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
+        profile_, extension_, data_);
+  }
+
+  // The profile the app should be run in.
+  Profile* profile_;
+  // The extension providing the app.
+  const Extension* extension_;
+  // The WebIntent data to be passed through to the app.
+  const webkit_glue::WebIntentData data_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformAppBlobIntentLauncher);
 };
 
 }  // namespace
@@ -194,9 +283,24 @@ void LaunchPlatformApp(Profile* profile,
   // launcher will be freed when nothing has a reference to it. The message
   // queue will retain a reference for any outstanding task, so when the
   // launcher has finished it will be freed.
-  scoped_refptr<PlatformAppLauncher> launcher =
-      new PlatformAppLauncher(profile, extension, command_line);
+  scoped_refptr<PlatformAppCommandLineLauncher> launcher =
+      new PlatformAppCommandLineLauncher(profile, extension, command_line);
   launcher->Launch();
+}
+
+void LaunchPlatformAppWithWebIntent(
+    Profile* profile,
+    const Extension* extension,
+    const webkit_glue::WebIntentData& web_intent_data) {
+  if (web_intent_data.data_type == webkit_glue::WebIntentData::BLOB) {
+    scoped_refptr<PlatformAppBlobIntentLauncher> launcher =
+        new PlatformAppBlobIntentLauncher(profile, extension, web_intent_data);
+    launcher->Launch();
+    return;
+  }
+
+  extensions::AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
+      profile, extension, web_intent_data);
 }
 
 }  // namespace extensions
