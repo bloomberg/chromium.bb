@@ -86,10 +86,11 @@ class DeepHeapProfile {
  private:
 #ifdef DEEP_HEAP_PROFILE
   struct DeepBucket {
-    Bucket* bucket;
-    size_t committed_size;
-    int   id;         // Unique ID of the bucket.
-    bool  is_logged;  // True if the stracktrace is logged to a file.
+    Bucket*     bucket;
+    size_t      committed_size;
+    int         id;         // Unique ID of the bucket.
+    bool        is_logged;  // True if the stracktrace is logged to a file.
+    DeepBucket* next;       // Next entry in hash-table.
   };
 
   typedef AddressMap<DeepBucket> DeepBucketMap;
@@ -161,16 +162,13 @@ class DeepHeapProfile {
     MapsRegionType type;
   };
 
+  static void DeallocateDeepBucketTable(DeepBucket** deep_table,
+                                        HeapProfileTable* heap_profile);
+
   // Checks if the length of |printed| characters by snprintf is valid.
   static bool IsPrintedStringValid(int printed,
                                    int buffer_size,
                                    int used_in_buffer);
-
-  // Clear the is_logged flag in a DeepBucket object as a callback function
-  // for DeepBucketMap::Iterate().
-  static void ClearIsLogged(const void* pointer,
-                            DeepBucket* db,
-                            DeepHeapProfile* deep_profile);
 
   // Open /proc/pid/pagemap and return its file descriptor.
   // File descriptors need to be refreshed after each fork.
@@ -205,7 +203,7 @@ class DeepHeapProfile {
 
   // Get the DeepBucket object corresponding to the given |bucket|.
   // DeepBucket is an extension to Bucket which is declared above.
-  DeepBucket* GetDeepBucket(Bucket* bucket);
+  DeepBucket* GetDeepBucket(Bucket* bucket, DeepBucket** table);
 
   // Reset committed_size member variables in DeepBucket objects to 0.
   void ResetCommittedSize(Bucket** bucket_table);
@@ -278,7 +276,7 @@ class DeepHeapProfile {
   char* profiler_buffer_;  // Buffer we use many times.
 
   int bucket_id_;
-  DeepBucketMap* deep_bucket_map_;
+  DeepBucket** deep_table_;
   MMapListEntry* mmap_list_;
   int mmap_list_length_;
   int num_mmap_allocations_;
