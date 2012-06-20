@@ -627,6 +627,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_key_press_event_t *key_press, *key_release;
 	xcb_keymap_notify_event_t *keymap_notify;
 	xcb_focus_in_event_t *focus_in;
+	xcb_expose_event_t *expose;
 	xcb_atom_t atom;
 	uint32_t *k;
 	uint32_t i, set;
@@ -716,10 +717,9 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 
 		case XCB_EXPOSE:
-			/* FIXME: schedule output repaint */
-			/* output = x11_compositor_find_output(c, expose->window); */
-
-			weston_compositor_schedule_repaint(&c->base);
+			expose = (xcb_expose_event_t *) event;
+			output = x11_compositor_find_output(c, expose->window);
+			weston_output_schedule_repaint(&output->base);
 			break;
 
 		case XCB_ENTER_NOTIFY:

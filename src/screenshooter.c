@@ -165,7 +165,7 @@ screenshooter_shoot(struct wl_client *client,
 
 	l->listener.notify = screenshooter_frame_notify;
 	wl_signal_add(&output->frame_signal, &l->listener);
-	weston_compositor_schedule_repaint(output->compositor);
+	weston_output_schedule_repaint(output);
 }
 
 struct screenshooter_interface screenshooter_implementation = {

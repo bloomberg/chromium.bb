@@ -230,7 +230,7 @@ fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
 
 	if (fb == fb->output->next ||
 	    (fb == fb->output->current && !fb->output->next))
-		weston_compositor_schedule_repaint(fb->output->base.compositor);
+		weston_output_schedule_repaint(&fb->output->base);
 }
 
 static int

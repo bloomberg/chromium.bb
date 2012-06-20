@@ -929,7 +929,7 @@ weston_output_damage(struct weston_output *output)
 
 	pixman_region32_union(&compositor->damage,
 			      &compositor->damage, &output->region);
-	weston_compositor_schedule_repaint(compositor);
+	weston_output_schedule_repaint(output);
 }
 
 static void
@@ -1175,28 +1175,35 @@ weston_layer_init(struct weston_layer *layer, struct wl_list *below)
 }
 
 WL_EXPORT void
-weston_compositor_schedule_repaint(struct weston_compositor *compositor)
+weston_output_schedule_repaint(struct weston_output *output)
 {
-	struct weston_output *output;
+	struct weston_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop;
 
 	if (compositor->state == WESTON_COMPOSITOR_SLEEPING)
 		return;
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
-	wl_list_for_each(output, &compositor->output_list, link) {
-		output->repaint_needed = 1;
-		if (output->repaint_scheduled)
-			continue;
+	output->repaint_needed = 1;
+	if (output->repaint_scheduled)
+		return;
 
-		wl_event_loop_add_idle(loop, idle_repaint, output);
-		output->repaint_scheduled = 1;
-	}
+	wl_event_loop_add_idle(loop, idle_repaint, output);
+	output->repaint_scheduled = 1;
 
 	if (compositor->input_loop_source) {
 		wl_event_source_remove(compositor->input_loop_source);
 		compositor->input_loop_source = NULL;
 	}
+}
+
+WL_EXPORT void
+weston_compositor_schedule_repaint(struct weston_compositor *compositor)
+{
+	struct weston_output *output;
+
+	wl_list_for_each(output, &compositor->output_list, link)
+		weston_output_schedule_repaint(output);
 }
 
 WL_EXPORT void
