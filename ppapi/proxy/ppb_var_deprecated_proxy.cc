@@ -269,8 +269,10 @@ PP_Var CreateObject(PP_Instance instance,
   PP_Var ret_var = result.Return(dispatcher);
 
   // Register this object as being implemented by the plugin.
-  tracker->PluginImplementedObjectCreated(instance, ret_var,
-                                          ppp_class, ppp_class_data);
+  if (ret_var.type == PP_VARTYPE_OBJECT) {
+    tracker->PluginImplementedObjectCreated(instance, ret_var,
+                                            ppp_class, ppp_class_data);
+  }
   return ret_var;
 }
 
