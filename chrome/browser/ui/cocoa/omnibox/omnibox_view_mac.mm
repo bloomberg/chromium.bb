@@ -21,11 +21,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
-#include "net/base/escape.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/rect.h"
 
@@ -171,7 +169,7 @@ OmniboxViewMac::OmniboxViewMac(AutocompleteEditController* controller,
                                CommandUpdater* command_updater,
                                AutocompleteTextField* field)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(new OmniboxPopupViewMac(this, model_.get(), profile, field)),
+      popup_view_(new OmniboxPopupViewMac(this, model_.get(), field)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),

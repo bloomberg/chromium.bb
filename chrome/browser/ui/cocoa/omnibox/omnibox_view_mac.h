@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_VIEW_MAC_H_
 #pragma once
 
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
 
 class AutocompleteEditController;
 class OmniboxPopupViewMac;
