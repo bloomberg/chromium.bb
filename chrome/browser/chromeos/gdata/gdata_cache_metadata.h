@@ -97,6 +97,11 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
                           GDataCache::CacheSubDirectoryType sub_dir_type,
                           CacheMap* cache_map);
 
+  // Returns true if |md5| matches the one in |cache_entry| with some
+  // exceptions. See the function definition for details.
+  static bool CheckIfMd5Matches(const std::string& md5,
+                                const GDataCache::CacheEntry& cache_entry);
+
   CacheMap cache_map_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadataMap);

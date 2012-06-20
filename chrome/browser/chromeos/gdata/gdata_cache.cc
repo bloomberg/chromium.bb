@@ -646,10 +646,9 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
 void GDataCache::RequestInitializeOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+  pool_->GetSequencedTaskRunner(sequence_token_)->PostTask(
       FROM_HERE,
-      base::Bind(&GDataCache::Initialize, base::Unretained(this)),
-      base::Bind(&GDataCache::OnInitialized, ui_weak_ptr_));
+      base::Bind(&GDataCache::Initialize, base::Unretained(this)));
 }
 
 scoped_ptr<GDataCache::CacheEntry> GDataCache::GetCacheEntry(
@@ -1353,11 +1352,6 @@ void GDataCache::Remove(const std::string& resource_id,
   metadata_->RemoveFromCache(resource_id);
 
   *error = base::PLATFORM_FILE_OK;
-}
-
-void GDataCache::OnInitialized() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(Observer, observers_, OnCacheInitialized());
 }
 
 void GDataCache::OnPinned(base::PlatformFileError* error,

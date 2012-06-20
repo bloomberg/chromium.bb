@@ -92,9 +92,6 @@ class GDataCache {
   // Used to notify events. All events are notified on UI thread.
   class Observer {
    public:
-    // Triggered when the cache has been initialized.
-    virtual void OnCacheInitialized() {}
-
     // Triggered when a file has been pinned successfully.
     virtual void OnCachePinned(const std::string& resource_id,
                                const std::string& md5) {}
@@ -383,9 +380,6 @@ class GDataCache {
   // Used to implement RemoveOnUIThread.
   void Remove(const std::string& resource_id,
               base::PlatformFileError* error);
-
-  // Notifies the observers when cache is initialized.
-  void OnInitialized();
 
   // Runs callback and notifies the observers when file is pinned.
   void OnPinned(base::PlatformFileError* error,

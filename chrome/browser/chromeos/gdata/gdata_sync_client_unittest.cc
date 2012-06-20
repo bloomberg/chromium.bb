@@ -69,6 +69,7 @@ class GDataSyncClientTest : public testing::Test {
         sync_client_.get())).Times(1);
     EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(
         sync_client_.get())).Times(1);
+    EXPECT_CALL(*mock_file_system_, AddObserver(sync_client_.get())).Times(1);
 
     sync_client_->Initialize();
   }

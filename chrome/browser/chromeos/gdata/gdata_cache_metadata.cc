@@ -168,10 +168,7 @@ scoped_ptr<GDataCache::CacheEntry> GDataCacheMetadataMap::GetCacheEntry(
   scoped_ptr<GDataCache::CacheEntry> cache_entry(
       new GDataCache::CacheEntry(iter->second));
 
-  // If entry is not dirty, it's only valid if matches with non-empty |md5|.
-  // If entry is dirty, its md5 may have been replaced by "local" during cache
-  // initialization, so we don't compare md5.
-  if (!cache_entry->IsDirty() && !md5.empty() && cache_entry->md5 != md5) {
+  if (!CheckIfMd5Matches(md5, *cache_entry)) {
     DVLOG(1) << "Non-matching md5: want=" << md5
              << ", found=[res_id=" << resource_id
              << ", " << cache_entry->ToString()
@@ -261,6 +258,30 @@ void GDataCacheMetadataMap::ScanCacheDirectory(
     cache_map->insert(std::make_pair(
         resource_id, GDataCache::CacheEntry(md5, sub_dir_type, cache_state)));
   }
+}
+
+// static
+bool GDataCacheMetadataMap::CheckIfMd5Matches(
+    const std::string& md5,
+    const GDataCache::CacheEntry& cache_entry) {
+  if (cache_entry.IsDirty()) {
+    // If the entry is dirty, its MD5 may have been replaced by "local"
+    // during cache initialization, so we don't compare MD5.
+    return true;
+  } else if (cache_entry.IsPinned() && cache_entry.md5.empty()) {
+    // If the entry is pinned, it's ok for the entry to have an empty
+    // MD5. This can happen if the pinned file is not fetched. MD5 for pinned
+    // files are collected from files in "persistent" directory, but the
+    // persistent files do not exisit if these are not fetched yet.
+    return true;
+  } else if (md5.empty()) {
+    // If the MD5 matching is not requested, don't check MD5.
+    return true;
+  } else if (md5 == cache_entry.md5) {
+    // Otherwise, compare the MD5.
+    return true;
+  }
+  return false;
 }
 
 }  // namespace gdata

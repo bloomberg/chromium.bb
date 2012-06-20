@@ -27,7 +27,6 @@ class MockGDataSyncClient : public GDataSyncClientInterface,
   virtual ~MockGDataSyncClient();
 
   MOCK_METHOD0(Initialize, void());
-  MOCK_METHOD0(OnCacheInitialized, void());
   MOCK_METHOD2(OnCachePinned, void(const std::string& resource_id,
                                    const std::string& md5));
   MOCK_METHOD2(OnCacheUnpinned, void(const std::string& resource_id,

@@ -216,7 +216,6 @@ class GDataFileSystemTest : public testing::Test {
     // Initialize() initiates the cache initialization on the blocking thread
     // pool. Block until it's done to ensure that the cache initialization is
     // done for every test. Otherwise, completion timing is nondeterministic.
-    EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
     RunAllPendingForIO();
   }
 
@@ -921,13 +920,8 @@ class GDataFileSystemTest : public testing::Test {
       }
     }
     DVLOG(1) << "PrepareForInitCacheTest finished";
-    // Temporarily remove the mock sync client while rescanning. Otherwise,
-    // OnCacheInitialized() is called again here, which breaks the
-    // expectation set in SetUp().
-    cache_->RemoveObserver(mock_sync_client_.get());
     cache_->RequestInitializeOnUIThread();  // Force a re-scan.
     RunAllPendingForIO();  // Wait until the initialization is done.
-    cache_->AddObserver(mock_sync_client_.get());
   }
 
   void TestInitializeCache() {

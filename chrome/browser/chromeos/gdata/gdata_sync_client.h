@@ -55,6 +55,7 @@ class GDataSyncClientInterface {
 // The production implementation of GDataSyncClientInterface.
 class GDataSyncClient
     : public GDataSyncClientInterface,
+      public GDataFileSystemInterface::Observer,
       public GDataCache::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver {
@@ -70,8 +71,10 @@ class GDataSyncClient
   // GDataSyncClientInterface overrides.
   virtual void Initialize() OVERRIDE;
 
+  // GDataFileSystemInterface overrides.
+  virtual void OnInitialLoadFinished() OVERRIDE;
+
   // GDataCache::Observer overrides.
-  virtual void OnCacheInitialized() OVERRIDE;
   virtual void OnCachePinned(const std::string& resource_id,
                              const std::string& md5) OVERRIDE;
   virtual void OnCacheUnpinned(const std::string& resource_id,

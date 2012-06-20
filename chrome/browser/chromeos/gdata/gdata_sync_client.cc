@@ -98,6 +98,7 @@ GDataSyncClient::~GDataSyncClient() {
 void GDataSyncClient::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  file_system_->AddObserver(this);
   cache_->AddObserver(this);
 
   chromeos::NetworkLibrary* network_library =
@@ -191,10 +192,15 @@ bool GDataSyncClient::ShouldStopFetchLoop() {
   return false;
 }
 
-void GDataSyncClient::OnCacheInitialized() {
+void GDataSyncClient::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Start the initial scan. Once it's complete, start the fetch loop.
+  //
+  // Note that we should start the initial scan after the file system
+  // metadata is loaded from the cache or the server, becase the file system
+  // metadata is necessary to fetch files. This is why we monitor
+  // OnInitialLoadFinished().
   StartInitialScan(base::Bind(&GDataSyncClient::StartFetchLoop,
                               weak_ptr_factory_.GetWeakPtr()));
 }

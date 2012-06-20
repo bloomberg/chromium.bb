@@ -53,8 +53,6 @@ GDataSystemService::~GDataSystemService() {
 void GDataSystemService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // This order is necessary so the sync_client_ doesn't miss
-  // OnCacheInitialized() notification.
   sync_client_->Initialize();
   file_system_->Initialize();
   cache_->RequestInitializeOnUIThread();
