@@ -50,7 +50,7 @@ bool GLContextGLX::Initialize(
       share_group() ? share_group()->GetHandle() : NULL);
 
   if (GLSurfaceGLX::IsCreateContextRobustnessSupported()) {
-    DLOG(INFO) << "GLX_ARB_create_context_robustness supported.";
+    DVLOG(1) << "GLX_ARB_create_context_robustness supported.";
 
     std::vector<int> attribs;
     attribs.push_back(GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB);
@@ -63,10 +63,10 @@ bool GLContextGLX::Initialize(
         True,
         &attribs.front());
     if (context_) {
-      DLOG(INFO) << "  Successfully allocated "
-                 << (compatible_surface->IsOffscreen() ?
-                     "offscreen" : "onscreen")
-                 << " GL context with LOSE_CONTEXT_ON_RESET_ARB";
+      DVLOG(1) << "  Successfully allocated "
+               << (compatible_surface->IsOffscreen() ?
+                   "offscreen" : "onscreen")
+               << " GL context with LOSE_CONTEXT_ON_RESET_ARB";
     } else {
       // TODO(kbr): it is not expected that things will work properly
       // in this case, since we will likely allocate our offscreen
@@ -132,12 +132,12 @@ bool GLContextGLX::Initialize(
     return false;
   }
 
-  DLOG(INFO) << (compatible_surface->IsOffscreen() ? "Offscreen" : "Onscreen")
-             << " context was "
-             << (glXIsDirect(display_,
-                             static_cast<GLXContext>(context_))
-                     ? "direct" : "indirect")
-             << ".";
+  DVLOG(1) << (compatible_surface->IsOffscreen() ? "Offscreen" : "Onscreen")
+           << " context was "
+           << (glXIsDirect(display_,
+                           static_cast<GLXContext>(context_))
+                   ? "direct" : "indirect")
+           << ".";
 
   return true;
 }
