@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"

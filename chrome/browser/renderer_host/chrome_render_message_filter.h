@@ -11,7 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"

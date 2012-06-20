@@ -10,15 +10,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/glue/webcursor.h"
+#include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)

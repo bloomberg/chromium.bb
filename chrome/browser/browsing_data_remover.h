@@ -10,8 +10,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_helpers.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"

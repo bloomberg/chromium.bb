@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/host_zoom_map.h"

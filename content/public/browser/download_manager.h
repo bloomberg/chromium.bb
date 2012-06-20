@@ -35,7 +35,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"

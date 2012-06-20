@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/string16.h"
 #include "chrome/browser/media/media_internals_observer.h"
 #include "content/public/browser/browser_thread.h"

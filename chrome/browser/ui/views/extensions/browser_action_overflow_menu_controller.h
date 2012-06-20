@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class BrowserActionsContainer;

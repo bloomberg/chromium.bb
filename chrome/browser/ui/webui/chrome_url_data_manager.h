@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_helpers.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 

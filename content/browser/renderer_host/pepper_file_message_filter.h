@@ -11,8 +11,8 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_helpers.h"
 #include "base/process.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
