@@ -15,6 +15,7 @@
 
 class GURL;
 class IndexedDBContextImpl;
+struct IndexedDBDatabaseMetadata;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
@@ -33,6 +34,7 @@ class WebIDBDatabase;
 class WebIDBIndex;
 class WebIDBObjectStore;
 class WebIDBTransaction;
+struct WebIDBMetadata;
 }
 
 namespace content {
@@ -115,6 +117,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
+    void OnMetadata(int32 idb_database_id,
+                    IndexedDBDatabaseMetadata* metadata);
     void OnName(int32 idb_database_id, string16* name);
     void OnVersion(int32 idb_database_id, string16* version);
     void OnObjectStoreNames(int32 idb_database_id,

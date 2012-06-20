@@ -22,6 +22,7 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual ~RendererWebIDBDatabaseImpl();
 
   // WebKit::WebIDBDatabase
+  virtual WebKit::WebIDBMetadata metadata() const;
   virtual WebKit::WebString name() const;
   virtual WebKit::WebString version() const;
   virtual WebKit::WebDOMStringList objectStoreNames() const;

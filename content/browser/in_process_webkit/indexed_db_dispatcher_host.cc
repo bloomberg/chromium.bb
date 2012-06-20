@@ -26,6 +26,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBIndex.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -51,6 +52,7 @@ using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBKeyRange;
+using WebKit::WebIDBMetadata;
 using WebKit::WebIDBObjectStore;
 using WebKit::WebIDBTransaction;
 using WebKit::WebSecurityOrigin;
@@ -324,6 +326,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::DatabaseDispatcherHost,
                            message, *msg_is_ok)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseMetadata, OnMetadata)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseName, OnName)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseVersion, OnVersion)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseObjectStoreNames,
@@ -345,6 +348,39 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
+    int32 idb_database_id, IndexedDBDatabaseMetadata* metadata) {
+  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id);
+  if (!idb_database)
+    return;
+
+  WebIDBMetadata web_metadata = idb_database->metadata();
+  metadata->name = web_metadata.name;
+  metadata->version = web_metadata.version;
+
+  for (size_t i = 0; i < web_metadata.objectStores.size(); ++i) {
+    const WebIDBMetadata::ObjectStore& web_store_metadata =
+        web_metadata.objectStores[i];
+    IndexedDBObjectStoreMetadata idb_store_metadata;
+    idb_store_metadata.name = web_store_metadata.name;
+    idb_store_metadata.keyPath = IndexedDBKeyPath(web_store_metadata.keyPath);
+    idb_store_metadata.autoIncrement = web_store_metadata.autoIncrement;
+
+    for (size_t j = 0; j < web_store_metadata.indexes.size(); ++j) {
+      const WebIDBMetadata::Index& web_index_metadata =
+          web_store_metadata.indexes[j];
+      IndexedDBIndexMetadata idb_index_metadata;
+      idb_index_metadata.name = web_index_metadata.name;
+      idb_index_metadata.keyPath = IndexedDBKeyPath(web_index_metadata.keyPath);
+      idb_index_metadata.unique = web_index_metadata.unique;
+      idb_index_metadata.multiEntry = web_index_metadata.multiEntry;
+      idb_store_metadata.indexes.push_back(idb_index_metadata);
+    }
+    metadata->object_stores.push_back(idb_store_metadata);
+  }
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnName(

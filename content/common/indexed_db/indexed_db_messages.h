@@ -11,9 +11,11 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 #include "content/public/common/serialized_script_value.h"
+#include "content/public/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 
 #define IPC_MESSAGE_START IndexedDBMsgStart
@@ -308,6 +310,32 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
 // WebIDBFactory::deleteDatabase() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
                      IndexedDBHostMsg_FactoryDeleteDatabase_Params)
+
+// WebIDBDatabase::metadata() payload
+IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
+  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
+  IPC_STRUCT_MEMBER(bool, unique)
+  IPC_STRUCT_MEMBER(bool, multiEntry)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBObjectStoreMetadata)
+  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
+  IPC_STRUCT_MEMBER(bool, autoIncrement)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBIndexMetadata>, indexes)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
+  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(string16, version)
+  IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
+IPC_STRUCT_END()
+
+// WebIDBDatabase::metadata() message.
+IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseMetadata,
+                            int32, /* idb_database_id */
+                            IndexedDBDatabaseMetadata /* metadata */)
 
 // WebIDBDatabase::name() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseName,

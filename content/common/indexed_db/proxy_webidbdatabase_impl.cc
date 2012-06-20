@@ -10,6 +10,7 @@
 #include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 #include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/worker_task_runner.h"
@@ -19,6 +20,7 @@ using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;
+using WebKit::WebIDBMetadata;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBTransaction;
 using WebKit::WebString;
@@ -36,6 +38,45 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   // any such pointers.
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseDestroyed(
       idb_database_id_));
+}
+
+WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
+  IndexedDBDatabaseMetadata idb_metadata;
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_DatabaseMetadata(idb_database_id_, &idb_metadata));
+
+  WebIDBMetadata web_metadata;
+  web_metadata.name = idb_metadata.name;
+  web_metadata.version = idb_metadata.version;
+  web_metadata.objectStores = WebVector<WebIDBMetadata::ObjectStore>(
+      idb_metadata.object_stores.size());
+
+  for (size_t i = 0; i < idb_metadata.object_stores.size(); ++i) {
+    const IndexedDBObjectStoreMetadata& idb_store_metadata =
+        idb_metadata.object_stores[i];
+    WebIDBMetadata::ObjectStore& web_store_metadata =
+        web_metadata.objectStores[i];
+
+    web_store_metadata.name = idb_store_metadata.name;
+    web_store_metadata.keyPath = idb_store_metadata.keyPath;
+    web_store_metadata.autoIncrement = idb_store_metadata.autoIncrement;
+    web_store_metadata.indexes = WebVector<WebIDBMetadata::Index>(
+        idb_store_metadata.indexes.size());
+
+    for (size_t j = 0; j < idb_store_metadata.indexes.size(); ++j) {
+      const IndexedDBIndexMetadata& idb_index_metadata =
+          idb_store_metadata.indexes[j];
+      WebIDBMetadata::Index& web_index_metadata =
+          web_store_metadata.indexes[j];
+
+      web_index_metadata.name = idb_index_metadata.name;
+      web_index_metadata.keyPath = idb_index_metadata.keyPath;
+      web_index_metadata.unique = idb_index_metadata.unique;
+      web_index_metadata.multiEntry = idb_index_metadata.multiEntry;
+    }
+  }
+
+  return web_metadata;
 }
 
 WebString RendererWebIDBDatabaseImpl::name() const {
