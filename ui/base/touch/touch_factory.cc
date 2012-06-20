@@ -127,24 +127,26 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
 
 void TouchFactory::UpdateDeviceList(Display* display) {
   // Detect touch devices.
-  // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
-  // not provide enough information to detect a touch device. As a result, the
-  // old version of query function (XListInputDevices) is used instead.
-  // If XInput2 is not supported, this will return null (with count of -1) so
-  // we assume there cannot be any touch devices.
   int count = 0;
   bool last_touch_device_available = touch_device_available_;
   touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
+
 #if !defined(USE_XI2_MT)
+  // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
+  // not provide enough information to detect a touch device. As a result, the
+  // old version of query function (XListInputDevices) is used instead.
+  // If XInput2 is not supported, this will return null (with count of -1) so
+  // we assume there cannot be any touch devices.
+  // With XI2.1 or older, we allow only single touch devices.
   XDeviceInfo* devlist = XListInputDevices(display, &count);
   for (int i = 0; i < count; i++) {
     if (devlist[i].type) {
       XScopedString devtype(XGetAtomName(display, devlist[i].type));
       if (devtype.string() && !strcmp(devtype.string(), XI_TOUCHSCREEN)) {
         touch_device_lookup_[devlist[i].id] = true;
-        touch_device_list_[devlist[i].id] = true;
+        touch_device_list_[devlist[i].id] = false;
         touch_device_available_ = true;
       }
     }
