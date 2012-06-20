@@ -44,16 +44,17 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
 
   // Initializes the sync setup flow and shows the setup UI. If |force_login| is
   // true, then the user is forced through the login flow even if they are
-  // already signed in (useful for when we need to force the user to re-enter
-  // credentials so we can fetch new tokens).
+  // already signed in (useful for when it is necessary to force the user to
+  // re-enter credentials so new tokens can be fetched).
   void OpenSyncSetup(bool force_login);
+
+  // Shows advanced configuration dialog without going through sign in dialog.
+  // Kicks the sync backend if necessary with showing spinner dialog until it
+  // gets ready.
+  void OpenConfigureSync();
 
   // Terminates the sync setup flow.
   void CloseSyncSetup();
-
-  // Displays an error message to the user due to an unrecoverable error during
-  // sync setup.
-  void ShowFatalError();
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, GaiaErrorInitializingSync);
@@ -80,16 +81,15 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // user's signin activity.
   virtual void RecordSignin();
 
-  // Display the configure sync UI. If |show_advanced| is true, we skip directly
-  // to the "advanced settings" dialog, otherwise we give the user the simpler
+  // Display the configure sync UI. If |show_advanced| is true, skip directly
+  // to the "advanced settings" dialog, otherwise give the user the simpler
   // "Sync Everything" dialog. Overridden by subclasses to allow them to skip
   // the sync setup dialog if desired.
   // If |passphrase_failed| is true, then the user previously tried to enter an
   // invalid passphrase.
   virtual void DisplayConfigureSync(bool show_advanced, bool passphrase_failed);
 
-  // Called when we are done configuring sync (so we want to close the dialog
-  // and start syncing).
+  // Called when configuring sync is done to close the dialog and start syncing.
   void ConfigureSyncDone();
 
   // Helper routine that gets the ProfileSyncService associated with the parent
@@ -106,6 +106,8 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   void HandleAttachHandler(const base::ListValue* args);
   void HandleShowErrorUI(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
+  void HandleShowSetupUIWithoutLogin(const base::ListValue* args);
+  void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
 
   // Helper routine that gets the Profile associated with this object (virtual
@@ -129,9 +131,9 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   void DisplayGaiaLoginWithErrorMessage(const string16& error_message,
                                         bool fatal_error);
 
-  // Instead of signing in, prepare requirements for showing the advanced
-  // configuration dialog.
-  void PrepareConfigDialog();
+  // A utility function to call before actually showing setup dialog. Makes sure
+  // that a new dialog can be shown and sets flag that setup is in progress.
+  bool PrepareSyncSetup();
 
   // Displays spinner-only UI indicating that something is going on in the
   // background.
@@ -139,7 +141,7 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // is running in the background.
   void DisplaySpinner();
 
-  // Returns true if we're the active login object.
+  // Returns true if this is the active login object.
   bool IsActiveLogin() const;
 
   // Initiates a login via the signin manager.
@@ -172,9 +174,9 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // is visible.
   scoped_ptr<SigninTracker> signin_tracker_;
 
-  // Set to true whenever the sync configure UI is visible. This is used so we
-  // can tell what stage of the setup wizard the user was in so we can update
-  // the UMA histograms in the case that the user cancels out.
+  // Set to true whenever the sync configure UI is visible. This is used to tell
+  // what stage of the setup wizard the user was in and to update the UMA
+  // histograms in the case that the user cancels out.
   bool configuring_sync_;
 
   // Weak reference to the profile manager.
@@ -185,6 +187,10 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
 
   // The error from the last signin attempt.
   GoogleServiceAuthError last_signin_error_;
+
+  // When setup starts with login UI, retry login if signing in failed.
+  // When setup starts without login UI, do not retry login and fail.
+  bool retry_on_signin_failure_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

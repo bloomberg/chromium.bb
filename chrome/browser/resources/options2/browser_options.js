@@ -105,16 +105,27 @@ cr.define('options', function() {
       this.updateSyncState_(loadTimeData.getValue('syncData'));
 
       $('sync-action-link').onclick = function(event) {
-        SyncSetupOverlay.showErrorUI();
+        if (cr.isChromeOS) {
+          // On Chrome OS, sign out the user and sign in again to get fresh
+          // credentials on auth errors.
+          SyncSetupOverlay.doSignOutOnAuthError();
+        } else {
+          SyncSetupOverlay.showErrorUI();
+        }
       };
       $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)
           SyncSetupOverlay.showStopSyncingUI();
+        else if (cr.isChromeOS)
+          SyncSetupOverlay.showSetupUIWithoutLogin();
         else
           SyncSetupOverlay.showSetupUI();
       };
       $('customize-sync').onclick = function(event) {
-        SyncSetupOverlay.showSetupUI();
+        if (cr.isChromeOS)
+          SyncSetupOverlay.showSetupUIWithoutLogin();
+        else
+          SyncSetupOverlay.showSetupUI();
       };
 
       // Internet connection section (ChromeOS only).

@@ -881,6 +881,22 @@ cr.define('options', function() {
     },
 
     /**
+     * Shows advanced configuration UI, skipping the login dialog.
+     * @private
+     */
+    showSetupUIWithoutLogin_: function() {
+      chrome.send('SyncSetupShowSetupUIWithoutLogin');
+    },
+
+    /**
+     * Forces user to sign out of Chrome for Chrome OS.
+     * @private
+     */
+    doSignOutOnAuthError_: function() {
+      chrome.send('SyncSetupDoSignOutOnAuthError');
+    },
+
+    /**
      * Hides the outer elements of the login UI. This is used by the sync promo
      * to customize the look of the login box.
      */
@@ -910,6 +926,14 @@ cr.define('options', function() {
 
   SyncSetupOverlay.showSetupUI = function() {
     SyncSetupOverlay.getInstance().showSetupUI_();
+  };
+
+  SyncSetupOverlay.showSetupUIWithoutLogin = function() {
+    SyncSetupOverlay.getInstance().showSetupUIWithoutLogin_();
+  };
+
+  SyncSetupOverlay.doSignOutOnAuthError = function() {
+    SyncSetupOverlay.getInstance().doSignOutOnAuthError_();
   };
 
   SyncSetupOverlay.showSyncSetupPage = function(page, args) {
