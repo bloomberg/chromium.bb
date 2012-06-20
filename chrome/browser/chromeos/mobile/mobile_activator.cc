@@ -186,6 +186,10 @@ MobileActivator* MobileActivator::GetInstance() {
 }
 
 void MobileActivator::TerminateActivation() {
+  // We're exiting; don't continue with termination.
+  if (!CrosLibrary::Get())
+    return;
+
   reconnect_timer_.Stop();
   NetworkLibrary* lib =
       CrosLibrary::Get()->GetNetworkLibrary();
