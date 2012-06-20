@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/active_tab_permission_manager.h"
 
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -55,6 +57,15 @@ void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
                                                      tab_id(),
                                                      extension->id(),
                                                      active_urls_));
+}
+
+void ActiveTabPermissionManager::GrantIfRequested(
+    const std::string& extension_id) {
+  ExtensionService* service =
+      ExtensionSystem::Get(tab_contents_->profile())->extension_service();
+  const Extension* extension = service->extensions()->GetByID(extension_id);
+  if (extension)
+    GrantIfRequested(extension);
 }
 
 void ActiveTabPermissionManager::DidCommitProvisionalLoadForFrame(

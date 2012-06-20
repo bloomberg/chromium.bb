@@ -14,8 +14,10 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -74,12 +76,18 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
 
 // static
 void ExtensionOmniboxEventRouter::OnInputEntered(
-    Profile* profile, const std::string& extension_id,
+    TabContents* tab_contents,
+    const std::string& extension_id,
     const std::string& input) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(input));
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
+
+  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+      GrantIfRequested(extension_id);
+
+  Profile* profile = tab_contents->profile();
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputEntered, json_args, profile, GURL());

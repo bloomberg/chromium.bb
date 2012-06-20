@@ -16,13 +16,16 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
@@ -568,14 +571,20 @@ void ExtensionMenuManager::ExecuteCommand(
     Profile* profile,
     WebContents* web_contents,
     const content::ContextMenuParams& params,
-    const ExtensionMenuItem::Id& menuItemId) {
+    const ExtensionMenuItem::Id& menu_item_id) {
   ExtensionEventRouter* event_router = profile->GetExtensionEventRouter();
   if (!event_router)
     return;
 
-  ExtensionMenuItem* item = GetItemById(menuItemId);
+  ExtensionMenuItem* item = GetItemById(menu_item_id);
   if (!item)
     return;
+
+  // ExtensionService/Extension can be NULL in unit tests :(
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  const extensions::Extension* extension = service ?
+      service->extensions()->GetByID(menu_item_id.extension_id) : NULL;
 
   if (item->type() == ExtensionMenuItem::RADIO)
     RadioItemSelected(item);
@@ -613,11 +622,11 @@ void ExtensionMenuManager::ExecuteCommand(
   args.Append(properties);
 
   // Add the tab info to the argument list.
-  if (web_contents) {
+  // Note: web_contents only NULL in unit tests :(
+  if (web_contents)
     args.Append(ExtensionTabUtil::CreateTabValue(web_contents));
-  } else {
+  else
     args.Append(new DictionaryValue());
-  }
 
   if (item->type() == ExtensionMenuItem::CHECKBOX ||
       item->type() == ExtensionMenuItem::RADIO) {
@@ -632,9 +641,15 @@ void ExtensionMenuManager::ExecuteCommand(
     item->SetChecked(checked);
     properties->SetBoolean("checked", item->checked());
 
-    const extensions::Extension* extension = ExtensionSystem::Get(profile_)->
-        extension_service()->GetExtensionById(menuItemId.extension_id, false);
-    WriteToStorage(extension);
+    if (extension)
+      WriteToStorage(extension);
+  }
+
+  TabContents* tab_contents = web_contents ?
+      TabContents::FromWebContents(web_contents) : NULL;
+  if (tab_contents && extension) {
+    tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+        GrantIfRequested(extension);
   }
 
   std::string json_args;

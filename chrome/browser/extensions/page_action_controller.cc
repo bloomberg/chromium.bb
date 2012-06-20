@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -48,6 +49,9 @@ LocationBarController::Action PageActionController::OnClicked(
   ExtensionAction* page_action = extension->page_action();
   CHECK(page_action);
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents_->web_contents());
+
+  tab_contents_->extension_tab_helper()->active_tab_permission_manager()->
+      GrantIfRequested(extension);
 
   switch (mouse_button) {
     case 1:  // left

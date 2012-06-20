@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
 
+class TabContents;
 class TemplateURL;
 namespace base {
 class ListValue;
@@ -33,12 +34,14 @@ class ExtensionOmniboxEventRouter {
   // keyword session. Returns true if someone is listening to this event, and
   // thus we have some degree of confidence we'll get a response.
   static bool OnInputChanged(
-      Profile* profile, const std::string& extension_id,
+      Profile* profile,
+      const std::string& extension_id,
       const std::string& input, int suggest_id);
 
   // The user has accepted the omnibox input.
   static void OnInputEntered(
-      Profile* profile, const std::string& extension_id,
+      TabContents* tab_contents,
+      const std::string& extension_id,
       const std::string& input);
 
   // The user has cleared the keyword, or closed the omnibox popup. This is

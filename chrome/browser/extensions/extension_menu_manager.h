@@ -297,9 +297,10 @@ class ExtensionMenuManager
   bool ItemUpdated(const ExtensionMenuItem::Id& id);
 
   // Called when a menu item is clicked on by the user.
-  void ExecuteCommand(Profile* profile, content::WebContents* web_contents,
+  void ExecuteCommand(Profile* profile,
+                      content::WebContents* web_contents,
                       const content::ContextMenuParams& params,
-                      const ExtensionMenuItem::Id& menuItemId);
+                      const ExtensionMenuItem::Id& menu_item_id);
 
   // This returns a bitmap of width/height kFaviconSize, loaded either from an
   // entry specified in the extension's 'icon' section of the manifest, or a

@@ -569,7 +569,8 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
 
         // Strip the keyword + leading space off the input.
         size_t prefix_length = match.keyword.length() + 1;
-        extensions::ExtensionOmniboxEventRouter::OnInputEntered(profile_,
+        extensions::ExtensionOmniboxEventRouter::OnInputEntered(
+            controller_->GetTabContents(),
             template_url->GetExtensionId(),
             UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
         view_->RevertAll();

@@ -33,6 +33,9 @@ class ActiveTabPermissionManager : public content::WebContentsObserver,
   // permissions to it until the next page navigation or refresh.
   void GrantIfRequested(const Extension* extension);
 
+  // Like above, except make this find the Extension with |extension_id|.
+  void GrantIfRequested(const std::string& extension_id);
+
   // content::WebContentsObserver implementation.
   //
   // This is public to be called from ActiveTabTest as a way to fake creating
