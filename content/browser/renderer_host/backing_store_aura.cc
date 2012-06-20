@@ -10,6 +10,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 
 // Assume that somewhere along the line, someone will do width * height * 4
@@ -35,9 +36,8 @@ BackingStoreAura::~BackingStoreAura() {
 
 void BackingStoreAura::SkiaShowRect(const gfx::Point& point,
                                     gfx::Canvas* canvas) {
-  const gfx::Point scaled_point = point.Scale(device_scale_factor_);
-  canvas->sk_canvas()->drawBitmap(bitmap_,
-      SkIntToScalar(scaled_point.x()), SkIntToScalar(scaled_point.y()));
+  canvas->DrawImageInt(gfx::ImageSkia(bitmap_, device_scale_factor_),
+                       point.x(), point.y());
 }
 
 void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
