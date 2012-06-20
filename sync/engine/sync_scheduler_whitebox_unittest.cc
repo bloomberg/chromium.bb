@@ -228,23 +228,6 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileThrottled) {
   EXPECT_EQ(decision, SyncScheduler::SAVE);
 }
 
-TEST_F(SyncSchedulerWhiteboxTest,
-       ContinueClearUserDataUnderAllCircumstances) {
-  InitializeSyncerOnNormalMode();
-
-  SetMode(SyncScheduler::CONFIGURATION_MODE);
-  SetWaitIntervalToThrottled();
-  SyncScheduler::JobProcessDecision decision = CreateAndDecideJob(
-      SyncScheduler::SyncSessionJob::CLEAR_USER_DATA);
-  EXPECT_EQ(decision, SyncScheduler::CONTINUE);
-
-  SetMode(SyncScheduler::NORMAL_MODE);
-  SetWaitIntervalToExponentialBackoff();
-  decision = CreateAndDecideJob(
-      SyncScheduler::SyncSessionJob::CLEAR_USER_DATA);
-  EXPECT_EQ(decision, SyncScheduler::CONTINUE);
-}
-
 TEST_F(SyncSchedulerWhiteboxTest, ContinueNudgeWhileExponentialBackOff) {
   InitializeSyncerOnNormalMode();
   SetMode(SyncScheduler::NORMAL_MODE);

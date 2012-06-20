@@ -77,16 +77,6 @@ void DebugInfoEventListener::OnUpdatedToken(const std::string& token) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::UPDATED_TOKEN);
 }
 
-void DebugInfoEventListener::OnClearServerDataFailed() {
-  // This command is not implemented on the client side.
-  NOTREACHED();
-}
-
-void DebugInfoEventListener::OnClearServerDataSucceeded() {
-  // This command is not implemented on the client side.
-  NOTREACHED();
-}
-
 void DebugInfoEventListener::OnEncryptedTypesChanged(
     syncable::ModelTypeSet encrypted_types,
     bool encrypt_everything) {

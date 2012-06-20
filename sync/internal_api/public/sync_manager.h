@@ -309,11 +309,6 @@ class SyncManager {
     // global stop syncing operation has wiped the store.
     virtual void OnStopSyncingPermanently() = 0;
 
-    // After a request to clear server data, these callbacks are invoked to
-    // indicate success or failure.
-    virtual void OnClearServerDataSucceeded() = 0;
-    virtual void OnClearServerDataFailed() = 0;
-
     // Called when the set of encrypted types or the encrypt
     // everything flag has been changed.  Note that encryption isn't
     // complete until the OnEncryptionComplete() notification has been
@@ -445,9 +440,6 @@ class SyncManager {
 
   void RequestCleanupDisabledTypes(
       const browser_sync::ModelSafeRoutingInfo& routing_info);
-
-  // Request a clearing of all data on the server
-  void RequestClearServerData();
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before

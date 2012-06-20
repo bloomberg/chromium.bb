@@ -128,7 +128,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
-      clear_server_data_state_(CLEAR_NOT_STARTED),
       encrypted_types_(browser_sync::Cryptographer::SensitiveTypes()),
       encrypt_everything_(false),
       encryption_pending_(false),
@@ -269,15 +268,6 @@ browser_sync::SessionModelAssociator*
   return static_cast<browser_sync::SessionDataTypeController*>(
       data_type_controllers_.find(
       syncable::SESSIONS)->second.get())->GetModelAssociator();
-}
-
-void ProfileSyncService::ResetClearServerDataState() {
-  clear_server_data_state_ = CLEAR_NOT_STARTED;
-}
-
-ProfileSyncService::ClearServerDataState
-    ProfileSyncService::GetClearServerDataState() {
-  return clear_server_data_state_;
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(
@@ -518,14 +508,6 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
     RemoveObserver(sync_global_error_.get());
     sync_global_error_.reset(NULL);
   }
-}
-
-void ProfileSyncService::ClearServerData() {
-  clear_server_data_state_ = CLEAR_CLEARING;
-  clear_server_data_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromSeconds(kSyncClearDataTimeoutInSeconds), this,
-      &ProfileSyncService::OnClearServerDataTimeout);
-  backend_->RequestClearServerData();
 }
 
 void ProfileSyncService::DisableForUser() {
@@ -838,38 +820,6 @@ void ProfileSyncService::OnStopSyncingPermanently() {
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   sync_prefs_.SetStartSuppressed(true);
   DisableForUser();
-}
-
-void ProfileSyncService::OnClearServerDataTimeout() {
-  if (clear_server_data_state_ != CLEAR_SUCCEEDED &&
-      clear_server_data_state_ != CLEAR_FAILED) {
-    clear_server_data_state_ = CLEAR_FAILED;
-    NotifyObservers();
-  }
-}
-
-void ProfileSyncService::OnClearServerDataFailed() {
-  clear_server_data_timer_.Stop();
-
-  // Only once clear has succeeded there is no longer a need to transition to
-  // a failed state as sync is disabled locally.  Also, no need to fire off
-  // the observers if the state didn't change (i.e. it was FAILED before).
-  if (clear_server_data_state_ != CLEAR_SUCCEEDED &&
-      clear_server_data_state_ != CLEAR_FAILED) {
-    clear_server_data_state_ = CLEAR_FAILED;
-    NotifyObservers();
-  }
-}
-
-void ProfileSyncService::OnClearServerDataSucceeded() {
-  clear_server_data_timer_.Stop();
-
-  // Even if the timout fired, we still transition to the succeeded state as
-  // we want UI to update itself and no longer allow the user to press "clear"
-  if (clear_server_data_state_ != CLEAR_SUCCEEDED) {
-    clear_server_data_state_ = CLEAR_SUCCEEDED;
-    NotifyObservers();
-  }
 }
 
 void ProfileSyncService::OnPassphraseRequired(

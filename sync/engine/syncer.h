@@ -38,7 +38,6 @@ enum SyncerStep {
   COMMIT,
   RESOLVE_CONFLICTS,
   APPLY_UPDATES_TO_RESOLVE_CONFLICTS,
-  CLEAR_PRIVATE_DATA,  // TODO(tim): Rename 'private' to 'user'.
   SYNCER_END
 };
 

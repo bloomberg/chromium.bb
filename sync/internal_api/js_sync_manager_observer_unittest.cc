@@ -53,20 +53,12 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
               HandleJsEvent("onStopSyncingPermanently",
                             HasDetails(JsEventDetails())));
   EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onClearServerDataSucceeded",
-                            HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onClearServerDataFailed",
-                            HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onEncryptionComplete",
                             HasDetails(JsEventDetails())));
 
   js_sync_manager_observer_.OnInitializationComplete(WeakHandle<JsBackend>(),
       true);
   js_sync_manager_observer_.OnStopSyncingPermanently();
-  js_sync_manager_observer_.OnClearServerDataSucceeded();
-  js_sync_manager_observer_.OnClearServerDataFailed();
   js_sync_manager_observer_.OnEncryptionComplete();
   PumpLoop();
 }

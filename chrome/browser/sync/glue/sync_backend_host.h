@@ -79,10 +79,6 @@ class SyncFrontend {
   // be disabled and state cleaned up at once.
   virtual void OnStopSyncingPermanently() = 0;
 
-  // Called to handle success/failure of clearing server data
-  virtual void OnClearServerDataSucceeded() = 0;
-  virtual void OnClearServerDataFailed() = 0;
-
   // The syncer requires a passphrase to decrypt sensitive updates. This is
   // called when the first sensitive data type is setup by the user and anytime
   // the passphrase is changed by another synced client. |reason| denotes why
@@ -249,9 +245,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Deactivates change processing for the given data type.
   void DeactivateDataType(syncable::ModelType type);
-
-  // Asks the server to clear all data associated with ChromeSync.
-  virtual bool RequestClearServerData();
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
@@ -451,10 +444,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void NotifyEncryptionComplete();
 
   void HandleStopSyncingPermanentlyOnFrontendLoop();
-
-  // Called to handle success/failure of clearing server data
-  void HandleClearServerDataSucceededOnFrontendLoop();
-  void HandleClearServerDataFailedOnFrontendLoop();
 
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.

@@ -121,8 +121,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   void FailNextPostBufferToPathCall() { countdown_to_postbuffer_fail_ = 1; }
   void FailNthPostBufferToPathCall(int n) { countdown_to_postbuffer_fail_ = n; }
 
-  void SetClearUserDataResponseStatus(sync_pb::SyncEnums::ErrorType errortype);
-
   void FailNonPeriodicGetUpdates() { fail_non_periodic_get_updates_ = true; }
 
   // Simple inspectors.

@@ -19,7 +19,10 @@ message GetUpdatesCallerInfo {
     PERIODIC = 4;  // The source of the update was periodic polling.
     SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
                                   // continuation of a previous update.
-    CLEAR_PRIVATE_DATA = 6;       // Source is a call to remove all private data
+
+    // This value is deprecated and was never used in production.
+    // CLEAR_PRIVATE_DATA = 6;
+
     NEWLY_SUPPORTED_DATATYPE = 7;   // The client is in configuration mode
                                     // because it's syncing all datatypes, and
                                     // support for a new datatype was recently

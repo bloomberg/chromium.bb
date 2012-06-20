@@ -79,7 +79,6 @@ const char* GetUpdatesSourceString(
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NOTIFICATION);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, PERIODIC);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, SYNC_CYCLE_CONTINUATION);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, CLEAR_PRIVATE_DATA);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NEWLY_SUPPORTED_DATATYPE);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, MIGRATION);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NEW_CLIENT);

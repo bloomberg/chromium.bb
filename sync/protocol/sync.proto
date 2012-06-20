@@ -455,15 +455,6 @@ message AuthenticateMessage {
   required string auth_token = 1;
 };
 
-// This message is sent to the server to clear data.  An asynchronous
-// response is returned to the client indicating that the server has received
-// the request and has begun to clear data.
-message ClearUserDataMessage {
-}
-
-message ClearUserDataResponse {
-}
-
 message ClientToServerMessage {
   required string share = 1;
   optional int32 protocol_version = 2 [default = 31];
@@ -478,8 +469,10 @@ message ClientToServerMessage {
   optional CommitMessage commit = 4;
   optional GetUpdatesMessage get_updates = 5;
   optional AuthenticateMessage authenticate = 6;
-  // Request to clear all Chromium data from the server
-  optional ClearUserDataMessage clear_user_data = 9;
+
+  // Request to clear all Chromium data from the server.
+  // DEPRECATED - this field was never used in production.
+  // optional ClearUserDataMessage clear_user_data = 9;
 
   optional string store_birthday = 7; // Opaque store ID; if it changes, duck!
   // The client sets this if it detects a sync issue. The server will tell it
@@ -632,7 +625,8 @@ message ClientToServerResponse {
   optional CommitResponse commit = 1;
   optional GetUpdatesResponse get_updates = 2;
   optional AuthenticateResponse authenticate = 3;
-  optional ClearUserDataResponse clear_user_data = 9;
+  // DEPRECATED - this field was never used in production.
+  // optional ClearUserDataResponse clear_user_data = 9;
   optional GetUpdatesMetadataResponse stream_metadata = 10;
   // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
   // none of the other fields (error_code and etc) will be set.

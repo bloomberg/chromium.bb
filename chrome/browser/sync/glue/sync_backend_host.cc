@@ -97,8 +97,6 @@ class SyncBackendHost::Core
       const std::string& bootstrap_token) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
-  virtual void OnClearServerDataFailed() OVERRIDE;
-  virtual void OnClearServerDataSucceeded() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
       syncable::ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
@@ -127,9 +125,6 @@ class SyncBackendHost::Core
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
   void DoStartSyncing(const ModelSafeRoutingInfo& routing_info);
-
-  // Called to clear server data.
-  void DoRequestClearServerData();
 
   // Called to cleanup disabled types.
   void DoRequestCleanupDisabledTypes(
@@ -628,13 +623,6 @@ void SyncBackendHost::DeactivateDataType(syncable::ModelType type) {
   registrar_->DeactivateDataType(type);
 }
 
-bool SyncBackendHost::RequestClearServerData() {
-  sync_thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoRequestClearServerData,
-                 core_.get()));
-  return true;
-}
-
 sync_api::UserShare* SyncBackendHost::GetUserShare() const {
   DCHECK(initialized());
   return core_->sync_manager()->GetUserShare();
@@ -988,24 +976,6 @@ void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
       &SyncBackendHost::NotifyUpdatedToken, token);
 }
 
-void SyncBackendHost::Core::OnClearServerDataFailed() {
-  if (!sync_loop_)
-    return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHost::HandleClearServerDataFailedOnFrontendLoop);
-}
-
-void SyncBackendHost::Core::OnClearServerDataSucceeded() {
-  if (!sync_loop_)
-    return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_.Call(
-      FROM_HERE,
-      &SyncBackendHost::HandleClearServerDataSucceededOnFrontendLoop);
-}
-
 void SyncBackendHost::Core::OnEncryptedTypesChanged(
     syncable::ModelTypeSet encrypted_types,
     bool encrypt_everything) {
@@ -1146,11 +1116,6 @@ void SyncBackendHost::Core::DoStartSyncing(
     const ModelSafeRoutingInfo& routing_info) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->StartSyncingNormally(routing_info);
-}
-
-void SyncBackendHost::Core::DoRequestClearServerData() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->RequestClearServerData();
 }
 
 void SyncBackendHost::Core::DoRequestCleanupDisabledTypes(
@@ -1419,18 +1384,6 @@ void SyncBackendHost::HandleStopSyncingPermanentlyOnFrontendLoop() {
   if (!frontend_)
     return;
   frontend_->OnStopSyncingPermanently();
-}
-
-void SyncBackendHost::HandleClearServerDataSucceededOnFrontendLoop() {
-  if (!frontend_)
-    return;
-  frontend_->OnClearServerDataSucceeded();
-}
-
-void SyncBackendHost::HandleClearServerDataFailedOnFrontendLoop() {
-  if (!frontend_)
-    return;
-  frontend_->OnClearServerDataFailed();
 }
 
 void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(

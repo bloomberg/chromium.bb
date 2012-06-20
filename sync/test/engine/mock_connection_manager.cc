@@ -145,8 +145,6 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     ProcessCommit(&post, &response);
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
     ProcessGetUpdates(&post, &response);
-  } else if (post.message_contents() == ClientToServerMessage::CLEAR_DATA) {
-    ProcessClearData(&post, &response);
   } else {
     EXPECT_TRUE(false) << "Unknown/unsupported ClientToServerMessage";
     return false;
@@ -450,21 +448,6 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   }
 
   update_queue_.pop_front();
-}
-
-void MockConnectionManager::SetClearUserDataResponseStatus(
-  sync_pb::SyncEnums::ErrorType errortype ) {
-  // Note: this is not a thread-safe set, ok for now.  NOT ok if tests
-  // run the syncer on the background thread while this method is called.
-  clear_user_data_response_errortype_ = errortype;
-}
-
-void MockConnectionManager::ProcessClearData(ClientToServerMessage* csm,
-  ClientToServerResponse* response) {
-  CHECK(csm->has_clear_user_data());
-  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::CLEAR_DATA);
-  response->clear_user_data();
-  response->set_error_code(clear_user_data_response_errortype_);
 }
 
 bool MockConnectionManager::ShouldConflictThisCommit() {

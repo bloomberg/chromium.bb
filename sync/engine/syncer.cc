@@ -13,7 +13,6 @@
 #include "sync/engine/apply_updates_command.h"
 #include "sync/engine/build_commit_command.h"
 #include "sync/engine/cleanup_disabled_types_command.h"
-#include "sync/engine/clear_data_command.h"
 #include "sync/engine/commit.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/download_updates_command.h"
@@ -68,7 +67,6 @@ const char* SyncerStepToString(const SyncerStep step)
     ENUM_CASE(COMMIT);
     ENUM_CASE(RESOLVE_CONFLICTS);
     ENUM_CASE(APPLY_UPDATES_TO_RESOLVE_CONFLICTS);
-    ENUM_CASE(CLEAR_PRIVATE_DATA);
     ENUM_CASE(SYNCER_END);
   }
   NOTREACHED();
@@ -223,12 +221,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         // extra sync cycles/GetUpdates.
         status->update_conflicts_resolved(before_blocking_conflicting_updates >
                                           after_blocking_conflicting_updates);
-        next_step = SYNCER_END;
-        break;
-      }
-      case CLEAR_PRIVATE_DATA: {
-        ClearDataCommand clear_data_command;
-        clear_data_command.Execute(session);
         next_step = SYNCER_END;
         break;
       }

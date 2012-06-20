@@ -826,12 +826,6 @@ void SyncManager::RequestCleanupDisabledTypes(
   }
 }
 
-void SyncManager::RequestClearServerData() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (data_->scheduler())
-    data_->scheduler()->ClearUserData();
-}
-
 void SyncManager::RequestConfig(
     const browser_sync::ModelSafeRoutingInfo& routing_info,
     const ModelTypeSet& types, ConfigureReason reason) {
@@ -2053,18 +2047,6 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   if (event.what_happened == SyncEngineEvent::STOP_SYNCING_PERMANENTLY) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnStopSyncingPermanently());
-    return;
-  }
-
-  if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnClearServerDataSucceeded());
-    return;
-  }
-
-  if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_FAILED) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnClearServerDataFailed());
     return;
   }
 

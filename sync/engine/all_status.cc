@@ -106,8 +106,6 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
       break;
     case SyncEngineEvent::STOP_SYNCING_PERMANENTLY:
     case SyncEngineEvent::UPDATED_TOKEN:
-    case SyncEngineEvent::CLEAR_SERVER_DATA_FAILED:
-    case SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED:
        break;
     case SyncEngineEvent::ACTIONABLE_ERROR:
       status_ = CreateBlankStatus();

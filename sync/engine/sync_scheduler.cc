@@ -113,7 +113,6 @@ const char* SyncScheduler::SyncSessionJob::GetPurposeString(
     ENUM_CASE(UNKNOWN);
     ENUM_CASE(POLL);
     ENUM_CASE(NUDGE);
-    ENUM_CASE(CLEAR_USER_DATA);
     ENUM_CASE(CONFIGURATION);
     ENUM_CASE(CLEANUP_DISABLED_TYPES);
   }
@@ -288,7 +287,6 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
     const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(wait_interval_.get());
-  DCHECK_NE(job.purpose, SyncSessionJob::CLEAR_USER_DATA);
   DCHECK_NE(job.purpose, SyncSessionJob::CLEANUP_DISABLED_TYPES);
 
   SDVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
@@ -322,8 +320,7 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
 SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
     const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (job.purpose == SyncSessionJob::CLEAR_USER_DATA ||
-      job.purpose == SyncSessionJob::CLEANUP_DISABLED_TYPES)
+  if (job.purpose == SyncSessionJob::CLEANUP_DISABLED_TYPES)
     return CONTINUE;
 
   // See if our type is throttled.
@@ -417,7 +414,6 @@ bool SyncScheduler::ShouldRunJob(const SyncSessionJob& job) {
 
 void SyncScheduler::SaveJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  DCHECK_NE(job.purpose, SyncSessionJob::CLEAR_USER_DATA);
   // TODO(sync): Should we also check that job.purpose !=
   // CLEANUP_DISABLED_TYPES?  (See http://crbug.com/90868.)
   if (job.purpose == SyncSessionJob::NUDGE) {
@@ -448,16 +444,6 @@ struct ModelSafeWorkerGroupIs {
   }
   ModelSafeGroup group;
 };
-
-void SyncScheduler::ClearUserData() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SyncSessionJob job(SyncSessionJob::CLEAR_USER_DATA, TimeTicks::Now(),
-                     make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
-                     false,
-                     FROM_HERE);
-
-  DoSyncSessionJob(job);
-}
 
 void SyncScheduler::CleanupDisabledTypes() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -655,10 +641,6 @@ void SyncScheduler::SetSyncerStepsForPurpose(
       *start = DOWNLOAD_UPDATES;
       *end = APPLY_UPDATES;
       return;
-    case SyncSessionJob::CLEAR_USER_DATA:
-      *start = CLEAR_PRIVATE_DATA;
-      *end = CLEAR_PRIVATE_DATA;
-       return;
     case SyncSessionJob::NUDGE:
     case SyncSessionJob::POLL:
       *start = SYNCER_BEGIN;

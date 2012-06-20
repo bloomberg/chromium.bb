@@ -50,8 +50,6 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend, bool success) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
-  virtual void OnClearServerDataSucceeded() OVERRIDE;
-  virtual void OnClearServerDataFailed() OVERRIDE;
   virtual void OnActionableError(
       const browser_sync::SyncProtocolError& sync_protocol_error) OVERRIDE;
 

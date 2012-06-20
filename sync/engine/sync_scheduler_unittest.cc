@@ -1056,17 +1056,6 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   StopSyncScheduler();
   Mock::VerifyAndClearExpectations(syncer());
 
-  // ClearUserData.
-  EXPECT_CALL(*syncer(), SyncShare(_, CLEAR_PRIVATE_DATA, CLEAR_PRIVATE_DATA))
-      .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  scheduler()->ClearUserData();
-
-  StopSyncScheduler();
-  Mock::VerifyAndClearExpectations(syncer());
-
-  // Configuration.
   EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES))
       .WillOnce(Invoke(sessions::test_util::SimulateSuccess));
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);

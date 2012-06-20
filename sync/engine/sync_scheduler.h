@@ -94,9 +94,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
       syncable::ModelTypeSet types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
-  // TODO(tim): remove this. crbug.com/131336
-  void ClearUserData();
-
   void CleanupDisabledTypes();
 
   // Change status of notifications in the SyncSessionContext.
@@ -150,9 +147,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
       // A nudge task can come from a variety of components needing to force
       // a sync.  The source is inferable from |session.source()|.
       NUDGE,
-      // The user invoked a function in the UI to clear their entire account
-      // and stop syncing (globally).
-      CLEAR_USER_DATA,
       // Typically used for fetching updates for a subset of the enabled types
       // during initial sync or reconfiguration.  We don't run all steps of
       // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
@@ -195,8 +189,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
                            SaveConfigurationWhileThrottled);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            SaveNudgeWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-                           ContinueClearUserDataUnderAllCircumstances);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
                            ContinueCanaryJobConfig);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,

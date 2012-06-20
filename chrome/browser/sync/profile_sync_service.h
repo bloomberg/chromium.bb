@@ -139,14 +139,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MAX_SYNC_EVENT_CODE
   };
 
-  // Keep track of where we are when clearing server data.
-  enum ClearServerDataState {
-    CLEAR_NOT_STARTED = 1,
-    CLEAR_CLEARING = 2,
-    CLEAR_FAILED = 3,
-    CLEAR_SUCCEEDED = 4,
-  };
-
   enum StartBehavior {
     AUTO_START,
     MANUAL_START,
@@ -201,10 +193,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // null.
   browser_sync::SessionModelAssociator* GetSessionModelAssociator();
 
-  // Maintain state of where we are in a server clear operation.
-  void ResetClearServerDataState();
-  ClearServerDataState GetClearServerDataState();
-
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
   void GetDataTypeControllerStates(
@@ -212,9 +200,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser();
-
-  // Clears all Chromesync data from the server.
-  void ClearServerData();
 
   // Whether sync is enabled by user or not.
   virtual bool HasSyncSetupCompleted() const;
@@ -229,8 +214,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnConnectionStatusChange(
       sync_api::ConnectionStatus status) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
-  virtual void OnClearServerDataFailed() OVERRIDE;
-  virtual void OnClearServerDataSucceeded() OVERRIDE;
   virtual void OnPassphraseRequired(
       sync_api::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
@@ -245,8 +228,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const browser_sync::Experiments& experiments) OVERRIDE;
   virtual void OnActionableError(
       const browser_sync::SyncProtocolError& error) OVERRIDE;
-
-  void OnClearServerDataTimeout();
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
@@ -716,16 +697,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
   std::string cached_passphrase_;
-
-  // Keep track of where we are in a server clear operation
-  ClearServerDataState clear_server_data_state_;
-
-  // Timeout for the clear data command.  This timeout is a temporary hack
-  // and is necessary because the nudge sync framework can drop nudges for
-  // a wide variety of sync-related conditions (throttling, connections issues,
-  // syncer paused, etc.).  It can only be removed correctly when the framework
-  // is reworked to allow one-shot commands like clearing server data.
-  base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
 
   // The current set of encrypted types.  Always a superset of
   // Cryptographer::SensitiveTypes().
