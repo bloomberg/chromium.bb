@@ -32,6 +32,7 @@ using testing::AtLeast;
 using testing::CreateFunctor;
 using testing::DeleteArg;
 using testing::DoAll;
+using testing::Expectation;
 using testing::InSequence;
 using testing::InvokeArgument;
 using testing::InvokeWithoutArgs;
@@ -286,29 +287,24 @@ TEST_F(ChromotingHostTest, Connect) {
 
   // When the video packet is received we first shut down ChromotingHost,
   // then execute the done task.
-  {
-    InSequence s;
-    EXPECT_CALL(*disconnect_window_, Show(_, _, _))
-        .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-            RunDoneTask()))
-        .RetiresOnSaturation();
-    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(RunDoneTask());
-    EXPECT_CALL(*connection_, Disconnect())
-        .WillOnce(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
-        .RetiresOnSaturation();
-  }
-
-  {
-    InSequence s;
-    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
-    EXPECT_CALL(*event_executor_, OnSessionFinished());
-  }
+  Expectation start = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+  Expectation stop = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .After(start)
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
+          RunDoneTask()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .Times(AnyNumber())
+      .After(stop)
+      .WillRepeatedly(RunDoneTask());
+  EXPECT_CALL(*connection_, Disconnect())
+      .After(stop)
+      .WillOnce(
+          InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*event_executor_, OnSessionFinished())
+      .After(stop);
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
@@ -323,54 +319,43 @@ TEST_F(ChromotingHostTest, Reconnect) {
 
   // When the video packet is received we first disconnect the mock
   // connection, then run the done task, then quit the message loop.
-  {
-    InSequence s;
-    EXPECT_CALL(*disconnect_window_, Show(_, _, _))
-        .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(this, &ChromotingHostTest::RemoveClientSession),
-            RunDoneTask(),
-            InvokeWithoutArgs(this, &ChromotingHostTest::QuitMainMessageLoop)))
-        .RetiresOnSaturation();
-    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(RunDoneTask());
-  }
-
-  {
-    InSequence s;
-    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
-    EXPECT_CALL(*event_executor_, OnSessionFinished());
-  }
+  Expectation start1 = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+  Expectation stop1 = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .After(start1)
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(this, &ChromotingHostTest::RemoveClientSession),
+          RunDoneTask(),
+          InvokeWithoutArgs(this, &ChromotingHostTest::QuitMainMessageLoop)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .Times(AnyNumber())
+      .After(stop1)
+      .WillRepeatedly(RunDoneTask());
+  EXPECT_CALL(*event_executor_, OnSessionFinished())
+      .After(stop1);
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
 
-  // Connect the second client.
-  {
-    InSequence s;
-    EXPECT_CALL(*disconnect_window_, Show(_, _, _))
-        .Times(0);
-    EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-            RunDoneTask()))
-        .RetiresOnSaturation();
-    EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(RunDoneTask());
-    EXPECT_CALL(*connection2_, Disconnect())
-        .WillOnce(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
-        .RetiresOnSaturation();
-  }
-
-  {
-    InSequence s;
-    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
-    EXPECT_CALL(*event_executor_, OnSessionFinished());
-  }
+  Expectation start2 = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
+      .After(stop1);
+  Expectation stop2 = EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
+      .After(start2)
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
+          RunDoneTask()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
+      .Times(AnyNumber())
+      .After(stop2)
+      .WillRepeatedly(RunDoneTask());
+  EXPECT_CALL(*connection2_, Disconnect())
+      .After(stop2)
+      .WillOnce(
+          InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*event_executor_, OnSessionFinished())
+      .After(stop2);
 
   SimulateClientConnection(1, true);
   message_loop_.Run();
@@ -385,46 +370,40 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
 
   // When a video packet is received we connect the second mock
   // connection.
-  {
-    InSequence s;
-    EXPECT_CALL(*disconnect_window_, Show(_, _, _))
-        .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(
-                CreateFunctor(
-                    this,
-                    &ChromotingHostTest::SimulateClientConnection, 1, true)),
-            RunDoneTask()))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*disconnect_window_, Show(_, _, _))
-        .Times(0);
-    EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(RunDoneTask());
-    EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-        .WillOnce(DoAll(
-            InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
-            RunDoneTask()))
-        .RetiresOnSaturation();
-    EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(RunDoneTask());
-  }
-
-  {
-    InSequence s;
-    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
-    EXPECT_CALL(*event_executor_, OnSessionFinished());
-    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
-    EXPECT_CALL(*event_executor_, OnSessionFinished());
-  }
-
+  Expectation start1 = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+  Expectation start2 = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .After(start1)
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(
+              CreateFunctor(
+                  this,
+                  &ChromotingHostTest::SimulateClientConnection, 1, true)),
+          RunDoneTask()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .Times(AnyNumber())
+      .After(start2)
+      .WillRepeatedly(RunDoneTask());
+  EXPECT_CALL(*event_executor_, OnSessionFinished()).After(start2);
+  EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_)).After(start2);
   EXPECT_CALL(*connection_, Disconnect())
+      .After(start2)
       .WillOnce(
           InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
       .RetiresOnSaturation();
+  Expectation stop2 = EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
+      .After(start2)
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
+          RunDoneTask()))
+      .RetiresOnSaturation();
+  EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
+      .Times(AnyNumber())
+      .After(stop2)
+      .WillRepeatedly(RunDoneTask());
+  EXPECT_CALL(*event_executor_, OnSessionFinished()).After(stop2);
   EXPECT_CALL(*connection2_, Disconnect())
+      .After(stop2)
       .WillOnce(
           InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
       .RetiresOnSaturation();
