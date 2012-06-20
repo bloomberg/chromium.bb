@@ -297,7 +297,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 #define MAYBE_TestClearDefaultGetsPropagatedToIO \
     DISABLED_TestClearDefaultGetsPropagatedToIO
 #define MAYBE_TestIsHandledProtocolWorksOnIOThread \
-    DISABLE_TestIsHandledProtocolWorksOnIOThread
+    DISABLED_TestIsHandledProtocolWorksOnIOThread
 #else
 #define MAYBE_AcceptProtocolHandlerHandlesProtocol \
     AcceptProtocolHandlerHandlesProtocol
