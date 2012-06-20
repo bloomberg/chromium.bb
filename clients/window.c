@@ -212,6 +212,12 @@ struct input {
 		xkb_mod_mask_t alt_mask;
 		xkb_mod_mask_t shift_mask;
 	} xkb;
+
+	struct task repeat_task;
+	int repeat_timer_fd;
+	uint32_t repeat_sym;
+	uint32_t repeat_key;
+	uint32_t repeat_time;
 };
 
 struct output {
@@ -1826,6 +1832,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	const xkb_keysym_t *syms;
 	xkb_keysym_t sym;
 	xkb_mod_mask_t mask;
+	struct itimerspec its;
 
 	input->display->serial = serial;
 	code = key + 8;
@@ -1845,19 +1852,53 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (mask & input->xkb.shift_mask)
 		input->modifiers |= MOD_SHIFT_MASK;
 
-	if (num_syms == 1 && syms[0] == XKB_KEY_F5 &&
-	    input->modifiers == MOD_ALT_MASK) {
+	sym = XKB_KEY_NoSymbol;
+	if (num_syms == 1)
+		sym = syms[0];
+
+	if (sym == XKB_KEY_F5 && input->modifiers == MOD_ALT_MASK) {
 		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 			window_set_maximized(window,
 					     window->type != TYPE_MAXIMIZED);
 	} else if (window->key_handler) {
-		if (num_syms == 1)
-			sym = syms[0];
-		else
-			sym = XKB_KEY_NoSymbol;
-
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
+	}
+
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED &&
+	    key == input->repeat_key) {
+		its.it_interval.tv_sec = 0;
+		its.it_interval.tv_nsec = 0;
+		its.it_value.tv_sec = 0;
+		its.it_value.tv_nsec = 0;
+		timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
+	} else if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		input->repeat_sym = sym;
+		input->repeat_key = key;
+		input->repeat_time = time;
+		its.it_interval.tv_sec = 0;
+		its.it_interval.tv_nsec = 25 * 1000 * 1000;
+		its.it_value.tv_sec = 0;
+		its.it_value.tv_nsec = 400 * 1000 * 1000;
+		timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
+	}
+}
+
+static void
+keyboard_repeat_func(struct task *task, uint32_t events)
+{
+	struct input *input =
+		container_of(task, struct input, repeat_task);
+	struct window *window = input->keyboard_focus;
+	uint64_t exp;
+
+	read(input->repeat_timer_fd, &exp, sizeof (uint64_t));
+
+	if (window->key_handler) {
+		(*window->key_handler)(window, input, input->repeat_time,
+				       input->repeat_key, input->repeat_sym,
+				       WL_KEYBOARD_KEY_STATE_PRESSED,
+				       window->user_data);
 	}
 }
 
@@ -3228,6 +3269,11 @@ display_add_input(struct display *d, uint32_t id)
 				    input);
 
 	input->pointer_surface = wl_compositor_create_surface(d->compositor);
+
+	input->repeat_timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
+	input->repeat_task.run = keyboard_repeat_func;
+	display_watch_fd(d, input->repeat_timer_fd,
+			 EPOLLIN, &input->repeat_task);
 }
 
 static void
@@ -3254,6 +3300,7 @@ input_destroy(struct input *input)
 
 	wl_list_remove(&input->link);
 	wl_seat_destroy(input->seat);
+	close(input->repeat_timer_fd);
 	free(input);
 }
 
