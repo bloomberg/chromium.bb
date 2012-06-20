@@ -78,7 +78,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
     PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048,  // Windows
     PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096,  // Windows
-    PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH = 8192,  // Mac
     PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE = 16384,  // Windows
     PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768,  // Linux
     PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
@@ -460,15 +459,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // Moves our dummy window to match the current screen location of the plugin.
   void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);
 
-#ifndef NP_NO_QUICKDRAW
-  // Sets the mode used for QuickDraw plugin drawing. If enabled is true the
-  // plugin draws into a GWorld that's not connected to a window (the faster
-  // path), otherwise the plugin draws into our invisible dummy window (which is
-  // slower, since the call we use to scrape the window contents is much more
-  // expensive than copying between GWorlds).
-  void SetQuickDrawFastPathEnabled(bool enabled);
-#endif
-
   // Adjusts the idle event rate for a Carbon plugin based on its current
   // visibility.
   void UpdateIdleEventRate();
@@ -483,7 +473,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
 #ifndef NP_NO_QUICKDRAW
   NP_Port qd_port_;
   scoped_ptr<QuickDrawDrawingManager> qd_manager_;
-  base::TimeTicks fast_path_enable_tick_;
 #endif
 
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
