@@ -1348,7 +1348,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Escape) {
   EscapeTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
+// http://crbug.com/131179
+#if defined(OS_LINUX)
+#define MAYBE_DesiredTLD DISABLED_DesiredTLD
+#else
+#define MAYBE_DesiredTLD DesiredTLD
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLD) {
   DesiredTLDTest();
 }
 

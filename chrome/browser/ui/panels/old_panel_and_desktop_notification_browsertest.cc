@@ -139,8 +139,15 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, AddAndClosePanel) {
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 }
 
+// http://crbug.com/133612
+#if defined(OS_LINUX)
+#define MAYBE_ExpandAndCollapsePanel DISABLED_ExpandAndCollapsePanel
+#else
+#define MAYBE_ExpandAndCollapsePanel ExpandAndCollapsePanel
+#endif
+
 IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
-                       ExpandAndCollapsePanel) {
+                       MAYBE_ExpandAndCollapsePanel) {
   // Disable mouse watcher since we don't want mouse movements to affect panel
   // testing for title-only state.
   PanelManager* panel_manager = PanelManager::GetInstance();
