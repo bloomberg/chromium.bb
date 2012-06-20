@@ -368,7 +368,7 @@ class MultiNavigationObserver : public content::NotificationObserver {
   int num_navigations() const { return num_navigations_; }
 
  private:
-  typedef std::map<content::WebContents*, int> TabNavigationMap;
+  typedef std::map<const content::WebContents*, int> TabNavigationMap;
 
   // content::NotificationObserver:
   virtual void Observe(int type, const content::NotificationSource& source,
@@ -437,6 +437,97 @@ void MultiNavigationObserver::Observe(
   ++tab_navigation_map_[controller->GetWebContents()];
   if (waiting_for_navigation_ &&
       num_navigations_to_wait_for_ == num_navigations_) {
+    waiting_for_navigation_ = false;
+    MessageLoopForUI::current()->Quit();
+  }
+}
+
+// This observer creates a list of loading tabs, and then waits for them all
+// to stop loading and have the kInternetConnectedTitle.
+//
+// This is for the specific purpose of observing tabs time out after logging in
+// to a captive portal, which will then cause them to reload.
+// MultiNavigationObserver is insufficient for this because there may or may not
+// be a LOAD_STOP event between the timeout and the reload.
+// See bug http://crbug.com/133227
+class FailLoadsAfterLoginObserver : public content::NotificationObserver {
+ public:
+  FailLoadsAfterLoginObserver();
+  virtual ~FailLoadsAfterLoginObserver();
+
+  void WaitForNavigations();
+
+ private:
+  typedef std::set<const content::WebContents*> TabSet;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type, const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // The set of tabs that need to be navigated.  This is the set of loading
+  // tabs when the observer is created.
+  TabSet tabs_needing_navigation_;
+
+  // Number of tabs that have stopped navigating with the expected title.  These
+  // are expected not to be navigated again.
+  TabSet tabs_navigated_to_final_destination_;
+
+  // True if WaitForNavigations has been called, until
+  // |tabs_navigated_to_final_destination_| equals |tabs_needing_navigation_|.
+  bool waiting_for_navigation_;
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(FailLoadsAfterLoginObserver);
+};
+
+FailLoadsAfterLoginObserver::FailLoadsAfterLoginObserver()
+    : waiting_for_navigation_(false) {
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                 content::NotificationService::AllSources());
+  for (TabContentsIterator tab_contents_it;
+       !tab_contents_it.done();
+       ++tab_contents_it) {
+    if (tab_contents_it->web_contents()->IsLoading())
+      tabs_needing_navigation_.insert(tab_contents_it->web_contents());
+  }
+}
+
+FailLoadsAfterLoginObserver::~FailLoadsAfterLoginObserver() {
+}
+
+void FailLoadsAfterLoginObserver::WaitForNavigations() {
+  // Shouldn't already be waiting for navigations.
+  EXPECT_FALSE(waiting_for_navigation_);
+  if (tabs_needing_navigation_.size() !=
+          tabs_navigated_to_final_destination_.size()) {
+    waiting_for_navigation_ = true;
+    ui_test_utils::RunMessageLoop();
+    EXPECT_FALSE(waiting_for_navigation_);
+  }
+  EXPECT_EQ(tabs_needing_navigation_.size(),
+            tabs_navigated_to_final_destination_.size());
+}
+
+void FailLoadsAfterLoginObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  ASSERT_EQ(type, content::NOTIFICATION_LOAD_STOP);
+  content::NavigationController* controller =
+      content::Source<content::NavigationController>(source).ptr();
+  content::WebContents* contents = controller->GetWebContents();
+
+  ASSERT_EQ(1u, tabs_needing_navigation_.count(contents));
+  ASSERT_EQ(0u, tabs_navigated_to_final_destination_.count(contents));
+
+  if (contents->GetTitle() != ASCIIToUTF16(kInternetConnectedTitle))
+    return;
+  tabs_navigated_to_final_destination_.insert(contents);
+
+  if (waiting_for_navigation_ &&
+      tabs_needing_navigation_.size() ==
+          tabs_navigated_to_final_destination_.size()) {
     waiting_for_navigation_ = false;
     MessageLoopForUI::current()->Quit();
   }
@@ -637,8 +728,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   // Makes the slow SSL loads of all active tabs time out at once, and waits for
   // them to finish both that load and the automatic reload it should trigger.
-  // There should be no timed out tabs when this is called.  The former login
-  // tab should be the active tab.
+  // There should be no timed out tabs when this is called.
   void FailLoadsAfterLogin(Browser* browser, int num_loading_tabs);
 
   // Makes the slow SSL loads of all active tabs time out at once, and waits for
@@ -1090,11 +1180,11 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
   int initial_active_tab = browser->active_index();
 
   CaptivePortalObserver portal_observer(browser->profile());
-  MultiNavigationObserver navigation_observer;
+  FailLoadsAfterLoginObserver fail_loads_observer;
   // Connection finally times out.
   URLRequestTimeoutOnDemandJob::FailRequests();
 
-  navigation_observer.WaitForNavigations(2 * num_loading_tabs);
+  fail_loads_observer.WaitForNavigations();
 
   // No captive portal checks should have ocurred or be pending, and there
   // should be no new tabs.
@@ -1106,8 +1196,6 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
 
   EXPECT_EQ(0, NumNeedReloadTabs());
   EXPECT_EQ(0, NumLoadingTabs());
-  EXPECT_EQ(0, navigation_observer.NumNavigationsForTab(
-                   browser->GetActiveWebContents()));
 }
 
 void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
@@ -1175,8 +1263,6 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsNonTimeoutError) {
 
 // Make sure no captive portal test triggers on HTTPS timeouts of iframes.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsIframeTimeout) {
-  CaptivePortalObserver portal_observer(browser()->profile());
-
   // Use an HTTPS server for the top level page.
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
                                net::TestServer::kLocalhost,
@@ -1249,46 +1335,24 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
   SlowLoadNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
 }
 
-// This test is disabled on MAC. See bug http://crbug.com/133227
-#if defined(OS_MACOSX)
-#define MAYBE_Login DISABLED_Login
-#else
-#define MAYBE_Login Login
-#endif
-
 // A slow SSL load triggers a captive portal check.  The user logs on before
 // the SSL page times out.  We wait for the timeout and subsequent reload.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_Login) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Login) {
   // Load starts, detect captive portal and open up a login tab.
   SlowLoadBehindCaptivePortal(browser(), true);
 
   // Log in.  One loading tab, no timed out ones.
   Login(browser(), 1, 0);
 
-  string16 expected_title = ASCIIToUTF16(kInternetConnectedTitle);
-  ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetWebContentsAt(0),
-      expected_title);
-
   // Timeout occurs, and page is automatically reloaded.
   FailLoadsAfterLogin(browser(), 1);
-
-  // Double check the tab's title.
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
-
-// This test is disabled on MAC. See bug http://crbug.com/133227
-#if defined(OS_MACOSX)
-#define MAYBE_LoginIncognito DISABLED_LoginIncognito
-#else
-#define MAYBE_LoginIncognito LoginIncognito
-#endif
 
 // Same as above, except we make sure everything works with an incognito
 // profile.  Main issues it tests for are that the incognito has its own
 // non-NULL captive portal service, and we open the tab in the correct
 // window.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_LoginIncognito) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, LoginIncognito) {
   // This will watch tabs for both profiles, but only used to make sure no
   // navigations occur for the non-incognito profile.
   MultiNavigationObserver navigation_observer;
