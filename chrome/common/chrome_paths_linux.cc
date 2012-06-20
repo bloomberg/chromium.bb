@@ -101,6 +101,10 @@ bool GetUserDownloadsDirectory(FilePath* result) {
 // We respect the user's preferred pictures location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Pictures.
 bool GetUserPicturesDirectory(FilePath* result) {
+#if defined(OS_CHROMEOS)
+  // No local Pictures directory on CrOS.
+  return false;
+#else
   *result = GetXDGUserDirectory("PICTURES", kPicturesDir);
 
   FilePath home = file_util::GetHomeDir();
@@ -114,6 +118,7 @@ bool GetUserPicturesDirectory(FilePath* result) {
 
   *result = home.Append(kPicturesDir);
   return true;
+#endif
 }
 
 bool GetUserDesktop(FilePath* result) {
