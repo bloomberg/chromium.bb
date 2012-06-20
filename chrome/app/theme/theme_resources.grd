@@ -128,6 +128,7 @@
       <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="default_100_percent/geolocation_allowed_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="default_100_percent/geolocation_denied_locationbar_icon.png" type="BINDATA" />
+      <include name="IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON" file="default_100_percent/register_protocol_handler_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_HOMEPAGE_CHANGE_ALERT" file="default_100_percent/protector_home_alert.png" type="BINDATA" />
       <include name="IDR_HOMEPAGE_CHANGE_BADGE" file="default_100_percent/protector_home_badge.png" type="BINDATA" />
       <include name="IDR_HOMEPAGE_CHANGE_MENU" file="default_100_percent/protector_home_menu.png" type="BINDATA" />
