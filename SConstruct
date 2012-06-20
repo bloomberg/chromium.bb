@@ -3261,6 +3261,12 @@ if nacl_env.Bit('bitcode'):
 
   # With pnacl's clang base/ code uses the "override" keyword.
   nacl_env.Append(CXXFLAGS=['-Wno-c++11-extensions'])
+  # Allow extraneous semicolons.  (Until these are removed.)
+  # http://code.google.com/p/nativeclient/issues/detail?id=2861
+  nacl_env.Append(CCFLAGS=['-Wno-extra-semi'])
+  # Allow unused private fields.  (Until these are removed.)
+  # http://code.google.com/p/nativeclient/issues/detail?id=2861
+  nacl_env.Append(CCFLAGS=['-Wno-unused-private-field'])
 
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone

@@ -245,14 +245,14 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-a76b7a89fcea}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-f57d0228abe6}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
 readonly GOLD_REV=35987ea19d61
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-156513}
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-158408}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 
@@ -2604,12 +2604,15 @@ binutils-gold-sb-configure() {
   mkdir -p "${objdir}/gold"
   spushd "${objdir}/gold"
   StepBanner "GOLD-NATIVE-SB" "Dir [$(pwd)]"
+  # Removed -Werror until upstream gold no longer has problems with new clang
+  # warnings. http://code.google.com/p/nativeclient/issues/detail?id=2861
+  # TODO(sehr,robertm): remove this when gold no longer has these.
   RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
     env -i \
     PATH="/usr/bin:/bin" \
     "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
-    CXXFLAGS="-Werror" \
-    CFLAGS="-Werror" \
+    CXXFLAGS="" \
+    CFLAGS="" \
     ac_cv_search_zlibVersion=no \
     ac_cv_header_sys_mman_h=no \
     ac_cv_func_mmap=no \
