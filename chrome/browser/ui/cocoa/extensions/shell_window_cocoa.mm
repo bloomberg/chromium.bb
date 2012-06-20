@@ -57,8 +57,11 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
                                    const ShellWindow::CreateParams& params)
     : ShellWindow(profile, extension, url),
       attention_request_id_(0) {
-  NSRect rect = NSMakeRect(params.bounds.x(), params.bounds.y(),
-                           params.bounds.width(), params.bounds.height());
+  // Flip coordinates based on the primary screen.
+  NSRect mainScreenRect = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSRect rect = NSMakeRect(params.bounds.x(),
+      NSHeight(mainScreenRect) - params.bounds.y() - params.bounds.height(),
+      params.bounds.width(), params.bounds.height());
   NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSResizableWindowMask |
                          NSTexturedBackgroundWindowMask;
