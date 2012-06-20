@@ -1112,9 +1112,15 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 			if (sr)	terminal->mode |=  MODE_AUTOREPEAT;
 			else	terminal->mode &= ~MODE_AUTOREPEAT;
 			break;
+		case 12:  /* Very visible cursor (CVVIS) */
+			/* FIXME: What do we do here. */
+			break;
 		case 25:
 			if (sr)	terminal->mode |=  MODE_SHOW_CURSOR;
 			else	terminal->mode &= ~MODE_SHOW_CURSOR;
+			break;
+		case 1034:   /* smm/rmm, meta mode on/off */
+			/* ignore */
 			break;
 		case 1037:   /* deleteSendsDel */
 			if (sr)	terminal->mode |=  MODE_DELETE_SENDS_DEL;
@@ -1123,6 +1129,10 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 		case 1039:   /* altSendsEscape */
 			if (sr)	terminal->mode |=  MODE_ALT_SENDS_ESC;
 			else	terminal->mode &= ~MODE_ALT_SENDS_ESC;
+			break;
+		case 1049:   /* rmcup/smcup, alternate screen */
+			/* Ignore.  Should be possible to implement,
+			 * but it's kind of annoying. */
 			break;
 		default:
 			fprintf(stderr, "Unknown parameter: ?%d\n", code);
