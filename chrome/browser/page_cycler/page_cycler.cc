@@ -33,8 +33,6 @@ PageCycler::PageCycler(Browser* browser,
       browser_(browser),
       urls_file_(urls_file),
       url_index_(0),
-      total_iterations_(0),
-      current_iteration_(0),
       aborted_(false) {
   BrowserList::AddObserver(this);
   AddRef();  // Balanced in Finish()/Abort() (only one should be called).
@@ -75,8 +73,7 @@ void PageCycler::DidFailProvisionalLoad(
     LoadFailed(validated_url, error_description);
 }
 
-void PageCycler::Run(const int& total_iterations) {
-  total_iterations_ = total_iterations;
+void PageCycler::Run() {
   if (browser_)
     content::BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
@@ -140,17 +137,12 @@ void PageCycler::BeginCycle() {
 void PageCycler::LoadNextURL() {
   CHECK(browser_);
   if (url_index_ >= urls_.size()) {
-    if (current_iteration_ < total_iterations_ - 1) {
-      ++current_iteration_;
-      url_index_ = 0;
-    } else {
-      content::BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(&PageCycler::PrepareResultsOnBackgroundThread, this));
-      return;
-    }
+    content::BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&PageCycler::PrepareResultsOnBackgroundThread, this));
+    return;
   }
-  if (url_index_ || current_iteration_) {
+  if (url_index_) {
     timings_string_.append(", ");
     urls_string_.append(", ");
   }
@@ -209,7 +201,12 @@ void PageCycler::WriteResultsOnBackgroundThread(const std::string& output) {
 
   if (!output.empty()) {
     CHECK(!stats_file_.empty());
-    file_util::WriteFile(stats_file_, output.c_str(), output.size());
+    if (file_util::PathExists(stats_file_)) {
+      VLOG(1) << "PageCycler: Previous stats file found; appending.";
+      file_util::AppendToFile(stats_file_, output.c_str(), output.size());
+    } else {
+      file_util::WriteFile(stats_file_, output.c_str(), output.size());
+    }
   }
   if (!errors_file_.empty()) {
     if (!error_.empty()) {

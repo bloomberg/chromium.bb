@@ -32,7 +32,7 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
   PageCycler(Browser* browser, const FilePath& urls_file);
 
   // Begin running the page cycler.
-  void Run(const int& total_iterations);
+  void Run();
 
   // content::WebContentsObserver
   virtual void DidFinishLoad(int64 frame_id,
@@ -124,12 +124,6 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
 
   // The current index into the |urls_| vector.
   size_t url_index_;
-
-  // The number of total iterations to be run.
-  int total_iterations_;
-
-  // The number of the current iteration.
-  int current_iteration_;
 
   // The generated string of urls which we have visited; this is built one url
   // at a time as we iterate through the |urls_| vector. This is primarily

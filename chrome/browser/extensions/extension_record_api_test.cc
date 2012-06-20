@@ -198,7 +198,6 @@ class RecordApiTest : public InProcessBrowserTest {
 
     remove_switches.push_back(switches::kUserDataDir);
     remove_switches.push_back(switches::kVisitURLs);
-    remove_switches.push_back(switches::kVisitURLsCount);
     remove_switches.push_back(switches::kPlaybackMode);
     remove_switches.push_back(switches::kRecordStats);
     remove_switches.push_back(switches::kLoadExtension);
@@ -333,11 +332,6 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
   EXPECT_TRUE(command_line.HasSwitch(switches::kLoadExtension) &&
       command_line.GetSwitchValuePath(switches::kLoadExtension)
       != FilePath(kDummyDirName));
-
-   // Check that visit-urls-count was set to 2.
-  EXPECT_TRUE(command_line.HasSwitch(switches::kVisitURLsCount) &&
-      command_line.GetSwitchValueASCII(switches::kVisitURLsCount).compare("2")
-      == 0);
 
    // Check for return value with proper stats.
   EXPECT_EQ(kTestStatistics, utils::GetString(result.get(), kStatsKey));

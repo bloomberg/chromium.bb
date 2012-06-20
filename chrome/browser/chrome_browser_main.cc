@@ -1463,13 +1463,7 @@ void ChromeBrowserMainParts::RunPageCycler() {
     page_cycler->set_stats_file(
         command_line->GetSwitchValuePath(switches::kRecordStats));
   }
-  int iterations = 1;
-  if (command_line->HasSwitch(switches::kVisitURLsCount)) {
-    CHECK(base::StringToInt(
-            command_line->GetSwitchValueNative(switches::kVisitURLsCount),
-            &iterations));
-  }
-  page_cycler->Run(iterations);
+  page_cycler->Run();
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

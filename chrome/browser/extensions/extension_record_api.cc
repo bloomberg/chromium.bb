@@ -86,7 +86,6 @@ void RunPageCyclerFunction::RunTestBrowser() {
   std::vector<std::string> remove_switches;
   remove_switches.push_back(switches::kUserDataDir);
   remove_switches.push_back(switches::kVisitURLs);
-  remove_switches.push_back(switches::kVisitURLsCount);
   remove_switches.push_back(switches::kPlaybackMode);
   remove_switches.push_back(switches::kRecordStats);
   remove_switches.push_back(switches::kLoadExtension);
@@ -166,9 +165,6 @@ bool CaptureURLsFunction::ParseJSParameters() {
 // CaptureURLsFunction adds "record-mode" to sub-browser call, and returns
 // just the (possibly empty) error list.
 void CaptureURLsFunction::AddSwitches(CommandLine* line) {
-  line->AppendSwitchASCII(switches::kVisitURLsCount,
-                          base::Int64ToString(repeat_count_));
-
   if (!line->HasSwitch(switches::kRecordMode))
     line->AppendSwitch(switches::kRecordMode);
 }
@@ -219,8 +215,6 @@ bool ReplayURLsFunction::ParseJSParameters() {
 void ReplayURLsFunction::AddSwitches(CommandLine* line) {
   file_util::CreateTemporaryFile(&stats_file_path_);
 
-  line->AppendSwitchASCII(switches::kVisitURLsCount,
-    base::Int64ToString(repeat_count_));
   if (!extension_path_.empty())
     line->AppendSwitchPath(switches::kLoadExtension, extension_path_);
   line->AppendSwitch(switches::kPlaybackMode);

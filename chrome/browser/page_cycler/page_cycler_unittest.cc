@@ -33,7 +33,6 @@ namespace {
 const int kFrameID = 1;
 const bool kIsMainFrame = true;
 const GURL kAboutURL = GURL(chrome::kAboutBlankURL);
-const int kSingleIteration = 1;
 }  // namespace
 
 class MockPageCycler : public PageCycler {
@@ -137,8 +136,8 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
     PumpLoop();
   }
 
-  void RunPageCycler(int total_iterations) {
-    page_cycler_->Run(total_iterations);
+  void RunPageCycler() {
+    page_cycler_->Run();
     PumpLoop();
   }
 
@@ -204,7 +203,7 @@ TEST_F(PageCyclerTest, FailProvisionalLoads) {
   set_page_cycler(new MockPageCycler(browser(),
                                      urls_file(),
                                      errors_file()));
-  RunPageCycler(kSingleIteration);
+  RunPageCycler();
 
   // Page cycler expects browser to automatically start loading the first page.
   EXPECT_CALL(*page_cycler(), DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame))
@@ -268,7 +267,7 @@ TEST_F(PageCyclerTest, StatsFile) {
   set_page_cycler(new MockPageCycler(browser(), urls_file(),
                                      errors_file()));
   page_cycler()->set_stats_file(stats_file());
-  RunPageCycler(kSingleIteration);
+  RunPageCycler();
 
   for (int i = 0; i < kNumLoads; ++i) {
     EXPECT_CALL(*page_cycler(), DidFinishLoad(
@@ -297,7 +296,7 @@ TEST_F(PageCyclerTest, KillBrowserAndAbort) {
   set_page_cycler(new MockPageCycler(browser(),
                                      urls_file(),
                                      errors_file()));
-  RunPageCycler(kSingleIteration);
+  RunPageCycler();
 
   EXPECT_CALL(*page_cycler(), DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame))
       .WillOnce(Invoke(page_cycler(),
@@ -319,8 +318,7 @@ TEST_F(PageCyclerTest, KillBrowserAndAbort) {
 }
 
 TEST_F(PageCyclerTest, MultipleIterations) {
-  const int kMultipleIterations = 3;
-  const int kNumLoads = 10;
+  const int kNumLoads = 4;
 
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -332,7 +330,7 @@ TEST_F(PageCyclerTest, MultipleIterations) {
                                      urls_file(),
                                      errors_file()));
   page_cycler()->set_stats_file(stats_file());
-  RunPageCycler(kMultipleIterations);
+  RunPageCycler();
 
   EXPECT_CALL(*page_cycler(), DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame))
       .WillRepeatedly(Invoke(page_cycler(),
