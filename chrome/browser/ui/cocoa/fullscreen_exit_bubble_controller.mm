@@ -76,6 +76,11 @@ const float kHideDuration = 0.7;
     owner_ = owner;
     url_ = url;
     bubbleType_ = bubbleType;
+    // Mouse lock expects mouse events to reach the main window immediately.
+    // Make the bubble transparent for mouse events if mouse lock is enabled.
+    if (bubbleType_ == FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
+        bubbleType_ == FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION)
+      [[self window] setIgnoresMouseEvents:YES];
   }
   return self;
 }
