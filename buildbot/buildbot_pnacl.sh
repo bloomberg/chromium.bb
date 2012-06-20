@@ -336,6 +336,10 @@ browser-tests() {
         "chrome_browser_tests"
   else
     # Otherwise, try pexe mode.
+    # Use streaming translator. TODO(dschuff): remove this when env var
+    # goes away in Chrome and we use it by default
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2195
+    export NACL_STREAMING_TRANSLATION
     single-browser-test ${platform} "${extra}" "chrome_browser_tests"
   fi
 }
