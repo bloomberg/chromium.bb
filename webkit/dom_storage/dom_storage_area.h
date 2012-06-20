@@ -9,14 +9,15 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/dom_storage/dom_storage_database.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
 namespace dom_storage {
 
+class DomStorageDatabaseAdapter;
 class DomStorageMap;
 class DomStorageTaskRunner;
 
@@ -118,7 +119,7 @@ class DomStorageArea
   FilePath directory_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;
   scoped_refptr<DomStorageMap> map_;
-  scoped_ptr<DomStorageDatabase> backing_;
+  scoped_ptr<DomStorageDatabaseAdapter> backing_;
   bool is_initial_import_done_;
   bool is_shutdown_;
   scoped_ptr<CommitBatch> commit_batch_;

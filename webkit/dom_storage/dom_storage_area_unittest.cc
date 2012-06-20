@@ -12,8 +12,11 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/dom_storage/dom_storage_area.h"
+#include "webkit/dom_storage/dom_storage_database.h"
+#include "webkit/dom_storage/dom_storage_database_adapter.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 #include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/dom_storage/local_storage_database_adapter.h"
 
 namespace dom_storage {
 
@@ -161,14 +164,16 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
             new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
     EXPECT_TRUE(area->backing_.get());
-    EXPECT_FALSE(area->backing_->IsOpen());
+    DomStorageDatabase* database = static_cast<LocalStorageDatabaseAdapter*>(
+        area->backing_.get())->db_.get();
+    EXPECT_FALSE(database->IsOpen());
     EXPECT_FALSE(area->is_initial_import_done_);
 
     // Inject an in-memory db to speed up the test.
     // We will verify that something is written into the database but not
     // that a file is written to disk - DOMStorageDatabase unit tests cover
     // that.
-    area->backing_.reset(new DomStorageDatabase());
+    area->backing_.reset(new LocalStorageDatabaseAdapter());
 
     // Need to write something to ensure that the database is created.
     NullableString16 old_value;
@@ -182,7 +187,9 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
 
     EXPECT_FALSE(area->commit_batch_.get());
     EXPECT_EQ(0, area->commit_batches_in_flight_);
-    EXPECT_TRUE(area->backing_->IsOpen());
+    database = static_cast<LocalStorageDatabaseAdapter*>(
+        area->backing_.get())->db_.get();
+    EXPECT_TRUE(database->IsOpen());
     EXPECT_EQ(1u, area->Length());
     EXPECT_EQ(kValue, area->GetItem(kKey).string());
 
@@ -203,7 +210,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
           temp_dir.path(),
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
   // Inject an in-memory db to speed up the test.
-  area->backing_.reset(new DomStorageDatabase());
+  area->backing_.reset(new LocalStorageDatabaseAdapter());
 
   // Unrelated to commits, but while we're here, see that querying Length()
   // causes the backing database to be opened and presumably read from.
@@ -282,7 +289,8 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
 
   // Inject an in-memory db to speed up the test and also to verify
   // the final changes are commited in it's dtor.
-  area->backing_.reset(new VerifyChangesCommittedDatabase());
+  static_cast<LocalStorageDatabaseAdapter*>(area->backing_.get())->db_.reset(
+      new VerifyChangesCommittedDatabase());
 
   ValuesMap values;
   NullableString16 old_value;
@@ -307,7 +315,8 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
   // This test puts files on disk.
-  FilePath db_file_path = area->backing_->file_path();
+  FilePath db_file_path = static_cast<LocalStorageDatabaseAdapter*>(
+      area->backing_.get())->db_->file_path();
   FilePath db_journal_file_path =
       DomStorageDatabase::GetJournalFilePath(db_file_path);
 
@@ -367,17 +376,21 @@ TEST_F(DomStorageAreaTest, PurgeMemory) {
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
   // Inject an in-memory db to speed up the test.
-  area->backing_.reset(new DomStorageDatabase());
+  area->backing_.reset(new LocalStorageDatabaseAdapter());
 
   // Unowned ptrs we use to verify that 'purge' has happened.
-  DomStorageDatabase* original_backing = area->backing_.get();
+  DomStorageDatabase* original_backing =
+      static_cast<LocalStorageDatabaseAdapter*>(
+          area->backing_.get())->db_.get();
   DomStorageMap* original_map = area->map_.get();
 
   // Should do no harm when called on a newly constructed object.
   EXPECT_FALSE(area->is_initial_import_done_);
   area->PurgeMemory();
   EXPECT_FALSE(area->is_initial_import_done_);
-  EXPECT_EQ(original_backing, area->backing_.get());
+  DomStorageDatabase* new_backing = static_cast<LocalStorageDatabaseAdapter*>(
+      area->backing_.get())->db_.get();
+  EXPECT_EQ(original_backing, new_backing);
   EXPECT_EQ(original_map, area->map_.get());
 
   // Should not do anything when commits are pending.
@@ -388,20 +401,26 @@ TEST_F(DomStorageAreaTest, PurgeMemory) {
   area->PurgeMemory();
   EXPECT_TRUE(area->is_initial_import_done_);
   EXPECT_TRUE(area->HasUncommittedChanges());
-  EXPECT_EQ(original_backing, area->backing_.get());
+  new_backing = static_cast<LocalStorageDatabaseAdapter*>(
+      area->backing_.get())->db_.get();
+  EXPECT_EQ(original_backing, new_backing);
   EXPECT_EQ(original_map, area->map_.get());
 
   // Commit the changes from above,
   MessageLoop::current()->RunAllPending();
   EXPECT_FALSE(area->HasUncommittedChanges());
-  EXPECT_EQ(original_backing, area->backing_.get());
+  new_backing = static_cast<LocalStorageDatabaseAdapter*>(
+      area->backing_.get())->db_.get();
+  EXPECT_EQ(original_backing, new_backing);
   EXPECT_EQ(original_map, area->map_.get());
 
   // Should drop caches and reset database connections
   // when invoked on an area that's loaded up primed.
   area->PurgeMemory();
   EXPECT_FALSE(area->is_initial_import_done_);
-  EXPECT_NE(original_backing, area->backing_.get());
+  new_backing = static_cast<LocalStorageDatabaseAdapter*>(
+      area->backing_.get())->db_.get();
+  EXPECT_NE(original_backing, new_backing);
   EXPECT_NE(original_map, area->map_.get());
 }
 

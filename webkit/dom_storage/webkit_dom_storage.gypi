@@ -24,6 +24,7 @@
         'dom_storage_context.h',
         'dom_storage_database.cc',
         'dom_storage_database.h',
+        'dom_storage_database_adapter.h',
         'dom_storage_host.cc',
         'dom_storage_host.h',
         'dom_storage_map.cc',
@@ -36,8 +37,12 @@
         'dom_storage_task_runner.cc',
         'dom_storage_task_runner.h',
         'dom_storage_types.h',
+        'local_storage_database_adapter.cc',
+        'local_storage_database_adapter.h',
         'session_storage_database.cc',
-        'session_storage_database.h'
+        'session_storage_database.h',
+        'session_storage_database_adapter.cc',
+        'session_storage_database_adapter.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

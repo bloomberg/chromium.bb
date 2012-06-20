@@ -5,7 +5,6 @@
 #include "webkit/dom_storage/dom_storage_area.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time.h"
@@ -15,6 +14,7 @@
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 #include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/dom_storage/local_storage_database_adapter.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -63,7 +63,7 @@ DomStorageArea::DomStorageArea(const GURL& origin, const FilePath& directory,
       commit_batches_in_flight_(0) {
   if (!directory.empty()) {
     FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
-    backing_.reset(new DomStorageDatabase(path));
+    backing_.reset(new LocalStorageDatabaseAdapter(path));
     is_initial_import_done_ = false;
   }
 }
@@ -197,10 +197,8 @@ void DomStorageArea::DeleteOrigin() {
   map_ = new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance);
   if (backing_.get()) {
     is_initial_import_done_ = false;
-    backing_.reset(new DomStorageDatabase(backing_->file_path()));
-    file_util::Delete(backing_->file_path(), false);
-    file_util::Delete(
-        DomStorageDatabase::GetJournalFilePath(backing_->file_path()), false);
+    backing_->Reset();
+    backing_->DeleteFiles();
   }
 }
 
@@ -217,7 +215,7 @@ void DomStorageArea::PurgeMemory() {
 
   // Recreate the database object, this frees up the open sqlite connection
   // and its page cache.
-  backing_.reset(new DomStorageDatabase(backing_->file_path()));
+  backing_->Reset();
 }
 
 void DomStorageArea::Shutdown() {

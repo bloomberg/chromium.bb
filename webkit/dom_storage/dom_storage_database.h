@@ -48,6 +48,7 @@ class DomStorageDatabase {
   DomStorageDatabase();
 
  private:
+  friend class LocalStorageDatabaseAdapter;
   FRIEND_TEST_ALL_PREFIXES(DomStorageDatabaseTest, SimpleOpenAndClose);
   FRIEND_TEST_ALL_PREFIXES(DomStorageDatabaseTest, TestLazyOpenIsLazy);
   FRIEND_TEST_ALL_PREFIXES(DomStorageDatabaseTest, TestDetectSchemaVersion);
