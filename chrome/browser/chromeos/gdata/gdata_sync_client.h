@@ -81,10 +81,9 @@ class GDataSyncClient
                                const std::string& md5) OVERRIDE;
   virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE;
 
-  // Starts scanning the pinned directory in the cache to collect
-  // pinned-but-not-fetched files. |closure| is run on the calling thread
-  // once the initial scan is complete.
-  void StartInitialScan(const base::Closure& closure);
+  // Starts processing the pinned-but-not-filed files. Kicks off retrieval of
+  // the resource IDs of these files, and then starts the fetch loop.
+  void StartProcessingPinnedButNotFetchedFiles();
 
   // Returns the contents of |queue_|. Used only for testing.
   const std::deque<std::string>& GetResourceIdsForTesting() const {
@@ -110,11 +109,9 @@ class GDataSyncClient
   // Returns true if we should stop the fetch loop.
   bool ShouldStopFetchLoop();
 
-  // Called when the initial scan is complete. Receives the resource IDs of
-  // pinned-but-not-fetched files as |resource_ids|. |closure| is run at the
-  // end.
-  void OnInitialScanComplete(const base::Closure& closure,
-                             std::vector<std::string>* resource_ids);
+  // Called when the resource IDs of pinned-but-not-fetched files are obtained.
+  void OnGetResourceIdsOfPinnedButNotFetchedFiles(
+      const std::vector<std::string>& resource_ids);
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoFetchLoop() to go back to the fetch loop.

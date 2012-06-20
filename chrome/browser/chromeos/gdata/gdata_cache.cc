@@ -288,6 +288,18 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
   }
 }
 
+// Appends |resource_id| ID to |resource_ids| if the file is pinned but not
+// fetched (not present locally).
+void CollectPinnedButNotFetched(std::vector<std::string>* resource_ids,
+                                const std::string& resource_id,
+                                const GDataCache::CacheEntry& cache_entry) {
+  DCHECK(resource_ids);
+
+  if (cache_entry.IsPinned() && !cache_entry.IsPresent())
+    resource_ids->push_back(resource_id);
+}
+
+
 // Runs callback with pointers dereferenced.
 // Used to implement SetMountedStateOnUIThread.
 void RunSetMountedStateCallback(const SetMountedStateCallback& callback,
@@ -327,6 +339,17 @@ void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
 
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5, *cache_file_path);
+}
+
+// Runs callback with pointers dereferenced.
+// Used to implement GetResourceIds* methods.
+void RunGetResourceIdsCallback(const GetResourceIdsCallback& callback,
+                               std::vector<std::string>* resource_ids) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(resource_ids);
+
+  if (!callback.is_null())
+    callback.Run(*resource_ids);
 }
 
 }  // namespace
@@ -414,6 +437,21 @@ void GDataCache::AddObserver(Observer* observer) {
 void GDataCache::RemoveObserver(Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
+}
+
+void GDataCache::GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread(
+    const GetResourceIdsCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::vector<std::string>* resource_ids = new std::vector<std::string>;
+  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataCache::GetResourceIdsOfPinnedButNotFetchedFiles,
+                 base::Unretained(this),
+                 resource_ids),
+      base::Bind(&RunGetResourceIdsCallback,
+                 callback,
+                 base::Owned(resource_ids)));
 }
 
 void GDataCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
@@ -692,6 +730,14 @@ void GDataCache::Initialize() {
 void GDataCache::Destroy() {
   AssertOnSequencedWorkerPool();
   delete this;
+}
+
+void GDataCache::GetResourceIdsOfPinnedButNotFetchedFiles(
+    std::vector<std::string>* resource_ids) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(resource_ids);
+
+  metadata_->Iterate(base::Bind(&CollectPinnedButNotFetched, resource_ids));
 }
 
 void GDataCache::GetFile(const std::string& resource_id,

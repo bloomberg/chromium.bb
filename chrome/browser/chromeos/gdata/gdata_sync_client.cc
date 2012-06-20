@@ -25,52 +25,6 @@
 using content::BrowserThread;
 
 namespace gdata {
-namespace {
-
-// Scans the pinned directory and returns pinned-but-not-fetched files.
-void ScanPinnedDirectory(const FilePath& directory,
-                         std::vector<std::string>* resource_ids) {
-  using file_util::FileEnumerator;
-
-  DVLOG(1) << "Scanning " << directory.value();
-  FileEnumerator::FileType file_types =
-      static_cast<FileEnumerator::FileType>(FileEnumerator::FILES |
-                                            FileEnumerator::SHOW_SYM_LINKS);
-
-  FileEnumerator enumerator(directory, false /* recursive */, file_types);
-  for (FilePath file_path = enumerator.Next(); !file_path.empty();
-       file_path = enumerator.Next()) {
-    // Check if it's a symlink.
-    FileEnumerator::FindInfo find_info;
-    enumerator.GetFindInfo(&find_info);
-    const bool is_symlink = S_ISLNK(find_info.stat.st_mode);
-    if (!is_symlink) {
-      LOG(WARNING) << "Removing " << file_path.value() << " (not a symlink)";
-      file_util::Delete(file_path, false /* recursive */);
-      continue;
-    }
-    // Read the symbolic link.
-    FilePath destination;
-    if (!file_util::ReadSymbolicLink(file_path, &destination)) {
-      LOG(WARNING) << "Removing " << file_path.value() << " (not readable)";
-      file_util::Delete(file_path, false /* recursive */);
-      continue;
-    }
-    // Remove the symbolic link if it's dangling. Something went wrong.
-    if (!file_util::PathExists(destination)) {
-      LOG(WARNING) << "Removing " << file_path.value() << " (dangling)";
-      file_util::Delete(file_path, false /* recursive */);
-      continue;
-    }
-    // Add it to the output list, if the symlink points to /dev/null.
-    if (destination == FilePath::FromUTF8Unsafe("/dev/null")) {
-      std::string resource_id = file_path.BaseName().AsUTF8Unsafe();
-      resource_ids->push_back(resource_id);
-    }
-  }
-}
-
-}  // namespace
 
 GDataSyncClient::GDataSyncClient(Profile* profile,
                                  GDataFileSystemInterface* file_system,
@@ -113,24 +67,10 @@ void GDataSyncClient::Initialize() {
   registrar_->Add(prefs::kDisableGDataOverCellular, this);
 }
 
-void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!closure.is_null());
-
-  // Start scanning the pinned directory in the cache.
-  std::vector<std::string>* resource_ids = new std::vector<std::string>;
-  const bool posted =
-      BrowserThread::GetBlockingPool()->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&ScanPinnedDirectory,
-                     cache_->GetCacheDirectoryPath(
-                         GDataCache::CACHE_TYPE_PINNED),
-                     resource_ids),
-          base::Bind(&GDataSyncClient::OnInitialScanComplete,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     closure,
-                     base::Owned(resource_ids)));
-  DCHECK(posted);
+void GDataSyncClient::StartProcessingPinnedButNotFetchedFiles() {
+  cache_->GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread(
+      base::Bind(&GDataSyncClient::OnGetResourceIdsOfPinnedButNotFetchedFiles,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GDataSyncClient::StartFetchLoop() {
@@ -195,14 +135,7 @@ bool GDataSyncClient::ShouldStopFetchLoop() {
 void GDataSyncClient::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Start the initial scan. Once it's complete, start the fetch loop.
-  //
-  // Note that we should start the initial scan after the file system
-  // metadata is loaded from the cache or the server, becase the file system
-  // metadata is necessary to fetch files. This is why we monitor
-  // OnInitialLoadFinished().
-  StartInitialScan(base::Bind(&GDataSyncClient::StartFetchLoop,
-                              weak_ptr_factory_.GetWeakPtr()));
+  StartProcessingPinnedButNotFetchedFiles();
 }
 
 void GDataSyncClient::OnCachePinned(const std::string& resource_id,
@@ -233,19 +166,17 @@ void GDataSyncClient::OnCacheCommitted(const std::string& resource_id) {
   // crbug.com/127080
 }
 
-void GDataSyncClient::OnInitialScanComplete(
-    const base::Closure& closure,
-    std::vector<std::string>* resource_ids) {
-  DCHECK(resource_ids);
+void GDataSyncClient::OnGetResourceIdsOfPinnedButNotFetchedFiles(
+    const std::vector<std::string>& resource_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (size_t i = 0; i < resource_ids->size(); ++i) {
-    const std::string& resource_id = (*resource_ids)[i];
+  for (size_t i = 0; i < resource_ids.size(); ++i) {
+    const std::string& resource_id = resource_ids[i];
     DVLOG(1) << "Queuing " << resource_id;
     queue_.push_back(resource_id);
   }
 
-  closure.Run();
+  StartFetchLoop();
 }
 
 void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,

@@ -196,6 +196,15 @@ void GDataCacheMetadataMap::RemoveTemporaryFiles() {
   }
 }
 
+void GDataCacheMetadataMap::Iterate(const IterateCallback& callback) {
+  AssertOnSequencedWorkerPool();
+
+  for (CacheMap::const_iterator iter = cache_map_.begin();
+       iter != cache_map_.end(); ++iter) {
+    callback.Run(iter->first, iter->second);
+  }
+}
+
 void GDataCacheMetadataMap::ScanCacheDirectory(
     const std::vector<FilePath>& cache_paths,
     GDataCache::CacheSubDirectoryType sub_dir_type,

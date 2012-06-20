@@ -148,8 +148,12 @@ class GDataSyncClientTest : public testing::Test {
     const FilePath pinned_dir =
         cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PINNED);
     ASSERT_TRUE(file_util::CreateDirectory(pinned_dir));
+    // Create a directory in the temporary directory for persistent files.
+    const FilePath persistent_dir =
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PERSISTENT);
+    ASSERT_TRUE(file_util::CreateDirectory(persistent_dir));
 
-    // Create a symlink in the temporary directory to /dev/null.
+    // Create a symlink in the pinned directory to /dev/null.
     // We'll collect this resource ID as a file to be fetched.
     ASSERT_TRUE(
         file_util::CreateSymbolicLink(
@@ -165,21 +169,17 @@ class GDataSyncClientTest : public testing::Test {
             FilePath::FromUTF8Unsafe("/dev/null"),
             pinned_dir.Append("resource_id_not_fetched_baz")));
 
-    // Create a symlink in the temporary directory to a test file
-    // We won't collect this resource ID, as it already exists.
-    FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    FilePath test_file_path = test_data_dir.AppendASCII("chromeos")
-        .AppendASCII("gdata").AppendASCII("testfile.txt");
+    // Create a file in the persistent directory.
+    const FilePath persistent_file_path =
+        persistent_dir.Append("resource_id_fetched");
+    const std::string content = "hello";
+    ASSERT_TRUE(file_util::WriteFile(
+        persistent_file_path, content.data(), content.size()));
+    // Create a symlink in the pinned directory to the test file.
     ASSERT_TRUE(
         file_util::CreateSymbolicLink(
-            test_file_path,
+            persistent_file_path,
             pinned_dir.Append("resource_id_fetched")));
-  }
-
-  // Called when StartInitialScan() is complete.
-  void OnInitialScanComplete() {
-    message_loop_.Quit();
   }
 
   // Sets the expectation for MockGDataFileSystem::GetFileByResourceId(),
@@ -210,25 +210,30 @@ class GDataSyncClientTest : public testing::Test {
 
 TEST_F(GDataSyncClientTest, StartInitialScan) {
   SetUpTestFiles();
+  // Connect to no network, so the fetch loop won't spin.
+  ConnectToNone();
 
-  sync_client_->StartInitialScan(
-      base::Bind(&GDataSyncClientTest::OnInitialScanComplete,
-                 base::Unretained(this)));
-  // Wait until the initial scan is complete.
-  message_loop_.Run();
+  // Kick off the cache initialization and wait until it's done. This will
+  // scan the contents in the test cache directory.
+  cache_->RequestInitializeOnUIThread();
+  // Start processing the pinned-but-not-fetch files. This will collect the
+  // resource IDs of these files.
+  sync_client_->StartProcessingPinnedButNotFetchedFiles();
+  // Wait until the resource IDs retrieval is done in the blocking pool.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  // Run the message loop, to receive the resource IDs on UI thread.
+  message_loop_.RunAllPending();
 
   // Check the contents of the queue.
-  const std::deque<std::string>& resource_ids =
+  std::deque<std::string> resource_ids =
       sync_client_->GetResourceIdsForTesting();
   ASSERT_EQ(3U, resource_ids.size());
   // Since these are the list of file names read from the disk, the order is
-  // not guaranteed
-  EXPECT_TRUE(std::find(resource_ids.begin(), resource_ids.end(),
-                        "resource_id_not_fetched_foo") != resource_ids.end());
-  EXPECT_TRUE(std::find(resource_ids.begin(), resource_ids.end(),
-                        "resource_id_not_fetched_bar") != resource_ids.end());
-  EXPECT_TRUE(std::find(resource_ids.begin(), resource_ids.end(),
-                        "resource_id_not_fetched_baz") != resource_ids.end());
+  // not guaranteed, hence sort it.
+  sort(resource_ids.begin(), resource_ids.end());
+  EXPECT_EQ("resource_id_not_fetched_bar", resource_ids[0]);
+  EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
+  EXPECT_EQ("resource_id_not_fetched_foo", resource_ids[2]);
   // resource_id_fetched is not collected in the queue.
 }
 

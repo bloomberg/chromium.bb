@@ -18,6 +18,11 @@ namespace gdata {
 // All member access including ctor and dtor must be made on the blocking pool.
 class GDataCacheMetadata {
  public:
+  // Callback for Iterate().
+  typedef base::Callback<void(const std::string& resource_id,
+                              const GDataCache::CacheEntry& cache_entry)>
+      IterateCallback;
+
   // |pool| and |sequence_token| are used to assert that the functions are
   // called on the right sequenced worker pool with the right sequence token.
   //
@@ -49,6 +54,10 @@ class GDataCacheMetadata {
 
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   virtual void RemoveTemporaryFiles() = 0;
+
+  // Iterates over all the cache entries synchronously. |callback| is called
+  // on each cache entry.
+  virtual void Iterate(const IterateCallback& callback) = 0;
 
  protected:
   // Checks whether the current thread is on the right sequenced worker pool
@@ -83,6 +92,7 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
       const std::string& resource_id,
       const std::string& md5) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
+  virtual void Iterate(const IterateCallback& callback) OVERRIDE;
 
  private:
   friend class GDataCacheMetadataMapTest;
