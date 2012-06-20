@@ -131,7 +131,7 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     with open(created_file, 'rb') as job_desc_file:
       values = json.load(job_desc_file)
 
-    self.assertIn('efudd@google.com', values['email'][0])
+    self.assertTrue('efudd@google.com' in values['email'][0])
 
     for patch in self.PATCHES:
       self.assertTrue(patch in values['extra_args'],
