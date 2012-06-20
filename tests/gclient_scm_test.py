@@ -814,12 +814,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_list = []
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
-    expectation = ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
-         'Fast-forward\n a |    1 +\n b |    1 +\n'
-         ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
-         '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-         'HEAD is now at a7142dc Personalized\n') % join(self.root_dir, '.')
-    self.assertTrue(sys.stdout.getvalue().startswith(expectation))
     sys.stdout.close()
 
   def testRevertNone(self):
@@ -835,13 +829,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    self.checkstdout(
-      ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
-       'Fast-forward\n a |    1 +\n b |    1 +\n'
-       ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
-       '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-       'HEAD is now at a7142dc Personalized\n') %
-            join(self.root_dir, '.'))
+    sys.stdout.close()
 
   def testRevertModified(self):
     if not self.enabled:
@@ -861,12 +849,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    expectation = ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
-       'Fast-forward\n a |    1 +\n b |    1 +\n'
-       ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
-       '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-       'HEAD is now at a7142dc Personalized\n') % join(self.root_dir, '.')
-    self.assertTrue(sys.stdout.getvalue().startswith(expectation))
     sys.stdout.close()
 
   def testRevertNew(self):
@@ -891,12 +873,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    expectation = ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
-       'Fast-forward\n a |    1 +\n b |    1 +\n'
-       ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
-       '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-       'HEAD is now at a7142dc Personalized\n') % join(self.root_dir, '.')
-    self.assertTrue(sys.stdout.getvalue().startswith(expectation))
     sys.stdout.close()
 
   def testStatusNew(self):
@@ -947,10 +923,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    self.checkstdout(
-        '\n_____ . at refs/heads/master\n'
-        'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
-        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n')
+    sys.stdout.close()
 
   def testUpdateReset(self):
     if not self.enabled:
@@ -971,13 +944,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     scm.update(options, (), file_list)
     self.assert_(gclient_scm.os.path.isdir(dir_path))
     self.assert_(gclient_scm.os.path.isfile(file_path))
-    self.checkstdout(
-        '\n________ running \'git reset --hard HEAD\' in \'%s\''
-        '\nHEAD is now at 069c602 A and B\n'
-        '\n_____ . at refs/heads/master\n'
-        'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
-        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n'
-        % join(self.root_dir, '.'))
+    sys.stdout.close()
 
   def testUpdateResetDeleteUnversionedTrees(self):
     if not self.enabled:
@@ -999,14 +966,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     scm.update(options, (), file_list)
     self.assert_(not gclient_scm.os.path.isdir(dir_path))
     self.assert_(gclient_scm.os.path.isfile(file_path))
-    self.checkstdout(
-        '\n________ running \'git reset --hard HEAD\' in \'%s\''
-        '\nHEAD is now at 069c602 A and B\n'
-        '\n_____ . at refs/heads/master\n'
-        'Updating 069c602..a7142dc\nFast-forward\n a |    1 +\n b |    1 +\n'
-        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n'
-        '\n_____ removing unversioned directory dir/\n' % join(self.root_dir,
-                                                               '.'))
+    sys.stdout.close()
 
   def testUpdateUnstagedConflict(self):
     if not self.enabled:
@@ -1046,16 +1006,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                  '\tYou have unstaged changes.\n'
                  '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    # The hash always changes. Use a cheap trick.
-    start = ('\n________ running \'git commit -am test\' in \'%s\'\n'
-             '[new ') % join(self.root_dir, '.')
-    end = ('] test\n 1 files changed, 1 insertions(+), '
-         '1 deletions(-)\n\n_____ . at refs/heads/master\n'
-         'Attempting rebase onto refs/remotes/origin/master...\n')
-    self.assertTrue(sys.stdout.getvalue().startswith(start))
-    self.assertTrue(sys.stdout.getvalue().endswith(end))
-    self.assertEquals(len(sys.stdout.getvalue()),
-                      len(start) + len(end) + 7)
     sys.stdout.close()
 
   def testUpdateNotGit(self):
