@@ -128,14 +128,6 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, CreateUberHTMLSource());
 
-  // The user may use a virtual (short) URL to get to the page. To avoid
-  // duplicate uber tabs, clear the virtual URL so that the omnibox will show
-  // the real URL. http://crbug.com/111878.
-  NavigationController* controller = &web_ui->GetWebContents()->GetController();
-  NavigationEntry* pending_entry = controller->GetPendingEntry();
-  if (pending_entry && !pending_entry->IsViewSourceMode())
-    pending_entry->SetVirtualURL(GURL());
-
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL);
   RegisterSubpage(chrome::kChromeUIHistoryFrameURL);
@@ -155,11 +147,33 @@ void UberUI::RegisterSubpage(const std::string& page_url) {
   sub_uis_[page_url] = webui;
 }
 
+void UberUI::ClearPendingVirtualURL() {
+  // A virtual (short) URL may be used to load an uber page. To avoid duplicate
+  // uber tabs, clear the virtual URL so that the omnibox will show the real
+  // URL. http://crbug.com/111878.
+  const NavigationController& controller =
+      web_ui()->GetWebContents()->GetController();
+  NavigationEntry* pending_entry = controller.GetPendingEntry();
+  if (pending_entry && !pending_entry->IsViewSourceMode())
+    pending_entry->SetVirtualURL(GURL());
+}
+
 void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
   for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
        ++iter) {
     iter->second->GetController()->RenderViewCreated(render_view_host);
   }
+
+  ClearPendingVirtualURL();
+}
+
+void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
+  for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
+       ++iter) {
+    iter->second->GetController()->RenderViewReused(render_view_host);
+  }
+
+  ClearPendingVirtualURL();
 }
 
 bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
