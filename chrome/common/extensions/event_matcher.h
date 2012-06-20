@@ -19,28 +19,29 @@ class EventFilteringInfo;
 // MatchNonURLCriteria() - URL matching is handled by EventFilter.
 class EventMatcher {
  public:
-  EventMatcher();
+  explicit EventMatcher(scoped_ptr<base::DictionaryValue> filter);
   ~EventMatcher();
 
   // Returns true if |event_info| satisfies this matcher's criteria, not taking
   // into consideration any URL criteria.
   bool MatchNonURLCriteria(const EventFilteringInfo& event_info) const;
 
-  void set_url_filters(scoped_ptr<base::ListValue> url_filters) {
-    url_filters_ = url_filters.Pass();
-  }
+  int GetURLFilterCount() const;
+  bool GetURLFilter(int i, base::DictionaryValue** url_filter_out);
 
-  // Returns NULL if no url_filters have been specified.
-  base::ListValue* url_filters() const {
-    return url_filters_.get();
-  }
+  int HasURLFilters() const;
 
-  bool has_url_filters() const {
-    return url_filters_.get() && !url_filters_->empty();
+  base::DictionaryValue* value() const {
+    return filter_.get();
   }
 
  private:
-  scoped_ptr<base::ListValue> url_filters_;
+  // Contains a dictionary that corresponds to a single event filter, eg:
+  //
+  // {url: [{hostSuffix: 'google.com'}]}
+  //
+  // The valid filter keys are event-specific.
+  scoped_ptr<base::DictionaryValue> filter_;
 
   DISALLOW_COPY_AND_ASSIGN(EventMatcher);
 };

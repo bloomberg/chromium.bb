@@ -29,6 +29,14 @@ class EventFilter {
   // the id of the matcher, or -1 if there was an error.
   MatcherID AddEventMatcher(const std::string& event_name,
                             scoped_ptr<EventMatcher> matcher);
+
+  // Retrieve the EventMatcher with the given id.
+  EventMatcher* GetEventMatcher(MatcherID id);
+
+  // Retrieve the name of the event that the EventMatcher specified by |id| is
+  // referring to.
+  const std::string& GetEventName(MatcherID id);
+
   // Removes an event matcher, returning the name of the event that it was for.
   std::string RemoveEventMatcher(MatcherID id);
 
@@ -64,8 +72,8 @@ class EventFilter {
     // and clean them up anyway.
     void DontRemoveConditionSetsInDestructor();
 
-    const EventMatcher& event_matcher() const {
-      return *event_matcher_;
+    EventMatcher* event_matcher() {
+      return event_matcher_.get();
     }
 
    private:
@@ -83,10 +91,10 @@ class EventFilter {
   // Maps from event name to the map of matchers that are registered for it.
   typedef std::map<std::string, EventMatcherMap> EventMatcherMultiMap;
 
-  // Adds the list of filters to the URL matcher, having matches for those URLs
-  // map to |id|.
+  // Adds the list of URL filters in |matcher| to the URL matcher, having
+  // matches for those URLs map to |id|.
   bool CreateConditionSets(MatcherID id,
-                           base::ListValue* url_filters,
+                           EventMatcher* matcher,
                            URLMatcherConditionSet::Vector* condition_sets);
 
   bool AddDictionaryAsConditionSet(

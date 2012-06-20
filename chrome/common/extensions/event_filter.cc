@@ -51,7 +51,7 @@ EventFilter::AddEventMatcher(const std::string& event_name,
                              scoped_ptr<EventMatcher> matcher) {
   MatcherID id = next_id_++;
   URLMatcherConditionSet::Vector condition_sets;
-  if (!CreateConditionSets(id, matcher->url_filters(), &condition_sets))
+  if (!CreateConditionSets(id, matcher.get(), &condition_sets))
     return -1;
 
   for (URLMatcherConditionSet::Vector::iterator it = condition_sets.begin();
@@ -65,19 +65,30 @@ EventFilter::AddEventMatcher(const std::string& event_name,
   return id;
 }
 
+EventMatcher* EventFilter::GetEventMatcher(MatcherID id) {
+  DCHECK(id_to_event_name_.find(id) != id_to_event_name_.end());
+  const std::string& event_name = id_to_event_name_[id];
+  return event_matchers_[event_name][id]->event_matcher();
+}
+
+const std::string& EventFilter::GetEventName(MatcherID id) {
+  DCHECK(id_to_event_name_.find(id) != id_to_event_name_.end());
+  return id_to_event_name_[id];
+}
+
 bool EventFilter::CreateConditionSets(
     MatcherID id,
-    base::ListValue* url_filters,
+    EventMatcher* matcher,
     URLMatcherConditionSet::Vector* condition_sets) {
-  if (!url_filters || url_filters->GetSize() == 0) {
-    // If there are no url_filters then we want to match all events, so create a
+  if (matcher->GetURLFilterCount() == 0) {
+    // If there are no URL filters then we want to match all events, so create a
     // URLFilter from an empty dictionary.
     base::DictionaryValue empty_dict;
     return AddDictionaryAsConditionSet(&empty_dict, condition_sets);
   }
-  for (size_t i = 0; i < url_filters->GetSize(); i++) {
+  for (int i = 0; i < matcher->GetURLFilterCount(); i++) {
     base::DictionaryValue* url_filter;
-    if (!url_filters->GetDictionary(i, &url_filter))
+    if (!matcher->GetURLFilter(i, &url_filter))
       return false;
     if (!AddDictionaryAsConditionSet(url_filter, condition_sets))
       return false;
@@ -106,8 +117,10 @@ bool EventFilter::AddDictionaryAsConditionSet(
 
 std::string EventFilter::RemoveEventMatcher(MatcherID id) {
   std::map<MatcherID, std::string>::iterator it = id_to_event_name_.find(id);
-  event_matchers_[it->second].erase(id);
   std::string event_name = it->second;
+  // EventMatcherEntry's destructor causes the condition set ids to be removed
+  // from url_matcher_.
+  event_matchers_[event_name].erase(id);
   id_to_event_name_.erase(it);
   return event_name;
 }
@@ -126,10 +139,21 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
   for (std::set<URLMatcherConditionSet::ID>::iterator it =
        matching_condition_set_ids.begin();
        it != matching_condition_set_ids.end(); it++) {
-    MatcherID id = condition_set_id_to_event_matcher_id_[*it];
-    const EventMatcher& event_matcher = matcher_map[id]->event_matcher();
-    if (event_matcher.MatchNonURLCriteria(event_info)) {
-      CHECK(!event_matcher.url_filters() || event_info.has_url());
+    std::map<URLMatcherConditionSet::ID, MatcherID>::iterator matcher_id =
+        condition_set_id_to_event_matcher_id_.find(*it);
+    if (matcher_id == condition_set_id_to_event_matcher_id_.end()) {
+      NOTREACHED() << "id not found in condition set map (" << (*it) << ")";
+      continue;
+    }
+    MatcherID id = matcher_id->second;
+    EventMatcherMap::iterator matcher_entry = matcher_map.find(id);
+    if (matcher_entry == matcher_map.end()) {
+      // Matcher must be for a different event.
+      continue;
+    }
+    const EventMatcher* event_matcher = matcher_entry->second->event_matcher();
+    if (event_matcher->MatchNonURLCriteria(event_info)) {
+      CHECK(!event_matcher->HasURLFilters() || event_info.has_url());
       matchers.insert(id);
     }
   }

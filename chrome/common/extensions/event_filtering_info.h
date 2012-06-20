@@ -27,11 +27,13 @@ class EventFilteringInfo {
   bool has_url() const { return has_url_; }
   const GURL& url() const { return url_; }
 
+  std::string AsJSONString() const;
+
  private:
   bool has_url_;
   GURL url_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventFilteringInfo);
+  // Allow implicit copy and assignment.
 };
 
 }  // namespace extensions

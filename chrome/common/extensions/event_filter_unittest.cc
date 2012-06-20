@@ -34,16 +34,19 @@ class EventFilterUnittest : public testing::Test {
   }
 
   scoped_ptr<EventMatcher> AllURLs() {
-    scoped_ptr<EventMatcher> matcher(new EventMatcher());
-    // An empty set of URL filters always matches.
-    matcher->set_url_filters(scoped_ptr<ListValue>(new ListValue()));
-    return matcher.Pass();
+    return scoped_ptr<EventMatcher>(new EventMatcher(
+        scoped_ptr<DictionaryValue>(new DictionaryValue)));
   }
 
   scoped_ptr<EventMatcher> HostSuffixMatcher(const std::string& host_suffix) {
-    scoped_ptr<EventMatcher> event_matcher(new EventMatcher());
-    event_matcher->set_url_filters(ValueAsList(HostSuffixDict(host_suffix)));
-    return event_matcher.Pass();
+    return MatcherFromURLFilterList(ValueAsList(HostSuffixDict(host_suffix)));
+  }
+
+  scoped_ptr<EventMatcher> MatcherFromURLFilterList(
+      scoped_ptr<ListValue> url_filter_list) {
+    scoped_ptr<DictionaryValue> filter_dict(new DictionaryValue);
+    filter_dict->Set("url", url_filter_list.release());
+    return scoped_ptr<EventMatcher>(new EventMatcher(filter_dict.Pass()));
   }
 
   EventFilter event_filter_;
@@ -121,8 +124,7 @@ TEST_F(EventFilterUnittest, TestMultipleURLFiltersMatchOnAny) {
   filters->Append(HostSuffixDict("google.com").release());
   filters->Append(HostSuffixDict("yahoo.com").release());
 
-  scoped_ptr<EventMatcher> matcher(new EventMatcher());
-  matcher->set_url_filters(filters.Pass());
+  scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(filters.Pass()));
   int id = event_filter_.AddEventMatcher("event1", matcher.Pass());
 
   {
@@ -157,6 +159,18 @@ TEST_F(EventFilterUnittest, TestStillMatchesAfterRemoval) {
   }
 }
 
+TEST_F(EventFilterUnittest, TestMatchesOnlyAgainstPatternsForCorrectEvent) {
+  int id1 = event_filter_.AddEventMatcher("event1", AllURLs());
+  event_filter_.AddEventMatcher("event2", AllURLs());
+
+  {
+    std::set<int> matches = event_filter_.MatchEvent("event1",
+        google_event_);
+    ASSERT_EQ(1u, matches.size());
+    ASSERT_EQ(1u, matches.count(id1));
+  }
+}
+
 TEST_F(EventFilterUnittest, TestGetMatcherCountForEvent) {
   ASSERT_EQ(0, event_filter_.GetMatcherCountForEvent("event1"));
   int id1 = event_filter_.AddEventMatcher("event1", AllURLs());
@@ -182,8 +196,8 @@ TEST_F(EventFilterUnittest, RemoveEventMatcherReturnsEventName) {
 TEST_F(EventFilterUnittest, InvalidURLFilterCantBeAdded) {
   scoped_ptr<base::ListValue> filter_list(new base::ListValue());
   filter_list->Append(new base::ListValue());  // Should be a dict.
-  scoped_ptr<EventMatcher> matcher(new EventMatcher);
-  matcher->set_url_filters(filter_list.Pass());
+  scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(
+      filter_list.Pass()));
   int id1 = event_filter_.AddEventMatcher("event1", matcher.Pass());
   EXPECT_TRUE(event_filter_.IsURLMatcherEmpty());
   ASSERT_EQ(-1, id1);
@@ -191,8 +205,8 @@ TEST_F(EventFilterUnittest, InvalidURLFilterCantBeAdded) {
 
 TEST_F(EventFilterUnittest, EmptyListOfURLFiltersMatchesAllURLs) {
   scoped_ptr<base::ListValue> filter_list(new base::ListValue());
-  scoped_ptr<EventMatcher> matcher(new EventMatcher);
-  matcher->set_url_filters(filter_list.Pass());
+  scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(
+      scoped_ptr<ListValue>(new ListValue)));
   int id = event_filter_.AddEventMatcher("event1", matcher.Pass());
   std::set<int> matches = event_filter_.MatchEvent("event1",
       google_event_);
@@ -219,9 +233,8 @@ TEST_F(EventFilterUnittest, EmptyURLsShouldBeMatchedByEmptyURLFilters) {
 
 TEST_F(EventFilterUnittest,
     EmptyURLsShouldBeMatchedByEmptyURLFiltersWithAnEmptyItem) {
-  scoped_ptr<EventMatcher> matcher(new EventMatcher());
-  matcher->set_url_filters(ValueAsList(scoped_ptr<Value>(
-      new DictionaryValue())));
+  scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(ValueAsList(
+      scoped_ptr<Value>(new DictionaryValue()))));
   int id = event_filter_.AddEventMatcher("event1", matcher.Pass());
   std::set<int> matches = event_filter_.MatchEvent("event1", empty_url_event_);
   ASSERT_EQ(1u, matches.size());
