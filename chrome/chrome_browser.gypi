@@ -2376,6 +2376,8 @@
         'browser/ui/browser_finder.h',
         'browser/ui/browser_list.cc',
         'browser/ui/browser_list.h',
+        'browser/ui/browser_mac.cc',
+        'browser/ui/browser_mac.h',
         'browser/ui/browser_navigator.cc',
         'browser/ui/browser_navigator.h',
         'browser/ui/browser_tab_restore_service_delegate.cc',

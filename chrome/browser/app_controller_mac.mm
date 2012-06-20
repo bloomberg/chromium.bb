@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -851,7 +852,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         browser->OpenClearBrowsingDataDialog();
       } else {
-        Browser::OpenClearBrowsingDataDialogWindow(lastProfile);
+        browser::OpenClearBrowsingDataDialogWindow(lastProfile);
       }
       break;
     }
@@ -859,7 +860,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         browser->OpenImportSettingsDialog();
       } else {
-        Browser::OpenImportSettingsDialogWindow(lastProfile);
+        browser::OpenImportSettingsDialogWindow(lastProfile);
       }
       break;
     }
@@ -877,13 +878,13 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowHistoryTab();
       else
-        Browser::OpenHistoryWindow(lastProfile);
+        browser::OpenHistoryWindow(lastProfile);
       break;
     case IDC_SHOW_DOWNLOADS:
       if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowDownloadsTab();
       else
-        Browser::OpenDownloadsWindow(lastProfile);
+        browser::OpenDownloadsWindow(lastProfile);
       break;
     case IDC_MANAGE_EXTENSIONS:
       if (Browser* browser = ActivateBrowser(lastProfile))
@@ -895,13 +896,13 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowHelpTab(Browser::HELP_SOURCE_MENU);
       else
-        Browser::OpenHelpWindow(lastProfile, Browser::HELP_SOURCE_MENU);
+        browser::OpenHelpWindow(lastProfile, Browser::HELP_SOURCE_MENU);
       break;
     case IDC_SHOW_SYNC_SETUP:
       if (Browser* browser = ActivateBrowser(lastProfile))
         browser->ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
       else
-        Browser::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
+        browser::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
       break;
     case IDC_TASK_MANAGER:
       content::RecordAction(UserMetricsAction("TaskManager"));
@@ -1183,7 +1184,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     browser->OpenOptionsDialog();
   } else {
     // No browser window, so create one for the options tab.
-    Browser::OpenOptionsWindow([self lastProfile]);
+    browser::OpenOptionsWindow([self lastProfile]);
   }
 }
 
@@ -1193,7 +1194,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     browser->OpenAboutChromeDialog();
   } else {
     // No browser window, so create one for the about tab.
-    Browser::OpenAboutWindow([self lastProfile]);
+    browser::OpenAboutWindow([self lastProfile]);
   }
 }
 
@@ -1312,7 +1313,7 @@ void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
   if (Browser* browser = ActivateBrowser(profile)) {
     browser->OpenInstantConfirmDialog();
   } else {
-    Browser::OpenInstantConfirmDialogWindow(profile);
+    browser::OpenInstantConfirmDialogWindow(profile);
   }
 }
 

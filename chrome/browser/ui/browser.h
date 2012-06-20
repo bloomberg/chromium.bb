@@ -320,21 +320,6 @@ class Browser : public TabStripModelDelegate,
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
 
-#if defined(OS_MACOSX)
-  // Open a new window with history/downloads/help/options (needed on Mac when
-  // there are no windows).
-  static void OpenAboutWindow(Profile* profile);
-  static void OpenHistoryWindow(Profile* profile);
-  static void OpenDownloadsWindow(Profile* profile);
-  static void OpenHelpWindow(Profile* profile, HelpSource source);
-  static void OpenOptionsWindow(Profile* profile);
-  static void OpenSyncSetupWindow(Profile* profile,
-                                  SyncPromoUI::Source source);
-  static void OpenClearBrowsingDataDialogWindow(Profile* profile);
-  static void OpenImportSettingsDialogWindow(Profile* profile);
-  static void OpenInstantConfirmDialogWindow(Profile* profile);
-#endif
-
   // Opens a window with the extensions tab in it - needed by long-lived
   // extensions which may run with no windows open.
   static void OpenExtensionsWindow(Profile* profile);
