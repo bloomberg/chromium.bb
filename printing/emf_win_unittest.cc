@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
     // If you get this assert, you need to lookup iType in wingdi.h. It starts
     // with EMR_HEADER.
     EMR_HEADER;
-    EXPECT_TRUE(itr->SafePlayback(NULL)) <<
+    EXPECT_TRUE(itr->SafePlayback(&emf_enum.context_)) <<
         " index: " << index << " type: " << itr->record()->iType;
   }
   context->PageDone();
