@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -99,6 +100,10 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   ChromeWebUIDataSource* source = CreateDownloadsUIHTMLSource();
   source->set_use_json_js_format_v2();
   ChromeURLDataManager::AddDataSource(profile, source);
+#if defined(ENABLE_THEMES)
+  ThemeSource* theme = new ThemeSource(profile);
+  ChromeURLDataManager::AddDataSource(profile, theme);
+#endif
 }
 
 // static
