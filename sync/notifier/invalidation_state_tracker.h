@@ -11,11 +11,13 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "sync/internal_api/public/syncable/model_type.h"
+#include "google/cacheinvalidation/include/types.h"
+#include "sync/notifier/invalidation_util.h"
 
 namespace csync {
 
-typedef std::map<syncable::ModelType, int64> InvalidationVersionMap;
+typedef std::map<invalidation::ObjectId, int64, ObjectIdLessThan>
+    InvalidationVersionMap;
 
 class InvalidationStateTracker {
  public:
@@ -25,7 +27,7 @@ class InvalidationStateTracker {
 
   // |max_version| should be strictly greater than any existing max
   // version for |model_type|.
-  virtual void SetMaxVersion(syncable::ModelType model_type,
+  virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) = 0;
 
   // Used by InvalidationClient for persistence. |state| is opaque data we can

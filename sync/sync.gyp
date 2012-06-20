@@ -386,8 +386,6 @@
         'internal_api/public/syncable/model_type_test_util.h',
         'js/js_test_util.cc',
         'js/js_test_util.h',
-        'notifier/mock_invalidation_state_tracker.cc',
-        'notifier/mock_invalidation_state_tracker.h',
         'sessions/test_util.cc',
         'sessions/test_util.h',
         'syncable/syncable_mock.cc',
@@ -436,6 +434,8 @@
         'sync_notifier',
       ],
       'sources': [
+        'notifier/mock_invalidation_state_tracker.cc',
+        'notifier/mock_invalidation_state_tracker.h',
         'notifier/mock_sync_notifier_observer.cc',
         'notifier/mock_sync_notifier_observer.h',
       ],

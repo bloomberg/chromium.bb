@@ -23,6 +23,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/notifier/sync_notifier_observer.h"
@@ -78,10 +79,10 @@ class NullInvalidationStateTracker
   }
 
   virtual void SetMaxVersion(
-      syncable::ModelType model_type,
+      const invalidation::ObjectId& id,
       int64 max_invalidation_version) OVERRIDE {
     LOG(INFO) << "Setting max invalidation version for "
-              << syncable::ModelTypeToString(model_type) << " to "
+              << csync::ObjectIdToString(id) << " to "
               << max_invalidation_version;
   }
 

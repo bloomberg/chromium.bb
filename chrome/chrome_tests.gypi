@@ -166,8 +166,6 @@
         'browser/sessions/session_service_test_helper.h',
         'browser/ssl/ssl_client_auth_requestor_mock.cc',
         'browser/ssl/ssl_client_auth_requestor_mock.h',
-        'browser/sync/profile_sync_service_mock.cc',
-        'browser/sync/profile_sync_service_mock.h',
         'browser/ui/browser.h',
         'browser/ui/cocoa/run_loop_testing.h',
         'browser/ui/cocoa/run_loop_testing.mm',
@@ -364,14 +362,21 @@
       'dependencies': [
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
+        'browser',
+        'common',
         'test_support_common',
+        '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:sync',
+        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'browser/sync/profile_sync_service_mock.cc',
+        'browser/sync/profile_sync_service_mock.h',
         'test/base/run_all_unittests.cc',
       ],
       'conditions': [
@@ -4041,6 +4046,7 @@
       'type': 'executable',
       'dependencies': [
         '../sync/protocol/sync_proto.gyp:sync_proto',
+        'browser',
         'chrome',
         'test_support_common',
         '../skia/skia.gyp:skia',

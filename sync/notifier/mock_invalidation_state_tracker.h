@@ -19,7 +19,7 @@ class MockInvalidationStateTracker
   virtual ~MockInvalidationStateTracker();
 
   MOCK_CONST_METHOD0(GetAllMaxVersions, InvalidationVersionMap());
-  MOCK_METHOD2(SetMaxVersion, void(syncable::ModelType, int64));
+  MOCK_METHOD2(SetMaxVersion, void(const invalidation::ObjectId&, int64));
   MOCK_CONST_METHOD0(GetInvalidationState, std::string());
   MOCK_METHOD1(SetInvalidationState, void(const std::string&));
 };

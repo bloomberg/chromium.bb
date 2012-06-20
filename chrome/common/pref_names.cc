@@ -1600,6 +1600,12 @@ const char kSyncSessionsGUID[] = "sync.session_sync_guid";
 // The value is base 64 encoded.
 const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 
+// List of {source, name, max invalidation version} tuples. source is an int,
+// while max invalidation version is an int64; both are stored as string
+// representations though.
+const char kInvalidatorMaxInvalidationVersions[] =
+    "invalidator.max_invalidation_versions";
+
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
 const char kSyncEncryptionBootstrapToken[] =

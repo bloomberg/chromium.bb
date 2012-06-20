@@ -8,6 +8,11 @@
       'target_name': 'browser_extensions',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
+      # Since browser and browser_extensions actually depend on each other,
+      # we must omit the dependency from browser_extensions to browser.
+      # However, this means browser_extensions and browser should more or less
+      # have the same dependencies. Once browser_extensions is untangled from
+      # browser, then we can clean up these dependencies.
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
         '../sync/protocol/sync_proto.gyp:sync_proto',
@@ -27,6 +32,7 @@
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:sync_notifier',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',

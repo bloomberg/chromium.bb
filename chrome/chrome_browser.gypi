@@ -44,6 +44,7 @@
         # TODO(akalin): Depend only on syncapi_service from sync.
         '../sync/sync.gyp:syncapi_core',
         '../sync/sync.gyp:syncapi_service',
+        '../sync/sync.gyp:sync_notifier',
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cld/cld.gyp:cld',
@@ -88,6 +89,9 @@
           '<@(nacl_defines)',
         ],
       },
+      'export_dependent_settings': [
+        '../sync/sync.gyp:sync_notifier',
+      ],
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for:
         # * tests and mocks.

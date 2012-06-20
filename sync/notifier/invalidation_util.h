@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "google/cacheinvalidation/deps/callback.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
 namespace invalidation {
@@ -22,7 +21,10 @@ class ObjectId;
 
 namespace csync {
 
-void RunAndDeleteClosure(invalidation::Closure* task);
+struct ObjectIdLessThan {
+  bool operator()(const invalidation::ObjectId& lhs,
+                  const invalidation::ObjectId& rhs) const;
+};
 
 bool RealModelTypeToObjectId(syncable::ModelType model_type,
                              invalidation::ObjectId* object_id);

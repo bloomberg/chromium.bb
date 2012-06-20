@@ -74,7 +74,7 @@ void ChromeInvalidationClient::Start(
              max_invalidation_versions_.begin();
          it != max_invalidation_versions_.end(); ++it) {
       DVLOG(2) << "Initial max invalidation version for "
-               << syncable::ModelTypeToString(it->first) << " is "
+               << ObjectIdToString(it->first) << " is "
                << it->second;
     }
   }
@@ -124,38 +124,41 @@ void ChromeInvalidationClient::Invalidate(
     const invalidation::AckHandle& ack_handle) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
-  syncable::ModelType model_type;
-  if (!ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
-    LOG(WARNING) << "Could not get invalidation model type; "
-                 << "invalidating everything";
-    EmitInvalidation(registered_types_, std::string());
-    client->Acknowledge(ack_handle);
-    return;
-  }
+
+  const invalidation::ObjectId& id = invalidation.object_id();
+
   // The invalidation API spec allows for the possibility of redundant
   // invalidations, so keep track of the max versions and drop
   // invalidations with old versions.
   //
-  // TODO(akalin): Now that we keep track of registered types, we
-  // should drop invalidations for unregistered types.  We may also
+  // TODO(akalin): Now that we keep track of registered ids, we
+  // should drop invalidations for unregistered ids.  We may also
   // have to filter it at a higher level, as invalidations for
-  // newly-unregistered types may already be in flight.
+  // newly-unregistered ids may already be in flight.
   InvalidationVersionMap::const_iterator it =
-      max_invalidation_versions_.find(model_type);
+      max_invalidation_versions_.find(id);
   if ((it != max_invalidation_versions_.end()) &&
       (invalidation.version() <= it->second)) {
     // Drop redundant invalidations.
     client->Acknowledge(ack_handle);
     return;
   }
-  DVLOG(2) << "Setting max invalidation version for "
-           << syncable::ModelTypeToString(model_type) << " to "
-           << invalidation.version();
-  max_invalidation_versions_[model_type] = invalidation.version();
+  DVLOG(2) << "Setting max invalidation version for " << ObjectIdToString(id)
+           << " to " << invalidation.version();
+  max_invalidation_versions_[id] = invalidation.version();
   invalidation_state_tracker_.Call(
       FROM_HERE,
       &InvalidationStateTracker::SetMaxVersion,
-      model_type, invalidation.version());
+      id, invalidation.version());
+
+  syncable::ModelType model_type;
+  if (!ObjectIdToRealModelType(id, &model_type)) {
+    LOG(WARNING) << "Could not get invalidation model type; "
+                 << "invalidating everything";
+    EmitInvalidation(registered_types_, std::string());
+    client->Acknowledge(ack_handle);
+    return;
+  }
 
   std::string payload;
   // payload() CHECK()'s has_payload(), so we must check it ourselves first.

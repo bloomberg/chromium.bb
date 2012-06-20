@@ -31,6 +31,8 @@ const char kClientInfo[] = "client_info";
 const char kState[] = "state";
 const char kNewState[] = "new_state";
 
+const int kChromeSyncSourceId = 1004;
+
 class MockInvalidationClient : public invalidation::InvalidationClient {
  public:
   MOCK_METHOD0(Start, void());
@@ -55,7 +57,11 @@ class ChromeInvalidationClientTest : public testing::Test {
  protected:
   ChromeInvalidationClientTest()
       : fake_push_client_(new notifier::FakePushClient()),
-        client_(scoped_ptr<notifier::PushClient>(fake_push_client_)) {}
+        client_(scoped_ptr<notifier::PushClient>(fake_push_client_)),
+        kBookmarksId_(kChromeSyncSourceId, "BOOKMARK"),
+        kPreferencesId_(kChromeSyncSourceId, "PREFERENCE"),
+        kExtensionsId_(kChromeSyncSourceId, "EXTENSION"),
+        kAppsId_(kChromeSyncSourceId, "APP") {}
 
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
@@ -119,6 +125,11 @@ class ChromeInvalidationClientTest : public testing::Test {
   StrictMock<MockInvalidationClient> mock_invalidation_client_;
   notifier::FakePushClient* const fake_push_client_;
   ChromeInvalidationClient client_;
+
+  const invalidation::ObjectId kBookmarksId_;
+  const invalidation::ObjectId kPreferencesId_;
+  const invalidation::ObjectId kExtensionsId_;
+  const invalidation::ObjectId kAppsId_;
 };
 
 namespace {
@@ -141,15 +152,17 @@ TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
   syncable::ModelTypeSet types(syncable::BOOKMARKS, syncable::APPS);
   client_.RegisterTypes(types);
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
+  EXPECT_CALL(mock_invalidation_state_tracker_,
+              SetMaxVersion(invalidation::ObjectId(kChromeSyncSourceId, "bad"),
+                            1));
   FireInvalidate("bad", 1, NULL);
-  message_loop_.RunAllPending();
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::BOOKMARKS, "")));
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::BOOKMARKS, 1));
+              SetMaxVersion(kBookmarksId_, 1));
   FireInvalidate("BOOKMARK", 1, NULL);
 }
 
@@ -157,7 +170,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::PREFERENCES, "payload")));
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::PREFERENCES, 1));
+              SetMaxVersion(kPreferencesId_, 1));
   FireInvalidate("PREFERENCE", 1, "payload");
 }
 
@@ -167,7 +180,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::APPS, "")));
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::APPS, 1));
+              SetMaxVersion(kAppsId_, 1));
 
   // Should trigger.
   FireInvalidate("APP", 1, NULL);
@@ -200,9 +213,9 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
               OnInvalidate(MakeMap(syncable::EXTENSIONS, "")));
 
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::APPS, 3));
+              SetMaxVersion(kAppsId_, 3));
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::EXTENSIONS, 2));
+              SetMaxVersion(kExtensionsId_, 2));
 
   // Should trigger both.
   FireInvalidate("APP", 3, NULL);
@@ -233,11 +246,11 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
               OnInvalidate(MakeMap(syncable::APPS, "")));
 
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::PREFERENCES, 5));
+              SetMaxVersion(kPreferencesId_, 5));
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::EXTENSIONS, 3));
+              SetMaxVersion(kExtensionsId_, 3));
   EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(syncable::APPS, 4));
+              SetMaxVersion(kAppsId_, 4));
 
   // Should trigger all three.
   FireInvalidate("PREFERENCE", 5, NULL);

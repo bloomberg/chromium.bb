@@ -11,9 +11,10 @@
 
 namespace csync {
 
-void RunAndDeleteClosure(invalidation::Closure* task) {
-  task->Run();
-  delete task;
+bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
+                                  const invalidation::ObjectId& rhs) const {
+  return (lhs.source() < rhs.source()) ||
+         (lhs.source() == rhs.source() && lhs.name() < rhs.name());
 }
 
 bool RealModelTypeToObjectId(syncable::ModelType model_type,
