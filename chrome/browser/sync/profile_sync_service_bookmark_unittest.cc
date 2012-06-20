@@ -36,7 +36,7 @@
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/syncable/syncable.h"  // TODO(tim): Remove. Bug 131130.
+#include "sync/syncable/mutable_entry.h"  // TODO(tim): Remove. Bug 131130.
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

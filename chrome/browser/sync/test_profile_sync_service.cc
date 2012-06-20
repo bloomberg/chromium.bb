@@ -15,16 +15,15 @@
 #include "sync/internal_api/public/user_share.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
 
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::sessions::ErrorCounters;
+using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::sessions::SyncSourceInfo;
 using browser_sync::sessions::SyncerStatus;
-using browser_sync::sessions::SyncSessionSnapshot;
-using syncable::Directory;
-using syncable::ModelType;
 using sync_api::UserShare;
+using syncable::Directory;
 
 namespace browser_sync {
 

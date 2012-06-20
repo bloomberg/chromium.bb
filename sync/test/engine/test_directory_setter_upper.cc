@@ -8,7 +8,8 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/string_util.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/read_transaction.h"
 #include "sync/test/null_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

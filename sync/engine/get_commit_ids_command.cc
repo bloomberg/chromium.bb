@@ -11,7 +11,9 @@
 #include "sync/engine/nigori_util.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/throttled_data_type_tracker.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using std::set;

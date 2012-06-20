@@ -14,6 +14,7 @@
 #include "sync/engine/syncer_util.h"
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/sync_session.h"
+#include "sync/syncable/directory.h"
 
 using std::pair;
 using std::vector;

@@ -54,7 +54,8 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/autofill_specifics.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -66,18 +67,12 @@ using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::DataTypeController;
 using browser_sync::GenericChangeProcessor;
 using browser_sync::SharedChangeProcessor;
-using browser_sync::GROUP_DB;
-using browser_sync::SyncBackendHostForProfileSyncTest;
-using browser_sync::UnrecoverableErrorHandler;
 using content::BrowserThread;
-using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::AUTOFILL;
 using syncable::BASE_VERSION;
 using syncable::CREATE;
 using syncable::GET_BY_SERVER_TAG;
-using syncable::INVALID;
 using syncable::MutableEntry;
-using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_SPECIFICS;
 using syncable::SPECIFICS;
 using syncable::UNITTEST;
@@ -86,14 +81,9 @@ using syncable::WriteTransaction;
 using sync_api::BaseNode;
 using testing::_;
 using testing::DoAll;
-using testing::DoDefault;
 using testing::ElementsAre;
-using testing::Eq;
-using testing::Invoke;
-using testing::Mock;
-using testing::Return;
-using testing::SaveArg;
 using testing::SetArgumentPointee;
+using testing::Return;
 
 namespace syncable {
 class Id;

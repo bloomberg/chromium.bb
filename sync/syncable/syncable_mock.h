@@ -8,7 +8,8 @@
 
 #include <string>
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"

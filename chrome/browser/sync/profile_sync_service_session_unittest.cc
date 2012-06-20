@@ -45,7 +45,6 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/syncable/syncable.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

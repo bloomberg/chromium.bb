@@ -17,7 +17,12 @@
 #include "base/basictypes.h"
 #include "base/port.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/syncable_id.h"
+
+namespace syncable {
+class WriteTransaction;
+class Entry;
+}
 
 namespace browser_sync {
 

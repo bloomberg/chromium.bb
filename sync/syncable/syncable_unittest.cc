@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/syncable/syncable.h"
-
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -20,16 +18,21 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "sync/engine/syncproto.h"
-#include "sync/util/test_unrecoverable_error_handler.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
+#include "sync/syncable/metahandle_set.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
+#include "sync/syncable/read_transaction.h"
+#include "sync/syncable/syncable_util.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/engine/test_syncable_utils.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/null_directory_change_delegate.h"
 #include "sync/test/null_transaction_observer.h"
-#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ExpectDictBooleanValue;

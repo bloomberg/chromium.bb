@@ -13,7 +13,10 @@
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/syncproto.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/syncable_util.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using std::vector;

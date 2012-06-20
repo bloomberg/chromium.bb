@@ -8,9 +8,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "sync/engine/syncer_command.h"
 #include "sync/engine/syncproto.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry_kernel.h"
+
+namespace syncable {
+class Entry;
+}
 
 namespace browser_sync {
 

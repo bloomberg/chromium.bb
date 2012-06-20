@@ -20,7 +20,8 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/entry.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/time.h"
 

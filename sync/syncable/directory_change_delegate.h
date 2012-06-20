@@ -7,7 +7,7 @@
 #pragma once
 
 #include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/write_transaction_info.h"
 
 namespace syncable {
 

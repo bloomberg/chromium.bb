@@ -14,7 +14,8 @@
 #include "sql/statement.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/dir_open_result.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/metahandle_set.h"
 
 namespace sync_pb {
 class EntitySpecifics;

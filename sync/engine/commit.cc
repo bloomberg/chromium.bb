@@ -10,6 +10,8 @@
 #include "sync/engine/process_commit_response_command.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/sessions/sync_session.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 
 using syncable::SYNCER;
 using syncable::WriteTransaction;

@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/syncable/syncable.h" // TODO(tim): Bug 131130.
+#include "sync/syncable/directory.h" // TODO(tim): Bug 131130.
 
 using syncable::ModelTypeSet;
 

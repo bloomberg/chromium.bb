@@ -15,7 +15,8 @@
 
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry_kernel.h"
+#include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace browser_sync {

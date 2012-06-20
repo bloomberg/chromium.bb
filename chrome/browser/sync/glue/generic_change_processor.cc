@@ -18,7 +18,7 @@
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/syncable/syncable.h"  // TODO(tim): Bug 123674.
+#include "sync/syncable/entry.h"  // TODO(tim): Bug 123674.
 
 using content::BrowserThread;
 

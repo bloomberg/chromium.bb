@@ -14,8 +14,10 @@
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/sync_session.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_changes_version.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/time.h"
 
 using std::set;

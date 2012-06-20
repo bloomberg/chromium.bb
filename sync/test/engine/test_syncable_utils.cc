@@ -6,7 +6,9 @@
 
 #include "sync/test/engine/test_syncable_utils.h"
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/base_transaction.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/entry.h"
 
 using std::string;
 

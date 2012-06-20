@@ -43,43 +43,22 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
-#include "sync/syncable/syncable.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
 using base::Thread;
-using browser_sync::SyncBackendHost;
-using browser_sync::TestIdFactory;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
-using browser_sync::UnrecoverableErrorHandler;
 using history::HistoryBackend;
 using history::URLID;
 using history::URLRow;
-using sync_api::SyncManager;
-using sync_api::UserShare;
-using syncable::BASE_VERSION;
-using syncable::CREATE;
-using syncable::IS_DEL;
-using syncable::IS_DIR;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
-using syncable::MutableEntry;
-using syncable::SERVER_IS_DIR;
-using syncable::SERVER_VERSION;
-using syncable::SPECIFICS;
-using syncable::UNIQUE_SERVER_TAG;
-using syncable::UNITTEST;
 using syncable::WriteTransaction;
 using testing::_;
 using testing::DoAll;
-using testing::DoDefault;
-using testing::Invoke;
 using testing::Return;
 using testing::SetArgumentPointee;
-using testing::WithArgs;
 
 namespace {
 // Visits with this timestamp are treated as expired.

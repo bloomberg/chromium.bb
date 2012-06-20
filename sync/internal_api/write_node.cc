@@ -18,7 +18,7 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/util/cryptographer.h"
 
 using browser_sync::Cryptographer;

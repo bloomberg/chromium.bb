@@ -41,7 +41,9 @@
 #include "sync/protocol/preference_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/sync_session_context.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/read_transaction.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
@@ -77,7 +79,6 @@ using syncable::WriteTransaction;
 
 using syncable::BASE_VERSION;
 using syncable::CREATE;
-using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::GET_BY_CLIENT_TAG;
@@ -95,7 +96,6 @@ using syncable::PARENT_ID;
 using syncable::PREV_ID;
 using syncable::BASE_SERVER_SPECIFICS;
 using syncable::SERVER_IS_DEL;
-using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;

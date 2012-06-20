@@ -16,7 +16,7 @@ include_rules = [
   "+sync/notifier/sync_notifier_observer.h",
 
   # TODO(zea): SessionModelAssociator shouldn't need this.
-  "+sync/syncable/syncable.h",
+  "+sync/syncable",
 
   # TODO(tim): This shouldn't be needed.
   "+sync/util/cryptographer.h"

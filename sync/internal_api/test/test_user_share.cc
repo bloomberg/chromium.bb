@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/test/test_user_share.h"
 
 #include "base/compiler_specific.h"
+#include "sync/syncable/directory.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

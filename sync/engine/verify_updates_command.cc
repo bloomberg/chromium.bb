@@ -14,15 +14,16 @@
 #include "sync/engine/syncproto.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 
 namespace browser_sync {
-
-using syncable::WriteTransaction;
 
 using syncable::GET_BY_ID;
 using syncable::ModelTypeSet;
 using syncable::SYNCER;
+using syncable::WriteTransaction;
 
 namespace {
 

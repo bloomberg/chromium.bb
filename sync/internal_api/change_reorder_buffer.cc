@@ -8,17 +8,17 @@
 #include <queue>
 #include <set>
 #include <utility>  // for pair<>
-#include <vector>
 
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/base_transaction.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/entry.h"
 
 using std::numeric_limits;
 using std::pair;
 using std::queue;
 using std::set;
-using std::vector;
 
 namespace sync_api {
 

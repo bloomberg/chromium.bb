@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/read_transaction.h"
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/read_transaction.h"
 
 namespace sync_api {
 

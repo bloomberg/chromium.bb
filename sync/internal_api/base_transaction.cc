@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/base_transaction.h"
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
 #include "sync/util/cryptographer.h"
 
 using browser_sync::Cryptographer;

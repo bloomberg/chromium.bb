@@ -16,8 +16,9 @@
 #include "sync/protocol/sync_enums.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/sessions/sync_session.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/entry.h"
 #include "sync/syncable/syncable-inl.h"
-#include "sync/syncable/syncable.h"
 #include "sync/util/time.h"
 
 using browser_sync::SyncProtocolErrorType;

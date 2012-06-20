@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/user_share.h"
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
 
 namespace sync_api {
 

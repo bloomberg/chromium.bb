@@ -25,13 +25,12 @@
 #include "sync/engine/syncproto.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/verify_updates_command.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable-inl.h"
-#include "sync/syncable/syncable.h"
 
 using base::Time;
 using base::TimeDelta;
 using sync_pb::ClientCommand;
-using syncable::Blob;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::SERVER_CTIME;
 using syncable::SERVER_IS_DEL;
@@ -42,8 +41,6 @@ using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
-using syncable::SYNCER;
-using syncable::WriteTransaction;
 
 namespace browser_sync {
 

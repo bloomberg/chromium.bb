@@ -7,7 +7,7 @@ include_rules = [
   # TODO(tim): Remove everything below. Bug 131130.
   "+sync/util/cryptographer.h",
   #  Used by tests.
-  "+sync/syncable/syncable.h",
+  "+sync/syncable",
   # Used by autofill tests, which should use sync_api instead.
   "+sync/test/engine/test_id_factory.h",
 

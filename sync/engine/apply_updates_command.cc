@@ -7,7 +7,9 @@
 #include "base/location.h"
 #include "sync/engine/update_applicator.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/read_transaction.h"
+#include "sync/syncable/write_transaction.h"
 
 namespace browser_sync {
 

@@ -11,7 +11,7 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncproto.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
 
 using sync_pb::DebugInfo;
 

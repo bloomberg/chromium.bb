@@ -10,7 +10,9 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/util/cryptographer.h"
 

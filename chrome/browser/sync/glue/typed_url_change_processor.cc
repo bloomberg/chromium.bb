@@ -20,7 +20,7 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
-#include "sync/syncable/syncable.h"  // TODO(tim): Investigating bug 121587.
+#include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
 
 using content::BrowserThread;
 

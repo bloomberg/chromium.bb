@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sync/engine/process_commit_response_command.h"
+
 #include <vector>
 
 #include "base/location.h"
 #include "base/stringprintf.h"
-#include "sync/engine/process_commit_response_command.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_id.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
 #include "sync/test/engine/test_id_factory.h"
-#include "sync/protocol/bookmark_specifics.pb.h"
-#include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

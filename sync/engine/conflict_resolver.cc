@@ -15,7 +15,9 @@
 #include "sync/engine/syncer_util.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/sessions/status_controller.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using std::list;

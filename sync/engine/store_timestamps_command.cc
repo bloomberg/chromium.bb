@@ -7,7 +7,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
 
 namespace browser_sync {
 

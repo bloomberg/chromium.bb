@@ -11,8 +11,6 @@
 
 #include <string>
 
-#include "sync/syncable/syncable.h"
-
 namespace syncable {
 
 class BaseTransaction;

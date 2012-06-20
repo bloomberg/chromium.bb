@@ -32,7 +32,7 @@ class WriteTransaction : public BaseTransaction {
                    UserShare* share);
   virtual ~WriteTransaction();
 
-  // Provide access to the syncable.h transaction from the API WriteNode.
+  // Provide access to the syncable transaction from the API WriteNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
   syncable::WriteTransaction* GetWrappedWriteTrans() { return transaction_; }
 

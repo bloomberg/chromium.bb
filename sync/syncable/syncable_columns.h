@@ -6,7 +6,7 @@
 #define SYNC_SYNCABLE_SYNCABLE_COLUMNS_H_
 #pragma once
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/syncable_changes_version.h"
 
 namespace syncable {

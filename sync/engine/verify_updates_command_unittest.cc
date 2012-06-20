@@ -7,7 +7,7 @@
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
@@ -15,13 +15,10 @@
 
 namespace browser_sync {
 
-using sessions::SyncSession;
 using sessions::StatusController;
 using std::string;
-using syncable::Entry;
 using syncable::Id;
 using syncable::MutableEntry;
-using syncable::ReadTransaction;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 

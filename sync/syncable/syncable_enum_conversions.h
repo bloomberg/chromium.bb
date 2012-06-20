@@ -6,9 +6,9 @@
 #define SYNC_SYNCABLE_SYNCABLE_ENUM_CONVERSIONS_H_
 #pragma once
 
-// Keep this file in sync with syncable.h.
+// Keep this file in sync with entry_kernel.h.
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry_kernel.h"
 
 // Utility functions to get the string equivalent for some syncable
 // enums.

@@ -6,7 +6,7 @@
 #define SYNC_SYNCABLE_SYNCABLE_INL_H_
 #pragma once
 
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry_kernel.h"
 
 namespace syncable {
 

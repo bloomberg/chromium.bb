@@ -10,7 +10,10 @@
 
 #include "base/json/json_writer.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 namespace syncable {

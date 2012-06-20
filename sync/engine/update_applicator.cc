@@ -9,8 +9,10 @@
 #include "base/logging.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/sessions/session_state.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/entry.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_id.h"
+#include "sync/syncable/write_transaction.h"
 
 using std::vector;
 

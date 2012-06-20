@@ -13,7 +13,7 @@
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/syncable/syncable.h"  // TODO(tim): Remove. Bug 131130.
+#include "sync/syncable/directory.h"  // TODO(tim): Remove. Bug 131130.
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

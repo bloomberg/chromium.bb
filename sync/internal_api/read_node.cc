@@ -6,7 +6,8 @@
 
 #include "base/logging.h"
 #include "sync/internal_api/public/base_transaction.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/base_transaction.h"
+#include "sync/syncable/entry.h"
 
 namespace sync_api {
 

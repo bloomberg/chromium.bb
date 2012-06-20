@@ -20,10 +20,9 @@
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/blob.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
 #include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncable::Blob;

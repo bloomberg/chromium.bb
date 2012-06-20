@@ -36,7 +36,9 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/session_specifics.pb.h"
-#include "sync/syncable/syncable.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/read_transaction.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/get_session_name.h"
 #include "sync/util/time.h"
 #if defined(OS_LINUX)

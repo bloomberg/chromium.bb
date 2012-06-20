@@ -11,7 +11,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
-#include "sync/syncable/syncable.h"
+#include "sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
