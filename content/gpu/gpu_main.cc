@@ -186,12 +186,11 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   }
 #endif
 
-  MessageLoop::Type message_loop_type = MessageLoop::TYPE_UI;
+  MessageLoop::Type message_loop_type = MessageLoop::TYPE_IO;
 #if defined(OS_WIN)
   // Unless we're running on desktop GL, we don't need a UI message
   // loop, so avoid its use to work around apparent problems with some
   // third-party software.
-  message_loop_type = MessageLoop::TYPE_IO;
   if (command_line.HasSwitch(switches::kUseGL) &&
       command_line.GetSwitchValueASCII(switches::kUseGL) ==
           gfx::kGLImplementationDesktopName) {
