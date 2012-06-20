@@ -449,6 +449,7 @@ std::string WebRequestRedirectByRegExAction::PerlToRe2Style(
       ++i;
       if (i == perl.end()) {
         result += '$';
+        return result;
       } else if (isdigit(*i)) {
         result += '\\';
         result += *i;
