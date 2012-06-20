@@ -2737,9 +2737,6 @@
         'browser/extensions/autoupdate_interceptor.h',
         'browser/extensions/background_page_apitest.cc',
         'browser/extensions/background_scripts_apitest.cc',
-        'browser/extensions/browser_action_test_util.h',
-        'browser/extensions/browser_action_test_util_gtk.cc',
-        'browser/extensions/browser_action_test_util_mac.mm',
         'browser/extensions/chrome_app_api_browsertest.cc',
         'browser/extensions/content_script_apitest.cc',
         'browser/extensions/content_security_policy_apitest.cc',
@@ -2916,7 +2913,6 @@
         'browser/ui/views/ash/launcher/chrome_launcher_controller_browsertest.cc',
         'browser/ui/views/ash/launcher/launcher_favicon_loader_browsertest.cc',
         'browser/ui/views/ash/volume_controller_browsertest_chromeos.cc',
-        'browser/ui/views/browser_action_test_util_views.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
@@ -3184,7 +3180,6 @@
         }],
         ['OS!="linux" or toolkit_views==1', {
           'sources!': [
-            'browser/extensions/browser_action_test_util_gtk.cc',
             'browser/ui/gtk/view_id_util_browsertest.cc',
           ],
         }],
@@ -3301,10 +3296,6 @@
             'browser/spellchecker/spellcheck_host_browsertest.cc',
             # ProcessSingletonMac doesn't do anything.
             'browser/process_singleton_browsertest.cc',
-          ],
-        }, { # else: OS != "mac"
-          'sources!': [
-            'browser/extensions/browser_action_test_util_mac.mm',
           ],
         }],
         ['os_posix == 0 or chromeos == 1', {
@@ -3483,11 +3474,6 @@
         },
       ],
       'conditions': [
-        ['OS!="linux" or toolkit_views==1', {
-          'sources!': [
-            'browser/extensions/browser_action_test_util_gtk.cc',
-          ],
-        }],
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
@@ -3564,10 +3550,6 @@
           # and can build this target standalone much faster.
           'dependencies': [
             'chrome'
-          ],
-        }, { # else: OS != "mac"
-          'sources!': [
-            'browser/extensions/browser_action_test_util_mac.mm',
           ],
         }],
         ['os_posix == 1 and OS != "mac"', {

@@ -342,13 +342,6 @@ void WaitForNewTab(Browser* browser) {
   observer.Wait();
 }
 
-void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
-  WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-      content::Source<ExtensionAction>(browser_action));
-  observer.Wait();
-}
-
 void WaitForLoadStop(WebContents* tab) {
   WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,

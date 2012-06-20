@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 
 class Browser;
+class ExtensionAction;
 
 namespace gfx {
 class Rect;
@@ -27,9 +28,9 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
-#if defined(TOOLKIT_VIEWS) && defined(UNIT_TEST)
-  // Waits for a browser action at |index| to get updated.
-  void WaitForBrowserActionUpdated(int index);
+#if defined(TOOLKIT_VIEWS)
+  // Returns the ExtensionAction for the given index.
+  ExtensionAction* GetExtensionAction(int index);
 #endif
 
   // Returns whether the browser action at |index| has a non-null icon. Note

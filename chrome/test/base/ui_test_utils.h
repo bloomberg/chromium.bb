@@ -113,10 +113,6 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title);
 // race hazard. Use WindowedNotificationObserver instead.
 void WaitForNewTab(Browser* browser);
 
-// Waits for a |browser_action| to be updated. TODO(gbillock): remove this race
-// hazard. Use WindowedNotificationObserver instead.
-void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
-
 // Waits for a load stop for the specified |tab|'s controller, if the tab is
 // currently loading.  Otherwise returns immediately.
 void WaitForLoadStop(content::WebContents* tab);

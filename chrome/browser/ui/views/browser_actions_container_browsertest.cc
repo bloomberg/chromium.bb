@@ -8,8 +8,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 using extensions::Extension;
 
@@ -32,7 +34,13 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
     if (!browser_actions_bar_->HasIcon(extension_index)) {
       // The icon is loaded asynchronously and a notification is then sent to
       // observers. So we wait on it.
-      browser_actions_bar_->WaitForBrowserActionUpdated(extension_index);
+      ExtensionAction* browser_action =
+          browser_actions_bar_->GetExtensionAction(extension_index);
+
+      ui_test_utils::WindowedNotificationObserver observer(
+          chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+          content::Source<ExtensionAction>(browser_action));
+      observer.Wait();
     }
     EXPECT_TRUE(browser_actions_bar()->HasIcon(extension_index));
   }
