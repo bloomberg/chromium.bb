@@ -197,9 +197,9 @@ Downloads.prototype.scheduleIconLoad = function(elem, iconURL) {
 };
 
 /**
- * Whether the displayed list needs to be updated
- * @param {Array} array of download nodes
- * @return {boolean} If the displayed list is to be updated
+ * Returns whether the displayed list needs to be updated or not.
+ * @param {Array} downloads Array of download nodes.
+ * @return {boolean} Returns true if the displayed list is to be updated.
  */
 Downloads.prototype.isUpdateNeeded = function(downloads) {
   var size = 0;
@@ -208,7 +208,7 @@ Downloads.prototype.isUpdateNeeded = function(downloads) {
   if (size != downloads.length)
     return true;
   for (var i in this.downloads_) {
-    if(this.downloads_[i].url_ != downloads[i].url)
+    if (this.downloads_[i].url_ != downloads[i].url)
       return true;
   }
   return false;
@@ -359,7 +359,7 @@ Download.DangerType = {
   DANGEROUS_URL: 'DANGEROUS_URL',
   DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
   UNCOMMON_CONTENT: 'UNCOMMON_CONTENT'
-}
+};
 
 /**
  * Constants for the progress meter.
@@ -643,8 +643,9 @@ function load() {
 
   // TODO(jhawkins): Use a link-button here.
   var openDownloadsFolderLink = $('open-downloads-folder');
-  openDownloadsFolderLink.onclick =
-      chrome.send.bind(chrome, 'openDownloadsFolder', []);
+  openDownloadsFolderLink.onclick = function() {
+    chrome.send('openDownloadsFolder');
+  };
   openDownloadsFolderLink.oncontextmenu = function() { return false; };
 
   $('search-link').onclick = function(e) {
