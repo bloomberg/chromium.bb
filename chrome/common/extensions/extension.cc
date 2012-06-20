@@ -37,6 +37,7 @@
 #include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "crypto/sha2.h"
@@ -516,6 +517,12 @@ GURL Extension::GetBackgroundURL() const {
   }
 }
 
+bool Extension::ResourceMatches(const URLPatternSet& pattern_set,
+                                const std::string& resource) const {
+  GURL url = extension_url_.Resolve(resource);
+  return pattern_set.MatchesURL(url);
+}
+
 bool Extension::IsResourceWebAccessible(const std::string& relative_path)
     const {
   // For old manifest versions which do not specify web_accessible_resources
@@ -523,11 +530,7 @@ bool Extension::IsResourceWebAccessible(const std::string& relative_path)
   if (manifest_version_ < 2 && !HasWebAccessibleResources())
     return true;
 
-  if (web_accessible_resources_.find(relative_path) !=
-      web_accessible_resources_.end())
-    return true;
-
-  return false;
+  return ResourceMatches(web_accessible_resources_, relative_path);
 }
 
 bool Extension::HasWebAccessibleResources() const {
@@ -538,7 +541,7 @@ bool Extension::HasWebAccessibleResources() const {
 }
 
 bool Extension::IsSandboxedPage(const std::string& relative_path) const {
-  return sandboxed_pages_.find(relative_path) != sandboxed_pages_.end();
+  return ResourceMatches(sandboxed_pages_, relative_path);
 }
 
 
@@ -1604,9 +1607,12 @@ bool Extension::LoadWebAccessibleResources(string16* error) {
           errors::kInvalidWebAccessibleResource, base::IntToString(i));
       return false;
     }
-    if (relative_path[0] != '/')
-      relative_path = '/' + relative_path;
-    web_accessible_resources_.insert(relative_path);
+    URLPattern pattern(URLPattern::SCHEME_EXTENSION);
+    pattern.Parse(extension_url_.spec());
+    while (relative_path[0] == '/')
+      relative_path = relative_path.substr(1, relative_path.length() - 1);
+    pattern.SetPath(pattern.path() + relative_path);
+    web_accessible_resources_.AddPattern(pattern);
   }
 
   return true;
@@ -1628,9 +1634,12 @@ bool Extension::LoadSandboxedPages(string16* error) {
           errors::kInvalidSandboxedPage, base::IntToString(i));
       return false;
     }
-    if (relative_path[0] != '/')
-      relative_path = '/' + relative_path;
-    sandboxed_pages_.insert(relative_path);
+    URLPattern pattern(URLPattern::SCHEME_EXTENSION);
+    pattern.Parse(extension_url_.spec());
+    while (relative_path[0] == '/')
+      relative_path = relative_path.substr(1, relative_path.length() - 1);
+    pattern.SetPath(pattern.path() + relative_path);
+    sandboxed_pages_.AddPattern(pattern);
   }
 
   if (manifest_->HasPath(keys::kSandboxedPagesCSP)) {

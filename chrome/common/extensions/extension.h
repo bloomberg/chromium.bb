@@ -346,6 +346,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return GetResourceURL(url(), relative_path);
   }
 
+  // Returns true if the resource matches a pattern in the pattern_set.
+  bool ResourceMatches(const URLPatternSet& pattern_set,
+                       const std::string& resource) const;
+
   // Returns true if the specified resource is web accessible.
   bool IsResourceWebAccessible(const std::string& relative_path) const;
 
@@ -1003,11 +1007,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   extensions::CommandMap named_commands_;
 
   // Optional list of web accessible extension resources.
-  base::hash_set<std::string> web_accessible_resources_;
+  URLPatternSet web_accessible_resources_;
 
   // Optional list of extension pages that are sandboxed (served from a unique
   // origin with a different Content Security Policy).
-  base::hash_set<std::string> sandboxed_pages_;
+  URLPatternSet sandboxed_pages_;
 
   // Content Security Policy that should be used to enforce the sandbox used
   // by sandboxed pages (guaranteed to have the "sandbox" directive without the

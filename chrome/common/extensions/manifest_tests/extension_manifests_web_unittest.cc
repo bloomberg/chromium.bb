@@ -32,21 +32,38 @@ TEST_F(ExtensionManifestTest, WebAccessibleResources) {
   scoped_refptr<Extension> extension4(
       LoadAndExpectSuccess("web_accessible_resources_4.json"));
 
+  // Default manifest version with wildcard web accessible resource.
+  scoped_refptr<Extension> extension5(
+      LoadAndExpectSuccess("web_accessible_resources_5.json"));
+
+  // Default manifest version with wildcard with specific path and extension.
+  scoped_refptr<Extension> extension6(
+      LoadAndExpectSuccess("web_accessible_resources_6.json"));
+
   EXPECT_TRUE(extension1->HasWebAccessibleResources());
   EXPECT_FALSE(extension2->HasWebAccessibleResources());
   EXPECT_TRUE(extension3->HasWebAccessibleResources());
   EXPECT_FALSE(extension4->HasWebAccessibleResources());
+  EXPECT_TRUE(extension5->HasWebAccessibleResources());
+  EXPECT_TRUE(extension6->HasWebAccessibleResources());
 
-  EXPECT_TRUE(extension1->IsResourceWebAccessible("/test"));
-  EXPECT_FALSE(extension1->IsResourceWebAccessible("/none"));
+  EXPECT_TRUE(extension1->IsResourceWebAccessible("test"));
+  EXPECT_FALSE(extension1->IsResourceWebAccessible("none"));
 
-  EXPECT_FALSE(extension2->IsResourceWebAccessible("/test"));
+  EXPECT_FALSE(extension2->IsResourceWebAccessible("test"));
 
-  EXPECT_TRUE(extension3->IsResourceWebAccessible("/test"));
-  EXPECT_FALSE(extension3->IsResourceWebAccessible("/none"));
+  EXPECT_TRUE(extension3->IsResourceWebAccessible("test"));
+  EXPECT_FALSE(extension3->IsResourceWebAccessible("none"));
 
-  EXPECT_TRUE(extension4->IsResourceWebAccessible("/test"));
-  EXPECT_TRUE(extension4->IsResourceWebAccessible("/none"));
+  EXPECT_TRUE(extension4->IsResourceWebAccessible("test"));
+  EXPECT_TRUE(extension4->IsResourceWebAccessible("none"));
+
+  EXPECT_TRUE(extension5->IsResourceWebAccessible("anything"));
+  EXPECT_TRUE(extension5->IsResourceWebAccessible("path/anything"));
+
+  EXPECT_TRUE(extension6->IsResourceWebAccessible("path/anything.ext"));
+  EXPECT_FALSE(extension6->IsResourceWebAccessible("anything.ext"));
+  EXPECT_FALSE(extension6->IsResourceWebAccessible("path/anything.badext"));
 }
 
 TEST_F(ExtensionManifestTest, WebIntents) {

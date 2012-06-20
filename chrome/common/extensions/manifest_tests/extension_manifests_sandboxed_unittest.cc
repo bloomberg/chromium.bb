@@ -24,6 +24,14 @@ TEST_F(ExtensionManifestTest, SandboxedPages) {
   scoped_refptr<Extension> extension3(
       LoadAndExpectSuccess("sandboxed_pages_valid_3.json"));
 
+  // Sandboxed pages specified with wildcard, no custom CSP value.
+  scoped_refptr<Extension> extension4(
+      LoadAndExpectSuccess("sandboxed_pages_valid_4.json"));
+
+  // Sandboxed pages specified with filename wildcard, no custom CSP value.
+  scoped_refptr<Extension> extension5(
+      LoadAndExpectSuccess("sandboxed_pages_valid_5.json"));
+
   const char kSandboxedCSP[] = "sandbox allow-scripts allow-forms";
   const char kDefaultCSP[] =
       "script-src 'self' chrome-extension-resource:; object-src 'self'";
@@ -37,6 +45,12 @@ TEST_F(ExtensionManifestTest, SandboxedPages) {
   EXPECT_EQ(kCustomSandboxedCSP,
       extension3->GetResourceContentSecurityPolicy("/test"));
   EXPECT_EQ(kDefaultCSP, extension3->GetResourceContentSecurityPolicy("/none"));
+  EXPECT_EQ(kSandboxedCSP,
+      extension4->GetResourceContentSecurityPolicy("/test"));
+  EXPECT_EQ(kSandboxedCSP,
+      extension5->GetResourceContentSecurityPolicy("/path/test.ext"));
+  EXPECT_EQ(kDefaultCSP,
+      extension5->GetResourceContentSecurityPolicy("/test"));
 
   Testcase testcases[] = {
     Testcase("sandboxed_pages_invalid_1.json",
