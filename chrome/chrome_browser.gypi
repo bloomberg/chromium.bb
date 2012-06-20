@@ -4731,7 +4731,6 @@
             'browser/managed_mode.h',
             'browser/net/gaia/gaia_oauth_fetcher.cc',
             'browser/ui/browser.cc',
-            'browser/ui/browser_init.cc',
             'browser/ui/browser_list.cc',
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',
