@@ -71,9 +71,10 @@ class UI_EXPORT AcceleratorManager {
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const Accelerator& accelerator) const;
 
- private:
+  // Returns false when Process() should never handle the |accelerator|.
   bool ShouldHandle(const Accelerator& accelerator) const;
 
+ private:
   // The accelerators and associated targets.
   typedef std::list<AcceleratorTarget*> AcceleratorTargetList;
   // This construct pairs together a |bool| (denoting whether the list contains

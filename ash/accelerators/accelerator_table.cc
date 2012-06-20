@@ -130,6 +130,13 @@ const AcceleratorData kAcceleratorData[] = {
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
+const AcceleratorAction kReservedActions[] = {
+  CYCLE_BACKWARD_MRU,
+  CYCLE_FORWARD_MRU,
+};
+
+const size_t kReservedActionsLength = arraysize(kReservedActions);
+
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,

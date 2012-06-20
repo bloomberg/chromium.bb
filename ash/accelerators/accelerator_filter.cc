@@ -6,31 +6,47 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 
+namespace ash {
 namespace {
 
 const int kModifierFlagMask = (ui::EF_SHIFT_DOWN |
                                ui::EF_CONTROL_DOWN |
                                ui::EF_ALT_DOWN);
 
-// Returns true if an Ash accelerator should be processed now.
-bool ShouldProcessAcceleratorsNow(aura::Window* target) {
+// Returns true if the |accelerator| should be processed now, inside Ash's env
+// event filter.
+bool ShouldProcessAcceleratorsNow(const ui::Accelerator& accelerator,
+                                  aura::Window* target) {
   if (!target)
     return true;
-  if (target == ash::Shell::GetPrimaryRootWindow())
+  if (target == Shell::GetPrimaryRootWindow())
     return true;
-  // Unless |target| is the root window, return false to let the custom focus
-  // manager (see ash/shell.cc) handle Ash accelerators.
-  return false;
+
+  // A full screen window should be able to handle all key events including the
+  // reserved ones.
+  if (wm::IsWindowFullscreen(target)) {
+    // TODO(yusukes): On Chrome OS, only browser and flash windows can be full
+    // screen. Launching an app in "open full-screen" mode is not supported yet.
+    // That makes the IsWindowFullscreen() check above almost meaningless
+    // because a browser and flash window do handle Ash accelerators anyway
+    // before they're passed to a page or flash content.
+    return false;
+  }
+
+  // Unless |target| is in the full screen state, handle reserved accelerators
+  // such as Alt+Tab now.
+  return Shell::GetInstance()->accelerator_controller()->IsReservedAccelerator(
+      accelerator);
 }
 
 }  // namespace
 
-namespace ash {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,12 +68,13 @@ bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
     return false;
   if (event->is_char())
     return false;
-  if (!ShouldProcessAcceleratorsNow(target))
-    return false;
 
   ui::Accelerator accelerator(event->key_code(),
                               event->flags() & kModifierFlagMask);
   accelerator.set_type(type);
+
+  if (!ShouldProcessAcceleratorsNow(accelerator, target))
+    return false;
   return Shell::GetInstance()->accelerator_controller()->Process(accelerator);
 }
 

@@ -261,6 +261,9 @@ void AcceleratorController::Init() {
   for (size_t i = 0; i < kActionsAllowedAtLockScreenLength; ++i) {
     actions_allowed_at_lock_screen_.insert(kActionsAllowedAtLockScreen[i]);
   }
+  for (size_t i = 0; i < kReservedActionsLength; ++i) {
+    reserved_actions_.insert(kReservedActions[i]);
+  }
 
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     ui::Accelerator accelerator(kAcceleratorData[i].keycode,
@@ -300,6 +303,22 @@ bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
 bool AcceleratorController::IsRegistered(
     const ui::Accelerator& accelerator) const {
   return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
+}
+
+bool AcceleratorController::IsReservedAccelerator(
+    const ui::Accelerator& accelerator) const {
+  const ui::Accelerator remapped_accelerator = ime_control_delegate_.get() ?
+      ime_control_delegate_->RemapAccelerator(accelerator) : accelerator;
+
+  if (!accelerator_manager_->ShouldHandle(remapped_accelerator))
+    return false;
+
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerators_.find(remapped_accelerator);
+  if (iter == accelerators_.end())
+    return false;  // not an accelerator.
+
+  return reserved_actions_.find(iter->second) != reserved_actions_.end();
 }
 
 bool AcceleratorController::PerformAction(int action,

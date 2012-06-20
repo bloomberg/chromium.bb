@@ -90,6 +90,13 @@ ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
 // The number of elements in kAcceleratorData.
 ASH_EXPORT extern const size_t kAcceleratorDataLength;
 
+// Actions that should be handled very early in Ash unless the current target
+// window is full-screen.
+ASH_EXPORT extern const AcceleratorAction kReservedActions[];
+
+// The number of elements in kReservedActions.
+ASH_EXPORT extern const size_t kReservedActionsLength;
+
 // Actions allowed while user is not signed in or screen is locked.
 ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[];
 

@@ -38,6 +38,14 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
   }
 }
 
+TEST(AcceleratorTableTest, CheckDuplicatedReservedActions) {
+  std::set<AcceleratorAction> actions;
+  for (size_t i = 0; i < kReservedActionsLength; ++i) {
+    EXPECT_TRUE(actions.insert(kReservedActions[i]).second)
+        << "Duplicated action: " << kReservedActions[i];
+  }
+}
+
 TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtLoginOrLockScreen) {
   std::set<AcceleratorAction> actions;
   for (size_t i = 0; i < kActionsAllowedAtLoginOrLockScreenLength; ++i) {
