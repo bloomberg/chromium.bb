@@ -11,6 +11,17 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
+namespace {
+
+// Checks to make sure this window is a direct child of the Root Window. We do
+// this to mirror ash's more interesting behaviour: it checks to make sure the
+// window it's going to activate is a child of one a few container windows.
+bool IsChildOfRootWindow(aura::Window* window) {
+  return window && window->parent() == window->GetRootWindow();
+}
+
+}  // namespace
+
 namespace aura {
 
 DesktopActivationClient::DesktopActivationClient(RootWindow* root_window)
@@ -86,7 +97,7 @@ Window* DesktopActivationClient::GetActiveWindow() {
 
 bool DesktopActivationClient::OnWillFocusWindow(Window* window,
                                                 const Event* event) {
-  return CanActivateWindow(window);
+  return CanActivateWindow(GetActivatableWindow(window));
 }
 
 void DesktopActivationClient::OnWindowFocused(aura::Window* window) {
@@ -97,7 +108,8 @@ bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
   return window &&
       window->IsVisible() &&
       (!aura::client::GetActivationDelegate(window) ||
-        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL));
+        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL)) &&
+      IsChildOfRootWindow(window);
 }
 
 aura::Window* DesktopActivationClient::GetActivatableWindow(
