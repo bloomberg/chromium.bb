@@ -827,7 +827,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   switch (error) {
     case media::PIPELINE_OK:
-      LOG(DFATAL) << "PIPELINE_OK isn't an error!";
+      NOTREACHED() << "PIPELINE_OK isn't an error!";
       break;
 
     case media::PIPELINE_ERROR_NETWORK:
@@ -858,6 +858,10 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
       // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
       // Webkit (see http://crbug.com/124486).
       SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
+      break;
+
+    case media::PIPELINE_STATUS_MAX:
+      NOTREACHED() << "PIPELINE_STATUS_MAX isn't a real error!";
       break;
   }
 

@@ -12,6 +12,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/filter_host.h"
 #include "media/base/pipeline.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
@@ -113,14 +114,17 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
 }
 
 void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
-                                 const PipelineStatusCB& status_cb,
+                                 const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize,
-        this, stream, status_cb, statistics_cb));
+        this, stream, orig_status_cb, statistics_cb));
     return;
   }
+
+  PipelineStatusCB status_cb = CreateUMAReportingPipelineCB(
+      "Media.GpuVideoDecoderInitializeStatus", orig_status_cb);
 
   DCHECK(!demuxer_stream_);
   if (!stream) {
