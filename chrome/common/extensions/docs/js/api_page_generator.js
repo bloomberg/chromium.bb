@@ -653,9 +653,14 @@ function isPermittedOnChannel(channel) {
   return false;
 }
 
-function hasCallback(parameters) {
+// Returns true if the last parameter in |parameters| is a fully defined
+// callback function. This requires that the callback function has a defined
+// parameters list. Callback functions without parameter lists cannot be
+// described in the API documentation.
+function hasFullyDefinedCallback(parameters) {
   return (parameters.length > 0 &&
-          parameters[parameters.length - 1].type == 'function');
+          parameters[parameters.length - 1].type == 'function' &&
+          parameters[parameters.length - 1].hasOwnProperty('parameters'));
 }
 
 function getCallbackParameters(parameters) {

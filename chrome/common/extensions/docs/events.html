@@ -192,12 +192,6 @@
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">
-Methods
-</a>
-              <ol>
-              </ol>
-            </li><li>
               <a href="#declarative">Declarative Event Handlers</a>
               <ol>
                 <li>
@@ -290,17 +284,6 @@ you can see that the function has a single parameter:
 a <a href="tabs.html#type-Tab">Tab</a> object
 that has details about the newly created tab.
 </p>
-<a name="H2-0"></a><h2>
-Methods
-</h2>
-<p>
-You can invoke the following methods on any <code>Event</code> object:
-</p>
-<pre>void addListener(function callback(...))
-void removeListener(function callback(...))
-bool hasListener(function callback(...))
-</pre>
-<!-- [PENDING: explain removeListener and hasListener] -->
 <h2 id="declarative">Declarative Event Handlers</h2>
 <p>
 The declarative event handlers provide a means to define rules consisting of
@@ -440,10 +423,37 @@ refers to an array of rules including filled optional parameters.
               <h4>addListener</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.addListener</span>()</div>
+                  <span>event.addListener</span>(<span class="null"><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
               <div class="description">
+                <p>Registers an event listener <em>callback</em> to an event.</p>
                 <!-- PARAMETERS -->
+                <h4>Parameters</h4>
                 <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Called when an event occurs. The parameters of this function depend on the type of event.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
                 </dl>
                 <!-- RETURNS -->
                 <dl>
@@ -644,7 +654,7 @@ refers to an array of rules including filled optional parameters.
                   <div>
                   <h4>Callback function</h4>
                   <p>
-                    The callback <em>parameter</em> should specify a function
+                    The <em>callback</em> parameter should specify a function
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
@@ -688,15 +698,65 @@ refers to an array of rules including filled optional parameters.
             </div><div class="apiItem">
               <a name="method-Event-hasListener"></a> <!-- method-anchor -->
               <h4>hasListener</h4>
-              <div class="summary">
+              <div class="summary"><span>boolean</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.hasListener</span>()</div>
+                  <span>event.hasListener</span>(<span class="null"><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <!-- PARAMETERS -->
+                <h4>Parameters</h4>
                 <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Listener whose registration status shall be tested.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
                 </dl>
                 <!-- RETURNS -->
+                <h4>Returns</h4>
                 <dl>
+                  <div>
+                    <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>True if <em>callback</em> is registered to the event.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
                 </dl>
                 <!-- CALLBACK -->
                 <!-- MIN_VERSION -->
@@ -704,7 +764,7 @@ refers to an array of rules including filled optional parameters.
             </div><div class="apiItem">
               <a name="method-Event-hasListeners"></a> <!-- method-anchor -->
               <h4>hasListeners</h4>
-              <div class="summary">
+              <div class="summary"><span>boolean</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>event.hasListeners</span>()</div>
               <div class="description">
@@ -712,7 +772,31 @@ refers to an array of rules including filled optional parameters.
                 <dl>
                 </dl>
                 <!-- RETURNS -->
+                <h4>Returns</h4>
                 <dl>
+                  <div>
+                    <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>True if any event listeners are registered to the event.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
                 </dl>
                 <!-- CALLBACK -->
                 <!-- MIN_VERSION -->
@@ -722,10 +806,37 @@ refers to an array of rules including filled optional parameters.
               <h4>removeListener</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.removeListener</span>()</div>
+                  <span>event.removeListener</span>(<span class="null"><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
               <div class="description">
+                <p>Deregisters an event listener <em>callback</em> from an event.</p>
                 <!-- PARAMETERS -->
+                <h4>Parameters</h4>
                 <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Listener that shall be unregistered.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
                 </dl>
                 <!-- RETURNS -->
                 <dl>
