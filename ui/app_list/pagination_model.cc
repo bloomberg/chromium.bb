@@ -27,6 +27,10 @@ void PaginationModel::SetTotalPages(int total_pages) {
     return;
 
   total_pages_ = total_pages;
+  if (selected_page_ < 0)
+    SelectPage(0, false /* animate */);
+  if (selected_page_ >= total_pages_)
+    SelectPage(total_pages_ - 1, false /* animate */);
   FOR_EACH_OBSERVER(PaginationModelObserver,
                     observers_,
                     TotalPagesChanged());

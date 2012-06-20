@@ -138,7 +138,6 @@ class PaginationModelTest : public testing::Test {
 };
 
 TEST_F(PaginationModelTest, SelectPage) {
-  pagination_.SelectPage(0, false /* animate */);
   pagination_.SelectPage(2, false /* animate */);
   pagination_.SelectPage(4, false /* animate */);
   pagination_.SelectPage(3, false /* animate */);
@@ -146,13 +145,13 @@ TEST_F(PaginationModelTest, SelectPage) {
 
   EXPECT_EQ(0, observer_.transition_start_count());
   EXPECT_EQ(0, observer_.transition_end_count());
-  EXPECT_EQ(5, observer_.selection_count());
-  EXPECT_EQ(std::string("0 2 4 3 1"), observer_.selected_pages());
+  EXPECT_EQ(4, observer_.selection_count());
+  EXPECT_EQ(std::string("2 4 3 1"), observer_.selected_pages());
 
   // Nothing happens if select the same page.
   pagination_.SelectPage(1, false /* animate */);
-  EXPECT_EQ(5, observer_.selection_count());
-  EXPECT_EQ(std::string("0 2 4 3 1"), observer_.selected_pages());
+  EXPECT_EQ(4, observer_.selection_count());
+  EXPECT_EQ(std::string("2 4 3 1"), observer_.selected_pages());
 }
 
 TEST_F(PaginationModelTest, SelectPageAnimated) {
@@ -367,6 +366,26 @@ TEST_F(PaginationModelTest, LongScroll) {
   pagination_.EndScroll();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
+}
+
+TEST_F(PaginationModelTest, SelectedPageIsLost) {
+  pagination_.SetTotalPages(2);
+  // The selected page is set to 0 once the total number of pages are set.
+  EXPECT_EQ(0, pagination_.selected_page());
+
+  pagination_.SelectPage(1, false /* animate */);
+  EXPECT_EQ(1, pagination_.selected_page());
+
+  // The selected page is unchanged if it's still valid.
+  pagination_.SetTotalPages(3);
+  EXPECT_EQ(1, pagination_.selected_page());
+  pagination_.SetTotalPages(2);
+  EXPECT_EQ(1, pagination_.selected_page());
+
+  // But if the currently selected_page exceeds the total number of pages,
+  // it automatically switches to the last page.
+  pagination_.SetTotalPages(1);
+  EXPECT_EQ(0, pagination_.selected_page());
 }
 
 }  // namespace test

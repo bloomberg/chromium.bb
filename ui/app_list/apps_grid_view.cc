@@ -290,8 +290,6 @@ void AppsGridView::Update() {
 void AppsGridView::UpdatePaginationModel() {
   pagination_model_->SetTotalPages(
       (child_count() - 1) / tiles_per_page() + 1);
-  if (pagination_model_->selected_page() < 0)
-    pagination_model_->SelectPage(0, false /* animate */);
 }
 
 AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
