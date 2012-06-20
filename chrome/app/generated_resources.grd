@@ -8534,10 +8534,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         The connection is encrypted using <ph name="CIPHER">$1<ex>AES_128</ex></ph>, with <ph name="MAC">$2<ex>SHA1</ex></ph> for message authentication and <ph name="KX">$3<ex>RSA</ex></ph> as the key exchange mechanism.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_NO_COMPRESSION" desc="This message is displayed when no SSL compression is in use.">
-        The connection is not compressed.
+        The connection does not use SSL compression.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_COMPRESSION_DETAILS" desc="This message contains the compression algorithm in use on an SSL connection">
-        The connection is compressed with <ph name="COMPRESSION">$1<ex>DEFLATE</ex></ph>.
+        The connection uses <ph name="COMPRESSION">$1<ex>DEFLATE</ex></ph> SSL compression.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE" desc="This message is displayed when the first secure connection to a site failed and Chrome retried with an older protocol.">
         The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.
