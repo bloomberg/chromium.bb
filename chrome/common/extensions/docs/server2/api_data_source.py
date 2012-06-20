@@ -5,6 +5,7 @@
 import json
 import os
 
+from handlebar_dict_generator import HandlebarDictGenerator
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
 
@@ -17,7 +18,9 @@ class APIDataSource(object):
     self._base_paths = base_paths
 
   def _LoadAPI(self, api):
-    return json.loads(json_comment_eater.Nom(api))[0]
+    generator = HandlebarDictGenerator(
+        json.loads(json_comment_eater.Nom(api))[0])
+    return generator.Generate()
 
   def __getitem__(self, key):
     return self.get(key)

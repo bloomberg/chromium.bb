@@ -1,0 +1,54 @@
+[
+  {
+    "namespace": "tester",
+    "types": [
+      {
+        "id": "TypeA",
+        "type": "object",
+        "description": "A cool thing.",
+        "properties": {
+          "a": {"nodoc": true, "type": "string", "minimum": 0},
+          "b": {"type": "array", "optional": true, "items": {"$ref": "TypeA"}, "description": "List of TypeA."}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Gets stuff.",
+        "parameters": [
+          {
+            "name": "a",
+            "description": "a param",
+            "choices": [
+              {"type": "string"},
+              {"type": "array", "items": {"type": "string"}, "minItems": 1}
+            ]
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "TypeA"} }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "EventA",
+        "type": "function",
+        "description": "A cool event.",
+        "parameters": [
+          {"type": "string", "name": "id"},
+          {
+            "$ref": "TypeA",
+            "name": "bookmark"
+          }
+        ]
+      }
+    ]
+  }
+]

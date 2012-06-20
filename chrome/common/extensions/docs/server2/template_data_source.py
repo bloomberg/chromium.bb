@@ -24,7 +24,7 @@ class TemplateDataSource(object):
     if not template:
       return ''
       # TODO error handling
-    return template.render(context, {'templates': self}).text
+    return template.render(context, {'partials': self}).text
 
   def __getitem__(self, key):
     return self.get(key)

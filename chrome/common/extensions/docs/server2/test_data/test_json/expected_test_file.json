@@ -1,0 +1,86 @@
+{
+  "functions": [
+    {
+      "callback": {
+        "name": "callback",
+        "parameters": [
+          {
+            "name": "results",
+            "type": "ARRAY",
+            "array": {
+              "name": "resultsElement",
+              "ref": "TypeA",
+              "type": "REF",
+              "optional": false,
+              "properties": [],
+              "description": null
+            },
+            "optional": false,
+            "properties": [],
+            "description": null
+          }
+        ]
+      },
+      "name": "get",
+      "parameters": [
+        {
+          "name": "a",
+          "type": "CHOICES",
+          "choices": [
+            {
+              "optional": true,
+              "properties": [],
+              "type": "STRING",
+              "name": "a",
+              "description": null
+            },
+            {
+              "name": "a",
+              "type": "ARRAY",
+              "array": {
+                "optional": false,
+                "properties": [],
+                "type": "STRING",
+                "name": "aElement",
+                "description": null
+              },
+              "optional": true,
+              "properties": [],
+              "description": null
+            }
+          ],
+          "optional": false,
+          "properties": [],
+          "description": "a param"
+        }
+      ],
+      "description": "Gets stuff."
+    }
+  ],
+  "name": "tester",
+  "types": [
+    {
+      "properties": [
+        {
+          "name": "b",
+          "type": "ARRAY",
+          "array": {
+            "name": "bElement",
+            "ref": "TypeA",
+            "type": "REF",
+            "optional": false,
+            "properties": [],
+            "description": null
+          },
+          "optional": true,
+          "properties": [],
+          "description": "List of TypeA."
+        }
+      ],
+      "functions": [],
+      "type": "OBJECT",
+      "name": "TypeA",
+      "description": "A cool thing."
+    }
+  ]
+}
