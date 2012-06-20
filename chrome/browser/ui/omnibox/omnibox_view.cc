@@ -30,20 +30,12 @@ string16 OmniboxView::GetClipboardText() {
                                    ui::Clipboard::BUFFER_STANDARD)) {
     string16 text;
     clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
-
-    // If the input contains non-newline whitespace, treat it as
-    // search data and convert newlines to spaces.  For instance, a
-    // street address.
-    // TODO(shess): It may also make sense to ignore leading or
-    // trailing whitespace when making this determination.
-    for (size_t i = 0; i < text.size(); ++i) {
-      if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r')
-        return StripJavascriptSchemas(CollapseWhitespace(text, false));
-    }
-
-    // Otherwise, the only whitespace in |text| is newlines.  Remove
-    // these entirely, because users are most likely pasting URLs
-    // split into multiple lines by terminals, email programs, etc.
+    // Note: Unlike in the find popup and textfield view, here we completely
+    // remove whitespace strings containing newlines.  We assume users are
+    // most likely pasting in URLs that may have been split into multiple
+    // lines in terminals, email programs, etc., and so linebreaks indicate
+    // completely bogus whitespace that would just cause the input to be
+    // invalid.
     return StripJavascriptSchemas(CollapseWhitespace(text, true));
   }
 
