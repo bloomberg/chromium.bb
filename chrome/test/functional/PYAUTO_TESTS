@@ -127,6 +127,8 @@
       '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
       '-policy.PolicyTest.testExtensionInstallFromForceList',
+      # crbug.com/133832
+      '-policy.PolicyTest.testPolicyToPrefMapping',
       # crbug.com/47935
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
       # crbug.com/83827
