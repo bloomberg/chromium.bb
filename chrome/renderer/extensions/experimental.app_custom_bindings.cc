@@ -33,7 +33,7 @@ v8::Handle<v8::Value> CreateBlob(const v8::Arguments &args) {
 
   std::string blob_file_path(*v8::String::Utf8Value(args[0]));
   std::string blob_length_string(*v8::String::Utf8Value(args[1]));
-  int64 blob_length;
+  int64 blob_length = 0;
   DCHECK(base::StringToInt64(blob_length_string, &blob_length));
   WebKit::WebBlob web_blob = WebBlob::createFromFile(
       WebString::fromUTF8(blob_file_path), blob_length);
