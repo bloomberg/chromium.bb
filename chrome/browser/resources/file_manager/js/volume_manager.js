@@ -190,12 +190,29 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
 
   if (event.mountType == 'gdata') {
     if (event.status == 'success') {
-      if (event.eventType == 'mount')
-        this.setGDataStatus_(VolumeManager.GDataStatus.MOUNTED);
-      else if (event.eventType == 'unmount')
+      if (event.eventType == 'mount') {
+        this.waitGDataLoaded_(event.mountPath,
+            this.setGDataStatus_.bind(this, VolumeManager.GDataStatus.MOUNTED));
+      } else if (event.eventType == 'unmount') {
         this.setGDataStatus_(VolumeManager.GDataStatus.UMOUNTED);
+      }
     }
   }
+};
+
+/**
+ * First access to GDrive takes time (to fetch data from the cloud).
+ * We want to change state to MOUNTED (likely from MOUNTING) when the
+ * drive ready to operate.
+ *
+ * @param {string} mountPath GData mount path.
+ * @param {function()} callback To be called when waiting finish.
+ * @private
+ */
+VolumeManager.prototype.waitGDataLoaded_ = function(mountPath, callback) {
+  chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+    filesystem.root.getDirectory(mountPath, {}, function() { callback(); });
+  });
 };
 
 /**
@@ -252,8 +269,6 @@ VolumeManager.prototype.mountGData = function(successCallback, errorCallback) {
     timeout = null;
   }, VolumeManager.MOUNTING_DELAY);
   this.mount_('', 'gdata', function(mountPath) {
-    if (timeout !== null)
-      clearTimeout(timeout);
     successCallback(mountPath);
   }, function(error) {
     if (self.getGDataStatus() != VolumeManager.GDataStatus.MOUNTED)
