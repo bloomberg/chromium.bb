@@ -11,16 +11,20 @@
 
 using WebKit::WebFrame;
 
-namespace webkit_media {
+namespace {
 
 // BufferedDataSource has an intermediate buffer, this value governs the initial
 // size of that buffer. It is set to 32KB because this is a typical read size
 // of FFmpeg.
-static const int kInitialReadBufferSize = 32768;
+const int kInitialReadBufferSize = 32768;
 
 // Number of cache misses we allow for a single Read() before signaling an
 // error.
-static const int kNumCacheMissRetries = 3;
+const int kNumCacheMissRetries = 3;
+
+}  // namespace
+
+namespace webkit_media {
 
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
@@ -32,7 +36,7 @@ BufferedDataSource::BufferedDataSource(
       buffered_bytes_(0),
       streaming_(false),
       frame_(frame),
-      loader_(NULL),
+      is_downloading_data_(false),
       read_size_(0),
       read_buffer_(NULL),
       last_read_start_(0),
