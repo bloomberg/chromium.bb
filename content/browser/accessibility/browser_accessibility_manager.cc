@@ -286,8 +286,7 @@ void BrowserAccessibilityManager::UpdateNode(
 
   // Build a new tree, reusing old nodes if possible. Each node that's
   // reused will have its reference count incremented by one.
-  current = CreateAccessibilityTree(
-      current_parent, src, current_index_in_parent, true);
+  CreateAccessibilityTree(current_parent, src, current_index_in_parent, true);
 
   // Decrement the reference count of all nodes in the old tree, which will
   // delete any nodes no longer needed.
