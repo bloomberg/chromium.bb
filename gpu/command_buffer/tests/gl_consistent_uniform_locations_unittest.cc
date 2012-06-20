@@ -65,17 +65,17 @@ TEST_F(ConsistenUniformLocationsTest, Basic) {
     { GL_FLOAT_VEC4, 1, "u_colorA", },
   };
 
+  GLuint program = GLTestHelper::LoadProgram(v_shader_str, f_shader_str);
+
   GLint locations[4];
 
   glGetUniformLocationsCHROMIUM(
-      defs, arraysize(defs), arraysize(locations), locations);
+      program, defs, arraysize(defs), arraysize(locations), locations);
 
   GLint u_colorCLocation = locations[0];
   GLint u_colorB0Location = locations[1];
   GLint u_colorB1Location = locations[2];
   GLint u_colorALocation = locations[3];
-
-  GLuint program = GLTestHelper::LoadProgram(v_shader_str, f_shader_str);
 
   GLint position_loc = glGetAttribLocation(program, "a_position");
 

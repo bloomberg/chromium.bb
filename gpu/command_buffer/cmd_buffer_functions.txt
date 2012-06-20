@@ -185,5 +185,5 @@ GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GL
 GL_APICALL void         GL_APIENTRY glGenMailboxCHROMIUM (GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glProduceTextureCHROMIUM (GLenumTextureTarget target, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glConsumeTextureCHROMIUM (GLenumTextureTarget target, const GLbyte* mailbox);
-GL_APICALL void         GL_APIENTRY glGetUniformLocationsCHROMIUM (const GLUniformDefinitionCHROMIUM* uniforms, GLsizei count, GLsizei max_locations, GLint* locations);
+GL_APICALL void         GL_APIENTRY glGetUniformLocationsCHROMIUM (GLidProgram program, const GLUniformDefinitionCHROMIUM* uniforms, GLsizei count, GLsizei max_locations, GLint* locations);
 

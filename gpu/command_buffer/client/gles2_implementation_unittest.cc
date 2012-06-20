@@ -8,6 +8,7 @@
 
 #include <GLES2/gl2ext.h>
 #include "gpu/command_buffer/client/client_test_helper.h"
+#include "gpu/command_buffer/client/program_info_manager.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/compiler_specific.h"
@@ -443,6 +444,12 @@ class GLES2ImplementationTest : public testing::Test {
 
   ExpectedMemoryInfo GetExpectedResultMemory(size_t size) {
     return transfer_buffer_->GetExpectedResultMemory(size);
+  }
+
+  // Sets the ProgramInfoManager. The manager will be owned
+  // by the ShareGroup.
+  void SetProgramInfoManager(ProgramInfoManager* manager) {
+    gl_->share_group()->set_program_info_manager(manager);
   }
 
   int CheckError() {
@@ -2558,7 +2565,43 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   EXPECT_EQ(0u, available);
 }
 
+namespace {
+
+class MockProgramInfoManager : public ProgramInfoManager {
+ public:
+  virtual ~MockProgramInfoManager() {};
+
+  MOCK_METHOD1(CreateInfo, void(GLuint program));
+
+  MOCK_METHOD1(DeleteInfo, void(GLuint program));
+
+  MOCK_METHOD4(GetProgramiv, bool(
+      GLES2Implementation* gl, GLuint program, GLenum pname, GLint* params));
+
+  MOCK_METHOD3(GetAttribLocation, GLint(
+      GLES2Implementation* gl, GLuint program, const char* name));
+
+  MOCK_METHOD3(GetUniformLocation, GLint(
+      GLES2Implementation* gl, GLuint program, const char* name));
+
+  MOCK_METHOD8(GetActiveAttrib, bool(
+      GLES2Implementation* gl,
+      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
+      GLint* size, GLenum* type, char* name));
+
+  MOCK_METHOD8(GetActiveUniform, bool(
+      GLES2Implementation* gl,
+      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
+      GLint* size, GLenum* type, char* name));
+};
+
+}  // anonymous namespace
+
 TEST_F(GLES2ImplementationTest, GetUniformLocationsCHROMIUM) {
+  MockProgramInfoManager* manager = new MockProgramInfoManager();
+  SetProgramInfoManager(manager);
+
+  const GLuint kProgramId = 123;
   static const GLUniformDefinitionCHROMIUM good_defs[] = {
     { GL_FLOAT_VEC4, 1, "moo", },
     { GL_FLOAT_VEC4, 4, "bar", },
@@ -2573,19 +2616,30 @@ TEST_F(GLES2ImplementationTest, GetUniformLocationsCHROMIUM) {
 
   // Test bad count
   GLint locations[50] = { -1, };
-  gl_->GetUniformLocationsCHROMIUM(bad_defs, 0, 1, locations);
+  gl_->GetUniformLocationsCHROMIUM(kProgramId, bad_defs, 0, 1, locations);
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
   EXPECT_EQ(-1, locations[0]);
 
   // Test bad size.
   gl_->GetUniformLocationsCHROMIUM(
-      bad_defs, arraysize(bad_defs), 1, locations);
+      kProgramId, bad_defs, arraysize(bad_defs), 1, locations);
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
   EXPECT_EQ(-1, locations[0]);
 
+  #if defined(GPU_CLIENT_DEBUG)
+  EXPECT_CALL(*manager, GetUniformLocation(_, kProgramId, _))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(2, 0))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 0))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 1))))
+      .RetiresOnSaturation();
+  #endif
+
   // Test max_locations
   gl_->GetUniformLocationsCHROMIUM(
-      good_defs, arraysize(good_defs), 3, locations);
+      kProgramId, good_defs, arraysize(good_defs), 3, locations);
   EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(2, 0)),
             locations[0]);
   EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 0)),
@@ -2594,9 +2648,31 @@ TEST_F(GLES2ImplementationTest, GetUniformLocationsCHROMIUM) {
             locations[2]);
   EXPECT_EQ(0, locations[3]);
 
+  #if defined(GPU_CLIENT_DEBUG)
+  EXPECT_CALL(*manager, GetUniformLocation(_, kProgramId, _))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(2, 0))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 0))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 1))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 2))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 3))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(1, 0))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(1, 1))))
+      .WillOnce(Return(
+          GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(1, 2))))
+      .RetiresOnSaturation();
+  #endif
+
   // Test all.
   gl_->GetUniformLocationsCHROMIUM(
-      good_defs, arraysize(good_defs), arraysize(locations), locations);
+      kProgramId, good_defs, arraysize(good_defs), arraysize(locations),
+      locations);
   EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(2, 0)),
             locations[0]);
   EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 0)),
@@ -2620,5 +2696,4 @@ TEST_F(GLES2ImplementationTest, GetUniformLocationsCHROMIUM) {
 
 }  // namespace gles2
 }  // namespace gpu
-
 

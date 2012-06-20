@@ -15,6 +15,7 @@ namespace gpu {
 namespace gles2 {
 
 class GLES2Implementation;
+class GLES2ImplementationTest;
 class ProgramInfoManager;
 
 typedef void (GLES2Implementation::*DeleteFn)(GLsizei n, const GLuint* ids);
@@ -72,7 +73,11 @@ class GLES2_IMPL_EXPORT ShareGroup
 
  private:
   friend class gpu::RefCountedThreadSafe<ShareGroup>;
+  friend class gpu::gles2::GLES2ImplementationTest;
   ~ShareGroup();
+
+  // Install a new program info manager. Used for testing only;
+  void set_program_info_manager(ProgramInfoManager* manager);
 
   scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
   scoped_ptr<ProgramInfoManager> program_info_manager_;

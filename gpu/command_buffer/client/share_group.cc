@@ -228,6 +228,10 @@ void ShareGroup::SetGLES2ImplementationForDestruction(
   gles2_ = gl_impl;
 }
 
+void ShareGroup::set_program_info_manager(ProgramInfoManager* manager) {
+  program_info_manager_.reset(manager);
+}
+
 ShareGroup::~ShareGroup() {
   for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
     id_handlers_[i]->Destroy(gles2_);

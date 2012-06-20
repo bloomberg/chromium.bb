@@ -1560,7 +1560,7 @@ void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
 }
 
 void GetUniformLocationsCHROMIUM(
-    const GLUniformDefinitionCHROMIUM* uniforms, GLsizei count,
+    GLuint program, const GLUniformDefinitionCHROMIUM* uniforms, GLsizei count,
     GLsizei max_locations, GLint* locations);
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

@@ -3295,13 +3295,18 @@ class GLUniformDefinitionComparer {
   const GLUniformDefinitionCHROMIUM* uniforms_;
 };
 
+
+
 }  // anonymous namespace.
 
 void GLES2Implementation::GetUniformLocationsCHROMIUM(
+    GLuint program,
     const GLUniformDefinitionCHROMIUM* uniforms,
     GLsizei count,
     GLsizei max_locations,
     GLint* locations) {
+  (void)program;  // To keep the compiler happy as it's unused in release.
+
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glGenUniformLocationsCHROMIUM("
       << static_cast<const void*>(uniforms) << ", "  << count << ", "
@@ -3342,9 +3347,23 @@ void GLES2Implementation::GetUniformLocationsCHROMIUM(
       if (max_locations <= 0) {
         return;
       }
-      *locations++ = GLES2Util::SwizzleLocation(
+      GLint location = GLES2Util::SwizzleLocation(
           GLES2Util::MakeFakeLocation(base_location, jj));
+      *locations++ = location;
+      #if defined(GPU_CLIENT_DEBUG)
+        std::string name(def.name);
+        if (jj > 0) {
+          char buf[20];
+          sprintf(buf, "%d", jj);
+          name = name + "[" + buf + "]";
+        }
+        GPU_DCHECK_EQ(
+            location,
+            share_group_->program_info_manager()->GetUniformLocation(
+                this, program, name.c_str()));
+      #endif
       --max_locations;
+
     }
   }
 }

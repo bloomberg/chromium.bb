@@ -652,10 +652,10 @@ void GLES2ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
   gles2::GetGLContext()->ConsumeTextureCHROMIUM(target, mailbox);
 }
 void GLES2GetUniformLocationsCHROMIUM(
-    const GLUniformDefinitionCHROMIUM* uniforms, GLsizei count,
+    GLuint program, const GLUniformDefinitionCHROMIUM* uniforms, GLsizei count,
     GLsizei max_locations, GLint* locations) {
   gles2::GetGLContext()->GetUniformLocationsCHROMIUM(
-      uniforms, count, max_locations, locations);
+      program, uniforms, count, max_locations, locations);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
