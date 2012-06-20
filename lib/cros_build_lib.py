@@ -132,7 +132,14 @@ def SudoRunCommand(cmd, user='root', **kwds):
   sudo_cmd.append('--')
 
   if isinstance(cmd, basestring):
-    sudo_cmd = '%s %s' % (' '.join(sudo_cmd), cmd)
+    # We need to handle shell ourselves so the order is correct:
+    #  $ sudo [sudo args] -- bash -c '[shell command]'
+    # If we let RunCommand take care of it, we'd end up with:
+    #  $ bash -c 'sudo [sudo args] -- [shell command]'
+    shell = kwds.pop('shell', False)
+    if not shell:
+      raise Exception('Cannot run a string command without a shell')
+    sudo_cmd.extend(['/bin/bash', '-c', cmd])
   else:
     sudo_cmd.extend(cmd)
 

@@ -344,7 +344,7 @@ class TestRunCommand(unittest.TestCase):
   def testSudoRunCommandShell(self):
     """Test SudoRunCommand(..., shell=True) works."""
     cmd = 'foo bar roger'
-    sudo_list = ['/bin/bash', '-c', 'sudo -- ' + cmd]
+    sudo_list = ['sudo', '--', '/bin/bash', '-c', cmd]
     self.proc_mock.returncode = 0
     self._TestCmd(cmd, sudo_list, sudo=True,
                   rc_kv=dict(shell=True))
@@ -369,7 +369,7 @@ class TestRunCommand(unittest.TestCase):
   def testSudoRunCommandUserShell(self):
     """Test SudoRunCommand(..., user='...', shell=True) works."""
     cmd = 'foo bar roger'
-    sudo_list = ['/bin/bash', '-c', 'sudo -u MMMMMonster -- ' + cmd]
+    sudo_list = ['sudo', '-u', 'MMMMMonster', '--', '/bin/bash', '-c', cmd]
     self.proc_mock.returncode = 0
     self._TestCmd(cmd, sudo_list, sudo=True,
                   rc_kv=dict(user='MMMMMonster', shell=True))
