@@ -144,14 +144,6 @@ enum dpms_enum {
 	WESTON_DPMS_OFF
 };
 
-struct weston_read_pixels {
-	void *data;
-	int x, y, width, height;
-	void (*done)(struct weston_read_pixels *read_pixels,
-		     struct weston_output *output);
-	struct wl_list link;
-};
-
 struct weston_output {
 	uint32_t id;
 
@@ -170,7 +162,6 @@ struct weston_output {
 	int repaint_scheduled;
 	struct weston_output_zoom zoom;
 	int dirty;
-	struct wl_list read_pixels_list;
 	struct wl_signal frame_signal;
 	uint32_t frame_time;
 
@@ -529,8 +520,6 @@ void
 weston_output_finish_frame(struct weston_output *output, int msecs);
 void
 weston_output_damage(struct weston_output *output);
-void
-weston_output_do_read_pixels(struct weston_output *output);
 void
 weston_compositor_schedule_repaint(struct weston_compositor *compositor);
 void

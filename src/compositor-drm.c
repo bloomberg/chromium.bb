@@ -305,7 +305,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base, damage);
 
-	weston_output_do_read_pixels(&output->base);
+	wl_signal_emit(&output->frame_signal, &output->frame_time);
 
 	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	bo = gbm_surface_lock_front_buffer(output->surface);

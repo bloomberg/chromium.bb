@@ -147,7 +147,7 @@ android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base, damage);
 
-	weston_output_do_read_pixels(&output->base);
+	wl_signal_emit(&output->frame_signal, &output->frame_time);
 
 	ret = eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	if (ret == EGL_FALSE && !errored) {

@@ -347,7 +347,7 @@ wayland_output_repaint(struct weston_output *output_base,
 
 	draw_border(output);
 
-	weston_output_do_read_pixels(&output->base);
+	wl_signal_emit(&output->frame_signal, &output->frame_time);
 
 	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	callback = wl_surface_frame(output->parent.surface);
