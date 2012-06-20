@@ -157,8 +157,7 @@ gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
     if (NSMouseInRect(ns_point, [screen frame], NO))
       return GetDisplayForScreen(screen, screen == primary);
   }
-  NOTREACHED();
-  return gfx::Display();
+  return GetPrimaryDisplay();
 }
 
 }  // namespace gfx
