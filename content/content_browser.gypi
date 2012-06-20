@@ -853,6 +853,11 @@
         '../media/media.gyp:media',
         'content.gyp:content_jni_headers',
       ],
+      'link_settings': {
+        'libraries': [
+          '-ljnigraphics',
+        ],
+      },
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/content',
       ],
