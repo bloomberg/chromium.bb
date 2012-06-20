@@ -114,6 +114,12 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
       new_url.ReplaceComponents(replacements);
 }
 
+// Determines whether or not we should be carrying over a user agent override
+// between two NavigationEntries.
+bool ShouldKeepOverride(const content::NavigationEntry* last_entry) {
+  return last_entry && last_entry->GetIsOverridingUserAgent();
+}
+
 }  // namespace
 
 // NavigationControllerImpl ----------------------------------------------------
@@ -577,14 +583,9 @@ void NavigationControllerImpl::LoadURL(
   if (content::HandleDebugURL(url, transition))
     return;
 
-  // The user initiated a load, we don't need to reload anymore.
-  needs_reload_ = false;
-
-  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      CreateNavigationEntry(
-          url, referrer, transition, false, extra_headers, browser_context_));
-
-  LoadEntry(entry);
+  bool override = ShouldKeepOverride(GetLastCommittedEntry());
+  LoadURLWithUserAgentOverride(url, referrer, transition, false, extra_headers,
+      override);
 }
 
 void NavigationControllerImpl::LoadURLFromRenderer(
@@ -592,12 +593,26 @@ void NavigationControllerImpl::LoadURLFromRenderer(
     const content::Referrer& referrer,
     content::PageTransition transition,
     const std::string& extra_headers) {
+  bool override = ShouldKeepOverride(GetLastCommittedEntry());
+  LoadURLWithUserAgentOverride(url, referrer, transition, true, extra_headers,
+      override);
+}
+
+void NavigationControllerImpl::LoadURLWithUserAgentOverride(
+    const GURL& url,
+    const content::Referrer& referrer,
+    content::PageTransition transition,
+    bool is_renderer_initiated,
+    const std::string& extra_headers,
+    bool is_overriding_user_agent) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
   NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
       CreateNavigationEntry(
-          url, referrer, transition, true, extra_headers, browser_context_));
+          url, referrer, transition, is_renderer_initiated, extra_headers,
+          browser_context_));
+  entry->SetIsOverridingUserAgent(is_overriding_user_agent);
 
   LoadEntry(entry);
 }
@@ -868,6 +883,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
       static_cast<SiteInstanceImpl*>(web_contents_->GetSiteInstance()));
   new_entry->SetHasPostData(params.is_post);
   new_entry->SetPostID(params.post_id);
+  new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
 
   if (params.redirects.size() > 0)
     new_entry->SetOriginalRequestURL(params.redirects[0]);

@@ -313,6 +313,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(caret_blink_interval)
   IPC_STRUCT_TRAITS_MEMBER(enable_referrers)
   IPC_STRUCT_TRAITS_MEMBER(default_zoom_level)
+  IPC_STRUCT_TRAITS_MEMBER(user_agent_override)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SSLStatus)
@@ -452,6 +453,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
 
   // Serialized history item state to store in the navigation entry.
   IPC_STRUCT_MEMBER(std::string, content_state)
+
+  // User agent override used to navigate.
+  IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
 IPC_STRUCT_END()
 
 // This message is used for supporting popup menus on Mac OS X using native
@@ -656,6 +660,9 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // guest RenderView. The embedder_channel_name and embedder_container_id
   // together uniquely identify a browser plugin instance.
   IPC_STRUCT_MEMBER(int, embedder_container_id)
+
+  // Whether or not the user agent override string should be used.
+  IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

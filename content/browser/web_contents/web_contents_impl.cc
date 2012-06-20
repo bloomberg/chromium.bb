@@ -227,6 +227,7 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
       entry.transferred_global_request_id().child_id;
   params->transferred_request_request_id =
       entry.transferred_global_request_id().request_id;
+  params->is_overriding_user_agent = entry.GetIsOverridingUserAgent();
   // Avoid downloading when in view-source mode.
   params->allow_download = !entry.IsViewSourceMode();
   params->embedder_channel_name = embedder_channel_name;
@@ -749,11 +750,25 @@ content::WebUI* WebContentsImpl::GetCommittedWebUI() const {
 }
 
 void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
-  user_agent_override_ = override;
+  if (GetUserAgentOverride() == override)
+    return;
+
+  renderer_preferences_.user_agent_override = override;
+
+  // Send the new override string to the renderer.
+  RenderViewHost* host = GetRenderViewHost();
+  if (host)
+    host->SyncRendererPrefs();
+
+  // Reload the page if a load is currently in progress to avoid having
+  // different parts of the page loaded using different user agents.
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  if (is_loading_ && entry != NULL && entry->GetIsOverridingUserAgent())
+    controller_.ReloadIgnoringCache(true);
 }
 
 const std::string& WebContentsImpl::GetUserAgentOverride() const {
-  return user_agent_override_;
+  return renderer_preferences_.user_agent_override;
 }
 
 const string16& WebContentsImpl::GetTitle() const {

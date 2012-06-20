@@ -167,6 +167,16 @@ class NavigationController {
                                    PageTransition type,
                                    const std::string& extra_headers) = 0;
 
+  // Same as LoadURL, but allows overriding the user agent of the
+  // NavigationEntry before it loads.
+  // TODO(dfalcantara): Consolidate the LoadURL* interfaces.
+  virtual void LoadURLWithUserAgentOverride(const GURL& url,
+                                            const Referrer& referrer,
+                                            PageTransition type,
+                                            bool is_renderer_initiated,
+                                            const std::string& extra_headers,
+                                            bool is_overriding_user_agent) = 0;
+
   // Behaves like LoadURL() and LoadURLFromRenderer() but marks the new
   // navigation as being transferred from one RVH to another. In this case the
   // browser can recycle the old request once the new renderer wants to

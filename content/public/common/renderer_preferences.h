@@ -13,6 +13,8 @@
 #define CONTENT_PUBLIC_COMMON_RENDERER_PREFERENCES_H_
 #pragma once
 
+#include <string>
+
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -89,6 +91,10 @@ struct CONTENT_EXPORT RendererPreferences {
 
   // Default page zoom level.
   double default_zoom_level;
+
+  // The user agent given to WebKit when it requests one and the user agent is
+  // being overridden for the current navigation.
+  std::string user_agent_override;
 };
 
 }  // namespace content

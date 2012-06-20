@@ -196,7 +196,8 @@ class InstantLoader : public content::NotificationObserver {
   void LoadInstantURL(const TemplateURL* template_url,
                       content::PageTransition transition_type,
                       const string16& user_text,
-                      bool verbatim);
+                      bool verbatim,
+                      bool override_user_agent);
 
   InstantLoaderDelegate* delegate_;
 

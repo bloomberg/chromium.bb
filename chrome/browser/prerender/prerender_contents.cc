@@ -369,12 +369,18 @@ void PrerenderContents::StartPrerendering(
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
-  new_contents->GetController().LoadURL(
+  // Transfer over the user agent override.
+  new_contents->SetUserAgentOverride(
+      prerender_manager_->config().user_agent_override);
+
+  new_contents->GetController().LoadURLWithUserAgentOverride(
       prerender_url_,
       referrer_,
       (origin_ == ORIGIN_OMNIBOX ? content::PAGE_TRANSITION_TYPED :
                                    content::PAGE_TRANSITION_LINK),
-      std::string());
+      false,
+      std::string(),
+      prerender_manager_->config().is_overriding_user_agent);
 }
 
 bool PrerenderContents::GetChildId(int* child_id) const {

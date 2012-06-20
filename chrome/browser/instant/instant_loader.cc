@@ -702,6 +702,11 @@ bool InstantLoader::Update(TabContents* tab_contents,
   if (created_preview_contents)
     CreatePreviewContents(tab_contents);
 
+  // Carry over the user agent override setting to the new entry.
+  content::NavigationEntry* entry =
+      tab_contents->web_contents()->GetController().GetActiveEntry();
+  bool override_user_agent = entry && entry->GetIsOverridingUserAgent();
+
   if (template_url) {
     DCHECK(template_url_id_ == template_url->id());
     if (!created_preview_contents) {
@@ -733,14 +738,17 @@ bool InstantLoader::Update(TabContents* tab_contents,
             complete_suggested_text_.substr(user_text_.size());
       }
     } else {
-      LoadInstantURL(template_url, transition_type, user_text_, verbatim);
+      LoadInstantURL(template_url, transition_type, user_text_, verbatim,
+          override_user_agent);
     }
   } else {
     DCHECK(template_url_id_ == 0);
     preview_tab_contents_delegate_->PrepareForNewLoad();
     frame_load_observer_.reset(NULL);
-    preview_contents_->web_contents()->GetController().LoadURL(
-        url_, content::Referrer(), transition_type, std::string());
+
+    preview_contents_->web_contents()->GetController().
+        LoadURLWithUserAgentOverride(url_, content::Referrer(), transition_type,
+            false, std::string(), override_user_agent);
   }
   return true;
 }
@@ -864,9 +872,14 @@ void InstantLoader::MaybeLoadInstantURL(TabContents* tab_contents,
   if (preview_contents_.get())
     return;
 
+  // Carry over the user agent override setting to the new entry.
+  content::NavigationEntry* entry =
+      tab_contents->web_contents()->GetController().GetActiveEntry();
+  bool override_user_agent = entry && entry->GetIsOverridingUserAgent();
+
   CreatePreviewContents(tab_contents);
   LoadInstantURL(template_url, content::PAGE_TRANSITION_GENERATED, string16(),
-                 true);
+                 true, override_user_agent);
 }
 
 bool InstantLoader::IsNavigationPending() const {
@@ -1111,6 +1124,11 @@ void InstantLoader::SetupPreviewContents(TabContents* tab_contents) {
   gfx::Rect tab_bounds;
   tab_contents->web_contents()->GetView()->GetContainerBounds(&tab_bounds);
   preview_contents_->web_contents()->GetView()->SizeContents(tab_bounds.size());
+
+  // Carry over the user agent override string.
+  const std::string& override =
+      tab_contents->web_contents()->GetUserAgentOverride();
+  preview_contents_->web_contents()->SetUserAgentOverride(override);
 }
 
 void InstantLoader::CreatePreviewContents(TabContents* tab_contents) {
@@ -1128,7 +1146,8 @@ void InstantLoader::CreatePreviewContents(TabContents* tab_contents) {
 void InstantLoader::LoadInstantURL(const TemplateURL* template_url,
                                    content::PageTransition transition_type,
                                    const string16& user_text,
-                                   bool verbatim) {
+                                   bool verbatim,
+                                   bool override_user_agent) {
   preview_tab_contents_delegate_->PrepareForNewLoad();
 
   // Load the instant URL. We don't reflect the url we load in url() as
@@ -1144,8 +1163,11 @@ void InstantLoader::LoadInstantURL(const TemplateURL* template_url,
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
-  preview_contents_->web_contents()->GetController().LoadURL(
-      instant_url, content::Referrer(), transition_type, std::string());
+
+  preview_contents_->web_contents()->GetController().
+      LoadURLWithUserAgentOverride(instant_url, content::Referrer(),
+          transition_type, false, std::string(), override_user_agent);
+
   RenderViewHost* host = preview_contents_->web_contents()->GetRenderViewHost();
   preview_contents_->web_contents()->HideContents();
 

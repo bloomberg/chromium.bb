@@ -1451,6 +1451,10 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       params.post_id = ExtractPostId(item);
     }
 
+    // Send the user agent override back.
+    params.is_overriding_user_agent =
+        document_state->is_overriding_user_agent();
+
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
     UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
@@ -2736,6 +2740,17 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
       PopulateDocumentStateFromPending(document_state);
   }
 
+  // Carry over the user agent override flag, if it exists.
+  if (content_initiated && webview() && webview()->mainFrame() &&
+      webview()->mainFrame()->dataSource()) {
+    DocumentState* old_document_state =
+        DocumentState::FromDataSource(webview()->mainFrame()->dataSource());
+    if (old_document_state) {
+      document_state->set_is_overriding_user_agent(
+          old_document_state->is_overriding_user_agent());
+    }
+  }
+
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
   if (content_initiated)
@@ -2819,6 +2834,7 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
   document_state->set_referrer_policy(params.referrer.policy);
+  document_state->set_is_overriding_user_agent(params.is_overriding_user_agent);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
@@ -3712,6 +3728,31 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
 void RenderViewImpl::willOpenSocketStream(
     WebSocketStreamHandle* handle) {
   SocketStreamHandleData::AddToHandle(handle, routing_id_);
+}
+
+WebKit::WebString RenderViewImpl::userAgentOverride(
+    WebKit::WebFrame* frame,
+    const WebKit::WebURL& url) {
+  if (!webview() || !webview()->mainFrame() ||
+      renderer_preferences_.user_agent_override.empty()) {
+    return WebKit::WebString();
+  }
+
+  // If we're in the middle of committing a load, the data source we need
+  // will still be provisional.
+  WebFrame* main_frame = webview()->mainFrame();
+  WebDataSource* data_source = NULL;
+  if (main_frame->provisionalDataSource())
+    data_source = main_frame->provisionalDataSource();
+  else
+    data_source = main_frame->dataSource();
+
+  DocumentState* document_state =
+      data_source ? DocumentState::FromDataSource(data_source) : NULL;
+  if (document_state && document_state->is_overriding_user_agent())
+    return WebString::fromUTF8(renderer_preferences_.user_agent_override);
+  else
+    return WebKit::WebString();
 }
 
 // WebKit::WebPageSerializerClient implementation ------------------------------

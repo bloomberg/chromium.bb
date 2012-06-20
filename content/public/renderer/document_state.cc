@@ -19,6 +19,7 @@ DocumentState::DocumentState()
       was_alternate_protocol_available_(false),
       was_fetched_via_proxy_(false),
       use_error_page_(false),
+      is_overriding_user_agent_(false),
       was_prefetcher_(false),
       was_referred_by_prefetcher_(false),
       load_type_(UNDEFINED_LOAD),

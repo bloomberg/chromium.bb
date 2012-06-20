@@ -665,10 +665,6 @@ class CONTENT_EXPORT WebContentsImpl
   // is closed.
   WebContentsImpl* opener_;
 
-  // User agent to use if a NavigationEntry requires that the default user agent
-  // is overridden.
-  std::string user_agent_override_;
-
   // Helper classes ------------------------------------------------------------
 
   // Manages creation and swapping of render views.

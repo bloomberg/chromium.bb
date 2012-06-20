@@ -192,6 +192,12 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
     use_error_page_ = use_error_page;
   }
 
+  // True if the user agent was overridden for this page.
+  bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
+  void set_is_overriding_user_agent(bool state) {
+    is_overriding_user_agent_ = state;
+  }
+
   void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
   bool was_prefetcher() const { return was_prefetcher_; }
 
@@ -272,6 +278,8 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
   std::string security_info_;
 
   bool use_error_page_;
+
+  bool is_overriding_user_agent_;
 
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;

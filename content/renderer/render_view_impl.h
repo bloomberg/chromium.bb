@@ -651,6 +651,9 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebFrame* source,
       WebKit::WebSecurityOrigin targetOrigin,
       WebKit::WebDOMMessageEvent event) OVERRIDE;
+  virtual WebKit::WebString userAgentOverride(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURL& url) OVERRIDE;
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 

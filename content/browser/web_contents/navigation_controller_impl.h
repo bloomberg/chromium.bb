@@ -63,6 +63,13 @@ class CONTENT_EXPORT NavigationControllerImpl
                                    const content::Referrer& referrer,
                                    content::PageTransition type,
                                    const std::string& extra_headers) OVERRIDE;
+  virtual void LoadURLWithUserAgentOverride(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::PageTransition type,
+      bool is_renderer_initiated,
+      const std::string& extra_headers,
+      bool is_overriding_user_agent) OVERRIDE;
   virtual void TransferURL(
       const GURL& url,
       const content::Referrer& referrer,
