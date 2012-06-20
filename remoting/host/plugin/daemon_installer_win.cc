@@ -10,10 +10,10 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "base/stringize_macros.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
@@ -31,25 +31,25 @@ using base::win::ScopedVariant;
 namespace {
 
 // The COM elevation moniker for Omaha.
-const char16 kOmahaElevationMoniker[] =
-    TO_L_STRING("Elevation:Administrator!new:GoogleUpdate.Update3WebMachine");
+const wchar_t kOmahaElevationMoniker[] =
+    L"Elevation:Administrator!new:GoogleUpdate.Update3WebMachine";
 
 // The registry key where the configuration of Omaha is stored.
-const char16 kOmahaUpdateKeyName[] = TO_L_STRING("Software\\Google\\Update");
+const wchar_t kOmahaUpdateKeyName[] = L"Software\\Google\\Update";
 
 // The name of the value where the full path to GoogleUpdate.exe is stored.
-const char16 kOmahaPathValueName[] = TO_L_STRING("path");
+const wchar_t kOmahaPathValueName[] = L"path";
 
 // The command line format string for GoogleUpdate.exe
-const char16 kGoogleUpdateCommandLineFormat[] =
-    TO_L_STRING("\"%ls\" /install \"bundlename=Chromoting%%20Host&appguid=%ls&")
-    TO_L_STRING("appname=Chromoting%%20Host&needsadmin=True&lang=%ls\"");
+const wchar_t kGoogleUpdateCommandLineFormat[] =
+    L"\"%ls\" /install \"bundlename=Chromoting%%20Host&appguid=%ls&"
+    L"appname=Chromoting%%20Host&needsadmin=True&lang=%ls\"";
 
 // TODO(alexeypa): Get the desired laungage from the web app.
-const char16 kOmahaLanguage[] = TO_L_STRING("en");
+const wchar_t kOmahaLanguage[] = L"en";
 
 // An empty string for optional parameters.
-const char16 kOmahaEmpty[] = TO_L_STRING("");
+const wchar_t kOmahaEmpty[] = L"";
 
 // The installation status polling interval.
 const int kOmahaPollIntervalMs = 500;
@@ -281,7 +281,7 @@ void DaemonCommandLineInstallerWin::Install() {
     return;
   }
 
-  string16 google_update;
+  std::wstring google_update;
   result = update_key.ReadValue(kOmahaPathValueName,
                                 &google_update);
   if (result != ERROR_SUCCESS) {
@@ -290,14 +290,15 @@ void DaemonCommandLineInstallerWin::Install() {
   }
 
   // Launch the updater process and wait for its termination.
-  string16 command_line =
+  std::wstring command_line =
       StringPrintf(kGoogleUpdateCommandLineFormat,
                    google_update.c_str(),
                    kHostOmahaAppid,
                    kOmahaLanguage);
 
   base::LaunchOptions options;
-  if (!base::LaunchProcess(command_line, options, process_.Receive())) {
+  if (!base::LaunchProcess(WideToUTF16(command_line), options,
+                           process_.Receive())) {
     result = GetLastError();
     Done(HRESULT_FROM_WIN32(result));
     return;

@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/stringize_macros.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
@@ -42,11 +41,11 @@ const FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
 
 // The host configuration file security descriptor that enables full access to
 // Local System and built-in administrators only.
-const char16 kConfigFileSecurityDescriptor[] =
-    TO_L_STRING("O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)");
+const wchar_t kConfigFileSecurityDescriptor[] =
+    L"O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)";
 
-const char16 kUnprivilegedConfigFileSecurityDescriptor[] =
-    TO_L_STRING("O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;AU)");
+const wchar_t kUnprivilegedConfigFileSecurityDescriptor[] =
+    L"O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)(A;;GR;;;AU)";
 
 // Configuration keys.
 const char kHostId[] = "host_id";
@@ -142,7 +141,7 @@ FilePath GetTempLocationFor(const FilePath& filename) {
 
 // Writes a config file to a temporary location.
 HRESULT WriteConfigFileToTemp(const FilePath& filename,
-                              const char16* security_descriptor,
+                              const wchar_t* security_descriptor,
                               const char* content,
                               size_t length) {
   // Create a security descriptor for the configuration file.

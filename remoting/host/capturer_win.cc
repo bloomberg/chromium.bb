@@ -10,8 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
-#include "base/string16.h"
-#include "base/stringize_macros.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/host/capturer_helper.h"
@@ -30,7 +29,7 @@ const UINT DWM_EC_ENABLECOMPOSITION = 1;
 
 typedef HRESULT (WINAPI * DwmEnableCompositionFunc)(UINT);
 
-const char16 kDwmapiLibraryName[] = TO_L_STRING("dwmapi");
+const wchar_t kDwmapiLibraryName[] = L"dwmapi";
 
 // Pixel colors used when generating cursor outlines.
 const uint32 kPixelBgraBlack = 0xff000000;
@@ -246,7 +245,8 @@ void CapturerGdi::Start(
   if (dwmapi_library_ == NULL) {
     std::string error;
     dwmapi_library_ = base::LoadNativeLibrary(
-        FilePath(base::GetNativeLibraryName(kDwmapiLibraryName)), &error);
+        FilePath(base::GetNativeLibraryName(WideToUTF16(kDwmapiLibraryName))),
+        &error);
   }
 
   if (dwmapi_library_ != NULL && composition_func_ == NULL) {

@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
 
 #include "remoting/host/wts_console_monitor_win.h"
@@ -89,7 +88,7 @@ class HostService : public WtsConsoleMonitor {
   int (HostService::*run_routine_)();
 
   // The service name.
-  string16 service_name_;
+  std::wstring service_name_;
 
   // The service status handle.
   SERVICE_STATUS_HANDLE service_status_handle_;

@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/stringize_macros.h"
 
 namespace {
 
@@ -36,7 +35,7 @@ const FilePath::CharType kConfigDir[] =
 namespace remoting {
 
 #if defined(OS_WIN)
-const char16 kWindowsServiceName[] = TO_L_STRING("chromoting");
+const wchar_t kWindowsServiceName[] = L"chromoting";
 #endif
 
 FilePath GetConfigDir() {

@@ -19,8 +19,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/string16.h"
-#include "base/stringize_macros.h"
 #include "base/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
@@ -43,10 +41,10 @@ const int kMaxLaunchDelaySeconds = 60;
 const int kMinLaunchDelaySeconds = 1;
 
 // Name of the default session desktop.
-char16 kDefaultDesktopName[] = TO_L_STRING("winsta0\\default");
+wchar_t kDefaultDesktopName[] = L"winsta0\\default";
 
 // Match the pipe name prefix used by Chrome IPC channels.
-const char16 kChromePipeNamePrefix[] = TO_L_STRING("\\\\.\\pipe\\chrome.");
+const wchar_t kChromePipeNamePrefix[] = L"\\\\.\\pipe\\chrome.";
 
 // The IPC channel name is passed to the host in the command line.
 const char kChromotingIpcSwitchName[] = "chromoting-ipc";
@@ -58,8 +56,8 @@ const char* kCopiedSwitchNames[] = {
 
 // The security descriptor of the Chromoting IPC channel. It gives full access
 // to LocalSystem and denies access by anyone else.
-const char16 kChromotingChannelSecurityDescriptor[] =
-    TO_L_STRING("O:SYG:SYD:(A;;GA;;;SY)");
+const wchar_t kChromotingChannelSecurityDescriptor[] =
+    L"O:SYG:SYD:(A;;GA;;;SY)";
 
 // Takes the process token and makes a copy of it. The returned handle will have
 // |desired_access| rights.
@@ -149,8 +147,8 @@ bool CreateSessionToken(uint32 session_id,
 
 // Generates random channel ID.
 // N.B. Stolen from src/content/common/child_process_host_impl.cc
-string16 GenerateRandomChannelId(void* instance) {
-  return base::StringPrintf(TO_L_STRING("%d.%p.%d"),
+std::wstring GenerateRandomChannelId(void* instance) {
+  return base::StringPrintf(L"%d.%p.%d",
                             base::GetCurrentProcId(), instance,
                             base::RandInt(0, std::numeric_limits<int>::max()));
 }
@@ -158,7 +156,7 @@ string16 GenerateRandomChannelId(void* instance) {
 // Creates the server end of the Chromoting IPC channel.
 // N.B. This code is based on IPC::Channel's implementation.
 bool CreatePipeForIpcChannel(void* instance,
-                             string16* channel_name_out,
+                             std::wstring* channel_name_out,
                              ScopedHandle* pipe_out) {
   // Create security descriptor for the channel.
   SECURITY_ATTRIBUTES security_attributes;
@@ -178,10 +176,10 @@ bool CreatePipeForIpcChannel(void* instance,
   }
 
   // Generate a random channel name.
-  string16 channel_name(GenerateRandomChannelId(instance));
+  std::wstring channel_name(GenerateRandomChannelId(instance));
 
   // Convert it to the pipe name.
-  string16 pipe_name(kChromePipeNamePrefix);
+  std::wstring pipe_name(kChromePipeNamePrefix);
   pipe_name.append(channel_name);
 
   // Create the server end of the pipe. This code should match the code in
@@ -211,10 +209,10 @@ bool CreatePipeForIpcChannel(void* instance,
 
 // Launches |binary| in the security context of the supplied |user_token|.
 bool LaunchProcessAsUser(const FilePath& binary,
-                         const string16& command_line,
+                         const std::wstring& command_line,
                          HANDLE user_token,
                          base::Process* process_out) {
-  string16 application_name = binary.value();
+  std::wstring application_name = binary.value();
 
   base::win::ScopedProcessInformation process_info;
   STARTUPINFOW startup_info;
@@ -281,7 +279,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
   launch_time_ = base::Time::Now();
 
-  string16 channel_name;
+  std::wstring channel_name;
   ScopedHandle pipe;
   if (CreatePipeForIpcChannel(this, &channel_name, &pipe)) {
     // Wrap the pipe into an IPC channel.

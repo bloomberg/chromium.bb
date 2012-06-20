@@ -11,7 +11,7 @@ namespace remoting {
 
 #if defined(OS_WIN)
 // Windows chromoting service name.
-extern const char16 kWindowsServiceName[];
+extern const wchar_t kWindowsServiceName[];
 #endif
 
 // Returns the location of the host configuration directory.

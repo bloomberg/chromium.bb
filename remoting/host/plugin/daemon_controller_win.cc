@@ -16,7 +16,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/string16.h"
-#include "base/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -40,13 +39,13 @@ namespace remoting {
 namespace {
 
 // ProgID of the daemon controller.
-const char16 kDaemonController[] =
-    TO_L_STRING("ChromotingElevatedController.ElevatedController");
+const wchar_t kDaemonController[] =
+    L"ChromotingElevatedController.ElevatedController";
 
 // The COM elevation moniker for the Elevated Controller.
-const char16 kDaemonControllerElevationMoniker[] =
-    TO_L_STRING("Elevation:Administrator!new:")
-    TO_L_STRING("ChromotingElevatedController.ElevatedController");
+const wchar_t kDaemonControllerElevationMoniker[] =
+    L"Elevation:Administrator!new:"
+    L"ChromotingElevatedController.ElevatedController";
 
 // Name of the Daemon Controller's worker thread.
 const char kDaemonControllerThreadName[] = "Daemon Controller thread";

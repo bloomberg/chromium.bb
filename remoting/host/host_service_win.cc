@@ -19,9 +19,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/stringize_macros.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/scoped_sc_handle_win.h"
@@ -41,12 +41,12 @@ const uint32 kInvalidSession = 0xffffffff;
 const char kIoThreadName[] = "I/O thread";
 
 // A window class for the session change notifications window.
-const char16 kSessionNotificationWindowClass[] =
-  TO_L_STRING("Chromoting_SessionNotificationWindow");
+const wchar_t kSessionNotificationWindowClass[] =
+  L"Chromoting_SessionNotificationWindow";
 
 // Command line actions and switches:
 // "run" sumply runs the service as usual.
-const char16 kRunActionName[] = TO_L_STRING("run");
+const wchar_t kRunActionName[] = L"run";
 
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
@@ -258,7 +258,7 @@ int HostService::RunInConsole() {
   HWND window = NULL;
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
-      kSessionNotificationWindowClass,
+      WideToUTF16(kSessionNotificationWindowClass).c_str(),
       &base::win::WrappedWindowProc<SessionChangeNotificationProc>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);

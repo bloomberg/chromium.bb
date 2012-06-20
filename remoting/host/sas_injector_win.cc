@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/stringize_macros.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 
@@ -29,10 +28,9 @@ typedef VOID (WINAPI *SendSasFunc)(BOOL);
 
 // The registry key and value holding the policy controlling software SAS
 // generation.
-const char16 kSystemPolicyKeyName[] =
-    TO_L_STRING("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\")
-    TO_L_STRING("System");
-const char16 kSoftwareSasValueName[] = TO_L_STRING("SoftwareSASGeneration");
+const wchar_t kSystemPolicyKeyName[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System";
+const wchar_t kSoftwareSasValueName[] = L"SoftwareSASGeneration";
 
 const DWORD kEnableSoftwareSasByServices = 1;
 
