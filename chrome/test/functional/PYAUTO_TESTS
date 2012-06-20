@@ -511,7 +511,7 @@
       '-translate.TranslateTest.testToggleTranslateOption',
       # crbug.com/133774
       '-youtube.YoutubeTest.testPlayerBytes',
-      'youtube.YoutubeTest.testPlayerResolution',
+      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'win': [
@@ -542,6 +542,9 @@
       '-gpu.GpuTest.test2dCanvas',
       # crbug.com/125424
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
+      # crbug.com/133850
+      '-translate.TranslateTest.testAlwaysTranslateOptionMultiProfile',
+      '-translate.TranslateTest.testNotTranslateOptionMultiProfile',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
       # crbug.com/95621
