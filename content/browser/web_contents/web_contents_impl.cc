@@ -1783,13 +1783,11 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
   GURL validated_opener_url(opener_url);
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHostImpl::FilterURL(
-      ChildProcessSecurityPolicyImpl::GetInstance(),
+  RenderViewHost::FilterURL(
       render_process_host->GetID(),
       false,
       &validated_url);
-  RenderViewHostImpl::FilterURL(
-      ChildProcessSecurityPolicyImpl::GetInstance(),
+  RenderViewHost::FilterURL(
       render_process_host->GetID(),
       true,
       &validated_opener_url);
@@ -1867,8 +1865,7 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
   GURL validated_url(params.url);
   content::RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHostImpl::FilterURL(
-      ChildProcessSecurityPolicyImpl::GetInstance(),
+  RenderViewHost::FilterURL(
       render_process_host->GetID(),
       false,
       &validated_url);

@@ -1916,6 +1916,8 @@
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
         'browser/renderer_host/chrome_url_request_user_data.cc',
         'browser/renderer_host/chrome_url_request_user_data.h',
+        'browser/renderer_host/intercept_navigation_resource_throttle.cc',
+        'browser/renderer_host/intercept_navigation_resource_throttle.h',
         'browser/renderer_host/offline_resource_throttle.cc',
         'browser/renderer_host/offline_resource_throttle.h',
         'browser/renderer_host/plugin_info_message_filter.cc',

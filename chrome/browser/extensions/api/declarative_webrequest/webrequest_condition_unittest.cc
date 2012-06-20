@@ -70,12 +70,12 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
   TestURLRequest match_request(GURL("http://www.example.com"), NULL);
   content::ResourceRequestInfo::AllocateForTesting(&match_request,
-      ResourceType::MAIN_FRAME, NULL);
+      ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_TRUE(result->IsFulfilled(&match_request, ON_BEFORE_REQUEST));
 
   TestURLRequest wrong_resource_type(GURL("https://www.example.com"), NULL);
   content::ResourceRequestInfo::AllocateForTesting(&wrong_resource_type,
-      ResourceType::SUB_FRAME, NULL);
+      ResourceType::SUB_FRAME, NULL, -1, -1);
   EXPECT_FALSE(result->IsFulfilled(&wrong_resource_type, ON_BEFORE_REQUEST));
 }
 

@@ -25,12 +25,14 @@ const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
 void ResourceRequestInfo::AllocateForTesting(
     net::URLRequest* request,
     ResourceType::Type resource_type,
-    ResourceContext* context) {
+    ResourceContext* context,
+    int render_process_id,
+    int render_view_id) {
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
           PROCESS_TYPE_RENDERER,             // process_type
-          -1,                                // child_id
-          MSG_ROUTING_NONE,                  // route_id
+          render_process_id,                 // child_id
+          render_view_id,                    // route_id
           0,                                 // origin_pid
           0,                                 // request_id
           resource_type == ResourceType::MAIN_FRAME,  // is_main_frame
@@ -166,6 +168,10 @@ WebKit::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
 
 uint64 ResourceRequestInfoImpl::GetUploadSize() const {
   return upload_size_;
+}
+
+bool ResourceRequestInfoImpl::HasUserGesture() const {
+  return has_user_gesture_;
 }
 
 bool ResourceRequestInfoImpl::GetAssociatedRenderView(

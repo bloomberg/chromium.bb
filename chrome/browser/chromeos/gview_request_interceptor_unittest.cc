@@ -159,7 +159,9 @@ class GViewRequestInterceptorTest : public testing::Test {
   void SetupRequest(net::URLRequest* request) {
     content::ResourceRequestInfo::AllocateForTesting(request,
                                                      ResourceType::MAIN_FRAME,
-                                                     &resource_context_);
+                                                     &resource_context_,
+                                                     -1,
+                                                     -1);
     request->set_context(resource_context_.GetRequestContext());
   }
 

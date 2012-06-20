@@ -33,6 +33,7 @@ struct WebPluginAction;
 
 namespace content {
 
+class ChildProcessSecurityPolicy;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -59,6 +60,13 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Downcasts from a RenderWidgetHost to a RenderViewHost.  Required
   // because RenderWidgetHost is a virtual base class.
   static RenderViewHost* From(RenderWidgetHost* rwh);
+
+  // Checks that the given renderer can request |url|, if not it sets it to
+  // about:blank.
+  // |empty_allowed| must be set to false for navigations for security reasons.
+  static void FilterURL(int renderer_id,
+                        bool empty_allowed,
+                        GURL* url);
 
   virtual ~RenderViewHost() {}
 

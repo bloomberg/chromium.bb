@@ -69,7 +69,9 @@ class ExtensionProtocolTest : public testing::Test {
                     ResourceType::Type resource_type) {
     content::ResourceRequestInfo::AllocateForTesting(request,
                                                      resource_type,
-                                                     &resource_context_);
+                                                     &resource_context_,
+                                                     -1,
+                                                     -1);
     request->set_context(resource_context_.GetRequestContext());
     request->Start();
     MessageLoop::current()->Run();

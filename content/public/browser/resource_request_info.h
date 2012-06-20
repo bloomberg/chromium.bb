@@ -32,7 +32,9 @@ class ResourceRequestInfo {
   CONTENT_EXPORT static void AllocateForTesting(
       net::URLRequest* request,
       ResourceType::Type resource_type,
-      ResourceContext* context);
+      ResourceContext* context,
+      int render_process_id,
+      int render_view_id);
 
   // Returns the associated RenderView for a given process. Returns false, if
   // there is no associated RenderView. This method does not rely on the
@@ -82,6 +84,10 @@ class ResourceRequestInfo {
   // When there is upload data, this is the byte count of that data. When there
   // is no upload, this will be 0.
   virtual uint64 GetUploadSize() const = 0;
+
+  // True if the request was initiated by a user action (like a tap to follow
+  // a link).
+  virtual bool HasUserGesture() const = 0;
 
   // Returns false if there is NOT an associated render view.
   virtual bool GetAssociatedRenderView(int* render_process_id,

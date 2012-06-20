@@ -76,6 +76,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual ResourceType::Type GetResourceType() const OVERRIDE;
   virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
   virtual uint64 GetUploadSize() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const OVERRIDE;
 
@@ -106,8 +107,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   // Downloads are allowed only as a top level request.
   bool allow_download() const { return allow_download_; }
-
-  bool has_user_gesture() const { return has_user_gesture_; }
 
   // Whether this is a download.
   bool is_download() const { return is_download_; }

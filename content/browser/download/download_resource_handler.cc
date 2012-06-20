@@ -144,7 +144,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   // Deleted in DownloadManager.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(
       base::Time::Now(), 0, content_length_, DownloadItem::IN_PROGRESS,
-      request_->net_log(), request_info->has_user_gesture(),
+      request_->net_log(), request_info->HasUserGesture(),
       request_info->transition_type()));
 
   // Create the ByteStream for sending data to the download sink.
@@ -162,7 +162,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->received_bytes = save_info_.offset;
   info->total_bytes = content_length_;
   info->state = DownloadItem::IN_PROGRESS;
-  info->has_user_gesture = request_info->has_user_gesture();
+  info->has_user_gesture = request_info->HasUserGesture();
   info->content_disposition = content_disposition_;
   info->mime_type = response->mime_type;
   info->remote_address = request_->GetSocketAddress().host();

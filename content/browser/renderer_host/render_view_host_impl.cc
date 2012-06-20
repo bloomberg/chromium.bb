@@ -123,6 +123,14 @@ RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
   return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(rwh));
 }
 
+// static
+void RenderViewHost::FilterURL(int renderer_id,
+                               bool empty_allowed,
+                               GURL* url) {
+  RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
+                                renderer_id, empty_allowed, url);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHostImpl, public:
 
