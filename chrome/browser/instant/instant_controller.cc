@@ -57,6 +57,11 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantEnabled,
                              false,
                              PrefService::SYNCABLE_PREF);
+
+  // TODO(jamescook): Move this to search controller.
+  prefs->RegisterDoublePref(prefs::kInstantAnimationScaleFactor,
+                            1.0,
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 // static

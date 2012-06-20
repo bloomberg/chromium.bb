@@ -3853,6 +3853,8 @@
         'browser/ui/webui/history_ui.h',
         'browser/ui/webui/inspect_ui.cc',
         'browser/ui/webui/inspect_ui.h',
+        'browser/ui/webui/instant_ui.cc',
+        'browser/ui/webui/instant_ui.h',
         'browser/ui/webui/media/media_internals_handler.cc',
         'browser/ui/webui/media/media_internals_handler.h',
         'browser/ui/webui/media/media_internals_proxy.cc',

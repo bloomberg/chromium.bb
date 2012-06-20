@@ -172,6 +172,7 @@ extern const char kAlternateProtocolServers[];
 extern const char kDisabledSchemes[];
 extern const char kUrlBlacklist[];
 extern const char kUrlWhitelist[];
+extern const char kInstantAnimationScaleFactor[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
 extern const char kMultipleProfilePrefMigration[];

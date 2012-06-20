@@ -447,6 +447,10 @@ const char kUrlBlacklist[] = "policy.url_blacklist";
 // Allows access to the listed host patterns, as exceptions to the blacklist.
 const char kUrlWhitelist[] = "policy.url_whitelist";
 
+// Double pref for a scaling factor used to slow down animations.
+const char kInstantAnimationScaleFactor[] =
+    "instant.animation_scale_factor";
+
 // Boolean pref indicating whether the instant confirm dialog has been shown.
 const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 
