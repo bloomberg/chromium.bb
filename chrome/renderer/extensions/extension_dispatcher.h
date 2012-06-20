@@ -71,7 +71,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // specified |frame| and isolated world. If |world_id| is zero, finds the
   // extension ID associated with the main world's JavaScript context. If the
   // JavaScript context isn't from an extension, returns empty string.
-  std::string GetExtensionID(WebKit::WebFrame* frame, int world_id);
+  std::string GetExtensionID(const WebKit::WebFrame* frame, int world_id);
 
   // See WebKit::WebPermissionClient::allowScriptExtension
   // TODO(koz): Remove once WebKit no longer calls this.
@@ -195,6 +195,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   void InstallBindings(ModuleSystem* module_system,
                        v8::Handle<v8::Context> v8_context,
                        const std::string& api);
+
+  // Determeines whether |frame| is being run inside a platform app
+  // (this evaluates to true for iframes in platform apps).
+  bool IsWithinPlatformApp(const WebKit::WebFrame* frame);
 
   // Returns the Feature::Context type of context for a JavaScript context.
   extensions::Feature::Context ClassifyJavaScriptContext(

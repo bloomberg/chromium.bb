@@ -679,11 +679,6 @@ void ExtensionDispatcher::DidCreateScriptContext(
   module_system->RegisterNativeHandler("channel",
       scoped_ptr<NativeHandler>(new ChannelNativeHandler(
           static_cast<chrome::VersionInfo::Channel>(chrome_channel_))));
-
-  int manifest_version = 1;
-  if (extension)
-    manifest_version = extension->manifest_version();
-
   // Create the 'chrome' variable if it doesn't already exist.
   {
     v8::HandleScope handle_scope;
@@ -726,11 +721,14 @@ void ExtensionDispatcher::DidCreateScriptContext(
 
   // Inject custom JS into the platform app context to block certain features
   // of the document and window.
-  if (extension && extension->is_platform_app())
+  if (IsWithinPlatformApp(frame))
     module_system->Require("platformApp");
 
   context->set_module_system(module_system.Pass());
 
+  int manifest_version = 1;
+  if (extension)
+    manifest_version = extension->manifest_version();
   context->DispatchOnLoadEvent(
       is_extension_process_,
       ChromeRenderProcessObserver::is_incognito_process(),
@@ -739,16 +737,23 @@ void ExtensionDispatcher::DidCreateScriptContext(
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
-std::string ExtensionDispatcher::GetExtensionID(WebFrame* frame, int world_id) {
+std::string ExtensionDispatcher::GetExtensionID(const WebFrame* frame,
+                                                int world_id) {
   if (world_id != 0) {
     // Isolated worlds (content script).
     return user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
-  } else {
-    // Extension pages (chrome-extension:// URLs).
-    GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
-    return extensions_.GetExtensionOrAppIDByURL(
-        ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
   }
+
+  // Extension pages (chrome-extension:// URLs).
+  GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
+  return extensions_.GetExtensionOrAppIDByURL(
+      ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
+}
+
+bool ExtensionDispatcher::IsWithinPlatformApp(const WebFrame* frame) {
+  const Extension* extension =
+      extensions_.GetByID(GetExtensionID(frame->top(), 0));
+  return extension && extension->is_platform_app();
 }
 
 void ExtensionDispatcher::WillReleaseScriptContext(

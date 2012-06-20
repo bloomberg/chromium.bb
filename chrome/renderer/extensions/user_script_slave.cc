@@ -234,7 +234,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   return true;
 }
 
-GURL UserScriptSlave::GetDataSourceURLForFrame(WebFrame* frame) {
+GURL UserScriptSlave::GetDataSourceURLForFrame(const WebFrame* frame) {
   // Normally we would use frame->document().url() to determine the document's
   // URL, but to decide whether to inject a content script, we use the URL from
   // the data source. This "quirk" helps prevents content scripts from
