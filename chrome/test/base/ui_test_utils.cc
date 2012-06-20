@@ -23,7 +23,6 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -377,13 +376,6 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
     DCHECK(!ContainsKey(excluded_browsers, new_browser));
   }
   return new_browser;
-}
-
-void WaitEventSignaled(base::WaitableEvent* event) {
-  while (!event->IsSignaled()) {
-    base::PlatformThread::YieldCurrentThread();
-    RunAllPendingInMessageLoop();
-  }
 }
 
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {

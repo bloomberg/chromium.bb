@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -16,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
@@ -84,9 +82,6 @@ void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
 }  // namespace
 
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
-static bool g_locale_initialized_ = false;
-static bool g_locale_reloading_ = false;
-static base::PlatformThreadId g_locale_reload_thread_id_ = 0;
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
@@ -96,7 +91,6 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
 
   g_shared_instance_->LoadCommonResources();
   std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
-  g_locale_initialized_ = true;
   return result;
 }
 
@@ -256,9 +250,6 @@ const FilePath& ResourceBundle::GetOverriddenPakPath() {
 std::string ResourceBundle::ReloadLocaleResources(
     const std::string& pref_locale) {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
-  AutoReset<bool> reset_reloading(&g_locale_reloading_, true);
-  AutoReset<base::PlatformThreadId> reset_reloading_thread(
-      &g_locale_reload_thread_id_, base::PlatformThread::CurrentId());
   UnloadLocaleResources();
   return LoadLocaleResources(pref_locale);
 }
@@ -356,16 +347,11 @@ base::StringPiece ResourceBundle::GetRawDataResource(
   // TODO(tony): Firm up locking for or constraints of calling
   // ReloadLocaleResources() and how to CHECK for misuse.
   if (!locale_resources_data_.get()) {
-    LOG(ERROR)
-        << "!locale_resources_data_.get()), init=" << g_locale_initialized_
-        << ", reloading=" << g_locale_reloading_
-        << ", reload_thread=" << g_locale_reload_thread_id_
-        << ", current thread=" << base::PlatformThread::CurrentId();
+    LOG(ERROR) << "!locale_resources_data_.get()";
     NOTREACHED();
-  }
-
-  if (locale_resources_data_->GetStringPiece(resource_id, &data))
+  } else if (locale_resources_data_->GetStringPiece(resource_id, &data)) {
     return data;
+  }
 
   if (scale_factor != ui::SCALE_FACTOR_100P) {
     for (size_t i = 0; i < data_packs_.size(); i++) {

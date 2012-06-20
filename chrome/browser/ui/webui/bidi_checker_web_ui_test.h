@@ -47,10 +47,6 @@ class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
-  static void SetUpOnIOThread(base::WaitableEvent* event);
-  static void CleanUpOnIOThread(base::WaitableEvent* event,
-                                const std::string& app_locale);
-
   // The app locale before we change it
   std::string app_locale_;
 };

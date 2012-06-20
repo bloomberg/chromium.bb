@@ -6,6 +6,7 @@
 
 #include "base/base_paths.h"
 #include "base/i18n/rtl.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
@@ -40,7 +41,39 @@ FilePath WebUIBidiCheckerLibraryJSPath() {
     LOG(ERROR) << "Couldn't find source root";
   return src_root.Append(kWebUIBidiCheckerLibraryJS);
 }
+
+// Since synchronization isn't complete for the ResourceBundle class, reload
+// locale resources on the IO thread.
+// crbug.com/95425, crbug.com/132752
+void ReloadLocaleResourcesOnIOThread(const std::string& new_locale) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    LOG(ERROR)
+        << content::BrowserThread::IO
+        << " != " << base::PlatformThread::CurrentId();
+    NOTREACHED();
+  }
+
+  std::string locale;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_scope;
+    locale.assign(
+        ResourceBundle::GetSharedInstance().ReloadLocaleResources(new_locale));
+  }
+  ASSERT_FALSE(locale.empty());
 }
+
+// Since synchronization isn't complete for the ResourceBundle class, reload
+// locale resources on the IO thread.
+// crbug.com/95425, crbug.com/132752
+void ReloadLocaleResources(const std::string& new_locale) {
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&ReloadLocaleResourcesOnIOThread, base::ConstRef(new_locale)),
+      MessageLoop::QuitClosure());
+  ui_test_utils::RunMessageLoop();
+}
+
+}  // namespace
 
 static const FilePath::CharType* kBidiCheckerTestsJS =
     FILE_PATH_LITERAL("bidichecker_tests.js");
@@ -73,39 +106,6 @@ void WebUIBidiCheckerBrowserTestRTL::RunBidiCheckerOnPage(
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(page_url, true);
 }
 
-// static
-void WebUIBidiCheckerBrowserTestRTL::SetUpOnIOThread(
-    base::WaitableEvent* event) {
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-    LOG(ERROR)
-        << content::BrowserThread::IO
-        << " != " << base::PlatformThread::CurrentId();
-    NOTREACHED();
-  }
-
-  std::string locale;
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_scope;
-    locale.assign(
-        ResourceBundle::GetSharedInstance().ReloadLocaleResources("he"));
-  }
-  event->Signal();
-  ASSERT_FALSE(locale.empty());
-}
-
-// static
-void WebUIBidiCheckerBrowserTestRTL::CleanUpOnIOThread(
-    base::WaitableEvent* event, const std::string& app_locale) {
-  std::string locale;
-  {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_scope;
-    locale.assign(
-        ResourceBundle::GetSharedInstance().ReloadLocaleResources(app_locale));
-  }
-  event->Signal();
-  ASSERT_EQ(app_locale, locale);
-}
-
 void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   WebUIBidiCheckerBrowserTest::SetUpOnMainThread();
   FilePath pak_path;
@@ -116,19 +116,7 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   pak_path = pak_path.AppendASCII("fake-bidi");
   pak_path = pak_path.ReplaceExtension(FILE_PATH_LITERAL("pak"));
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(pak_path);
-
-  // Since synchronization isn't complete for the ResourceBundle class, reload
-  // locale resources on the IO thread.
-  // crbug.com/95425, crbug.com/132752
-  // TODO(scr): make this generic to share with CleanUpOnMainThread and use
-  // PostTaskAndReply rather than WaitableEvent.
-  base::WaitableEvent event(true, false);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&WebUIBidiCheckerBrowserTestRTL::SetUpOnIOThread,
-                 base::Unretained(&event)));
-  ui_test_utils::WaitEventSignaled(&event);
-
+  ReloadLocaleResources("he");
   base::i18n::SetICUDefaultLocale("he");
 #if defined(OS_POSIX) && defined(TOOLKIT_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
@@ -143,19 +131,7 @@ void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
 
   base::i18n::SetICUDefaultLocale(app_locale_);
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(FilePath());
-
-  // Since synchronization isn't complete for the ResourceBundle class, reload
-  // locale resources on the IO thread.
-  // crbug.com/95425, crbug.com/132752
-  // TODO(scr): make this generic to share with SetUpOnMainThread and use
-  // PostTaskAndReply rather than WaitableEvent.
-  base::WaitableEvent event(true, false);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&WebUIBidiCheckerBrowserTestRTL::CleanUpOnIOThread,
-                 base::Unretained(&event),
-                 base::ConstRef(app_locale_)));
-  ui_test_utils::WaitEventSignaled(&event);
+  ReloadLocaleResources(app_locale_);
 }
 
 // Tests
