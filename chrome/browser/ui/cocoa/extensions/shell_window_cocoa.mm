@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/shell_window_cocoa.h"
 
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -13,6 +14,10 @@
 #include "content/public/browser/web_contents_view.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
+@interface NSWindow (NSPrivateApis)
+- (void)setBottomCornerRounded:(BOOL)rounded;
+@end
+
 @implementation ShellWindowController
 
 @synthesize shellWindow = shellWindow_;
@@ -20,6 +25,28 @@
 - (void)windowWillClose:(NSNotification*)notification {
   if (shellWindow_)
     shellWindow_->WindowWillClose();
+}
+
+@end
+
+@interface ShellNSWindow : UnderlayOpenGLHostingWindow
+
+- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
+
+@end
+
+@implementation ShellNSWindow
+
+- (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view {
+  [[NSBezierPath bezierPathWithRect:rect] addClip];
+  [[NSColor clearColor] set];
+  NSRectFill(rect);
+  const CGFloat kWindowBorderRadius = 3.0;
+  [[NSBezierPath bezierPathWithRoundedRect:[view bounds]
+                                   xRadius:kWindowBorderRadius
+                                   yRadius:kWindowBorderRadius] addClip];
+  [[NSColor whiteColor] set];
+  NSRectFill(rect);
 }
 
 @end
@@ -33,13 +60,18 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
   NSRect rect = NSMakeRect(params.bounds.x(), params.bounds.y(),
                            params.bounds.width(), params.bounds.height());
   NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
-                         NSMiniaturizableWindowMask | NSResizableWindowMask;
-  scoped_nsobject<NSWindow> window([[UnderlayOpenGLHostingWindow alloc]
+                         NSMiniaturizableWindowMask | NSResizableWindowMask |
+                         NSTexturedBackgroundWindowMask;
+  scoped_nsobject<NSWindow> window([[ShellNSWindow alloc]
       initWithContentRect:rect
                 styleMask:styleMask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension->name())];
+
+  if (base::mac::IsOSSnowLeopardOrEarlier() &&
+      [window respondsToSelector:@selector(setBottomCornerRounded:)])
+    [window setBottomCornerRounded:NO];
 
   NSView* view = web_contents()->GetView()->GetNativeView();
   [view setFrame:[[window contentView] bounds]];
