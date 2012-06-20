@@ -273,6 +273,8 @@ cr.define('cr.ui', function() {
       } else {
         this.list_.dataModel.sort(cm.getId(i), 'asc');
       }
+      if (this.selectionModel.selectedIndex == -1)
+        this.list_.scrollTop = 0;
     },
 
     /**
