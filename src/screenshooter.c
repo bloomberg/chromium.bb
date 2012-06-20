@@ -46,7 +46,6 @@ struct screenshooter_frame_listener {
 	struct wl_listener listener;
 	struct wl_buffer *buffer;
 	struct wl_resource *resource;
-	struct weston_output *output;
 };
 
 static void
@@ -98,7 +97,7 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 	struct screenshooter_frame_listener *l =
 		container_of(listener,
 			     struct screenshooter_frame_listener, listener);
-	struct weston_output *output = l->output;
+	struct weston_output *output = data;
 	int32_t stride;
 	uint8_t *pixels, *d, *s;
 
@@ -163,7 +162,6 @@ screenshooter_shoot(struct wl_client *client,
 
 	l->buffer = buffer;
 	l->resource = resource;
-	l->output = output;
 
 	l->listener.notify = screenshooter_frame_notify;
 	wl_signal_add(&output->frame_signal, &l->listener);
@@ -214,7 +212,6 @@ screenshooter_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 struct weston_recorder {
-	struct weston_output *output;
 	uint32_t *frame, *rect;
 	uint32_t total;
 	int fd;
@@ -258,8 +255,8 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 {
 	struct weston_recorder *recorder =
 		container_of(listener, struct weston_recorder, frame_listener);
-	struct weston_output *output = recorder->output;
-	uint32_t msecs = * (uint32_t *) data;
+	struct weston_output *output = data;
+	uint32_t msecs = output->frame_time;
 	pixman_box32_t *r;
 	pixman_region32_t damage;
 	int i, j, k, n, width, height, run, stride;
@@ -271,8 +268,8 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	struct iovec v[2];
 
 	pixman_region32_init(&damage);
-	pixman_region32_intersect(&damage, &recorder->output->region,
-				  &recorder->output->previous_damage);
+	pixman_region32_intersect(&damage, &output->region,
+				  &output->previous_damage);
 
 	r = pixman_region32_rectangles(&damage, &n);
 	if (n == 0)
@@ -342,7 +339,6 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	struct { uint32_t magic, format, width, height; } header;
 
 	recorder = malloc(sizeof *recorder);
-	recorder->output = output;
 
 	stride = output->current->width;
 	size = stride * 4 * output->current->height;

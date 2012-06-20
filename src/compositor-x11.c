@@ -270,7 +270,7 @@ x11_output_repaint(struct weston_output *output_base,
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base, damage);
 
-	wl_signal_emit(&output->frame_signal, &output->frame_time);
+	wl_signal_emit(&output->base.frame_signal, output);
 
 	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 
