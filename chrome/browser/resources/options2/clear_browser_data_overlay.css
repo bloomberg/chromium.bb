@@ -16,3 +16,7 @@
   vertical-align: middle;
   visibility: hidden;
 }
+
+#flash-storage-settings {
+  padding-top: 5px;
+}

@@ -58,6 +58,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
       IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX },
     { "clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
+    { "clearBrowsingDataLearnMoreUrl", IDS_CLEAR_BROWSING_DATA_LEARN_MORE_URL },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
