@@ -293,6 +293,12 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   fetch_state_.http_response_code = source->GetResponseCode();
   fetch_state_.error_code = source->GetStatus().error();
 
+  // Use a real (non-debug) log to facilitate troubleshooting in the wild.
+  VLOG(2) << "HttpBridge::OnURLFetchComplete for: "
+          << fetch_state_.url_poster->GetURL().spec();
+  VLOG(1) << "HttpBridge received response code: "
+          << fetch_state_.http_response_code;
+
   source->GetResponseAsString(&fetch_state_.response_content);
   fetch_state_.response_headers = source->GetResponseHeaders();
 
