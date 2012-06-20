@@ -651,7 +651,7 @@ const char kLanguageMozcSuggestionsSize[] =
 
 // A integer prefs which determine how we remap modifier keys (e.g. swap Alt-L
 // and Control-L.) Possible values for these prefs are 0-4. See ModifierKey enum
-// in src/third_party/cros/chrome_keyboard.h for details.
+// in src/chrome/browser/chromeos/input_method/xkeyboard.h
 const char kLanguageXkbRemapSearchKeyTo[] =
     "settings.language.xkb_remap_search_key_to";
 const char kLanguageXkbRemapControlKeyTo[] =

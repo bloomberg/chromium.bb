@@ -10,9 +10,16 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "third_party/cros/chromeos_network.h"
 
 namespace chromeos {
+
+// Enum to describe type of a plan.
+enum CellularDataPlanType {
+  CELLULAR_DATA_PLAN_UNKNOWN = 0,
+  CELLULAR_DATA_PLAN_UNLIMITED = 1,
+  CELLULAR_DATA_PLAN_METERED_PAID = 2,
+  CELLULAR_DATA_PLAN_METERED_BASE = 3
+};
 
 // Cellular network is considered low data when less than 60 minues.
 extern const int kCellularDataLowSecs;
@@ -29,7 +36,6 @@ extern const int kCellularDataVeryLowBytes;
 class CellularDataPlan {
  public:
   CellularDataPlan();
-  explicit CellularDataPlan(const CellularDataPlanInfo &plan);
   ~CellularDataPlan();
 
   // Formats cellular plan description.

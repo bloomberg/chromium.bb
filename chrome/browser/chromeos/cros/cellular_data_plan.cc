@@ -33,16 +33,6 @@ CellularDataPlan::CellularDataPlan()
       data_bytes_used(0) {
 }
 
-CellularDataPlan::CellularDataPlan(const CellularDataPlanInfo &plan)
-    : plan_name(plan.plan_name ? plan.plan_name : ""),
-      plan_type(plan.plan_type),
-      update_time(base::Time::FromInternalValue(plan.update_time)),
-      plan_start_time(base::Time::FromInternalValue(plan.plan_start_time)),
-      plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
-      plan_data_bytes(plan.plan_data_bytes),
-      data_bytes_used(plan.data_bytes_used) {
-}
-
 CellularDataPlan::~CellularDataPlan() {}
 
 string16 CellularDataPlan::GetPlanDesciption() const {

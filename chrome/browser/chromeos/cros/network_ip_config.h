@@ -8,11 +8,23 @@
 #include <string>
 #include <vector>
 
-#include "third_party/cros/chromeos_network.h"
+#include "base/basictypes.h"
 
 namespace chromeos {
 
- // IP Configuration.
+// ipconfig types (see flimflam/files/doc/ipconfig-api.txt)
+enum IPConfigType {
+  IPCONFIG_TYPE_UNKNOWN,
+  IPCONFIG_TYPE_IPV4,
+  IPCONFIG_TYPE_IPV6,
+  IPCONFIG_TYPE_DHCP,
+  IPCONFIG_TYPE_BOOTP,  // Not Used.
+  IPCONFIG_TYPE_ZEROCONF,
+  IPCONFIG_TYPE_DHCP6,
+  IPCONFIG_TYPE_PPP,
+};
+
+// IP Configuration.
 struct NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
                   const std::string& address, const std::string& netmask,

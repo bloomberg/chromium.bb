@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/cros/cellular_data_plan.h"
 #include "chrome/browser/chromeos/cros/network_ip_config.h"
-#include "third_party/cros/chromeos_network.h"
 
 namespace base {
 
@@ -25,6 +24,30 @@ class Value;
 }  // namespace base
 
 namespace chromeos {
+
+// Describes whether there is an error and whether the error came from
+// the local system or from the server implementing the connect
+// method.
+enum NetworkMethodErrorType {
+  NETWORK_METHOD_ERROR_NONE = 0,
+  NETWORK_METHOD_ERROR_LOCAL = 1,
+  NETWORK_METHOD_ERROR_REMOTE = 2,
+};
+
+// Struct to represent a SMS.
+struct SMS {
+  base::Time timestamp;
+  const char *number;
+  const char *text;
+  const char *smsc;  // optional; NULL if not present in message
+  int32 validity;  // optional; -1 if not present in message
+  int32 msgclass;  // optional; -1 if not present in message
+};
+
+// Callback to be called when receiving a SMS.
+typedef void (*MonitorSMSCallback)(void* object,
+                                   const char* modem_device_path,
+                                   const SMS* message);
 
 // Callback for asynchronous getters.
 typedef base::Callback<void(
