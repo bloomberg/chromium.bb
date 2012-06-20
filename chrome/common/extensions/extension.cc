@@ -1368,7 +1368,7 @@ bool Extension::LoadManifestVersion(string16* error) {
         l10n_util::GetStringFUTF8(
             IDS_EXTENSION_MANIFEST_VERSION_OLD,
             ASCIIToUTF16("<a href='http://code.google.com/chrome/extensions/"
-                         "manifestVersion.html'>"),
+                         "manifestVersion.html' target='_blank'>"),
             ASCIIToUTF16("</a>"))));
   }
 
