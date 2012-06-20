@@ -44,12 +44,13 @@ tester.addAsyncTest('trusted_crash_during_startup', function(status) {
     var test_args = getTestArguments({ 'is_pnacl': 'false' });
     if (test_args['is_pnacl'] != 'false') {
       expected_error = ('NaCl module load failed: PnaclCoordinator: ' +
-                        'Compile process could not be created.');
+                        'Compile process could not be created');
+      status.assert(begins_with(embed.lastError, expected_error));
     } else {
       expected_error = ('NaCl module load failed: ServiceRuntime: ' +
                         'command channel creation failed');
+      status.assertEqual(embed.lastError, expected_error);
     }
-    status.assertEqual(embed.lastError, expected_error);
     status.pass();
   }), true);
 
