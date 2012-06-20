@@ -59,6 +59,23 @@ const char kHTTPInternalErrorText[] = "Internal Error";
 // Initial size of download buffer, same as kBufferSize used for URLFetcherCore.
 const int kInitialDownloadBufferSizeInBytes = 4096;
 
+struct MimeTypeReplacement {
+  const char* original_type;
+  const char* new_type;
+};
+
+const MimeTypeReplacement kMimeTypeReplacements[] = {
+    {"message/rfc822","multipart/related"} // Fixes MHTML
+};
+
+std::string FixupMimeType(const std::string& type) {
+  for (size_t i = 0; i < arraysize(kMimeTypeReplacements); i++) {
+    if (type == kMimeTypeReplacements[i].original_type)
+      return kMimeTypeReplacements[i].new_type;
+  }
+  return type;
+}
+
 // Empty callback for net::FileStream::Close().
 void EmptyCompletionCallback(int) {
 }
@@ -325,7 +342,7 @@ void GDataURLRequestJob::Kill() {
 
 bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  mime_type->assign(mime_type_);
+  mime_type->assign(FixupMimeType(mime_type_));
   return !mime_type->empty();
 }
 
