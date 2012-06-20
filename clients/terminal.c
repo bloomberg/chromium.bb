@@ -1765,13 +1765,13 @@ handle_special_char(struct terminal *terminal, char c)
 		break;
 	case '\t':
 		while (terminal->column < terminal->width) {
-			if (terminal->tab_ruler[terminal->column]) break;
 			if (terminal->mode & MODE_IRM)
 				terminal_shift_line(terminal, +1);
 			row[terminal->column].byte[0] = ' ';
 			row[terminal->column].byte[1] = '\0';
 			attr_row[terminal->column] = terminal->curr_attr;
 			terminal->column++;
+			if (terminal->tab_ruler[terminal->column]) break;
 		}
 		if (terminal->column >= terminal->width) {
 			terminal->column = terminal->width - 1;
