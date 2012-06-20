@@ -2123,6 +2123,8 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		break;
 
 	case XKB_KEY_BackSpace:
+		ch[len++] = 0x7f;
+		break;
 	case XKB_KEY_Tab:
 	case XKB_KEY_Linefeed:
 	case XKB_KEY_Clear:
