@@ -143,11 +143,8 @@ class ExtensionServiceInterface : public SyncableService {
 class ExtensionService
     : public ExtensionServiceInterface,
       public ExternalExtensionProviderInterface::VisitorInterface,
-      public base::SupportsWeakPtr<ExtensionService>,
       public content::NotificationObserver {
  public:
-  using base::SupportsWeakPtr<ExtensionService>::AsWeakPtr;
-
   // The name of the directory inside the profile where extensions are
   // installed to.
   static const char* kInstallDirectoryName;
@@ -617,6 +614,9 @@ class ExtensionService
   extensions::APIResourceController* api_resource_controller();
 
   AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
+
+  // Specialization of SyncableService::AsWeakPtr.
+  base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
  private:
   // Contains Extension data that can change during the life of the process,
