@@ -12,6 +12,9 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_instance.h"
+#include "webkit/glue/webpreferences.h"
+
+using webkit_glue::WebPreferences;
 
 namespace content {
 
@@ -46,12 +49,19 @@ void BrowserPluginChannelManager::CreateRenderView(
     DCHECK(success);
     embedder_channels_[params.embedder_channel_name] = channel;
   }
+
+  // Force compositing on browser tag guests since software rendering path is
+  // not implemented (yet). Short term solution so force compositing is not
+  // required to be set globally.
+  WebPreferences modified_web_preferences = params.web_preferences;
+  modified_web_preferences.force_compositing_mode = true;
+
   RenderViewImpl* render_view =
     RenderViewImpl::Create(
         params.parent_window,
         params.opener_route_id,
         params.renderer_preferences,
-        params.web_preferences,
+        modified_web_preferences,
         new SharedRenderViewCounter(0),
         params.view_id,
         params.surface_id,
