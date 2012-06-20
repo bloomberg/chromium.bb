@@ -227,7 +227,8 @@ PnaclCoordinator::PnaclCoordinator(
     const nacl::string& pexe_url,
     const nacl::string& cache_identity,
     const pp::CompletionCallback& translate_notify_callback)
-  : plugin_(plugin),
+  : translate_finish_error_(PP_OK),
+    plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
     manifest_(new ExtensionManifest(plugin->url_util())),

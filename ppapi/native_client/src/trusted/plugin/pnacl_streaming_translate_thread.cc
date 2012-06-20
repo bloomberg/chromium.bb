@@ -35,7 +35,7 @@ void PnaclStreamingTranslateThread::RunTranslate(
   nexe_file_ = nexe_file;
   pexe_wrapper_ = NULL; // The streaming translator doesn't use a pexe desc.
   DCHECK(pexe_wrapper == NULL);
-  error_info_ = error_info;
+  coordinator_error_info_ = error_info;
   resources_ = resources;
   plugin_ = plugin;
 
@@ -83,10 +83,12 @@ void PnaclStreamingTranslateThread::PutBytes(std::vector<char>* bytes,
 }
 
 void PnaclStreamingTranslateThread::DoTranslate() {
+  ErrorInfo error_info;
   nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
-      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_));
+      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_, &error_info));
   if (llc_subprocess == NULL) {
-    TranslateFailed("Compile process could not be created.");
+    TranslateFailed("Compile process could not be created: " +
+                    error_info.message());
     return;
   }
   // Run LLC.

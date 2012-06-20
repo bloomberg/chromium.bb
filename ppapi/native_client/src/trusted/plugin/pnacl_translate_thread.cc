@@ -18,7 +18,7 @@ PnaclTranslateThread::PnaclTranslateThread() : subprocesses_should_die_(false),
                                                obj_file_(NULL),
                                                nexe_file_(NULL),
                                                pexe_wrapper_(NULL),
-                                               error_info_(NULL),
+                                               coordinator_error_info_(NULL),
                                                resources_(NULL),
                                                plugin_(NULL) {
   NaClXMutexCtor(&subprocess_mu_);
@@ -40,7 +40,7 @@ void PnaclTranslateThread::RunTranslate(
   obj_file_ = obj_file;
   nexe_file_ = nexe_file;
   pexe_wrapper_ = pexe_wrapper;
-  error_info_ = error_info;
+  coordinator_error_info_ = error_info;
   resources_ = resources;
   plugin_ = plugin;
 
@@ -63,12 +63,13 @@ void PnaclTranslateThread::RunTranslate(
 
 NaClSubprocess* PnaclTranslateThread::StartSubprocess(
     const nacl::string& url_for_nexe,
-    const Manifest* manifest) {
+    const Manifest* manifest,
+    ErrorInfo* error_info) {
   PLUGIN_PRINTF(("PnaclTranslateThread::StartSubprocess (url_for_nexe=%s)\n",
                  url_for_nexe.c_str()));
   nacl::DescWrapper* wrapper = resources_->WrapperForUrl(url_for_nexe);
   nacl::scoped_ptr<NaClSubprocess> subprocess(
-      plugin_->LoadHelperNaClModule(wrapper, manifest, error_info_));
+      plugin_->LoadHelperNaClModule(wrapper, manifest, error_info));
   if (subprocess.get() == NULL) {
     PLUGIN_PRINTF((
         "PnaclTranslateThread::StartSubprocess: subprocess creation failed\n"));
@@ -84,10 +85,12 @@ void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
 }
 
 void PnaclTranslateThread::DoTranslate() {
+  ErrorInfo error_info;
   nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
-      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_));
+      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_, &error_info));
   if (llc_subprocess == NULL) {
-    TranslateFailed("Compile process could not be created.");
+    TranslateFailed("Compile process could not be created: " +
+                    error_info.message());
     return;
   }
   // Run LLC.
@@ -130,10 +133,12 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
                                            const nacl::string& soname,
                                            const nacl::string& lib_dependencies
                                            ) {
+  ErrorInfo error_info;
   nacl::scoped_ptr<NaClSubprocess> ld_subprocess(
-      StartSubprocess(PnaclUrls::GetLdUrl(), ld_manifest_));
+      StartSubprocess(PnaclUrls::GetLdUrl(), ld_manifest_, &error_info));
   if (ld_subprocess == NULL) {
-    TranslateFailed("Link process could not be created.");
+    TranslateFailed("Link process could not be created: " +
+                    error_info.message());
     return false;
   }
   // Run LD.
@@ -170,11 +175,12 @@ void PnaclTranslateThread::TranslateFailed(const nacl::string& error_string) {
   PLUGIN_PRINTF(("PnaclTranslateThread::TranslateFailed (error_string='%s')\n",
                  error_string.c_str()));
   pp::Core* core = pp::Module::Get()->core();
-  if (error_info_->message().empty()) {
+  if (coordinator_error_info_->message().empty()) {
     // Only use our message if one hasn't already been set by the coordinator
     // (e.g. pexe load failed).
-    error_info_->SetReport(ERROR_UNKNOWN,
-                           nacl::string("PnaclCoordinator: ") + error_string);
+    coordinator_error_info_->SetReport(ERROR_UNKNOWN,
+                                       nacl::string("PnaclCoordinator: ") +
+                                       error_string);
   }
   core->CallOnMainThread(0, report_translate_finished_, PP_ERROR_FAILED);
 }

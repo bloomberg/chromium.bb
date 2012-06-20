@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 
 #include "ppapi/cpp/completion_callback.h"
 
@@ -20,7 +21,6 @@ class DescWrapper;
 
 namespace plugin {
 
-class ErrorInfo;
 class LocalTempFile;
 class Manifest;
 class NaClSubprocess;
@@ -50,7 +50,8 @@ class PnaclTranslateThread {
  protected:
   // Starts an individual llc or ld subprocess used for translation.
   NaClSubprocess* StartSubprocess(const nacl::string& url,
-                                  const Manifest* manifest);
+                                  const Manifest* manifest,
+                                  ErrorInfo* error_info);
   // Helper thread entry point for translation. Takes a pointer to
   // PnaclTranslateThread and calls DoTranslate().
   static void WINAPI DoTranslateThread(void* arg);
@@ -78,7 +79,7 @@ class PnaclTranslateThread {
   LocalTempFile* obj_file_;
   LocalTempFile* nexe_file_;
   nacl::DescWrapper* pexe_wrapper_;
-  ErrorInfo* error_info_;
+  ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
   Plugin* plugin_;
  private:
