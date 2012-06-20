@@ -118,8 +118,8 @@ class Target {
   bool GetFirstThreadId(uint32_t *id);
   bool GetNextThreadId(uint32_t *id);
 
-  uint32_t GetRegThreadId() const;
-  uint32_t GetRunThreadId() const;
+  port::IThread *GetRegThread();
+  port::IThread *GetRunThread();
   port::IThread *GetThread(uint32_t id);
 
  private:
@@ -153,9 +153,6 @@ class Target {
   // Signaled thread id.
   // Set to 0 when execution was interrupted by GDB and not by a signal.
   volatile uint32_t sig_thread_;
-
-  // Thread for subsequent step and continue operations.
-  uint32_t run_thread_;
 
   // Thread for subsequent registers access operations.
   uint32_t reg_thread_;

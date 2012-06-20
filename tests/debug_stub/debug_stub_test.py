@@ -348,9 +348,11 @@ class DebugStubTest(unittest.TestCase):
 
       self.CheckSingleStep(connection, 'vCont;s:%x' % tid, reply)
 
-      # Try to single-step the thread and to continue all others.
+      # Single step one thread and continue all others.
       reply = connection.RspRequest('vCont;s:%x;c' % tid)
-      self.assertTrue(reply.startswith('E'))
+      # WARNING! This check is valid in single-threaded case only!
+      # In multi-threaded case another thread might stop first.
+      self.assertTrue(reply.startswith('T05thread:%x' % tid))
 
       # Try to continue the thread and to single-step all others.
       reply = connection.RspRequest('vCont;c:%x;s' % tid)

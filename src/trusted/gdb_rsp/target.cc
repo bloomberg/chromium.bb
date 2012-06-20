@@ -43,7 +43,6 @@ Target::Target(const Abi* abi)
     ctx_(NULL),
     cur_signal_(0),
     sig_thread_(0),
-    run_thread_(0),
     reg_thread_(0),
     mem_base_(0) {
   if (NULL == abi_) abi_ = Abi::Get();
@@ -191,7 +190,6 @@ void Target::Signal(uint32_t id, int8_t sig, bool wait) {
     cur_signal_ = sig;
     sig_thread_ = id;
     reg_thread_ = id;
-    run_thread_ = id;
   }
 
   // Wait for permission to continue
@@ -373,13 +371,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     // IN : $g
     // OUT: $xx...xx
     case 'g': {
-      uint32_t id = GetRegThreadId();
-      if (0 == id) {
-        err = BAD_ARGS;
-        break;
-      }
-
-      IThread *thread = GetThread(id);
+      IThread *thread = GetRegThread();
       if (NULL == thread) {
         err = BAD_ARGS;
         break;
@@ -398,13 +390,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     // IN : $Gxx..xx
     // OUT: $OK
     case 'G': {
-      uint32_t id = GetRegThreadId();
-      if (0 == id) {
-        err = BAD_ARGS;
-        break;
-      }
-
-      IThread *thread = threads_[id];
+      IThread *thread = GetRegThread();
       if (NULL == thread) {
         err = BAD_ARGS;
         break;
@@ -458,9 +444,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
             break;
 
           case 'c':
-            run_thread_ = static_cast<uint32_t>(id);
-            break;
-
+            // 'c' is deprecated in favor of vCont.
           default:
             err = BAD_ARGS;
             break;
@@ -577,7 +561,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     }
 
     case 's': {
-      IThread *thread = GetThread(GetRunThreadId());
+      IThread *thread = GetRunThread();
       if (thread) thread->SetStep(true);
       return true;
     }
@@ -617,11 +601,11 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         }
 
         if (strncmp(subcommand, ";s:", 3) == 0) {
-          // Single step one thread.
+          // Single step one thread and optionally continue all other threads.
           char *end;
           uint32_t thread_id = static_cast<uint32_t>(
               strtol(subcommand + 3, &end, 16));
-          if (end == subcommand + 3 || *end != 0) {
+          if (end == subcommand + 3) {
             err = BAD_ARGS;
             break;
           }
@@ -632,8 +616,32 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
             break;
           }
 
+          if (*end == 0) {
+            // Single step one thread and keep other threads stopped.
+            // GDB uses this to continue from a breakpoint, which works by:
+            // - replacing trap instruction with the original instruction;
+            // - single-stepping through the original instruction. Other threads
+            //   must remain stopped, otherwise they might execute the code at
+            //   the same address and thus miss the breakpoint;
+            // - replacing the original instruction with trap instruction;
+            // - continuing all threads;
+            if (thread_id != sig_thread_) {
+              err = BAD_ARGS;
+              break;
+            }
+            // TODO(eaeltsin): switch to stepping-over-breakpoint mode, when
+            // suspended threads are not resumed. Save thread being stepped
+            // for checking.
+            // step_over_breakpoint_thread_ = sig_thread_;
+          } else if (strcmp(end, ";c") == 0) {
+            // Single step one thread and continue all other threads.
+          } else {
+            // Unsupported combination of single step and other args.
+            err = BAD_ARGS;
+            break;
+          }
+
           it->second->SetStep(true);
-          run_thread_ = thread_id;
           return true;
         }
 
@@ -698,7 +706,7 @@ void Target::Detach() {
 }
 
 
-uint32_t Target::GetRegThreadId() const {
+IThread* Target::GetRegThread() {
   ThreadMap_t::const_iterator itr;
 
   switch (reg_thread_) {
@@ -715,11 +723,19 @@ uint32_t Target::GetRegThreadId() const {
 
   if (itr == threads_.end()) return 0;
 
-  return itr->first;
+  return itr->second;
 }
 
-uint32_t Target::GetRunThreadId() const {
-  return run_thread_;
+IThread* Target::GetRunThread() {
+  // This is used to select a thread for "s" (step) command only.
+  // For multi-threaded targets, "s" is deprecated in favor of "vCont", which
+  // always specifies the thread explicitly when needed. However, we want
+  // to keep backward compatibility here, as using "s" when debugging
+  // a single-threaded program might be a popular use case.
+  if (threads_.size() == 1) {
+    return threads_.begin()->second;
+  }
+  return NULL;
 }
 
 IThread* Target::GetThread(uint32_t id) {
