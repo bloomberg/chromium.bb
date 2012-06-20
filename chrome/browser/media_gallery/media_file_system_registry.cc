@@ -110,9 +110,11 @@ void MediaFileSystemRegistry::Observe(
  ******************/
 
 MediaFileSystemRegistry::MediaFileSystemRegistry() {
+  SystemMonitor::Get()->AddDevicesChangedObserver(this);
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {
+  SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
 }
 
 void MediaFileSystemRegistry::RegisterForRPHGoneNotifications(
