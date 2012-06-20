@@ -42,7 +42,9 @@ class PasswordChangedView : public views::DialogDelegateView,
     virtual void ResyncEncryptedData() = 0;
   };
 
-  PasswordChangedView(Delegate* delegate, bool full_sync_disabled);
+  PasswordChangedView(Delegate* delegate,
+                      bool full_sync_disabled,
+                      bool show_invalid_old_password_error);
   virtual ~PasswordChangedView() {}
 
   // views::DialogDelegate:
@@ -87,12 +89,17 @@ class PasswordChangedView : public views::DialogDelegateView,
   views::RadioButton* full_sync_radio_;
   views::RadioButton* delta_sync_radio_;
   views::Textfield* old_password_field_;
+  views::Label* password_error_label_;
 
   // Notifications receiver.
   Delegate* delegate_;
 
   // Whether full sync option is disabled.
-  bool full_sync_disabled_;
+  const bool full_sync_disabled_;
+
+  // Whether should show "Incorrect password" error message
+  // i.e. dialog is opened second time after incorrect old password input try.
+  const bool show_invalid_old_password_error_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordChangedView);
 };

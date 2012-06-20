@@ -668,12 +668,19 @@ void ExistingUserController::OnPasswordChangeDetected() {
     return;
   }
 
+  // True if user has already made an attempt to enter old password and failed.
+  bool show_invalid_old_password_error =
+      login_performer_->password_changed_callback_count() > 1;
+
   // Passing 'false' here enables "full sync" mode in the dialog,
   // which disables the requirement for the old owner password,
   // allowing us to recover from a lost owner password/homedir.
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
-  PasswordChangedView* view = new PasswordChangedView(this, false);
+  PasswordChangedView* view = new PasswordChangedView(
+      this,
+      false,  // Allow removal of existing cryptohome, perform full migration.
+      show_invalid_old_password_error);
   views::Widget* window = views::Widget::CreateWindowWithParent(
       view, GetNativeWindow());
   window->SetAlwaysOnTop(true);

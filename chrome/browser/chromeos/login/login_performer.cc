@@ -54,6 +54,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       last_login_failure_(LoginFailure::None()),
       delegate_(delegate),
       password_changed_(false),
+      password_changed_callback_count_(0),
       screen_lock_requested_(false),
       initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
@@ -212,6 +213,7 @@ void LoginPerformer::OnOffTheRecordLoginSuccess() {
 
 void LoginPerformer::OnPasswordChangeDetected() {
   password_changed_ = true;
+  password_changed_callback_count_++;
   if (delegate_) {
     delegate_->OnPasswordChangeDetected();
   } else {

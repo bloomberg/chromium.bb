@@ -34,14 +34,17 @@ const int kPasswordFieldWidthChars = 20;
 }  // namespace
 
 PasswordChangedView::PasswordChangedView(Delegate* delegate,
-                                         bool full_sync_disabled)
+                                         bool full_sync_disabled,
+                                         bool show_invalid_old_password_error)
     : title_label_(NULL),
       description_label_(NULL),
       full_sync_radio_(NULL),
       delta_sync_radio_(NULL),
       old_password_field_(NULL),
+      password_error_label_(NULL),
       delegate_(delegate),
-      full_sync_disabled_(full_sync_disabled) {
+      full_sync_disabled_(full_sync_disabled),
+      show_invalid_old_password_error_(show_invalid_old_password_error) {
 }
 
 bool PasswordChangedView::Accept() {
@@ -125,6 +128,16 @@ void PasswordChangedView::Init() {
   old_password_field_->set_default_width_in_chars(kPasswordFieldWidthChars);
   old_password_field_->SetController(this);
 
+  if (show_invalid_old_password_error_) {
+    password_error_label_ = new Label();
+    // TODO(nkostylev): Add separate string on TOT.
+    password_error_label_->SetText(
+        l10n_util::GetStringUTF16(IDS_NETWORK_CONFIG_ERROR_INCORRECT_PASSWORD));
+    password_error_label_->SetMultiLine(true);
+    password_error_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+    password_error_label_->SetEnabledColor(SK_ColorRED);
+  }
+
   // Define controls layout.
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
@@ -153,6 +166,13 @@ void PasswordChangedView::Init() {
   layout->StartRow(0, 1);
   layout->AddView(
       old_password_field_, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
+
+  if (show_invalid_old_password_error_) {
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+    layout->StartRow(0, 1);
+    layout->AddView(
+        password_error_label_, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
+  }
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
