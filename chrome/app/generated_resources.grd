@@ -16210,6 +16210,9 @@ Battery full
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_DENY" desc="Text to show for the deny button for the register protocol handler request infobar.">
       No
     </message>
+    <message name="IDS_REGISTER_PROTOCOL_HANDLER_IGNORE" desc="Text to show for an ignore prompt for a register protocol handler registration request.">
+      Ignore 
+    </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED" desc="Text to show when the user tries to register a protocol handler that they have already registered.">
       <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> is already being used to handle <ph name="PROTOCOL">$2<ex>search</ex></ph>: links.
     </message>
