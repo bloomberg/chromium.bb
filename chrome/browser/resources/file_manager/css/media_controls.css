@@ -3,11 +3,9 @@
  * found in the LICENSE file. */
 
 .media-button {
-  background-position: center center;
-  background-repeat: no-repeat;
   height: 28px;
   position: relative;
-  width: 28px;
+  width: 26px;
 }
 
 .media-button > div {
@@ -162,7 +160,7 @@
   background: #202020;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
-  bottom: 20px;
+  bottom: 19px;
   color: white;
   display: -webkit-box;
   font-size: 13px;
@@ -259,6 +257,7 @@
 /* Time display. */
 
 .time-controls > .time {
+  cursor: default;
   height: 100%;
   margin-left: 15px;
   position: relative;
@@ -298,8 +297,8 @@
 /* Sound button */
 
 .media-button.sound {
-  background-position: -2px center;
   margin-left: -4px;
+  width: 31px;
 }
 
 .media-button.sound[level='0'] > .normal {
