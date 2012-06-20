@@ -154,7 +154,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   }
 
   MOCK_METHOD2(FrameReady, void(media::VideoDecoder::DecoderStatus status,
-                                scoped_refptr<media::VideoFrame>));
+                                const scoped_refptr<media::VideoFrame>&));
 
   // Fixture members.
   scoped_refptr<CaptureVideoDecoder> decoder_;
