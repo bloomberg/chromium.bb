@@ -35,6 +35,7 @@ Library
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include "louis.h"
 #include "config.h"
@@ -188,7 +189,7 @@ lou_logPrint (char *format, ...)
   if (logFile == NULL && initialLogFileName[0] != 0)
     logFile = fopen (initialLogFileName, "wb");
   if (logFile == NULL);
-    logFile = stderr;
+  logFile = stderr;
   va_start (argp, format);
   vfprintf (logFile, format, argp);
   fprintf (logFile, "\n");
@@ -5111,6 +5112,40 @@ lou_compileString (const char *tableList, const char *inString)
  * This procedure provides a target for cals that serve as breakpoints 
  * for gdb.
  */
+char *EXPORT_CALL
+lou_getTablePaths ()
+{
+  static char paths[MAXSTRING];
+  char *pathList;
+  strcpy (paths, tablePath);
+  strcat (paths, ",");
+  pathList = getenv ("LOUIS_TABLEPATH");
+  if (pathList)
+    {
+      strcat (paths, pathList);
+      strcat (paths, ",");
+    }
+  pathList = getcwd (scratchBuf, MAXSTRING);
+  if (pathList)
+    {
+      strcat (paths, pathList);
+      strcat (paths, ",");
+    }
+  pathList = lou_getDataPath ();
+  if (pathList)
+    {
+      strcat (paths, pathList);
+      strcat (paths, ",");
+    }
+#ifdef _WIN32
+  strcpy (paths, lou_getProgramPath ());
+  strcat (paths, "\\share\\liblouss\\tables\\");
+#else
+  strcpy (paths, TABLESDIR);
+#endif
+  return paths;
+}
+
 void
 debugHook ()
 {

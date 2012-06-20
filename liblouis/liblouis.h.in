@@ -34,7 +34,7 @@ extern "C"
 
 #ifdef _WIN32
 #define EXPORT_CALL __stdcall
-char * EXPORT_CALL lou_getProgramPath (void);
+char * EXPORT_CALL lou_getProgramPath ();
 #else
 #define EXPORT_CALL
 #endif
@@ -114,7 +114,7 @@ char *typeform, char *spacing, int
 * ASCII8, and return it as an integer. EOF at end of file. Mode = 1 on 
 * first call, any other value thereafter*/
 
-  void EXPORT_CALL lou_logEnd (void);
+  void EXPORT_CALL lou_logEnd ();
   /* Closes the log file so it can be read by other functions. */
 
   void * EXPORT_CALL lou_getTable (const char *tableList);
@@ -127,8 +127,16 @@ char *typeform, char *spacing, int
 int EXPORT_CALL lou_compileString (const char *tableList, const char 
     *inString);
   char * EXPORT_CALL lou_setDataPath (char *path);
-  char * EXPORT_CALL lou_getDataPath ();  
-  void EXPORT_CALL lou_free (void);
+  /* Set the path used for searching for tables and liblouisutdml files. 
+  * Overrides the installation path. */
+
+  char * EXPORT_CALL lou_getDataPath ();
+  /* Get the path set in the previous function. */
+
+  char EXPORT_CALL * lou_getTablePaths ();
+  /* Get a list of paths actually used in seraching for tables*/
+
+  void EXPORT_CALL lou_free ();
 /* This function should be called at the end of 
 * the application to free all memory allocated by liblouis. */
 
