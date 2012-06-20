@@ -618,9 +618,9 @@ test-all-newlib() {
   # First build everything.
   echo "@@@BUILD_STEP scons build @@@"
   local scons_flags="--mode=opt-host,nacl skip_trusted_tests=1 -j${concur}"
-  scons-stage "arm"    "${scons_flags}" "${EVERYTHING}"
-  scons-stage "x86-32" "${scons_flags}" "${EVERYTHING}"
-  scons-stage "x86-64" "${scons_flags}" "${EVERYTHING}"
+  scons-stage "arm"    "${scons_flags}" "${SCONS_EVERYTHING}"
+  scons-stage "x86-32" "${scons_flags}" "${SCONS_EVERYTHING}"
+  scons-stage "x86-64" "${scons_flags}" "${SCONS_EVERYTHING}"
   # Then run at least the smoke_tests
   echo "@@@BUILD_STEP scons smoke_tests @@@"
   scons-stage "arm"    "${scons_flags}" "smoke_tests"
