@@ -88,6 +88,7 @@ void AppShortcutManager::InstallApplicationShortcuts(
   shortcut_info_.create_in_applications_menu = true;
   shortcut_info_.create_in_quick_launch_bar = true;
   shortcut_info_.create_on_desktop = true;
+  shortcut_info_.profile_path = profile_->GetPath();
 
   std::vector<ImageLoadingTracker::ImageInfo> info_list;
   for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {

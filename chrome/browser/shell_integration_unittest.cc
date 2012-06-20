@@ -361,7 +361,8 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             false,
             FilePath(),
             ASCIIToUTF16(test_cases[i].title),
-            test_cases[i].icon_name));
+            test_cases[i].icon_name,
+            FilePath()));
   }
 }
 #elif defined(OS_WIN)

@@ -487,7 +487,8 @@ std::string GetDesktopFileContents(
     const bool is_platform_app,
     const FilePath& extension_path,
     const string16& title,
-    const std::string& icon_name) {
+    const std::string& icon_name,
+    const FilePath& profile_path) {
   if (template_contents.empty())
     return std::string(kXdgOpenShebang) + "\n";
 
@@ -552,7 +553,7 @@ std::string GetDesktopFileContents(
     }
     CommandLine cmd_line(CommandLine::NO_PROGRAM);
     cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-        url, extension_id, is_platform_app);
+        url, extension_id, is_platform_app, profile_path);
     const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
     for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
          i != switch_map.end(); ++i) {
@@ -601,7 +602,7 @@ bool CreateDesktopShortcut(
   if (shortcut_filename.empty())
     return false;
 
-  std::string icon_name =CreateShortcutIcon(shortcut_info, shortcut_filename);
+  std::string icon_name = CreateShortcutIcon(shortcut_info, shortcut_filename);
 
   std::string app_name =
       web_app::GenerateApplicationNameFromInfo(shortcut_info);
@@ -613,7 +614,8 @@ bool CreateDesktopShortcut(
       shortcut_info.is_platform_app,
       shortcut_info.extension_path,
       shortcut_info.title,
-      icon_name);
+      icon_name,
+      shortcut_info.profile_path);
 
   bool success = true;
 

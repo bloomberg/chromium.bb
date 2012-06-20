@@ -320,6 +320,7 @@ CreateChromeApplicationShortcutsDialogGtk::
   shortcut_info_.url = GURL(app_->launch_web_url());
   shortcut_info_.title = UTF8ToUTF16(app_->name());
   shortcut_info_.description = UTF8ToUTF16(app_->description());
+  shortcut_info_.profile_path = profile_path_;
 
   // Get the icon.
   const gfx::Size max_size(kIconPreviewSizePixels, kIconPreviewSizePixels);

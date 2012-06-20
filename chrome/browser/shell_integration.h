@@ -88,6 +88,7 @@ class ShellIntegration {
     string16 description;
     FilePath extension_path;
     gfx::Image favicon;
+    FilePath profile_path;
 
     // Shortcuts to platform apps are created differently. They start up with
     // their own user data directory and load the app from |extension_path|.
@@ -120,7 +121,8 @@ class ShellIntegration {
   static CommandLine CommandLineArgsForLauncher(
       const GURL& url,
       const std::string& extension_app_id,
-      bool is_platform_app);
+      bool is_platform_app,
+      const FilePath& profile_path);
 
 #if defined(OS_WIN)
   // Generates an application user model ID (AppUserModelId) for a given app

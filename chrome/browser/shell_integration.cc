@@ -55,7 +55,8 @@ bool ShellIntegration::IsRunningInAppMode() {
 CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
-    bool is_platform_app) {
+    bool is_platform_app,
+    const FilePath& profile_path) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
 
@@ -73,6 +74,9 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
   if (!profile.empty())
     new_cmd_line.AppendSwitchPath(switches::kLoginProfile, profile);
+#else
+  if (!profile_path.empty() && !extension_app_id.empty())
+    new_cmd_line.AppendSwitchPath(switches::kProfileDirectory, profile_path);
 #endif
 
   // If |extension_app_id| is present, we use the kAppId switch rather than

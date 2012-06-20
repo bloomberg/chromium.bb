@@ -38,7 +38,8 @@ std::string GetDesktopFileContents(const std::string& template_contents,
                                    const bool is_platform_app,
                                    const FilePath& extension_path,
                                    const string16& title,
-                                   const std::string& icon_name);
+                                   const std::string& icon_name,
+                                   const FilePath& profile_path);
 
 bool CreateDesktopShortcut(const ShellIntegration::ShortcutInfo& shortcut_info,
                            const std::string& shortcut_template);
