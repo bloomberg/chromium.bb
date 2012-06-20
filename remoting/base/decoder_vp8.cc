@@ -147,6 +147,12 @@ void DecoderVp8::RenderFrame(const SkISize& view_size,
                                     RoundToTwosMultiple(source_rect.top()),
                                     source_rect.right(),
                                     source_rect.bottom());
+
+    // If there were no changes within the clip source area then don't render.
+    if (!updated_region_.intersects(source_rect))
+      return;
+
+    // Scale & convert the entire clip area.
     int y_offset = CalculateYOffset(source_rect.x(),
                                     source_rect.y(),
                                     last_image_->stride[0]);
