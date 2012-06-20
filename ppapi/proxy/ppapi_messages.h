@@ -952,8 +952,7 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_LockMouse,
                     PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_UnlockMouse,
                     PP_Instance /* instance */)
-IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings,
-                           PP_Instance /* instance */,
+IPC_SYNC_MESSAGE_ROUTED0_2(PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings,
                            PP_PrintSettings_Dev /* settings */,
                            bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,

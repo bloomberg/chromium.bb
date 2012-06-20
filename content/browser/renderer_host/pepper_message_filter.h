@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/time.h"
+#include "content/browser/renderer_host/pepper_print_settings_initializer.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/net_util.h"
@@ -29,6 +30,7 @@ class PepperTCPSocket;
 class PepperUDPSocket;
 struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
+struct PP_PrintSettings_Dev;
 
 namespace base {
 class ListValue;
@@ -216,6 +218,11 @@ class PepperMessageFilter
   void OnGetDeviceID(std::string* id);
   void OnGetDeviceIDAsync(int32_t routing_id, PP_Resource resource);
 
+  // Outputs the default print settings in |settings|. Sets |result| to true
+  // on success.
+  void OnGetDefaultPrintSettings(PP_PrintSettings_Dev* settings,
+                                 bool* result);
+
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,
                                scoped_ptr<base::ListValue> result);
@@ -257,6 +264,9 @@ class PepperMessageFilter
 
   FilePath browser_path_;
   bool incognito_;
+
+  scoped_refptr<content::PepperPrintSettingsInitializer>
+      print_settings_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };
