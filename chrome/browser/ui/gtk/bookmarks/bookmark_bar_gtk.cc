@@ -375,7 +375,7 @@ void BookmarkBarGtk::PopupForButton(GtkWidget* button) {
   }
 
   current_menu_.reset(
-      new BookmarkMenuController(browser_->profile(), page_navigator_,
+      new BookmarkMenuController(browser_, page_navigator_,
           GTK_WINDOW(gtk_widget_get_toplevel(button)),
           node,
           button == overflow_button_ ? first_hidden : 0));
@@ -1119,7 +1119,8 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
   GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
   current_context_menu_controller_.reset(
       new BookmarkContextMenuController(
-          window, this, browser_->profile(), page_navigator_, parent, nodes));
+          window, this, browser_, browser_->profile(), page_navigator_, parent,
+          nodes));
   current_context_menu_.reset(
       new MenuGtk(NULL, current_context_menu_controller_->menu_model()));
   current_context_menu_->PopupAsContext(

@@ -14,6 +14,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 
+class Browser;
 class Profile;
 
 namespace content {
@@ -42,14 +43,15 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
                                       public ui::SimpleMenuModel::Delegate {
  public:
   // Creates the bookmark context menu.
+  // |browser| is used to open the bookmark manager and is NULL in tests.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
-  // |browser| is used to determine the PageNavigator and may be null.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.
   BookmarkContextMenuController(
       gfx::NativeWindow parent_window,
       BookmarkContextMenuControllerDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
@@ -89,6 +91,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
 
   gfx::NativeWindow parent_window_;
   BookmarkContextMenuControllerDelegate* delegate_;
+  Browser* browser_;
   Profile* profile_;
   content::PageNavigator* navigator_;
   const BookmarkNode* parent_;
