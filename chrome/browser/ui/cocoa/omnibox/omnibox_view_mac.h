@@ -106,10 +106,6 @@ class OmniboxViewMac : public OmniboxView,
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.
   void FocusLocation(bool select_all);
 
-  // Helper to get appropriate contents from |clipboard|.  Returns
-  // empty string if no appropriate data is found on |clipboard|.
-  static string16 GetClipboardText(ui::Clipboard* clipboard);
-
   // Helper to get the font to use in the field, exposed for the
   // popup.
   static NSFont* GetFieldFont();

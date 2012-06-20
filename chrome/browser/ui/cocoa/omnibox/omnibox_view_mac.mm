@@ -940,7 +940,7 @@ void OmniboxViewMac::OnPaste() {
   // This code currently expects |field_| to be focussed.
   DCHECK([field_ currentEditor]);
 
-  string16 text = GetClipboardText(g_browser_process->clipboard());
+  string16 text = GetClipboardText();
   if (text.empty()) {
     return;
   }
@@ -969,8 +969,7 @@ void OmniboxViewMac::OnPaste() {
 }
 
 bool OmniboxViewMac::CanPasteAndGo() {
-  return
-    model_->CanPasteAndGo(GetClipboardText(g_browser_process->clipboard()));
+  return model_->CanPasteAndGo(GetClipboardText());
 }
 
 int OmniboxViewMac::GetPasteActionStringId() {
@@ -1060,46 +1059,6 @@ void OmniboxViewMac::FocusLocation(bool select_all) {
       [[field_ window] makeFirstResponder:field_];
     DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
   }
-}
-
-// TODO(shess): Copied from omnibox_view_win.cc. Could this be pushed into the
-// model?
-string16 OmniboxViewMac::GetClipboardText(ui::Clipboard* clipboard) {
-  // omnibox_view_win.cc assumes this can never happen, we will too.
-  DCHECK(clipboard);
-
-  if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                   ui::Clipboard::BUFFER_STANDARD)) {
-    string16 text16;
-    clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text16);
-
-    // Note: Unlike in the find popup and textfield view, here we completely
-    // remove whitespace strings containing newlines.  We assume users are
-    // most likely pasting in URLs that may have been split into multiple
-    // lines in terminals, email programs, etc., and so linebreaks indicate
-    // completely bogus whitespace that would just cause the input to be
-    // invalid.
-    return StripJavascriptSchemas(CollapseWhitespace(text16, true));
-  }
-
-  // Try bookmark format.
-  //
-  // It is tempting to try bookmark format first, but the URL we get out of a
-  // bookmark has been cannonicalized via GURL.  This means if a user copies
-  // and pastes from the URL bar to itself, the text will get fixed up and
-  // cannonicalized, which is not what the user expects.  By pasting in this
-  // order, we are sure to paste what the user copied.
-  if (clipboard->IsFormatAvailable(ui::Clipboard::GetUrlWFormatType(),
-                                   ui::Clipboard::BUFFER_STANDARD)) {
-    std::string url_str;
-    clipboard->ReadBookmark(NULL, &url_str);
-    // pass resulting url string through GURL to normalize
-    GURL url(url_str);
-    if (url.is_valid())
-      return StripJavascriptSchemas(UTF8ToUTF16(url.spec()));
-  }
-
-  return string16();
 }
 
 // static
