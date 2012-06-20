@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_local_predictor.h"
 
 #include <algorithm>
+#include <ctype.h>
 #include <map>
 #include <set>
 

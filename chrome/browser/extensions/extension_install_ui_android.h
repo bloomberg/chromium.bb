@@ -20,7 +20,7 @@ class ExtensionInstallUIAndroid : public ExtensionInstallUI {
   virtual void SetSkipPostInstallUI(bool skip_ui);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ExtensionInstallUIAndroid);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallUIAndroid);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_ANDROID_H_

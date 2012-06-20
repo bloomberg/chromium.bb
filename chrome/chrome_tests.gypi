@@ -2347,8 +2347,6 @@
           ],
         }],
         ['OS=="android"', {
-          # TODO(yfriedman): Remove once unit_tests can link for Android.
-          'type': '<(android_unit_test_target_type)',
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
@@ -2383,6 +2381,9 @@
             'test/base/browser_with_test_window_test.cc',
             'test/base/browser_with_test_window_test.h',
             'test/base/test_browser_window.h',
+
+            # TODO(jcivelli): figure-out how to make this compile.
+            'browser/metrics/variations_service_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

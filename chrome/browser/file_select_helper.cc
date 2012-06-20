@@ -408,7 +408,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       web_contents_,
       owning_window,
 #if defined(OS_ANDROID)
-      const_cast<content::FileChooserParams*>(&params);
+      const_cast<content::FileChooserParams*>(&params));
 #else
       NULL);
 #endif

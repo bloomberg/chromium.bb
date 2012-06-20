@@ -546,8 +546,7 @@ bool GetProcessIdForTabFunction::RunImpl() {
 
   return true;
 #else
-  error_ = ExtensionErrorUtils::FormatErrorMessage(
-      errors::kExtensionNotSupported);
+  error_ = errors::kExtensionNotSupported;
   return false;
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
@@ -607,8 +606,7 @@ bool TerminateFunction::RunImpl() {
 
   return true;
 #else
-  error_ = ExtensionErrorUtils::FormatErrorMessage(
-      errors::kExtensionNotSupported);
+  error_ = errors::kExtensionNotSupported;
   return false;
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
@@ -692,8 +690,7 @@ bool GetProcessInfoFunction::RunImpl() {
   return true;
 
 #else
-  error_ = ExtensionErrorUtils::FormatErrorMessage(
-      errors::kExtensionNotSupported);
+  error_ = errors::kExtensionNotSupported;
   return false;
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
@@ -708,6 +705,7 @@ void GetProcessInfoFunction::Observe(
 }
 
 void GetProcessInfoFunction::GatherProcessInfo() {
+#if defined(ENABLE_TASK_MANAGER)
   TaskManagerModel* model = TaskManager::GetInstance()->model();
   DictionaryValue* processes = new DictionaryValue();
 
@@ -751,4 +749,5 @@ void GetProcessInfoFunction::GatherProcessInfo() {
 
   // Balance the AddRef in the RunImpl.
   Release();
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
