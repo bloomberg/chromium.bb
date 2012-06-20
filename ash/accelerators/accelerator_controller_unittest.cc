@@ -806,10 +806,44 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   {
     const ui::Accelerator shift_alt_press(ui::VKEY_MENU,
                                           ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-    const ReleaseAccelerator shift_alt(ui::VKEY_MENU,
-                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator shift_alt(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
     const ui::Accelerator alt_shift_press(ui::VKEY_SHIFT,
                                           ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
+
+    DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
+    GetController()->SetImeControlDelegate(
+        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+    EXPECT_EQ(0, delegate->handle_next_ime_count());
+    EXPECT_FALSE(GetController()->Process(shift_alt_press));
+    EXPECT_TRUE(GetController()->Process(shift_alt));
+    EXPECT_EQ(1, delegate->handle_next_ime_count());
+    EXPECT_FALSE(GetController()->Process(alt_shift_press));
+    EXPECT_TRUE(GetController()->Process(alt_shift));
+    EXPECT_EQ(2, delegate->handle_next_ime_count());
+
+    // We should NOT switch IME when e.g. Shift+Alt+X is pressed and X is
+    // released.
+    const ui::Accelerator shift_alt_x_press(
+        ui::VKEY_X,
+        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator shift_alt_x(ui::VKEY_X,
+                                         ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+
+    EXPECT_FALSE(GetController()->Process(shift_alt_press));
+    EXPECT_FALSE(GetController()->Process(shift_alt_x_press));
+    EXPECT_FALSE(GetController()->Process(shift_alt_x));
+    EXPECT_FALSE(GetController()->Process(shift_alt));
+    EXPECT_EQ(2, delegate->handle_next_ime_count());
+  }
+
+#if defined(OS_CHROMEOS)
+  // Test IME shortcuts again with unnormalized accelerators (Chrome OS only).
+  {
+    const ui::Accelerator shift_alt_press(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
+    const ReleaseAccelerator shift_alt(ui::VKEY_MENU,
+                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ui::Accelerator alt_shift_press(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
     const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT,
                                        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
 
@@ -826,8 +860,9 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
 
     // We should NOT switch IME when e.g. Shift+Alt+X is pressed and X is
     // released.
-    const ui::Accelerator shift_alt_x_press(ui::VKEY_X,
-       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ui::Accelerator shift_alt_x_press(
+        ui::VKEY_X,
+        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
     const ReleaseAccelerator shift_alt_x(ui::VKEY_X,
                                          ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
 
@@ -837,6 +872,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(GetController()->Process(shift_alt));
     EXPECT_EQ(2, delegate->handle_next_ime_count());
   }
+#endif
 }
 
 }  // namespace test
