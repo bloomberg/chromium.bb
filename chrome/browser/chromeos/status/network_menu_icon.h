@@ -108,7 +108,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
 
   // Returns a modified version of |source| representing the connecting state
   // of a network. Public for unit tests.
-  static const SkBitmap GenerateConnectingBitmap(const gfx::ImageSkia& source);
+  static const gfx::ImageSkia GenerateConnectingImage(
+      const gfx::ImageSkia& source);
 
   // Returns an image associated with |network|, reflecting its current state.
   static const gfx::ImageSkia GetImage(const Network* network,

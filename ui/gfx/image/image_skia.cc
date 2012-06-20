@@ -132,6 +132,14 @@ const SkBitmap& ImageSkia::GetBitmapForScale(float scale_factor,
                                       bitmap_scale_factor);
 }
 
+float ImageSkia::GetScaleAtIndex(size_t index) const {
+  const std::vector<SkBitmap>& bitmaps = storage_->bitmaps();
+
+  DCHECK_GE(index, 0u);
+  DCHECK_LT(index, bitmaps.size());
+  return static_cast<float>(bitmaps[index].width()) / width();
+}
+
 const SkBitmap& ImageSkia::GetBitmapForScale(float x_scale_factor,
                                              float y_scale_factor,
                                              float* bitmap_scale_factor) const {
@@ -187,6 +195,9 @@ bool ImageSkia::extractSubset(ImageSkia* dst, const SkIRect& subset) const {
 }
 
 const std::vector<SkBitmap> ImageSkia::bitmaps() const {
+  if (isNull())
+    return std::vector<SkBitmap>();
+
   return storage_->bitmaps();
 }
 

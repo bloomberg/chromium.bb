@@ -7,7 +7,9 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -39,13 +41,10 @@ void ImageButton::SetImage(ButtonState state, const gfx::ImageSkia* image) {
 void ImageButton::SetBackground(SkColor color,
                                 const gfx::ImageSkia* image,
                                 const gfx::ImageSkia* mask) {
-  if (!image || !mask) {
-    background_image_ = gfx::ImageSkia();
-    return;
-  }
-
-  background_image_ =
-      SkBitmapOperations::CreateButtonBackground(color, *image, *mask);
+  background_image_.src_color_ = color;
+  background_image_.src_image_ = image ? *image : gfx::ImageSkia();
+  background_image_.src_mask_ = mask ? *mask : gfx::ImageSkia();
+  background_image_.result_ = gfx::ImageSkia();
 }
 
 void ImageButton::SetOverlayImage(const gfx::ImageSkia* image) {
@@ -76,7 +75,8 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
 
-  gfx::ImageSkia img = GetImageToPaint();
+  float current_device_scale = GetCurrentDeviceScale();
+  gfx::ImageSkia img = GetImageToPaint(current_device_scale);
 
   if (!img.isNull()) {
     int x = 0, y = 0;
@@ -91,8 +91,10 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
     else if (v_alignment_ == ALIGN_BOTTOM)
       y = height() - img.height();
 
-    if (!background_image_.empty())
-      canvas->DrawImageInt(background_image_, x, y);
+    if (!background_image_.result_.HasBitmapForScale(current_device_scale))
+      UpdateButtonBackground(current_device_scale);
+    if (!background_image_.result_.empty())
+      canvas->DrawImageInt(background_image_.result_, x, y);
 
     canvas->DrawImageInt(img, x, y);
 
@@ -105,17 +107,48 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, protected:
 
-gfx::ImageSkia ImageButton::GetImageToPaint() {
+float ImageButton::GetCurrentDeviceScale() {
+  gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
+      GetWidget() ? GetWidget()->GetNativeView() : NULL);
+  return display.device_scale_factor();
+}
+
+gfx::ImageSkia ImageButton::GetImageToPaint(float scale) {
   gfx::ImageSkia img;
 
   if (!images_[BS_HOT].isNull() && hover_animation_->is_animating()) {
-    img = SkBitmapOperations::CreateBlendedBitmap(images_[BS_NORMAL],
-        images_[BS_HOT], hover_animation_->GetCurrentValue());
+    float normal_bitmap_scale;
+    float hot_bitmap_scale;
+    SkBitmap normal_bitmap = images_[BS_NORMAL].GetBitmapForScale(
+        scale, &normal_bitmap_scale);
+    SkBitmap hot_bitmap = images_[BS_HOT].GetBitmapForScale(scale,
+        &hot_bitmap_scale);
+    DCHECK_EQ(normal_bitmap_scale, hot_bitmap_scale);
+    SkBitmap blended_bitmap = SkBitmapOperations::CreateBlendedBitmap(
+        normal_bitmap, hot_bitmap, hover_animation_->GetCurrentValue());
+    img = gfx::ImageSkia(blended_bitmap, normal_bitmap_scale);
   } else {
     img = images_[state_];
   }
 
   return !img.isNull() ? img : images_[BS_NORMAL];
+}
+
+void ImageButton::UpdateButtonBackground(float scale) {
+  float bitmap_scale;
+  float mask_scale;
+  SkBitmap bitmap = background_image_.src_image_.GetBitmapForScale(
+      scale, &bitmap_scale);
+  SkBitmap mask_bitmap = background_image_.src_mask_.GetBitmapForScale(
+      scale, &mask_scale);
+  if (bitmap.isNull() || mask_bitmap.isNull() ||
+      background_image_.result_.HasBitmapForScale(bitmap_scale)) {
+    return;
+  }
+  DCHECK_EQ(bitmap_scale, mask_scale);
+  SkBitmap result = SkBitmapOperations::CreateButtonBackground(
+      background_image_.src_color_, bitmap, mask_bitmap);
+  background_image_.result_.AddBitmapForScale(result, bitmap_scale);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +215,15 @@ bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
 
   *tooltip = toggled_tooltip_text_;
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// struct BackgroundImageGenerationInfo
+ImageButton::BackgroundImageGenerationInfo::BackgroundImageGenerationInfo()
+    : src_color_(0) {
+}
+
+ImageButton::BackgroundImageGenerationInfo::~BackgroundImageGenerationInfo() {
 }
 
 }  // namespace views
