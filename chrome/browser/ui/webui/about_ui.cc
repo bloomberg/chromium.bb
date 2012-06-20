@@ -245,10 +245,8 @@ class ChromeOSTermsHandler
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // If we fail to load Chrome OS EULA from disk, load it from resources.
     // Do nothing if OEM EULA load failed.
-    if (contents_.empty() && path_ != chrome::kOemEulaURLPath) {
-      contents_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_TERMS_HTML, ui::SCALE_FACTOR_NONE).as_string();
-    }
+    if (contents_.empty() && path_ != chrome::kOemEulaURLPath)
+      contents_ = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
     source_->FinishDataRequest(contents_, request_id_);
   }
 
@@ -1433,8 +1431,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     ChromeOSTermsHandler::Start(this, path, request_id);
     return;
 #else
-    response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_TERMS_HTML, ui::SCALE_FACTOR_NONE).as_string();
+    response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
 #endif
   } else if (host == chrome::kChromeUIVersionHost) {
     if (path == kStringsJsPath) {
