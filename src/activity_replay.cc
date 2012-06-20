@@ -521,11 +521,8 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
       }
       case ActivityLog::kCallbackRequest:
         if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
-          // Apply EXPECT_TRUE only when the fuzzy DoubleEq is not true.
-          EXPECT_TRUE(DoubleEq(last_timeout_req, entry->details.timestamp)) <<
-              "  Actual timeout request: " << last_timeout_req << endl <<
-              "Expected timeout request: " << entry->details.timestamp <<
-              " (entry idx " << i << ")";
+          Err("Expected timeout request of %f, but log has %f (entry idx %zu)",
+              last_timeout_req, entry->details.timestamp, i);
         }
         break;
       case ActivityLog::kGesture: {
@@ -547,7 +544,7 @@ void ActivityReplay::Replay(Interpreter* interpreter) {
         break;
       }
       case ActivityLog::kPropChange:
-        EXPECT_TRUE(ReplayPropChange(entry->details.prop_change));
+        ReplayPropChange(entry->details.prop_change);
         break;
     }
   }
