@@ -938,7 +938,10 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
       service->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
   views::Label* title = new views::Label(elided_title);
   grid_layout->AddView(title);
-  if (model_->GetSuggestedExtensionCount()) {
+  // Add link for "choose another service" if other suggestions are available
+  // or if we have more than one (the current) service installed.
+  if (model_->GetInstalledServiceCount() > 1 ||
+       model_->GetSuggestedExtensionCount()) {
     choose_another_service_link_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
     grid_layout->AddView(choose_another_service_link_);
