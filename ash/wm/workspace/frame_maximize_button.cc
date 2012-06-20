@@ -179,7 +179,7 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
   return ImageButton::OnGestureEvent(event);
 }
 
-gfx::ImageSkia FrameMaximizeButton::GetImageToPaint(float scale) {
+gfx::ImageSkia FrameMaximizeButton::GetImageToPaint() {
   if (is_snap_enabled_) {
     int id = 0;
     if (frame_->GetWidget()->IsMaximized()) {
@@ -224,7 +224,7 @@ gfx::ImageSkia FrameMaximizeButton::GetImageToPaint(float scale) {
     return *ResourceBundle::GetSharedInstance().GetImageNamed(id).ToImageSkia();
   }
   // Hot and pressed states handled by regular ImageButton.
-  return ImageButton::GetImageToPaint(scale);
+  return ImageButton::GetImageToPaint();
 }
 
 void FrameMaximizeButton::ProcessStartEvent(const views::LocatedEvent& event) {

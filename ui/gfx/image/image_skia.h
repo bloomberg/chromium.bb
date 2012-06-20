@@ -89,9 +89,6 @@ class UI_EXPORT ImageSkia {
                                     float y_scale_factor,
                                     float* bitmap_scale_factor) const;
 
-  // Returns the scale of the bitmap at |index|.
-  float GetScaleAtIndex(size_t index) const;
-
   // Returns true if object is null or |size_| is empty.
   bool empty() const;
 

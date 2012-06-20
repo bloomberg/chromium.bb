@@ -104,7 +104,7 @@ class NetworkMenuIconTest : public testing::Test {
                                   NetworkMenuIcon::COLOR_DARK),
         NULL, NULL, NULL, NULL);
     // Wifi connecting = IDR_STATUSBAR_NETWORK_ARCS1 (faded).
-    wifi_connecting_image_ = NetworkMenuIcon::GenerateConnectingImage(
+    wifi_connecting_image_ = NetworkMenuIcon::GenerateConnectingBitmap(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::ARCS, 1,
                                   NetworkMenuIcon::COLOR_DARK));
     // 4G connected, strength = 50% = BARS4 icon + 4G badge.
@@ -135,7 +135,7 @@ class NetworkMenuIconTest : public testing::Test {
                                       NetworkMenuIcon::COLOR_DARK),
             NULL, NULL, NULL, rb_.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_3G));
     // 3G connecting = IDR_STATUSBAR_NETWORK_BARS1 (faded).
-    cellular_connecting_image_ = NetworkMenuIcon::GenerateConnectingImage(
+    cellular_connecting_image_ = NetworkMenuIcon::GenerateConnectingBitmap(
         NetworkMenuIcon::GetImage(NetworkMenuIcon::BARS, 1,
                                   NetworkMenuIcon::COLOR_DARK));
   }
