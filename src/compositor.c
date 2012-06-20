@@ -3171,7 +3171,7 @@ static const char xdg_wrong_mode_message[] =
 	"warning: XDG_RUNTIME_DIR \"%s\" is not configured\n"
 	"correctly.  Unix access mode must be 0700 but is %o,\n"
 	"and XDG_RUNTIME_DIR must be owned by the user, but is\n"
-	"owned by UID %d.\n"
+	"owned by UID %d.\n";
 
 static const char xdg_detail_message[] =
 	"Refer to your distribution on how to get it, or\n"
