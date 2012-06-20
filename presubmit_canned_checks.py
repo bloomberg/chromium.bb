@@ -657,7 +657,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
     command = [input_api.python_executable,
                input_api.os_path.join(_HERE, 'third_party', 'pylint.py')]
     try:
-      return input_api.subprocess.call(command + files + extra_args)
+      return input_api.subprocess.call(command + files + extra_args, env=env)
     except OSError:
       return 'Pylint failed!'
 

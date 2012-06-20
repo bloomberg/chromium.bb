@@ -2144,7 +2144,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
     input_api.subprocess.call(
-        ['pyyyyython', pylint, 'file1.py', '--rcfile=%s' % pylintrc])
+        ['pyyyyython', pylint, 'file1.py', '--rcfile=%s' % pylintrc],
+        env=mox.IgnoreArg())
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPylint(
