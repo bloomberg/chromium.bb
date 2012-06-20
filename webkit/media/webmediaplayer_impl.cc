@@ -91,6 +91,16 @@ COMPILE_ASSERT_MATCHING_ENUM(Anonymous);
 COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
 #undef COMPILE_ASSERT_MATCHING_ENUM
 
+static WebKit::WebTimeRanges ConvertToWebTimeRanges(
+    const media::Ranges<base::TimeDelta>& ranges) {
+  WebKit::WebTimeRanges result(ranges.size());
+  for (size_t i = 0; i < ranges.size(); i++) {
+    result[i].start = ranges.start(i).InSecondsF();
+    result[i].end = ranges.end(i).InSecondsF();
+  }
+  return result;
+}
+
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
@@ -471,13 +481,8 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
 
 const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  media::Ranges<base::TimeDelta> buffered_time_ranges =
-      pipeline_->GetBufferedTimeRanges();
-  WebKit::WebTimeRanges web_ranges(buffered_time_ranges.size());
-  for (size_t i = 0; i < buffered_time_ranges.size(); ++i) {
-    web_ranges[i].start = buffered_time_ranges.start(i).InSecondsF();
-    web_ranges[i].end = buffered_time_ranges.end(i).InSecondsF();
-  }
+  WebKit::WebTimeRanges web_ranges(
+      ConvertToWebTimeRanges(pipeline_->GetBufferedTimeRanges()));
   buffered_.swap(web_ranges);
   return buffered_;
 }
@@ -656,16 +661,7 @@ bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
 
 WebKit::WebTimeRanges WebMediaPlayerImpl::sourceBuffered(
     const WebKit::WebString& id) {
-  media::ChunkDemuxer::Ranges buffered_ranges;
-  if (!proxy_->DemuxerBufferedRange(id.utf8().data(), &buffered_ranges))
-    return WebKit::WebTimeRanges();
-
-  WebKit::WebTimeRanges ranges(buffered_ranges.size());
-  for (size_t i = 0; i < buffered_ranges.size(); i++) {
-    ranges[i].start = buffered_ranges[i].first.InSecondsF();
-    ranges[i].end = buffered_ranges[i].second.InSecondsF();
-  }
-  return ranges;
+  return ConvertToWebTimeRanges(proxy_->DemuxerBufferedRange(id.utf8().data()));
 }
 
 bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,

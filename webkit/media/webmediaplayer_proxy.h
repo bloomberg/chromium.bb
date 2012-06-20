@@ -100,8 +100,7 @@ class WebMediaPlayerProxy
                                            const std::string& type,
                                            std::vector<std::string>& codecs);
   void DemuxerRemoveId(const std::string& id);
-  bool DemuxerBufferedRange(const std::string& id,
-                            media::ChunkDemuxer::Ranges* ranges_out);
+  media::Ranges<base::TimeDelta> DemuxerBufferedRange(const std::string& id);
   bool DemuxerAppend(const std::string& id, const uint8* data, size_t length);
   void DemuxerAbort(const std::string& id);
   void DemuxerEndOfStream(media::PipelineStatus status);

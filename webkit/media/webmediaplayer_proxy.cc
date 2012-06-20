@@ -200,10 +200,9 @@ void WebMediaPlayerProxy::DemuxerRemoveId(const std::string& id) {
   chunk_demuxer_->RemoveId(id);
 }
 
-bool WebMediaPlayerProxy::DemuxerBufferedRange(
-    const std::string& id,
-    media::ChunkDemuxer::Ranges* ranges_out) {
-  return chunk_demuxer_->GetBufferedRanges(id, ranges_out);
+media::Ranges<base::TimeDelta> WebMediaPlayerProxy::DemuxerBufferedRange(
+    const std::string& id) {
+  return chunk_demuxer_->GetBufferedRanges(id);
 }
 
 bool WebMediaPlayerProxy::DemuxerAppend(const std::string& id,
