@@ -110,8 +110,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   EXPECT_EQ(theme, GetTheme());
 }
 
+// Disabled due to a use-after-free bug, see http://crbug.com/127538.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       AppInstallConfirmation) {
+                       DISABLED_AppInstallConfirmation) {
   int num_tabs = browser()->tab_count();
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
@@ -128,8 +129,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   }
 }
 
+// Disabled due to a use-after-free bug, see http://crbug.com/127538.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       AppInstallConfirmation_Incognito) {
+                       DISABLED_AppInstallConfirmation_Incognito) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = browser::FindOrCreateTabbedBrowser(
       incognito_profile);
