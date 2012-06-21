@@ -33,5 +33,12 @@
     static void create(DOMString url,
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
+
+    static void activate();
+    static void maximize();
+    static void minimize();
+    static void restore();
+    [nocompile] static void moveTo(long x, long y);
+    [nocompile] static void resizeTo(long width, long height);
   };
 };

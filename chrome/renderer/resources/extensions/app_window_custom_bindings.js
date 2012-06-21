@@ -20,4 +20,10 @@ chromeHidden.registerCustomHook('appWindow', function(bindingsAPI) {
       delete request.callback;
     }
   })
+  apiFunctions.setHandleRequest('moveTo', function(x, y) {
+    window.moveTo(x, y);
+  })
+  apiFunctions.setHandleRequest('resizeTo', function(width, height) {
+    window.resizeTo(width, height);
+  })
 });
