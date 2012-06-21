@@ -53,6 +53,11 @@ class VideoDetectorTest : public AshTestBase {
     detector_->set_now_for_test(now_);
   }
 
+  virtual void TearDown() OVERRIDE {
+    detector_->RemoveObserver(observer_.get());
+    AshTestBase::TearDown();
+  }
+
  protected:
   // Move |detector_|'s idea of the current time forward by |delta|.
   void AdvanceTime(base::TimeDelta delta) {

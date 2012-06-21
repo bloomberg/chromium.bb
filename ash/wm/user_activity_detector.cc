@@ -5,6 +5,7 @@
 #include "ash/wm/user_activity_detector.h"
 
 #include "ash/wm/user_activity_observer.h"
+#include "ui/aura/event.h"
 
 namespace ash {
 
@@ -32,7 +33,8 @@ bool UserActivityDetector::PreHandleKeyEvent(aura::Window* target,
 
 bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
                                                aura::MouseEvent* event) {
-  MaybeNotify();
+  if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
+    MaybeNotify();
   return false;
 }
 
@@ -51,7 +53,8 @@ ui::GestureStatus UserActivityDetector::PreHandleGestureEvent(
 }
 
 void UserActivityDetector::MaybeNotify() {
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now =
+      !now_for_test_.is_null() ? now_for_test_ : base::TimeTicks::Now();
   if (last_observer_notification_time_.is_null() ||
       (now - last_observer_notification_time_).InSecondsF() >=
       kNotifyIntervalSec) {

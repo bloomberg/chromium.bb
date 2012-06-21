@@ -421,6 +421,7 @@
         'wm/system_gesture_event_filter_unittest.cc',
         'wm/system_modal_container_layout_manager_unittest.cc',
         'wm/toplevel_window_event_filter_unittest.cc',
+        'wm/user_activity_detector_unittest.cc',
         'wm/video_detector_unittest.cc',
         'wm/visibility_controller_unittest.cc',
         'wm/window_animations_unittest.cc',

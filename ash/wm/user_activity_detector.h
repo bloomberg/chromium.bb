@@ -27,6 +27,8 @@ class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
   UserActivityDetector();
   virtual ~UserActivityDetector();
 
+  void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }
+
   void AddObserver(UserActivityObserver* observer);
   void RemoveObserver(UserActivityObserver* observer);
 
@@ -52,6 +54,10 @@ class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
 
   // Last time at which we notified observers that the user was active.
   base::TimeTicks last_observer_notification_time_;
+
+  // If set, used when the current time is needed.  This can be set by tests to
+  // simulate the passage of time.
+  base::TimeTicks now_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityDetector);
 };
