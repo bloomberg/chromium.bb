@@ -2080,7 +2080,7 @@ FcParseInclude (FcConfigParse *parse)
     {
 	attr = FcConfigGetAttribute (parse, "deprecated");
 	if (attr && FcConfigLexBool (parse, (FcChar8 *) attr) == FcTrue)
-	    FcConfigMessage (parse, FcSevereWarning, "reading configurations from %s is deprecated.\n", s);
+	    FcConfigMessage (parse, FcSevereWarning, "reading configurations from %s is deprecated.", s);
     }
     FcStrBufDestroy (&parse->pstack->str);
 
