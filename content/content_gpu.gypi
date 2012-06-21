@@ -90,5 +90,10 @@
         },
       ],
     }],
+    ['OS=="linux"', {
+      'dependencies': [
+        '../third_party/libXNVCtrl/libXNVCtrl.gyp:libXNVCtrl',
+      ],
+    }],
   ],
 }

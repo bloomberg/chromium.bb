@@ -5,6 +5,7 @@
 #include "content/gpu/gpu_info_collector.h"
 
 #include <dlfcn.h>
+#include <X11/Xlib.h>
 #include <vector>
 
 #include "base/command_line.h"
@@ -12,10 +13,13 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "third_party/libXNVCtrl/NVCtrl.h"
+#include "third_party/libXNVCtrl/NVCtrlLib.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -138,16 +142,16 @@ void FinalizeLibPci(PciInterface** interface) {
 }
 
 // Scan /etc/ati/amdpcsdb.default for "ReleaseVersion".
-// Return "" on failing.
+// Return empty string on failing.
 std::string CollectDriverVersionATI() {
   const FilePath::CharType kATIFileName[] =
       FILE_PATH_LITERAL("/etc/ati/amdpcsdb.default");
   FilePath ati_file_path(kATIFileName);
   if (!file_util::PathExists(ati_file_path))
-    return "";
+    return std::string();
   std::string contents;
   if (!file_util::ReadFileToString(ati_file_path, &contents))
-    return "";
+    return std::string();
   StringTokenizer t(contents, "\r\n");
   while (t.GetNext()) {
     std::string line = t.token();
@@ -162,7 +166,35 @@ std::string CollectDriverVersionATI() {
       }
     }
   }
-  return "";
+  return std::string();
+}
+
+// Use NVCtrl extention to query NV driver version.
+// Return empty string on failing.
+std::string CollectDriverVersionNVidia() {
+  Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
+  if (!display) {
+    LOG(ERROR) << "XOpenDisplay failed.";
+    return std::string();
+  }
+  int event_base = 0, error_base = 0;
+  if (!XNVCTRLQueryExtension(display, &event_base, &error_base)) {
+    LOG(INFO) << "NVCtrl extension does not exits.";
+    return std::string();
+  }
+  int screen_count = ScreenCount(display);
+  for (int screen = 0; screen < screen_count; ++screen) {
+    char* buffer = NULL;
+    if (XNVCTRLIsNvScreen(display, screen) &&
+        XNVCTRLQueryStringAttribute(display, screen, 0,
+                                    NV_CTRL_STRING_NVIDIA_DRIVER_VERSION,
+                                    &buffer)) {
+      std::string driver_version(buffer);
+      XFree(buffer);
+      return driver_version;
+    }
+  }
+  return std::string();
 }
 
 const uint32 kVendorIDIntel = 0x8086;
@@ -199,12 +231,22 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
 
   bool rt = CollectVideoCardInfo(gpu_info);
 
-  if (gpu_info->gpu.vendor_id == kVendorIDAMD) {
-    std::string ati_driver_version = CollectDriverVersionATI();
-    if (!ati_driver_version.empty()) {
-      gpu_info->driver_vendor = "ATI / AMD";
-      gpu_info->driver_version = ati_driver_version;
-    }
+  std::string driver_version;
+  switch (gpu_info->gpu.vendor_id) {
+    case kVendorIDAMD:
+      driver_version = CollectDriverVersionATI();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "ATI / AMD";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
+    case kVendorIDNVidia:
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
   }
 
   return rt;
