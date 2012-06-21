@@ -686,12 +686,14 @@
           'sources': [
             'browser/extensions/extension_install_ui_android.cc',
             'browser/extensions/extension_install_ui_android.h',
+            'browser/extensions/extension_tab_util_android.cc',
           ],
           'sources!': [
             'browser/extensions/app_notify_channel_ui.cc',
             'browser/extensions/app_notify_channel_ui.h',
             'browser/extensions/extension_install_ui_default.cc',
             'browser/extensions/extension_install_ui_default.h',
+            'browser/extensions/extension_tab_util.cc',
             'browser/extensions/platform_app_launcher.cc',
             'browser/extensions/platform_app_launcher.h',
             'browser/extensions/api/usb/usb_api.cc',

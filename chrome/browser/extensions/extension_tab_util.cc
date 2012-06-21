@@ -23,7 +23,6 @@
 #include "googleurl/src/gurl.h"
 
 namespace keys = extensions::tabs_constants;
-namespace errors = extension_manifest_errors;
 
 using content::NavigationEntry;
 using content::WebContents;
