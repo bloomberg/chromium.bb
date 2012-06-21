@@ -141,13 +141,13 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
     case IDC_BOOKMARK_MANAGER: {
       content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (selection_.size() != 1)
-        chrome::ShowBookmarkManager(browser);
+        chrome::ShowBookmarkManager(browser_);
       else if (selection_[0]->is_folder())
-        chrome::ShowBookmarkManagerForNode(browser, selection_[0]->id());
+        chrome::ShowBookmarkManagerForNode(browser_, selection_[0]->id());
       else if (parent_)
-        chrome::ShowBookmarkManagerForNode(browser, parent_->id());
+        chrome::ShowBookmarkManagerForNode(browser_, parent_->id());
       else
-        chrome::ShowBookmarkManager(browser);
+        chrome::ShowBookmarkManager(browser_);
       break;
     }
 
