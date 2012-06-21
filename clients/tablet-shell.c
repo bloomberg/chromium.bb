@@ -401,7 +401,8 @@ tablet_shell_add_launcher(struct tablet *tablet,
 	launcher = malloc(sizeof *launcher);
 	launcher->path = strdup(path);
 	launcher->icon = load_cairo_surface(icon);
-	if (cairo_surface_status (launcher->icon) != CAIRO_STATUS_SUCCESS) {
+	if ( !launcher->icon ||
+	     cairo_surface_status (launcher->icon) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "couldn't load %s\n", icon);
 		free(launcher);
 		return;
