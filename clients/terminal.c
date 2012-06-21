@@ -40,6 +40,7 @@
 
 static int option_fullscreen;
 static char *option_font = "mono";
+static char *option_term = "xterm";
 
 #define MOD_SHIFT	0x01
 #define MOD_ALT		0x02
@@ -2372,8 +2373,8 @@ terminal_run(struct terminal *terminal, const char *path)
 
 	pid = forkpty(&master, NULL, NULL, NULL);
 	if (pid == 0) {
-		setenv("TERM", "xterm-256color", 1);
-		setenv("COLORTERM", "xterm-256color", 1);
+		setenv("TERM", option_term, 1);
+		setenv("COLORTERM", option_term, 1);
 		if (execl(path, path, NULL)) {
 			printf("exec failed: %m\n");
 			exit(EXIT_FAILURE);
@@ -2398,6 +2399,7 @@ terminal_run(struct terminal *terminal, const char *path)
 
 static const struct config_key terminal_config_keys[] = {
 	{ "font", CONFIG_KEY_STRING, &option_font },
+	{ "term", CONFIG_KEY_STRING, &option_term },
 };
 
 static const struct config_section config_sections[] = {
