@@ -9,6 +9,7 @@
 #include <base/stringprintf.h>
 
 #include "gestures/include/accel_filter_interpreter.h"
+#include "gestures/include/apple_trackpad_filter_interpreter.h"
 #include "gestures/include/box_filter_interpreter.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
 #include "gestures/include/finger_metrics.h"
@@ -247,6 +248,7 @@ GestureInterpreter::GestureInterpreter(int version)
   temp = new StuckButtonInhibitorFilterInterpreter(temp);
   temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp);
   temp = new SemiMtCorrectingFilterInterpreter(prop_reg_.get(), temp);
+  temp = new AppleTrackpadFilterInterpreter(prop_reg_.get(), temp);
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp);
   interpreter_.reset(temp);
   temp = NULL;

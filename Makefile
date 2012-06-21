@@ -8,6 +8,7 @@ OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter.o \
 	$(OBJDIR)/activity_log.o \
 	$(OBJDIR)/activity_replay.o \
+	$(OBJDIR)/apple_trackpad_filter_interpreter.o \
 	$(OBJDIR)/box_filter_interpreter.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter.o \
 	$(OBJDIR)/finger_metrics.o \
@@ -31,6 +32,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \
 	$(OBJDIR)/activity_log_unittest.o \
 	$(OBJDIR)/activity_replay_unittest.o \
+	$(OBJDIR)/apple_trackpad_filter_interpreter_unittest.o \
 	$(OBJDIR)/box_filter_interpreter_unittest.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter_unittest.o \
 	$(OBJDIR)/gestures_unittest.o \
