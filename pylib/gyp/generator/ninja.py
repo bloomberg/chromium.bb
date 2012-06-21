@@ -210,6 +210,11 @@ class NinjaWriter:
     self.flavor = flavor
     self.abs_build_dir = abs_build_dir
     self.obj_ext = '.obj' if flavor == 'win' else '.o'
+    if flavor == 'win':
+      # See docstring of msvs_emulation.GenerateEnvironmentFiles().
+      self.win_env = {}
+      for arch in ('x86', 'x64'):
+        self.win_env[arch] = 'environment.' + arch
 
     # Relative path from build output dir to base dir.
     self.build_to_base = os.path.join(InvertRelativePath(build_dir), base_dir)
@@ -339,6 +344,8 @@ class NinjaWriter:
     if self.flavor == 'win':
       self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec,
                                                            generator_flags)
+      # TODO(scottmg): x64 support.
+      self.ninja.variable('arch', self.win_env['x86'])
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -608,6 +615,8 @@ class NinjaWriter:
 
         inputs = map(self.GypPathToNinja, inputs)
         outputs = map(self.GypPathToNinja, outputs)
+        extra_bindings.append(('unique_name',
+            re.sub('[^a-zA-Z0-9_]', '_', outputs[0])))
         self.ninja.build(outputs, rule_name, self.GypPathToNinja(source),
                          implicit=inputs,
                          order_only=prebuild,
@@ -1102,35 +1111,34 @@ class NinjaWriter:
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in
     # the arguments to point to the proper locations.
-    if self.flavor == 'win':
-      cd = 'cmd /s /c "'
-      if not is_cygwin:
-        # cd command added by BuildCygwinBashCommandLine in cygwin case.
-        cd += 'cd %s && ' % self.build_to_base
-    else:
-      cd = 'cd %s; ' % self.build_to_base
+    rspfile = None
+    rspfile_content = None
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
-    env = self.ComputeExportEnvString(env) if self.flavor != 'win' else ''
     if self.flavor == 'win':
+      rspfile = rule_name + '.$unique_name.rsp'
+      # The cygwin case handles this inside the bash sub-shell.
+      run_in = '' if is_cygwin else ' ' + self.build_to_base
       if is_cygwin:
-        command = self.msvs_settings.BuildCygwinBashCommandLine(
+        rspfile_content = self.msvs_settings.BuildCygwinBashCommandLine(
             args, self.build_to_base)
       else:
-        # If there's no command, fake one to match the dangling |&&| above.
-        command = gyp.msvs_emulation.EncodeRspFileList(args) or 'cmd /c'
-      command += '"' # Close quote opened in |cd|.
+        rspfile_content = gyp.msvs_emulation.EncodeRspFileList(args)
+      command = ('cmd /s /c "python gyp-win-tool action-wrapper $arch ' +
+                  rspfile + run_in + '"')
     else:
+      env = self.ComputeExportEnvString(env)
       command = gyp.common.EncodePOSIXShellList(args)
-    if env:
-      # If an environment is passed in, variables in the command should be
-      # read from it, instead of from ninja's internal variables.
-      command = ninja_syntax.escape(command)
+      if env:
+        # If an environment is passed in, variables in the command should be
+        # read from it, instead of from ninja's internal variables.
+        command = ninja_syntax.escape(command)
+      command = 'cd %s; ' % self.build_to_base + env + command
 
-    command = cd + env + command
     # GYP rules/actions express being no-ops by not touching their outputs.
     # Avoid executing downstream dependencies in this case by specifying
     # restat=1 to ninja.
-    self.ninja.rule(rule_name, command, description, restat=True)
+    self.ninja.rule(rule_name, command, description, restat=True,
+                    rspfile=rspfile, rspfile_content=rspfile_content)
     self.ninja.newline()
 
     return rule_name
@@ -1202,24 +1210,13 @@ def CalculateVariables(default_variables, params):
                                  os.path.join('$!PRODUCT_DIR', 'obj'))
 
 
-def OpenOutput(path):
+def OpenOutput(path, mode='w'):
   """Open |path| for writing, creating directories if necessary."""
   try:
     os.makedirs(os.path.dirname(path))
   except OSError:
     pass
-  return open(path, 'w')
-
-
-def _WriteWinEnvironmentHelper(toplevel_build, generator_flags):
-  """It's not sufficient to have the absolute path to the compiler, linker,
-  etc. on Windows, as those tools rely on .dlls being in the PATH. We write a
-  helper .bat file that sets up the environment correctly once we've detected
-  which toolchain we want to use."""
-  out = OpenOutput(os.path.join(toplevel_build, 'set_environment.bat'))
-  vsvars_path = gyp.msvs_emulation.GetVsvarsPath(generator_flags)
-  out.write('@call "%s"\n' % vsvars_path)
-  out.close()
+  return open(path, mode)
 
 
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
@@ -1244,8 +1241,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   # Grab make settings for CC/CXX.
   if flavor == 'win':
-    cc = cxx = gyp.msvs_emulation.GetCLPath(generator_flags)
-    _WriteWinEnvironmentHelper(toplevel_build, generator_flags)
+    cc = cxx = 'cl.exe'
+    gyp.msvs_emulation.GenerateEnvironmentFiles(
+        toplevel_build, generator_flags, OpenOutput)
   else:
     cc, cxx = 'gcc', 'g++'
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
@@ -1261,13 +1259,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.variable('cc', os.environ.get('CC', cc))
   master_ninja.variable('cxx', os.environ.get('CXX', cxx))
   if flavor == 'win':
-    master_ninja.variable('ld', gyp.msvs_emulation.GetLinkPath(generator_flags))
-    master_ninja.variable('idl',
-        gyp.msvs_emulation.GetMidlPath(generator_flags))
-    master_ninja.variable('ar', gyp.msvs_emulation.GetLibPath(generator_flags))
-    # TODO(scottmg): Note that rc.exe isn't part of VS, it's part of the
-    # Windows SDK. We currently assume it's in the PATH, we may need to figure
-    # out a way to locate it explicitly.
+    master_ninja.variable('ld', 'link.exe')
+    master_ninja.variable('idl', 'midl.exe')
+    master_ninja.variable('ar', 'lib.exe')
     master_ninja.variable('rc', 'rc.exe')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
@@ -1305,14 +1299,16 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     # and generating PCH. In the case of PCH, the "output" is specified by /Fp
     # rather than /Fo (for object files), but we still need to specify an /Fo
     # when compiling PCH.
-    cc_template = ('cmd /s /c "$cc /nologo /showIncludes /FC '
+    cc_template = ('ninja-deplist-helper -r . -q -f cl -o $out.dl -e $arch '
+                   '--command '
+                   '$cc /nologo /showIncludes /FC '
                    '@$out.rsp '
-                   '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname '
-                   '| ninja-deplist-helper -r . -q -f cl -o $out.dl"')
-    cxx_template = ('cmd /s /c "$cxx /nologo /showIncludes /FC '
+                   '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname ')
+    cxx_template = ('ninja-deplist-helper -r . -q -f cl -o $out.dl -e $arch '
+                    '--command '
+                    '$cxx /nologo /showIncludes /FC '
                     '@$out.rsp '
-                    '$cflags_pch_cc /c $in %(outspec)s $pchobj /Fd$pdbname '
-                    '| ninja-deplist-helper -r . -q -f cl -o $out.dl"')
+                    '$cflags_pch_cc /c $in %(outspec)s $pchobj /Fd$pdbname ')
     master_ninja.rule(
       'cc',
       description='CC $out',
@@ -1344,7 +1340,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'idl',
       description='IDL $in',
-      command=('python gyp-win-tool midl-wrapper $outdir '
+      command=('python gyp-win-tool midl-wrapper $arch $outdir '
                '$tlb $h $dlldata $iid $proxy $in '
                '$idlflags'))
     master_ninja.rule(
@@ -1352,7 +1348,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='RC $in',
       # Note: $in must be last otherwise rc.exe complains.
       command=('python gyp-win-tool rc-wrapper '
-               '$rc $defines $includes $rcflags /fo$out $in'))
+               '$arch $rc $defines $includes $rcflags /fo$out $in'))
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(
@@ -1378,11 +1374,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
         'alink',
         description='LIB $out',
-        command='$ar /nologo /ignore:4221 /OUT:$out @$out.rsp',
+        command=('python gyp-win-tool link-wrapper $arch '
+                 '$ar /nologo /ignore:4221 /OUT:$out @$out.rsp'),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libflags')
     dlldesc = 'LINK(DLL) $dll'
-    dllcmd = ('python gyp-win-tool link-wrapper '
+    dllcmd = ('python gyp-win-tool link-wrapper $arch '
               '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
               '/PDB:$dll.pdb @$dll.rsp')
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
@@ -1398,7 +1395,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
         'link',
         description='LINK $out',
-        command=('python gyp-win-tool link-wrapper '
+        command=('python gyp-win-tool link-wrapper $arch '
                  '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp'),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libs $ldflags')

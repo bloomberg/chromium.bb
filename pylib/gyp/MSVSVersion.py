@@ -60,17 +60,34 @@ class VisualStudioVersion(object):
     """Returns the path to a given compiler tool. """
     return os.path.normpath(os.path.join(self.path, "VC/bin", tool))
 
-  def SetupScript(self):
-    """Returns the path to the setup script for setting up the environment."""
+  def SetupScript(self, target_arch):
+    """Returns a command (with arguments) to be used to set up the
+    environment."""
     # Check if we are running in the SDK command line environment and use
-    # the setup script from the SDK if so.
-    # TODO(alexeypa): specify the target platform (x86 or x64).
+    # the setup script from the SDK if so. |target_arch| should be either
+    # 'x86' or 'x64'.
+    assert target_arch in ('x86', 'x64')
     sdk_dir = os.environ.get('WindowsSDKDir')
     if self.sdk_based and sdk_dir:
-      return os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.Cmd'))
+      return [os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.Cmd')),
+              '/' + target_arch]
     else:
-      return os.path.normpath(
-          os.path.join(self.path, 'Common7/Tools/vsvars32.bat'))
+      # We don't use VC/vcvarsall.bat for x86 because vcvarsall calls
+      # vcvars32, which it can only find if VS??COMNTOOLS is set, which it
+      # isn't always.
+      if target_arch == 'x86':
+        return [os.path.normpath(
+          os.path.join(self.path, 'Common7/Tools/vsvars32.bat'))]
+      else:
+        assert target_arch == 'x64'
+        arg = 'x86_amd64'
+        if (os.environ.get('PROCESSOR_ARCHITECTURE') == 'AMD64' or
+            os.environ.get('PROCESSOR_ARCHITEW6432') == 'AMD64'):
+          # Use the 64-on-64 compiler if we can.
+          arg = 'amd64'
+        return [os.path.normpath(
+            os.path.join(self.path, 'VC/vcvarsall.bat')), arg]
+
 
 def _RegistryQueryBase(sysdir, key, value):
   """Use reg.exe to read a particular key.

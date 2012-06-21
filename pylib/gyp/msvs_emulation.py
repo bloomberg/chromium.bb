@@ -526,26 +526,7 @@ def GetVSVersion(generator_flags):
         generator_flags.get('msvs_version', 'auto'))
   return vs_version
 
-def _GetBinaryPath(generator_flags, tool):
-  vs = GetVSVersion(generator_flags)
-  return ('"' + vs.ToolPath(tool) + '"')
-
-def GetCLPath(generator_flags):
-  return _GetBinaryPath(generator_flags, 'cl.exe')
-
-def GetLinkPath(generator_flags):
-  return _GetBinaryPath(generator_flags, 'link.exe')
-
-def GetLibPath(generator_flags):
-  return _GetBinaryPath(generator_flags, 'lib.exe')
-
-def GetMidlPath(generator_flags):
-  return _GetBinaryPath(generator_flags, 'midl.exe')
-
-def GetRCPath(generator_flags):
-  return _GetBinaryPath(generator_flags, 'rc.exe')
-
-def GetVsvarsPath(generator_flags):
+def _GetVsvarsSetupArgs(generator_flags, arch):
   vs = GetVSVersion(generator_flags)
   return vs.SetupScript()
 
@@ -557,3 +538,67 @@ def ExpandMacros(string, expansions):
       assert '$(' not in new, new
       string = string.replace(old, new)
   return string
+
+def _ExtractImportantEnvironment(output_of_set):
+  """Extracts environment variables required for the toolchain to run from
+  a textual dump output by the cmd.exe 'set' command."""
+  envvars_to_save = (
+      'goma_.*', # TODO(scottmg): This is ugly, but needed for goma.
+      'include',
+      'lib',
+      'libpath',
+      'path',
+      'pathext',
+      'systemroot',
+      'temp',
+      'tmp',
+      )
+  env = {}
+  for line in output_of_set.splitlines():
+    for envvar in envvars_to_save:
+      if re.match(envvar + '=', line.lower()):
+        var, setting = line.split('=', 1)
+        if envvar == 'path':
+          # Our own rules (for running gyp-win-tool) and other actions in
+          # Chromium rely on python being in the path. Add the path to this
+          # python here so that if it's not in the path when ninja is run
+          # later, python will still be found.
+          setting = os.path.dirname(sys.executable) + os.pathsep + setting
+        env[var] = setting
+        break
+  return env
+
+def _FormatAsEnvironmentBlock(envvar_dict):
+  """Format as an 'environment block' directly suitable for CreateProcess.
+  Briefly this is a list of key=value\0, terminated by an additional \0. See
+  CreateProcess documentation for more details."""
+  block = ''
+  nul = '\0'
+  for key, value in envvar_dict.iteritems():
+    block += key + '=' + value + nul
+  block += nul
+  return block
+
+def GenerateEnvironmentFiles(toplevel_build_dir, generator_flags, open_out):
+  """It's not sufficient to have the absolute path to the compiler, linker,
+  etc. on Windows, as those tools rely on .dlls being in the PATH. We also
+  need to support both x86 and x64 compilers within the same build (to support
+  msvs_target_platform hackery). Different architectures require a different
+  compiler binary, and different supporting environment variables (INCLUDE,
+  LIB, LIBPATH). So, we extract the environment here, wrap all invocations
+  of compiler tools (cl, link, lib, rc, midl, etc.) via win_tool.py which
+  sets up the environment, and then we do not prefix the compiler with
+  an absolute path, instead preferring something like "cl.exe" in the rule
+  which will then run whichever the environment setup has put in the path."""
+  vs = GetVSVersion(generator_flags)
+  for arch in ('x86', 'x64'):
+    args = vs.SetupScript(arch)
+    args.extend(('&&', 'set'))
+    popen = subprocess.Popen(
+        args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    variables, _ = popen.communicate()
+    env = _ExtractImportantEnvironment(variables)
+    env_block = _FormatAsEnvironmentBlock(env)
+    f = open_out(os.path.join(toplevel_build_dir, 'environment.' + arch), 'wb')
+    f.write(env_block)
+    f.close()

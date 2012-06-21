@@ -506,14 +506,6 @@ class TestGypNinja(TestGypOnMSToolchain):
   ALL = 'all'
   DEFAULT = 'all'
 
-  def initialize_build_tool(self):
-    super(TestGypNinja, self).initialize_build_tool()
-    if sys.platform == 'win32':
-      # Compiler and linker aren't in the path by default on Windows, so we
-      # make our "build tool" be set up + run ninja.
-      self.build_tool = os.environ.get('COMSPEC', 'cmd.exe')
-      self.helper_args = ['/c', self.vsvars_path, '&&', 'ninja']
-
   def run_gyp(self, gyp_file, *args, **kw):
     TestGypBase.run_gyp(self, gyp_file, *args, **kw)
 
@@ -527,9 +519,6 @@ class TestGypNinja(TestGypOnMSToolchain):
     if target is None:
       target = 'all'
     arguments.append(target)
-
-    if sys.platform == 'win32':
-      arguments = self.helper_args + arguments
 
     kw['arguments'] = arguments
     return self.run(program=self.build_tool, **kw)
