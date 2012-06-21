@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/gtk_preserve_window.h"
@@ -575,6 +576,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(
       was_imcontext_focused_before_grab_(false),
       do_x_grab_(false),
       is_fullscreen_(false),
+      made_active_(false),
       destroy_handler_id_(0),
       dragged_at_horizontal_edge_(0),
       dragged_at_vertical_edge_(0),
@@ -660,10 +662,6 @@ void RenderWidgetHostViewGtk::InitAsFullscreen(
   GtkWindow* window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_decorated(window, FALSE);
   gtk_window_fullscreen(window);
-  g_signal_connect(GTK_WIDGET(window),
-                   "window-state-event",
-                   G_CALLBACK(&OnWindowStateEventThunk),
-                   this);
   destroy_handler_id_ = g_signal_connect(GTK_WIDGET(window),
                                          "destroy",
                                          G_CALLBACK(OnDestroyThunk),
@@ -765,6 +763,18 @@ void RenderWidgetHostViewGtk::Blur() {
 
 bool RenderWidgetHostViewGtk::HasFocus() const {
   return gtk_widget_is_focus(view_.get());
+}
+
+void RenderWidgetHostViewGtk::ActiveWindowChanged(GdkWindow* window) {
+  GdkWindow* our_window = gtk_widget_get_parent_window(view_.get());
+
+  if (our_window == window)
+    made_active_ = true;
+
+  // If the window was previously active, but isn't active anymore, shut it
+  // down.
+  if (is_fullscreen_ && our_window != window && made_active_)
+    host_->Shutdown();
 }
 
 bool RenderWidgetHostViewGtk::IsSurfaceAvailableForCopy() const {
@@ -877,6 +887,8 @@ void RenderWidgetHostViewGtk::Destroy() {
   if (IsPopup() || is_fullscreen_) {
     GtkWidget* window = gtk_widget_get_parent(view_.get());
 
+    ui::ActiveWindowWatcherX::RemoveObserver(this);
+
     // Disconnect the destroy handler so that we don't try to shutdown twice.
     if (is_fullscreen_)
       g_signal_handler_disconnect(window, destroy_handler_id_);
@@ -952,24 +964,6 @@ gfx::NativeView RenderWidgetHostViewGtk::BuildInputMethodsGtkMenu() {
   return im_context_->BuildInputMethodsGtkMenu();
 }
 
-gboolean RenderWidgetHostViewGtk::OnWindowStateEvent(
-    GtkWidget* widget,
-    GdkEventWindowState* event) {
-  if (is_fullscreen_) {
-    // If a fullscreen widget got unfullscreened (e.g. by the window manager),
-    // close it.
-    bool unfullscreened =
-        (event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN) &&
-        !(event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN);
-    if (unfullscreened) {
-      host_->Shutdown();
-      return TRUE;
-    }
-  }
-
-  return FALSE;
-}
-
 void RenderWidgetHostViewGtk::OnDestroy(GtkWidget* widget) {
   DCHECK(is_fullscreen_);
   host_->Shutdown();
@@ -995,6 +989,8 @@ void RenderWidgetHostViewGtk::DoPopupOrFullscreenInit(GtkWindow* window,
   requested_size_.SetSize(std::min(bounds.width(), kMaxWindowWidth),
                           std::min(bounds.height(), kMaxWindowHeight));
   host_->WasResized();
+
+  ui::ActiveWindowWatcherX::AddObserver(this);
 
   // Don't set the size when we're going fullscreen. This can confuse the
   // window manager into thinking we're resizing a fullscreen window and

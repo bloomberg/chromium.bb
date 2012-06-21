@@ -21,6 +21,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -45,7 +46,8 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewGtk
     : public content::RenderWidgetHostViewBase,
-      public BrowserAccessibilityDelegate {
+      public BrowserAccessibilityDelegate,
+      public ui::ActiveWindowWatcherXObserver {
  public:
   virtual ~RenderWidgetHostViewGtk();
 
@@ -127,6 +129,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
       const std::vector<AccessibilityHostMsg_NotificationParams>& params)
       OVERRIDE;
 
+  // ActiveWindowWatcherXObserver implementation.
+  virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
+
   // If the widget is aligned with an edge of the monitor its on and the user
   // attempts to drag past that edge we track the number of times it has
   // occurred, so that we can force the widget to scroll when it otherwise
@@ -171,11 +176,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
  private:
   friend class RenderWidgetHostViewGtkWidget;
-
-  CHROMEGTK_CALLBACK_1(RenderWidgetHostViewGtk,
-                       gboolean,
-                       OnWindowStateEvent,
-                       GdkEventWindowState*);
 
   CHROMEGTK_CALLBACK_0(RenderWidgetHostViewGtk,
                        void,
@@ -255,6 +255,10 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
   // Is the widget fullscreen?
   bool is_fullscreen_;
+
+  // Has the window ever been marked active? Only valid for fullscreen or
+  // popup windows.
+  bool made_active_;
 
   // Used to record the last position of the mouse.
   // While the mouse is locked, they store the last known position just as mouse
