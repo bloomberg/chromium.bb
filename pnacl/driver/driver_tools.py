@@ -883,14 +883,14 @@ def Run(args,
 
   if errexit and p.returncode != 0:
     if redirect_stdout == subprocess.PIPE:
-        Log.Info('--------------stdout: begin')
-        Log.Info(result_stdout)
-        Log.Info('--------------stdout: end')
+        Log.Error('--------------stdout: begin')
+        Log.Error(result_stdout)
+        Log.Error('--------------stdout: end')
 
     if redirect_stderr == subprocess.PIPE:
-        Log.Info('--------------stderr: begin')
-        Log.Info(result_stderr)
-        Log.Info('--------------stderr: end')
+        Log.Error('--------------stderr: begin')
+        Log.Error(result_stderr)
+        Log.Error('--------------stderr: end')
     DriverExit(p.returncode)
 
   return p.returncode, result_stdout, result_stderr

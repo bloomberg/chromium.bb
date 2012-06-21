@@ -168,7 +168,7 @@ EXTRA_ENV = {
   'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
                     '-metadata-text ${output}.meta',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
-  # for testing. Defaults to 1Gpbs (effectively unlimited).
+  # for testing. Defaults to 1Gbps (effectively unlimited).
   # If 0, use the non-streaming file-descriptor codepath.
   'BITCODE_STREAM_RATE' : '1000000000',
 }
