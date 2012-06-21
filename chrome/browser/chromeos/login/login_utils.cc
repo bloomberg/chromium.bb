@@ -710,6 +710,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
     const CommandLine& base_command_line,
     CommandLine* command_line) {
   static const char* kForwardSwitches[] = {
+      ::switches::kAllowWebUICompositing,
       ::switches::kCompressSystemFeedback,
       ::switches::kDeviceManagementUrl,
       ::switches::kForceDeviceScaleFactor,
