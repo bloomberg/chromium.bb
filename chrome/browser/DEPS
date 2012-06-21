@@ -47,7 +47,6 @@ include_rules = [
   "+chrome/browser/ui/views/extensions/extension_popup.h",
   "+chrome/browser/ui/views/extensions/extension_view.h",
   "+chrome/browser/ui/views/frame/browser_view.h",
-  "+chrome/browser/ui/views/infobars/infobar_container_view.h",
   "+chrome/browser/ui/views/location_bar/location_bar_view.h",
   "+chrome/browser/ui/views/location_bar/location_icon_view.h",
   "+chrome/browser/ui/views/network_profile_bubble.h",
