@@ -275,6 +275,7 @@ void ChromeLauncherController::OpenAppID(
   for (WindowList::const_iterator i = platform_app_windows_.begin();
        i != platform_app_windows_.end(); ++i) {
     if (window_to_id_map_[*i] == launcher_id) {
+      (*i)->Show();
       ash::wm::ActivateWindow(*i);
       return;
     }
@@ -293,6 +294,7 @@ void ChromeLauncherController::OpenAppID(
     int index = tab_strip->GetIndexOfTabContents(tab);
     DCHECK(index != TabStripModel::kNoTab);
     tab_strip->ActivateTabAt(index, false);
+    browser->window()->Show();
     ash::wm::ActivateWindow(browser->window()->GetNativeWindow());
   } else {
     const Extension* extension =

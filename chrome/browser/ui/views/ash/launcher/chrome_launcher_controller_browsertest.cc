@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -28,9 +29,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 
 using extensions::Extension;
 using content::WebContents;
@@ -461,6 +464,36 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchUnpinned) {
   close_observer.Wait();
   EXPECT_EQ(--tab_count, tab_strip->count());
   EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+}
+
+// Confirm that clicking a icon for an app running in one of 2 maxmized windows
+// activates the right window.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
+  aura::Window* window1 = browser()->window()->GetNativeWindow();
+  ash::wm::MaximizeWindow(window1);
+  ui_test_utils::WindowedNotificationObserver open_observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
+  Browser::NewEmptyWindow(browser()->profile());
+  open_observer.Wait();
+  Browser* browser2 = browser::FindLastActiveWithProfile(browser()->profile());
+  printf("browser2 is active: %d\n", browser2->window()->IsActive());
+  aura::Window* window2 = browser2->window()->GetNativeWindow();
+  TabStripModel* tab_strip = browser2->tab_strip_model();
+  int tab_count = tab_strip->count();
+  ash::wm::MaximizeWindow(window2);
+
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+
+  window1->Show();
+  ash::wm::ActivateWindow(window1);
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut_id)).status);
+
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 }
 
 // Launches app multiple times through the api that the applist uses.

@@ -104,6 +104,8 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
 }
 
 void BrowserLauncherItemController::BrowserActivationStateChanged() {
+  if (tab_model_->GetActiveTabContents())
+    UpdateAppState(tab_model_->GetActiveTabContents());
   UpdateItemStatus();
 }
 
