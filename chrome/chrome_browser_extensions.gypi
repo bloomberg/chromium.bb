@@ -572,6 +572,9 @@
             # TODO: The re-includes should go away or shrink as extensions are refactored to be
             # less intertwined in the main codebase.
             ['exclude', '^browser/extensions/api/'],
+            ['include', '^browser/extensions/api/content_settings/content_settings_api_constants.cc'],
+            ['include', '^browser/extensions/api/content_settings/content_settings_helpers.cc'],
+            ['include', '^browser/extensions/api/content_settings/content_settings_store.cc'],
             ['include', '^browser/extensions/api/declarative/initializing_rules_registry.cc'],
             ['include', '^browser/extensions/api/declarative/rules_registry.cc'],
             ['include', '^browser/extensions/api/declarative/rules_registry_service.cc'],
