@@ -271,7 +271,7 @@ class CONTENT_EXPORT BrowserThread {
   // ...
   //  private:
   //   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
-  //   friend class DeleteTask<Foo>;
+  //   friend class base::DeleteHelper<Foo>;
   //
   //   ~Foo();
   struct DeleteOnUIThread : public DeleteOnThread<UI> { };

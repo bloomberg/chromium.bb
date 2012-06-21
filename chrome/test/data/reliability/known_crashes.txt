@@ -156,9 +156,6 @@ PREFIX: webcore::renderobject::destroy___webcore::renderobjectchildlist::destroy
 # 77176
 PREFIX: webcore::implicitanimation::~implicitanimation___webcore::implicitanimation::`scalar deleting destructor'___wtf::hashtable<wtf::refptr<webcore::animationbase>,wtf::refptr<webcore::animationbase>,wtf::identityextractor<wtf::refptr<webcore::animationbase> >,wtf::ptrhash<wtf::refptr<webcore::animationbase> >,wtf::hashtraits<wtf::refptr<webcore::animationbase> >,wtf::hashtraits<wtf::refptr<webcore::animationbase> > >::deallocatetable
 
-# 21054
-REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
-
 # 84178
 PREFIX: `anonymous namespace'::establishchannelcallback::send___`anonymous namespace'::establishchannelcallback::runwithparams___gpuprocesshost::sendoutstandingreplies
 

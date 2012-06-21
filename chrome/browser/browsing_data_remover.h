@@ -168,8 +168,8 @@ class BrowsingDataRemover : public content::NotificationObserver,
     STATE_DONE
   };
 
-  // BrowsingDataRemover deletes itself (using DeleteTask) and is not supposed
-  // to be deleted by other objects so make destructor private and DeleteTask
+  // BrowsingDataRemover deletes itself (using DeleteHelper) and is not supposed
+  // to be deleted by other objects so make destructor private and DeleteHelper
   // a friend.
   friend class base::DeleteHelper<BrowsingDataRemover>;
   virtual ~BrowsingDataRemover();

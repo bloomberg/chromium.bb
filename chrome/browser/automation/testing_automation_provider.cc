@@ -3659,7 +3659,7 @@ void TestingAutomationProvider::ClearBrowsingData(
   remover->AddObserver(
       new AutomationProviderBrowsingDataObserver(this, reply_message));
   remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
-  // BrowsingDataRemover deletes itself using DeleteTask.
+  // BrowsingDataRemover deletes itself using DeleteHelper.
   // The observer also deletes itself after sending the reply.
 }
 
