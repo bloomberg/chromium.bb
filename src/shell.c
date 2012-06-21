@@ -1743,22 +1743,17 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 	}
 }
 
+static void
+shell_surface_configure(struct weston_surface *, int32_t, int32_t);
+
 static struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
 {
-	struct wl_listener *listener;
-
-	listener = wl_signal_get(&surface->surface.resource.destroy_signal,
-				 shell_handle_surface_destroy);
-	if (listener)
-		return container_of(listener, struct shell_surface,
-				    surface_destroy_listener);
-
-	return NULL;
+	if (surface->configure == shell_surface_configure)
+		return surface->private;
+	else
+		return NULL;
 }
-
-static void
-shell_surface_configure(struct weston_surface *, int32_t, int32_t);
 
 static 	struct shell_surface *
 create_shell_surface(void *shell, struct weston_surface *surface,
@@ -1778,6 +1773,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	}
 
 	surface->configure = shell_surface_configure;
+	surface->private = shsurf;
 	surface->compositor->shell_interface.shell = shell;
 
 	shsurf->shell = (struct desktop_shell *) shell;
