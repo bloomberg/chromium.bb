@@ -31,6 +31,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
@@ -54,6 +55,9 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 #endif
 #if NACL_LINUX || NACL_OSX
   args->urandom_fd = -1;
+#endif
+#if NACL_LINUX
+  args->prereserved_sandbox_size = 0;
 #endif
   return args;
 }
@@ -131,6 +135,21 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   }
 
   errcode = LOAD_OK;
+
+#if NACL_LINUX
+  /* TODO(arbenson): Drop this after changes to Chrome side. */
+  if (g_nacl_prereserved_sandbox_addr != NULL &&
+      args->prereserved_sandbox_size == 0) {
+# if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+    /* On x86-32 Linux, we reserve 1 GB */
+    args->prereserved_sandbox_size = 0x40000000;
+# elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+    /* On ARM, we reserve 1 GB plus an 8 KB guard */
+    args->prereserved_sandbox_size = 0x40002000;
+# endif
+  }
+  g_prereserved_sandbox_size = args->prereserved_sandbox_size;
+#endif
 
   if (args->create_memory_object_func != NULL)
     NaClSetCreateMemoryObjectFunc(args->create_memory_object_func);

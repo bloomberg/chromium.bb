@@ -16,7 +16,7 @@
 
 /*
  * This function searches for sandbox memory that has been reserved by
- * the parent process on our behalf. We pre-reserve the sandbox on 32-bit
+ * the parent process on our behalf. We prereserve the sandbox on 32-bit
  * systems because otherwise the address space may become fragmented, making
  * the large sandbox request fail.
  */

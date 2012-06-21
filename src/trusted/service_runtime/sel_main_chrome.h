@@ -86,6 +86,15 @@ struct NaClChromeMainArgs {
    */
   int urandom_fd;
 #endif
+
+#if NACL_LINUX
+  /*
+   * Size of address space reserved at address zero onwards for the sandbox.
+   * This is optional and may be 0 if no address space has been reserved, though
+   * some sandboxes (such as ARM) might fail in that case.
+   */
+  size_t prereserved_sandbox_size;
+#endif
 };
 
 /* Create a new args struct containing default values. */

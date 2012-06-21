@@ -20,9 +20,21 @@ struct NaClApp; /* fwd */
 EXTERN_C_BEGIN
 
 #if NACL_LINUX
+/*
+ * TODO(arbenson): remove g_nacl_prereserved_sandbox_addr when Chromium no
+ * longer sets the variable directly.
+ */
 extern void *g_nacl_prereserved_sandbox_addr;
+extern size_t g_prereserved_sandbox_size;
 #endif
 
+/*
+ * Try to find prereserved sandbox memory.  Sets *p to the start of the
+ * sandbox.
+ *
+ * Returns a non-zero value if prereserved sandbox memory was found and the
+ * memory is the same size as the requested size.  Returns zero otherwise.
+ */
 int NaClFindPrereservedSandboxMemory(void **p, size_t num_bytes);
 
 void NaClAddrSpaceBeforeAlloc(size_t guarded_addrsp_size);

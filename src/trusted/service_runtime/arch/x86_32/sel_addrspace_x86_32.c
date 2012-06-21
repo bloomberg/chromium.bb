@@ -18,9 +18,6 @@
 
 
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
-#if NACL_LINUX
-  const void *ONE_MEGABYTE = (void *)(1024*1024);
-#endif
   int result;
 
   CHECK(NULL != mem);
@@ -32,42 +29,23 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
    * On 32 bit Linux, a 1 gigabyte block of address space may be reserved at
    * the zero-end of the address space during process creation, to address
    * sandbox layout requirements on ARM and performance issues on Intel ATOM.
-   * Look for this pre-reserved block and if found, pass its address to the
+   * Look for this prereserved block and if found, pass its address to the
    * page allocation function.
    */
   if (NaClFindPrereservedSandboxMemory(mem, addrsp_size)) {
-    /* Sanity check zero sandbox base address.
-     * It should be within a few pages above the 64KB boundary. See
-     * chrome/nacl/nacl_helper_bootstrap.c in the Chromium repository
-     * for more details.
-     */
-    if (0 == *mem || ONE_MEGABYTE < *mem) {
-      NaClLog(LOG_ERROR, "NaClAllocateSpace:"
-                         "  Can't handle sandbox at high address"
-                         " 0x%08"NACL_PRIxPTR"\n",
-              (uintptr_t)*mem);
-      return LOAD_NO_MEMORY;
-    }
-
-    /*
-     * When creating a zero-based sandbox, we do not allocate the first 64K of
-     * pages beneath the trampolines, because -- on Linux at least -- we cannot.
-     * Instead, we allocate starting at the trampolines, and then coerce the
-     * "mem" out parameter.
-     */
+    void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
+    CHECK(*mem == 0);
     addrsp_size -= NACL_TRAMPOLINE_START;
-    *mem = (void *) NACL_TRAMPOLINE_START;
-    result = NaCl_page_alloc_at_addr(mem, addrsp_size);
-    *mem = 0;
+    result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
   } else {
-    /* Zero-based sandbox not pre-reserved. Attempt to allocate anyway. */
+    /* Zero-based sandbox not prereserved. Attempt to allocate anyway. */
     result = NaCl_page_alloc(mem, addrsp_size);
   }
 #elif NACL_WINDOWS
   /*
    * On 32 bit Windows, a 1 gigabyte block of address space is reserved before
    * starting up this process to make sure we can create the sandbox. Look for
-   * this pre-reserved block and if found, pass its address to the page
+   * this prereserved block and if found, pass its address to the page
    * allocation function.
    */
   if (0 == NaClFindPrereservedSandboxMemory(mem, addrsp_size)) {
