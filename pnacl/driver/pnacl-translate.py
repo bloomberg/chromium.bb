@@ -167,7 +167,10 @@ EXTRA_ENV = {
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
                     '-metadata-text ${output}.meta',
-  'STREAM_BITCODE' : '0',
+  # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
+  # for testing. Defaults to 1Gpbs (effectively unlimited).
+  # If 0, use the non-streaming file-descriptor codepath.
+  'BITCODE_STREAM_RATE' : '1000000000',
 }
 
 TranslatorPatterns = [
@@ -210,7 +213,7 @@ TranslatorPatterns = [
   ( '-fPIC',           "env.set('PIC', '1')"),
 
   ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0).split(','))"),
-  ( '-bitcode-stream-rate=([0-9]+)', "env.set('STREAM_BITCODE', $0)"),
+  ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
 
   ( '(-.*)',            driver_tools.UnrecognizedOption),
 
@@ -288,12 +291,12 @@ def main(argv):
       assert not env.getbool('STATIC')
       assert env.getbool('SHARED')
       assert env.getbool('PIC')
-      assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
+      assert env.get('ARCH') != 'arm', "no glibc support for arm yet"
     elif bctype == 'pexe':
       if env.getbool('LIBMODE_GLIBC'):   # this is our proxy for dynamic images
         assert not env.getbool('STATIC')
         assert not env.getbool('SHARED')
-        assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
+        assert env.get('ARCH') != 'arm', "no glibc support for arm yet"
         # for the dynamic case we require non-pic because we do not
         # have the necessary tls rewrites in gold
         assert not env.getbool('PIC')
@@ -509,8 +512,13 @@ def RunLLCSandboxed():
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
-  stream_bitcode = int(env.getraw('STREAM_BITCODE'))
-  if stream_bitcode == 0:
+  stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
+  if stream_rate != 0 and not UseDefaultCommandlineLLC():
+    # TODO(dschuff): Add non-default command line support to llc streaming
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2195
+    Log.Error('Warning: non-default command lines not supported with '
+              'bitcode streaming yet: using non-streaming translation')
+  if stream_rate == 0 or not UseDefaultCommandlineLLC():
     script.append('readonly_file myfile %s' % infile)
     if UseDefaultCommandlineLLC():
       script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
@@ -525,7 +533,7 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   else:
     script.append('rpc StreamInit h(objfile) * s()')
     # specify filename, chunk size and rate in bits/s
-    script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_bitcode))
+    script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
     script.append('rpc StreamEnd * i() s() s() s()')
   script.append('echo "llc complete"')
   script.append('')
