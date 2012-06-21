@@ -31,7 +31,8 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
       visible_size_(640, 480),
       url_(url),
       state_(kUnInitialized),
-      got_first_frame_(false) {
+      got_first_frame_(false),
+      shutting_down_(false) {
 }
 
 void RTCVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -63,6 +64,11 @@ void RTCVideoDecoder::Read(const ReadCB& read_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(read_cb_.is_null());
   read_cb_ = read_cb;
+
+  if (shutting_down_) {
+    message_loop_->PostTask(FROM_HERE,
+        base::Bind(&RTCVideoDecoder::CancelPendingRead, this));
+  }
 }
 
 void RTCVideoDecoder::Reset(const base::Closure& closure) {
@@ -74,21 +80,7 @@ void RTCVideoDecoder::Reset(const base::Closure& closure) {
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
-  ReadCB read_cb;
-  {
-    base::AutoLock auto_lock(lock_);
-    if (!read_cb_.is_null()) {
-      std::swap(read_cb, read_cb_);
-    }
-  }
-
-  if (!read_cb.is_null()) {
-    scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::CreateBlackFrame(visible_size_.width(),
-                                            visible_size_.height());
-    read_cb.Run(kOk, video_frame);
-  }
-
+  CancelPendingRead();
   closure.Run();
 }
 
@@ -109,6 +101,18 @@ void RTCVideoDecoder::Stop(const base::Closure& closure) {
 const gfx::Size& RTCVideoDecoder::natural_size() {
   // TODO(vrk): Return natural size when aspect ratio support is implemented.
   return visible_size_;
+}
+
+void RTCVideoDecoder::PrepareForShutdownHack() {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(FROM_HERE,
+                            base::Bind(&RTCVideoDecoder::PrepareForShutdownHack,
+                                       this));
+    return;
+  }
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  shutting_down_ = true;
+  CancelPendingRead();
 }
 
 bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
@@ -171,6 +175,19 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
 
   read_cb.Run(kOk, video_frame);
   return true;
+}
+
+void RTCVideoDecoder::CancelPendingRead() {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  ReadCB read_cb;
+  {
+    base::AutoLock auto_lock(lock_);
+    std::swap(read_cb, read_cb_);
+  }
+
+  if (!read_cb.is_null()) {
+    read_cb.Run(kOk, NULL);
+  }
 }
 
 RTCVideoDecoder::~RTCVideoDecoder() {}

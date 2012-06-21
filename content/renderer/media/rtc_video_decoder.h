@@ -36,6 +36,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   virtual void Reset(const base::Closure& clusure) OVERRIDE;
   virtual void Stop(const base::Closure& clusure) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
+  virtual void PrepareForShutdownHack() OVERRIDE;
 
   // cricket::VideoRenderer implementation
   virtual bool SetSize(int width, int height, int reserved) OVERRIDE;
@@ -57,12 +58,15 @@ class CONTENT_EXPORT RTCVideoDecoder
     kStopped
   };
 
+  void CancelPendingRead();
+
   MessageLoop* message_loop_;
   gfx::Size visible_size_;
   std::string url_;
   DecoderState state_;
   ReadCB read_cb_;
   bool got_first_frame_;
+  bool shutting_down_;
   base::TimeDelta last_frame_timestamp_;
   base::TimeDelta start_time_;
 
