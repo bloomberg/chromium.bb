@@ -84,6 +84,7 @@ std::string WheelEvent::ToString() const {
          << " wheel_ticks_x:" << ticks_x_
          << " wheel_ticks_y:" << ticks_y_
          << " scroll_by_page: " << scroll_by_page_
+         << " time:" << timestamp_
          << "\n";
   return stream.str();
 }
