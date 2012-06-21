@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_MAC_H_
 #pragma once
 
-#include "chrome/browser/ui/browser.h"  // For Browser::HelpSource
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 
 class Profile;
@@ -18,7 +18,7 @@ namespace browser {
 void OpenAboutWindow(Profile* profile);
 void OpenHistoryWindow(Profile* profile);
 void OpenDownloadsWindow(Profile* profile);
-void OpenHelpWindow(Profile* profile, Browser::HelpSource source);
+void OpenHelpWindow(Profile* profile, chrome::HelpSource source);
 void OpenOptionsWindow(Profile* profile);
 void OpenSyncSetupWindow(Profile* profile, SyncPromoUI::Source source);
 void OpenClearBrowsingDataDialogWindow(Profile* profile);

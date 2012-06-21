@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 
 LoginUIService::LoginUIService(Profile* profile)
@@ -39,10 +40,10 @@ void LoginUIService::ShowLoginUI() {
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (!browser) {
       browser = Browser::Create(profile_);
-      browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+      chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
       browser->window()->Show();
     } else {
-      browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+      chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
     }
   }
 }

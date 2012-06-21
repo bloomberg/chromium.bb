@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/ash/balloon_view_ash.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_views.h"
@@ -92,7 +93,7 @@ void BalloonCollectionImplAsh::ShowSettings(const std::string& notifcation_id) {
   Profile* profile =
       balloon ? balloon->profile() : ProfileManager::GetDefaultProfile();
   Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
-  browser->ShowContentSettingsPage(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void BalloonCollectionImplAsh::OnClicked(const std::string& notifcation_id) {

@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -155,7 +156,7 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
     // Any existing UI is now closed - display new login UI.
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser) {
-      browser->ShowOptionsTab(chrome::kSyncSetupForceLoginSubPage);
+      chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupForceLoginSubPage);
       return;
     }
     // Should not be possible to have no browser here, since we're in an

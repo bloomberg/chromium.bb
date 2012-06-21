@@ -6,6 +6,7 @@
 
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -24,7 +25,7 @@ class BookmarksTest : public InProcessBrowserTest {
         content::NotificationService::AllSources(), NULL, 2);
 
     // Bring up the bookmarks manager tab.
-    browser()->OpenBookmarkManager();
+    chrome::ShowBookmarkManager(browser());
     navigation_observer.Wait();
   }
 
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandAgainGoesBackToBookmarksTab) {
 
   // Switch to first tab and run command again.
   browser()->ActivateTabAt(0, true);
-  browser()->OpenBookmarkManager();
+  chrome::ShowBookmarkManager(browser());
 
   // Ensure the bookmarks ui tab is active.
   ASSERT_EQ(1, browser()->active_index());
@@ -82,8 +83,8 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandAgainGoesBackToBookmarksTab) {
 IN_PROC_BROWSER_TEST_F(BookmarksTest, TwoCommandsOneTab) {
   content::TestNavigationObserver navigation_observer(
       content::NotificationService::AllSources());
-  browser()->OpenBookmarkManager();
-  browser()->OpenBookmarkManager();
+  chrome::ShowBookmarkManager(browser());
+  chrome::ShowBookmarkManager(browser());
   navigation_observer.Wait();
 
   ASSERT_EQ(1, browser()->tab_count());

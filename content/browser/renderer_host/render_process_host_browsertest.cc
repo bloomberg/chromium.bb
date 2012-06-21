@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/process.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -43,7 +44,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
   // the renderer process to be created or foregrounded, returning the process
   // handle.
   base::ProcessHandle ShowSingletonTab(const GURL& page) {
-    browser()->ShowSingletonTab(page);
+    chrome::ShowSingletonTab(browser(), page);
     WebContents* wc = browser()->GetActiveWebContents();
     CHECK(wc->GetURL() == page);
 
@@ -80,7 +81,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
 
     // Create a new TYPE_TABBED tab.  It should be in its own process.
     GURL page1("data:text/html,hello world1");
-    browser()->ShowSingletonTab(page1);
+    chrome::ShowSingletonTab(browser(), page1);
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
@@ -94,7 +95,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
 
     // Create another TYPE_TABBED tab.  It should share the previous process.
     GURL page2("data:text/html,hello world2");
-    browser()->ShowSingletonTab(page2);
+    chrome::ShowSingletonTab(browser(), page2);
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
@@ -109,7 +110,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     // exercise bug 43448 where extension and WebUI tabs could get combined into
     // normal renderers.
     GURL history(chrome::kTestHistoryURL);
-    browser()->ShowSingletonTab(history);
+    chrome::ShowSingletonTab(browser(), history);
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
@@ -122,7 +123,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     // Create a TYPE_EXTENSION tab.  It should be in its own process.
     // (the bookmark manager is implemented as an extension)
     GURL bookmarks(chrome::kTestBookmarksURL);
-    browser()->ShowSingletonTab(bookmarks);
+    chrome::ShowSingletonTab(browser(), bookmarks);
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
@@ -164,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
 
   // Create a new TYPE_TABBED tab.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1);
+  chrome::ShowSingletonTab(browser(), page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -174,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
 
   // Create another TYPE_TABBED tab.  It should share the previous process.
   GURL page2("data:text/html,hello world2");
-  browser()->ShowSingletonTab(page2);
+  chrome::ShowSingletonTab(browser(), page2);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;

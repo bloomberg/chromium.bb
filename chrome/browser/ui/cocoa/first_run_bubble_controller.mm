@@ -9,6 +9,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
@@ -89,7 +90,7 @@
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
   [self close];
   if (browser)
-    browser->OpenSearchEngineOptionsDialog();
+    chrome::ShowSearchEngineSettings(browser);
 }
 
 @end  // FirstRunBubbleController

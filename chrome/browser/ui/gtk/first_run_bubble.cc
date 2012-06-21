@@ -11,6 +11,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -99,5 +100,5 @@ void FirstRunBubble::HandleChangeLink(GtkWidget* sender) {
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
   bubble_->Close();
   if (browser)
-    browser->OpenSearchEngineOptionsDialog();
+    chrome::ShowSearchEngineSettings(browser);
 }

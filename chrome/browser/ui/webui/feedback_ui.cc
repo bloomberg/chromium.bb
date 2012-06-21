@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -175,7 +176,7 @@ void ShowWebFeedbackView(Browser* browser,
   feedback_url = feedback_url + "&" + kTimestampParameter +
                  net::EscapeUrlEncodedData(timestamp, false);
 #endif
-  browser->ShowSingletonTab(GURL(feedback_url));
+  chrome::ShowSingletonTab(browser, GURL(feedback_url));
 }
 
 }  // namespace browser

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -232,8 +233,8 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Browser* browser) {
 void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
                                             const std::string& app_id) {
   if (NewTabUI::ShouldShowApps()) {
-    browser::NavigateParams params = browser->GetSingletonTabNavigateParams(
-        GURL(chrome::kChromeUINewTabURL));
+    browser::NavigateParams params = chrome::GetSingletonTabNavigateParams(
+        browser, GURL(chrome::kChromeUINewTabURL));
     browser::Navigate(&params);
 
     content::NotificationService::current()->Notify(

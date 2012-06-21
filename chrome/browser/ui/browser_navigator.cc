@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -57,19 +58,6 @@ bool WindowCanOpenTabs(Browser* browser) {
 Browser* GetOrCreateBrowser(Profile* profile) {
   Browser* browser = browser::FindTabbedBrowser(profile, false);
   return browser ? browser : Browser::Create(profile);
-}
-
-// Returns true if two URLs are equal after taking |replacements| into account.
-bool CompareURLsWithReplacements(
-    const GURL& url,
-    const GURL& other,
-    const url_canon::Replacements<char>& replacements) {
-  if (url == other)
-    return true;
-
-  GURL url_replaced = url.ReplaceComponents(replacements);
-  GURL other_replaced = other.ReplaceComponents(replacements);
-  return url_replaced == other_replaced;
 }
 
 // Change some of the navigation parameters based on the particular URL.
@@ -495,7 +483,7 @@ void Navigate(NavigateParams* params) {
   std::string extra_headers;
 
   // Check if this is a singleton tab that already exists
-  int singleton_index = GetIndexOfSingletonTab(params);
+  int singleton_index = chrome::GetIndexOfSingletonTab(params);
 
   // If no target TabContents was specified, we need to construct one if
   // we are supposed to target a new tab; unless it's a singleton that already
@@ -619,50 +607,6 @@ void Navigate(NavigateParams* params) {
         content::Source<content::WebContentsDelegate>(params->browser),
         content::Details<WebContents>(params->target_contents->web_contents()));
   }
-}
-
-// Returns the index of an existing singleton tab in |params->browser| matching
-// the URL specified in |params|.
-int GetIndexOfSingletonTab(browser::NavigateParams* params) {
-  if (params->disposition != SINGLETON_TAB)
-    return -1;
-
-  // In case the URL was rewritten by the BrowserURLHandler we need to ensure
-  // that we do not open another URL that will get redirected to the rewritten
-  // URL.
-  GURL rewritten_url(params->url);
-  bool reverse_on_redirect = false;
-  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &rewritten_url,
-      params->browser->profile(),
-      &reverse_on_redirect);
-
-  // If there are several matches: prefer the active tab by starting there.
-  int start_index = std::max(0, params->browser->active_index());
-  int tab_count = params->browser->tab_count();
-  for (int i = 0; i < tab_count; ++i) {
-    int tab_index = (start_index + i) % tab_count;
-    TabContents* tab = params->browser->GetTabContentsAt(tab_index);
-
-    url_canon::Replacements<char> replacements;
-    if (params->ref_behavior == browser::NavigateParams::IGNORE_REF)
-      replacements.ClearRef();
-    if (params->path_behavior == browser::NavigateParams::IGNORE_AND_NAVIGATE ||
-        params->path_behavior == browser::NavigateParams::IGNORE_AND_STAY_PUT) {
-      replacements.ClearPath();
-      replacements.ClearQuery();
-    }
-
-    if (CompareURLsWithReplacements(tab->web_contents()->GetURL(),
-                                    params->url, replacements) ||
-        CompareURLsWithReplacements(tab->web_contents()->GetURL(),
-                                    rewritten_url, replacements)) {
-      params->target_contents = tab;
-      return tab_index;
-    }
-  }
-
-  return -1;
 }
 
 bool IsURLAllowedInIncognito(const GURL& url) {

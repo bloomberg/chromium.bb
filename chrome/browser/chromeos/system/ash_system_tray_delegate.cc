@@ -57,6 +57,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -302,20 +304,21 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowSettings() OVERRIDE {
-    GetAppropriateBrowser()->OpenOptionsDialog();
+    chrome::ShowSettings(GetAppropriateBrowser());
   }
 
   virtual void ShowDateSettings() OVERRIDE {
     content::RecordAction(content::UserMetricsAction("ShowDateOptions"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-    GetAppropriateBrowser()->ShowOptionsTab(sub_page);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
   }
 
   virtual void ShowNetworkSettings() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenInternetOptionsDialog"));
-    GetAppropriateBrowser()->ShowOptionsTab(chrome::kInternetOptionsSubPage);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
+                                chrome::kInternetOptionsSubPage);
   }
 
   virtual void ShowBluetoothSettings() OVERRIDE {
@@ -325,17 +328,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ShowDriveSettings() OVERRIDE {
     // TODO(hshi): Open the drive-specific settings page once we put it in.
     // For now just show the generic settings page.
-    GetAppropriateBrowser()->OpenOptionsDialog();
+    chrome::ShowSettings(GetAppropriateBrowser());
   }
 
   virtual void ShowIMESettings() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenLanguageOptionsDialog"));
-    GetAppropriateBrowser()->ShowOptionsTab(chrome::kLanguageOptionsSubPage);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
+                                chrome::kLanguageOptionsSubPage);
   }
 
   virtual void ShowHelp() OVERRIDE {
-    GetAppropriateBrowser()->ShowHelpTab(Browser::HELP_SOURCE_MENU);
+    chrome::ShowHelp(GetAppropriateBrowser(), chrome::HELP_SOURCE_MENU);
   }
 
   virtual bool IsAudioMuted() const OVERRIDE {
@@ -665,7 +669,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // discovery process.
     content::RecordAction(
         content::UserMetricsAction("OpenAddBluetoothDeviceDialog"));
-    GetAppropriateBrowser()->ShowOptionsTab(chrome::kBluetoothAddDeviceSubPage);
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
+                                chrome::kBluetoothAddDeviceSubPage);
   }
 
   virtual void ToggleAirplaneMode() OVERRIDE {
@@ -760,7 +765,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowCellularURL(const std::string& url) OVERRIDE {
-    GetAppropriateBrowser()->ShowSingletonTab(GURL(url));
+    chrome::ShowSingletonTab(GetAppropriateBrowser(), GURL(url));
   }
 
   virtual void ChangeProxySettings() OVERRIDE {
@@ -1212,7 +1217,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       Browser* browser = GetAppropriateBrowser();
       if (!browser)
         return;
-      browser->ShowSingletonTab(GURL(deal_url_to_open));
+      chrome::ShowSingletonTab(browser, GURL(deal_url_to_open));
     }
   }
 

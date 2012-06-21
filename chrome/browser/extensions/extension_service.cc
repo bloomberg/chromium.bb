@@ -77,6 +77,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -1781,7 +1782,7 @@ void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
 
 void ExtensionService::HandleExtensionAlertDetails(Browser* browser) {
   DCHECK(browser);
-  browser->ShowExtensionsTab();
+  chrome::ShowExtensions(browser);
 }
 
 void ExtensionService::UnloadExtension(

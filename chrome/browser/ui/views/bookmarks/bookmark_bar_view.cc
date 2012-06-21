@@ -27,6 +27,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
@@ -839,7 +840,7 @@ void BookmarkBarView::BookmarkMenuDeleted(BookmarkMenuController* controller) {
 }
 
 void BookmarkBarView::ShowImportDialog() {
-  browser_->OpenImportSettingsDialog();
+  chrome::ShowImportDialog(browser_);
 }
 
 void BookmarkBarView::Loaded(BookmarkModel* model, bool ids_reassigned) {

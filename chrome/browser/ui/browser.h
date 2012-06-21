@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -156,18 +155,6 @@ class Browser : public TabStripModelDelegate,
     // There are active downloads associated with this incognito profile
     // that would be canceled.
     DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
-  };
-
-  // Sources of requests to show the help tab.
-  enum HelpSource {
-    // Keyboard accelerators.
-    HELP_SOURCE_KEYBOARD,
-
-    // Menus (e.g. wrench menu or Chrome OS system menu).
-    HELP_SOURCE_MENU,
-
-    // WebUI (the "About" page).
-    HELP_SOURCE_WEBUI,
   };
 
   // Different types of action when web app info is available.
@@ -477,21 +464,6 @@ class Browser : public TabStripModelDelegate,
   // disposition.
   bool NavigateToIndexWithDisposition(int index, WindowOpenDisposition disp);
 
-  // Show a given a URL. If a tab with the same URL (ignoring the ref) is
-  // already visible in this browser, it becomes selected. Otherwise a new tab
-  // is created.
-  void ShowSingletonTab(const GURL& url);
-
-  // Same as ShowSingletonTab, but does not ignore ref.
-  void ShowSingletonTabRespectRef(const GURL& url);
-
-  // As ShowSingletonTab, but if the current tab is the new tab page or
-  // about:blank, then overwrite it with the passed contents.
-  void ShowSingletonTabOverwritingNTP(const browser::NavigateParams& params);
-
-  // Creates a NavigateParams struct for a singleton tab navigation.
-  browser::NavigateParams GetSingletonTabNavigateParams(const GURL& url);
-
   // Invoked when the fullscreen state of the window changes.
   // BrowserWindow::EnterFullscreen invokes this after the window has become
   // fullscreen.
@@ -604,32 +576,9 @@ class Browser : public TabStripModelDelegate,
 
   void ToggleBookmarkBar();
 
-  void OpenBookmarkManager();
-  void OpenBookmarkManagerForNode(int64 node_id);
-  void OpenBookmarkManagerEditNode(int64 node_id);
   void ShowAppMenu();
   void ShowAvatarMenu();
-  void ShowHistoryTab();
-  void ShowDownloadsTab();
-  void ShowExtensionsTab();
-  void ShowAboutConflictsTab();
-  void ShowBrokenPageTab(content::WebContents* contents);
-  void ShowOptionsTab(const std::string& sub_page);
-  // Shows the Content Settings page for a given content type.
-  void ShowContentSettingsPage(ContentSettingsType content_type);
-  void OpenClearBrowsingDataDialog();
-  void OpenOptionsDialog();
-  void OpenPasswordManager();
-  void OpenSyncMyBookmarksDialog();
-  void OpenImportSettingsDialog();
-  void OpenInstantConfirmDialog();
-  void OpenAboutChromeDialog();
   void OpenUpdateChromeDialog();
-  void ShowHelpTab(HelpSource source);
-  void OpenPrivacyDashboardTabAndActivate();
-  void OpenSearchEngineOptionsDialog();
-  void OpenPluginsTabAndActivate();
-  void ShowSyncSetup(SyncPromoUI::Source source);
   void ToggleSpeechInput();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
@@ -1286,9 +1235,6 @@ class Browser : public TabStripModelDelegate,
   // Resets |bookmark_bar_state_| based on the active tab. Notifies the
   // BrowserWindow if necessary.
   void UpdateBookmarkBarState(BookmarkBarStateChangeReason reason);
-
-  // Open the bookmark manager with a defined hash action.
-  void OpenBookmarkManagerWithHash(const std::string& action, int64 node_id);
 
   // Creates a BackgroundContents if appropriate; return true if one was
   // created.

@@ -19,6 +19,7 @@
 #import "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
@@ -823,7 +824,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (IBAction)importBookmarks:(id)sender {
-  browser_->OpenImportSettingsDialog();
+  chrome::ShowImportDialog(browser_);
 }
 
 #pragma mark Private Methods

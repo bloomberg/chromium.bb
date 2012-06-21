@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
@@ -199,13 +200,13 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     case IDC_BOOKMARK_MANAGER: {
       content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (selection_.size() != 1)
-        browser_->OpenBookmarkManager();
+        chrome::ShowBookmarkManager(browser_);
       else if (selection_[0]->is_folder())
-        browser_->OpenBookmarkManagerForNode(selection_[0]->id());
+        chrome::ShowBookmarkManagerForNode(browser_, selection_[0]->id());
       else if (parent_)
-        browser_->OpenBookmarkManagerForNode(parent_->id());
+        chrome::ShowBookmarkManagerForNode(browser_, parent_->id());
       else
-        browser_->OpenBookmarkManager();
+        chrome::ShowBookmarkManager(browser_);
       break;
     }
 

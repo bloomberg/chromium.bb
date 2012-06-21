@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/download/download_item_gtk.h"
@@ -308,7 +309,7 @@ void DownloadShelfGtk::OnButtonClick(GtkWidget* button) {
     Close();
   } else {
     // The link button was clicked.
-    browser_->ShowDownloadsTab();
+    chrome::ShowDownloads(browser_);
   }
 }
 

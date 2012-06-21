@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -103,7 +104,7 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
 bool OpenTab(int index, const GURL& url) {
   DVLOG(1) << "Opening tab: " << url.spec() << " using profile "
            << index << ".";
-  test()->GetBrowser(index)->ShowSingletonTab(url);
+  chrome::ShowSingletonTab(test()->GetBrowser(index), url);
   return WaitForTabsToLoad(index, std::vector<GURL>(1, url));
 }
 
@@ -113,7 +114,7 @@ bool OpenMultipleTabs(int index, const std::vector<GURL>& urls) {
        it != urls.end(); ++it) {
     DVLOG(1) << "Opening tab: " << it->spec() << " using profile " << index
              << ".";
-    browser->ShowSingletonTab(*it);
+    chrome::ShowSingletonTab(browser, *it);
   }
   return WaitForTabsToLoad(index, urls);
 }

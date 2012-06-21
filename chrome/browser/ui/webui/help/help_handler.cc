@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -322,7 +323,7 @@ void HelpHandler::OpenHelpPage(const base::ListValue* args) {
   DCHECK(args->empty());
   Browser* browser = browser::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
-  browser->ShowHelpTab(Browser::HELP_SOURCE_WEBUI);
+  chrome::ShowHelp(browser, chrome::HELP_SOURCE_WEBUI);
 }
 
 #if defined(OS_CHROMEOS)

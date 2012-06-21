@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
@@ -193,7 +194,7 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextManage: {
-      browser->ShowExtensionsTab();
+      chrome::ShowExtensions(browser);
       break;
     }
     default:

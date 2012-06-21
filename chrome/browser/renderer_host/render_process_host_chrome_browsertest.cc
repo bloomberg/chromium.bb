@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1);
+  chrome::ShowSingletonTab(browser(), page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -105,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
-  browser()->ShowSingletonTab(page1);
+  chrome::ShowSingletonTab(browser(), page1);
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;

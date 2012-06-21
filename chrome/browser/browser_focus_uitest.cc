@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -837,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Open the history tab, focus should be on the tab contents.
-  browser()->ShowHistoryTab();
+  chrome::ShowHistory(browser());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
       browser()->GetActiveWebContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
@@ -849,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   EXPECT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 
   // Open the download tab, focus should be on the tab contents.
-  browser()->ShowDownloadsTab();
+  chrome::ShowDownloads(browser());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
       browser()->GetActiveWebContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
@@ -902,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   }
 
   // Focus should now be on the tab contents.
-  browser()->ShowDownloadsTab();
+  chrome::ShowDownloads(browser());
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 }
 
@@ -924,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   }
 
   // Focus should now be on the tab contents.
-  browser()->ShowDownloadsTab();
+  chrome::ShowDownloads(browser());
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 }
 

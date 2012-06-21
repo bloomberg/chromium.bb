@@ -104,6 +104,7 @@
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_toolbar_model_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -120,6 +121,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -131,7 +133,6 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
-#include "chrome/browser/ui/webui/options2/content_settings_handler2.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -237,8 +238,6 @@ const char kPrivacyDashboardUrl[] = "https://www.google.com/dashboard";
 
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
-
-const char kHashMark[] = "#";
 
 // Returns |true| if entry has an internal chrome:// URL, |false| otherwise.
 bool HasInternalURL(const NavigationEntry* entry) {
@@ -658,14 +657,14 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 // static
 void Browser::OpenBookmarkManagerWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->OpenBookmarkManager();
+  chrome::ShowBookmarkManager(browser);
   browser->window()->Show();
 }
 
 // static
 void Browser::OpenExtensionsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->ShowExtensionsTab();
+  chrome::ShowExtensions(browser);
   browser->window()->Show();
 }
 
@@ -912,7 +911,7 @@ void Browser::InProgressDownloadResponse(bool cancel_downloads) {
 
   // Show the download page so the user can figure-out what downloads are still
   // in-progress.
-  ShowDownloadsTab();
+  chrome::ShowDownloads(this);
 }
 
 Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
@@ -1166,43 +1165,6 @@ bool Browser::NavigateToIndexWithDisposition(int index,
     return false;
   controller.GoToIndex(index);
   return true;
-}
-
-void Browser::ShowSingletonTab(const GURL& url) {
-  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
-  browser::Navigate(&params);
-}
-
-void Browser::ShowSingletonTabRespectRef(const GURL& url) {
-  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
-  params.ref_behavior = browser::NavigateParams::RESPECT_REF;
-  browser::Navigate(&params);
-}
-
-void Browser::ShowSingletonTabOverwritingNTP(
-    const browser::NavigateParams& params) {
-  browser::NavigateParams local_params(params);
-  WebContents* contents = GetActiveWebContents();
-  if (contents) {
-    const GURL& contents_url = contents->GetURL();
-    if ((contents_url == GURL(chrome::kChromeUINewTabURL) ||
-         contents_url == GURL(chrome::kAboutBlankURL)) &&
-        browser::GetIndexOfSingletonTab(&local_params) < 0) {
-      local_params.disposition = CURRENT_TAB;
-    }
-  }
-
-  browser::Navigate(&local_params);
-}
-
-browser::NavigateParams Browser::GetSingletonTabNavigateParams(
-    const GURL& url) {
-  browser::NavigateParams params(
-      this, url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = SINGLETON_TAB;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
-  params.user_gesture = true;
-  return params;
 }
 
 void Browser::WindowFullscreenStateChanged() {
@@ -1780,21 +1742,6 @@ void Browser::ToggleBookmarkBar() {
   window_->ToggleBookmarkBar();
 }
 
-void Browser::OpenBookmarkManager() {
-  content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  content::RecordAction(UserMetricsAction("ShowBookmarks"));
-  ShowSingletonTabOverwritingNTP(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL)));
-}
-
-void Browser::OpenBookmarkManagerForNode(int64 node_id) {
-  OpenBookmarkManagerWithHash("", node_id);
-}
-
-void Browser::OpenBookmarkManagerEditNode(int64 node_id) {
-  OpenBookmarkManagerWithHash("e=", node_id);
-}
-
 void Browser::ShowAppMenu() {
   // We record the user metric for this event in WrenchMenu::RunMenu.
   window_->ShowAppMenu();
@@ -1804,174 +1751,9 @@ void Browser::ShowAvatarMenu() {
   window_->ShowAvatarBubbleFromAvatarButton();
 }
 
-void Browser::ShowHistoryTab() {
-  content::RecordAction(UserMetricsAction("ShowHistory"));
-  browser::NavigateParams params(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryURL)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(params);
-}
-
-void Browser::ShowDownloadsTab() {
-  content::RecordAction(UserMetricsAction("ShowDownloads"));
-  if (window()) {
-    DownloadShelf* shelf = window()->GetDownloadShelf();
-    if (shelf->IsShowing())
-      shelf->Close();
-  }
-  ShowSingletonTabOverwritingNTP(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIDownloadsURL)));
-}
-
-void Browser::ShowExtensionsTab() {
-  content::RecordAction(UserMetricsAction("ShowExtensions"));
-  browser::NavigateParams params(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIExtensionsURL)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(params);
-}
-
-void Browser::ShowAboutConflictsTab() {
-  content::RecordAction(UserMetricsAction("AboutConflicts"));
-  ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL));
-}
-
-void Browser::ShowBrokenPageTab(WebContents* contents) {
-  content::RecordAction(UserMetricsAction("Feedback"));
-  string16 page_title = contents->GetTitle();
-  NavigationEntry* entry = contents->GetController().GetActiveEntry();
-  if (!entry)
-    return;
-  std::string page_url = entry->GetURL().spec();
-  std::vector<std::string> subst;
-  subst.push_back(UTF16ToASCII(page_title));
-  subst.push_back(page_url);
-  std::string report_page_url =
-      ReplaceStringPlaceholders(kBrokenPageUrl, subst, NULL);
-  ShowSingletonTab(GURL(report_page_url));
-}
-
-void Browser::ShowOptionsTab(const std::string& sub_page) {
-  std::string url = std::string(chrome::kChromeUISettingsURL) + sub_page;
-#if defined(OS_CHROMEOS)
-  if (sub_page.find(chrome::kInternetOptionsSubPage, 0) != std::string::npos) {
-    std::string::size_type loc = sub_page.find("?", 0);
-    std::string network_page = loc != std::string::npos ?
-        sub_page.substr(loc) : std::string();
-    url = std::string(chrome::kChromeUISettingsURL) + network_page;
-  }
-#endif
-  browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(params);
-}
-
-void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {
-  ShowOptionsTab(
-      chrome::kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-      options2::ContentSettingsHandler::ContentSettingsTypeToGroupName(
-          content_type));
-}
-
-void Browser::OpenClearBrowsingDataDialog() {
-  content::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"));
-  ShowOptionsTab(chrome::kClearBrowserDataSubPage);
-}
-
-void Browser::OpenOptionsDialog() {
-  content::RecordAction(UserMetricsAction("ShowOptions"));
-  ShowOptionsTab(std::string());
-}
-
-void Browser::OpenPasswordManager() {
-  content::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
-  ShowOptionsTab(chrome::kPasswordManagerSubPage);
-}
-
-void Browser::OpenImportSettingsDialog() {
-  content::RecordAction(UserMetricsAction("Import_ShowDlg"));
-  ShowOptionsTab(chrome::kImportDataSubPage);
-}
-
-void Browser::OpenInstantConfirmDialog() {
-  ShowOptionsTab(chrome::kInstantConfirmPage);
-}
-
-void Browser::OpenAboutChromeDialog() {
-  content::RecordAction(UserMetricsAction("AboutChrome"));
-#if !defined(OS_WIN)
-  browser::NavigateParams params(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIUberURL)));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(params);
-#else
-  // crbug.com/115123.
-  window_->ShowAboutChromeDialog();
-#endif
-}
-
 void Browser::OpenUpdateChromeDialog() {
   content::RecordAction(UserMetricsAction("UpdateChrome"));
   window_->ShowUpdateChromeDialog();
-}
-
-void Browser::ShowHelpTab(HelpSource source) {
-  content::RecordAction(UserMetricsAction("ShowHelpTab"));
-  GURL url;
-  switch (source) {
-    case HELP_SOURCE_KEYBOARD:
-      url = GURL(chrome::kChromeHelpViaKeyboardURL);
-      break;
-    case HELP_SOURCE_MENU:
-      url = GURL(chrome::kChromeHelpViaMenuURL);
-      break;
-    case HELP_SOURCE_WEBUI:
-      url = GURL(chrome::kChromeHelpViaWebUIURL);
-      break;
-    default:
-      NOTREACHED() << "Unhandled help source " << source;
-  }
-  ShowSingletonTab(url);
-}
-
-void Browser::OpenPrivacyDashboardTabAndActivate() {
-  OpenURL(OpenURLParams(
-      GURL(kPrivacyDashboardUrl), Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
-  window_->Activate();
-}
-
-void Browser::OpenSearchEngineOptionsDialog() {
-  content::RecordAction(UserMetricsAction("EditSearchEngines"));
-  ShowOptionsTab(chrome::kSearchEnginesSubPage);
-}
-
-void Browser::OpenPluginsTabAndActivate() {
-  OpenURL(OpenURLParams(
-      GURL(chrome::kChromeUIPluginsURL), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false));
-  window_->Activate();
-}
-
-void Browser::ShowSyncSetup(SyncPromoUI::Source source) {
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          profile()->GetOriginalProfile());
-  LoginUIService* login_service =
-      LoginUIServiceFactory::GetForProfile(profile()->GetOriginalProfile());
-  if (service->HasSyncSetupCompleted()) {
-    ShowOptionsTab(std::string());
-  } else if (SyncPromoUI::ShouldShowSyncPromo(profile()) &&
-             login_service->current_login_ui() == NULL) {
-    // There is no currently active login UI, so display a new promo page.
-    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source));
-    browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-    ShowSingletonTabOverwritingNTP(params);
-  } else {
-    LoginUIServiceFactory::GetForProfile(
-        profile()->GetOriginalProfile())->ShowLoginUI();
-  }
 }
 
 void Browser::ToggleSpeechInput() {
@@ -2530,24 +2312,35 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
     case IDC_PROFILING_ENABLED:     Profiling::Toggle();              break;
 
-    case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();            break;
+    case IDC_SHOW_BOOKMARK_MANAGER: chrome::ShowBookmarkManager(this);break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                    break;
     case IDC_SHOW_AVATAR_MENU:      ShowAvatarMenu();                 break;
-    case IDC_SHOW_HISTORY:          ShowHistoryTab();                 break;
-    case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();               break;
-    case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;
-    case IDC_OPTIONS:               OpenOptionsDialog();              break;
-    case IDC_EDIT_SEARCH_ENGINES:   OpenSearchEngineOptionsDialog();  break;
-    case IDC_VIEW_PASSWORDS:        OpenPasswordManager();            break;
-    case IDC_CLEAR_BROWSING_DATA:   OpenClearBrowsingDataDialog();    break;
-    case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();       break;
-    case IDC_ABOUT:                 OpenAboutChromeDialog();          break;
+    case IDC_SHOW_HISTORY:          chrome::ShowHistory(this);        break;
+    case IDC_SHOW_DOWNLOADS:        chrome::ShowDownloads(this);      break;
+    case IDC_MANAGE_EXTENSIONS:     chrome::ShowExtensions(this);     break;
+    case IDC_OPTIONS:               chrome::ShowSettings(this);       break;
+    case IDC_EDIT_SEARCH_ENGINES:
+      chrome::ShowSearchEngineSettings(this);
+      break;
+    case IDC_VIEW_PASSWORDS:        chrome::ShowPasswordManager(this);break;
+    case IDC_CLEAR_BROWSING_DATA:
+      chrome::ShowClearBrowsingDataDialog(this);
+      break;
+    case IDC_IMPORT_SETTINGS:       chrome::ShowImportDialog(this);   break;
+    case IDC_ABOUT:                 chrome::ShowAboutChrome(this);    break;
     case IDC_UPGRADE_DIALOG:        OpenUpdateChromeDialog();         break;
-    case IDC_VIEW_INCOMPATIBILITIES: ShowAboutConflictsTab();         break;
-    case IDC_HELP_PAGE_VIA_KEYBOARD: ShowHelpTab(HELP_SOURCE_KEYBOARD); break;
-    case IDC_HELP_PAGE_VIA_MENU:    ShowHelpTab(HELP_SOURCE_MENU);    break;
-    case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
-                                    break;
+    case IDC_VIEW_INCOMPATIBILITIES:
+      chrome::ShowConflicts(this);
+      break;
+    case IDC_HELP_PAGE_VIA_KEYBOARD:
+      chrome::ShowHelp(this, chrome::HELP_SOURCE_KEYBOARD);
+      break;
+    case IDC_HELP_PAGE_VIA_MENU:
+      chrome::ShowHelp(this, chrome::HELP_SOURCE_MENU);
+      break;
+    case IDC_SHOW_SYNC_SETUP:
+      chrome::ShowSyncSetup(this, SyncPromoUI::SOURCE_MENU);
+      break;
     case IDC_TOGGLE_SPEECH_INPUT:   ToggleSpeechInput();              break;
 
     default:
@@ -5073,18 +4866,6 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
   window_->BookmarkBarStateChanged(animate_type);
-}
-
-void Browser::OpenBookmarkManagerWithHash(const std::string& action,
-                                          int64 node_id) {
-  content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  content::RecordAction(UserMetricsAction("ShowBookmarks"));
-  browser::NavigateParams params(GetSingletonTabNavigateParams(
-      GURL(chrome::kChromeUIBookmarksURL).Resolve(
-      StringPrintf("/#%s%s", action.c_str(),
-      base::Int64ToString(node_id).c_str()))));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(params);
 }
 
 bool Browser::MaybeCreateBackgroundContents(int route_id,

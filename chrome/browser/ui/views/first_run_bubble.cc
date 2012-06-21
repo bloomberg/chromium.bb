@@ -9,6 +9,7 @@
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -99,5 +100,5 @@ void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
   GetWidget()->Close();
   if (browser)
-    browser->OpenSearchEngineOptionsDialog();
+    chrome::ShowSearchEngineSettings(browser);
 }

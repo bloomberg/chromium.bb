@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
@@ -690,7 +691,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
           browser->window()->Show();
         }
         DCHECK(browser);
-        browser->ShowDownloadsTab();
+        chrome::ShowDownloads(browser);
         return NO;
       }
 
@@ -850,7 +851,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
       if (Browser* browser = ActivateBrowser(lastProfile)) {
-        browser->OpenClearBrowsingDataDialog();
+        chrome::ShowClearBrowsingDataDialog(browser);
       } else {
         browser::OpenClearBrowsingDataDialogWindow(lastProfile);
       }
@@ -858,7 +859,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     }
     case IDC_IMPORT_SETTINGS: {
       if (Browser* browser = ActivateBrowser(lastProfile)) {
-        browser->OpenImportSettingsDialog();
+        chrome::ShowImportDialog(browser);
       } else {
         browser::OpenImportSettingsDialogWindow(lastProfile);
       }
@@ -867,8 +868,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     case IDC_SHOW_BOOKMARK_MANAGER:
       content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (Browser* browser = ActivateBrowser(lastProfile)) {
-        // Open a bookmark manager tab.
-        browser->OpenBookmarkManager();
+        chrome::ShowBookmarkManager(browser);
       } else {
         // No browser window, so create one for the bookmark manager tab.
         Browser::OpenBookmarkManagerWindow(lastProfile);
@@ -876,31 +876,31 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       break;
     case IDC_SHOW_HISTORY:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowHistoryTab();
+        chrome::ShowHistory(browser);
       else
         browser::OpenHistoryWindow(lastProfile);
       break;
     case IDC_SHOW_DOWNLOADS:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowDownloadsTab();
+        chrome::ShowDownloads(browser);
       else
         browser::OpenDownloadsWindow(lastProfile);
       break;
     case IDC_MANAGE_EXTENSIONS:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowExtensionsTab();
+        chrome::ShowExtensions(browser);
       else
         Browser::OpenExtensionsWindow(lastProfile);
       break;
     case IDC_HELP_PAGE_VIA_MENU:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowHelpTab(Browser::HELP_SOURCE_MENU);
+        chrome::ShowHelp(browser, chrome::HELP_SOURCE_MENU);
       else
-        browser::OpenHelpWindow(lastProfile, Browser::HELP_SOURCE_MENU);
+        browser::OpenHelpWindow(lastProfile, chrome::HELP_SOURCE_MENU);
       break;
     case IDC_SHOW_SYNC_SETUP:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
+        chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_MENU);
       else
         browser::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
       break;
@@ -1181,7 +1181,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 - (IBAction)showPreferences:(id)sender {
   if (Browser* browser = ActivateBrowser([self lastProfile])) {
     // Show options tab in the active browser window.
-    browser->OpenOptionsDialog();
+    chrome::ShowSettings(browser);
   } else {
     // No browser window, so create one for the options tab.
     browser::OpenOptionsWindow([self lastProfile]);
@@ -1190,8 +1190,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
   if (Browser* browser = ActivateBrowser([self lastProfile])) {
-    // Show about tab in the active browser window.
-    browser->OpenAboutChromeDialog();
+    chrome::ShowAboutChrome(browser);
   } else {
     // No browser window, so create one for the about tab.
     browser::OpenAboutWindow([self lastProfile]);
@@ -1311,7 +1310,7 @@ namespace browser {
 
 void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
   if (Browser* browser = ActivateBrowser(profile)) {
-    browser->OpenInstantConfirmDialog();
+    chrome::ShowInstantConfirmDialog(browser);
   } else {
     browser::OpenInstantConfirmDialogWindow(profile);
   }

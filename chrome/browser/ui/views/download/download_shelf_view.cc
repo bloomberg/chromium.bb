@@ -13,6 +13,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -380,7 +381,7 @@ void DownloadShelfView::OnThemeChanged() {
 }
 
 void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {
-  browser_->ShowDownloadsTab();
+  chrome::ShowDownloads(browser_);
 }
 
 void DownloadShelfView::ButtonPressed(

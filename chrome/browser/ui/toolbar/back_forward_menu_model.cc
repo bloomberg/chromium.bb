@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -175,9 +176,9 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
   // Execute the command for the last item: "Show Full History".
   if (index == GetItemCount() - 1) {
     content::RecordComputedAction(BuildActionName("ShowFullHistory", -1));
-    browser_->ShowSingletonTabOverwritingNTP(
-        browser_->GetSingletonTabNavigateParams(
-            GURL(chrome::kChromeUIHistoryURL)));
+    chrome::ShowSingletonTabOverwritingNTP(browser_,
+        chrome::GetSingletonTabNavigateParams(
+            browser_, GURL(chrome::kChromeUIHistoryURL)));
     return;
   }
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -255,7 +256,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
         // background pages, or for a chrome frame process on windows).
         browser = Browser::Create(balloon_->profile());
       }
-      browser->ShowContentSettingsPage(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
     default:

@@ -26,6 +26,7 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -492,7 +493,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id) {
   BackgroundModeData* bmd = background_mode_data_.begin()->second.get();
   switch (command_id) {
     case IDC_ABOUT:
-      bmd->GetBrowserWindow()->OpenAboutChromeDialog();
+      chrome::ShowAboutChrome(bmd->GetBrowserWindow());
       break;
     case IDC_TASK_MANAGER:
       bmd->GetBrowserWindow()->OpenTaskManager(true);

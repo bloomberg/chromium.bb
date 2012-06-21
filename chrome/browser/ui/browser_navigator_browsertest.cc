@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -1041,7 +1042,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1058,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1078,7 +1079,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1097,7 +1098,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
@@ -1110,7 +1111,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1122,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
@@ -1135,7 +1136,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenClearBrowsingDataDialog();
+    chrome::ShowClearBrowsingDataDialog(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1149,7 +1150,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenClearBrowsingDataDialog();
+    chrome::ShowClearBrowsingDataDialog(browser());
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
@@ -1170,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   {
@@ -1186,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenOptionsDialog();
+    chrome::ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
@@ -1238,7 +1239,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->ShowHistoryTab();
+    chrome::ShowHistory(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1252,7 +1253,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->OpenBookmarkManager();
+    chrome::ShowBookmarkManager(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
@@ -1266,7 +1267,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->ShowDownloadsTab();
+    chrome::ShowDownloads(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());

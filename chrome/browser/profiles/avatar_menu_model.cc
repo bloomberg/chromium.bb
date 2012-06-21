@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -96,7 +97,7 @@ void AvatarMenuModel::EditProfile(size_t index) {
   std::string page = chrome::kManageProfileSubPage;
   page += "#";
   page += base::IntToString(static_cast<int>(index));
-  browser->ShowOptionsTab(page);
+  chrome::ShowSettingsSubPage(browser, page);
 }
 
 void AvatarMenuModel::AddNewProfile() {

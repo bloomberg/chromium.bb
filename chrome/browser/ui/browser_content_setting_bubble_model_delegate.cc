@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 
 BrowserContentSettingBubbleModelDelegate::
 BrowserContentSettingBubbleModelDelegate(Browser* browser) : browser_(browser) {
@@ -21,5 +22,5 @@ void BrowserContentSettingBubbleModelDelegate::ShowCollectedCookiesDialog(
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     ContentSettingsType type) {
-  browser_->ShowContentSettingsPage(type);
+  chrome::ShowContentSettings(browser_, type);
 }

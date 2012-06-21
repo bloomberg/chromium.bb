@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
@@ -34,7 +35,7 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   virtual void OpenSetWallpaperPage() OVERRIDE {
     Browser* browser = browser::FindOrCreateTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord());
-    browser->ShowOptionsTab("setWallpaper");
+    chrome::ShowSettingsSubPage(browser, "setWallpaper");
   }
 
   virtual bool CanOpenSetWallpaperPage() OVERRIDE {

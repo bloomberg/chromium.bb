@@ -25,6 +25,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -531,7 +533,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_VIEW_ACCOUNT) {
     Browser* browser = browser::FindOrCreateTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord());
-    browser->ShowSingletonTab(GURL(top_up_url_));
+    chrome::ShowSingletonTab(browser, GURL(top_up_url_));
   }
 }
 
@@ -1073,7 +1075,7 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
       net::EscapeUrlEncodedData(network->service_path(), true).c_str(),
       network->type(),
       net::EscapeUrlEncodedData(network_name, false).c_str());
-  browser->ShowOptionsTab(page);
+  chrome::ShowSettingsSubPage(browser, page);
 }
 
 void NetworkMenu::DoConnect(Network* network) {
@@ -1135,7 +1137,7 @@ void NetworkMenu::ToggleMobile() {
           setup_url = locale_config->setup_url();
       }
       if (!setup_url.empty()) {
-        GetAppropriateBrowser()->ShowSingletonTab(GURL(setup_url));
+        chrome::ShowSingletonTab(GetAppropriateBrowser(), GURL(setup_url));
       } else {
         // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
       }

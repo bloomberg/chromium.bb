@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -1452,7 +1453,7 @@ void BookmarkBarGtk::OnThrobbingWidgetDestroy(GtkWidget* widget) {
 }
 
 void BookmarkBarGtk::ShowImportDialog() {
-  browser_->OpenImportSettingsDialog();
+  chrome::ShowImportDialog(browser_);
 }
 
 void BookmarkBarGtk::OnEditBookmarksEnabledChanged() {

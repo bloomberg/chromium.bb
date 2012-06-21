@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -547,7 +548,7 @@ void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
           setup_url = locale_config->setup_url();
       }
       if (!setup_url.empty()) {
-        GetAppropriateBrowser()->ShowSingletonTab(GURL(setup_url));
+        chrome::ShowSingletonTab(GetAppropriateBrowser(), GURL(setup_url));
       } else {
         // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
       }

@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
@@ -188,7 +189,7 @@ void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {
   const chromeos::CellularNetwork* cellular = lib->cellular_network();
   if (!cellular)
     return;
-  browser->ShowSingletonTab(GURL(cellular->payment_url()));
+  chrome::ShowSingletonTab(browser, GURL(cellular->payment_url()));
 }
 
 void NetworkMessageObserver::InitNewPlan(const CellularDataPlan* plan) {

@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -130,7 +131,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case MANAGE: {
-      browser_->ShowExtensionsTab();
+      chrome::ShowExtensions(browser_);
       break;
     }
     case INSPECT_POPUP: {

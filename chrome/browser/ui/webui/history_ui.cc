@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -293,7 +294,7 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   Browser* browser = browser::FindBrowserWithProfile(profile);
   if (browser)
-    browser->OpenClearBrowsingDataDialog();
+    chrome::ShowClearBrowsingDataDialog(browser);
 #endif
 }
 

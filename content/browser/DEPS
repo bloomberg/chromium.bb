@@ -17,4 +17,5 @@ include_rules = [
 
   # ONLY USED BY TESTS
   "+chrome/browser/ui/browser.h",
+  "+chrome/browser/ui/singleton_tabs.h",
 ]

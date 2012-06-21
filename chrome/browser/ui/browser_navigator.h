@@ -194,10 +194,6 @@ struct NavigateParams {
 // Navigates according to the configuration specified in |params|.
 void Navigate(NavigateParams* params);
 
-// If the given navigational URL is a Singleton, return the tab index for it.
-// Otherwise, returns -1.
-int GetIndexOfSingletonTab(NavigateParams* params);
-
 // Returns true if the url is allowed to open in incognito window.
 bool IsURLAllowedInIncognito(const GURL& url);
 

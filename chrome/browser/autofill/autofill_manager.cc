@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -682,7 +683,7 @@ void AutofillManager::OnShowAutofillDialog() {
 #else
   Browser* browser = browser::FindBrowserWithWebContents(web_contents());
   if (browser)
-    browser->ShowOptionsTab(chrome::kAutofillSubPage);
+    chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
 #endif  // #if defined(OS_ANDROID)
 }
 

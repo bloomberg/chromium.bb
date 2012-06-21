@@ -12,6 +12,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -171,7 +172,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
 }
 
 - (void)showDownloadsTab:(id)sender {
-  bridge_->browser()->ShowDownloadsTab();
+  chrome::ShowDownloads(bridge_->browser());
 }
 
 - (void)remove:(DownloadItemController*)download {
