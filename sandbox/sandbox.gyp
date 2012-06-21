@@ -138,63 +138,20 @@
     ],
   },
   'conditions': [
-    [ 'OS!="win" and OS!="mac"', {
+    [ 'OS=="linux"', {
+      'includes': [
+        'sandbox_linux.gypi',
+      ],
+    }],
+    [ 'OS!="win" and OS!="mac" and OS!="linux"', {
+      # We need a 'default' to accomodate the "sandbox" target, for instance
+      # on Android.
       'targets': [
         {
           'target_name': 'sandbox',
           'type': 'none',
-          'conditions': [
-            # Only compile in the seccomp mode 1 code for the flag combination
-            # where we support it.
-            [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64") '
-              'and toolkit_views==0 and selinux==0', {
-              'dependencies': [
-                '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
-              ],
-            }],
-            # This does not include Android.
-            [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
-              'type': 'static_library',
-              # Compile seccomp mode 2 code on Linux
-              'sources': [
-                'linux/seccomp-bpf/sandbox_bpf.cc',
-                'linux/seccomp-bpf/sandbox_bpf.h',
-                'linux/seccomp-bpf/verifier.cc',
-                'linux/seccomp-bpf/verifier.h',
-              ],
-              'dependencies': [
-                '../base/base.gyp:base',
-              ],
-              'include_dirs': [
-                '..',
-              ],
-            }],
-          ],
-        },
-      ],
-    }],
-    [ 'OS=="linux" and selinux==0', {
-      'targets': [
-        {
-          'target_name': 'chrome_sandbox',
-          'type': 'executable',
-          'sources': [
-            'linux/suid/linux_util.c',
-            'linux/suid/linux_util.h',
-            'linux/suid/process_util.h',
-            'linux/suid/process_util_linux.c',
-            'linux/suid/sandbox.h',
-            'linux/suid/sandbox.c',
-          ],
-          'cflags': [
-            # For ULLONG_MAX
-            '-std=gnu99',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-        },
-      ],
+        }
+       ]
     }],
     [ 'OS=="win"', {
       'targets': [
