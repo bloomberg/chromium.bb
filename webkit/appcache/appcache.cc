@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,11 +152,8 @@ void AppCache::InitializeWithDatabaseRecords(
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
             SortNamespacesByLength);
 
-  if (!online_whitelist_all_) {
-    for (size_t i = 0; i < whitelists.size(); ++i) {
-      online_whitelist_namespaces_.push_back(whitelists.at(i).namespace_url);
-    }
-  }
+  for (size_t i = 0; i < whitelists.size(); ++i)
+    online_whitelist_namespaces_.push_back(whitelists.at(i).namespace_url);
 }
 
 void AppCache::ToDatabaseRecords(
@@ -209,13 +206,11 @@ void AppCache::ToDatabaseRecords(
     record.target_url = fallback_namespaces_[i].target_url;
   }
 
-  if (!online_whitelist_all_) {
-    for (size_t i = 0; i < online_whitelist_namespaces_.size(); ++i) {
-      whitelists->push_back(AppCacheDatabase::OnlineWhiteListRecord());
-      AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
-      record.cache_id = cache_id_;
-      record.namespace_url = online_whitelist_namespaces_[i];
-    }
+  for (size_t i = 0; i < online_whitelist_namespaces_.size(); ++i) {
+    whitelists->push_back(AppCacheDatabase::OnlineWhiteListRecord());
+    AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
+    record.cache_id = cache_id_;
+    record.namespace_url = online_whitelist_namespaces_[i];
   }
 }
 

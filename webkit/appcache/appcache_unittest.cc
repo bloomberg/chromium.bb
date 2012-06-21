@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -321,6 +321,76 @@ TEST(AppCacheTest, FindResponseForRequest) {
   EXPECT_FALSE(fallback_entry.has_response_id());
   EXPECT_TRUE(fallback_namespace.is_empty());
   EXPECT_FALSE(network_namespace);
+}
+
+TEST(AppCacheTest, ToFromDatabaseRecords) {
+  // Setup a cache with some entries.
+  const int64 kCacheId = 1234;
+  const int64 kGroupId = 4321;
+  const GURL kManifestUrl("http://foo.com/manifest");
+  const GURL kInterceptUrl("http://foo.com/intercept.html");
+  const GURL kFallbackUrl("http://foo.com/fallback.html");
+  const std::string kData(
+    "CACHE MANIFEST\r"
+    "CHROMIUM-INTERCEPT:\r"
+    "/intercept return /intercept.html\r"
+    "FALLBACK:\r"
+    "/ /fallback.html\r"
+    "NETWORK:\r"
+    "/whitelist\r"
+    "*\r");
+  MockAppCacheService service;
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, kManifestUrl, kGroupId);
+  scoped_refptr<AppCache> cache(new AppCache(&service, kCacheId));
+  Manifest manifest;
+  EXPECT_TRUE(
+      ParseManifest(kManifestUrl, kData.c_str(), kData.length(), manifest));
+  cache->InitializeWithManifest(&manifest);
+  cache->AddEntry(
+      kManifestUrl,
+      AppCacheEntry(AppCacheEntry::MANIFEST, 1, 1));
+  cache->AddEntry(
+      kInterceptUrl,
+      AppCacheEntry(AppCacheEntry::INTERCEPT, 3, 3));
+  cache->AddEntry(
+      kFallbackUrl,
+      AppCacheEntry(AppCacheEntry::FALLBACK, 2, 2));
+
+  // Get it to produce database records and verify them.
+  AppCacheDatabase::CacheRecord cache_record;
+  std::vector<AppCacheDatabase::EntryRecord> entries;
+  std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
+  std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
+  std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+  cache->ToDatabaseRecords(
+      group, &cache_record, &entries,
+      &intercepts, &fallbacks, &whitelists);
+  EXPECT_EQ(kCacheId, cache_record.cache_id);
+  EXPECT_EQ(kGroupId, cache_record.group_id);
+  EXPECT_TRUE(cache_record.online_wildcard);
+  EXPECT_EQ(1 + 2 + 3, cache_record.cache_size);
+  EXPECT_EQ(3u, entries.size());
+  EXPECT_EQ(1u, intercepts.size());
+  EXPECT_EQ(1u, fallbacks.size());
+  EXPECT_EQ(1u, whitelists.size());
+  cache = NULL;
+
+  // Create a new AppCache and populate it with those records and verify.
+  cache = new AppCache(&service, kCacheId);
+  cache->InitializeWithDatabaseRecords(
+      cache_record, entries, intercepts,
+      fallbacks, whitelists);
+  EXPECT_TRUE(cache->online_whitelist_all_);
+  EXPECT_EQ(3u, cache->entries().size());
+  EXPECT_TRUE(cache->GetEntry(kManifestUrl));
+  EXPECT_TRUE(cache->GetEntry(kInterceptUrl));
+  EXPECT_TRUE(cache->GetEntry(kFallbackUrl));
+  EXPECT_EQ(kInterceptUrl,
+            cache->GetInterceptEntryUrl(GURL("http://foo.com/intercept")));
+  EXPECT_EQ(kFallbackUrl,
+            cache->GetFallbackEntryUrl(GURL("http://foo.com/")));
+  EXPECT_EQ(1 + 2 + 3, cache->cache_size());
 }
 
 }  // namespace appacache
