@@ -63,7 +63,7 @@ class ShellWindowFrameView : public views::NonClientFrameView,
  public:
   static const char kViewClassName[];
 
-  ShellWindowFrameView();
+  explicit ShellWindowFrameView(bool frameless);
   virtual ~ShellWindowFrameView();
 
   void Init(views::Widget* frame);
@@ -94,15 +94,18 @@ class ShellWindowFrameView : public views::NonClientFrameView,
   views::Widget* frame_;
   views::ImageButton* close_button_;
 
+  bool is_frameless_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
 };
 
 const char ShellWindowFrameView::kViewClassName[] =
     "browser/ui/views/extensions/ShellWindowFrameView";
 
-ShellWindowFrameView::ShellWindowFrameView()
+ShellWindowFrameView::ShellWindowFrameView(bool frameless)
     : frame_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      is_frameless_(frameless) {
 }
 
 ShellWindowFrameView::~ShellWindowFrameView() {
@@ -110,17 +113,20 @@ ShellWindowFrameView::~ShellWindowFrameView() {
 
 void ShellWindowFrameView::Init(views::Widget* frame) {
   frame_ = frame;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetNativeImageNamed(IDR_CLOSE_BAR).ToImageSkia());
-  close_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetNativeImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
-      rb.GetNativeImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
-  AddChildView(close_button_);
+
+  if (!is_frameless_) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    close_button_ = new views::ImageButton(this);
+    close_button_->SetImage(views::CustomButton::BS_NORMAL,
+        rb.GetNativeImageNamed(IDR_CLOSE_BAR).ToImageSkia());
+    close_button_->SetImage(views::CustomButton::BS_HOT,
+        rb.GetNativeImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
+    close_button_->SetImage(views::CustomButton::BS_PUSHED,
+        rb.GetNativeImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
+    close_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+    AddChildView(close_button_);
+  }
 
 #if defined(USE_ASH)
   aura::Window* window = frame->GetNativeWindow();
@@ -140,7 +146,7 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
 }
 
 gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
-  if (frame_->IsFullscreen())
+  if (is_frameless_ || frame_->IsFullscreen())
     return bounds();
   return gfx::Rect(0, kCaptionHeight, width(),
       std::max(0, height() - kCaptionHeight));
@@ -148,6 +154,9 @@ gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
 
 gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const {
+  if (is_frameless_)
+    return client_bounds;
+
   int closeButtonOffsetX =
       (kCaptionHeight - close_button_->height()) / 2;
   int header_width = close_button_->width() + closeButtonOffsetX * 2;
@@ -216,6 +225,8 @@ gfx::Size ShellWindowFrameView::GetPreferredSize() {
 }
 
 void ShellWindowFrameView::Layout() {
+  if (is_frameless_)
+    return;
   gfx::Size close_size = close_button_->GetPreferredSize();
   int closeButtonOffsetY =
       (kCaptionHeight - close_size.height()) / 2;
@@ -228,6 +239,8 @@ void ShellWindowFrameView::Layout() {
 }
 
 void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
+  if (is_frameless_)
+    return;
   // TODO(jeremya): different look for inactive?
   SkPaint paint;
   paint.setAntiAlias(false);
@@ -251,6 +264,9 @@ std::string ShellWindowFrameView::GetClassName() const {
 
 gfx::Size ShellWindowFrameView::GetMinimumSize() {
   gfx::Size min_size = frame_->client_view()->GetMinimumSize();
+  if (is_frameless_)
+    return min_size;
+
   // Ensure we can display the top of the caption area.
   gfx::Rect client_bounds = GetBoundsForClientView();
   min_size.Enlarge(0, client_bounds.y());
@@ -266,6 +282,9 @@ gfx::Size ShellWindowFrameView::GetMinimumSize() {
 
 gfx::Size ShellWindowFrameView::GetMaximumSize() {
   gfx::Size max_size = frame_->client_view()->GetMaximumSize();
+  if (is_frameless_)
+    return max_size;
+
   if (!max_size.IsEmpty()) {
     gfx::Rect client_bounds = GetBoundsForClientView();
     max_size.Enlarge(0, client_bounds.y());
@@ -275,6 +294,7 @@ gfx::Size ShellWindowFrameView::GetMaximumSize() {
 
 void ShellWindowFrameView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
+  DCHECK(!is_frameless_);
   if (sender == close_button_)
     frame_->Close();
 }
@@ -447,7 +467,8 @@ views::View* ShellWindowViews::GetContentsView() {
 
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
-  ShellWindowFrameView* frame_view = new ShellWindowFrameView();
+  ShellWindowFrameView* frame_view =
+      new ShellWindowFrameView(use_custom_frame_);
   frame_view->Init(window_);
   return frame_view;
 }
