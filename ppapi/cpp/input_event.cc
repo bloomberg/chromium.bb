@@ -8,6 +8,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/cpp/touch_point.h"
 #include "ppapi/cpp/var.h"
 
 namespace pp {
@@ -216,6 +217,52 @@ Var KeyboardInputEvent::GetCharacterText() const {
   return Var(PASS_REF,
              get_interface<PPB_KeyboardInputEvent_1_0>()->GetCharacterText(
                  pp_resource()));
+}
+
+// TouchInputEvent ------------------------------------------------------------
+TouchInputEvent::TouchInputEvent() : InputEvent() {
+}
+
+TouchInputEvent::TouchInputEvent(const InputEvent& event) : InputEvent() {
+  if (!has_interface<PPB_TouchInputEvent_1_0>())
+    return;
+  // Type check the input event before setting it.
+  if (get_interface<PPB_TouchInputEvent_1_0>()->IsTouchInputEvent(
+      event.pp_resource())) {
+    Module::Get()->core()->AddRefResource(event.pp_resource());
+    PassRefFromConstructor(event.pp_resource());
+  }
+}
+
+void TouchInputEvent::AddTouchPoint(PP_TouchListType list,
+                                    PP_TouchPoint point) {
+  if (!has_interface<PPB_TouchInputEvent_1_0>())
+    return;
+  get_interface<PPB_TouchInputEvent_1_0>()->AddTouchPoint(pp_resource(), list,
+                                                          &point);
+}
+
+uint32_t TouchInputEvent::GetTouchCount(PP_TouchListType list) const {
+  if (!has_interface<PPB_TouchInputEvent_1_0>())
+    return 0;
+  return get_interface<PPB_TouchInputEvent_1_0>()->GetTouchCount(pp_resource(),
+                                                                 list);
+}
+
+TouchPoint TouchInputEvent::GetTouchById(PP_TouchListType list,
+                                             uint32_t id) const {
+  if (!has_interface<PPB_TouchInputEvent_1_0>())
+    return TouchPoint();
+  return TouchPoint(get_interface<PPB_TouchInputEvent_1_0>()->
+                        GetTouchById(pp_resource(), list, id));
+}
+
+TouchPoint TouchInputEvent::GetTouchByIndex(PP_TouchListType list,
+                                                uint32_t index) const {
+  if (!has_interface<PPB_TouchInputEvent_1_0>())
+    return TouchPoint();
+  return TouchPoint(get_interface<PPB_TouchInputEvent_1_0>()->
+                        GetTouchByIndex(pp_resource(), list, index));
 }
 
 }  // namespace pp

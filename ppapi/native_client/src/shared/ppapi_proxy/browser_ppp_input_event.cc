@@ -7,9 +7,9 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/input_event_data.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
-#include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_resource.h"
@@ -73,6 +73,13 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
     case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
     case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
     case PP_INPUTEVENT_TYPE_IME_TEXT:
+      DebugPrintf("   No implementation for event type %d\n",
+          data.event_type);
+      return PP_FALSE;
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
       DebugPrintf("   No implementation for event type %d\n",
           data.event_type);
       return PP_FALSE;

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 
@@ -48,6 +49,10 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   int32_t composition_target_segment;
   uint32_t composition_selection_start;
   uint32_t composition_selection_end;
+
+  std::vector<PP_TouchPoint> touches;
+  std::vector<PP_TouchPoint> changed_touches;
+  std::vector<PP_TouchPoint> target_touches;
 };
 
 // This simple class implements the PPB_InputEvent_API in terms of the
@@ -83,6 +88,13 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
   virtual uint32_t GetIMESegmentOffset(uint32_t index) OVERRIDE;
   virtual int32_t GetIMETargetSegment() OVERRIDE;
   virtual void GetIMESelection(uint32_t* start, uint32_t* end) OVERRIDE;
+  virtual void AddTouchPoint(PP_TouchListType list,
+                             const PP_TouchPoint& point) OVERRIDE;
+  virtual uint32_t GetTouchCount(PP_TouchListType list) OVERRIDE;
+  virtual PP_TouchPoint GetTouchByIndex(PP_TouchListType list,
+                                        uint32_t index) OVERRIDE;
+  virtual PP_TouchPoint GetTouchById(PP_TouchListType list,
+                                     uint32_t id) OVERRIDE;
 
   // Implementations for event creation.
   static PP_Resource CreateIMEInputEvent(ResourceObjectType type,

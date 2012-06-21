@@ -42,6 +42,13 @@ class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
   virtual uint32_t GetIMESegmentOffset(uint32_t index) = 0;
   virtual int32_t GetIMETargetSegment() = 0;
   virtual void GetIMESelection(uint32_t* start, uint32_t* end) = 0;
+  virtual void AddTouchPoint(PP_TouchListType list,
+                             const PP_TouchPoint& point) = 0;
+  virtual uint32_t GetTouchCount(PP_TouchListType list) = 0;
+  virtual PP_TouchPoint GetTouchByIndex(PP_TouchListType list,
+                                        uint32_t index) = 0;
+  virtual PP_TouchPoint GetTouchById(PP_TouchListType list,
+                                     uint32_t id) = 0;
 };
 
 }  // namespace thunk

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -379,6 +379,72 @@ const PPB_IMEInputEvent_Dev_0_2 g_ppb_ime_input_event_0_2_thunk = {
   &GetIMESelection
 };
 
+// Touch -----------------------------------------------------------------------
+
+PP_Resource CreateTouchInputEvent(PP_Instance instance,
+                                  PP_InputEvent_Type type,
+                                  PP_TimeTicks time_stamp,
+                                  uint32_t modifiers) {
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  // TODO(sad):
+  return 0;
+}
+
+void AddTouchPoint(PP_Resource touch_event,
+                   PP_TouchListType list,
+                   const PP_TouchPoint* point) {
+  EnterInputEvent enter(touch_event, true);
+  if (enter.failed())
+    return;
+  return enter.object()->AddTouchPoint(list, *point);
+}
+
+PP_Bool IsTouchInputEvent(PP_Resource resource) {
+  if (!IsInputEvent(resource))
+    return PP_FALSE;  // Prevent warning log in GetType.
+  PP_InputEvent_Type type = GetType(resource);
+  return PP_FromBool(type == PP_INPUTEVENT_TYPE_TOUCHSTART ||
+                     type == PP_INPUTEVENT_TYPE_TOUCHMOVE ||
+                     type == PP_INPUTEVENT_TYPE_TOUCHEND ||
+                     type == PP_INPUTEVENT_TYPE_TOUCHCANCEL);
+}
+
+uint32_t GetTouchCount(PP_Resource touch_event, PP_TouchListType list) {
+  EnterInputEvent enter(touch_event, true);
+  if (enter.failed())
+    return 0;
+  return enter.object()->GetTouchCount(list);
+}
+
+struct PP_TouchPoint GetTouchByIndex(PP_Resource touch_event,
+                                     PP_TouchListType list,
+                                     uint32_t index) {
+  EnterInputEvent enter(touch_event, true);
+  if (enter.failed())
+    return PP_MakeTouchPoint();
+  return enter.object()->GetTouchByIndex(list, index);
+}
+
+struct PP_TouchPoint GetTouchById(PP_Resource touch_event,
+                                  PP_TouchListType list,
+                                  uint32_t id) {
+  EnterInputEvent enter(touch_event, true);
+  if (enter.failed())
+    return PP_MakeTouchPoint();
+  return enter.object()->GetTouchById(list, id);
+}
+
+const PPB_TouchInputEvent_1_0 g_ppb_touch_input_event_thunk = {
+  &CreateTouchInputEvent,
+  &AddTouchPoint,
+  &IsTouchInputEvent,
+  &GetTouchCount,
+  &GetTouchByIndex,
+  &GetTouchById
+};
+
 }  // namespace
 
 const PPB_InputEvent_1_0* GetPPB_InputEvent_1_0_Thunk() {
@@ -412,6 +478,10 @@ const PPB_IMEInputEvent_Dev_0_1* GetPPB_IMEInputEvent_Dev_0_1_Thunk() {
 
 const PPB_IMEInputEvent_Dev_0_2* GetPPB_IMEInputEvent_Dev_0_2_Thunk() {
   return &g_ppb_ime_input_event_0_2_thunk;
+}
+
+const PPB_TouchInputEvent_1_0* GetPPB_TouchInputEvent_Thunk() {
+  return &g_ppb_touch_input_event_thunk;
 }
 
 }  // namespace thunk

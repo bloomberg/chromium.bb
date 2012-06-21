@@ -26,7 +26,10 @@ InputEventData::InputEventData()
       character_text(),
       composition_target_segment(-1),
       composition_selection_start(0),
-      composition_selection_end(0) {
+      composition_selection_end(0),
+      touches(),
+      changed_touches(),
+      target_touches() {
 }
 
 InputEventData::~InputEventData() {
@@ -125,6 +128,82 @@ void PPB_InputEvent_Shared::GetIMESelection(uint32_t* start, uint32_t* end) {
     *start = data_.composition_selection_start;
   if (end)
     *end = data_.composition_selection_end;
+}
+
+void PPB_InputEvent_Shared::AddTouchPoint(PP_TouchListType list,
+                                          const PP_TouchPoint& point) {
+  switch (list) {
+    case PP_TOUCHLIST_TYPE_TOUCHES:
+      data_.touches.push_back(point);
+      break;
+    case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
+      data_.changed_touches.push_back(point);
+      break;
+    case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
+      data_.target_touches.push_back(point);
+      break;
+    default:
+      break;
+  }
+}
+
+uint32_t PPB_InputEvent_Shared::GetTouchCount(PP_TouchListType list) {
+  switch (list) {
+    case PP_TOUCHLIST_TYPE_TOUCHES:
+      return data_.touches.size();
+    case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
+      return data_.changed_touches.size();
+    case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
+      return data_.target_touches.size();
+    default:
+      return 0;
+  }
+  return data_.touches.size();
+}
+
+PP_TouchPoint PPB_InputEvent_Shared::GetTouchByIndex(PP_TouchListType list,
+                                                     uint32_t index) {
+  std::vector<PP_TouchPoint>* points;
+  switch (list) {
+    case PP_TOUCHLIST_TYPE_TOUCHES:
+      points = &data_.touches;
+      break;
+    case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
+      points = &data_.changed_touches;
+      break;
+    case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
+      points = &data_.target_touches;
+      break;
+    default:
+      return PP_MakeTouchPoint();
+  }
+  if (index >= points->size()) {
+    return PP_MakeTouchPoint();
+  }
+  return points->at(index);
+}
+
+PP_TouchPoint PPB_InputEvent_Shared::GetTouchById(PP_TouchListType list,
+                                                  uint32_t id) {
+  const std::vector<PP_TouchPoint>* points;
+  switch (list) {
+    case PP_TOUCHLIST_TYPE_TOUCHES:
+      points = &data_.touches;
+      break;
+    case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
+      points = &data_.changed_touches;
+      break;
+    case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
+      points = &data_.target_touches;
+      break;
+    default:
+      return PP_MakeTouchPoint();
+  }
+  for (size_t i = 0; i < points->size(); i++) {
+    if (points->at(i).id == id)
+      return points->at(i);
+  }
+  return PP_MakeTouchPoint();
 }
 
 //static

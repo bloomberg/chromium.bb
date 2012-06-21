@@ -133,7 +133,35 @@ enum PP_InputEvent_Type {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_IME class.
    */
-  PP_INPUTEVENT_TYPE_IME_TEXT = 14
+  PP_INPUTEVENT_TYPE_IME_TEXT = 14,
+
+  /**
+   * Notification that a finger was placed on a touch-enabled device.
+   *
+   * Register for this event using the PP_INPUTEVENT_CLASS_TOUCH class.
+   */
+  PP_INPUTEVENT_TYPE_TOUCHSTART = 15,
+
+  /**
+   * Notification that a finger was moved on a touch-enabled device.
+   *
+   * Register for this event using the PP_INPUTEVENT_CLASS_TOUCH class.
+   */
+  PP_INPUTEVENT_TYPE_TOUCHMOVE = 16,
+
+  /**
+   * Notification that a finger was released on a touch-enabled device.
+   *
+   * Register for this event using the PP_INPUTEVENT_CLASS_TOUCH class.
+   */
+  PP_INPUTEVENT_TYPE_TOUCHEND = 17,
+
+  /**
+   * Notification that a touch event was canceled.
+   *
+   * Register for this event using the PP_INPUTEVENT_CLASS_TOUCH class.
+   */
+  PP_INPUTEVENT_TYPE_TOUCHCANCEL = 18
 };
 
 /**
@@ -730,3 +758,125 @@ interface PPB_KeyboardInputEvent {
   PP_Var GetCharacterText([in] PP_Resource character_event);
 };
 
+[assert_size(4)]
+enum PP_TouchListType {
+  /**
+   * The list of all TouchPoints which are currently down.
+   */
+  PP_TOUCHLIST_TYPE_TOUCHES = 0,
+
+  /**
+   * The list of all TouchPoints whose state has changed since the last
+   * TouchInputEvent.
+   */
+  PP_TOUCHLIST_TYPE_CHANGEDTOUCHES = 1,
+
+  /**
+   * The list of all TouchPoints which are targeting this plugin.  This is a
+   * subset of Touches.
+   */
+  PP_TOUCHLIST_TYPE_TARGETTOUCHES = 2
+};
+
+/**
+ * The <code>PPB_TouchInputEvent</code> interface contains pointers to several
+ * functions related to touch events.
+ */
+[version=1.0, macro="PPB_TOUCH_INPUT_EVENT_INTERFACE"]
+interface PPB_TouchInputEvent {
+  /**
+   * Creates a touch input event with the given parameters. Normally you
+   * will get a touch event passed through the HandleInputEvent and will not
+   * need to create them, but some applications may want to create their own
+   * for internal use. The type must be one of the touch event types.
+   * This newly created touch input event does not have any touch point in any
+   * of the touch-point lists. <code>AddTouchPoint</code> should be called to
+   * add the touch-points.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+   * input event.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in]  modifiers A bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   *
+   * @return A <code>PP_Resource</code> containing the new touch input event.
+   */
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_InputEvent_Type type,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] uint32_t modifiers);
+
+  /**
+   * Adds a touch point to the touch event in the specified touch-list.
+   *
+   * @param[in] touch_event A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list to add the touch point to.
+   *
+   * @param[in] point The point to add to the list.
+   */
+  void AddTouchPoint([in] PP_Resource touch_event,
+                     [in] PP_TouchListType list,
+                     [in] PP_TouchPoint point);
+
+  /**
+   * IsTouchInputEvent() determines if a resource is a touch event.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an event.
+   *
+   * @return <code>PP_TRUE</code> if the given resource is a valid touch input
+   * event, otherwise <code>PP_FALSE</code>.
+   */
+  PP_Bool IsTouchInputEvent([in] PP_Resource resource);
+
+  /**
+   * Returns the number of touch-points in the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @return The number of touch-points in the specified list.
+   */
+  uint32_t GetTouchCount([in] PP_Resource resource,
+                         [in] PP_TouchListType list);
+
+  /**
+   * Returns the touch-point at the specified index from the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @param[in] index The index.
+   *
+   * @return A <code>PP_TouchPoint</code> representing the touch-point.
+   */
+  PP_TouchPoint GetTouchByIndex([in] PP_Resource resource,
+                                [in] PP_TouchListType list,
+                                [in] uint32_t index);
+
+  /**
+   * Returns the touch-point with the spcified touch-id in the specified list.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a touch
+   * event.
+   *
+   * @param[in] list The list.
+   *
+   * @param[in] touch_id The id of the touch-point.
+   *
+   * @return A <code>PP_TouchPoint</code> representing the touch-point.
+   */
+  PP_TouchPoint GetTouchById([in] PP_Resource resource,
+                             [in] PP_TouchListType list,
+                             [in] uint32_t touch_id);
+};

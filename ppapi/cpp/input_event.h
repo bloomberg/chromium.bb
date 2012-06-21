@@ -9,6 +9,7 @@
 
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/resource.h"
+#include "ppapi/cpp/touch_point.h"
 
 /// @file
 /// This file defines the API used to handle mouse and keyboard input events.
@@ -297,6 +298,50 @@ class KeyboardInputEvent : public InputEvent {
   /// undefined var.
   Var GetCharacterText() const;
 };
+
+class TouchInputEvent : public InputEvent {
+ public:
+  /// Constructs an is_null() touch input event object.
+  TouchInputEvent();
+
+  /// Constructs a touch input event object from the given generic input event.
+  /// If the given event is itself is_null() or is not a touch input event, the
+  /// touch object will be is_null().
+  explicit TouchInputEvent(const InputEvent& event);
+
+  /// Constructs a touch input even from the given parameters.
+  ///
+  /// @param[in] instance The instance for which this event occured.
+  ///
+  /// @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+  /// input event.
+  ///
+  /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+  /// when the event occured.
+  ///
+  /// @param[in]  modifiers A bit field combination of the
+  /// <code>PP_InputEvent_Modifier</code> flags.
+  TouchInputEvent(const InstanceHandle& instance,
+                  PP_InputEvent_Type type,
+                  PP_TimeTicks time_stamp,
+                  uint32_t modifiers);
+
+  /// Adds the touch-point to the specified TouchList.
+  void AddTouchPoint(PP_TouchListType list, PP_TouchPoint point);
+
+  /// @return The number of TouchPoints in this TouchList.
+  uint32_t GetTouchCount(PP_TouchListType list) const;
+
+  /// @return The TouchPoint at the given index of the given list, or an empty
+  /// TouchPoint if the index is out of range.
+  TouchPoint GetTouchByIndex(PP_TouchListType list, uint32_t index) const;
+
+  /// @return The TouchPoint in the given list with the given identifier, or an
+  /// empty TouchPoint if the list does not contain a TouchPoint with that
+  /// identifier.
+  TouchPoint GetTouchById(PP_TouchListType list, uint32_t id) const;
+};
+
 
 }  // namespace pp
 
