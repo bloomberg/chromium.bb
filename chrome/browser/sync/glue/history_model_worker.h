@@ -18,16 +18,16 @@ class HistoryService;
 
 namespace browser_sync {
 
-// A ModelSafeWorker for history models that accepts requests
+// A csync::ModelSafeWorker for history models that accepts requests
 // from the syncapi that need to be fulfilled on the history thread.
-class HistoryModelWorker : public browser_sync::ModelSafeWorker {
+class HistoryModelWorker : public csync::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(HistoryService* history_service);
 
-  // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual SyncerError DoWorkAndWaitUntilDone(
-      const WorkCallback& work) OVERRIDE;
-  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  // csync::ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  virtual csync::SyncerError DoWorkAndWaitUntilDone(
+      const csync::WorkCallback& work) OVERRIDE;
+  virtual csync::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  private:
   virtual ~HistoryModelWorker();

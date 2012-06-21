@@ -33,7 +33,8 @@ class MockSyncFrontend : public SyncFrontend {
  public:
   virtual ~MockSyncFrontend() {}
 
-  MOCK_METHOD2(OnBackendInitialized, void(const WeakHandle<JsBackend>&, bool));
+  MOCK_METHOD2(OnBackendInitialized,
+               void(const csync::WeakHandle<csync::JsBackend>&, bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD1(OnConnectionStatusChange,
                void(sync_api::ConnectionStatus status));
@@ -49,9 +50,9 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD0(OnEncryptionComplete, void());
   MOCK_METHOD1(OnMigrationNeededForTypes, void(syncable::ModelTypeSet));
   MOCK_METHOD1(OnExperimentsChanged,
-      void(const browser_sync::Experiments&));
+      void(const csync::Experiments&));
   MOCK_METHOD1(OnActionableError,
-      void(const browser_sync::SyncProtocolError& sync_error));
+      void(const csync::SyncProtocolError& sync_error));
   MOCK_METHOD0(OnSyncConfigureRetry, void());
 };
 
@@ -103,9 +104,9 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   sync_api::SyncCredentials credentials;
   credentials.email = "user@example.com";
   credentials.sync_token = "sync_token";
-  browser_sync::TestUnrecoverableErrorHandler handler;
+  csync::TestUnrecoverableErrorHandler handler;
   backend.Initialize(&mock_frontend,
-                     WeakHandle<JsEventHandler>(),
+                     csync::WeakHandle<csync::JsEventHandler>(),
                      GURL(k_mock_url),
                      syncable::ModelTypeSet(),
                      credentials,

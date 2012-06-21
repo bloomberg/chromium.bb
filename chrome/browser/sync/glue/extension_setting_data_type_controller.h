@@ -34,7 +34,7 @@ class ExtensionSettingDataTypeController
 
   // NonFrontendDataTypeController implementation
   virtual syncable::ModelType type() const OVERRIDE;
-  virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual csync::ModelSafeGroup model_safe_group() const OVERRIDE;
 
  private:
   virtual ~ExtensionSettingDataTypeController();

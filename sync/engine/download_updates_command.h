@@ -18,7 +18,7 @@ namespace sync_pb {
 class EntitySpecifics;
 }
 
-namespace browser_sync {
+namespace csync {
 
 // Determine the enabled datatypes, download a batch of updates for them
 // from the server, place the result in the SyncSession for further processing.
@@ -59,7 +59,7 @@ class DownloadUpdatesCommand : public SyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommand);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_DOWNLOAD_UPDATES_COMMAND_H_
 

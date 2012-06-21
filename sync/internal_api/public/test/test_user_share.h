@@ -34,7 +34,7 @@
 #include "base/basictypes.h"
 #include "sync/internal_api/public/user_share.h"
 
-namespace browser_sync {
+namespace csync {
 
 class TestDirectorySetterUpper;
 
@@ -63,6 +63,6 @@ class TestUserShare {
   DISALLOW_COPY_AND_ASSIGN(TestUserShare);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_TEST_TEST_USER_SHARE_H_

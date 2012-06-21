@@ -13,7 +13,7 @@
 
 using std::string;
 
-namespace browser_sync {
+namespace csync {
 
 namespace {
 // Parameters that the server understands. (here, a-Z)
@@ -54,4 +54,4 @@ string MakeSyncQueryString(const string& client_id) {
   return query;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

@@ -48,7 +48,7 @@ class InvalidationNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             InvalidationVersionMap(),
             initial_invalidation_state,
-            browser_sync::MakeWeakHandle(mock_tracker_.AsWeakPtr()),
+            csync::MakeWeakHandle(mock_tracker_.AsWeakPtr()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }

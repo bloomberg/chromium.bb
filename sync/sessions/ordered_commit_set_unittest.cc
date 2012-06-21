@@ -11,17 +11,17 @@ using std::vector;
 class OrderedCommitSetTest : public testing::Test {
  public:
   OrderedCommitSetTest() {
-    routes_[syncable::BOOKMARKS] = browser_sync::GROUP_UI;
-    routes_[syncable::PREFERENCES] = browser_sync::GROUP_UI;
-    routes_[syncable::AUTOFILL] = browser_sync::GROUP_DB;
-    routes_[syncable::TOP_LEVEL_FOLDER] = browser_sync::GROUP_PASSIVE;
+    routes_[syncable::BOOKMARKS] = csync::GROUP_UI;
+    routes_[syncable::PREFERENCES] = csync::GROUP_UI;
+    routes_[syncable::AUTOFILL] = csync::GROUP_DB;
+    routes_[syncable::TOP_LEVEL_FOLDER] = csync::GROUP_PASSIVE;
   }
  protected:
-  browser_sync::TestIdFactory ids_;
-  browser_sync::ModelSafeRoutingInfo routes_;
+  csync::TestIdFactory ids_;
+  csync::ModelSafeRoutingInfo routes_;
 };
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 TEST_F(OrderedCommitSetTest, Projections) {
@@ -128,5 +128,5 @@ TEST_F(OrderedCommitSetTest, AddAndRemoveEntries) {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 

@@ -32,7 +32,7 @@ struct WriteTransactionInfo {
 };
 
 typedef
-    browser_sync::Immutable<WriteTransactionInfo>
+    csync::Immutable<WriteTransactionInfo>
     ImmutableWriteTransactionInfo;
 
 }  // namespace syncable

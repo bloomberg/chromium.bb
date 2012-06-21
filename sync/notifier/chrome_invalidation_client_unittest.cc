@@ -66,7 +66,7 @@ class ChromeInvalidationClientTest : public testing::Test {
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
                   InvalidationVersionMap(),
-                  browser_sync::MakeWeakHandle(
+                  csync::MakeWeakHandle(
                       mock_invalidation_state_tracker_.AsWeakPtr()),
                   &mock_listener_);
   }

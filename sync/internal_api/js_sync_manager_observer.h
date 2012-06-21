@@ -18,7 +18,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace browser_sync {
+namespace csync {
 
 class JsEventDetails;
 class JsEventHandler;
@@ -51,7 +51,7 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
       const WeakHandle<JsBackend>& js_backend, bool success) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnActionableError(
-      const browser_sync::SyncProtocolError& sync_protocol_error) OVERRIDE;
+      const csync::SyncProtocolError& sync_protocol_error) OVERRIDE;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,
@@ -62,6 +62,6 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(JsSyncManagerObserver);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_JS_SYNC_MANAGER_OBSERVER_H_

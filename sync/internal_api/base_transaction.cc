@@ -7,7 +7,7 @@
 #include "sync/syncable/directory.h"
 #include "sync/util/cryptographer.h"
 
-using browser_sync::Cryptographer;
+using csync::Cryptographer;
 
 namespace sync_api {
 
@@ -20,7 +20,7 @@ BaseTransaction::BaseTransaction(UserShare* share) {
 BaseTransaction::~BaseTransaction() {
 }
 
-browser_sync::Cryptographer* BaseTransaction::GetCryptographer() const {
+csync::Cryptographer* BaseTransaction::GetCryptographer() const {
   return directory_->GetCryptographer(this->GetWrappedTrans());
 }
 

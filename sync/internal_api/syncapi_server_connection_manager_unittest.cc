@@ -17,9 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
-using browser_sync::HttpResponse;
-using browser_sync::ServerConnectionManager;
-using browser_sync::ScopedServerStatusWatcher;
+using csync::HttpResponse;
+using csync::ServerConnectionManager;
+using csync::ScopedServerStatusWatcher;
 
 namespace sync_api {
 namespace {

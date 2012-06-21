@@ -60,7 +60,7 @@ struct ChangeRecord {
 
 typedef std::vector<ChangeRecord> ChangeRecordList;
 
-typedef browser_sync::Immutable<ChangeRecordList> ImmutableChangeRecordList;
+typedef csync::Immutable<ChangeRecordList> ImmutableChangeRecordList;
 
 }  // namespace sync_api
 

@@ -10,7 +10,7 @@
 using base::TimeDelta;
 using base::TimeTicks;
 
-namespace browser_sync {
+namespace csync {
 
 TEST(ThrottledDataTypeTrackerTest, AddUnthrottleTimeTest) {
   const syncable::ModelTypeSet types(syncable::BOOKMARKS, syncable::PASSWORDS);
@@ -63,5 +63,5 @@ TEST(ThrottledDataTypeTrackerTest, UnthrottleSomeTypesTest) {
   EXPECT_TRUE(throttler.GetThrottledTypes().Equals(long_throttled));
 }
 
-}  // namespace browser_sync
+}  // namespace csync
 

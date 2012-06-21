@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/util/unrecoverable_error_info.h"
 
-namespace browser_sync {
+namespace csync {
 
 UnrecoverableErrorInfo::UnrecoverableErrorInfo()
     : is_set_(false) {
@@ -41,4 +41,4 @@ const std::string& UnrecoverableErrorInfo::message() const {
   return message_;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

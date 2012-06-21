@@ -26,7 +26,7 @@ namespace sync_pb {
 class ClientToServerMessage;
 }
 
-namespace browser_sync {
+namespace csync {
 
 static const int32 kUnsetResponseCode = -1;
 static const int32 kUnsetContentLength = -1;
@@ -354,6 +354,6 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
 
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr);
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_NET_SERVER_CONNECTION_MANAGER_H_

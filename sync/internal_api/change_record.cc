@@ -42,7 +42,7 @@ DictionaryValue* ChangeRecord::ToValue() const {
       value->Set("extra", extra->ToValue());
     }
     value->Set("specifics",
-               browser_sync::EntitySpecificsToValue(specifics));
+               csync::EntitySpecificsToValue(specifics));
   }
   return value;
 }
@@ -57,7 +57,7 @@ ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
 ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
 
 DictionaryValue* ExtraPasswordChangeRecordData::ToValue() const {
-  return browser_sync::PasswordSpecificsDataToValue(unencrypted_);
+  return csync::PasswordSpecificsDataToValue(unencrypted_);
 }
 
 const sync_pb::PasswordSpecificsData&

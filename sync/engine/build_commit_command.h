@@ -17,7 +17,7 @@ namespace syncable {
 class Entry;
 }
 
-namespace browser_sync {
+namespace csync {
 
 namespace sessions {
 class OrderedCommitSet;
@@ -74,6 +74,6 @@ class BuildCommitCommand : public SyncerCommand {
   ClientToServerMessage* commit_message_;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_BUILD_COMMIT_COMMAND_H_

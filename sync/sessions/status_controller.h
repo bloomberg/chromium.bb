@@ -42,7 +42,7 @@
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/session_state.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 class StatusController {

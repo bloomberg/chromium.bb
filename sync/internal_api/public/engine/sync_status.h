@@ -29,7 +29,7 @@ struct SyncStatus {
   // Notifications counters updated by the actions in synapi.
   int notifications_received;
 
-  browser_sync::SyncProtocolError sync_protocol_error;
+  csync::SyncProtocolError sync_protocol_error;
 
   // Number of encryption conflicts counted during most recent sync cycle.
   int encryption_conflicts;

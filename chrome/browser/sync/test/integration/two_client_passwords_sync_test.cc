@@ -245,12 +245,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Initial sync."));
 
   // Following ensures types are enabled and active (see bug 87572).
-  browser_sync::ModelSafeRoutingInfo routes;
+  csync::ModelSafeRoutingInfo routes;
   GetClient(0)->service()->GetModelSafeRoutingInfo(&routes);
-  ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
+  ASSERT_EQ(csync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
   routes.clear();
   GetClient(1)->service()->GetModelSafeRoutingInfo(&routes);
-  ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
+  ASSERT_EQ(csync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,

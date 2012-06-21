@@ -13,7 +13,7 @@
 #include "sync/js/js_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 using ::testing::InSequence;
@@ -124,4 +124,4 @@ TEST_F(JsMutationEventObserverTest, OnChangesComplete) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

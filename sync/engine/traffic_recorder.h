@@ -19,7 +19,7 @@ class ClientToServerResponse;
 class ClientToServerMessage;
 }
 
-namespace browser_sync {
+namespace csync {
 
 class TrafficRecorder {
  public:
@@ -72,7 +72,7 @@ class TrafficRecorder {
   DISALLOW_COPY_AND_ASSIGN(TrafficRecorder);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_RECORDER_H_
 

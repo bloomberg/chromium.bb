@@ -60,30 +60,30 @@
 #include "sync/util/time.h"
 
 using base::TimeDelta;
-using browser_sync::AllStatus;
-using browser_sync::Cryptographer;
-using browser_sync::Encryptor;
-using browser_sync::JsArgList;
-using browser_sync::JsBackend;
-using browser_sync::JsEventDetails;
-using browser_sync::JsEventHandler;
-using browser_sync::JsEventHandler;
-using browser_sync::JsReplyHandler;
-using browser_sync::JsMutationEventObserver;
-using browser_sync::JsSyncManagerObserver;
-using browser_sync::kNigoriTag;
-using browser_sync::KeyParams;
-using browser_sync::ModelSafeRoutingInfo;
-using browser_sync::ReportUnrecoverableErrorFunction;
-using browser_sync::ServerConnectionEvent;
-using browser_sync::ServerConnectionEventListener;
-using browser_sync::SyncEngineEvent;
-using browser_sync::SyncEngineEventListener;
-using browser_sync::SyncScheduler;
-using browser_sync::Syncer;
-using browser_sync::UnrecoverableErrorHandler;
-using browser_sync::WeakHandle;
-using browser_sync::sessions::SyncSessionContext;
+using csync::AllStatus;
+using csync::Cryptographer;
+using csync::Encryptor;
+using csync::JsArgList;
+using csync::JsBackend;
+using csync::JsEventDetails;
+using csync::JsEventHandler;
+using csync::JsEventHandler;
+using csync::JsReplyHandler;
+using csync::JsMutationEventObserver;
+using csync::JsSyncManagerObserver;
+using csync::kNigoriTag;
+using csync::KeyParams;
+using csync::ModelSafeRoutingInfo;
+using csync::ReportUnrecoverableErrorFunction;
+using csync::ServerConnectionEvent;
+using csync::ServerConnectionEventListener;
+using csync::SyncEngineEvent;
+using csync::SyncEngineEventListener;
+using csync::SyncScheduler;
+using csync::Syncer;
+using csync::UnrecoverableErrorHandler;
+using csync::WeakHandle;
+using csync::sessions::SyncSessionContext;
 using syncable::ImmutableWriteTransactionInfo;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
@@ -133,7 +133,7 @@ const unsigned int kMaxMessageSizeToRecord = 5 * 1024;
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::IPAddressObserver,
-      public browser_sync::Cryptographer::Observer,
+      public csync::Cryptographer::Observer,
       public csync::SyncNotifierObserver,
       public JsBackend,
       public SyncEngineEventListener,
@@ -199,9 +199,9 @@ class SyncManager::SyncInternal
             bool use_ssl,
             const scoped_refptr<base::TaskRunner>& blocking_task_runner,
             HttpPostProviderFactory* post_factory,
-            const browser_sync::ModelSafeRoutingInfo& model_safe_routing_info,
-            const std::vector<browser_sync::ModelSafeWorker*>& workers,
-            browser_sync::ExtensionsActivityMonitor*
+            const csync::ModelSafeRoutingInfo& model_safe_routing_info,
+            const std::vector<csync::ModelSafeWorker*>& workers,
+            csync::ExtensionsActivityMonitor*
                 extensions_activity_monitor,
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
@@ -228,7 +228,7 @@ class SyncManager::SyncInternal
 
   // Tell the sync engine to start the syncing process.
   void StartSyncingNormally(
-      const browser_sync::ModelSafeRoutingInfo& routing_info);
+      const csync::ModelSafeRoutingInfo& routing_info);
 
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   bool IsUsingExplicitPassphrase();
@@ -552,7 +552,7 @@ class SyncManager::SyncInternal
 
   // This can be called from any thread, but only between calls to
   // OpenDirectory() and ShutdownOnSyncThread().
-  browser_sync::WeakHandle<SyncManager::ChangeObserver> change_observer_;
+  csync::WeakHandle<SyncManager::ChangeObserver> change_observer_;
 
   ObserverList<SyncManager::Observer> observers_;
 
@@ -606,12 +606,12 @@ class SyncManager::SyncInternal
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
 
-  browser_sync::ThrottledDataTypeTracker throttled_data_type_tracker_;
+  csync::ThrottledDataTypeTracker throttled_data_type_tracker_;
 
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;
 
-  browser_sync::TrafficRecorder traffic_recorder_;
+  csync::TrafficRecorder traffic_recorder_;
 
   Encryptor* encryptor_;
   UnrecoverableErrorHandler* unrecoverable_error_handler_;
@@ -677,7 +677,7 @@ class NudgeStrategy {
        break;
      case ACCOMPANY_ONLY:
        delay = TimeDelta::FromSeconds(
-           browser_sync::kDefaultShortPollIntervalSeconds);
+           csync::kDefaultShortPollIntervalSeconds);
        break;
      case CUSTOM:
        switch (model_type) {
@@ -716,9 +716,9 @@ bool SyncManager::Init(
     bool use_ssl,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     HttpPostProviderFactory* post_factory,
-    const browser_sync::ModelSafeRoutingInfo& model_safe_routing_info,
-    const std::vector<browser_sync::ModelSafeWorker*>& workers,
-    browser_sync::ExtensionsActivityMonitor* extensions_activity_monitor,
+    const csync::ModelSafeRoutingInfo& model_safe_routing_info,
+    const std::vector<csync::ModelSafeWorker*>& workers,
+    csync::ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
@@ -775,7 +775,7 @@ syncable::ModelTypeSet SyncManager::InitialSyncEndedTypes() {
 }
 
 void SyncManager::StartSyncingNormally(
-    const browser_sync::ModelSafeRoutingInfo& routing_info) {
+    const csync::ModelSafeRoutingInfo& routing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->StartSyncingNormally(routing_info);
 }
@@ -819,7 +819,7 @@ bool SyncManager::IsUsingExplicitPassphrase() {
 }
 
 void SyncManager::RequestCleanupDisabledTypes(
-    const browser_sync::ModelSafeRoutingInfo& routing_info) {
+    const csync::ModelSafeRoutingInfo& routing_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data_->scheduler()) {
     data_->session_context()->set_routing_info(routing_info);
@@ -828,7 +828,7 @@ void SyncManager::RequestCleanupDisabledTypes(
 }
 
 void SyncManager::RequestConfig(
-    const browser_sync::ModelSafeRoutingInfo& routing_info,
+    const csync::ModelSafeRoutingInfo& routing_info,
     const ModelTypeSet& types, ConfigureReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!data_->scheduler()) {
@@ -851,7 +851,7 @@ void SyncManager::StartConfigurationMode(const base::Closure& callback) {
     return;
   }
   data_->scheduler()->Start(
-      browser_sync::SyncScheduler::CONFIGURATION_MODE, callback);
+      csync::SyncScheduler::CONFIGURATION_MODE, callback);
 }
 
 bool SyncManager::SyncInternal::Init(
@@ -862,9 +862,9 @@ bool SyncManager::SyncInternal::Init(
     bool use_ssl,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     HttpPostProviderFactory* post_factory,
-    const browser_sync::ModelSafeRoutingInfo& model_safe_routing_info,
-    const std::vector<browser_sync::ModelSafeWorker*>& workers,
-    browser_sync::ExtensionsActivityMonitor* extensions_activity_monitor,
+    const csync::ModelSafeRoutingInfo& model_safe_routing_info,
+    const std::vector<csync::ModelSafeWorker*>& workers,
+    csync::ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
@@ -938,7 +938,7 @@ bool SyncManager::SyncInternal::Init(
   if (signed_in) {
     if (scheduler()) {
       scheduler()->Start(
-          browser_sync::SyncScheduler::CONFIGURATION_MODE, base::Closure());
+          csync::SyncScheduler::CONFIGURATION_MODE, base::Closure());
     }
 
     initialized_ = true;
@@ -974,7 +974,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
     const std::string& chrome_version,
     const base::Closure& done_callback) {
   DCHECK(initialized_);
-  browser_sync::GetSessionName(
+  csync::GetSessionName(
       blocking_task_runner_,
       base::Bind(
           &SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback,
@@ -1110,7 +1110,7 @@ void SyncManager::SyncInternal::NotifyCryptographerState(
 }
 
 void SyncManager::SyncInternal::StartSyncingNormally(
-    const browser_sync::ModelSafeRoutingInfo& routing_info) {
+    const csync::ModelSafeRoutingInfo& routing_info) {
   // Start the sync scheduler.
   if (scheduler()) { // NULL during certain unittests.
     session_context()->set_routing_info(routing_info);
@@ -1123,9 +1123,9 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 
   // Set before Open().
   change_observer_ =
-      browser_sync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
+      csync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
   WeakHandle<syncable::TransactionObserver> transaction_observer(
-      browser_sync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
+      csync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
   if (testing_mode_ == TEST_IN_MEMORY) {
@@ -1736,19 +1736,19 @@ void SyncManager::SyncInternal::OnServerConnectionEvent(
     const ServerConnectionEvent& event) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (event.connection_code ==
-      browser_sync::HttpResponse::SERVER_CONNECTION_OK) {
+      csync::HttpResponse::SERVER_CONNECTION_OK) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnConnectionStatusChange(CONNECTION_OK));
   }
 
-  if (event.connection_code == browser_sync::HttpResponse::SYNC_AUTH_ERROR) {
+  if (event.connection_code == csync::HttpResponse::SYNC_AUTH_ERROR) {
     observing_ip_address_changes_ = false;
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
   }
 
   if (event.connection_code ==
-      browser_sync::HttpResponse::SYNC_SERVER_ERROR) {
+      csync::HttpResponse::SYNC_SERVER_ERROR) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnConnectionStatusChange(CONNECTION_SERVER_ERROR));
   }
@@ -1938,7 +1938,7 @@ void SyncManager::SyncInternal::RequestNudge(
     const tracked_objects::Location& location) {
   if (scheduler()) {
      scheduler()->ScheduleNudgeAsync(
-        TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
+        TimeDelta::FromMilliseconds(0), csync::NUDGE_SOURCE_LOCAL,
         ModelTypeSet(), location);
   }
 }
@@ -1963,7 +1963,7 @@ void SyncManager::SyncInternal::RequestNudgeForDataTypes(
       types.First().Get(),
       this);
   scheduler()->ScheduleNudgeAsync(nudge_delay,
-                                  browser_sync::NUDGE_SOURCE_LOCAL,
+                                  csync::NUDGE_SOURCE_LOCAL,
                                   types,
                                   nudge_location);
 }
@@ -2310,14 +2310,14 @@ void SyncManager::SyncInternal::OnIncomingNotification(
     if (scheduler()) {
       scheduler()->ScheduleNudgeWithPayloadsAsync(
           TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
-          browser_sync::NUDGE_SOURCE_LOCAL_REFRESH,
+          csync::NUDGE_SOURCE_LOCAL_REFRESH,
           type_payloads, FROM_HERE);
     }
   } else if (!type_payloads.empty()) {
     if (scheduler()) {
       scheduler()->ScheduleNudgeWithPayloadsAsync(
           TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
-          browser_sync::NUDGE_SOURCE_NOTIFICATION,
+          csync::NUDGE_SOURCE_NOTIFICATION,
           type_payloads, FROM_HERE);
     }
     allstatus_.IncrementNotificationsReceived();
@@ -2392,7 +2392,7 @@ syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
   return GetEncryptedTypes(&trans);
 }
 
-bool SyncManager::ReceivedExperiment(browser_sync::Experiments* experiments)
+bool SyncManager::ReceivedExperiment(csync::Experiments* experiments)
     const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);

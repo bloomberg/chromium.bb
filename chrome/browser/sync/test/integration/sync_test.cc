@@ -704,21 +704,21 @@ namespace {
 
 sync_pb::SyncEnums::ErrorType
     GetClientToServerResponseErrorType(
-        browser_sync::SyncProtocolErrorType error) {
+        csync::SyncProtocolErrorType error) {
   switch (error) {
-    case browser_sync::SYNC_SUCCESS:
+    case csync::SYNC_SUCCESS:
       return sync_pb::SyncEnums::SUCCESS;
-    case browser_sync::NOT_MY_BIRTHDAY:
+    case csync::NOT_MY_BIRTHDAY:
       return sync_pb::SyncEnums::NOT_MY_BIRTHDAY;
-    case browser_sync::THROTTLED:
+    case csync::THROTTLED:
       return sync_pb::SyncEnums::THROTTLED;
-    case browser_sync::CLEAR_PENDING:
+    case csync::CLEAR_PENDING:
       return sync_pb::SyncEnums::CLEAR_PENDING;
-    case browser_sync::TRANSIENT_ERROR:
+    case csync::TRANSIENT_ERROR:
       return sync_pb::SyncEnums::TRANSIENT_ERROR;
-    case browser_sync::MIGRATION_DONE:
+    case csync::MIGRATION_DONE:
       return sync_pb::SyncEnums::MIGRATION_DONE;
-    case browser_sync::UNKNOWN_ERROR:
+    case csync::UNKNOWN_ERROR:
       return sync_pb::SyncEnums::UNKNOWN;
     default:
       NOTREACHED();
@@ -727,19 +727,19 @@ sync_pb::SyncEnums::ErrorType
 }
 
 sync_pb::SyncEnums::Action GetClientToServerResponseAction(
-    const browser_sync::ClientAction& action) {
+    const csync::ClientAction& action) {
   switch (action) {
-    case browser_sync::UPGRADE_CLIENT:
+    case csync::UPGRADE_CLIENT:
       return sync_pb::SyncEnums::UPGRADE_CLIENT;
-    case browser_sync::CLEAR_USER_DATA_AND_RESYNC:
+    case csync::CLEAR_USER_DATA_AND_RESYNC:
       return sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC;
-    case browser_sync::ENABLE_SYNC_ON_ACCOUNT:
+    case csync::ENABLE_SYNC_ON_ACCOUNT:
       return sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT;
-    case browser_sync::STOP_AND_RESTART_SYNC:
+    case csync::STOP_AND_RESTART_SYNC:
       return sync_pb::SyncEnums::STOP_AND_RESTART_SYNC;
-    case browser_sync::DISABLE_SYNC_ON_CLIENT:
+    case csync::DISABLE_SYNC_ON_CLIENT:
       return sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT;
-    case browser_sync::UNKNOWN_ACTION:
+    case csync::UNKNOWN_ACTION:
       return sync_pb::SyncEnums::UNKNOWN_ACTION;
     default:
       NOTREACHED();
@@ -749,7 +749,7 @@ sync_pb::SyncEnums::Action GetClientToServerResponseAction(
 
 }  // namespace
 
-void SyncTest::TriggerSyncError(const browser_sync::SyncProtocolError& error,
+void SyncTest::TriggerSyncError(const csync::SyncProtocolError& error,
                                 SyncErrorFrequency frequency) {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/error";

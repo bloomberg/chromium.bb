@@ -13,7 +13,7 @@
 using std::set;
 using std::vector;
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 ConflictProgress::ConflictProgress(bool* dirty_flag)
@@ -155,4 +155,4 @@ PerModelSafeGroupState::~PerModelSafeGroupState() {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

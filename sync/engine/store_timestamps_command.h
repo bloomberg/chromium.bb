@@ -10,7 +10,7 @@
 #include "sync/engine/syncer_command.h"
 #include "sync/engine/syncer_types.h"
 
-namespace browser_sync {
+namespace csync {
 
 // A syncer command that extracts the changelog timestamp information from
 // a GetUpdatesResponse (fetched in DownloadUpdatesCommand) and stores
@@ -36,6 +36,6 @@ class StoreTimestampsCommand : public SyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(StoreTimestampsCommand);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_STORE_TIMESTAMPS_COMMAND_H_

@@ -11,7 +11,7 @@
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/write_transaction.h"
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::SyncSession;
 
@@ -85,4 +85,4 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
   return SYNCER_OK;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

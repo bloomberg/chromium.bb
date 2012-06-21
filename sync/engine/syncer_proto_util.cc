@@ -21,7 +21,7 @@
 #include "sync/syncable/syncable-inl.h"
 #include "sync/util/time.h"
 
-using browser_sync::SyncProtocolErrorType;
+using csync::SyncProtocolErrorType;
 using std::string;
 using std::stringstream;
 using syncable::BASE_VERSION;
@@ -33,7 +33,7 @@ using syncable::IS_UNSYNCED;
 using syncable::MTIME;
 using syncable::PARENT_ID;
 
-namespace browser_sync {
+namespace csync {
 using sessions::SyncSession;
 
 namespace {
@@ -217,7 +217,7 @@ void SyncerProtoUtil::HandleThrottleError(
     const base::TimeTicks& throttled_until,
     ThrottledDataTypeTracker* tracker,
     sessions::SyncSession::Delegate* delegate) {
-  DCHECK_EQ(error.error_type, browser_sync::THROTTLED);
+  DCHECK_EQ(error.error_type, csync::THROTTLED);
   if (error.error_data_types.Empty()) {
     // No datatypes indicates the client should be completely throttled.
     delegate->OnSilencedUntil(throttled_until);
@@ -244,53 +244,53 @@ SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
     const sync_pb::SyncEnums::ErrorType& error_type) {
   switch (error_type) {
     case sync_pb::SyncEnums::SUCCESS:
-      return browser_sync::SYNC_SUCCESS;
+      return csync::SYNC_SUCCESS;
     case sync_pb::SyncEnums::NOT_MY_BIRTHDAY:
-      return browser_sync::NOT_MY_BIRTHDAY;
+      return csync::NOT_MY_BIRTHDAY;
     case sync_pb::SyncEnums::THROTTLED:
-      return browser_sync::THROTTLED;
+      return csync::THROTTLED;
     case sync_pb::SyncEnums::CLEAR_PENDING:
-      return browser_sync::CLEAR_PENDING;
+      return csync::CLEAR_PENDING;
     case sync_pb::SyncEnums::TRANSIENT_ERROR:
-      return browser_sync::TRANSIENT_ERROR;
+      return csync::TRANSIENT_ERROR;
     case sync_pb::SyncEnums::MIGRATION_DONE:
-      return browser_sync::MIGRATION_DONE;
+      return csync::MIGRATION_DONE;
     case sync_pb::SyncEnums::UNKNOWN:
-      return browser_sync::UNKNOWN_ERROR;
+      return csync::UNKNOWN_ERROR;
     case sync_pb::SyncEnums::USER_NOT_ACTIVATED:
     case sync_pb::SyncEnums::AUTH_INVALID:
     case sync_pb::SyncEnums::ACCESS_DENIED:
-      return browser_sync::INVALID_CREDENTIAL;
+      return csync::INVALID_CREDENTIAL;
     default:
       NOTREACHED();
-      return browser_sync::UNKNOWN_ERROR;
+      return csync::UNKNOWN_ERROR;
   }
 }
 
-browser_sync::ClientAction ConvertClientActionPBToLocalClientAction(
+csync::ClientAction ConvertClientActionPBToLocalClientAction(
     const sync_pb::SyncEnums::Action& action) {
   switch (action) {
     case sync_pb::SyncEnums::UPGRADE_CLIENT:
-      return browser_sync::UPGRADE_CLIENT;
+      return csync::UPGRADE_CLIENT;
     case sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC:
-      return browser_sync::CLEAR_USER_DATA_AND_RESYNC;
+      return csync::CLEAR_USER_DATA_AND_RESYNC;
     case sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT:
-      return browser_sync::ENABLE_SYNC_ON_ACCOUNT;
+      return csync::ENABLE_SYNC_ON_ACCOUNT;
     case sync_pb::SyncEnums::STOP_AND_RESTART_SYNC:
-      return browser_sync::STOP_AND_RESTART_SYNC;
+      return csync::STOP_AND_RESTART_SYNC;
     case sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT:
-      return browser_sync::DISABLE_SYNC_ON_CLIENT;
+      return csync::DISABLE_SYNC_ON_CLIENT;
     case sync_pb::SyncEnums::UNKNOWN_ACTION:
-      return browser_sync::UNKNOWN_ACTION;
+      return csync::UNKNOWN_ACTION;
     default:
       NOTREACHED();
-      return browser_sync::UNKNOWN_ACTION;
+      return csync::UNKNOWN_ACTION;
   }
 }
 
-browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
+csync::SyncProtocolError ConvertErrorPBToLocalType(
     const sync_pb::ClientToServerResponse::Error& error) {
-  browser_sync::SyncProtocolError sync_protocol_error;
+  csync::SyncProtocolError sync_protocol_error;
   sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
       error.error_type());
   sync_protocol_error.error_description = error.error_description();
@@ -312,13 +312,13 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
 }
 
 // TODO(lipalani) : Rename these function names as per the CR for issue 7740067.
-browser_sync::SyncProtocolError ConvertLegacyErrorCodeToNewError(
+csync::SyncProtocolError ConvertLegacyErrorCodeToNewError(
     const sync_pb::SyncEnums::ErrorType& error_type) {
-  browser_sync::SyncProtocolError error;
+  csync::SyncProtocolError error;
   error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(error_type);
   if (error_type == sync_pb::SyncEnums::CLEAR_PENDING ||
       error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY) {
-      error.action = browser_sync::DISABLE_SYNC_ON_CLIENT;
+      error.action = csync::DISABLE_SYNC_ON_CLIENT;
   }  // There is no other action we can compute for legacy server.
   return error;
 }
@@ -345,11 +345,11 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
                              msg, response)) {
     // There was an error establishing communication with the server.
     // We can not proceed beyond this point.
-    const browser_sync::HttpResponse::ServerConnectionCode server_status =
+    const csync::HttpResponse::ServerConnectionCode server_status =
         session->context()->connection_manager()->server_status();
 
-    DCHECK_NE(server_status, browser_sync::HttpResponse::NONE);
-    DCHECK_NE(server_status, browser_sync::HttpResponse::SERVER_CONNECTION_OK);
+    DCHECK_NE(server_status, csync::HttpResponse::NONE);
+    DCHECK_NE(server_status, csync::HttpResponse::SERVER_CONNECTION_OK);
 
     return ServerConnectionErrorAsSyncerError(server_status);
   }
@@ -358,13 +358,13 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   session->context()->traffic_recorder()->RecordClientToServerResponse(
       *response);
 
-  browser_sync::SyncProtocolError sync_protocol_error;
+  csync::SyncProtocolError sync_protocol_error;
 
   // Birthday mismatch overrides any error that is sent by the server.
   if (!VerifyResponseBirthday(dir, response)) {
-    sync_protocol_error.error_type = browser_sync::NOT_MY_BIRTHDAY;
+    sync_protocol_error.error_type = csync::NOT_MY_BIRTHDAY;
      sync_protocol_error.action =
-         browser_sync::DISABLE_SYNC_ON_CLIENT;
+         csync::DISABLE_SYNC_ON_CLIENT;
   } else if (response->has_error()) {
     // This is a new server. Just get the error from the protocol.
     sync_protocol_error = ConvertErrorPBToLocalType(response->error());
@@ -384,28 +384,28 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   // Now do any special handling for the error type and decide on the return
   // value.
   switch (sync_protocol_error.error_type) {
-    case browser_sync::UNKNOWN_ERROR:
+    case csync::UNKNOWN_ERROR:
       LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
                    << "recent version.";
       return SERVER_RETURN_UNKNOWN_ERROR;
-    case browser_sync::SYNC_SUCCESS:
+    case csync::SYNC_SUCCESS:
       LogResponseProfilingData(*response);
       return SYNCER_OK;
-    case browser_sync::THROTTLED:
+    case csync::THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
       HandleThrottleError(sync_protocol_error,
                           base::TimeTicks::Now() + GetThrottleDelay(*response),
                           session->context()->throttled_data_type_tracker(),
                           session->delegate());
       return SERVER_RETURN_THROTTLED;
-    case browser_sync::TRANSIENT_ERROR:
+    case csync::TRANSIENT_ERROR:
       return SERVER_RETURN_TRANSIENT_ERROR;
-    case browser_sync::MIGRATION_DONE:
+    case csync::MIGRATION_DONE:
       HandleMigrationDoneResponse(response, session);
       return SERVER_RETURN_MIGRATION_DONE;
-    case browser_sync::CLEAR_PENDING:
+    case csync::CLEAR_PENDING:
       return SERVER_RETURN_CLEAR_PENDING;
-    case browser_sync::NOT_MY_BIRTHDAY:
+    case csync::NOT_MY_BIRTHDAY:
       return SERVER_RETURN_NOT_MY_BIRTHDAY;
     default:
       NOTREACHED();
@@ -542,4 +542,4 @@ std::string SyncerProtoUtil::ClientToServerResponseDebugString(
   return output;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

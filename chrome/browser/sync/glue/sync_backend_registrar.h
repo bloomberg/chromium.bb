@@ -79,7 +79,7 @@ class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
   // group) and starts the given change processor.  Must be called
   // from |group|'s native thread.
   void ActivateDataType(syncable::ModelType type,
-                        ModelSafeGroup group,
+                        csync::ModelSafeGroup group,
                         ChangeProcessor* change_processor,
                         sync_api::UserShare* user_share);
 
@@ -100,12 +100,12 @@ class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
       const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
-  void GetWorkers(std::vector<ModelSafeWorker*>* out);
-  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
+  void GetWorkers(std::vector<csync::ModelSafeWorker*>* out);
+  void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out);
 
  private:
-  typedef std::map<ModelSafeGroup,
-                   scoped_refptr<ModelSafeWorker> > WorkerMap;
+  typedef std::map<csync::ModelSafeGroup,
+                   scoped_refptr<csync::ModelSafeWorker> > WorkerMap;
 
   // Returns the change processor for the given model, or NULL if none
   // exists.  Must be called from |group|'s native thread.
@@ -142,11 +142,11 @@ class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
   // destroyed.  Unless a worker is no longer needed because all types
   // that get routed to it have been disabled (from syncing). In that
   // case, we'll destroy on demand *after* routing any dependent types
-  // to GROUP_PASSIVE, so that the syncapi doesn't call into garbage.
+  // to csync::GROUP_PASSIVE, so that the syncapi doesn't call into garbage.
   // If a key is present, it means at least one ModelType that routes
   // to that model safe group is being synced.
   WorkerMap workers_;
-  ModelSafeRoutingInfo routing_info_;
+ csync::ModelSafeRoutingInfo routing_info_;
 
   // The change processors that handle the different data types.
   std::map<syncable::ModelType, ChangeProcessor*> processors_;

@@ -90,9 +90,9 @@ std::string FakeDataTypeController::name() const {
 }
 
 // This isn't called by the DTM.
-browser_sync::ModelSafeGroup FakeDataTypeController::model_safe_group() const {
+csync::ModelSafeGroup FakeDataTypeController::model_safe_group() const {
   ADD_FAILURE();
-  return browser_sync::GROUP_PASSIVE;
+  return csync::GROUP_PASSIVE;
 }
 
 DataTypeController::State FakeDataTypeController::state() const {

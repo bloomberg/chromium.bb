@@ -120,7 +120,7 @@ std::string SyncData::ToString() const {
   std::string type = syncable::ModelTypeToString(GetDataType());
   std::string specifics;
   scoped_ptr<DictionaryValue> value(
-      browser_sync::EntitySpecificsToValue(GetSpecifics()));
+      csync::EntitySpecificsToValue(GetSpecifics()));
   base::JSONWriter::WriteWithOptions(value.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &specifics);

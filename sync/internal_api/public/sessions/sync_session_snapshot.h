@@ -20,7 +20,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 // An immutable snapshot of state from a SyncSession.  Convenient to use as
@@ -95,6 +95,6 @@ class SyncSessionSnapshot {
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_

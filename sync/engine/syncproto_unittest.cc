@@ -5,7 +5,7 @@
 #include "sync/engine/syncproto.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 class SyncProtoTest : public testing::Test {
 };
@@ -15,4 +15,4 @@ TEST_F(SyncProtoTest, ProtocolVersionPresent) {
   EXPECT_TRUE(csm.has_protocol_version());
 }
 
-}  // namespace browser_sync
+}  // namespace csync

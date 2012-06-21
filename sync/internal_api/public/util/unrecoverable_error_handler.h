@@ -10,7 +10,7 @@
 
 #include "base/location.h"
 
-namespace browser_sync {
+namespace csync {
 
 class UnrecoverableErrorHandler {
  public:

@@ -61,7 +61,7 @@ typedef GoogleServiceAuthError AuthError;
 namespace browser_sync {
 
 using content::BrowserThread;
-using sessions::SyncSessionSnapshot;
+using csync::sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 
 // Helper macros to log with the syncer thread name; useful when there
@@ -83,9 +83,9 @@ class SyncBackendHost::Core
   // traffic controller here, forwarding incoming messages to appropriate
   // landing threads.
   virtual void OnSyncCycleCompleted(
-      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
+      const csync::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
-      const WeakHandle<JsBackend>& js_backend,
+      const csync::WeakHandle<csync::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnConnectionStatusChange(
       sync_api::ConnectionStatus status) OVERRIDE;
@@ -102,7 +102,7 @@ class SyncBackendHost::Core
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnActionableError(
-      const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
+      const csync::SyncProtocolError& sync_error) OVERRIDE;
 
   // Note:
   //
@@ -124,11 +124,11 @@ class SyncBackendHost::Core
 
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
-  void DoStartSyncing(const ModelSafeRoutingInfo& routing_info);
+  void DoStartSyncing(const csync::ModelSafeRoutingInfo& routing_info);
 
   // Called to cleanup disabled types.
   void DoRequestCleanupDisabledTypes(
-      const browser_sync::ModelSafeRoutingInfo& routing_info);
+      const csync::ModelSafeRoutingInfo& routing_info);
 
   // Called to set the passphrase for encryption.
   void DoSetEncryptionPassphrase(const std::string& passphrase,
@@ -160,7 +160,7 @@ class SyncBackendHost::Core
   void DoShutdown(bool stopping_sync);
 
   virtual void DoRequestConfig(
-      const browser_sync::ModelSafeRoutingInfo& routing_info,
+      const csync::ModelSafeRoutingInfo& routing_info,
       syncable::ModelTypeSet types_to_config,
       sync_api::ConfigureReason reason);
 
@@ -209,7 +209,7 @@ class SyncBackendHost::Core
   const FilePath sync_data_folder_path_;
 
   // Our parent SyncBackendHost.
-  WeakHandle<SyncBackendHost> host_;
+  csync::WeakHandle<SyncBackendHost> host_;
 
   // The loop where all the sync backend operations happen.
   // Non-NULL only between calls to DoInitialize() and DoShutdown().
@@ -332,13 +332,14 @@ sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
 
 void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
-    const WeakHandle<JsEventHandler>& event_handler,
+    const csync::WeakHandle<csync::JsEventHandler>& event_handler,
     const GURL& sync_service_url,
     syncable::ModelTypeSet initial_types,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    UnrecoverableErrorHandler* unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
+    csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
+    csync::ReportUnrecoverableErrorFunction
+        report_unrecoverable_error_function) {
   if (!sync_thread_.Start())
     return;
 
@@ -355,8 +356,8 @@ void SyncBackendHost::Initialize(
                                             name_,
                                             profile_,
                                             sync_thread_.message_loop()));
-  ModelSafeRoutingInfo routing_info;
-  std::vector<ModelSafeWorker*> workers;
+ csync::ModelSafeRoutingInfo routing_info;
+  std::vector<csync::ModelSafeWorker*> workers;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   registrar_->GetWorkers(&workers);
 
@@ -390,7 +391,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 void SyncBackendHost::StartSyncingWithServer() {
   SDVLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
 
-  ModelSafeRoutingInfo routing_info;
+ csync::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
 
   sync_thread_.message_loop()->PostTask(FROM_HERE,
@@ -585,7 +586,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // callers can assume that the data types are cleaned up once
   // configuration is done.
   if (!types_to_remove_with_nigori.Empty()) {
-    ModelSafeRoutingInfo routing_info;
+   csync::ModelSafeRoutingInfo routing_info;
     registrar_->GetModelSafeRoutingInfo(&routing_info);
     sync_thread_.message_loop()->PostTask(
         FROM_HERE,
@@ -614,7 +615,7 @@ void SyncBackendHost::EnableEncryptEverything() {
 }
 
 void SyncBackendHost::ActivateDataType(
-    syncable::ModelType type, ModelSafeGroup group,
+    syncable::ModelType type, csync::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
   registrar_->ActivateDataType(type, group, change_processor, GetUserShare());
 }
@@ -661,7 +662,7 @@ bool SyncBackendHost::IsCryptographerReady(
 }
 
 void SyncBackendHost::GetModelSafeRoutingInfo(
-    ModelSafeRoutingInfo* out) const {
+   csync::ModelSafeRoutingInfo* out) const {
   if (initialized()) {
     CHECK(registrar_.get());
     registrar_->GetModelSafeRoutingInfo(out);
@@ -758,7 +759,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
             << "FinishConfigureDataTypesOnFrontendLoop";
 
 
-  ModelSafeRoutingInfo routing_info;
+ csync::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   const syncable::ModelTypeSet enabled_types =
       GetRoutingInfoTypes(routing_info);
@@ -806,7 +807,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     SDVLOG(1) << "Types "
               << syncable::ModelTypeSetToString(types_to_config)
               << " added; calling DoRequestConfig";
-    ModelSafeRoutingInfo routing_info;
+   csync::ModelSafeRoutingInfo routing_info;
     registrar_->GetModelSafeRoutingInfo(&routing_info);
     sync_thread_.message_loop()->PostTask(FROM_HERE,
          base::Bind(&SyncBackendHost::Core::DoRequestConfig,
@@ -831,10 +832,10 @@ bool SyncBackendHost::IsDownloadingNigoriForTest() const {
 SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
-    const ModelSafeRoutingInfo& routing_info,
-    const std::vector<ModelSafeWorker*>& workers,
-    ExtensionsActivityMonitor* extensions_activity_monitor,
-    const WeakHandle<JsEventHandler>& event_handler,
+    const csync::ModelSafeRoutingInfo& routing_info,
+    const std::vector<csync::ModelSafeWorker*>& workers,
+    csync::ExtensionsActivityMonitor* extensions_activity_monitor,
+    const csync::WeakHandle<csync::JsEventHandler>& event_handler,
     const GURL& service_url,
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
     const sync_api::SyncCredentials& credentials,
@@ -843,8 +844,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     sync_api::SyncManager::TestingMode testing_mode,
-    UnrecoverableErrorHandler* unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
+    csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
+    csync::ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -903,7 +904,7 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
 
 
 void SyncBackendHost::Core::OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend,
+    const csync::WeakHandle<csync::JsBackend>& js_backend,
     bool success) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(
@@ -1000,7 +1001,7 @@ void SyncBackendHost::Core::OnEncryptionComplete() {
 }
 
 void SyncBackendHost::Core::OnActionableError(
-    const browser_sync::SyncProtocolError& sync_error) {
+    const csync::SyncProtocolError& sync_error) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -1113,13 +1114,13 @@ void SyncBackendHost::Core::DoUpdateEnabledTypes(
 }
 
 void SyncBackendHost::Core::DoStartSyncing(
-    const ModelSafeRoutingInfo& routing_info) {
+    const csync::ModelSafeRoutingInfo& routing_info) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->StartSyncingNormally(routing_info);
 }
 
 void SyncBackendHost::Core::DoRequestCleanupDisabledTypes(
-    const browser_sync::ModelSafeRoutingInfo& routing_info) {
+    const csync::ModelSafeRoutingInfo& routing_info) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->RequestCleanupDisabledTypes(routing_info);
 }
@@ -1176,7 +1177,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::Core::DoRequestConfig(
-    const browser_sync::ModelSafeRoutingInfo& routing_info,
+    const csync::ModelSafeRoutingInfo& routing_info,
     syncable::ModelTypeSet types_to_config,
     sync_api::ConfigureReason reason) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -1223,7 +1224,7 @@ void SyncBackendHost::Core::SaveChanges() {
 
 void SyncBackendHost::AddExperimentalTypes() {
   CHECK(initialized());
-  Experiments experiments;
+  csync::Experiments experiments;
   if (core_->sync_manager()->ReceivedExperiment(&experiments))
     frontend_->OnExperimentsChanged(experiments);
 }
@@ -1237,7 +1238,7 @@ void SyncBackendHost::OnNigoriDownloadRetry() {
 }
 
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
-    const WeakHandle<JsBackend>& js_backend, bool success) {
+    const csync::WeakHandle<csync::JsBackend>& js_backend, bool success) {
   DCHECK_NE(NOT_ATTEMPTED, initialization_state_);
   if (!frontend_)
     return;
@@ -1250,7 +1251,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   if (!success) {
     initialization_state_ = NOT_INITIALIZED;
-    frontend_->OnBackendInitialized(WeakHandle<JsBackend>(), false);
+    frontend_->OnBackendInitialized(
+        csync::WeakHandle<csync::JsBackend>(), false);
     return;
   }
 
@@ -1309,7 +1311,7 @@ void SyncBackendHost::PersistEncryptionBootstrapToken(
 }
 
 void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
-    const browser_sync::SyncProtocolError& sync_error) {
+    const csync::SyncProtocolError& sync_error) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
@@ -1320,7 +1322,7 @@ bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(
     const std::string& passphrase) const {
   DCHECK(cached_pending_keys_.has_blob());
   DCHECK(!passphrase.empty());
-  browser_sync::Nigori nigori;
+  csync::Nigori nigori;
   nigori.InitByDerivation("localhost", "dummy", passphrase);
   std::string plaintext;
   bool result = nigori.Decrypt(cached_pending_keys_.blob(), &plaintext);
@@ -1397,7 +1399,7 @@ void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(
 }
 
 void SyncBackendHost::HandleNigoriConfigurationCompletedOnFrontendLoop(
-    const WeakHandle<JsBackend>& js_backend,
+    const csync::WeakHandle<csync::JsBackend>& js_backend,
     const syncable::ModelTypeSet failed_configuration_types) {
   HandleInitializationCompletedOnFrontendLoop(
       js_backend, failed_configuration_types.Empty());

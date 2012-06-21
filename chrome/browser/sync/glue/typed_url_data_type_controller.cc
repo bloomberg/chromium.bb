@@ -76,9 +76,9 @@ syncable::ModelType TypedUrlDataTypeController::type() const {
   return syncable::TYPED_URLS;
 }
 
-browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
+csync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
     const {
-  return browser_sync::GROUP_HISTORY;
+  return csync::GROUP_HISTORY;
 }
 
 void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {

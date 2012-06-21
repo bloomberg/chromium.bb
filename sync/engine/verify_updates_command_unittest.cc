@@ -13,7 +13,7 @@
 #include "sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::StatusController;
 using std::string;

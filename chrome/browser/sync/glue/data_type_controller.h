@@ -100,7 +100,7 @@ class DataTypeController
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
   // model.
-  virtual browser_sync::ModelSafeGroup model_safe_group() const = 0;
+  virtual csync::ModelSafeGroup model_safe_group() const = 0;
 
   // Current state of the data type controller.
   virtual State state() const = 0;

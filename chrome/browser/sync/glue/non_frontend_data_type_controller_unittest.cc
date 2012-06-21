@@ -27,7 +27,7 @@
 using base::WaitableEvent;
 using browser_sync::ChangeProcessorMock;
 using browser_sync::DataTypeController;
-using browser_sync::GROUP_DB;
+using csync::GROUP_DB;
 using browser_sync::NonFrontendDataTypeController;
 using browser_sync::NonFrontendDataTypeControllerMock;
 using browser_sync::ModelAssociatorMock;
@@ -62,8 +62,8 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
         mock_(mock) {}
 
   virtual syncable::ModelType type() const { return syncable::BOOKMARKS; }
-  virtual browser_sync::ModelSafeGroup model_safe_group() const {
-    return GROUP_DB;
+  virtual csync::ModelSafeGroup model_safe_group() const {
+    return csync::GROUP_DB;
   }
 
  private:

@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/debug_info_event_listener.h"
 
-using browser_sync::sessions::SyncSessionSnapshot;
+using csync::sessions::SyncSessionSnapshot;
 namespace sync_api {
 
 DebugInfoEventListener::DebugInfoEventListener()
@@ -44,7 +44,7 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
 }
 
 void DebugInfoEventListener::OnInitializationComplete(
-    const browser_sync::WeakHandle<browser_sync::JsBackend>& js_backend,
+    const csync::WeakHandle<csync::JsBackend>& js_backend,
     bool success) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::INITIALIZATION_COMPLETE);
 }
@@ -88,7 +88,7 @@ void DebugInfoEventListener::OnEncryptionComplete() {
 }
 
 void DebugInfoEventListener::OnActionableError(
-    const browser_sync::SyncProtocolError& sync_error) {
+    const csync::SyncProtocolError& sync_error) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
 }
 

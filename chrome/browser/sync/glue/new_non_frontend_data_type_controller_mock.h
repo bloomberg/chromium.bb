@@ -27,7 +27,7 @@ class NewNonFrontendDataTypeControllerMock
   MOCK_METHOD0(enabled, bool());
   MOCK_CONST_METHOD0(type, syncable::ModelType());
   MOCK_CONST_METHOD0(name, std::string());
-  MOCK_CONST_METHOD0(model_safe_group, browser_sync::ModelSafeGroup());
+  MOCK_CONST_METHOD0(model_safe_group, csync::ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());
   MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
                                           const std::string&));

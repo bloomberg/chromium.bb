@@ -16,7 +16,7 @@
 #include "sync/protocol/sync_protocol_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 using ::testing::InSequence;
@@ -94,9 +94,9 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnActionableError) {
-  browser_sync::SyncProtocolError sync_error;
-  sync_error.action = browser_sync::CLEAR_USER_DATA_AND_RESYNC;
-  sync_error.error_type = browser_sync::TRANSIENT_ERROR;
+  csync::SyncProtocolError sync_error;
+  sync_error.action = csync::CLEAR_USER_DATA_AND_RESYNC;
+  sync_error.error_type = csync::TRANSIENT_ERROR;
   DictionaryValue expected_details;
   expected_details.Set("syncError", sync_error.ToValue());
 
@@ -208,4 +208,4 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

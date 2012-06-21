@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 
-namespace browser_sync {
+namespace csync {
 
 // Fake implementation of ModelSafeWorker that does work on the
 // current thread regardless of the group.
@@ -35,7 +35,7 @@ class FakeModelWorker : public ModelSafeWorker, public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(FakeModelWorker);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_TEST_ENGINE_FAKE_MODEL_WORKER_H_
 

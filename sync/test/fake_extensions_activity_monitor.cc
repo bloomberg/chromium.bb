@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace browser_sync {
+namespace csync {
 
 FakeExtensionsActivityMonitor::FakeExtensionsActivityMonitor() {}
 
@@ -28,4 +28,4 @@ void FakeExtensionsActivityMonitor::PutRecords(const Records& records) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

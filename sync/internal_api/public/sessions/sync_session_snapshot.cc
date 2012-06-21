@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 SyncSessionSnapshot::SyncSessionSnapshot()
@@ -170,4 +170,4 @@ bool SyncSessionSnapshot::retry_scheduled() const {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

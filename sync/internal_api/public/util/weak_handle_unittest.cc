@@ -13,7 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 using ::testing::_;
 using ::testing::SaveArg;
@@ -323,4 +323,4 @@ TEST_F(WeakHandleTest, TypeConversionConstructorUninitializedAssignment) {
   EXPECT_FALSE(base_weak_handle.IsInitialized());
 }
 
-}  // namespace browser_sync
+}  // namespace csync

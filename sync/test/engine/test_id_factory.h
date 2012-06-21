@@ -13,7 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace browser_sync {
+namespace csync {
 
 class TestIdFactory {
  public:
@@ -67,7 +67,7 @@ class TestIdFactory {
   int next_value_;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
 

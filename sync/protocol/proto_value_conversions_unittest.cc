@@ -27,7 +27,7 @@
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 class ProtoValueConversionsTest : public testing::Test {
@@ -250,4 +250,4 @@ TEST_F(ProtoValueConversionsTest, ClientToServerResponseToValue) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

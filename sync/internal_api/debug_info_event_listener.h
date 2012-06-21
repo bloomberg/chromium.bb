@@ -24,16 +24,16 @@ const unsigned int kMaxEntries = 6;
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
 class DebugInfoEventListener : public sync_api::SyncManager::Observer,
-                               public browser_sync::sessions::DebugInfoGetter {
+                               public csync::sessions::DebugInfoGetter {
  public:
   DebugInfoEventListener();
   virtual ~DebugInfoEventListener();
 
   // SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
-    const browser_sync::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
+    const csync::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
-    const browser_sync::WeakHandle<browser_sync::JsBackend>& js_backend,
+    const csync::WeakHandle<csync::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnConnectionStatusChange(
       sync_api::ConnectionStatus connection_status) OVERRIDE;
@@ -50,7 +50,7 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnActionableError(
-      const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
+      const csync::SyncProtocolError& sync_error) OVERRIDE;
 
   // Sync manager events.
   void OnNudgeFromDatatype(syncable::ModelType datatype);

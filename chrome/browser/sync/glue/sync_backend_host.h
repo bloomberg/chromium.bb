@@ -62,7 +62,7 @@ class SyncFrontend {
   // from the 'Backend' in 'OnBackendInitialized' (unfortunately).  It
   // is initialized only if |success| is true.
   virtual void OnBackendInitialized(
-      const WeakHandle<JsBackend>& js_backend, bool success) = 0;
+      const csync::WeakHandle<csync::JsBackend>& js_backend, bool success) = 0;
 
   // The backend queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
@@ -100,11 +100,11 @@ class SyncFrontend {
   // below).
   //
   // |encrypted_types| will always be a superset of
-  // Cryptographer::SensitiveTypes().  If |encrypt_everything| is
+  // csync::Cryptographer::SensitiveTypes().  If |encrypt_everything| is
   // true, |encrypted_types| will be the set of all known types.
   //
   // Until this function is called, observers can assume that the set
-  // of encrypted types is Cryptographer::SensitiveTypes() and that
+  // of encrypted types is csync::Cryptographer::SensitiveTypes() and that
   // the encrypt everything flag is false.
   virtual void OnEncryptedTypesChanged(
       syncable::ModelTypeSet encrypted_types,
@@ -120,11 +120,11 @@ class SyncFrontend {
 
   // Inform the Frontend that new datatypes are available for registration.
   virtual void OnExperimentsChanged(
-      const browser_sync::Experiments& experiments) = 0;
+      const csync::Experiments& experiments) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(
-      const browser_sync::SyncProtocolError& error) = 0;
+      const csync::SyncProtocolError& error) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -165,13 +165,13 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // |report_unrecoverable_error_function| can be NULL.
   // Note: |unrecoverable_error_handler| may be invoked from any thread.
   void Initialize(SyncFrontend* frontend,
-                  const WeakHandle<JsEventHandler>& event_handler,
+                  const csync::WeakHandle<csync::JsEventHandler>& event_handler,
                   const GURL& service_url,
                   syncable::ModelTypeSet initial_types,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder,
-                  UnrecoverableErrorHandler* unrecoverable_error_handler,
-                  ReportUnrecoverableErrorFunction
+                  csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
+                  csync::ReportUnrecoverableErrorFunction
                       report_unrecoverable_error_function);
 
   // Called from |frontend_loop| to update SyncCredentials.
@@ -240,7 +240,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // no changes are dropped between model association and change
   // processor activation.
   void ActivateDataType(
-      syncable::ModelType type, ModelSafeGroup group,
+      syncable::ModelType type, csync::ModelSafeGroup group,
       ChangeProcessor* change_processor);
 
   // Deactivates change processing for the given data type.
@@ -253,7 +253,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
   Status GetDetailedStatus();
-  sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
+  csync::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
@@ -271,7 +271,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // using a token previously received.
   bool IsCryptographerReady(const sync_api::BaseTransaction* trans) const;
 
-  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const;
+  void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out) const;
 
  protected:
   // The types and functions below are protected so that test
@@ -287,10 +287,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     DoInitializeOptions(
         MessageLoop* sync_loop,
         SyncBackendRegistrar* registrar,
-        const ModelSafeRoutingInfo& routing_info,
-        const std::vector<ModelSafeWorker*>& workers,
-        ExtensionsActivityMonitor* extensions_activity_monitor,
-        const WeakHandle<JsEventHandler>& event_handler,
+        const csync::ModelSafeRoutingInfo& routing_info,
+        const std::vector<csync::ModelSafeWorker*>& workers,
+        csync::ExtensionsActivityMonitor* extensions_activity_monitor,
+        const csync::WeakHandle<csync::JsEventHandler>& event_handler,
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
         const sync_api::SyncCredentials& credentials,
@@ -299,16 +299,17 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
         sync_api::SyncManager::TestingMode testing_mode,
-        UnrecoverableErrorHandler* unrecoverable_error_handler,
-        ReportUnrecoverableErrorFunction report_unrecoverable_error_function);
+        csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
+        csync::ReportUnrecoverableErrorFunction
+            report_unrecoverable_error_function);
     ~DoInitializeOptions();
 
     MessageLoop* sync_loop;
     SyncBackendRegistrar* registrar;
-    ModelSafeRoutingInfo routing_info;
-    std::vector<ModelSafeWorker*> workers;
-    ExtensionsActivityMonitor* extensions_activity_monitor;
-    WeakHandle<JsEventHandler> event_handler;
+   csync::ModelSafeRoutingInfo routing_info;
+    std::vector<csync::ModelSafeWorker*> workers;
+    csync::ExtensionsActivityMonitor* extensions_activity_monitor;
+    csync::WeakHandle<csync::JsEventHandler> event_handler;
     GURL service_url;
     // Overridden by tests.
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
@@ -319,8 +320,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
     sync_api::SyncManager::TestingMode testing_mode;
-    UnrecoverableErrorHandler* unrecoverable_error_handler;
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function;
+    csync::UnrecoverableErrorHandler* unrecoverable_error_handler;
+    csync::ReportUnrecoverableErrorFunction report_unrecoverable_error_function;
   };
 
   // Allows tests to perform alternate core initialization work.
@@ -329,7 +330,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
   // thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
-      const sessions::SyncSessionSnapshot& snapshot);
+      const csync::sessions::SyncSessionSnapshot& snapshot);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.
@@ -396,7 +397,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
   virtual void HandleInitializationCompletedOnFrontendLoop(
-      const WeakHandle<JsBackend>& js_backend,
+      const csync::WeakHandle<csync::JsBackend>& js_backend,
       bool success);
 
   // Helpers to persist a token that can be used to bootstrap sync encryption
@@ -410,7 +411,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Let the front end handle the actionable error event.
   void HandleActionableErrorEventOnFrontendLoop(
-      const browser_sync::SyncProtocolError& sync_error);
+      const csync::SyncProtocolError& sync_error);
 
   // Checks if |passphrase| can be used to decrypt the cryptographer's pending
   // keys that were cached during NotifyPassphraseRequired. Returns true if
@@ -453,7 +454,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called when configuration of the Nigori node has completed as
   // part of the initialization process.
   void HandleNigoriConfigurationCompletedOnFrontendLoop(
-      const WeakHandle<JsBackend>& js_backend,
+      const csync::WeakHandle<csync::JsBackend>& js_backend,
       syncable::ModelTypeSet failed_configuration_types);
 
   // Must be called on |frontend_loop_|.  |done_callback| is called on
@@ -512,7 +513,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   sync_pb::EncryptedData cached_pending_keys_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
-  sessions::SyncSessionSnapshot last_snapshot_;
+  csync::sessions::SyncSessionSnapshot last_snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

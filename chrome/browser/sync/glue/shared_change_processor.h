@@ -85,7 +85,7 @@ class SharedChangeProcessor
   // Register |generic_change_processor_| as the change processor for the
   // current type on |model_safe_group|.
   // Does nothing if |disconnected_| is true.
-  virtual void ActivateDataType(browser_sync::ModelSafeGroup model_safe_group);
+  virtual void ActivateDataType(csync::ModelSafeGroup model_safe_group);
 
   virtual SyncError CreateAndUploadError(
       const tracked_objects::Location& location,

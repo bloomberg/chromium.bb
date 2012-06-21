@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 
-namespace browser_sync {
+namespace csync {
 #define ENUM_CASE(x) case x: return #x; break;
 
 const char* GetSyncErrorTypeString(SyncProtocolErrorType type) {
@@ -59,5 +59,5 @@ DictionaryValue* SyncProtocolError::ToValue() const {
   return value;
 }
 
-}  // namespace browser_sync
+}  // namespace csync
 

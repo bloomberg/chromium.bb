@@ -62,7 +62,7 @@ using std::multimap;
 using std::set;
 using std::string;
 
-namespace browser_sync {
+namespace csync {
 
 using syncable::BaseTransaction;
 using syncable::Blob;
@@ -561,7 +561,7 @@ class SyncerTest : public testing::Test,
   scoped_refptr<ModelSafeWorker> worker_;
 
   syncable::ModelTypeSet enabled_datatypes_;
-  browser_sync::TrafficRecorder traffic_recorder_;
+  csync::TrafficRecorder traffic_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
@@ -715,7 +715,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     // Mark bookmarks as encrypted and set the cryptographer to have pending
     // keys.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    browser_sync::Cryptographer other_cryptographer(&encryptor_);
+    csync::Cryptographer other_cryptographer(&encryptor_);
     other_cryptographer.AddKey(other_params);
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
@@ -808,7 +808,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
 
 TEST_F(SyncerTest, EncryptionAwareConflicts) {
   KeyParams key_params = {"localhost", "dummy", "foobar"};
-  browser_sync::Cryptographer other_cryptographer(&encryptor_);
+  csync::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
   bookmark.mutable_bookmark()->set_title("title");
@@ -982,7 +982,7 @@ TEST_F(SyncerTest, ReceiveOldNigori) {
   KeyParams current_key = {"localhost", "dummy", "cur"};
 
   // Data for testing encryption/decryption.
-  browser_sync::Cryptographer other_cryptographer(&encryptor_);
+  csync::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(old_key);
   sync_pb::EntitySpecifics other_encrypted_specifics;
   other_encrypted_specifics.mutable_bookmark()->set_title("title");
@@ -1065,7 +1065,7 @@ TEST_F(SyncerTest, ReceiveOldNigori) {
 TEST_F(SyncerTest, NigoriConflicts) {
   KeyParams local_key_params = {"localhost", "dummy", "blargle"};
   KeyParams other_key_params = {"localhost", "dummy", "foobar"};
-  browser_sync::Cryptographer other_cryptographer(&encryptor_);
+  csync::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(other_key_params);
   syncable::ModelTypeSet encrypted_types(syncable::PASSWORDS, syncable::NIGORI);
   sync_pb::EntitySpecifics initial_nigori_specifics;
@@ -4832,4 +4832,4 @@ TEST_F(SyncerPositionTiebreakingTest, MidLowHigh) {
   ExpectLocalOrderIsByServerId();
 }
 
-}  // namespace browser_sync
+}  // namespace csync

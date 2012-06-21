@@ -14,18 +14,19 @@
 
 namespace browser_sync {
 
-// Chrome-specific implementation of ExtensionsActivityMonitor.
+// Chrome-specific implementation of csync::ExtensionsActivityMonitor.
 //
-// As per the requirements of ExtensionsActivityMonitor, all
+// As per the requirements of csync::ExtensionsActivityMonitor, all
 // overridden methods are thread-safe, although this class must be
 // created and destroyed on the UI thread.
 class ChromeExtensionsActivityMonitor
-    : public ExtensionsActivityMonitor, content::NotificationObserver {
+    : public csync::ExtensionsActivityMonitor,
+      public content::NotificationObserver {
  public:
   ChromeExtensionsActivityMonitor();
   virtual ~ChromeExtensionsActivityMonitor();
 
-  // ExtensionsActivityMonitor implementation.
+  // csync::ExtensionsActivityMonitor implementation.
   virtual void GetAndClearRecords(Records* buffer) OVERRIDE;
   virtual void PutRecords(const Records& records) OVERRIDE;
 

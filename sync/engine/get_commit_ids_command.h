@@ -19,7 +19,7 @@
 using std::pair;
 using std::vector;
 
-namespace browser_sync {
+namespace csync {
 
 // A class that contains the code used to search the syncable::Directory for
 // locally modified items that are ready to be committed to the server.
@@ -135,6 +135,6 @@ class GetCommitIdsCommand : public SyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(GetCommitIdsCommand);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_GET_COMMIT_IDS_COMMAND_H_

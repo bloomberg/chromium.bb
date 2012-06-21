@@ -75,8 +75,8 @@ class NewNonFrontendDataTypeControllerFake
   virtual syncable::ModelType type() const OVERRIDE {
     return AUTOFILL_PROFILE;
   }
-  virtual ModelSafeGroup model_safe_group() const OVERRIDE {
-    return GROUP_DB;
+  virtual csync::ModelSafeGroup model_safe_group() const OVERRIDE {
+    return csync::GROUP_DB;
   }
 
   // Prevent tasks from being posted on the backend thread until

@@ -23,7 +23,7 @@
 #include "sync/internal_api/public/sessions/syncer_status.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 class UpdateProgress;
@@ -196,6 +196,6 @@ struct PerModelSafeGroupState {
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_SESSIONS_SESSION_STATE_H_

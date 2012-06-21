@@ -8,12 +8,12 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 namespace internal {
 
 std::string GetComputerName();
 
 }  // namespace internal
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_GET_SESSION_NAME_WIN_H_

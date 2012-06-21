@@ -21,7 +21,7 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/util/cryptographer.h"
 
-using browser_sync::Cryptographer;
+using csync::Cryptographer;
 using std::string;
 using std::vector;
 using syncable::kEncryptedString;
@@ -205,7 +205,7 @@ void WriteNode::SetEntitySpecifics(
   if (GetModelType() != syncable::UNSPECIFIED) {
     DCHECK_EQ(new_specifics_type, GetModelType());
   }
-  browser_sync::Cryptographer* cryptographer =
+  csync::Cryptographer* cryptographer =
       GetTransaction()->GetCryptographer();
 
   // Preserve unknown fields.
@@ -477,6 +477,10 @@ const syncable::Entry* WriteNode::GetEntry() const {
 
 const BaseTransaction* WriteNode::GetTransaction() const {
   return transaction_;
+}
+
+syncable::MutableEntry* WriteNode::GetMutableEntryForTest() {
+  return entry_;
 }
 
 void WriteNode::Remove() {

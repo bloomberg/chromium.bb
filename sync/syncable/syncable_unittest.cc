@@ -37,9 +37,9 @@
 
 using base::ExpectDictBooleanValue;
 using base::ExpectDictStringValue;
-using browser_sync::FakeEncryptor;
-using browser_sync::TestIdFactory;
-using browser_sync::TestUnrecoverableErrorHandler;
+using csync::FakeEncryptor;
+using csync::TestIdFactory;
+using csync::TestUnrecoverableErrorHandler;
 
 namespace syncable {
 
@@ -401,7 +401,7 @@ class TestUnsaveableDirectory : public Directory {
   DirOpenResult OpenUnsaveable(
       const FilePath& file_path, const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const browser_sync::WeakHandle<TransactionObserver>&
+      const csync::WeakHandle<TransactionObserver>&
           transaction_observer) {
     DirectoryBackingStore *store = new UnsaveableBackingStore(name, file_path);
     DirOpenResult result =
@@ -1151,14 +1151,14 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
     server_item.Put(SERVER_IS_DEL, false);
     ASSERT_EQ(datatype, server_item.GetServerModelType());
 
-    browser_sync::SyncEntity folder_entity;
+    csync::SyncEntity folder_entity;
     folder_entity.set_id(id_factory.NewServerId());
     folder_entity.set_deleted(false);
     folder_entity.set_folder(true);
     folder_entity.mutable_specifics()->CopyFrom(specifics);
     ASSERT_EQ(datatype, folder_entity.GetModelType());
 
-    browser_sync::SyncEntity item_entity;
+    csync::SyncEntity item_entity;
     item_entity.set_id(id_factory.NewServerId());
     item_entity.set_deleted(false);
     item_entity.set_folder(false);

@@ -245,8 +245,8 @@ TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
   EXPECT_TRUE(service_->sync_initialized());
   EXPECT_TRUE(service_->GetBackendForTest() != NULL);
 
-  JsController* js_controller = service_->GetJsController();
-  StrictMock<MockJsEventHandler> event_handler;
+  csync::JsController* js_controller = service_->GetJsController();
+  StrictMock<csync::MockJsEventHandler> event_handler;
   js_controller->AddJsEventHandler(&event_handler);
   js_controller->RemoveJsEventHandler(&event_handler);
 }
@@ -255,13 +255,13 @@ TEST_F(ProfileSyncServiceTest,
        JsControllerHandlersDelayedBackendInitialization) {
   StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true, false);
 
-  StrictMock<MockJsEventHandler> event_handler;
+  StrictMock<csync::MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler, HandleJsEvent(_, _)).Times(AtLeast(1));
 
   EXPECT_EQ(NULL, service_->GetBackendForTest());
   EXPECT_FALSE(service_->sync_initialized());
 
-  JsController* js_controller = service_->GetJsController();
+  csync::JsController* js_controller = service_->GetJsController();
   js_controller->AddJsEventHandler(&event_handler);
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
@@ -273,16 +273,16 @@ TEST_F(ProfileSyncServiceTest,
 TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
   StartSyncService();
 
-  StrictMock<MockJsReplyHandler> reply_handler;
+  StrictMock<csync::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
   arg_list1.Append(Value::CreateBooleanValue(false));
-  JsArgList args1(&arg_list1);
+  csync::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
 
   {
-    JsController* js_controller = service_->GetJsController();
+    csync::JsController* js_controller = service_->GetJsController();
     js_controller->ProcessJsMessage("getNotificationState", args1,
                                     reply_handler.AsWeakHandle());
   }
@@ -296,16 +296,16 @@ TEST_F(ProfileSyncServiceTest,
        JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
   StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true, false);
 
-  StrictMock<MockJsReplyHandler> reply_handler;
+  StrictMock<csync::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
   arg_list1.Append(Value::CreateBooleanValue(false));
-  JsArgList args1(&arg_list1);
+  csync::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
 
   {
-    JsController* js_controller = service_->GetJsController();
+    csync::JsController* js_controller = service_->GetJsController();
     js_controller->ProcessJsMessage("getNotificationState",
                                     args1, reply_handler.AsWeakHandle());
   }

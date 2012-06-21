@@ -21,9 +21,9 @@ class HttpPostProviderInterface;
 // This provides HTTP Post functionality through the interface provided
 // to the sync API by the application hosting the syncer backend.
 class SyncAPIBridgedConnection
-    : public browser_sync::ServerConnectionManager::Connection {
+    : public csync::ServerConnectionManager::Connection {
  public:
-  SyncAPIBridgedConnection(browser_sync::ServerConnectionManager* scm,
+  SyncAPIBridgedConnection(csync::ServerConnectionManager* scm,
                            HttpPostProviderFactory* factory);
 
   virtual ~SyncAPIBridgedConnection();
@@ -31,7 +31,7 @@ class SyncAPIBridgedConnection
   virtual bool Init(const char* path,
                     const std::string& auth_token,
                     const std::string& payload,
-                    browser_sync::HttpResponse* response) OVERRIDE;
+                    csync::HttpResponse* response) OVERRIDE;
 
   virtual void Abort() OVERRIDE;
 
@@ -49,7 +49,7 @@ class SyncAPIBridgedConnection
 // subclass so that we can override MakePost() to generate a POST object using
 // an instance of the HttpPostProviderFactory class.
 class SyncAPIServerConnectionManager
-    : public browser_sync::ServerConnectionManager {
+    : public csync::ServerConnectionManager {
  public:
   // Takes ownership of factory.
   SyncAPIServerConnectionManager(const std::string& server,

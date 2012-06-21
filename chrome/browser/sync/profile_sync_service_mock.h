@@ -36,7 +36,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_METHOD0(DisableForUser, void());
   MOCK_METHOD2(OnBackendInitialized,
-               void(const browser_sync::WeakHandle<browser_sync::JsBackend>&,
+               void(const csync::WeakHandle<csync::JsBackend>&,
                     bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD0(OnAuthError, void());
@@ -59,14 +59,14 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                std::string message));
   MOCK_CONST_METHOD0(GetUserShare, sync_api::UserShare*());
   MOCK_METHOD3(ActivateDataType,
-               void(syncable::ModelType, browser_sync::ModelSafeGroup,
+               void(syncable::ModelType, csync::ModelSafeGroup,
                     browser_sync::ChangeProcessor*));
   MOCK_METHOD1(DeactivateDataType, void(syncable::ModelType));
 
   MOCK_METHOD0(InitializeBackend, void());
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
-  MOCK_METHOD0(GetJsController, base::WeakPtr<browser_sync::JsController>());
+  MOCK_METHOD0(GetJsController, base::WeakPtr<csync::JsController>());
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 
   MOCK_CONST_METHOD0(EncryptEverythingEnabled, bool());
@@ -77,7 +77,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetPreferredDataTypes, syncable::ModelTypeSet());
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncable::ModelTypeSet());
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,
-                     browser_sync::sessions::SyncSessionSnapshot());
+                     csync::sessions::SyncSessionSnapshot());
 
   MOCK_METHOD0(QueryDetailedSyncStatus,
                browser_sync::SyncBackendHost::Status());
@@ -88,7 +88,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(sync_initialized, bool());
   MOCK_CONST_METHOD0(waiting_for_auth, bool());
   MOCK_METHOD1(OnActionableError, void(
-      const browser_sync::SyncProtocolError&));
+      const csync::SyncProtocolError&));
 
   MOCK_METHOD0(IsSyncEnabledAndLoggedIn, bool());
   MOCK_METHOD0(IsSyncTokenAvailable, bool());

@@ -18,7 +18,7 @@
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/util/nigori.h"
 
-namespace browser_sync {
+namespace csync {
 
 class Encryptor;
 
@@ -248,6 +248,6 @@ class Cryptographer {
   DISALLOW_COPY_AND_ASSIGN(Cryptographer);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_CRYPTOGRAPHER_H_

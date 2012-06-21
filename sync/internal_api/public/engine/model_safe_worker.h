@@ -19,7 +19,7 @@ namespace base {
 class DictionaryValue;
 }  // namespace
 
-namespace browser_sync {
+namespace csync {
 
 typedef base::Callback<enum SyncerError(void)> WorkCallback;
 
@@ -82,6 +82,6 @@ syncable::ModelTypeSet GetRoutingInfoTypes(
 ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
                                     const ModelSafeRoutingInfo& routes);
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_MODEL_SAFE_WORKER_H_

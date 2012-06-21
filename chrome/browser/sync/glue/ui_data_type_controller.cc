@@ -264,9 +264,9 @@ void UIDataTypeController::StopModels() {
   // Do nothing by default.
 }
 
-browser_sync::ModelSafeGroup UIDataTypeController::model_safe_group() const {
+csync::ModelSafeGroup UIDataTypeController::model_safe_group() const {
   DCHECK(syncable::IsRealDataType(type_));
-  return browser_sync::GROUP_UI;
+  return csync::GROUP_UI;
 }
 
 std::string UIDataTypeController::name() const {

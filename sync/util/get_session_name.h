@@ -15,7 +15,7 @@ namespace base {
 class TaskRunner;
 }  // namespace base
 
-namespace browser_sync {
+namespace csync {
 
 void GetSessionName(
     const scoped_refptr<base::TaskRunner>& task_runner,
@@ -23,6 +23,6 @@ void GetSessionName(
 
 std::string GetSessionNameSynchronouslyForTesting();
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_GET_SESSION_NAME_H_

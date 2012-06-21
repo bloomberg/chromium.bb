@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 namespace internal {
 
 // Returns the Hardware model name, without trailing numbers, if
@@ -18,6 +18,6 @@ namespace internal {
 std::string GetHardwareModelName();
 
 }  // namespace internal
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_GET_SESSION_NAME_MAC_H_

@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 namespace internal {
 
 // Return the unique identifier of this device.
@@ -21,6 +21,6 @@ std::string GetModel();
 bool IsTabletUi();
 
 }  // namespace internal
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_SESSION_UTILS_ANDROID_H_

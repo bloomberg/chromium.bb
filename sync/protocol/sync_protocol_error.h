@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace browser_sync{
+namespace csync{
 
 enum SyncProtocolErrorType {
   // Success case.
@@ -76,6 +76,6 @@ struct SyncProtocolError {
 
 const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
 const char* GetClientActionString(ClientAction action);
-}  // namespace browser_sync
+}  // namespace csync
 #endif  // SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
 

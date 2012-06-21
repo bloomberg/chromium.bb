@@ -12,10 +12,13 @@
 
 class Profile;
 
+namespace csync {
+class UnrecoverableErrorHandler;
+}  // namespace csync
+
 namespace browser_sync {
 
 class ModelAssociator;
-class UnrecoverableErrorHandler;
 
 // An interface used to apply changes from the sync model to the browser's
 // native model.  This does not currently distinguish between model data types.
@@ -24,14 +27,15 @@ class ChangeProcessor {
   explicit ChangeProcessor(DataTypeErrorHandler* error_handler);
   virtual ~ChangeProcessor();
 
-  // Call when the processor should accept changes from either provided model
-  // and apply them to the other.  Both the chrome model and sync_api are
-  // expected to be initialized and loaded.  You must have set a valid
-  // ModelAssociator and UnrecoverableErrorHandler before using this method,
-  // and the two models should be associated w.r.t the ModelAssociator provided.
-  // It is safe to call Start again after previously Stop()ing the processor.
-  // Subclasses can extract their associated chrome model from |profile| in
-  // |StartImpl|.
+  // Call when the processor should accept changes from either
+  // provided model and apply them to the other.  Both the chrome
+  // model and sync_api are expected to be initialized and loaded.
+  // You must have set a valid ModelAssociator and
+  // csync::UnrecoverableErrorHandler before using this method, and
+  // the two models should be associated w.r.t the ModelAssociator
+  // provided.  It is safe to call Start again after previously
+  // Stop()ing the processor.  Subclasses can extract their associated
+  // chrome model from |profile| in |StartImpl|.
   void Start(Profile* profile, sync_api::UserShare* share_handle);
   void Stop();
   virtual bool IsRunning() const;

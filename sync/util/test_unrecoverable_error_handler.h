@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
-namespace browser_sync {
+namespace csync {
 
 // Implementation of UnrecoverableErrorHandler that simply adds a
 // gtest failure.
@@ -22,7 +22,7 @@ class TestUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
                                     const std::string& message) OVERRIDE;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_INCLUDES_TEST_UNRECOVERABLE_ERROR_HANDLER_H_
 

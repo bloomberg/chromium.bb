@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/session_state.h"
 
-namespace browser_sync {
+namespace csync {
 
 AllStatus::AllStatus() {
   status_.initial_sync_ended = true;
@@ -166,4 +166,4 @@ ScopedStatusLock::~ScopedStatusLock() {
   allstatus_->mutex_.Release();
 }
 
-}  // namespace browser_sync
+}  // namespace csync

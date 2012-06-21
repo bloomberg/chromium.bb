@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 using ::testing::_;
@@ -123,4 +123,4 @@ TEST_F(SyncJsControllerTest, Events) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

@@ -132,7 +132,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
   } else if (result == sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
     // TODO(tim): Investigating bug 121587.
-    Cryptographer* crypto = trans->GetCryptographer();
+    csync::Cryptographer* crypto = trans->GetCryptographer();
     syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
     const sync_pb::EntitySpecifics& specifics =
         update_node.GetEntry()->Get(syncable::SPECIFICS);

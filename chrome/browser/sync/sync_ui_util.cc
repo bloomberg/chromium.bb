@@ -166,24 +166,24 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
 }
 
 void GetStatusForActionableError(
-    const browser_sync::SyncProtocolError& error,
+    const csync::SyncProtocolError& error,
     string16* status_label) {
   DCHECK(status_label);
   switch (error.action) {
-    case browser_sync::STOP_AND_RESTART_SYNC:
+    case csync::STOP_AND_RESTART_SYNC:
        status_label->assign(
            l10n_util::GetStringUTF16(IDS_SYNC_STOP_AND_RESTART_SYNC));
       break;
-    case browser_sync::UPGRADE_CLIENT:
+    case csync::UPGRADE_CLIENT:
        status_label->assign(
            l10n_util::GetStringFUTF16(IDS_SYNC_UPGRADE_CLIENT,
                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       break;
-    case browser_sync::ENABLE_SYNC_ON_ACCOUNT:
+    case csync::ENABLE_SYNC_ON_ACCOUNT:
        status_label->assign(
            l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC_ON_ACCOUNT));
     break;
-    case browser_sync::CLEAR_USER_DATA_AND_RESYNC:
+    case csync::CLEAR_USER_DATA_AND_RESYNC:
        status_label->assign(
            l10n_util::GetStringUTF16(IDS_SYNC_CLEAR_USER_DATA));
       break;
@@ -532,10 +532,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // the values from a single sync cycle.
     //
     // |snapshot| could be NULL if sync is not yet initialized.
-    const browser_sync::sessions::SyncSessionSnapshot& snapshot =
+    const csync::sessions::SyncSessionSnapshot& snapshot =
         service->sync_initialized() ?
         service->GetLastSessionSnapshot() :
-        browser_sync::sessions::SyncSessionSnapshot();
+        csync::sessions::SyncSessionSnapshot();
 
     sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
                                        service->QuerySyncStatusSummary());
@@ -611,7 +611,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
         details, "Status from Last Completed Session");
     sync_ui_util::AddStringSyncDetails(
         cycles, "Sync Source",
-        browser_sync::GetUpdatesSourceString(
+        csync::GetUpdatesSourceString(
         snapshot.source().updates_source));
     sync_ui_util::AddStringSyncDetails(
         cycles, "Download Step Result",
@@ -715,18 +715,18 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
     // Now set the actionable errors.
     if ((full_status.sync_protocol_error.error_type !=
-         browser_sync::UNKNOWN_ERROR) &&
+         csync::UNKNOWN_ERROR) &&
         (full_status.sync_protocol_error.error_type !=
-         browser_sync::SYNC_SUCCESS)) {
+         csync::SYNC_SUCCESS)) {
       strings->Set("actionable_error_detected",
                    base::Value::CreateBooleanValue(true));
       ListValue* actionable_error = new ListValue();
       strings->Set("actionable_error", actionable_error);
       sync_ui_util::AddStringSyncDetails(actionable_error, "Error Type",
-          browser_sync::GetSyncErrorTypeString(
+          csync::GetSyncErrorTypeString(
               full_status.sync_protocol_error.error_type));
       sync_ui_util::AddStringSyncDetails(actionable_error, "Action",
-          browser_sync::GetClientActionString(
+          csync::GetClientActionString(
               full_status.sync_protocol_error.action));
       sync_ui_util::AddStringSyncDetails(actionable_error, "url",
           full_status.sync_protocol_error.url);
@@ -758,15 +758,15 @@ void ConstructAboutInformation(ProfileSyncService* service,
       strings->SetString("unrecoverable_error_message",
                          unrecoverable_error_message);
     } else if (service->sync_initialized()) {
-      browser_sync::ModelSafeRoutingInfo routes;
+      csync::ModelSafeRoutingInfo routes;
       service->GetModelSafeRoutingInfo(&routes);
       ListValue* routing_info = new ListValue();
       strings->Set("routing_info", routing_info);
-      browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
+      csync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
       for (; it != routes.end(); ++it) {
         DictionaryValue* val = new DictionaryValue;
         val->SetString("model_type", ModelTypeToString(it->first));
-        val->SetString("group", ModelSafeGroupToString(it->second));
+        val->SetString("group", csync::ModelSafeGroupToString(it->second));
         routing_info->Append(val);
       }
     }

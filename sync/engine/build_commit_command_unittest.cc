@@ -5,7 +5,7 @@
 #include "sync/engine/build_commit_command.h"
 #include "sync/test/engine/syncer_command_test.h"
 
-namespace browser_sync {
+namespace csync {
 
 // A test fixture for tests exercising ClearDataCommandTest.
 class BuildCommitCommandTest : public SyncerCommandTest {
@@ -102,6 +102,6 @@ TEST_F(BuildCommitCommandTest, InterpolatePosition) {
       command_.InterpolatePosition(0, BuildCommitCommand::GetGap()*2 + 1));
 }
 
-}  // namespace browser_sync
+}  // namespace csync
 
 

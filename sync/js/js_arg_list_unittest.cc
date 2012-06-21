@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 class JsArgListTest : public testing::Test {};
@@ -37,4 +37,4 @@ TEST_F(JsArgListTest, FromList) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

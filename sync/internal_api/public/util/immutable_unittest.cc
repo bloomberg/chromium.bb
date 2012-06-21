@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 // Helper class that keeps track of the token passed in at
 // construction and how many times that token is copied.
@@ -102,20 +102,20 @@ void swap(ADLToken& t1, ADLToken& t2) {
   t1.Swap(&t2);
 }
 
-}  // namespace browser_sync
+}  // namespace csync
 
 // Allowed by the standard (17.4.3.1/1).
 namespace std {
 
 template <>
-void swap(browser_sync::SpecializationToken& t1,
-          browser_sync::SpecializationToken& t2) {
+void swap(csync::SpecializationToken& t1,
+          csync::SpecializationToken& t2) {
   t1.Swap(&t2);
 }
 
 }  // namespace
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 class ImmutableTest : public ::testing::Test {};
@@ -247,4 +247,4 @@ TEST_F(ImmutableTest, Set) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 class Cryptographer;
 }
 
@@ -22,14 +22,14 @@ class PasswordSpecificsData;
 namespace sync_api {
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
-    browser_sync::Cryptographer* crypto);
+    csync::Cryptographer* crypto);
 
 void SyncAPINameToServerName(const std::string& sync_api_name,
                              std::string* out);
 
 bool IsNameServerIllegalAfterTrimming(const std::string& name);
 
-bool AreSpecificsEqual(const browser_sync::Cryptographer* cryptographer,
+bool AreSpecificsEqual(const csync::Cryptographer* cryptographer,
                        const sync_pb::EntitySpecifics& left,
                        const sync_pb::EntitySpecifics& right);
 }

@@ -19,7 +19,7 @@
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace browser_sync {
+namespace csync {
 
 class ScopedStatusLock;
 struct ServerConnectionEvent;
@@ -77,6 +77,6 @@ class ScopedStatusLock {
   AllStatus* allstatus_;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_ALL_STATUS_H_

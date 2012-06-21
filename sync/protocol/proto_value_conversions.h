@@ -50,7 +50,7 @@ class TypedUrlSpecifics;
 //
 // TODO(akalin): Improve enum support.
 
-namespace browser_sync {
+namespace csync {
 
 // Ownership of all returned DictionaryValues are transferred to the
 // caller.
@@ -148,6 +148,6 @@ base::DictionaryValue* ClientToServerResponseToValue(
     bool include_specifics);
 
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_

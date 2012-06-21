@@ -22,9 +22,9 @@
 class ProfileSyncService;
 class TestProfileSyncService;
 
-namespace browser_sync {
+namespace csync {
 class TestIdFactory;
-}  // namespace browser_sync
+}  // namespace csync
 
 namespace sync_api {
 struct UserShare;
@@ -36,7 +36,7 @@ class ProfileSyncServiceTestHelper {
 
   static bool CreateRoot(syncable::ModelType model_type,
                          sync_api::UserShare* service,
-                         browser_sync::TestIdFactory* ids);
+                         csync::TestIdFactory* ids);
 
   static sync_api::ImmutableChangeRecordList MakeSingletonChangeRecordList(
       int64 node_id, sync_api::ChangeRecord::Action action);

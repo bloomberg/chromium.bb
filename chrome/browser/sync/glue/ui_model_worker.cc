@@ -19,10 +19,10 @@ namespace browser_sync {
 namespace {
 
 // A simple callback to signal a waitable event after running a closure.
-void CallDoWorkAndSignalCallback(const WorkCallback& work,
+void CallDoWorkAndSignalCallback(const csync::WorkCallback& work,
                                  base::WaitableEvent* work_done,
                                  UIModelWorker* const scheduler,
-                                 SyncerError* error_info) {
+                                 csync::SyncerError* error_info) {
   if (work.is_null()) {
     // This can happen during tests or cases where there are more than just the
     // default UIModelWorker in existence and it gets destroyed before
@@ -76,8 +76,8 @@ void UIModelWorker::Stop() {
   state_ = STOPPED;
 }
 
-SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
-    const WorkCallback& work) {
+csync::SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
+    const csync::WorkCallback& work) {
   // In most cases, this method is called in WORKING state. It is possible this
   // gets called when we are in the RUNNING_MANUAL_SHUTDOWN_PUMP state, because
   // the UI loop has initiated shutdown but the syncer hasn't got the memo yet.
@@ -85,7 +85,7 @@ SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
   // code handling this case in Stop(). Note there _no_ way we can be in here
   // with state_ = STOPPED, so it is safe to read / compare in this case.
   CHECK_NE(ANNOTATE_UNPROTECTED_READ(state_), STOPPED);
-  SyncerError error_info;
+  csync::SyncerError error_info;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
       << "ui_loop_. Probably a nested invocation?";
@@ -114,8 +114,8 @@ SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
   return error_info;
 }
 
-ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
-  return GROUP_UI;
+csync::ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
+  return csync::GROUP_UI;
 }
 
 void UIModelWorker::OnSyncerShutdownComplete() {

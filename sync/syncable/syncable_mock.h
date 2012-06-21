@@ -20,7 +20,7 @@ using syncable::EntryKernel;
 
 class MockDirectory : public Directory {
  public:
-  explicit MockDirectory(browser_sync::UnrecoverableErrorHandler* handler);
+  explicit MockDirectory(csync::UnrecoverableErrorHandler* handler);
   virtual ~MockDirectory();
 
   MOCK_METHOD1(GetEntryByHandle, syncable::EntryKernel*(int64));
@@ -33,7 +33,7 @@ class MockDirectory : public Directory {
   MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelTypeSet));
 
  private:
-  browser_sync::FakeEncryptor encryptor_;
+  csync::FakeEncryptor encryptor_;
   syncable::NullDirectoryChangeDelegate delegate_;
 };
 

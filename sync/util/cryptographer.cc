@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "sync/util/encryptor.h"
 
-namespace browser_sync {
+namespace csync {
 
 const char kNigoriTag[] = "google_chrome_nigori";
 
@@ -450,4 +450,4 @@ void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

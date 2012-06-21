@@ -20,7 +20,7 @@
 #include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/util/cryptographer.h"
 
-namespace browser_sync {
+namespace csync {
 class Encryptor;
 class UnrecoverableErrorHandler;
 }
@@ -201,9 +201,9 @@ class Directory {
   // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
   Directory(
-      browser_sync::Encryptor* encryptor,
-      browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler,
-      browser_sync::ReportUnrecoverableErrorFunction
+      csync::Encryptor* encryptor,
+      csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
+      csync::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function);
   virtual ~Directory();
 
@@ -213,7 +213,7 @@ class Directory {
   // thread.  |transaction_observer| must be initialized.
   DirOpenResult Open(const FilePath& file_path, const std::string& name,
                      DirectoryChangeDelegate* delegate,
-                     const browser_sync::WeakHandle<TransactionObserver>&
+                     const csync::WeakHandle<TransactionObserver>&
                          transaction_observer);
 
   // Same as above, but does not create a file to persist the database.  This is
@@ -221,7 +221,7 @@ class Directory {
   // want to pay the performance penalty of using a real database.
   DirOpenResult OpenInMemoryForTest(
       const std::string& name, DirectoryChangeDelegate* delegate,
-      const browser_sync::WeakHandle<TransactionObserver>&
+      const csync::WeakHandle<TransactionObserver>&
           transaction_observer);
 
   // Stops sending events to the delegate and the transaction
@@ -269,7 +269,7 @@ class Directory {
   // Returns a pointer to our cryptographer.  Does not transfer ownership.  The
   // cryptographer is not thread safe; it should not be accessed after the
   // transaction has been released.
-  browser_sync::Cryptographer* GetCryptographer(const BaseTransaction* trans);
+  csync::Cryptographer* GetCryptographer(const BaseTransaction* trans);
 
   // Returns true if the directory had encountered an unrecoverable error.
   // Note: Any function in |Directory| that can be called without holding a
@@ -315,7 +315,7 @@ class Directory {
   DirOpenResult OpenImpl(
       DirectoryBackingStore* store, const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const browser_sync::WeakHandle<TransactionObserver>&
+      const csync::WeakHandle<TransactionObserver>&
           transaction_observer);
 
  private:
@@ -483,7 +483,7 @@ class Directory {
   void InitKernelForTest(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const browser_sync::WeakHandle<TransactionObserver>&
+      const csync::WeakHandle<TransactionObserver>&
           transaction_observer);
 
  private:
@@ -492,7 +492,7 @@ class Directory {
     // initialized.
     Kernel(const std::string& name, const KernelLoadInfo& info,
            DirectoryChangeDelegate* delegate,
-           const browser_sync::WeakHandle<TransactionObserver>&
+           const csync::WeakHandle<TransactionObserver>&
                transaction_observer);
 
     ~Kernel();
@@ -566,7 +566,7 @@ class Directory {
     DirectoryChangeDelegate* const delegate;
 
     // The transaction observer.
-    const browser_sync::WeakHandle<TransactionObserver> transaction_observer;
+    const csync::WeakHandle<TransactionObserver> transaction_observer;
   };
 
   // Helper method used to do searches on |parent_id_child_index|.
@@ -605,14 +605,14 @@ class Directory {
   EntryKernel* GetPossibleLastChildForTest(
       const ScopedKernelLock& lock, const Id& parent_id);
 
-  browser_sync::Cryptographer cryptographer_;
+  csync::Cryptographer cryptographer_;
 
   Kernel* kernel_;
 
   DirectoryBackingStore* store_;
 
-  browser_sync::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
-  const browser_sync::ReportUnrecoverableErrorFunction
+  csync::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
+  const csync::ReportUnrecoverableErrorFunction
       report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
 };

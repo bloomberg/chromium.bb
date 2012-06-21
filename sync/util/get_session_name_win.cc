@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-namespace browser_sync {
+namespace csync {
 namespace internal {
 
 std::string GetComputerName() {
@@ -18,4 +18,4 @@ std::string GetComputerName() {
 }
 
 }  // namespace internal
-}  // namespace browser_sync
+}  // namespace csync

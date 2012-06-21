@@ -216,8 +216,8 @@ struct EntryKernel {
     // Round-trip to proto time format and back so that we have
     // consistent time resolutions (ms).
     time_fields[field - TIME_FIELDS_BEGIN] =
-        browser_sync::ProtoTimeToTime(
-            browser_sync::TimeToProtoTime(value));
+        csync::ProtoTimeToTime(
+            csync::TimeToProtoTime(value));
   }
   inline void put(IdField field, const Id& value) {
     id_fields[field - ID_FIELDS_BEGIN] = value;
@@ -307,7 +307,7 @@ struct EntryKernelMutation {
 
 typedef std::map<int64, EntryKernelMutation> EntryKernelMutationMap;
 
-typedef browser_sync::Immutable<EntryKernelMutationMap>
+typedef csync::Immutable<EntryKernelMutationMap>
     ImmutableEntryKernelMutationMap;
 
 // Caller owns the return value.

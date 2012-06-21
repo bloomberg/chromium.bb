@@ -68,7 +68,7 @@ using syncable::SPECIFICS;
 using syncable::SYNCER;
 using syncable::WriteTransaction;
 
-namespace browser_sync {
+namespace csync {
 
 // Returns the number of unsynced entries.
 // static
@@ -722,4 +722,4 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
   return VERIFY_UNDECIDED;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

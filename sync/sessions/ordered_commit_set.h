@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 // TODO(ncarter): This code is more generic than just Commit and can
@@ -30,7 +30,7 @@ class OrderedCommitSet {
   typedef std::vector<size_t> Projection;
 
   // TODO(chron): Reserve space according to batch size?
-  explicit OrderedCommitSet(const browser_sync::ModelSafeRoutingInfo& routes);
+  explicit OrderedCommitSet(const csync::ModelSafeRoutingInfo& routes);
   ~OrderedCommitSet();
 
   bool HaveCommitItem(const int64 metahandle) const {
@@ -65,7 +65,7 @@ class OrderedCommitSet {
   // response one ModelSafeGroup at a time. See GetCommitIdAt for how the
   // indices contained in the returned Projection can be used.
   const Projection& GetCommitIdProjection(
-      browser_sync::ModelSafeGroup group) const;
+      csync::ModelSafeGroup group) const;
 
   size_t Size() const {
     return commit_ids_.size();
@@ -89,7 +89,7 @@ class OrderedCommitSet {
   void operator=(const OrderedCommitSet& other);
  private:
   // A set of CommitIdProjections associated with particular ModelSafeGroups.
-  typedef std::map<browser_sync::ModelSafeGroup, Projection> Projections;
+  typedef std::map<csync::ModelSafeGroup, Projection> Projections;
 
   // Helper container for return value of GetCommitItemAt.
   struct CommitItem {
@@ -115,11 +115,11 @@ class OrderedCommitSet {
   // and shouldn't take up too much extra space since commit lists are small.
   std::vector<syncable::ModelType> types_;
 
-  browser_sync::ModelSafeRoutingInfo routes_;
+  csync::ModelSafeRoutingInfo routes_;
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_SESSIONS_ORDERED_COMMIT_SET_H_
 

@@ -9,7 +9,7 @@
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 TestUserShare::TestUserShare() : dir_maker_(new TestDirectorySetterUpper()) {}
 
@@ -39,4 +39,4 @@ sync_api::UserShare* TestUserShare::user_share() {
   return user_share_.get();
 }
 
-}  // namespace browser_sync
+}  // namespace csync

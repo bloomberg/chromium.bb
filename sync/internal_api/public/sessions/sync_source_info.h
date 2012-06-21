@@ -15,7 +15,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 // A container for the source of a sync session. This includes the update
@@ -37,6 +37,6 @@ struct SyncSourceInfo {
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SOURCE_INFO_H_

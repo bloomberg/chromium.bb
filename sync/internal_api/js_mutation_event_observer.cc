@@ -13,7 +13,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 
-namespace browser_sync {
+namespace csync {
 
 JsMutationEventObserver::JsMutationEventObserver()
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
@@ -109,4 +109,4 @@ void JsMutationEventObserver::HandleJsEvent(
                       &JsEventHandler::HandleJsEvent, name, details);
 }
 
-}  // namespace browser_sync
+}  // namespace csync

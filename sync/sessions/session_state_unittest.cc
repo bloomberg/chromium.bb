@@ -17,7 +17,7 @@
 #include "sync/internal_api/public/sessions/syncer_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 namespace {
 
@@ -152,4 +152,4 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
 
 }  // namespace
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

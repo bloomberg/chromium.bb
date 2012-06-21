@@ -18,7 +18,7 @@
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
 
-namespace browser_sync {
+namespace csync {
 
 class JsBackend;
 
@@ -76,6 +76,6 @@ class SyncJsController
   DISALLOW_COPY_AND_ASSIGN(SyncJsController);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_JS_SYNC_JS_CONTROLLER_H_

@@ -25,7 +25,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace browser_sync {
+namespace csync {
 class Encryptor;
 struct Experiments;
 class ExtensionsActivityMonitor;
@@ -35,7 +35,7 @@ class JsEventHandler;
 namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 namespace csync {
 class SyncNotifier;
@@ -58,7 +58,7 @@ enum ConnectionStatus {
   CONNECTION_SERVER_ERROR
 };
 
-// Reasons due to which browser_sync::Cryptographer might require a passphrase.
+// Reasons due to which csync::Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
   REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.
   REASON_ENCRYPTION = 1,               // The cryptographer requires a
@@ -184,7 +184,7 @@ class SyncManager {
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
     virtual void OnSyncCycleCompleted(
-        const browser_sync::sessions::SyncSessionSnapshot& snapshot) = 0;
+        const csync::sessions::SyncSessionSnapshot& snapshot) = 0;
 
     // Called when the status of the connection to the sync server has
     // changed.
@@ -300,7 +300,7 @@ class SyncManager {
     // function getChildNodeIds(id);
 
     virtual void OnInitializationComplete(
-        const browser_sync::WeakHandle<browser_sync::JsBackend>&
+        const csync::WeakHandle<csync::JsBackend>&
             js_backend, bool success) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
@@ -334,7 +334,7 @@ class SyncManager {
     virtual void OnEncryptionComplete() = 0;
 
     virtual void OnActionableError(
-        const browser_sync::SyncProtocolError& sync_protocol_error) = 0;
+        const csync::SyncProtocolError& sync_protocol_error) = 0;
 
    protected:
     virtual ~Observer();
@@ -369,16 +369,16 @@ class SyncManager {
   // |sync_notifier| is owned and used to listen for notifications.
   // |report_unrecoverable_error_function| may be NULL.
   bool Init(const FilePath& database_location,
-            const browser_sync::WeakHandle<browser_sync::JsEventHandler>&
+            const csync::WeakHandle<csync::JsEventHandler>&
                 event_handler,
             const std::string& sync_server_and_path,
             int sync_server_port,
             bool use_ssl,
             const scoped_refptr<base::TaskRunner>& blocking_task_runner,
             HttpPostProviderFactory* post_factory,
-            const browser_sync::ModelSafeRoutingInfo& model_safe_routing_info,
-            const std::vector<browser_sync::ModelSafeWorker*>& workers,
-            browser_sync::ExtensionsActivityMonitor*
+            const csync::ModelSafeRoutingInfo& model_safe_routing_info,
+            const std::vector<csync::ModelSafeWorker*>& workers,
+            csync::ExtensionsActivityMonitor*
                 extensions_activity_monitor,
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
@@ -386,10 +386,10 @@ class SyncManager {
             csync::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             TestingMode testing_mode,
-            browser_sync::Encryptor* encryptor,
-            browser_sync::UnrecoverableErrorHandler*
+            csync::Encryptor* encryptor,
+            csync::UnrecoverableErrorHandler*
                 unrecoverable_error_handler,
-            browser_sync::ReportUnrecoverableErrorFunction
+            csync::ReportUnrecoverableErrorFunction
                 report_unrecoverable_error_function);
 
   // Throw an unrecoverable error from a transaction (mostly used for
@@ -407,7 +407,7 @@ class SyncManager {
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally(
-      const browser_sync::ModelSafeRoutingInfo& routing_info);
+      const csync::ModelSafeRoutingInfo& routing_info);
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -434,12 +434,12 @@ class SyncManager {
 
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.
-  void RequestConfig(const browser_sync::ModelSafeRoutingInfo& routing_info,
+  void RequestConfig(const csync::ModelSafeRoutingInfo& routing_info,
                      const syncable::ModelTypeSet& types,
                      sync_api::ConfigureReason reason);
 
   void RequestCleanupDisabledTypes(
-      const browser_sync::ModelSafeRoutingInfo& routing_info);
+      const csync::ModelSafeRoutingInfo& routing_info);
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
@@ -514,7 +514,7 @@ class SyncManager {
   // Reads the nigori node to determine if any experimental features should
   // be enabled.
   // Note: opens a transaction.  May be called on any thread.
-  bool ReceivedExperiment(browser_sync::Experiments* experiments) const;
+  bool ReceivedExperiment(csync::Experiments* experiments) const;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.

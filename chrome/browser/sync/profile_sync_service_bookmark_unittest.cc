@@ -119,7 +119,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
     // Create new fake tagged nodes at the end of the ordering.
     node.InitByCreation(type, root, predecessor);
     node.SetIsFolder(true);
-    node.entry_->Put(syncable::UNIQUE_SERVER_TAG, tag);
+    node.GetMutableEntryForTest()->Put(syncable::UNIQUE_SERVER_TAG, tag);
     node.SetTitle(UTF8ToWide(tag_str));
     node.SetExternalId(0);
     *sync_id = node.GetId();
@@ -128,7 +128,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
 
  private:
   sync_api::UserShare* user_share_;
-  browser_sync::TestIdFactory id_factory_;
+  csync::TestIdFactory id_factory_;
 };
 
 namespace {
@@ -554,7 +554,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
  protected:
   BookmarkModel* model_;
-  TestUserShare test_user_share_;
+  csync::TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
   StrictMock<DataTypeErrorHandlerMock> mock_error_handler_;
 };

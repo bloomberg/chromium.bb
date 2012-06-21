@@ -7,7 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 
-namespace browser_sync {
+namespace csync {
 
 int64 TimeToProtoTime(const base::Time& t) {
   return (t - base::Time::UnixEpoch()).InMilliseconds();
@@ -21,4 +21,4 @@ std::string GetTimeDebugString(const base::Time& t) {
   return UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(t));
 }
 
-}  // namespace browser_sync
+}  // namespace csync

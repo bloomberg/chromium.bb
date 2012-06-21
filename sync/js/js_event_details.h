@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "sync/internal_api/public/util/immutable.h"
 
-namespace browser_sync {
+namespace csync {
 
 // A thin wrapper around Immutable<DictionaryValue>.  Used for passing
 // around event details to different threads.
@@ -40,6 +40,6 @@ class JsEventDetails {
   ImmutableDictionaryValue details_;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_JS_JS_EVENT_DETAILS_H_

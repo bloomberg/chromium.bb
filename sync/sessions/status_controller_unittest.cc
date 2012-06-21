@@ -6,7 +6,7 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 class StatusControllerTest : public testing::Test {
@@ -162,4 +162,4 @@ TEST_F(StatusControllerTest, Unrestricted) {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

@@ -67,13 +67,13 @@
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
-using browser_sync::JsBackend;
-using browser_sync::JsController;
-using browser_sync::JsEventDetails;
-using browser_sync::JsEventHandler;
+using csync::JsBackend;
+using csync::JsController;
+using csync::JsEventDetails;
+using csync::JsEventHandler;
 using browser_sync::SyncBackendHost;
-using browser_sync::SyncProtocolError;
-using browser_sync::WeakHandle;
+using csync::SyncProtocolError;
+using csync::WeakHandle;
 using sync_api::SyncCredentials;
 
 typedef GoogleServiceAuthError AuthError;
@@ -105,9 +105,9 @@ static bool IsTokenServiceRelevant(const std::string& service) {
 }
 
 bool ShouldShowActionOnUI(
-    const browser_sync::SyncProtocolError& error) {
-  return (error.action != browser_sync::UNKNOWN_ACTION &&
-          error.action != browser_sync::DISABLE_SYNC_ON_CLIENT);
+    const csync::SyncProtocolError& error) {
+  return (error.action != csync::UNKNOWN_ACTION &&
+          error.action != csync::DISABLE_SYNC_ON_CLIENT);
 }
 
 ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
@@ -128,7 +128,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
-      encrypted_types_(browser_sync::Cryptographer::SensitiveTypes()),
+      encrypted_types_(csync::Cryptographer::SensitiveTypes()),
       encrypt_everything_(false),
       encryption_pending_(false),
       auto_start_enabled_(start_behavior == AUTO_START),
@@ -476,7 +476,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // Shutdown the migrator before the backend to ensure it doesn't pull a null
   // snapshot.
   migrator_.reset();
-  sync_js_controller_.AttachJsBackend(WeakHandle<JsBackend>());
+  sync_js_controller_.AttachJsBackend(WeakHandle<csync::JsBackend>());
 
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
@@ -498,7 +498,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   cached_passphrase_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
-  encrypted_types_ = browser_sync::Cryptographer::SensitiveTypes();
+  encrypted_types_ = csync::Cryptographer::SensitiveTypes();
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   last_auth_error_ = GoogleServiceAuthError::None();
 
@@ -583,7 +583,7 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
 void ProfileSyncService::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  // Unrecoverable errors that arrive via the UnrecoverableErrorHandler
+  // Unrecoverable errors that arrive via the csync::UnrecoverableErrorHandler
   // interface are assumed to originate within the syncer.
   unrecoverable_error_reason_ = ERROR_REASON_SYNCER;
   OnUnrecoverableErrorImpl(from_here, message, true);
@@ -637,7 +637,7 @@ void ProfileSyncService::DisableBrokenDatatype(
 }
 
 void ProfileSyncService::OnBackendInitialized(
-    const WeakHandle<JsBackend>& js_backend, bool success) {
+    const csync::WeakHandle<csync::JsBackend>& js_backend, bool success) {
   if (!HasSyncSetupCompleted()) {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);
   } else {
@@ -706,7 +706,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 }
 
 void ProfileSyncService::OnExperimentsChanged(
-    const browser_sync::Experiments& experiments) {
+    const csync::Experiments& experiments) {
   if (current_experiments.Matches(experiments))
     return;
 
@@ -904,12 +904,12 @@ void ProfileSyncService::OnMigrationNeededForTypes(
 void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   last_actionable_error_ = error;
   DCHECK_NE(last_actionable_error_.action,
-            browser_sync::UNKNOWN_ACTION);
+            csync::UNKNOWN_ACTION);
   switch (error.action) {
-    case browser_sync::UPGRADE_CLIENT:
-    case browser_sync::CLEAR_USER_DATA_AND_RESYNC:
-    case browser_sync::ENABLE_SYNC_ON_ACCOUNT:
-    case browser_sync::STOP_AND_RESTART_SYNC:
+    case csync::UPGRADE_CLIENT:
+    case csync::CLEAR_USER_DATA_AND_RESYNC:
+    case csync::ENABLE_SYNC_ON_ACCOUNT:
+    case csync::STOP_AND_RESTART_SYNC:
       // TODO(lipalani) : if setup in progress we want to display these
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
@@ -923,7 +923,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
                                    true,
                                    ERROR_REASON_ACTIONABLE_ERROR);
       break;
-    case browser_sync::DISABLE_SYNC_ON_CLIENT:
+    case csync::DISABLE_SYNC_ON_CLIENT:
       OnStopSyncingPermanently();
       break;
     default:
@@ -1076,9 +1076,9 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
 void ProfileSyncService::RefreshSpareBootstrapToken(
     const std::string& passphrase) {
   browser_sync::ChromeEncryptor encryptor;
-  browser_sync::Cryptographer temp_cryptographer(&encryptor);
+  csync::Cryptographer temp_cryptographer(&encryptor);
   // The first 2 params (hostname and username) doesn't have any effect here.
-  browser_sync::KeyParams key_params = {"localhost", "dummy", passphrase};
+  csync::KeyParams key_params = {"localhost", "dummy", passphrase};
 
   std::string bootstrap_token;
   if (!temp_cryptographer.AddKey(key_params)) {
@@ -1213,13 +1213,13 @@ sync_api::UserShare* ProfileSyncService::GetUserShare() const {
   return NULL;
 }
 
-browser_sync::sessions::SyncSessionSnapshot
+csync::sessions::SyncSessionSnapshot
     ProfileSyncService::GetLastSessionSnapshot() const {
   if (backend_.get() && backend_initialized_) {
     return backend_->GetLastSessionSnapshot();
   }
   NOTREACHED();
-  return browser_sync::sessions::SyncSessionSnapshot();
+  return csync::sessions::SyncSessionSnapshot();
 }
 
 bool ProfileSyncService::HasUnsyncedItems() const {
@@ -1236,7 +1236,7 @@ browser_sync::BackendMigrator*
 }
 
 void ProfileSyncService::GetModelSafeRoutingInfo(
-    browser_sync::ModelSafeRoutingInfo* out) const {
+    csync::ModelSafeRoutingInfo* out) const {
   if (backend_.get() && backend_initialized_) {
     backend_->GetModelSafeRoutingInfo(out);
   } else {
@@ -1245,7 +1245,7 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
 }
 
 void ProfileSyncService::ActivateDataType(
-    syncable::ModelType type, browser_sync::ModelSafeGroup group,
+    syncable::ModelType type, csync::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
   if (!backend_.get()) {
     NOTREACHED();
@@ -1554,7 +1554,7 @@ bool ProfileSyncService::HasObserver(Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-base::WeakPtr<JsController> ProfileSyncService::GetJsController() {
+base::WeakPtr<csync::JsController> ProfileSyncService::GetJsController() {
   return sync_js_controller_.AsWeakPtr();
 }
 

@@ -16,7 +16,7 @@
 using syncable::SYNCER;
 using syncable::WriteTransaction;
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::SyncSession;
 using sessions::StatusController;
@@ -152,4 +152,4 @@ SyncerError BuildAndPostCommits(Syncer* syncer,
   return result;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

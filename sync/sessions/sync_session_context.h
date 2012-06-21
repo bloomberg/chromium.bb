@@ -34,7 +34,7 @@ namespace syncable {
 class Directory;
 }
 
-namespace browser_sync {
+namespace csync {
 
 class ConflictResolver;
 class ExtensionsActivityMonitor;
@@ -58,7 +58,7 @@ class SyncSessionContext {
                      ThrottledDataTypeTracker* throttled_data_type_tracker,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
-                     browser_sync::TrafficRecorder* traffic_recorder);
+                     csync::TrafficRecorder* traffic_recorder);
   ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
@@ -124,7 +124,7 @@ class SyncSessionContext {
                       OnSyncEngineEvent(event));
   }
 
-  browser_sync::TrafficRecorder* traffic_recorder() {
+  csync::TrafficRecorder* traffic_recorder() {
     return traffic_recorder_;
   }
 
@@ -174,7 +174,7 @@ class SyncSessionContext {
   // client behavior on server side.
   DebugInfoGetter* const debug_info_getter_;
 
-  browser_sync::TrafficRecorder* traffic_recorder_;
+  csync::TrafficRecorder* traffic_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };
@@ -203,6 +203,6 @@ class ScopedSessionContextConflictResolver {
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_

@@ -13,7 +13,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::EntitySpecificsToValue;
+using csync::EntitySpecificsToValue;
 
 // Ordered list of SyncChange's.
 typedef std::vector<SyncChange> SyncChangeList;

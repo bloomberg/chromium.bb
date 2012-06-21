@@ -29,7 +29,7 @@
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
-namespace browser_sync {
+namespace csync {
 
 namespace {
 
@@ -593,4 +593,4 @@ DictionaryValue* ClientToServerMessageToValue(
 
 #undef SET_FIELD
 
-}  // namespace browser_sync
+}  // namespace csync

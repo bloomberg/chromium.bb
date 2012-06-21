@@ -21,7 +21,7 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::SyncSession;
 using std::string;
@@ -119,8 +119,8 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
       const string& name,
       syncable::ModelType model_type,
       sessions::OrderedCommitSet *commit_set,
-      browser_sync::ClientToServerMessage *commit,
-      browser_sync::ClientToServerResponse *response) {
+      csync::ClientToServerMessage *commit,
+      csync::ClientToServerResponse *response) {
     bool is_folder = true;
     int64 metahandle = 0;
     CreateUnsyncedItem(item_id, parent_id, name, is_folder, model_type,
@@ -191,8 +191,8 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
 
 TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   sessions::OrderedCommitSet commit_set(session()->routing_info());
-  browser_sync::ClientToServerMessage request;
-  browser_sync::ClientToServerResponse response;
+  csync::ClientToServerMessage request;
+  csync::ClientToServerResponse response;
 
   Id bookmark_folder_id = id_factory_.NewLocalId();
   Id bookmark_id1 = id_factory_.NewLocalId();
@@ -275,8 +275,8 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 // of the children.
 TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   sessions::OrderedCommitSet commit_set(session()->routing_info());
-  browser_sync::ClientToServerMessage request;
-  browser_sync::ClientToServerResponse response;
+  csync::ClientToServerMessage request;
+  csync::ClientToServerResponse response;
 
   // Create the parent folder, a new item whose ID will change on commit.
   Id folder_id = id_factory_.NewLocalId();
@@ -403,8 +403,8 @@ INSTANTIATE_TEST_CASE_P(ProcessCommitResponse,
 // depending on the test parameter.
 TEST_P(MixedResult, ExtensionActivity) {
   sessions::OrderedCommitSet commit_set(session()->routing_info());
-  browser_sync::ClientToServerMessage request;
-  browser_sync::ClientToServerResponse response;
+  csync::ClientToServerMessage request;
+  csync::ClientToServerResponse response;
 
   EXPECT_NE(routing_info().find(syncable::BOOKMARKS)->second,
             routing_info().find(syncable::AUTOFILL)->second)
@@ -452,4 +452,4 @@ TEST_P(MixedResult, ExtensionActivity) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

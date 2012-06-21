@@ -15,14 +15,14 @@
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_reply_handler.h"
 
-namespace browser_sync {
+namespace csync {
 class JsController;
-}  // namespace browser_sync
+}  // namespace csync
 
 // The implementation for the chrome://sync-internals page.
 class SyncInternalsUI : public content::WebUIController,
-                        public browser_sync::JsEventHandler,
-                        public browser_sync::JsReplyHandler {
+                        public csync::JsEventHandler,
+                        public csync::JsReplyHandler {
  public:
   explicit SyncInternalsUI(content::WebUI* web_ui);
   virtual ~SyncInternalsUI();
@@ -44,19 +44,19 @@ class SyncInternalsUI : public content::WebUIController,
                                           const std::string& name,
                                           const base::ListValue& args) OVERRIDE;
 
-  // browser_sync::JsEventHandler implementation.
+  // csync::JsEventHandler implementation.
   virtual void HandleJsEvent(
       const std::string& name,
-      const browser_sync::JsEventDetails& details) OVERRIDE;
+      const csync::JsEventDetails& details) OVERRIDE;
 
-  // browser_sync::JsReplyHandler implementation.
+  // csync::JsReplyHandler implementation.
   virtual void HandleJsReply(
       const std::string& name,
-      const browser_sync::JsArgList& args) OVERRIDE;
+      const csync::JsArgList& args) OVERRIDE;
 
  private:
   base::WeakPtrFactory<SyncInternalsUI> weak_ptr_factory_;
-  base::WeakPtr<browser_sync::JsController> js_controller_;
+  base::WeakPtr<csync::JsController> js_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncInternalsUI);
 };

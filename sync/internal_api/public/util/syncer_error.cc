@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace browser_sync {
+namespace csync {
 
 #define ENUM_CASE(x) case x: return #x; break;
 const char* GetSyncerErrorString(SyncerError value) {
@@ -32,5 +32,5 @@ const char* GetSyncerErrorString(SyncerError value) {
 }
 #undef ENUM_CASE
 
-} // namespace browser_sync
+} // namespace csync
 

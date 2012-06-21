@@ -25,9 +25,9 @@ using ::testing::Return;
 
 namespace browser_sync {
 
-using sessions::ErrorCounters;
-using sessions::SyncerStatus;
-using sessions::SyncSessionSnapshot;
+using csync::sessions::ErrorCounters;
+using csync::sessions::SyncerStatus;
+using csync::sessions::SyncSessionSnapshot;
 
 class SyncBackendMigratorTest : public testing::Test {
  public:
@@ -107,7 +107,7 @@ class SyncBackendMigratorTest : public testing::Test {
   syncable::ModelTypeSet preferred_types_;
   NiceMock<ProfileSyncServiceMock> service_;
   NiceMock<DataTypeManagerMock> manager_;
-  TestUserShare test_user_share_;
+  csync::TestUserShare test_user_share_;
   scoped_ptr<BackendMigrator> migrator_;
 };
 

@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 enum TestEnum {
@@ -192,4 +192,4 @@ TEST_F(EnumSetTest, Difference) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace csync

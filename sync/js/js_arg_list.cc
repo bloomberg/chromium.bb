@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 
-namespace browser_sync {
+namespace csync {
 
 JsArgList::JsArgList() {}
 
@@ -24,4 +24,4 @@ std::string JsArgList::ToString() const {
   return str;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

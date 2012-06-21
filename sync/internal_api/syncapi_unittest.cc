@@ -67,24 +67,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ExpectDictStringValue;
-using browser_sync::Cryptographer;
-using browser_sync::FakeEncryptor;
-using browser_sync::FakeExtensionsActivityMonitor;
-using browser_sync::HasArgsAsList;
-using browser_sync::HasDetailsAsDictionary;
-using browser_sync::KeyParams;
-using browser_sync::kNigoriTag;
-using browser_sync::JsArgList;
-using browser_sync::JsBackend;
-using browser_sync::JsEventHandler;
-using browser_sync::JsReplyHandler;
-using browser_sync::MockJsEventHandler;
-using browser_sync::MockJsReplyHandler;
-using browser_sync::ModelSafeRoutingInfo;
-using browser_sync::ModelSafeWorker;
-using browser_sync::sessions::SyncSessionSnapshot;
-using browser_sync::TestUnrecoverableErrorHandler;
-using browser_sync::WeakHandle;
+using csync::Cryptographer;
+using csync::FakeEncryptor;
+using csync::FakeExtensionsActivityMonitor;
+using csync::HasArgsAsList;
+using csync::HasDetailsAsDictionary;
+using csync::KeyParams;
+using csync::kNigoriTag;
+using csync::JsArgList;
+using csync::JsBackend;
+using csync::JsEventHandler;
+using csync::JsReplyHandler;
+using csync::MockJsEventHandler;
+using csync::MockJsReplyHandler;
+using csync::ModelSafeRoutingInfo;
+using csync::ModelSafeWorker;
+using csync::sessions::SyncSessionSnapshot;
+using csync::TestUnrecoverableErrorHandler;
+using csync::WeakHandle;
 using syncable::IS_DEL;
 using syncable::IS_UNSYNCED;
 using syncable::kEncryptedString;
@@ -121,7 +121,7 @@ void ExpectTimeValue(const base::Time& expected_value,
                      const DictionaryValue& value, const std::string& key) {
   std::string time_str;
   EXPECT_TRUE(value.GetString(key, &time_str));
-  EXPECT_EQ(browser_sync::GetTimeDebugString(expected_value), time_str);
+  EXPECT_EQ(csync::GetTimeDebugString(expected_value), time_str);
 }
 
 // Makes a non-folder child of the root node.  Returns the id of the
@@ -245,7 +245,7 @@ class SyncApiTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  browser_sync::TestUserShare test_user_share_;
+  csync::TestUserShare test_user_share_;
 };
 
 TEST_F(SyncApiTest, SanityCheckTest) {
@@ -705,7 +705,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnActionableError,
-               void(const browser_sync::SyncProtocolError&));  // NOLINT
+               void(const csync::SyncProtocolError&));  // NOLINT
 };
 
 class SyncNotifierMock : public csync::SyncNotifier {
@@ -815,12 +815,12 @@ class SyncManagerTest : public testing::Test,
   }
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
-    (*out)[syncable::NIGORI] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::BOOKMARKS] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::THEMES] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::SESSIONS] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::PASSWORDS] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::PREFERENCES] = browser_sync::GROUP_PASSIVE;
+    (*out)[syncable::NIGORI] = csync::GROUP_PASSIVE;
+    (*out)[syncable::BOOKMARKS] = csync::GROUP_PASSIVE;
+    (*out)[syncable::THEMES] = csync::GROUP_PASSIVE;
+    (*out)[syncable::SESSIONS] = csync::GROUP_PASSIVE;
+    (*out)[syncable::PASSWORDS] = csync::GROUP_PASSIVE;
+    (*out)[syncable::PREFERENCES] = csync::GROUP_PASSIVE;
   }
 
   virtual void OnChangesApplied(
@@ -1844,7 +1844,7 @@ TEST_F(SyncManagerTest, NudgeDelayTest) {
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::AUTOFILL),
       base::TimeDelta::FromSeconds(
-          browser_sync::kDefaultShortPollIntervalSeconds));
+          csync::kDefaultShortPollIntervalSeconds));
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::PREFERENCES),
       base::TimeDelta::FromMilliseconds(
@@ -2463,7 +2463,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    browser_sync::Cryptographer* crypto = trans.GetCryptographer();
+    csync::Cryptographer* crypto = trans.GetCryptographer();
     sync_pb::EntitySpecifics bm_specifics;
     bm_specifics.mutable_bookmark()->set_title("title");
     bm_specifics.mutable_bookmark()->set_url("url");
@@ -2511,4 +2511,4 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

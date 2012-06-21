@@ -230,7 +230,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
           "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
       LOG(ERROR) << "Deleted entry.";
     } else {
-      Cryptographer* crypto = trans.GetCryptographer();
+      csync::Cryptographer* crypto = trans.GetCryptographer();
       syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
       const sync_pb::EntitySpecifics& specifics =
           sync_node.GetEntry()->Get(syncable::SPECIFICS);

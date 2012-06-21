@@ -21,7 +21,7 @@
 
 using std::vector;
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::SyncSession;
 using sessions::StatusController;
@@ -182,4 +182,4 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   return SUCCESS_PROCESSED;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

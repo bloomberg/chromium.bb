@@ -4,7 +4,7 @@
 
 #include "sync/sessions/test_util.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 namespace test_util {
 
@@ -63,4 +63,4 @@ void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
 
 }  // namespace test_util
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

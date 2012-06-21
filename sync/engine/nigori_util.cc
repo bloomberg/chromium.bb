@@ -20,7 +20,7 @@ namespace syncable {
 
 bool ProcessUnsyncedChangesForEncryption(
     WriteTransaction* const trans,
-    browser_sync::Cryptographer* cryptographer) {
+    csync::Cryptographer* cryptographer) {
   DCHECK(cryptographer->is_ready());
   // Get list of all datatypes with unsynced changes. It's possible that our
   // local changes need to be encrypted if encryption for that datatype was
@@ -29,7 +29,7 @@ bool ProcessUnsyncedChangesForEncryption(
   // changes in this code path are likely due to consistency issues (we have
   // to be updated to a key we already have, e.g. an old key).
   std::vector<int64> handles;
-  browser_sync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
+  csync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
     MutableEntry entry(trans, GET_BY_HANDLE, handles[i]);
     const sync_pb::EntitySpecifics& specifics = entry.Get(SPECIFICS);
@@ -51,7 +51,7 @@ bool VerifyUnsyncedChangesAreEncrypted(
     BaseTransaction* const trans,
     ModelTypeSet encrypted_types) {
   std::vector<int64> handles;
-  browser_sync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
+  csync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
     Entry entry(trans, GET_BY_HANDLE, handles[i]);
     if (!entry.good()) {
@@ -92,7 +92,7 @@ bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
 // Mainly for testing.
 bool VerifyDataTypeEncryptionForTest(
     BaseTransaction* const trans,
-    browser_sync::Cryptographer* cryptographer,
+    csync::Cryptographer* cryptographer,
     ModelType type,
     bool is_encrypted) {
   if (type == PASSWORDS || type == NIGORI) {
@@ -156,7 +156,7 @@ bool VerifyDataTypeEncryptionForTest(
 }
 
 bool UpdateEntryWithEncryption(
-    browser_sync::Cryptographer* cryptographer,
+    csync::Cryptographer* cryptographer,
     const sync_pb::EntitySpecifics& new_specifics,
     syncable::MutableEntry* entry) {
   syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);

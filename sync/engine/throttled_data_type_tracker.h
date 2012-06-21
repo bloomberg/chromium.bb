@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace browser_sync {
+namespace csync {
 
 class AllStatus;
 
@@ -50,6 +50,6 @@ class ThrottledDataTypeTracker {
   DISALLOW_COPY_AND_ASSIGN(ThrottledDataTypeTracker);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_THROTTLED_DATA_TYPE_TRACKER_H_

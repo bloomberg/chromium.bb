@@ -17,16 +17,17 @@
 class ProfileSyncService;
 namespace browser_sync {
 
-class BackendUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
+class BackendUnrecoverableErrorHandler
+    : public csync::UnrecoverableErrorHandler {
  public:
   BackendUnrecoverableErrorHandler(
-      const WeakHandle<ProfileSyncService>& service);
+      const csync::WeakHandle<ProfileSyncService>& service);
   virtual ~BackendUnrecoverableErrorHandler();
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
                                     const std::string& message) OVERRIDE;
 
  private:
-  WeakHandle<ProfileSyncService> service_;
+  csync::WeakHandle<ProfileSyncService> service_;
 };
 }  // namespace browser_sync
 #endif  // CHROME_BROWSER_SYNC_BACKEND_UNRECOVERABLE_ERROR_HANDLER_H_

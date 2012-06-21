@@ -30,9 +30,9 @@
 
 using ::testing::NiceMock;
 
-namespace browser_sync {
+namespace csync {
 
-class MockDebugInfoGetter : public browser_sync::sessions::DebugInfoGetter {
+class MockDebugInfoGetter : public csync::sessions::DebugInfoGetter {
  public:
   MockDebugInfoGetter();
   virtual ~MockDebugInfoGetter();
@@ -233,6 +233,6 @@ class MockDirectorySyncerCommandTest : public SyncerCommandTestBase {
   MockDirectory mock_directory_;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_TEST_ENGINE_SYNCER_COMMAND_TEST_H_

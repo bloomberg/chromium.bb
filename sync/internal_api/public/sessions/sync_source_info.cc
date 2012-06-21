@@ -7,7 +7,7 @@
 #include "base/values.h"
 #include "sync/protocol/proto_enum_conversions.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 SyncSourceInfo::SyncSourceInfo()
@@ -33,4 +33,4 @@ DictionaryValue* SyncSourceInfo::ToValue() const {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

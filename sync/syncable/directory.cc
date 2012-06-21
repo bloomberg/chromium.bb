@@ -21,9 +21,9 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 
-using browser_sync::Encryptor;
-using browser_sync::ReportUnrecoverableErrorFunction;
-using browser_sync::UnrecoverableErrorHandler;
+using csync::Encryptor;
+using csync::ReportUnrecoverableErrorFunction;
+using csync::UnrecoverableErrorHandler;
 using std::string;
 
 namespace syncable {
@@ -113,7 +113,7 @@ const FilePath::CharType Directory::kSyncDatabaseFilename[] =
 void Directory::InitKernelForTest(
     const std::string& name,
     DirectoryChangeDelegate* delegate,
-    const browser_sync::WeakHandle<TransactionObserver>&
+    const csync::WeakHandle<TransactionObserver>&
         transaction_observer) {
   DCHECK(!kernel_);
   kernel_ = new Kernel(name, KernelLoadInfo(), delegate, transaction_observer);
@@ -145,7 +145,7 @@ Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 Directory::Kernel::Kernel(
     const std::string& name,
     const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
-    const browser_sync::WeakHandle<TransactionObserver>&
+    const csync::WeakHandle<TransactionObserver>&
         transaction_observer)
     : refcount(1),
       next_write_transaction_id(0),
@@ -208,7 +208,7 @@ Directory::~Directory() {
 DirOpenResult Directory::Open(
     const FilePath& file_path, const string& name,
     DirectoryChangeDelegate* delegate,
-    const browser_sync::WeakHandle<TransactionObserver>&
+    const csync::WeakHandle<TransactionObserver>&
         transaction_observer) {
   TRACE_EVENT0("sync", "SyncDatabaseOpen");
 
@@ -226,7 +226,7 @@ DirOpenResult Directory::Open(
 
 DirOpenResult Directory::OpenInMemoryForTest(
     const string& name, DirectoryChangeDelegate* delegate,
-    const browser_sync::WeakHandle<TransactionObserver>&
+    const csync::WeakHandle<TransactionObserver>&
         transaction_observer) {
 
   DirectoryBackingStore* store = new InMemoryDirectoryBackingStore(name);
@@ -261,7 +261,7 @@ DirOpenResult Directory::OpenImpl(
     DirectoryBackingStore* store,
     const string& name,
     DirectoryChangeDelegate* delegate,
-    const browser_sync::WeakHandle<TransactionObserver>&
+    const csync::WeakHandle<TransactionObserver>&
         transaction_observer) {
   DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
   store_ = store;
@@ -797,7 +797,7 @@ string Directory::cache_guid() const {
   return kernel_->cache_guid;
 }
 
-browser_sync::Cryptographer* Directory::GetCryptographer(
+csync::Cryptographer* Directory::GetCryptographer(
     const BaseTransaction* trans) {
   DCHECK_EQ(this, trans->directory());
   return &cryptographer_;

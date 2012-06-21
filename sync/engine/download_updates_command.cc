@@ -15,7 +15,7 @@
 
 using sync_pb::DebugInfo;
 
-namespace browser_sync {
+namespace csync {
 using sessions::StatusController;
 using sessions::SyncSession;
 using std::string;
@@ -127,4 +127,4 @@ void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
 }
 
 
-}  // namespace browser_sync
+}  // namespace csync

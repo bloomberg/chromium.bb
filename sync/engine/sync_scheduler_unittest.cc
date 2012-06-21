@@ -30,7 +30,7 @@ using testing::Mock;
 using testing::Return;
 using testing::WithArg;
 
-namespace browser_sync {
+namespace csync {
 using sessions::SyncSession;
 using sessions::SyncSessionContext;
 using sessions::SyncSessionSnapshot;
@@ -1140,4 +1140,4 @@ TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {
   EXPECT_TRUE(expected == context()->previous_session_routing_info());
 }
 
-}  // namespace browser_sync
+}  // namespace csync

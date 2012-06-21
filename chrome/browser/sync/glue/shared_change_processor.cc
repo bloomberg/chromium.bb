@@ -137,7 +137,7 @@ bool SharedChangeProcessor::CryptoReadyIfNecessary() {
 }
 
 void SharedChangeProcessor::ActivateDataType(
-    browser_sync::ModelSafeGroup model_safe_group) {
+    csync::ModelSafeGroup model_safe_group) {
   DCHECK(backend_loop_.get());
   DCHECK(backend_loop_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);

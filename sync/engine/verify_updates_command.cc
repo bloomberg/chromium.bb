@@ -18,7 +18,7 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/write_transaction.h"
 
-namespace browser_sync {
+namespace csync {
 
 using syncable::GET_BY_ID;
 using syncable::ModelTypeSet;
@@ -100,7 +100,7 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();
 
-  ModelTypeSet requested_types = browser_sync::GetRoutingInfoTypes(
+  ModelTypeSet requested_types = csync::GetRoutingInfoTypes(
       session->routing_info());
 
   DVLOG(1) << update_count << " entries to verify";
@@ -186,4 +186,4 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
   return result;  // This might be VERIFY_SUCCESS as well
 }
 
-}  // namespace browser_sync
+}  // namespace csync

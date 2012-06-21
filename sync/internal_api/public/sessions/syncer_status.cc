@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 SyncerStatus::SyncerStatus()
@@ -41,4 +41,4 @@ DictionaryValue* SyncerStatus::ToValue() const {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

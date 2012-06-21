@@ -17,11 +17,11 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/syncable/directory.h"
 
-using browser_sync::ModelSafeRoutingInfo;
-using browser_sync::sessions::ErrorCounters;
-using browser_sync::sessions::SyncSessionSnapshot;
-using browser_sync::sessions::SyncSourceInfo;
-using browser_sync::sessions::SyncerStatus;
+using csync::ModelSafeRoutingInfo;
+using csync::sessions::ErrorCounters;
+using csync::sessions::SyncSessionSnapshot;
+using csync::sessions::SyncSourceInfo;
+using csync::sessions::SyncerStatus;
 using sync_api::UserShare;
 using syncable::Directory;
 
@@ -108,7 +108,7 @@ void SyncBackendHostForProfileSyncTest::SetHistoryServiceExpectations(
 
 }  // namespace browser_sync
 
-browser_sync::TestIdFactory* TestProfileSyncService::id_factory() {
+csync::TestIdFactory* TestProfileSyncService::id_factory() {
   return &id_factory_;
 }
 
@@ -154,7 +154,7 @@ void TestProfileSyncService::SetInitialSyncEndedForAllTypes() {
 }
 
 void TestProfileSyncService::OnBackendInitialized(
-    const browser_sync::WeakHandle<browser_sync::JsBackend>& backend,
+    const csync::WeakHandle<csync::JsBackend>& backend,
     bool success) {
   bool send_passphrase_required = false;
   if (success) {

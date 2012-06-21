@@ -18,9 +18,9 @@
 #include "sync/js/js_event_handler.h"
 #include "sync/sessions/session_state.h"
 
-namespace browser_sync {
+namespace csync {
 
-using browser_sync::SyncProtocolError;
+using csync::SyncProtocolError;
 
 JsSyncManagerObserver::JsSyncManagerObserver() {}
 
@@ -153,4 +153,4 @@ void JsSyncManagerObserver::HandleJsEvent(
                       &JsEventHandler::HandleJsEvent, name, details);
 }
 
-}  // namespace browser_sync
+}  // namespace csync

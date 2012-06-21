@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace browser_sync {
+namespace csync {
 class Cryptographer;
 class TestBookmarkModelAssociator;
 }
@@ -173,8 +173,9 @@ class WriteNode : public BaseNode {
 
   virtual const BaseTransaction* GetTransaction() const OVERRIDE;
 
+  syncable::MutableEntry* GetMutableEntryForTest();
+
  private:
-  friend class browser_sync::TestBookmarkModelAssociator;
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, EncryptBookmarksWithLegacyData);
 
   void* operator new(size_t size);  // Node is meant for stack use only.

@@ -32,7 +32,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
                bool(bool*));
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
   MOCK_METHOD1(ActivateDataType,
-               void(browser_sync::ModelSafeGroup));
+               void(csync::ModelSafeGroup));
 
  protected:
   virtual ~SharedChangeProcessorMock();

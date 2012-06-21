@@ -198,7 +198,7 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers a sync error on the server.
   //   error: The error the server is expected to return.
   //   frequency: Frequency with which the error is returned.
-  void TriggerSyncError(const browser_sync::SyncProtocolError& error,
+  void TriggerSyncError(const csync::SyncProtocolError& error,
                         SyncErrorFrequency frequency);
 
   // Triggers the creation the Synced Bookmarks folder on the server.

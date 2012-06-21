@@ -58,7 +58,7 @@ using content::BrowserThread;
 using sync_api::ChangeRecord;
 using testing::_;
 using testing::Return;
-using browser_sync::TestIdFactory;
+using csync::TestIdFactory;
 
 namespace browser_sync {
 

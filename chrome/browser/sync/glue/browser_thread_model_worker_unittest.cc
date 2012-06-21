@@ -42,7 +42,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   // DoWork hasn't executed within action_timeout_ms() ms.
   void ScheduleWork() {
    // We wait until the callback is done. So it is safe to use unretained.
-   WorkCallback c = base::Bind(&SyncBrowserThreadModelWorkerTest::DoWork,
+   csync::WorkCallback c = base::Bind(&SyncBrowserThreadModelWorkerTest::DoWork,
                                base::Unretained(this));
     timer()->Start(
         FROM_HERE,
@@ -53,13 +53,13 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   }
 
   // This is the work that will be scheduled to be done on the DB thread.
-  SyncerError DoWork() {
+  csync::SyncerError DoWork() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     timer_.Stop();  // Stop the failure timer so the test succeeds.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, MessageLoop::QuitClosure());
     did_do_work_ = true;
-    return SYNCER_OK;
+    return csync::SYNCER_OK;
   }
 
   // This will be called by the OneShotTimer and make the test fail unless

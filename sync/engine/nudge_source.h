@@ -6,7 +6,7 @@
 #define SYNC_ENGINE_NUDGE_SOURCE_H_
 #pragma once
 
-namespace browser_sync {
+namespace csync {
 
 enum NudgeSource {
   NUDGE_SOURCE_UNKNOWN = 0,
@@ -22,6 +22,6 @@ enum NudgeSource {
 
 const char* GetNudgeSourceString(NudgeSource nudge_source);
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_NUDGE_SOURCE_H_

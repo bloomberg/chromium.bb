@@ -50,7 +50,7 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
-  virtual browser_sync::ModelSafeGroup model_safe_group() const = 0;
+  virtual csync::ModelSafeGroup model_safe_group() const = 0;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
 

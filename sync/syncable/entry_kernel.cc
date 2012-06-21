@@ -61,7 +61,7 @@ StringValue* Int64ToValue(int64 i) {
 }
 
 StringValue* TimeToValue(const base::Time& t) {
-  return Value::CreateStringValue(browser_sync::GetTimeDebugString(t));
+  return Value::CreateStringValue(csync::GetTimeDebugString(t));
 }
 
 StringValue* IdToValue(const Id& id) {
@@ -119,7 +119,7 @@ DictionaryValue* EntryKernel::ToValue() const {
 
   // Proto fields.
   SetFieldValues(*this, kernel_info,
-                 &GetProtoFieldString, &browser_sync::EntitySpecificsToValue,
+                 &GetProtoFieldString, &csync::EntitySpecificsToValue,
                  PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
 
   // Bit temps.

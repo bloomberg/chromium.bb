@@ -16,7 +16,7 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/util/cryptographer.h"
 
-using browser_sync::TestIdFactory;
+using csync::TestIdFactory;
 using content::BrowserThread;
 using sync_api::UserShare;
 using syncable::BASE_VERSION;

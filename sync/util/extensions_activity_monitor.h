@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 
-namespace browser_sync {
+namespace csync {
 
 // An interface to monitor usage of extensions APIs to send to sync
 // servers, with the ability to purge data once sync servers have
@@ -48,6 +48,6 @@ class ExtensionsActivityMonitor {
   virtual ~ExtensionsActivityMonitor();
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_EXTENSIONS_ACTIVITY_MONITOR_H_

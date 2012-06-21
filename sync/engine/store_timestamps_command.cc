@@ -9,7 +9,7 @@
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
 
-namespace browser_sync {
+namespace csync {
 
 StoreTimestampsCommand::StoreTimestampsCommand() {}
 StoreTimestampsCommand::~StoreTimestampsCommand() {}
@@ -56,4 +56,4 @@ SyncerError StoreTimestampsCommand::ExecuteImpl(
   return SYNCER_OK;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

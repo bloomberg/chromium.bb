@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 
 class Encryptor {
  public:
@@ -23,6 +23,6 @@ class Encryptor {
   virtual ~Encryptor() {}
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_ENCRYPTOR_H_

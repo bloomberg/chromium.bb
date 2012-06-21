@@ -15,12 +15,12 @@ class ClientToServerResponse;
 class ClientToServerMessage;
 }  // namespace sync_pb
 
-namespace browser_sync {
+namespace csync {
 
 void LogClientToServerMessage(const sync_pb::ClientToServerMessage& msg);
 void LogClientToServerResponse(
     const sync_pb::ClientToServerResponse& response);
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_TRAFFIC_LOGGER_H_

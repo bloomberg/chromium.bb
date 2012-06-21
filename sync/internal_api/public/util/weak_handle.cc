@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 
-namespace browser_sync {
+namespace csync {
 
 namespace internal {
 

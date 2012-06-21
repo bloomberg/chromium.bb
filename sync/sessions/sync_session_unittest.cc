@@ -23,7 +23,7 @@
 
 using syncable::WriteTransaction;
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 namespace {
 
@@ -537,4 +537,4 @@ TEST_F(SyncSessionTest, CoalescePayloads) {
 
 }  // namespace
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

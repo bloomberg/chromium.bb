@@ -8,7 +8,7 @@
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/util/extensions_activity_monitor.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 const unsigned int kMaxMessagesToRecord = 10;
@@ -23,7 +23,7 @@ SyncSessionContext::SyncSessionContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
-    browser_sync::TrafficRecorder* traffic_recorder)
+    csync::TrafficRecorder* traffic_recorder)
     : resolver_(NULL),
       connection_manager_(connection_manager),
       directory_(directory),
@@ -44,4 +44,4 @@ SyncSessionContext::~SyncSessionContext() {
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 
 class JsArgList;
 
@@ -25,6 +25,6 @@ class JsReplyHandler {
   virtual ~JsReplyHandler() {}
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_JS_JS_REPLY_HANDLER_H_

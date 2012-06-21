@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 // Counters for various errors that can occur repeatedly during a sync session.
@@ -27,6 +27,6 @@ struct ErrorCounters {
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_ERROR_COUNTERS_H_

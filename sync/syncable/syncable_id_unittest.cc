@@ -16,7 +16,7 @@ using std::vector;
 
 namespace syncable {
 
-using browser_sync::TestIdFactory;
+using csync::TestIdFactory;
 
 class SyncableIdTest : public testing::Test { };
 

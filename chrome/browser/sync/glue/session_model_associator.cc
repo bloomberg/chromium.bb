@@ -504,7 +504,8 @@ void SessionModelAssociator::AssociateTabContents(
         // (if so, we want to refresh the timestamp).
         if (!(current_index != prev_tab->current_navigation_index &&
               current_index == i)) {
-          sync_nav->set_timestamp(TimeToProtoTime(prev_nav_iter->timestamp()));
+          sync_nav->set_timestamp(
+              csync::TimeToProtoTime(prev_nav_iter->timestamp()));
           DVLOG(2) << "Nav to " << sync_nav->virtual_url() << " already known, "
                    << "reusing old timestamp " << sync_nav->timestamp();
         }
@@ -713,7 +714,8 @@ void SessionModelAssociator::PopulateSessionSpecificsNavigation(
         sync_pb::SyncEnums_PageTransition_TYPED);
   }
   tab_navigation->set_unique_id(navigation.GetUniqueID());
-  tab_navigation->set_timestamp(TimeToProtoTime(base::Time::Now()));
+  tab_navigation->set_timestamp(
+      csync::TimeToProtoTime(base::Time::Now()));
 }
 
 void SessionModelAssociator::Associate(const SyncedTabDelegate* tab,
@@ -888,7 +890,7 @@ void SessionModelAssociator::InitializeCurrentSessionName() {
                    AsWeakPtr(),
                    std::string("TestSessionName")));
   } else {
-    browser_sync::GetSessionName(
+    csync::GetSessionName(
         BrowserThread::GetBlockingPool(),
         base::Bind(&SessionModelAssociator::OnSessionNameInitialized,
                    AsWeakPtr()));
@@ -1268,7 +1270,7 @@ void SessionModelAssociator::AppendSessionTabNavigation(
     }
   }
   if (specifics.has_timestamp()) {
-    timestamp = ProtoTimeToTime(specifics.timestamp());
+    timestamp = csync::ProtoTimeToTime(specifics.timestamp());
   }
   if (specifics.has_unique_id()) {
     unique_id = specifics.unique_id();

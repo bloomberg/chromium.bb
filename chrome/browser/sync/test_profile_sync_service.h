@@ -82,7 +82,7 @@ class TestProfileSyncService : public ProfileSyncService {
   void SetInitialSyncEndedForAllTypes();
 
   virtual void OnBackendInitialized(
-      const browser_sync::WeakHandle<browser_sync::JsBackend>& backend,
+      const csync::WeakHandle<csync::JsBackend>& backend,
       bool success) OVERRIDE;
 
   virtual void Observe(int type,
@@ -97,7 +97,7 @@ class TestProfileSyncService : public ProfileSyncService {
   void fail_initial_download();
   void set_use_real_database();
 
-  browser_sync::TestIdFactory* id_factory();
+  csync::TestIdFactory* id_factory();
 
   // Override of ProfileSyncService::GetBackendForTest() with a more
   // specific return type (since C++ supports covariant return types)
@@ -109,7 +109,7 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual void CreateBackend() OVERRIDE;
 
  private:
-  browser_sync::TestIdFactory id_factory_;
+  csync::TestIdFactory id_factory_;
 
   bool synchronous_backend_initialization_;
 

@@ -147,7 +147,7 @@ class EncryptedData;
 //
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
-                           public browser_sync::UnrecoverableErrorHandler,
+                           public csync::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
                            public ProfileKeyedService {
  public:
@@ -254,7 +254,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(
-      const browser_sync::WeakHandle<browser_sync::JsBackend>& js_backend,
+      const csync::WeakHandle<csync::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
@@ -272,9 +272,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnMigrationNeededForTypes(
       syncable::ModelTypeSet types) OVERRIDE;
   virtual void OnExperimentsChanged(
-      const browser_sync::Experiments& experiments) OVERRIDE;
+      const csync::Experiments& experiments) OVERRIDE;
   virtual void OnActionableError(
-      const browser_sync::SyncProtocolError& error) OVERRIDE;
+      const csync::SyncProtocolError& error) OVERRIDE;
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
@@ -355,7 +355,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns a weak pointer to the service's JsController.
   // Overrideable for testing purposes.
-  virtual base::WeakPtr<browser_sync::JsController> GetJsController();
+  virtual base::WeakPtr<csync::JsController> GetJsController();
 
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
@@ -369,7 +369,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // management. If so, the user is not allowed to configure sync.
   bool IsManaged() const;
 
-  // UnrecoverableErrorHandler implementation.
+  // csync::UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
@@ -394,7 +394,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // ProfileSyncServiceHarness.  Figure out a different way to expose
   // this info to that class, and remove these functions.
 
-  virtual browser_sync::sessions::SyncSessionSnapshot
+  virtual csync::sessions::SyncSessionSnapshot
       GetLastSessionSnapshot() const;
 
   // Returns whether or not the underlying sync engine has made any
@@ -414,12 +414,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // classes.  Figure out a different way to expose this info and
   // remove this function.
   void GetModelSafeRoutingInfo(
-      browser_sync::ModelSafeRoutingInfo* out) const;
+      csync::ModelSafeRoutingInfo* out) const;
 
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void ActivateDataType(
-      syncable::ModelType type, browser_sync::ModelSafeGroup group,
+      syncable::ModelType type, csync::ModelSafeGroup group,
       browser_sync::ChangeProcessor* change_processor);
   virtual void DeactivateDataType(syncable::ModelType type);
 
@@ -728,7 +728,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ObserverList<Observer> observers_;
 
-  browser_sync::SyncJsController sync_js_controller_;
+  csync::SyncJsController sync_js_controller_;
 
   content::NotificationRegistrar registrar_;
 
@@ -746,7 +746,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   std::string cached_passphrase_;
 
   // The current set of encrypted types.  Always a superset of
-  // Cryptographer::SensitiveTypes().
+  // csync::Cryptographer::SensitiveTypes().
   syncable::ModelTypeSet encrypted_types_;
 
   // Whether we want to encrypt everything.
@@ -767,7 +767,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
-  browser_sync::SyncProtocolError last_actionable_error_;
+  csync::SyncProtocolError last_actionable_error_;
 
   // This is used to show sync errors in the wrench menu.
   scoped_ptr<SyncGlobalError> sync_global_error_;
@@ -785,13 +785,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool setup_in_progress_;
 
   // The set of currently enabled sync experiments.
-  browser_sync::Experiments current_experiments;
+  csync::Experiments current_experiments;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 
 bool ShouldShowActionOnUI(
-    const browser_sync::SyncProtocolError& error);
+    const csync::SyncProtocolError& error);
 
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_

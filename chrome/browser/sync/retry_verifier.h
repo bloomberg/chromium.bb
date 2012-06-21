@@ -8,11 +8,13 @@
 
 #include "base/time.h"
 
-namespace browser_sync {
-
+namespace csync {
 namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
+}  // namespace csync
+
+namespace browser_sync {
 
 // The minimum and maximum wait times for a retry. The actual retry would take
 // place somewhere in this range. The algorithm that calculates the retry wait
@@ -32,9 +34,9 @@ class RetryVerifier {
 
   // Initialize with the current sync session snapshot. Using the snapshot
   // we will figure out when the first retry sync happened.
-  void Initialize(const browser_sync::sessions::SyncSessionSnapshot& snap);
+  void Initialize(const csync::sessions::SyncSessionSnapshot& snap);
   void VerifyRetryInterval(
-      const browser_sync::sessions::SyncSessionSnapshot& snap);
+      const csync::sessions::SyncSessionSnapshot& snap);
   bool done() const { return done_; }
   bool Succeeded() const { return done() && success_; }
 

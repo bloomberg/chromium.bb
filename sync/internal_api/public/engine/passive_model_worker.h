@@ -13,7 +13,7 @@
 
 class MessageLoop;
 
-namespace browser_sync {
+namespace csync {
 
 // Implementation of ModelSafeWorker for passive types.  All work is
 // done on the same thread DoWorkAndWaitUntilDone (i.e., the sync
@@ -35,6 +35,6 @@ class PassiveModelWorker : public ModelSafeWorker {
   DISALLOW_COPY_AND_ASSIGN(PassiveModelWorker);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_

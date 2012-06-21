@@ -18,8 +18,8 @@
 using base::TimeDelta;
 using base::TimeTicks;
 
-namespace browser_sync {
-using browser_sync::Syncer;
+namespace csync {
+using csync::Syncer;
 using sessions::SyncSession;
 using sessions::SyncSessionContext;
 using sessions::SyncSourceInfo;
@@ -265,4 +265,4 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueCanaryJobConfig) {
   EXPECT_EQ(decision, SyncScheduler::CONTINUE);
 }
 
-}  // namespace browser_sync
+}  // namespace csync

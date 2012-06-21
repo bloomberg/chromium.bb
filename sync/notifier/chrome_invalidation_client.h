@@ -73,7 +73,7 @@ class ChromeInvalidationClient
       const std::string& client_id, const std::string& client_info,
       const std::string& state,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const browser_sync::WeakHandle<InvalidationStateTracker>&
+      const csync::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       Listener* listener);
 
@@ -140,7 +140,7 @@ class ChromeInvalidationClient
   notifier::PushClient* const push_client_;
   ChromeSystemResources chrome_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
-  browser_sync::WeakHandle<InvalidationStateTracker>
+  csync::WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
   Listener* listener_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;

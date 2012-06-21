@@ -15,7 +15,7 @@ namespace syncable {
 class Id;
 }
 
-namespace browser_sync {
+namespace csync {
 
 struct SyncEngineEvent {
   enum EventCause {
@@ -67,6 +67,6 @@ class SyncEngineEventListener {
   virtual ~SyncEngineEventListener() {}
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_SYNC_ENGINE_EVENT_H_

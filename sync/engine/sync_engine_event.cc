@@ -4,11 +4,11 @@
 
 #include "sync/engine/sync_engine_event.h"
 
-namespace browser_sync {
+namespace csync {
 
 SyncEngineEvent::SyncEngineEvent(EventCause cause) : what_happened(cause) {
 }
 
 SyncEngineEvent::~SyncEngineEvent() {}
 
-}  // namespace browser_sync
+}  // namespace csync

@@ -12,7 +12,7 @@
 
 #include "base/location.h"
 
-namespace browser_sync {
+namespace csync {
 
 class UnrecoverableErrorInfo {
  public:
@@ -36,6 +36,6 @@ class UnrecoverableErrorInfo {
   bool is_set_;
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_UTIL_UNRECOVERABLE_ERROR_INFO_H_

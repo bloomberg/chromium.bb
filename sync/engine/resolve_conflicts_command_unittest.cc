@@ -12,7 +12,7 @@
 #include "sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 namespace {
 
@@ -48,4 +48,4 @@ TEST_F(ResolveConflictsCommandTest, GetGroupsToChange) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace csync

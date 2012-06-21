@@ -32,7 +32,7 @@ using syncable::IsRealDataType;
 using syncable::MutableEntry;
 using syncable::WriteTransaction;
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::ConflictProgress;
 using sessions::StatusController;
@@ -417,4 +417,4 @@ bool ConflictResolver::ResolveConflicts(syncable::WriteTransaction* trans,
   return forward_progress;
 }
 
-}  // namespace browser_sync
+}  // namespace csync

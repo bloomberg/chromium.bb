@@ -25,7 +25,7 @@
 #include "sync/util/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::SyncSession;
 using std::string;
@@ -531,7 +531,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
       cryptographer = directory()->GetCryptographer(&trans);
   }
 
-  browser_sync::KeyParams params = {"localhost", "dummy", "foobar"};
+  csync::KeyParams params = {"localhost", "dummy", "foobar"};
   cryptographer->AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
@@ -1005,4 +1005,4 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

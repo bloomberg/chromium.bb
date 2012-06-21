@@ -120,9 +120,9 @@ void FrontendDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-browser_sync::ModelSafeGroup FrontendDataTypeController::model_safe_group()
+csync::ModelSafeGroup FrontendDataTypeController::model_safe_group()
     const {
-  return browser_sync::GROUP_UI;
+  return csync::GROUP_UI;
 }
 
 std::string FrontendDataTypeController::name() const {

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
-using browser_sync::ModelSafeRoutingInfo;
+using csync::ModelSafeRoutingInfo;
 namespace syncable {
 
 ModelTypePayloadMap ModelTypePayloadMapFromEnumSet(
@@ -36,10 +36,10 @@ ModelTypeSet ModelTypePayloadMapToEnumSet(
 }
 
 ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
-    const browser_sync::ModelSafeRoutingInfo& routes,
+    const csync::ModelSafeRoutingInfo& routes,
     const std::string& payload) {
   ModelTypePayloadMap types_with_payloads;
-  for (browser_sync::ModelSafeRoutingInfo::const_iterator i = routes.begin();
+  for (csync::ModelSafeRoutingInfo::const_iterator i = routes.begin();
        i != routes.end(); ++i) {
     types_with_payloads[i->first] = payload;
   }

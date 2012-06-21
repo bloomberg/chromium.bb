@@ -32,9 +32,9 @@ syncable::ModelType PasswordDataTypeController::type() const {
   return syncable::PASSWORDS;
 }
 
-browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group()
+csync::ModelSafeGroup PasswordDataTypeController::model_safe_group()
     const {
-  return browser_sync::GROUP_PASSWORD;
+  return csync::GROUP_PASSWORD;
 }
 
 PasswordDataTypeController::~PasswordDataTypeController() {}

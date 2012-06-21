@@ -10,7 +10,7 @@
 #include "sync/engine/syncer_command.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 class SyncSession;
 }
@@ -31,7 +31,7 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   virtual ~ModelChangingSyncerCommand() { }
 
   // SyncerCommand implementation. Sets work_session to session.
-  virtual browser_sync::SyncerError ExecuteImpl(
+  virtual csync::SyncerError ExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 
   // Wrapper so implementations don't worry about storing work_session.
@@ -72,6 +72,6 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(ModelChangingSyncerCommand);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_MODEL_CHANGING_SYNCER_COMMAND_H_

@@ -362,7 +362,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
           LOG(ERROR) << "Update: deleted entry.";
           return error;
         } else {
-          Cryptographer* crypto = trans.GetCryptographer();
+          csync::Cryptographer* crypto = trans.GetCryptographer();
           syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
           const sync_pb::EntitySpecifics& specifics =
               sync_node.GetEntry()->Get(syncable::SPECIFICS);

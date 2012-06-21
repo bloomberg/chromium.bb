@@ -30,7 +30,7 @@ class AutofillProfileDataTypeController
 
   // NewNonFrontendDataTypeController implementation.
   virtual syncable::ModelType type() const OVERRIDE;
-  virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual csync::ModelSafeGroup model_safe_group() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

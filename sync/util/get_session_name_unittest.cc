@@ -9,7 +9,7 @@
 #include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 
 namespace {
 
@@ -45,4 +45,4 @@ TEST_F(GetSessionNameTest, GetSessionName) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace csync

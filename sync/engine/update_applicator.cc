@@ -16,7 +16,7 @@
 
 using std::vector;
 
-namespace browser_sync {
+namespace csync {
 
 UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
                                    Cryptographer* cryptographer,
@@ -189,4 +189,4 @@ bool UpdateApplicator::ResultTracker::no_conflicts() const {
   return conflicting_ids_.empty();
 }
 
-}  // namespace browser_sync
+}  // namespace csync

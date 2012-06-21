@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
-namespace browser_sync {
+namespace csync {
 
 #define ASSERT_ENUM_BOUNDS(enum_parent, enum_type, enum_min, enum_max)  \
   COMPILE_ASSERT(enum_parent::enum_type##_MIN == enum_parent::enum_min, \

@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace csync {
 namespace {
 
 TEST(SyncNigoriTest, Permute) {
@@ -167,4 +167,4 @@ TEST(SyncNigoriTest, MAYBE_ExportImport) {
 }
 
 }  // anonymous namespace
-}  // namespace browser_sync
+}  // namespace csync

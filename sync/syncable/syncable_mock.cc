@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "sync/test/null_transaction_observer.h"
 
-MockDirectory::MockDirectory(browser_sync::UnrecoverableErrorHandler* handler)
+MockDirectory::MockDirectory(csync::UnrecoverableErrorHandler* handler)
     : Directory(&encryptor_, handler, NULL) {
   InitKernelForTest("myk", &delegate_, syncable::NullTransactionObserver());
 }

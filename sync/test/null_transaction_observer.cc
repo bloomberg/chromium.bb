@@ -8,8 +8,8 @@
 
 namespace syncable {
 
-browser_sync::WeakHandle<TransactionObserver> NullTransactionObserver() {
-  return browser_sync::MakeWeakHandle(base::WeakPtr<TransactionObserver>());
+csync::WeakHandle<TransactionObserver> NullTransactionObserver() {
+  return csync::MakeWeakHandle(base::WeakPtr<TransactionObserver>());
 }
 
 }  // namespace syncable

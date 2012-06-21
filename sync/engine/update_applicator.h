@@ -24,7 +24,7 @@ class WriteTransaction;
 class Entry;
 }
 
-namespace browser_sync {
+namespace csync {
 
 namespace sessions {
 class ConflictProgress;
@@ -109,6 +109,6 @@ class UpdateApplicator {
   DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_UPDATE_APPLICATOR_H_

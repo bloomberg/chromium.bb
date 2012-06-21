@@ -8,7 +8,7 @@
 
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace browser_sync {
+namespace csync {
 
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {

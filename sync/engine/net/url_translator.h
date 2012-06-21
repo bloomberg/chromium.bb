@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace browser_sync {
+namespace csync {
 
 // Convenience wrappers around CgiEscapePath(), used by gaia_auth.
 std::string CgiEscapeString(const char* src);
@@ -23,6 +23,6 @@ std::string MakeSyncServerPath(const std::string& path,
 
 std::string MakeSyncQueryString(const std::string& client_id);
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_NET_URL_TRANSLATOR_H_

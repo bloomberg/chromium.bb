@@ -13,7 +13,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 // Data pertaining to the status of an active Syncer object.
@@ -45,6 +45,6 @@ struct SyncerStatus {
 };
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNCER_STATUS_H_

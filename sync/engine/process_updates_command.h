@@ -18,7 +18,7 @@ namespace sync_pb {
 class SyncEntity;
 }
 
-namespace browser_sync {
+namespace csync {
 
 class Cryptographer;
 
@@ -50,6 +50,6 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(ProcessUpdatesCommand);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_ENGINE_PROCESS_UPDATES_COMMAND_H_

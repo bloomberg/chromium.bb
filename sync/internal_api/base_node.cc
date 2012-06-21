@@ -255,7 +255,7 @@ DictionaryValue* BaseNode::GetDetailsAsValue() const {
   DictionaryValue* node_info = GetSummaryAsValue();
   node_info->SetString(
       "modificationTime",
-      browser_sync::GetTimeDebugString(GetModificationTime()));
+      csync::GetTimeDebugString(GetModificationTime()));
   node_info->SetString("parentId", base::Int64ToString(GetParentId()));
   // Specifics are already in the Entry value, so no need to duplicate
   // it here.

@@ -17,18 +17,18 @@ namespace {
 // the next retry.
 DelayInfo CalculateDelay(int64 current_delay) {
   int64 backoff_s = std::max(static_cast<int64>(1), current_delay *
-                             browser_sync::kBackoffRandomizationFactor);
+                             csync::kBackoffRandomizationFactor);
 
   DelayInfo delay_info;
   delay_info.min_delay = backoff_s + (-1 * current_delay/
-                             browser_sync::kBackoffRandomizationFactor);
+                             csync::kBackoffRandomizationFactor);
   delay_info.max_delay = backoff_s + current_delay/2;
 
   delay_info.min_delay = std::max(static_cast<int64>(1),
-      std::min(delay_info.min_delay, browser_sync::kMaxBackoffSeconds));
+      std::min(delay_info.min_delay, csync::kMaxBackoffSeconds));
 
   delay_info.max_delay = std::max(static_cast<int64>(1),
-      std::min(delay_info.max_delay, browser_sync::kMaxBackoffSeconds));
+      std::min(delay_info.max_delay, csync::kMaxBackoffSeconds));
 
   return delay_info;
 }
@@ -79,7 +79,7 @@ RetryVerifier::~RetryVerifier() {
 
 // Initializes the state for verification.
 void RetryVerifier::Initialize(
-    const browser_sync::sessions::SyncSessionSnapshot& snap) {
+    const csync::sessions::SyncSessionSnapshot& snap) {
   retry_count_ = 0;
   last_sync_time_ = snap.sync_start_time();
   FillDelayTable(delay_table_, kMaxRetry);
@@ -88,7 +88,7 @@ void RetryVerifier::Initialize(
 }
 
 void RetryVerifier::VerifyRetryInterval(
-    const browser_sync::sessions::SyncSessionSnapshot& snap) {
+    const csync::sessions::SyncSessionSnapshot& snap) {
   DCHECK(retry_count_ < kMaxRetry);
   if (retry_count_ == 0) {
     if (snap.sync_start_time() != last_sync_time_) {

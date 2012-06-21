@@ -14,13 +14,13 @@ using content::BrowserThread;
 namespace browser_sync {
 
 BrowserThreadModelWorker::BrowserThreadModelWorker(
-    BrowserThread::ID thread, ModelSafeGroup group)
+    BrowserThread::ID thread, csync::ModelSafeGroup group)
     : thread_(thread), group_(group) {
 }
 
-SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
-    const WorkCallback& work) {
-  SyncerError error = UNSET;
+csync::SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
+    const csync::WorkCallback& work) {
+  csync::SyncerError error = csync::UNSET;
   if (BrowserThread::CurrentlyOn(thread_)) {
     DLOG(WARNING) << "Already on thread " << thread_;
     return work.Run();
@@ -38,42 +38,42 @@ SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
   return error;
 }
 
-ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
+csync::ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
   return group_;
 }
 
 BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
 
 void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
-    const WorkCallback& work,
+    const csync::WorkCallback& work,
     WaitableEvent* done,
-    SyncerError* error) {
+    csync::SyncerError* error) {
   DCHECK(BrowserThread::CurrentlyOn(thread_));
   *error = work.Run();
   done->Signal();
 }
 
 DatabaseModelWorker::DatabaseModelWorker()
-    : BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB) {
+    : BrowserThreadModelWorker(BrowserThread::DB, csync::GROUP_DB) {
 }
 
 void DatabaseModelWorker::CallDoWorkAndSignalTask(
-    const WorkCallback& work,
+    const csync::WorkCallback& work,
     WaitableEvent* done,
-    SyncerError* error) {
+    csync::SyncerError* error) {
   BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error);
 }
 
 DatabaseModelWorker::~DatabaseModelWorker() {}
 
 FileModelWorker::FileModelWorker()
-    : BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE) {
+    : BrowserThreadModelWorker(BrowserThread::FILE, csync::GROUP_FILE) {
 }
 
 void FileModelWorker::CallDoWorkAndSignalTask(
-    const WorkCallback& work,
+    const csync::WorkCallback& work,
     WaitableEvent* done,
-    SyncerError* error) {
+    csync::SyncerError* error) {
   BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error);
 }
 

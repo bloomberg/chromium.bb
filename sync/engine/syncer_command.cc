@@ -7,7 +7,7 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/sessions/sync_session.h"
 
-namespace browser_sync {
+namespace csync {
 using sessions::SyncSession;
 
 SyncerCommand::SyncerCommand() {}
@@ -27,4 +27,4 @@ void SyncerCommand::SendNotifications(SyncSession* session) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

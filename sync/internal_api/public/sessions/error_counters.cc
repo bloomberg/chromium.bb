@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/sessions/error_counters.h"
 
-namespace browser_sync {
+namespace csync {
 namespace sessions {
 
 ErrorCounters::ErrorCounters()
@@ -13,4 +13,4 @@ ErrorCounters::ErrorCounters()
 }
 
 }  // namespace sessions
-}  // namespace browser_sync
+}  // namespace csync

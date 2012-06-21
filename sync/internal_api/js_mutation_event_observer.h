@@ -20,7 +20,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace browser_sync {
+namespace csync {
 
 class JsEventDetails;
 class JsEventHandler;
@@ -65,6 +65,6 @@ class JsMutationEventObserver
   DISALLOW_COPY_AND_ASSIGN(JsMutationEventObserver);
 };
 
-}  // namespace browser_sync
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_JS_MUTATION_EVENT_OBSERVER_H_

@@ -9,7 +9,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/cryptographer.h"
 
-using browser_sync::Cryptographer;
+using csync::Cryptographer;
 
 namespace sync_api {
 
@@ -54,7 +54,7 @@ bool IsNameServerIllegalAfterTrimming(const std::string& name) {
 }
 
 // Compare the values of two EntitySpecifics, accounting for encryption.
-bool AreSpecificsEqual(const browser_sync::Cryptographer* cryptographer,
+bool AreSpecificsEqual(const csync::Cryptographer* cryptographer,
                        const sync_pb::EntitySpecifics& left,
                        const sync_pb::EntitySpecifics& right) {
   // Note that we can't compare encrypted strings directly as they are seeded

@@ -45,7 +45,7 @@ using syncable::SERVER_VERSION;
 using syncable::SYNCER;
 using syncable::SYNCING;
 
-namespace browser_sync {
+namespace csync {
 
 using sessions::OrderedCommitSet;
 using sessions::StatusController;
@@ -477,4 +477,4 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
   }
 }
 
-}  // namespace browser_sync
+}  // namespace csync

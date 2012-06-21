@@ -98,7 +98,7 @@ class SyncData {
     static void Swap(sync_pb::SyncEntity* t1, sync_pb::SyncEntity* t2);
   };
 
-  typedef browser_sync::Immutable<
+  typedef csync::Immutable<
     sync_pb::SyncEntity, ImmutableSyncEntityTraits>
       ImmutableSyncEntity;
 
