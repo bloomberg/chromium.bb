@@ -1569,9 +1569,10 @@ TEST(TestAsPerfTest, MetaTag_createproxy) {
         "AutomationProvider::InitializeChannel");
 
     external_tab_navigate_monitor[i].set_interesting_event(
-        "ExternalTabContainer::Navigate");
+        "ExternalTabContainerWin::Navigate");
 
-    renderer_main_monitor[i].set_start_event("ExternalTabContainer::Navigate");
+    renderer_main_monitor[i].set_start_event(
+        "ExternalTabContainerWin::Navigate");
     renderer_main_monitor[i].set_end_event("RendererMain");
 
     pre_read_chrome_monitor[i].set_interesting_event("PreReadImage");

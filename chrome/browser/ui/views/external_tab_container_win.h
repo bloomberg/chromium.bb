@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTERNAL_TAB_EXTERNAL_TAB_CONTAINER_WIN_H_
-#define CHROME_BROWSER_EXTERNAL_TAB_EXTERNAL_TAB_CONTAINER_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_EXTERNAL_TAB_CONTAINER_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_EXTERNAL_TAB_CONTAINER_WIN_H_
 #pragma once
 
 #include <map>
@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
+#include "chrome/browser/external_tab/external_tab_container.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
@@ -51,76 +52,59 @@ class WebView;
 // An external tab is a Chrome tab that is meant to displayed in an
 // external process. This class provides the FocusManger needed by the
 // WebContents as well as an implementation of content::WebContentsDelegate.
-class ExternalTabContainer : public content::WebContentsDelegate,
-                             public content::WebContentsObserver,
-                             public content::NotificationObserver,
-                             public views::NativeWidgetWin,
-                             public base::RefCounted<ExternalTabContainer>,
-                             public ui::AcceleratorTarget,
-                             public InfoBarContainer::Delegate,
-                             public BlockedContentTabHelperDelegate {
+class ExternalTabContainerWin : public ExternalTabContainer,
+                                public content::WebContentsDelegate,
+                                public content::WebContentsObserver,
+                                public content::NotificationObserver,
+                                public views::NativeWidgetWin,
+                                public ui::AcceleratorTarget,
+                                public InfoBarContainer::Delegate,
+                                public BlockedContentTabHelperDelegate {
  public:
-  typedef std::map<uintptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
+  typedef std::map<uintptr_t,
+                   scoped_refptr<ExternalTabContainerWin> > PendingTabs;
 
-  ExternalTabContainer(AutomationProvider* automation,
-                       AutomationResourceMessageFilter* filter);
+  ExternalTabContainerWin(AutomationProvider* automation,
+                          AutomationResourceMessageFilter* filter);
 
-  content::WebContents* web_contents() const;
-  TabContents* tab_contents() { return tab_contents_.get(); }
+  static scoped_refptr<ExternalTabContainer> RemovePendingExternalTab(
+      uintptr_t cookie);
 
-  // Temporary hack so we can send notifications back
-  void SetTabHandle(int handle);
-
-  int tab_handle() const {
-    return tab_handle_;
-  }
-
-  bool Init(Profile* profile,
-            HWND parent,
-            const gfx::Rect& bounds,
-            DWORD style,
-            bool load_requests_via_automation,
-            bool handle_top_level_requests,
-            TabContents* existing_tab_contents,
-            const GURL& initial_url,
-            const GURL& referrer,
-            bool infobars_enabled,
-            bool supports_full_tab_mode);
-
-  // Unhook the keystroke listener and notify about the closing WebContents.
-  // This function gets called from three places, which is fine.
-  // 1. OnFinalMessage
-  // 2. In the destructor.
-  // 3. In AutomationProvider::CreateExternalTab
-  void Uninitialize();
-
-  // Used to reinitialize the automation channel and related information
-  // for this container. Typically used when an ExternalTabContainer
-  // instance is created by Chrome and attached to an automation client.
-  bool Reinitialize(AutomationProvider* automation_provider,
-                    AutomationResourceMessageFilter* filter,
-                    gfx::NativeWindow parent_window);
-
-  // This is invoked when the external host reflects back to us a keyboard
-  // message it did not process
-  void ProcessUnhandledAccelerator(const MSG& msg);
-
-  // See WebContents::FocusThroughTabTraversal.  Called from AutomationProvider.
-  void FocusThroughTabTraversal(bool reverse, bool restore_focus_to_view);
+  // Overridden from ExternalTabContainer:
+  virtual bool Init(Profile* profile,
+                    HWND parent,
+                    const gfx::Rect& bounds,
+                    DWORD style,
+                    bool load_requests_via_automation,
+                    bool handle_top_level_requests,
+                    TabContents* existing_tab_contents,
+                    const GURL& initial_url,
+                    const GURL& referrer,
+                    bool infobars_enabled,
+                    bool supports_full_tab_mode) OVERRIDE;
+  virtual void Uninitialize() OVERRIDE;
+  virtual bool Reinitialize(AutomationProvider* automation_provider,
+                            AutomationResourceMessageFilter* filter,
+                            gfx::NativeWindow parent_window) OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual TabContents* GetTabContents() OVERRIDE;
+  virtual gfx::NativeView GetExternalTabNativeView() const OVERRIDE;
+  virtual void SetTabHandle(int handle) OVERRIDE;
+  virtual int GetTabHandle() const OVERRIDE;
+  virtual void RunUnloadHandlers(IPC::Message* reply_message) OVERRIDE;
+  virtual void ProcessUnhandledAccelerator(const MSG& msg) OVERRIDE;
+  virtual void FocusThroughTabTraversal(bool reverse,
+                                        bool restore_focus_to_view) OVERRIDE;
 
   // A helper method that tests whether the given window is an
-  // ExternalTabContainer window
+  // ExternalTabContainerWin window.
   static bool IsExternalTabContainer(HWND window);
 
-  // A helper function that returns a pointer to the ExternalTabContainer
+  // A helper function that returns a pointer to the ExternalTabContainerWin
   // instance associated with a native view.  Returns NULL if the window
-  // is not an ExternalTabContainer.
+  // is not an ExternalTabContainerWin.
   static ExternalTabContainer* GetExternalContainerFromNativeWindow(
       gfx::NativeView native_window);
-
-  // A helper method that retrieves the ExternalTabContainer object that
-  // hosts the given tab window.
-  static ExternalTabContainer* GetContainerForTab(HWND tab_window);
 
   // Overridden from content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
@@ -215,39 +199,28 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // Returns the ExternalTabContainer instance associated with the cookie
-  // passed in. It also erases the corresponding reference from the map.
-  // Returns NULL if we fail to find the cookie in the map.
-  static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
+  // Overridden from ui::AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
-  // ui::AcceleratorTarget
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  bool CanHandleAccelerators() const OVERRIDE;
-
-  bool pending() const {
-    return pending_;
-  }
-
-  void set_pending(bool pending) {
-    pending_ = pending;
-  }
+  void set_pending(bool pending) { pending_ = pending; }
+  bool pending() const { return pending_; }
 
   void set_is_popup_window(bool is_popup_window) {
     is_popup_window_ = is_popup_window;
   }
 
-  // InfoBarContainer::Delegate overrides
+  // Overridden from InfoBarContainer::Delegate:
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;
   virtual void InfoBarContainerStateChanged(bool is_animating) OVERRIDE;
   virtual bool DrawInfoBarArrows(int* x) const OVERRIDE;
-
-  void RunUnloadHandlers(IPC::Message* reply_message);
 
   // Overridden from BlockedContentTabHelperDelegate:
   virtual TabContents* GetConstrainingTabContents(TabContents* source) OVERRIDE;
 
  protected:
-  ~ExternalTabContainer();
+  virtual ~ExternalTabContainerWin();
+
   // Overridden from views::NativeWidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
   virtual void OnDestroy();
@@ -257,8 +230,6 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                           content::NavigationType nav_type,
                           int relative_offset);
   void Navigate(const GURL& url, const GURL& referrer);
-
-  friend class base::RefCounted<ExternalTabContainer>;
 
   // Helper resource automation registration method, allowing registration of
   // pending RenderViewHosts.
@@ -276,10 +247,11 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // Sends over pending Open URL requests to the external host.
   void ServicePendingOpenURLRequests();
 
-  // Scheduled as a task in ExternalTabContainer::Reinitialize
+  // Scheduled as a task in ExternalTabContainerWin::Reinitialize.
   void OnReinitialize();
 
-  // Creates and initializes the view hierarchy for this ExternalTabContainer.
+  // Creates and initializes the view hierarchy for this
+  // ExternalTabContainerWin.
   void SetupExternalTabView();
 
   scoped_ptr<TabContents> tab_contents_;
@@ -312,9 +284,9 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // Contains ExternalTabContainers that have not been connected to as yet.
   static base::LazyInstance<PendingTabs> pending_tabs_;
 
-  // Allows us to run tasks on the ExternalTabContainer instance which are
+  // Allows us to run tasks on the ExternalTabContainerWin instance which are
   // bound by its lifetime.
-  base::WeakPtrFactory<ExternalTabContainer> weak_factory_;
+  base::WeakPtrFactory<ExternalTabContainerWin> weak_factory_;
 
   // The URL request context to be used for this tab. Can be NULL.
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;
@@ -327,7 +299,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // Top level navigations received for a tab while it is waiting for an ack
   // from the external host go here. Scenario is a window.open executes on a
   // page in ChromeFrame. A new WebContents is created and the current
-  // ExternalTabContainer is notified via AddNewContents. At this point we
+  // ExternalTabContainerWin is notified via AddNewContents. At this point we
   // send off an attach tab request to the host browser. Before the host
   // browser sends over the ack, we receive a top level URL navigation for the
   // new tab, which needs to be routed over the correct automation channel.
@@ -337,7 +309,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // from the external host.
   std::vector<content::OpenURLParams> pending_open_url_requests_;
 
-  // Set to true if the ExternalTabContainer instance is waiting for an ack
+  // Set to true if the ExternalTabContainerWin instance is waiting for an ack
   // from the host.
   bool pending_;
 
@@ -357,18 +329,19 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // if this tab is a popup
   bool is_popup_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
+  DISALLOW_COPY_AND_ASSIGN(ExternalTabContainerWin);
 };
 
 // This class is instantiated for handling requests to open popups for external
 // tabs hosted in browsers which need to be notified about all top level
 // navigations. An instance of this class is created for handling window.open
 // or link navigations with target blank, etc.
-class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
+class TemporaryPopupExternalTabContainerWin : public ExternalTabContainerWin {
  public:
-  TemporaryPopupExternalTabContainer(AutomationProvider* automation,
+  TemporaryPopupExternalTabContainerWin(
+      AutomationProvider* automation,
       AutomationResourceMessageFilter* filter);
-  virtual ~TemporaryPopupExternalTabContainer();
+  virtual ~TemporaryPopupExternalTabContainerWin();
 
   virtual bool OnGoToEntryOffset(int offset) {
     NOTREACHED();
@@ -424,4 +397,4 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
   }
 };
 
-#endif  // CHROME_BROWSER_EXTERNAL_TAB_EXTERNAL_TAB_CONTAINER_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_EXTERNAL_TAB_CONTAINER_WIN_H_

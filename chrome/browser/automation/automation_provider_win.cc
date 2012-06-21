@@ -12,7 +12,7 @@
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
-#include "chrome/browser/external_tab/external_tab_container_win.h"
+#include "chrome/browser/external_tab/external_tab_container.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -177,7 +177,7 @@ void AutomationProvider::CreateExternalTab(
   *tab_window = NULL;
   *session_id = -1;
   scoped_refptr<ExternalTabContainer> external_tab_container =
-      new ExternalTabContainer(this, automation_resource_message_filter_);
+      ExternalTabContainer::Create(this, automation_resource_message_filter_);
 
   Profile* profile = settings.is_incognito ?
       profile_->GetOffTheRecordProfile() : profile_;
@@ -191,11 +191,11 @@ void AutomationProvider::CreateExternalTab(
       settings.route_all_top_level_navigations);
 
   if (AddExternalTab(external_tab_container)) {
-    WebContents* web_contents = external_tab_container->web_contents();
-    *tab_handle = external_tab_container->tab_handle();
-    *tab_container_window = external_tab_container->GetNativeView();
+    WebContents* web_contents = external_tab_container->GetWebContents();
+    *tab_handle = external_tab_container->GetTabHandle();
+    *tab_container_window = external_tab_container->GetExternalTabNativeView();
     *tab_window = web_contents->GetNativeView();
-    *session_id = external_tab_container->tab_contents()->
+    *session_id = external_tab_container->GetTabContents()->
         restore_tab_helper()->session_id().id();
   } else {
     external_tab_container->Uninitialize();
@@ -207,7 +207,7 @@ void AutomationProvider::CreateExternalTab(
 bool AutomationProvider::AddExternalTab(ExternalTabContainer* external_tab) {
   DCHECK(external_tab != NULL);
 
-  WebContents* web_contents = external_tab->web_contents();
+  WebContents* web_contents = external_tab->GetWebContents();
   if (web_contents) {
     int tab_handle = tab_tracker_->Add(&web_contents->GetController());
     external_tab->SetTabHandle(tab_handle);
@@ -330,11 +330,11 @@ void AutomationProvider::ConnectExternalTab(
     external_tab_container->Reinitialize(this,
                                          automation_resource_message_filter_,
                                          parent_window);
-    WebContents* tab_contents = external_tab_container->web_contents();
-    *tab_handle = external_tab_container->tab_handle();
-    *tab_container_window = external_tab_container->GetNativeView();
+    WebContents* tab_contents = external_tab_container->GetWebContents();
+    *tab_handle = external_tab_container->GetTabHandle();
+    *tab_container_window = external_tab_container->GetExternalTabNativeView();
     *tab_window = tab_contents->GetNativeView();
-    *session_id = external_tab_container->tab_contents()->
+    *session_id = external_tab_container->GetTabContents()->
         restore_tab_helper()->session_id().id();
   } else {
     external_tab_container->Uninitialize();

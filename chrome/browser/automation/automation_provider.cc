@@ -77,10 +77,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "chrome/browser/external_tab/external_tab_container_win.h"
-#endif  // defined(OS_WIN)
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
