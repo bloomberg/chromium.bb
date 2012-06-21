@@ -221,6 +221,23 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
   return []
 
 
+def _CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
+  """Checks to make sure no source files use UNIT_TEST"""
+  problems = []
+  for f in input_api.AffectedFiles():
+    if (not f.LocalPath().endswith(('.cc', '.mm'))):
+      continue
+
+    for line_num, line in f.ChangedContents():
+      if 'UNIT_TEST' in line:
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('UNIT_TEST is only for headers.\n' +
+      '\n'.join(problems))]
+
+
 def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
   problems = []
@@ -302,6 +319,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(
     _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
+  results.extend(_CheckNoUNIT_TESTInSourceFiles(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
