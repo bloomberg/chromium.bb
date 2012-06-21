@@ -53,10 +53,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -139,14 +135,7 @@ TabContents::TabContents(WebContents* contents)
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
 
-#if defined(OS_WIN)
-  // Metro mode Chrome on Windows does not support plugins. Avoid registering
-  // the PluginObserver so we don't popup plugin-related infobars.
-  if (!base::win::IsMetroProcess())
-    plugin_observer_.reset(new PluginObserver(this));
-#else
   plugin_observer_.reset(new PluginObserver(this));
-#endif
 
 #if !defined(OS_ANDROID)
   if (OmniboxSearchHint::IsEnabled(profile()))

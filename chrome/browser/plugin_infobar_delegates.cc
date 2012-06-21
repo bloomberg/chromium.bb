@@ -412,4 +412,65 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
       owner(), installer(), base::Closure(), new_install_, message);
   owner()->ReplaceInfoBar(this, delegate);
 }
+
+// PluginMetroModeInfoBarDelegate ---------------------------------------------
+#if defined(OS_WIN)
+InfoBarDelegate* PluginMetroModeInfoBarDelegate::Create(
+    InfoBarTabHelper* infobar_helper, const string16& plugin_name) {
+  string16 message = l10n_util::GetStringFUTF16(
+      IDS_METRO_MISSING_PLUGIN_PROMPT, plugin_name);
+  return new PluginMetroModeInfoBarDelegate(
+      infobar_helper, message);
+}
+
+PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
+    InfoBarTabHelper* infobar_helper, const string16& message)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      message_(message) {
+}
+
+PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
+}
+
+gfx::Image* PluginMetroModeInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_PLUGIN_INSTALL);
+}
+
+string16 PluginMetroModeInfoBarDelegate::GetMessageText() const {
+  return message_;
+}
+
+int PluginMetroModeInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_METRO_SWITCH_TO_DESKTOP_BUTTON);
+}
+
+bool PluginMetroModeInfoBarDelegate::Accept() {
+  // TODO(cpu) switch to desktop chrome here.
+  return false;
+}
+
+string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_METRO_SWITCH_WHY_LINK);
+}
+
+bool PluginMetroModeInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  // TODO(cpu): replace with the final url.
+  GURL url = google_util::AppendGoogleLocaleParam(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
+  OpenURLParams params(
+      url, Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  owner()->web_contents()->OpenURL(params);
+  return false;
+}
+#endif  // defined(OS_WIN)
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)

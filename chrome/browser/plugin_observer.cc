@@ -37,6 +37,10 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;
@@ -270,10 +274,21 @@ void PluginObserver::FindMissingPlugin(int placeholder_id,
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id, installer);
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
-  InfoBarDelegate* delegate = PluginInstallerInfoBarDelegate::Create(
+  InfoBarDelegate* delegate;
+#if !defined(OS_WIN)
+  delegate = PluginInstallerInfoBarDelegate::Create(
       infobar_helper, installer,
       base::Bind(&PluginObserver::InstallMissingPlugin,
                  weak_ptr_factory_.GetWeakPtr(), installer));
+#else
+  delegate = base::win::IsMetroProcess() ?
+      PluginMetroModeInfoBarDelegate::Create(
+          infobar_helper, installer->name()) :
+      PluginInstallerInfoBarDelegate::Create(
+          infobar_helper, installer,
+          base::Bind(&PluginObserver::InstallMissingPlugin,
+              weak_ptr_factory_.GetWeakPtr(), installer));
+#endif
   infobar_helper->AddInfoBar(delegate);
 }
 

@@ -16556,8 +16556,9 @@ Battery full
     </message>
 
     <!-- Windows 8 Metro mode. -->
-    <message name="IDS_METRO_FLOW_TAB_TITLE" desc="The dialog window title.">
-        Welcome to Chrome
+    <message name="IDS_METRO_FLOW_TAB_TITLE"
+	         desc="The dialog window title.">
+      Welcome to Chrome
     </message>
     <message name="IDS_METRO_FLOW_TITLE_SHORT"
              desc="The title at the top of the window guiding user through making Chrome default in Metro.">
@@ -16569,13 +16570,25 @@ Battery full
     </message>
     <message name="IDS_METRO_FLOW_SET_DEFAULT"
              desc="The label of the button invoking Windows8 default app settings window.">
-        Next
+      Next
     </message>
     <message name="IDS_METRO_FLOW_SET_DEFAULT_CANCEL"
              desc="The label of the button closing the flow and returning to Chrome.">
-        No thanks
+      No thanks
     </message>
-
+    <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
+	         desc="Info Bar message to let user do something about the missing plugin">
+      <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
+    </message>
+    <message name="IDS_METRO_SWITCH_TO_DESKTOP_BUTTON"
+	         desc="Infobar button to switch from metro to desktop mode">
+      View this page in desktop mode
+    </message>
+    <message name="IDS_METRO_SWITCH_WHY_LINK"
+	         desc="Infobar text for link to help center about metro mode issues">
+      Why am I seeing this?
+    </message>
+	
     </messages>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->

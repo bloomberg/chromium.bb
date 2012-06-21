@@ -172,4 +172,31 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 };
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
+#if defined(OS_WIN)
+class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  // Shows an infobar asking the user to switch to desktop chrome if they
+  // want to use the plugin.
+  static InfoBarDelegate* Create(InfoBarTabHelper* infobar_helper,
+                                 const string16& plugin_name);
+ private:
+  PluginMetroModeInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                 const string16& message);
+  virtual ~PluginMetroModeInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+
+  string16 message_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginMetroModeInfoBarDelegate);
+};
+#endif  // defined(OS_WIN)
+
 #endif  // CHROME_BROWSER_PLUGIN_INFOBAR_DELEGATES_H_
