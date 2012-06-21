@@ -2877,6 +2877,8 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
     return false;
 
   LocalGestureEvent* local = static_cast<LocalGestureEvent*>(gesture);
+  if (local->data().type == WebKit::WebGestureEvent::Undefined)
+    return false;
   const WebKit::WebGestureEvent& generatedEvent = local->data();
   render_widget_host_->ForwardGestureEvent(generatedEvent);
   return true;
