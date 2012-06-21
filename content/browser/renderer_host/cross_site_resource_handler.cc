@@ -10,10 +10,12 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_controller.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_response.h"
+#include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
 namespace content {
@@ -37,23 +39,21 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     int render_process_host_id,
     int render_view_id,
-    net::URLRequest* request)
+    ResourceDispatcherHostImpl* rdh)
     : LayeredResourceHandler(next_handler.Pass()),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
-      request_(request),
       has_started_response_(false),
       in_cross_site_transition_(false),
       request_id_(-1),
       completed_during_transition_(false),
       did_defer_(false),
       completed_status_(),
-      response_(NULL) {
+      response_(NULL),
+      rdh_(rdh) {
 }
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
-  // Cleanup back-pointer stored on the request info.
-  ResourceRequestInfoImpl::ForRequest(request_)->set_cross_site_handler(NULL);
 }
 
 bool CrossSiteResourceHandler::OnRequestRedirected(
@@ -78,7 +78,14 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   DCHECK(!in_cross_site_transition_);
   has_started_response_ = true;
 
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request_);
+  // Look up the request and associated info.
+  GlobalRequestID global_id(render_process_host_id_, request_id);
+  net::URLRequest* request = rdh_->GetURLRequest(global_id);
+  if (!request) {
+    DLOG(WARNING) << "Request wasn't found";
+    return false;
+  }
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
 
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
@@ -98,7 +105,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
 
   // Tell the renderer to run the onunload event handler, and wait for the
   // reply.
-  StartCrossSiteTransition(request_id, response, defer);
+  StartCrossSiteTransition(request_id, response, global_id, defer);
   return true;
 }
 
@@ -128,8 +135,9 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
     // so that the error message (e.g., 404) can be displayed to the user.
     // Also continue with the logic below to remember that we completed
     // during the cross-site transition.
+    GlobalRequestID global_id(render_process_host_id_, request_id);
     bool defer = false;
-    StartCrossSiteTransition(request_id, NULL, &defer);
+    StartCrossSiteTransition(request_id, NULL, global_id, &defer);
     DCHECK(!defer);  // Since !has_started_response_.
   }
 
@@ -150,6 +158,14 @@ void CrossSiteResourceHandler::ResumeResponse() {
   DCHECK(in_cross_site_transition_);
   in_cross_site_transition_ = false;
 
+  // Find the request for this response.
+  GlobalRequestID global_id(render_process_host_id_, request_id_);
+  net::URLRequest* request = rdh_->GetURLRequest(global_id);
+  if (!request) {
+    DLOG(WARNING) << "Resuming a request that wasn't found";
+    return;
+  }
+
   if (has_started_response_) {
     // Send OnResponseStarted to the new renderer.
     DCHECK(response_);
@@ -165,7 +181,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 
   // Remove ourselves from the ExtraRequestInfo.
   ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request);
   info->set_cross_site_handler(NULL);
 
   // If the response completed during the transition, notify the next
@@ -183,6 +199,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 void CrossSiteResourceHandler::StartCrossSiteTransition(
     int request_id,
     ResourceResponse* response,
+    const GlobalRequestID& global_id,
     bool* defer) {
   in_cross_site_transition_ = true;
   request_id_ = request_id;
@@ -190,8 +207,13 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
 
   // Store this handler on the ExtraRequestInfo, so that RDH can call our
   // ResumeResponse method when the close ACK is received.
+  net::URLRequest* request = rdh_->GetURLRequest(global_id);
+  if (!request) {
+    DLOG(WARNING) << "Cross site response for a request that wasn't found";
+    return;
+  }
   ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request);
   info->set_cross_site_handler(this);
 
   if (has_started_response_) {

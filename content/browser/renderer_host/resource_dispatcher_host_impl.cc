@@ -99,6 +99,10 @@ static ResourceDispatcherHostImpl* g_resource_dispatcher_host;
 // The interval for calls to ResourceDispatcherHostImpl::UpdateLoadStates
 const int kUpdateLoadStatesIntervalMsec = 100;
 
+// Maximum number of pending data messages sent to the renderer at any
+// given time for a given request.
+const int kMaxPendingDataMessages = 20;
+
 // Maximum byte "cost" of all the outstanding requests for a renderer.
 // See delcaration of |max_outstanding_requests_cost_per_process_| for details.
 // This bound is 25MB, which allows for around 6000 outstanding requests.
@@ -927,6 +931,22 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
+  // Construct the event handler.
+  scoped_ptr<ResourceHandler> handler;
+  if (sync_result) {
+    handler.reset(new SyncResourceHandler(
+        filter_, request_data.url, sync_result, this));
+  } else {
+    handler.reset(new AsyncResourceHandler(
+        filter_, route_id, request_data.url, this));
+  }
+
+  // The RedirectToFileResourceHandler depends on being next in the chain.
+  if (request_data.download_to_file) {
+    handler.reset(
+        new RedirectToFileResourceHandler(handler.Pass(), child_id, this));
+  }
+
   int load_flags =
       BuildLoadFlagsForRequest(request_data, child_id, sync_result != NULL);
 
@@ -967,22 +987,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     upload_size = request_data.upload_data->GetContentLengthSync();
   }
 
-  // Construct the IPC resource handler.
-  scoped_ptr<ResourceHandler> handler;
-  if (sync_result) {
-    handler.reset(new SyncResourceHandler(
-        filter_, request, sync_result, this));
-  } else {
-    handler.reset(new AsyncResourceHandler(
-        filter_, route_id, request, this));
-  }
-
-  // The RedirectToFileResourceHandler depends on being next in the chain.
-  if (request_data.download_to_file) {
-    handler.reset(
-        new RedirectToFileResourceHandler(handler.Pass(), child_id, this));
-  }
-
   // Install a CrossSiteResourceHandler if this request is coming from a
   // RenderViewHost with a pending cross-site request.  We only check this for
   // MAIN_FRAME requests. Unblock requests only come from a blocked page, do
@@ -993,8 +997,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
           HasPendingCrossSiteRequest(child_id, route_id)) {
     // Wrap the event handler to be sure the current page's onunload handler
     // has a chance to run before we render the new page.
-    handler.reset(new CrossSiteResourceHandler(handler.Pass(), child_id,
-                                               route_id, request));
+    handler.reset(
+        new CrossSiteResourceHandler(handler.Pass(), child_id, route_id, this));
   }
 
   // Insert a buffered event handler before the actual one.
@@ -1078,13 +1082,33 @@ void ResourceDispatcherHostImpl::OnReleaseDownloadedFile(int request_id) {
 }
 
 void ResourceDispatcherHostImpl::OnDataReceivedACK(int request_id) {
-  ResourceLoader* loader = GetLoader(filter_->child_id(), request_id);
+  DataReceivedACK(filter_->child_id(), request_id);
+}
+
+void ResourceDispatcherHostImpl::DataReceivedACK(int child_id,
+                                                 int request_id) {
+  ResourceLoader* loader = GetLoader(child_id, request_id);
   if (!loader)
     return;
 
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-  if (info->async_handler())
-    info->async_handler()->OnDataReceivedACK();
+
+  // Decrement the number of pending data messages.
+  info->DecrementPendingDataCount();
+
+  // If the pending data count was higher than the max, resume the request.
+  if (info->pending_data_count() == kMaxPendingDataMessages) {
+    // Decrement the pending data count one more time because we also
+    // incremented it before pausing the request.
+    info->DecrementPendingDataCount();
+
+    // Resume the request.
+    //
+    // TODO(darin): Make the AsyncResourceHandler be responsible for resuming
+    // via its controller().  This static_cast is here as a temporary measure.
+    //
+    static_cast<ResourceController*>(loader)->Resume();
+  }
 }
 
 void ResourceDispatcherHostImpl::OnDataDownloadedACK(int request_id) {
@@ -1148,12 +1172,8 @@ void ResourceDispatcherHostImpl::OnFollowRedirect(
     return;
   }
 
-  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-  if (info->async_handler()) {
-    info->async_handler()->OnFollowRedirect(
-        has_new_first_party_for_cookies,
-        new_first_party_for_cookies);
-  }
+  loader->OnFollowRedirect(has_new_first_party_for_cookies,
+                           new_first_party_for_cookies);
 }
 
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
@@ -1266,6 +1286,28 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
   BeginRequestInternal(request.Pass(), handler.Pass());
+}
+
+bool ResourceDispatcherHostImpl::WillSendData(int child_id, int request_id,
+                                              bool* defer) {
+  ResourceLoader* loader = GetLoader(child_id, request_id);
+  if (!loader) {
+    NOTREACHED() << "WillSendData for invalid request";
+    return false;
+  }
+
+  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+
+  info->IncrementPendingDataCount();
+  if (info->pending_data_count() > kMaxPendingDataMessages) {
+    // We reached the max number of data messages that can be sent to
+    // the renderer for a given request. Pause the request and wait for
+    // the renderer to start processing them before resuming it.
+    *defer = true;
+    return false;
+  }
+
+  return true;
 }
 
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
@@ -1476,9 +1518,6 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
 
     IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
                                            info->GetChildID());
-
-    // A ResourceHandler must not outlive its associated URLRequest.
-    handler.reset();
     return;
   }
 

@@ -177,6 +177,18 @@ void ResourceLoader::OnUploadProgressACK() {
   waiting_for_upload_progress_ack_ = false;
 }
 
+void ResourceLoader::OnFollowRedirect(bool has_new_first_party_for_cookies,
+                                      const GURL& new_first_party_for_cookies) {
+  if (!request_->status().is_success()) {
+    DVLOG(1) << "OnDeferredRedirect for invalid request";
+    return;
+  }
+
+  if (has_new_first_party_for_cookies)
+    request_->set_first_party_for_cookies(new_first_party_for_cookies);
+  request_->FollowDeferredRedirect();
+}
+
 void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
                                         const GURL& new_url,
                                         bool* defer) {

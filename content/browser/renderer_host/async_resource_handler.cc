@@ -15,12 +15,12 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -43,10 +43,6 @@ const int kInitialReadBufSize = 32768;
 
 // The maximum size of the shared memory buffer. (512 kilobytes).
 const int kMaxReadBufSize = 524288;
-
-// Maximum number of pending data messages sent to the renderer at any
-// given time for a given request.
-const int kMaxPendingDataMessages = 20;
 
 }  // namespace
 
@@ -85,46 +81,16 @@ class SharedIOBuffer : public net::IOBuffer {
 AsyncResourceHandler::AsyncResourceHandler(
     ResourceMessageFilter* filter,
     int routing_id,
-    net::URLRequest* request,
+    const GURL& url,
     ResourceDispatcherHostImpl* rdh)
     : filter_(filter),
       routing_id_(routing_id),
-      request_(request),
       rdh_(rdh),
       next_buffer_size_(kInitialReadBufSize),
-      pending_data_count_(0),
-      did_defer_(false) {
+      url_(url) {
 }
 
 AsyncResourceHandler::~AsyncResourceHandler() {
-  // Cleanup back-pointer stored on the request info.
-  ResourceRequestInfoImpl::ForRequest(request_)->set_async_handler(NULL);
-}
-
-void AsyncResourceHandler::OnFollowRedirect(
-    bool has_new_first_party_for_cookies,
-    const GURL& new_first_party_for_cookies) {
-  if (!request_->status().is_success()) {
-    DVLOG(1) << "OnFollowRedirect for invalid request";
-    return;
-  }
-
-  if (has_new_first_party_for_cookies)
-    request_->set_first_party_for_cookies(new_first_party_for_cookies);
-
-  ResumeIfDeferred();
-}
-
-void AsyncResourceHandler::OnDataReceivedACK() {
-  // If the pending data count was higher than the max, resume the request.
-  if (--pending_data_count_ == kMaxPendingDataMessages) {
-    // Decrement the pending data count one more time because we also
-    // incremented it before deferring the request.
-    --pending_data_count_;
-
-    // Resume the request.
-    ResumeIfDeferred();
-  }
 }
 
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
@@ -139,13 +105,13 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
                                                ResourceResponse* response,
                                                bool* defer) {
   *defer = true;
-  MarkAsDeferred(true);
-
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
-    rdh_->delegate()->OnRequestRedirected(request_, response);
+    rdh_->delegate()->OnRequestRedirected(request, response);
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
-  response->request_start = request_->creation_time();
+  DevToolsNetLogObserver::PopulateResponseInfo(request, response);
+  response->request_start = request->creation_time();
   response->response_start = TimeTicks::Now();
   return filter_->Send(new ResourceMsg_ReceivedRedirect(
       routing_id_, request_id, new_url, *response));
@@ -159,34 +125,36 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // renderer will be able to set these precisely at the time the
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
 
   if (rdh_->delegate())
-    rdh_->delegate()->OnResponseStarted(request_, response, filter_);
+    rdh_->delegate()->OnResponseStarted(request, response, filter_);
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
+  DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
   ResourceContext* resource_context = filter_->resource_context();
   HostZoomMap* host_zoom_map =
       GetHostZoomMapForResourceContext(resource_context);
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->GetResourceType() == ResourceType::MAIN_FRAME && host_zoom_map) {
-    const GURL& request_url = request_->url();
+    GURL request_url(request->url());
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->GetRouteID(),
         request_url, host_zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(
             request_url))));
   }
 
-  response->request_start = request_->creation_time();
+  response->request_start = request->creation_time();
   response->response_start = TimeTicks::Now();
   filter_->Send(new ResourceMsg_ReceivedResponse(
       routing_id_, request_id, *response));
 
-  if (request_->response_info().metadata) {
-    std::vector<char> copy(request_->response_info().metadata->data(),
-                           request_->response_info().metadata->data() +
-                           request_->response_info().metadata->size());
+  if (request->response_info().metadata) {
+    std::vector<char> copy(request->response_info().metadata->data(),
+                           request->response_info().metadata->data() +
+                           request->response_info().metadata->size());
     filter_->Send(new ResourceMsg_ReceivedCachedMetadata(
         routing_id_, request_id, copy));
   }
@@ -239,7 +207,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
     next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
   }
 
-  if (!WillSendData(defer)) {
+  if (!rdh_->WillSendData(filter_->child_id(), request_id, defer)) {
     // We should not send this data now, we have too many pending requests.
     return true;
   }
@@ -251,8 +219,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
     // to fix this. We can't move this call above the WillSendData because
     // it's killing our read_buffer_, and we don't want that when we pause
     // the request.
-    OnDataReceivedACK();
-
+    rdh_->DataReceivedACK(filter_->child_id(), request_id);
     // We just unmapped the memory.
     read_buffer_ = NULL;
     return false;
@@ -260,8 +227,10 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
   // We just unmapped the memory.
   read_buffer_ = NULL;
 
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
   int encoded_data_length =
-      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
+      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request);
   filter_->Send(new ResourceMsg_DataReceived(
       routing_id_, request_id, handle, *bytes_read, encoded_data_length));
 
@@ -281,7 +250,7 @@ bool AsyncResourceHandler::OnResponseCompleted(
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/107692
   char url_buf[128];
-  base::strlcpy(url_buf, request_->url().spec().c_str(), arraysize(url_buf));
+  base::strlcpy(url_buf, url_.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
 
   TimeTicks completion_time = TimeTicks::Now();
@@ -311,39 +280,6 @@ void AsyncResourceHandler::GlobalCleanup() {
     SharedIOBuffer* tmp = g_spare_read_buffer;
     g_spare_read_buffer = NULL;
     tmp->Release();
-  }
-}
-
-bool AsyncResourceHandler::WillSendData(bool* defer) {
-  if (++pending_data_count_ > kMaxPendingDataMessages) {
-    // We reached the max number of data messages that can be sent to
-    // the renderer for a given request. Pause the request and wait for
-    // the renderer to start processing them before resuming it.
-    *defer = true;
-    MarkAsDeferred(true);
-    return false;
-  }
-
-  return true;
-}
-
-void AsyncResourceHandler::MarkAsDeferred(bool deferred) {
-  did_defer_ = deferred;
-
-  // Set a back-pointer from ResourceRequestInfoImpl to |this| when deferred,
-  // so that the ResourceDispatcherHostImpl can send us IPC messages.
-  // TODO(darin): Implement an IPC message filter instead?
-
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  if (deferred)
-    info->set_async_handler(this);
-}
-
-void AsyncResourceHandler::ResumeIfDeferred() {
-  if (did_defer_) {
-    MarkAsDeferred(false);
-    controller()->Resume();
   }
 }
 

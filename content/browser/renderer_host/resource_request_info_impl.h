@@ -25,7 +25,6 @@ class BlobData;
 }
 
 namespace content {
-class AsyncResourceHandler;
 class CrossSiteResourceHandler;
 class ResourceContext;
 struct GlobalRequestID;
@@ -84,7 +83,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   GlobalRequestID GetGlobalRequestID() const;
 
-  // CrossSiteResourceHandler for this request.  May be null.
+  // CrossSiteResourceHandler for this request, if it is a cross-site request.
+  // (NULL otherwise.) This handler is part of the chain of ResourceHandlers
+  // pointed to by resource_handler, and is not owned by this class.
   CrossSiteResourceHandler* cross_site_handler() {
     return cross_site_handler_;
   }
@@ -92,18 +93,16 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     cross_site_handler_ = h;
   }
 
-  // AsyncResourceHandler for this request.  May be null.
-  AsyncResourceHandler* async_handler() {
-    return async_handler_;
-  }
-  void set_async_handler(AsyncResourceHandler* h) {
-    async_handler_ = h;
-  }
-
   // Identifies the type of process (renderer, plugin, etc.) making the request.
   ProcessType process_type() const {
     return process_type_;
   }
+
+  // Number of messages we've sent to the renderer that we haven't gotten an
+  // ACK for. This allows us to avoid having too many messages in flight.
+  int pending_data_count() const { return pending_data_count_; }
+  void IncrementPendingDataCount() { pending_data_count_++; }
+  void DecrementPendingDataCount() { pending_data_count_--; }
 
   // Downloads are allowed only as a top level request.
   bool allow_download() const { return allow_download_; }
@@ -131,7 +130,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
  private:
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;
-  AsyncResourceHandler* async_handler_;
 
   ProcessType process_type_;
   int child_id_;
@@ -142,6 +140,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int64 frame_id_;
   bool parent_is_main_frame_;
   int64 parent_frame_id_;
+  int pending_data_count_;
   bool is_download_;
   bool allow_download_;
   bool has_user_gesture_;

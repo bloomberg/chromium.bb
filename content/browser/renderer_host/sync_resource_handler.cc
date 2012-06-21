@@ -18,15 +18,14 @@ namespace content {
 
 SyncResourceHandler::SyncResourceHandler(
     ResourceMessageFilter* filter,
-    net::URLRequest* request,
+    const GURL& url,
     IPC::Message* result_message,
     ResourceDispatcherHostImpl* resource_dispatcher_host)
     : read_buffer_(new net::IOBuffer(kReadBufSize)),
       filter_(filter),
-      request_(request),
       result_message_(result_message),
       rdh_(resource_dispatcher_host) {
-  result_.final_url = request_->url();
+  result_.final_url = url;
 }
 
 SyncResourceHandler::~SyncResourceHandler() {
@@ -47,10 +46,12 @@ bool SyncResourceHandler::OnRequestRedirected(
     const GURL& new_url,
     ResourceResponse* response,
     bool* defer) {
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
-    rdh_->delegate()->OnRequestRedirected(request_, response);
+    rdh_->delegate()->OnRequestRedirected(request, response);
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
+  DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   // TODO(darin): It would be much better if this could live in WebCore, but
   // doing so requires API changes at all levels.  Similar code exists in
   // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
@@ -66,10 +67,12 @@ bool SyncResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response,
     bool* defer) {
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
-    rdh_->delegate()->OnResponseStarted(request_, response, filter_);
+    rdh_->delegate()->OnResponseStarted(request, response, filter_);
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
+  DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
   // We don't care about copying the status here.
   result_.headers = response->headers;
@@ -113,8 +116,10 @@ bool SyncResourceHandler::OnResponseCompleted(
     const std::string& security_info) {
   result_.status = status;
 
+  net::URLRequest* request = rdh_->GetURLRequest(
+      GlobalRequestID(filter_->child_id(), request_id));
   result_.encoded_data_length =
-      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
+      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request);
 
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
   filter_->Send(result_message_);
