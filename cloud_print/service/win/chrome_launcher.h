@@ -23,8 +23,6 @@ class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
 
   virtual void Run() OVERRIDE;
 
-  static FilePath GetChromePath(HKEY key);
-
  private:
   FilePath user_data_;
   base::WaitableEvent stop_event_;
@@ -34,4 +32,3 @@ class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
 };
 
 #endif  // CLOUD_PRINT_SERVICE_CHROME_LAUNCHER_H_
-

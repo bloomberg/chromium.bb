@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
@@ -182,13 +183,15 @@ class CloudPrintServiceModule
   }
 
   HRESULT InstallService() {
+    using namespace chrome_launcher_support;
+
     // TODO(vitalybuka): consider "lite" version if we don't want unregister
     // printers here.
     HRESULT hr = UninstallService();
     if (FAILED(hr))
       return hr;
 
-    if (ChromeLauncher::GetChromePath(HKEY_LOCAL_MACHINE).empty()) {
+    if (GetChromePathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION).empty()) {
       LOG(ERROR) << "Found no Chrome installed for all users.";
       return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }

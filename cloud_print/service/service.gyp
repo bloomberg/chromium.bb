@@ -26,7 +26,14 @@
         'service_switches.h',
         'win/chrome_launcher.cc',
         'win/chrome_launcher.h',
-      ]
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '<(DEPTH)/chrome/chrome.gyp:launcher_support',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'cloud_print_service',

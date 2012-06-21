@@ -33,6 +33,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "google_update/google_update_idl.h"
@@ -373,30 +374,8 @@ BOOL __stdcall LaunchGoogleChrome() {
 
   // Now grab the uninstall string from the appropriate ClientState key
   // and use that as the base for a path to chrome.exe.
-  FilePath chrome_exe_path;
-  RegKey client_state(install_key, kChromeRegClientStateKey, KEY_QUERY_VALUE);
-  if (client_state.Valid()) {
-    std::wstring uninstall_string;
-    if (client_state.ReadValue(installer::kUninstallStringField,
-                               &uninstall_string) == ERROR_SUCCESS) {
-      // The uninstall path contains the path to setup.exe which is two levels
-      // down from chrome.exe. Move up two levels (plus one to drop the file
-      // name) and look for chrome.exe from there.
-      FilePath uninstall_path(uninstall_string);
-      chrome_exe_path = uninstall_path.DirName()
-                                      .DirName()
-                                      .DirName()
-                                      .Append(installer::kChromeExe);
-      if (!file_util::PathExists(chrome_exe_path)) {
-        // By way of mild future proofing, look up one to see if there's a
-        // chrome.exe in the version directory
-        chrome_exe_path =
-            uninstall_path.DirName().DirName().Append(installer::kChromeExe);
-      }
-    }
-  }
-
-  if (!file_util::PathExists(chrome_exe_path)) {
+  FilePath chrome_exe_path(chrome_launcher_support::GetAnyChromePath());
+  if (chrome_exe_path.empty()) {
     return false;
   }
 

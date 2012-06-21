@@ -30,6 +30,7 @@
           'dependencies': [
             'installer_util',
             '../base/base.gyp:base',
+            '../chrome/chrome.gyp:launcher_support',
             '../google_update/google_update.gyp:google_update',
           ],
           'include_dirs': [
@@ -169,6 +170,25 @@
               '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
             ],
           },
+        },
+        {
+          'target_name': 'launcher_support',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '..',
+            ],
+          },
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+          ],
+          'sources': [
+            'installer/launcher_support/chrome_launcher_support.cc',
+            'installer/launcher_support/chrome_launcher_support.h',
+          ],
         },
         {
           'target_name': 'mini_installer_test',
