@@ -205,7 +205,7 @@ class Category {
 
  private:
   friend class DocumentEntry;
-  // Converts category scheme into CategoryType enum. For example,
+  // Converts catory scheme into CategoryType enum. For example,
   // http://schemas.google.com/g/2005#kind => Category::KIND
   // Returns false and does not change |result| when |scheme| has an
   // unrecognizable value.
@@ -239,49 +239,6 @@ class Content {
 
   GURL url_;
   std::string mime_type_;
-};
-
-// This stores a representation of an application icon as registered with the
-// installed applications section of the account metadata feed. There can be
-// multiple icons registered for each application, differing in size, category
-// and mime_type.
-class AppIcon {
- public:
-  enum IconCategory {
-    UNKNOWN,         // Uninitialized state
-    DOCUMENT,        // Document icon for various mime types
-    APPLICATION,     // Application icon for various mime types
-    SHARED_DOCUMENT, // Icon for documents that are shared from other users.
-  };
-
-  AppIcon();
-  ~AppIcon();
-
-  // Registers the mapping between JSON field names and the members in
-  // this class.
-  static void RegisterJSONConverter(
-      base::JSONValueConverter<AppIcon>* converter);
-
-  // Category of the icon.
-  IconCategory category() const { return category_; }
-
-  // Size in pixels of one side of the icon (icons are always square).
-  const int icon_side_length() const { return icon_side_length_; }
-
-  // Get a link stored in this application icon by mime type.
-  const Link* GetIconLinkForType(const std::string& mime_type) const;
-
- private:
-  // Extracts the icon category from the given string. Returns false and does
-  // not change |result| when |scheme| has an unrecognizable value.
-  static bool GetIconCategory(const base::StringPiece& category,
-                              IconCategory* result);
-
-  IconCategory category_;
-  int icon_side_length_;
-  ScopedVector<Link> links_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppIcon);
 };
 
 // Base class for feed entries.
@@ -599,16 +556,6 @@ class InstalledApp {
   // List of entry links.
   const ScopedVector<Link>& links() const { return links_; }
 
-  // Returns a list of icons associated with this installed application.
-  const ScopedVector<AppIcon>& app_icons() const {
-    return app_icons_;
-  }
-
-  // Convenience function for getting the URL of the icon for a particular
-  // category and mime type. Returns an empty GURL if no such icon exists.
-  GURL GetAppIconByCategoryAndType(AppIcon::IconCategory category,
-                                   const std::string& mime_type) const;
-
   // Retrieves product URL from the link collection.
   GURL GetProductUrl() const;
 
@@ -631,7 +578,6 @@ class InstalledApp {
   ScopedVector<std::string> primary_extensions_;
   ScopedVector<std::string> secondary_extensions_;
   ScopedVector<Link> links_;
-  ScopedVector<AppIcon> app_icons_;
 };
 
 // Account metadata feed represents the metadata object attached to the user's

@@ -75,9 +75,6 @@ const char kHrefField[] = "href";
 const char kIDField[] = "id.$t";
 const char kInstalledAppField[] = "docs$installedApp";
 const char kInstalledAppNameField[] = "docs$installedAppName";
-const char kInstalledAppIconField[] = "docs$installedAppIcon";
-const char kInstalledAppIconCategoryField[] = "docs$installedAppIconCategory";
-const char kInstalledAppIconSizeField[] = "docs$installedAppIconSize";
 const char kInstalledAppObjectTypeField[] = "docs$installedAppObjectType";
 const char kInstalledAppPrimaryFileExtensionField[] =
     "docs$installedAppPrimaryFileExtension";
@@ -203,8 +200,10 @@ struct FeedLinkTypeMap {
 };
 
 const FeedLinkTypeMap kFeedLinkTypeMap[] = {
-    { FeedLink::ACL, "http://schemas.google.com/acl/2007#accessControlList" },
-    { FeedLink::REVISIONS, "http://schemas.google.com/docs/2007/revisions" },
+    { FeedLink::ACL,
+      "http://schemas.google.com/acl/2007#accessControlList" },
+    { FeedLink::REVISIONS,
+      "http://schemas.google.com/docs/2007/revisions" },
 };
 
 struct CategoryTypeMap {
@@ -213,19 +212,10 @@ struct CategoryTypeMap {
 };
 
 const CategoryTypeMap kCategoryTypeMap[] = {
-    { Category::KIND, "http://schemas.google.com/g/2005#kind" },
-    { Category::LABEL, "http://schemas.google.com/g/2005/labels" },
-};
-
-struct AppIconCategoryMap {
-  AppIcon::IconCategory category;
-  const char* category_name;
-};
-
-const AppIconCategoryMap kAppIconCategoryMap[] = {
-    { AppIcon::DOCUMENT, "document" },
-    { AppIcon::APPLICATION, "application" },
-    { AppIcon::SHARED_DOCUMENT, "documentShared" },
+    { Category::KIND,
+      "http://schemas.google.com/g/2005#kind" },
+    { Category::LABEL,
+      "http://schemas.google.com/g/2005/labels" },
 };
 
 // Converts |url_string| to |result|.  Always returns true to be used
@@ -499,52 +489,6 @@ Content* Content::CreateFromXml(XmlReader* xml_reader) {
 
   xml_reader->NodeAttribute(kTypeAttr, &content->mime_type_);
   return content;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// AppIcon implementation
-
-AppIcon::AppIcon() : category_(AppIcon::UNKNOWN), icon_side_length_(0) {
-}
-
-AppIcon::~AppIcon() {
-}
-
-// static
-void AppIcon::RegisterJSONConverter(
-    base::JSONValueConverter<AppIcon>* converter) {
-  converter->RegisterCustomField<AppIcon::IconCategory>(
-      kInstalledAppIconCategoryField,
-      &AppIcon::category_,
-      &AppIcon::GetIconCategory);
-  converter->RegisterCustomField<int>(kInstalledAppIconSizeField,
-                                      &AppIcon::icon_side_length_,
-                                      base::StringToInt);
-  converter->RegisterRepeatedMessage(kLinkField, &AppIcon::links_);
-}
-
-const Link* AppIcon::GetIconLinkForType(const std::string& mime_type) const {
-  for (size_t i = 0; i < links_.size(); ++i) {
-    if (links_[i]->type() == Link::ICON &&
-        links_[i]->mime_type() == mime_type) {
-      return links_[i];
-    }
-  }
-  return NULL;
-}
-
-// static
-bool AppIcon::GetIconCategory(const base::StringPiece& category,
-                              AppIcon::IconCategory* result) {
-  for (size_t i = 0; i < arraysize(kAppIconCategoryMap); i++) {
-    if (category == kAppIconCategoryMap[i].category_name) {
-      *result = kAppIconCategoryMap[i].category;
-      return true;
-    }
-  }
-  DVLOG(1) << "Unknown icon category " << category;
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -909,20 +853,6 @@ InstalledApp::InstalledApp() : supports_create_(false) {
 InstalledApp::~InstalledApp() {
 }
 
-GURL InstalledApp::GetAppIconByCategoryAndType(
-    AppIcon::IconCategory category,
-    const std::string& mime_type) const {
-  for (ScopedVector<AppIcon>::const_iterator icon_iter = app_icons_->begin();
-       icon_iter != app_icons_.end(); ++icon_iter) {
-    if ((*icon_iter)->category() == category) {
-      const Link* icon_link = (*icon_iter)->GetIconLinkForType(mime_type);
-      if (icon_link)
-        return icon_link->href();
-    }
-  }
-  return GURL();
-}
-
 GURL InstalledApp::GetProductUrl() const {
   for (ScopedVector<Link>::const_iterator it = links_->begin();
        it != links_.end(); ++it) {
@@ -949,8 +879,6 @@ bool InstalledApp::GetValueString(const base::Value* value,
 // static
 void InstalledApp::RegisterJSONConverter(
     base::JSONValueConverter<InstalledApp>* converter) {
-  converter->RegisterRepeatedMessage(kInstalledAppIconField,
-                                     &InstalledApp::app_icons_);
   converter->RegisterStringField(kInstalledAppNameField,
                                  &InstalledApp::app_name_);
   converter->RegisterStringField(kInstalledAppObjectTypeField,

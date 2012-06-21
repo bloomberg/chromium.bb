@@ -1,6 +1,12 @@
 {
     "encoding": "UTF-8",
     "entry": {
+        "gd$quotaBytesTotal": {
+            "$t": "9876543210"
+        },
+        "gd$quotaBytesUsed": {
+            "$t": "6789012345"
+        },
         "author": [
             {
                 "email": {
@@ -238,86 +244,6 @@
                 "target": "document"
             }
         ],
-        "docs$installedApp": [
-            {
-                "docs$installedAppIcon": [
-                    {
-                        "docs$installedAppIconCategory": "document",
-                        "docs$installedAppIconSize": "16",
-                        "link": [
-                            {
-                                "href": "https://www.google.com/images/srpr/logo3w.png",
-                                "rel": "http://schemas.google.com/docs/2007#icon",
-                                "type": "application/vnd.google-apps.drive-sdk.11111111"
-                            }
-                        ]
-                    }
-                ],
-                "docs$installedAppId": "11111111",
-                "docs$installedAppName": "Drive App 1",
-                "docs$installedAppObjectType": "Drive App Object 1",
-                "docs$installedAppPrimaryFileExtension": [
-                    {
-                        "$t": "ext_1"
-                    },
-                    {
-                        "$t": "ext_2"
-                    }
-                ],
-                "docs$installedAppPrimaryMimeType": [
-                    {
-                        "$t": "application/test_type_1"
-                    },
-                    {
-                        "$t": "application/vnd.google-apps.drive-sdk.11111111"
-                    }
-                ],
-                "docs$installedAppSecondaryFileExtension": [
-                    {
-                        "$t": "ext_3"
-                    }
-                ],
-                "docs$installedAppSecondaryMimeType": [
-                    {
-                        "$t": "image/jpeg"
-                    }
-                ],
-                "docs$installedAppSupportsCreate": "true",
-                "link": [
-                    {
-                        "href": "https://chrome.google.com/webstore/detail/abcdefabcdef",
-                        "rel": "http://schemas.google.com/docs/2007#product",
-                        "type": "text/html"
-                    }
-                ]
-            },
-            {
-                "docs$installedAppId": "22222222",
-                "docs$installedAppName": "Drive App 2",
-                "docs$installedAppObjectType": "Drive App Object 2",
-                "docs$installedAppPrimaryFileExtension": [
-                    {
-                        "$t": "ext_3"
-                    }
-                ],
-                "docs$installedAppPrimaryMimeType": [
-                    {
-                        "$t": "application/test_type_2"
-                    },
-                    {
-                        "$t": "application/vnd.google-apps.drive-sdk.22222222"
-                    }
-                ],
-                "docs$installedAppSupportsCreate": "false",
-                "link": [
-                    {
-                        "href": "https://chrome.google.com/webstore/detail/deadbeefdeadbeef",
-                        "rel": "http://schemas.google.com/docs/2007#product",
-                        "type": "text/html"
-                    }
-                ]
-            }
-        ],
         "docs$largestChangestamp": {
             "value": "654321"
         },
@@ -347,16 +273,75 @@
                 "kind": "file"
             }
         ],
+        "docs$installedApp": [
+            {
+               "docs$installedAppName": "Drive App 1",
+               "docs$installedAppObjectType": "Drive App Object 1",
+               "docs$installedAppSupportsCreate": "true",
+               "link": [
+                     {
+                      "rel": "http://schemas.google.com/docs/2007#product",
+                      "type": "text/html",
+                      "href": "https://chrome.google.com/webstore/detail/11111111"
+                     }
+               ],
+               "docs$installedAppPrimaryMimeType": [
+                     {
+                      "$t": "application/test_type_1"
+                     },
+                     {
+                      "$t": "application/vnd.google-apps.drive-sdk.11111111"
+                     }
+               ],
+               "docs$installedAppSecondaryMimeType": [
+                     {
+                      "$t": "image/jpeg"
+                     }
+               ],
+               "docs$installedAppPrimaryFileExtension": [
+                     {
+                      "$t": "ext_1"
+                     },
+                     {
+                      "$t": "ext_2"
+                     }
+               ],
+               "docs$installedAppSecondaryFileExtension": [
+                     {
+                      "$t": "ext_3"
+                     }
+               ]
+             },
+             {
+               "docs$installedAppName": "Drive App 2",
+               "docs$installedAppObjectType": "Drive App Object 2",
+               "docs$installedAppSupportsCreate": "false",
+               "link": [
+                     {
+                      "rel": "http://schemas.google.com/docs/2007#product",
+                      "type": "text/html",
+                      "href": "https://chrome.google.com/webstore/detail/22222222"
+                     }
+               ],
+               "docs$installedAppPrimaryMimeType": [
+                     {
+                      "$t": "application/test_type_2"
+                     },
+                     {
+                      "$t": "application/vnd.google-apps.drive-sdk.22222222"
+                     }
+               ],
+               "docs$installedAppPrimaryFileExtension": [
+                     {
+                      "$t": "ext_3"
+                     }
+               ]
+            }
+        ],
         "docs$quotaBytesUsedInTrash": {
             "$t": "123"
         },
         "gd$etag": "W/\"CEINQ3c9fSt7ImA9WABC123.\"",
-        "gd$quotaBytesTotal": {
-            "$t": "9876543210"
-        },
-        "gd$quotaBytesUsed": {
-            "$t": "6789012345"
-        },
         "id": {
             "$t": "https://docs.google.com/feeds/metadata/test%40example.com"
         },
