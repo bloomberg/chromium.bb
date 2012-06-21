@@ -480,6 +480,27 @@ class FullscreenMouselockTest(pyauto.PyUITest):
               into tab 1, click on lockMouse1() button, and move the mouse \
               cursor on the page in tab 1. Verify mouse movement is smooth.')
 
+  def MouseEventsIndependentOfExitBubble(self):
+    """Verify mouse events are independent of the exit FS exit bubble for ML.
+
+    Mouse movement events should work immediately when mouse lock is activated.
+    The events should not be blocked waiting for the exit instruction bubble to
+    clear.
+    """
+    self.NavigateToURL(self.GetHttpURLForDataPath(
+        'fullscreen_mouselock', 'fullscreen_mouselock.html'))
+    # Should not be in fullscreen mode during initial launch.
+    self.assertFalse(self.IsFullscreenForBrowser())
+    self.assertFalse(self.IsFullscreenForTab())
+    # Go into fullscreen mode.
+    self._driver.find_element_by_id('enterFullscreen').click()
+    self.assertTrue(self.WaitUntil(self.IsFullscreenForTab))
+    self._EnableMouseLockMode()
+    raw_input(
+        '1. Move the mouse, see movement data being received by the page.\
+        2. Press ESC key.\
+        3. Lock the mouse without going fullscreen. Click lockMouse1() button.\
+        Verify: The mouse movement events should work immediately.')
 
 if __name__ == '__main__':
   pyauto_functional.Main()
