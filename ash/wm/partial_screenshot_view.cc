@@ -82,11 +82,13 @@ gfx::NativeCursor PartialScreenshotView::GetCursor(
 void PartialScreenshotView::OnPaint(gfx::Canvas* canvas) {
   if (is_dragging_) {
     // Screenshot area representation: black rectangle with white
-    // rectangle inside.
+    // rectangle inside.  To avoid capturing these rectangles when mouse
+    // release, they should be outside of the actual capturing area.
     gfx::Rect screenshot_rect = GetScreenshotRect();
-    canvas->DrawRect(screenshot_rect, SK_ColorBLACK);
-    screenshot_rect.Inset(1, 1, 1, 1);
+    screenshot_rect.Inset(-1, -1, -1, -1);
     canvas->DrawRect(screenshot_rect, SK_ColorWHITE);
+    screenshot_rect.Inset(-1, -1, -1, -1);
+    canvas->DrawRect(screenshot_rect, SK_ColorBLACK);
   }
 }
 
