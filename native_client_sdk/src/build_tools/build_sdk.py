@@ -17,6 +17,7 @@ and whether it should upload an SDK to file storage (GSTORE)
 
 
 # std python includes
+import copy
 import generate_make
 import optparse
 import os
@@ -400,6 +401,9 @@ def main(args):
       action='store_true', dest='only_examples', default=False)
   parser.add_option('--update', help='Only build the updater.',
       action='store_true', dest='only_updater', default=False)
+  parser.add_option('--test-examples',
+      help='Run the pyauto tests for examples.', action='store_true',
+      dest='test_examples', default=False)
   parser.add_option('--skip-tar', help='Skip generating a tarball.',
       action='store_true', dest='skip_tar', default=False)
   parser.add_option('--archive', help='Force the archive step.',
@@ -415,6 +419,11 @@ def main(args):
   if builder_name.find('pnacl') >= 0 and builder_name.find('sdk') >= 0:
     options.pnacl = True
 
+  # TODO(binji) for now, only test examples on non-trybots. Trybots don't build
+  # pyauto Chrome.
+  if buildbot_common.IsSDKBuilder():
+    options.test_examples = True
+
   if options.pnacl:
     toolchains = ['pnacl']
   else:
@@ -427,6 +436,8 @@ def main(args):
   skip_untar = skip
   skip_build = skip
   skip_test_updater = skip
+  skip_test_examples = skip_examples or not options.test_examples
+  skip_test_build_tools = skip
   skip_tar = skip or options.skip_tar
 
   if options.archive and (options.only_examples or options.skip_tar):
@@ -501,9 +512,10 @@ def main(args):
          'pepper_' + pepper_ver], cwd=NACL_DIR)
 
   # Run build tests
-  buildbot_common.BuildStep('Run build_tools tests')
-  buildbot_common.Run([sys.executable,
-      os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')])
+  if not skip_test_build_tools:
+    buildbot_common.BuildStep('Run build_tools tests')
+    buildbot_common.Run([sys.executable,
+        os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')])
 
   # build sdk update
   if not skip_update:
@@ -564,7 +576,7 @@ def main(args):
 
   # build examples.
   if not skip_examples:
-    buildbot_common.BuildStep('Test Build Examples')
+    buildbot_common.BuildStep('Build Examples')
     example_dir = os.path.join(pepperdir, 'examples')
     makefile = os.path.join(example_dir, 'Makefile')
     if os.path.isfile(makefile):
@@ -573,18 +585,35 @@ def main(args):
                           cwd=os.path.abspath(example_dir), shell=True)
 
   # test examples.
-  skip_test_examples = True
-  if not skip_examples:
-    if not skip_test_examples:
-      run_script_path = os.path.join(SRC_DIR, 'chrome', 'test', 'functional')
-      buildbot_common.Run([sys.executable, 'nacl_sdk_example_test.py',
-        'nacl_sdk_example_test.NaClSDKTest.testNaClSDK'], cwd=run_script_path,
-        env=dict(os.environ.items()+{'pepper_ver':pepper_ver,
-        'OUT_DIR':OUT_DIR}.items()))
+  if not skip_examples and not skip_test_examples:
+    buildbot_common.BuildStep('Test Examples')
+    env = copy.copy(os.environ)
+    env['PEPPER_VER'] = pepper_ver
+    env['NACL_SDK_ROOT'] = pepperdir
+
+    pyauto_script = os.path.join(SRC_DIR, 'chrome', 'test', 'functional',
+        'nacl_sdk.py')
+    pyauto_script_args = ['nacl_sdk.NaClSDKTest.NaClSDKExamples']
+
+    if platform == 'linux' and buildbot_common.IsSDKBuilder():
+      # linux buildbots need to run the pyauto tests through xvfb. Running
+      # using runtest.py does this.
+      #env['PYTHON_PATH'] = '.:' + env.get('PYTHON_PATH', '.')
+      build_dir = os.path.dirname(SRC_DIR)
+      runtest_py = os.path.join(build_dir, '..', '..', '..', 'scripts', 'slave',
+          'runtest.py')
+      buildbot_common.Run([sys.executable, runtest_py, '--target', 'Release',
+          '--build-dir', 'src/build', sys.executable,
+          pyauto_script] + pyauto_script_args,
+          cwd=build_dir, env=env)
+    else:
+      buildbot_common.Run([sys.executable, 'nacl_sdk.py',
+        'nacl_sdk.NaClSDKTest.NaClSDKExamples'],
+        cwd=os.path.dirname(pyauto_script),
+        env=env)
 
   # Archive on non-trybots.
-  buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
-  if options.archive or '-sdk' in buildername:
+  if options.archive or buildbot_common.IsSDKBuilder():
     buildbot_common.BuildStep('Archive build')
     bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % \
         build_utils.ChromeVersion()
@@ -592,7 +621,7 @@ def main(args):
 
     if not skip_update:
       # Only push up sdk_tools.tgz on the linux buildbot.
-      if buildername == 'linux-sdk-multi':
+      if builder_name == 'linux-sdk-multi':
         sdk_tools = os.path.join(OUT_DIR, 'sdk_tools.tgz')
         buildbot_common.Archive('sdk_tools.tgz', bucket_path, OUT_DIR,
                                 step_link=False)

@@ -24,6 +24,10 @@
     function changeFrequency(freq) {
       naclModule.postMessage('setFrequency:' + freq);
     }
+
+    function handleMessage(e) {
+      document.getElementById('frequency_field').value = message_event.data;
+    }
   </script>
 </head>
 <body onload="pageDidLoad('<NAME>', '<tc>')">
