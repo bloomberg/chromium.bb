@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// TODO(nona): Remove this file.
 
 #ifndef UI_BASE_IME_MOCK_IBUS_CLIENT_H_
 #define UI_BASE_IME_MOCK_IBUS_CLIENT_H_
@@ -17,37 +18,29 @@ namespace internal {
 // A dummy IBusClient implementation for testing which requires neither
 // ibus-daemon nor ibus header files.
 class UI_EXPORT MockIBusClient : public IBusClient {
-public:
+ public:
   MockIBusClient();
   virtual ~MockIBusClient();
 
   // ui::internal::IBusClient overrides:
-  virtual IBusBus* GetConnection() OVERRIDE;
-  virtual bool IsConnected(IBusBus* bus) OVERRIDE;
-  virtual void CreateContext(IBusBus* bus,
-                             PendingCreateICRequest* request) OVERRIDE;
-  virtual void DestroyProxy(IBusInputContext* context) OVERRIDE;
+  virtual bool IsConnected() OVERRIDE;
+  virtual bool IsContextReady() OVERRIDE;
+  virtual void CreateContext(PendingCreateICRequest* request) OVERRIDE;
+  virtual void DestroyProxy() OVERRIDE;
   virtual void SetCapabilities(
-      IBusInputContext* context,
       InlineCompositionCapability inline_type) OVERRIDE;
-  virtual void FocusIn(IBusInputContext* context) OVERRIDE;
-  virtual void FocusOut(IBusInputContext* context) OVERRIDE;
-  virtual void Reset(IBusInputContext* context) OVERRIDE;
+  virtual void FocusIn() OVERRIDE;
+  virtual void FocusOut() OVERRIDE;
+  virtual void Reset() OVERRIDE;
   virtual InputMethodType GetInputMethodType() OVERRIDE;
-  virtual void SetCursorLocation(IBusInputContext* context,
-                                 const gfx::Rect& cursor_location,
+  virtual void SetCursorLocation(const gfx::Rect& cursor_location,
                                  const gfx::Rect& composition_head) OVERRIDE;
-  virtual void SendKeyEvent(IBusInputContext* context,
-                            uint32 keyval,
-                            uint32 keycode,
-                            uint32 state,
-                            PendingKeyEvent* pending_key) OVERRIDE;
-  virtual void ExtractCompositionText(
-      IBusText* text,
-      guint cursor_position,
-      CompositionText* out_composition) OVERRIDE;
-  virtual string16 ExtractCommitText(IBusText* text) OVERRIDE;
-
+  virtual void SendKeyEvent(
+      uint32 keyval,
+      uint32 keycode,
+      uint32 state,
+      const chromeos::IBusInputContextClient::ProcessKeyEventCallback&
+          cb) OVERRIDE;
   // See comments in CreateContext().
   enum CreateContextResult {
     kCreateContextSuccess,
@@ -65,10 +58,10 @@ public:
 
   // A value which IsConnected() will return.
   bool is_connected_;
+  // A value which IsContextReady() will return.
+  bool is_context_ready_;
   // A value which GetInputMethodType() will return.
   InputMethodType input_method_type_;
-  // A text which ExtractCompositionText() will return.
-  CompositionText composition_text_;
   // A text which ExtractCommitText() will return.
   string16 commit_text_;
 
@@ -80,7 +73,7 @@ public:
   unsigned int reset_call_count_;
   unsigned int set_cursor_location_call_count_;
 
-private:
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockIBusClient);
 };
 

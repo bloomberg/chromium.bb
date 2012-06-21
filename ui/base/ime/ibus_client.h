@@ -6,17 +6,15 @@
 #define UI_BASE_IME_IBUS_CLIENT_H_
 #pragma once
 
-#include <glib/gtypes.h>
-
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/string16.h"
+#include "chromeos/dbus/ibus/ibus_client.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
 #include "ui/base/events.h"
 #include "ui/base/ui_export.h"
-
-typedef struct _IBusBus IBusBus;
-typedef struct _IBusInputContext IBusInputContext;
-typedef struct _IBusText IBusText;
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Rect;
@@ -29,6 +27,8 @@ namespace internal {
 
 // An interface implemented by the object that sends and receives an event to
 // and from ibus-daemon.
+// TODO(nona): Remove all methods except GetInputMethodType and
+// SetCursorLocation.
 class UI_EXPORT IBusClient {
  public:
   // A class to hold all data related to a key event being processed by the
@@ -45,10 +45,13 @@ class UI_EXPORT IBusClient {
   // context.
   class PendingCreateICRequest {
    public:
-    virtual ~PendingCreateICRequest() {};
-    // Stores the result input context to |input_method_|, or abandon it if
-    // |input_method_| is NULL.
-    virtual void StoreOrAbandonInputContext(IBusInputContext* ic) = 0;
+    virtual ~PendingCreateICRequest() {}
+    // Set up signal handlers, or destroy object proxy if the input context is
+    // already abandoned.
+    virtual void InitOrAbandonInputContext() = 0;
+
+    // Called if the create input context method call is failed.
+    virtual void OnCreateInputContextFailed() = 0;
   };
 
   enum InlineCompositionCapability {
@@ -66,59 +69,44 @@ class UI_EXPORT IBusClient {
 
   virtual ~IBusClient() {}
 
-  // Gets a D-Bus connection to ibus-daemon. An implementation should establish
-  // a connection to the daemon when the method is called first. After that, the
-  // implementation should return the same object as before.
-  virtual IBusBus* GetConnection() = 0;
+  // Returns true if the connection to ibus-daemon is established.
+  virtual bool IsConnected() = 0;
 
-  // Returns true if |bus| is connected.
-  virtual bool IsConnected(IBusBus* bus) = 0;
+  // Returns true if the input context is ready to use.
+  virtual bool IsContextReady() = 0;
 
   // Creates a new input context asynchronously. An implementation has to call
   // PendingCreateICRequest::StoreOrAbandonInputContext() with the newly created
   // context when the asynchronous request succeeds.
-  virtual void CreateContext(IBusBus* bus,
-                             PendingCreateICRequest* request) = 0;
+  // TODO(nona): We can omit the first argument(need unittests fix).
+  virtual void CreateContext(PendingCreateICRequest* request) = 0;
 
-  // Destroys the proxy object for the |context|. An implementation must send
-  // "destroy" signal to the context object.
-  virtual void DestroyProxy(IBusInputContext* context) = 0;
+  // Destroys the proxy object in input context client.
+  virtual void DestroyProxy() = 0;
 
-  // Updates the set of capabilities of the |context|.
-  virtual void SetCapabilities(IBusInputContext* context,
-                               InlineCompositionCapability inline_type) = 0;
+  // Updates the set of capabilities.
+  virtual void SetCapabilities(InlineCompositionCapability inline_type) = 0;
 
-  // Focuses the |context| asynchronously.
-  virtual void FocusIn(IBusInputContext* context) = 0;
-  // Blurs the |context| asynchronously.
-  virtual void FocusOut(IBusInputContext* context) = 0;
-  // Resets the |context| asynchronously.
-  virtual void Reset(IBusInputContext* context) = 0;
+  // Focuses the context asynchronously.
+  virtual void FocusIn() = 0;
+  // Blurs the context asynchronously.
+  virtual void FocusOut() = 0;
+  // Resets the context asynchronously.
+  virtual void Reset() = 0;
 
   // Returns the current input method type.
   virtual InputMethodType GetInputMethodType() = 0;
 
   // Resets the cursor location asynchronously.
-  virtual void SetCursorLocation(IBusInputContext* context,
-                                 const gfx::Rect& cursor_location,
+  virtual void SetCursorLocation(const gfx::Rect& cursor_location,
                                  const gfx::Rect& composition_head) = 0;
 
   // Sends the key to ibus-daemon asynchronously.
-  virtual void SendKeyEvent(IBusInputContext* context,
-                            uint32 keyval,
-                            uint32 keycode,
-                            uint32 state,
-                            PendingKeyEvent* pending_key) = 0;
-
-  // Called by InputMethodIBus::OnUpdatePreeditText to convert |text| into a
-  // CompositionText.
-  virtual void ExtractCompositionText(IBusText* text,
-                                      guint cursor_position,
-                                      CompositionText* out_composition) = 0;
-
-  // Called by InputMethodIBus::OnCommitText to convert |text| into a Unicode
-  // string.
-  virtual string16 ExtractCommitText(IBusText* text) = 0;
+  virtual void SendKeyEvent(
+      uint32 keyval,
+      uint32 keycode,
+      uint32 state,
+      const chromeos::IBusInputContextClient::ProcessKeyEventCallback& cb) = 0;
 };
 
 }  // namespace internal

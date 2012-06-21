@@ -11,45 +11,35 @@
 
 namespace ui {
 
-static const int kIBusReleaseMask = 1 << 30;
-
 namespace internal {
 
 // An interface implemented by the object that sends and receives an event to
 // and from ibus-daemon.
 class UI_EXPORT IBusClientImpl : public IBusClient {
-public:
+ public:
   IBusClientImpl();
   virtual ~IBusClientImpl();
 
   // ui::internal::IBusClient overrides:
-  virtual IBusBus* GetConnection() OVERRIDE;
-  virtual bool IsConnected(IBusBus* bus) OVERRIDE;
-  virtual void CreateContext(IBusBus* bus,
-                             PendingCreateICRequest* request) OVERRIDE;
-  virtual void DestroyProxy(IBusInputContext* context) OVERRIDE;
+  virtual bool IsConnected() OVERRIDE;
+  virtual bool IsContextReady() OVERRIDE;
+  virtual void CreateContext(PendingCreateICRequest* request) OVERRIDE;
+  virtual void DestroyProxy() OVERRIDE;
   virtual void SetCapabilities(
-      IBusInputContext* context,
       InlineCompositionCapability inline_type) OVERRIDE;
-  virtual void FocusIn(IBusInputContext* context) OVERRIDE;
-  virtual void FocusOut(IBusInputContext* context) OVERRIDE;
-  virtual void Reset(IBusInputContext* context) OVERRIDE;
+  virtual void FocusIn() OVERRIDE;
+  virtual void FocusOut() OVERRIDE;
+  virtual void Reset() OVERRIDE;
   virtual InputMethodType GetInputMethodType() OVERRIDE;
-  virtual void SetCursorLocation(IBusInputContext* context,
-                                 const gfx::Rect& cursor_location,
+  virtual void SetCursorLocation(const gfx::Rect& cursor_location,
                                  const gfx::Rect& composition_head) OVERRIDE;
-  virtual void SendKeyEvent(IBusInputContext* context,
-                            uint32 keyval,
-                            uint32 keycode,
-                            uint32 state,
-                            PendingKeyEvent* pending_key) OVERRIDE;
-  virtual void ExtractCompositionText(
-      IBusText* text,
-      guint cursor_position,
-      CompositionText* out_composition) OVERRIDE;
-  virtual string16 ExtractCommitText(IBusText* text) OVERRIDE;
-
-private:
+  virtual void SendKeyEvent(
+      uint32 keyval,
+      uint32 keycode,
+      uint32 state,
+      const chromeos::IBusInputContextClient::ProcessKeyEventCallback&
+          cb) OVERRIDE;
+ private:
   DISALLOW_COPY_AND_ASSIGN(IBusClientImpl);
 };
 

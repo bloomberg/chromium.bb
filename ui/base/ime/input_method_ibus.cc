@@ -4,8 +4,6 @@
 
 #include "ui/base/ime/input_method_ibus.h"
 
-#include <glib.h>
-#include <glib-object.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -18,13 +16,17 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
 #include "ui/base/events.h"
 #include "ui/base/ime/ibus_client_impl.h"
-#include "ui/base/ime/mock_ibus_client.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
@@ -32,6 +34,8 @@
 #include "ui/gfx/rect.h"
 
 namespace {
+
+const int kIBusReleaseMask = 1 << 30;
 
 XKeyEvent* GetKeyEvent(XEvent* event) {
   DCHECK(event && (event->type == KeyPress || event->type == KeyRelease));
@@ -50,15 +54,15 @@ int EventFlagsFromXFlags(unsigned int flags) {
 }
 
 // Converts X flags to ibus key state flags.
-guint32 IBusStateFromXFlags(unsigned int flags) {
+uint32 IBusStateFromXFlags(unsigned int flags) {
   return (flags & (LockMask | ControlMask | ShiftMask | Mod1Mask |
                    Button1Mask | Button2Mask | Button3Mask));
 }
 
 void IBusKeyEventFromNativeKeyEvent(const base::NativeEvent& native_event,
-                                    guint32* ibus_keyval,
-                                    guint32* ibus_keycode,
-                                    guint32* ibus_state) {
+                                    uint32* ibus_keyval,
+                                    uint32* ibus_keycode,
+                                    uint32* ibus_state) {
   DCHECK(native_event);  // A fabricated event is not supported here.
   XKeyEvent* x_key = GetKeyEvent(native_event);
 
@@ -70,7 +74,7 @@ void IBusKeyEventFromNativeKeyEvent(const base::NativeEvent& native_event,
   *ibus_keycode = x_key->keycode;
   *ibus_state = IBusStateFromXFlags(x_key->state);
   if (native_event->type == KeyRelease)
-    *ibus_state |= ui::kIBusReleaseMask;
+    *ibus_state |= kIBusReleaseMask;
 }
 
 }  // namespace
@@ -83,7 +87,7 @@ class InputMethodIBus::PendingKeyEventImpl
  public:
   PendingKeyEventImpl(InputMethodIBus* input_method,
                       const base::NativeEvent& native_event,
-                      guint32 ibus_keyval);
+                      uint32 ibus_keyval);
   virtual ~PendingKeyEventImpl();
 
   // internal::IBusClient::PendingKeyEvent overrides:
@@ -106,7 +110,7 @@ class InputMethodIBus::PendingKeyEventImpl
   // bitwise copy.
   XKeyEvent x_event_;
 
-  const guint32 ibus_keyval_;
+  const uint32 ibus_keyval_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingKeyEventImpl);
 };
@@ -114,7 +118,7 @@ class InputMethodIBus::PendingKeyEventImpl
 InputMethodIBus::PendingKeyEventImpl::PendingKeyEventImpl(
     InputMethodIBus* input_method,
     const base::NativeEvent& native_event,
-    guint32 ibus_keyval)
+    uint32 ibus_keyval)
     : input_method_(input_method),
       ibus_keyval_(ibus_keyval) {
   DCHECK(input_method_);
@@ -155,7 +159,8 @@ class InputMethodIBus::PendingCreateICRequestImpl
   virtual ~PendingCreateICRequestImpl();
 
   // internal::IBusClient::PendingCreateICRequest overrides:
-  virtual void StoreOrAbandonInputContext(IBusInputContext* ic) OVERRIDE;
+  virtual void InitOrAbandonInputContext() OVERRIDE;
+  virtual void OnCreateInputContextFailed() OVERRIDE;
 
   // Abandon this pending key event. Its result will just be discarded.
   void Abandon() {
@@ -188,22 +193,19 @@ InputMethodIBus::PendingCreateICRequestImpl::~PendingCreateICRequestImpl() {
   }
 }
 
-void InputMethodIBus::PendingCreateICRequestImpl::StoreOrAbandonInputContext(
-    IBusInputContext* ic) {
-  // TODO(yusukes): If the connection between Chrome and ibus-daemon terminates
-  // for some reason, the create ic request will fail. In that case, NULL ic
-  // will be passed to this function. We might want to call
+void InputMethodIBus::PendingCreateICRequestImpl::OnCreateInputContextFailed() {
+  // TODO(nona): If the connection between Chrome and ibus-daemon terminates
+  // for some reason, the create ic request will fail. We might want to call
   // ibus_client_->CreateContext() again after some delay.
-  if (!ic)
-    return;
+}
 
+void InputMethodIBus::PendingCreateICRequestImpl::InitOrAbandonInputContext() {
   if (input_method_) {
-    input_method_->SetContext(ic);
+    DCHECK(ibus_client_->IsContextReady());
+    input_method_->SetUpSignalHandlers();
   } else {
-    // Since DestroyProxy() will not really release the object, we still need
-    // to call g_object_unref() explicitly.
-    ibus_client_->DestroyProxy(ic);
-    g_object_unref(ic);
+    ibus_client_->DestroyProxy();
+    DCHECK(!ibus_client_->IsContextReady());
   }
 }
 
@@ -211,29 +213,19 @@ void InputMethodIBus::PendingCreateICRequestImpl::StoreOrAbandonInputContext(
 InputMethodIBus::InputMethodIBus(
     internal::InputMethodDelegate* delegate)
     :
-#if defined(HAVE_IBUS)
       ibus_client_(new internal::IBusClientImpl),
-#else
-      ibus_client_(new internal::MockIBusClient),
-#endif
-      context_(NULL),
       pending_create_ic_request_(NULL),
       context_focused_(false),
       composing_text_(false),
       composition_changed_(false),
-      suppress_next_result_(false) {
+      suppress_next_result_(false),
+      weak_ptr_factory_(this) {
   SetDelegate(delegate);
 }
 
 InputMethodIBus::~InputMethodIBus() {
   AbandonAllPendingKeyEvents();
   DestroyContext();
-
-  // Disconnect bus signals
-  g_signal_handlers_disconnect_by_func(
-      GetBus(), reinterpret_cast<gpointer>(OnIBusConnectedThunk), this);
-  g_signal_handlers_disconnect_by_func(
-      GetBus(), reinterpret_cast<gpointer>(OnIBusDisconnectedThunk), this);
 }
 
 void InputMethodIBus::set_ibus_client(
@@ -260,20 +252,20 @@ void InputMethodIBus::Init(bool focused) {
   // Initializes the connection to ibus daemon. It may happen asynchronously,
   // and as soon as the connection is established, the |context_| will be
   // created automatically.
-  IBusBus* bus = GetBus();
 
-  // connect bus signals
-  g_signal_connect(bus, "connected",
-                   G_CALLBACK(OnIBusConnectedThunk), this);
-  g_signal_connect(bus, "disconnected",
-                   G_CALLBACK(OnIBusDisconnectedThunk), this);
-
-  // Creates the |context_| if the connection is already established. In such
-  // case, we will not get "connected" signal.
-  if (ibus_client_->IsConnected(bus))
+  // Create the input context if the connection is already established.
+  if (ibus_client_->IsConnected())
     CreateContext();
 
   InputMethodBase::Init(focused);
+}
+
+// static
+void InputMethodIBus::ProcessKeyEventDone(
+    PendingKeyEventImpl* pending_key_event, bool is_handled) {
+  DCHECK(pending_key_event);
+  pending_key_event->ProcessPostIME(is_handled);
+  delete pending_key_event;
 }
 
 void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
@@ -281,9 +273,9 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
                           native_event->type == KeyRelease));
   DCHECK(system_toplevel_window_focused());
 
-  guint32 ibus_keyval = 0;
-  guint32 ibus_keycode = 0;
-  guint32 ibus_state = 0;
+  uint32 ibus_keyval = 0;
+  uint32 ibus_keycode = 0;
+  uint32 ibus_state = 0;
   IBusKeyEventFromNativeKeyEvent(
       native_event, &ibus_keyval, &ibus_keycode, &ibus_state);
 
@@ -307,11 +299,11 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
       new PendingKeyEventImpl(this, native_event, ibus_keyval);
   pending_key_events_.insert(pending_key);
 
-  ibus_client_->SendKeyEvent(context_,
-                             ibus_keyval,
+  ibus_client_->SendKeyEvent(ibus_keyval,
                              ibus_keycode,
                              ibus_state,
-                             pending_key);
+                             base::Bind(&InputMethodIBus::ProcessKeyEventDone,
+                                        base::Unretained(pending_key)));
 
   // We don't want to suppress the result generated by this key event, but it
   // may cause problem. See comment in ResetContext() method.
@@ -319,7 +311,7 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
 }
 
 void InputMethodIBus::OnTextInputTypeChanged(const TextInputClient* client) {
-  if (context_ && IsTextInputClientFocused(client)) {
+  if (ibus_client_->IsContextReady() && IsTextInputClientFocused(client)) {
     ResetContext();
     UpdateContextFocusState();
   }
@@ -341,7 +333,7 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   }
 
   // This function runs asynchronously.
-  ibus_client_->SetCursorLocation(context_, rect, composition_head);
+  ibus_client_->SetCursorLocation(rect, composition_head);
 }
 
 void InputMethodIBus::CancelComposition(const TextInputClient* client) {
@@ -382,37 +374,42 @@ void InputMethodIBus::OnDidChangeFocusedClient(TextInputClient* focused_before,
 }
 
 void InputMethodIBus::CreateContext() {
-  DCHECK(!context_);
-  DCHECK(GetBus());
-  DCHECK(ibus_client_->IsConnected(GetBus()));
+  DCHECK(ibus_client_->IsConnected());
   DCHECK(!pending_create_ic_request_);
 
   // Creates the input context asynchronously.
   pending_create_ic_request_ = new PendingCreateICRequestImpl(
       this, ibus_client_.get(), &pending_create_ic_request_);
-  ibus_client_->CreateContext(GetBus(), pending_create_ic_request_);
+  ibus_client_->CreateContext(pending_create_ic_request_);
 }
 
-void InputMethodIBus::SetContext(IBusInputContext* ic) {
-  DCHECK(ic);
-  DCHECK(!context_);
-  context_ = ic;
+void InputMethodIBus::SetUpSignalHandlers() {
+  DCHECK(ibus_client_->IsContextReady());
 
   // connect input context signals
-  g_signal_connect(ic, "commit-text",
-                   G_CALLBACK(OnCommitTextThunk), this);
-  g_signal_connect(ic, "forward-key-event",
-                   G_CALLBACK(OnForwardKeyEventThunk), this);
-  g_signal_connect(ic, "update-preedit-text",
-                   G_CALLBACK(OnUpdatePreeditTextThunk), this);
-  g_signal_connect(ic, "show-preedit-text",
-                   G_CALLBACK(OnShowPreeditTextThunk), this);
-  g_signal_connect(ic, "hide-preedit-text",
-                   G_CALLBACK(OnHidePreeditTextThunk), this);
-  g_signal_connect(ic, "destroy",
-                   G_CALLBACK(OnDestroyThunk), this);
+  chromeos::IBusInputContextClient* input_context_client =
+      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
+  input_context_client->SetCommitTextHandler(
+      base::Bind(&InputMethodIBus::OnCommitText,
+                 weak_ptr_factory_.GetWeakPtr()));
 
-  ibus_client_->SetCapabilities(ic, internal::IBusClient::INLINE_COMPOSITION);
+  input_context_client->SetForwardKeyEventHandler(
+      base::Bind(&InputMethodIBus::OnForwardKeyEvent,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  input_context_client->SetUpdatePreeditTextHandler(
+      base::Bind(&InputMethodIBus::OnUpdatePreeditText,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  input_context_client->SetShowPreeditTextHandler(
+      base::Bind(&InputMethodIBus::OnShowPreeditText,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  input_context_client->SetHidePreeditTextHandler(
+      base::Bind(&InputMethodIBus::OnHidePreeditText,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  ibus_client_->SetCapabilities(internal::IBusClient::INLINE_COMPOSITION);
 
   UpdateContextFocusState();
   // Since ibus-daemon is launched in an on-demand basis on Chrome OS, RWHVA (or
@@ -424,16 +421,13 @@ void InputMethodIBus::SetContext(IBusInputContext* ic) {
 
 void InputMethodIBus::DestroyContext() {
   if (pending_create_ic_request_) {
-    DCHECK(!context_);
+    DCHECK(!ibus_client_->IsContextReady());
     // |pending_create_ic_request_| will be deleted in CreateInputContextDone().
     pending_create_ic_request_->Abandon();
     pending_create_ic_request_ = NULL;
-  } else if (context_) {
-    // DestroyProxy() will not really release the resource of |context_|
-    // object. We still need to handle "destroy" signal and call
-    // g_object_unref() there.
-    ibus_client_->DestroyProxy(context_);
-    DCHECK(!context_);
+  } else if (ibus_client_->IsContextReady()) {
+    ResetInputContext();
+    DCHECK(!ibus_client_->IsContextReady());
   }
 }
 
@@ -475,13 +469,13 @@ void InputMethodIBus::ResetContext() {
   // Note: some input method engines may not support reset method, such as
   // ibus-anthy. But as we control all input method engines by ourselves, we can
   // make sure that all of the engines we are using support it correctly.
-  ibus_client_->Reset(context_);
+  ibus_client_->Reset();
 
   character_composer_.Reset();
 }
 
 void InputMethodIBus::UpdateContextFocusState() {
-  if (!context_) {
+  if (!ibus_client_->IsContextReady()) {
     context_focused_ = false;
     return;
   }
@@ -501,21 +495,21 @@ void InputMethodIBus::UpdateContextFocusState() {
   // We only focus in |context_| when the focus is in a normal textfield.
   // ibus_input_context_focus_{in|out}() run asynchronously.
   if (old_context_focused && !context_focused_)
-    ibus_client_->FocusOut(context_);
+    ibus_client_->FocusOut();
   else if (!old_context_focused && context_focused_)
-    ibus_client_->FocusIn(context_);
+    ibus_client_->FocusIn();
 
   if (context_focused_) {
     internal::IBusClient::InlineCompositionCapability capability =
         CanComposeInline() ? internal::IBusClient::INLINE_COMPOSITION
                            : internal::IBusClient::OFF_THE_SPOT_COMPOSITION;
-    ibus_client_->SetCapabilities(context_, capability);
+    ibus_client_->SetCapabilities(capability);
   }
 }
 
 void InputMethodIBus::ProcessKeyEventPostIME(
     const base::NativeEvent& native_event,
-    guint32 ibus_keyval,
+    uint32 ibus_keyval,
     bool handled) {
   TextInputClient* client = GetTextInputClient();
 
@@ -561,7 +555,7 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(
 
 void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
     const base::NativeEvent& native_event,
-    guint32 ibus_keyval) {
+    uint32 ibus_keyval) {
   // For a fabricated event, ProcessUnfilteredFabricatedKeyPressEvent should be
   // called instead.
   DCHECK(native_event);
@@ -621,7 +615,7 @@ void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
     EventType type,
     KeyboardCode key_code,
     int flags,
-    guint32 ibus_keyval) {
+    uint32 ibus_keyval) {
   TextInputClient* client = GetTextInputClient();
   DispatchFabricatedKeyEventPostIME(type, key_code, flags);
 
@@ -718,10 +712,8 @@ void InputMethodIBus::AbandonAllPendingKeyEvents() {
   pending_key_events_.clear();
 }
 
-void InputMethodIBus::OnCommitText(
-    IBusInputContext* context, IBusText* text) {
-  DCHECK_EQ(context_, context);
-  if (suppress_next_result_ || !text)
+void InputMethodIBus::OnCommitText(const chromeos::ibus::IBusText& text) {
+  if (suppress_next_result_ || text.text().empty())
     return;
 
   // We need to receive input method result even if the text input type is
@@ -730,7 +722,7 @@ void InputMethodIBus::OnCommitText(
   if (!GetTextInputClient())
     return;
 
-  const string16 utf16_text = ibus_client_->ExtractCommitText(text);
+  const string16 utf16_text = UTF8ToUTF16(text.text());
   if (utf16_text.empty())
     return;
 
@@ -748,12 +740,9 @@ void InputMethodIBus::OnCommitText(
   }
 }
 
-void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
-                                        guint keyval,
-                                        guint keycode,
-                                        guint state) {
-  DCHECK_EQ(context_, context);
-
+void InputMethodIBus::OnForwardKeyEvent(uint32 keyval,
+                                        uint32 keycode,
+                                        uint32 state) {
   KeyboardCode ui_key_code = KeyboardCodeFromXKeysym(keyval);
   if (!ui_key_code)
     return;
@@ -775,19 +764,16 @@ void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
   }
 }
 
-void InputMethodIBus::OnShowPreeditText(IBusInputContext* context) {
-  DCHECK_EQ(context_, context);
+void InputMethodIBus::OnShowPreeditText() {
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
 
   composing_text_ = true;
 }
 
-void InputMethodIBus::OnUpdatePreeditText(IBusInputContext* context,
-                                          IBusText* text,
-                                          guint cursor_pos,
-                                          gboolean visible) {
-  DCHECK_EQ(context_, context);
+void InputMethodIBus::OnUpdatePreeditText(const chromeos::ibus::IBusText& text,
+                                          uint32 cursor_pos,
+                                          bool visible) {
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
 
@@ -799,11 +785,11 @@ void InputMethodIBus::OnUpdatePreeditText(IBusInputContext* context,
   // If it's only for clearing the current preedit text, then why not just use
   // OnHidePreeditText()?
   if (!visible) {
-    OnHidePreeditText(context);
+    OnHidePreeditText();
     return;
   }
 
-  ibus_client_->ExtractCompositionText(text, cursor_pos, &composition_);
+  ExtractCompositionText(text, cursor_pos, &composition_);
 
   composition_changed_ = true;
 
@@ -822,8 +808,7 @@ void InputMethodIBus::OnUpdatePreeditText(IBusInputContext* context,
   }
 }
 
-void InputMethodIBus::OnHidePreeditText(IBusInputContext* context) {
-  DCHECK_EQ(context_, context);
+void InputMethodIBus::OnHidePreeditText() {
   if (composition_.text.empty() || IsTextInputTypeNone())
     return;
 
@@ -839,46 +824,113 @@ void InputMethodIBus::OnHidePreeditText(IBusInputContext* context) {
   }
 }
 
-void InputMethodIBus::OnDestroy(IBusInputContext* context) {
-  DCHECK_EQ(context_, context);
-  g_object_unref(context_);
-  context_ = NULL;
+void InputMethodIBus::ResetInputContext() {
   context_focused_ = false;
 
   ConfirmCompositionText();
 
   // We are dead, so we need to ask the client to stop relying on us.
-  // We cannot do it in DestroyContext(), because OnDestroy() may be called
-  // automatically.
   OnInputMethodChanged();
+  ibus_client_->DestroyProxy();
 }
 
-void InputMethodIBus::OnIBusConnected(IBusBus* bus) {
-  DCHECK_EQ(GetBus(), bus);
-  DCHECK(ibus_client_->IsConnected(bus));
+void InputMethodIBus::OnConnected() {
+  DCHECK(ibus_client_->IsConnected());
+  // If already input context is initialized, do nothing.
+  if (ibus_client_->IsContextReady())
+    return;
 
   DestroyContext();
   CreateContext();
 }
 
-void InputMethodIBus::OnIBusDisconnected(IBusBus* bus) {
-  DCHECK_EQ(GetBus(), bus);
-
-  // TODO(suzhe): Make sure if we really do not need to handle this signal.
-  // And I'm actually wondering if ibus-daemon will release the resource of the
-  // |context_| correctly when the connection is lost.
+void InputMethodIBus::OnDisconnected() {
+  DestroyContext();
 }
 
-IBusBus* InputMethodIBus::GetBus() {
-  // Everything happens in UI thread, so we do not need to care about
-  // synchronization issue.
-  static IBusBus* ibus = NULL;
+void InputMethodIBus::ExtractCompositionText(
+    const chromeos::ibus::IBusText& text,
+    uint32 cursor_position,
+    CompositionText* out_composition) const {
+  out_composition->Clear();
+  out_composition->text = UTF8ToUTF16(text.text());
 
-  if (!ibus) {
-    ibus = ibus_client_->GetConnection();
-    DCHECK(ibus);
+  if (out_composition->text.empty())
+    return;
+
+  // ibus uses character index for cursor position and attribute range, but we
+  // use char16 offset for them. So we need to do conversion here.
+  std::vector<size_t> char16_offsets;
+  size_t length = out_composition->text.length();
+  base::i18n::UTF16CharIterator char_iterator(&out_composition->text);
+  do {
+    char16_offsets.push_back(char_iterator.array_pos());
+  } while (char_iterator.Advance());
+
+  // The text length in Unicode characters.
+  uint32 char_length = static_cast<uint32>(char16_offsets.size());
+  // Make sure we can convert the value of |char_length| as well.
+  char16_offsets.push_back(length);
+
+  size_t cursor_offset =
+      char16_offsets[std::min(char_length, cursor_position)];
+
+  out_composition->selection = Range(cursor_offset);
+
+  const std::vector<chromeos::ibus::IBusText::UnderlineAttribute>&
+      underline_attributes = text.underline_attributes();
+  const std::vector<chromeos::ibus::IBusText::SelectionAttribute>&
+      selection_attributes = text.selection_attributes();
+
+  if (!underline_attributes.empty()) {
+    for (size_t i = 0; i < underline_attributes.size(); ++i) {
+      const uint32 start = underline_attributes[i].start_index;
+      const uint32 end = underline_attributes[i].end_index;
+      if (start >= end)
+        continue;
+      CompositionUnderline underline(
+          char16_offsets[start], char16_offsets[end],
+          SK_ColorBLACK, false /* thick */);
+      if (underline_attributes[i].type ==
+          chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE)
+        underline.thick = true;
+      else if (underline_attributes[i].type ==
+               chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_ERROR)
+        underline.color = SK_ColorRED;
+      out_composition->underlines.push_back(underline);
+    }
   }
-  return ibus;
+
+  if (!selection_attributes.empty()) {
+    LOG_IF(ERROR, selection_attributes.size() != 1)
+        << "Chrome does not support multiple selection";
+    for (uint32 i = 0; i < selection_attributes.size(); ++i) {
+      const uint32 start = selection_attributes[i].start_index;
+      const uint32 end = selection_attributes[i].end_index;
+      if (start >= end)
+        continue;
+      CompositionUnderline underline(
+          char16_offsets[start], char16_offsets[end],
+          SK_ColorBLACK, true /* thick */);
+      out_composition->underlines.push_back(underline);
+      // If the cursor is at start or end of this underline, then we treat
+      // it as the selection range as well, but make sure to set the cursor
+      // position to the selection end.
+      if (underline.start_offset == cursor_offset) {
+        out_composition->selection.set_start(underline.end_offset);
+        out_composition->selection.set_end(cursor_offset);
+      } else if (underline.end_offset == cursor_offset) {
+        out_composition->selection.set_start(underline.start_offset);
+        out_composition->selection.set_end(cursor_offset);
+      }
+    }
+  }
+
+  // Use a black thin underline by default.
+  if (out_composition->underlines.empty()) {
+    out_composition->underlines.push_back(CompositionUnderline(
+        0, length, SK_ColorBLACK, false /* thick */));
+  }
 }
 
 }  // namespace ui

@@ -294,8 +294,7 @@ class IBusUiControllerImpl : public IBusUiController {
           INPUT_METHOD_XKB_LAYOUT : INPUT_METHOD_NORMAL;
     }
 
-    virtual void SetCursorLocation(IBusInputContext* context,
-                                   const gfx::Rect& cursor_location,
+    virtual void SetCursorLocation(const gfx::Rect& cursor_location,
                                    const gfx::Rect& composition_head) OVERRIDE {
       if (!ui_)
         return;

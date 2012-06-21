@@ -12,6 +12,7 @@
 #include <stack>
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_path_watcher.h"
@@ -25,6 +26,9 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
+#include "ui/base/ime/input_method_ibus.h"
 
 // TODO(nona): Remove libibus dependency from this file. Then, write unit tests
 // for all functions in this file. crbug.com/26334
@@ -464,6 +468,7 @@ IBusControllerImpl::IBusControllerImpl()
       ibus_config_(NULL),
       process_handle_(base::kNullProcessHandle),
       ibus_daemon_status_(IBUS_DAEMON_STOP),
+      input_method_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -1040,6 +1045,18 @@ bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
   return true;
 }
 
+ui::InputMethodIBus* IBusControllerImpl::GetInputMethod() {
+  return input_method_ ? input_method_ :
+      static_cast<ui::InputMethodIBus*>(
+          ash::Shell::GetPrimaryRootWindow()->GetProperty(
+              aura::client::kRootWindowInputMethodKey));
+}
+
+void IBusControllerImpl::set_input_method_for_testing(
+    ui::InputMethodIBus* input_method) {
+  input_method_ = input_method;
+}
+
 // static
 void IBusControllerImpl::IBusDaemonInitializationDone(
     IBusControllerImpl* controller,
@@ -1053,6 +1070,10 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   }
   chromeos::DBusThreadManager::Get()->InitIBusBus(ibus_address);
   controller->ibus_daemon_status_ = IBUS_DAEMON_RUNNING;
+
+  ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
+  DCHECK(input_method_ibus);
+  input_method_ibus->OnConnected();
   VLOG(1) << "The ibus-daemon initialization is done.";
 }
 
@@ -1102,6 +1123,9 @@ void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
 
   const IBusDaemonStatus on_exit_state = controller->ibus_daemon_status_;
   controller->ibus_daemon_status_ = IBUS_DAEMON_STOP;
+  ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
+  DCHECK(input_method_ibus);
+  input_method_ibus->OnDisconnected();
   if (on_exit_state == IBUS_DAEMON_SHUTTING_DOWN) {
     // Normal exitting, so do nothing.
     return;

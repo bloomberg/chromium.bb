@@ -4,7 +4,9 @@
 
 #include "ui/base/ime/text_input_test_support.h"
 
+#if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
+#endif  // OS_CHROMEOS
 
 namespace ui {
 

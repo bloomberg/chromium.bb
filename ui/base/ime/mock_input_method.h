@@ -6,6 +6,8 @@
 #define UI_BASE_IME_MOCK_INPUT_METHOD_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/input_method.h"

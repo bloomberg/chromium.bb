@@ -30,6 +30,10 @@ typedef struct _IBusPanelService IBusPanelService;
 typedef struct _IBusPropList IBusPropList;
 typedef struct _IBusProperty IBusProperty;
 
+namespace ui {
+class InputMethodIBus;
+}  // namespace ui
+
 namespace chromeos {
 namespace input_method {
 
@@ -132,6 +136,13 @@ class IBusControllerImpl : public IBusControllerBase {
                      base::ProcessHandle* process_handle,
                      GChildWatchFunc watch_func);
 
+  // Returns pointer to InputMethod object.
+  ui::InputMethodIBus* GetInputMethod();
+
+  // Injects an alternative ui::InputMethod for testing.
+  // The injected object must be released by caller.
+  void set_input_method_for_testing(ui::InputMethodIBus* input_method);
+
   // A callback function that will be called when ibus_config_set_value_async()
   // request is finished.
   static void SetInputMethodConfigCallback(GObject* source_object,
@@ -168,6 +179,9 @@ class IBusControllerImpl : public IBusControllerBase {
 
   // Represents ibus-daemon's status.
   IBusDaemonStatus ibus_daemon_status_;
+
+  // The pointer to global input method. We can inject this value for testing.
+  ui::InputMethodIBus* input_method_;
 
   // Used for making callbacks for PostTask.
   base::WeakPtrFactory<IBusControllerImpl> weak_ptr_factory_;

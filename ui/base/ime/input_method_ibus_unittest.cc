@@ -2,19 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <glib-object.h>
-
 #include <cstring>
 
+#include "base/i18n/char_iterator.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_ibus.h"
 #include "ui/base/ime/mock_ibus_client.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/rect.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
+namespace {
+
+uint32 GetOffsetInUTF16(const std::string& utf8_string, uint32 utf8_offset) {
+  string16 utf16_string = UTF8ToUTF16(utf8_string);
+  DCHECK_LT(utf8_offset, utf16_string.size());
+  base::i18n::UTF16CharIterator char_iterator(&utf16_string);
+  for (size_t i = 0; i < utf8_offset; ++i)
+    char_iterator.Advance();
+  return char_iterator.array_pos();
+}
+
+}  // namespace
+
 
 class TestableInputMethodIBus : public InputMethodIBus {
  public:
@@ -25,7 +40,7 @@ class TestableInputMethodIBus : public InputMethodIBus {
   }
 
   // Change access rights.
-  using InputMethodIBus::GetBus;
+  using InputMethodIBus::ExtractCompositionText;
 };
 
 class InputMethodIBusTest : public internal::InputMethodDelegate,
@@ -41,6 +56,13 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
+    // |thread_manager_| will be released by DBusThreadManager::Shutdown
+    // function in TearDown function.
+    // Current MockIBusInputContext is strongly depend on gmock, but gmock is
+    // banned in ui/*. So just use stab implementation for testing.
+    // TODO(nona): Introduce gmock-free MockIBusInputContext.
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
     scoped_ptr<internal::IBusClient> client(new internal::MockIBusClient);
     ime_.reset(new TestableInputMethodIBus(this, client.Pass()));
     ime_->SetFocusedTextInputClient(this);
@@ -50,6 +72,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     if (ime_.get())
       ime_->SetFocusedTextInputClient(NULL);
     ime_.reset();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   // ui::internal::InputMethodDelegate overrides:
@@ -113,10 +136,6 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   }
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE { return false; }
-
-  IBusBus* GetBus() {
-    return ime_->GetBus();
-  }
 
   internal::MockIBusClient* GetClient() {
     return static_cast<internal::MockIBusClient*>(ime_->ibus_client());
@@ -284,7 +303,7 @@ TEST_F(InputMethodIBusTest, InitiallyDisconnected) {
   EXPECT_EQ(0U, GetClient()->create_context_call_count_);
   // Start the daemon.
   GetClient()->is_connected_ = true;
-  g_signal_emit_by_name(GetBus(), "connected");
+  ime_->OnConnected();
   // A context should be created upon the signal delivery.
   EXPECT_EQ(1U, GetClient()->create_context_call_count_);
   EXPECT_EQ(1U, GetClient()->set_capabilities_call_count_);
@@ -298,7 +317,7 @@ TEST_F(InputMethodIBusTest, Disconnect) {
   ime_->Init(true);
   EXPECT_EQ(1U, GetClient()->create_context_call_count_);
   GetClient()->is_connected_ = false;
-  g_signal_emit_by_name(GetBus(), "disconnected");
+  ime_->OnDisconnected();
 }
 
 // Confirm that ui::InputMethodIBus re-creates an input context when ibus-daemon
@@ -310,9 +329,9 @@ TEST_F(InputMethodIBusTest, DisconnectThenReconnect) {
   EXPECT_EQ(1U, GetClient()->set_capabilities_call_count_);
   EXPECT_EQ(0U, GetClient()->destroy_proxy_call_count_);
   GetClient()->is_connected_ = false;
-  g_signal_emit_by_name(GetBus(), "disconnected");
+  ime_->OnDisconnected();
   GetClient()->is_connected_ = true;
-  g_signal_emit_by_name(GetBus(), "connected");
+  ime_->OnConnected();
   // Check if the old context is deleted.
   EXPECT_EQ(1U, GetClient()->destroy_proxy_call_count_);
   // Check if a new context is created.
@@ -374,7 +393,7 @@ TEST_F(InputMethodIBusTest, FocusIn_Text) {
   ime_->OnTextInputTypeChanged(this);
   // Start the daemon.
   GetClient()->is_connected_ = true;
-  g_signal_emit_by_name(GetBus(), "connected");
+  ime_->OnConnected();
   // A context should be created upon the signal delivery.
   EXPECT_EQ(1U, GetClient()->create_context_call_count_);
   // Since a form has focus, IBusClient::FocusIn() should be called.
@@ -395,7 +414,7 @@ TEST_F(InputMethodIBusTest, FocusIn_Password) {
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
   GetClient()->is_connected_ = true;
-  g_signal_emit_by_name(GetBus(), "connected");
+  ime_->OnConnected();
   EXPECT_EQ(1U, GetClient()->create_context_call_count_);
   // Since a form has focus, IBusClient::FocusIn() should NOT be called.
   EXPECT_EQ(0U, GetClient()->focus_in_call_count_);
@@ -463,6 +482,207 @@ TEST_F(InputMethodIBusTest, OnCaretBoundsChanged) {
   EXPECT_EQ(3U, GetClient()->set_cursor_location_call_count_);
 }
 
-// TODO(yusukes): Write more tests, especially for key event functions.
+TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {
+  const char kSampleText[] = "Sample Text";
+  const uint32 kCursorPos = 2UL;
+
+  const string16 utf16_string = UTF8ToUTF16(kSampleText);
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  // If there is no selection, |selection| represents cursor position.
+  EXPECT_EQ(kCursorPos, composition_text.selection.start());
+  EXPECT_EQ(kCursorPos, composition_text.selection.end());
+  // If there is no underline, |underlines| contains one underline and it is
+  // whole text underline.
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(0UL, composition_text.underlines[0].start_offset);
+  EXPECT_EQ(utf16_string.size(), composition_text.underlines[0].end_offset);
+  EXPECT_FALSE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SingleUnderline) {
+  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
+                             "\xE3\x81\x88\xE3\x81\x8A";
+  const uint32 kCursorPos = 2UL;
+
+  // Set up ibus text with one underline attribute.
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+  chromeos::ibus::IBusText::UnderlineAttribute underline;
+  underline.type = chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_SINGLE;
+  underline.start_index = 1UL;
+  underline.end_index = 4UL;
+  ibus_text.mutable_underline_attributes()->push_back(underline);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  // If there is no selection, |selection| represents cursor position.
+  EXPECT_EQ(kCursorPos, composition_text.selection.start());
+  EXPECT_EQ(kCursorPos, composition_text.selection.end());
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.start_index),
+            composition_text.underlines[0].start_offset);
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.end_index),
+            composition_text.underlines[0].end_offset);
+  // Single underline represents as black thin line.
+  EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
+  EXPECT_FALSE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_DoubleUnderline) {
+  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
+                             "\xE3\x81\x88\xE3\x81\x8A";
+  const uint32 kCursorPos = 2UL;
+
+  // Set up ibus text with one underline attribute.
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+  chromeos::ibus::IBusText::UnderlineAttribute underline;
+  underline.type = chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE;
+  underline.start_index = 1UL;
+  underline.end_index = 4UL;
+  ibus_text.mutable_underline_attributes()->push_back(underline);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  // If there is no selection, |selection| represents cursor position.
+  EXPECT_EQ(kCursorPos, composition_text.selection.start());
+  EXPECT_EQ(kCursorPos, composition_text.selection.end());
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.start_index),
+            composition_text.underlines[0].start_offset);
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.end_index),
+            composition_text.underlines[0].end_offset);
+  // Double underline represents as black thick line.
+  EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
+  EXPECT_TRUE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_ErrorUnderline) {
+  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
+                             "\xE3\x81\x88\xE3\x81\x8A";
+  const uint32 kCursorPos = 2UL;
+
+  // Set up ibus text with one underline attribute.
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+  chromeos::ibus::IBusText::UnderlineAttribute underline;
+  underline.type = chromeos::ibus::IBusText::IBUS_TEXT_UNDERLINE_ERROR;
+  underline.start_index = 1UL;
+  underline.end_index = 4UL;
+  ibus_text.mutable_underline_attributes()->push_back(underline);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kCursorPos, composition_text.selection.start());
+  EXPECT_EQ(kCursorPos, composition_text.selection.end());
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.start_index),
+            composition_text.underlines[0].start_offset);
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.end_index),
+            composition_text.underlines[0].end_offset);
+  // Error underline represents as red thin line.
+  EXPECT_EQ(SK_ColorRED, composition_text.underlines[0].color);
+  EXPECT_FALSE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_Selection) {
+  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
+                             "\xE3\x81\x88\xE3\x81\x8A";
+  const uint32 kCursorPos = 2UL;
+
+  // Set up ibus text with one underline attribute.
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+  chromeos::ibus::IBusText::SelectionAttribute selection;
+  selection.start_index = 1UL;
+  selection.end_index = 4UL;
+  ibus_text.mutable_selection_attributes()->push_back(selection);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  EXPECT_EQ(kCursorPos, composition_text.selection.start());
+  EXPECT_EQ(kCursorPos, composition_text.selection.end());
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+            composition_text.underlines[0].start_offset);
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+            composition_text.underlines[0].end_offset);
+  EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
+  EXPECT_TRUE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest,
+       ExtractCompositionTextTest_SelectionStartWithCursor) {
+  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
+                             "\xE3\x81\x88\xE3\x81\x8A";
+  const uint32 kCursorPos = 1UL;
+
+  // Set up ibus text with one underline attribute.
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+  chromeos::ibus::IBusText::SelectionAttribute selection;
+  selection.start_index = kCursorPos;
+  selection.end_index = 4UL;
+  ibus_text.mutable_selection_attributes()->push_back(selection);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  // If the cursor position is same as selection bounds, selection start
+  // position become opposit side of selection from cursor.
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+            composition_text.selection.start());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, kCursorPos),
+            composition_text.selection.end());
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+            composition_text.underlines[0].start_offset);
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+            composition_text.underlines[0].end_offset);
+  EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
+  EXPECT_TRUE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SelectionEndWithCursor) {
+  const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
+                             "\xE3\x81\x88\xE3\x81\x8A";
+  const uint32 kCursorPos = 4UL;
+
+  // Set up ibus text with one underline attribute.
+  chromeos::ibus::IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+  chromeos::ibus::IBusText::SelectionAttribute selection;
+  selection.start_index = 1UL;
+  selection.end_index = kCursorPos;
+  ibus_text.mutable_selection_attributes()->push_back(selection);
+
+  CompositionText composition_text;
+  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
+  // If the cursor position is same as selection bounds, selection start
+  // position become opposit side of selection from cursor.
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+            composition_text.selection.start());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, kCursorPos),
+            composition_text.selection.end());
+  ASSERT_EQ(1UL, composition_text.underlines.size());
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+            composition_text.underlines[0].start_offset);
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+            composition_text.underlines[0].end_offset);
+  EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
+  EXPECT_TRUE(composition_text.underlines[0].thick);
+}
+
+// TODO(nona): Write more tests, especially for key event functions.
 
 }  // namespace ui

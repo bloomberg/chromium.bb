@@ -22,7 +22,7 @@
 namespace {
 
 #if defined(USE_X11)
-guint32 EventFlagsFromXFlags(unsigned int flags) {
+uint32 EventFlagsFromXFlags(unsigned int flags) {
   return (flags & LockMask ? ui::EF_CAPS_LOCK_DOWN : 0U) |
       (flags & ControlMask ? ui::EF_CONTROL_DOWN : 0U) |
       (flags & ShiftMask ? ui::EF_SHIFT_DOWN : 0U) |
