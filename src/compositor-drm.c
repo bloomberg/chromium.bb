@@ -692,6 +692,7 @@ drm_assign_planes(struct weston_output *output)
 	 * the client buffer can be used directly for the sprite surface
 	 * as we do for flipping full screen surfaces.
 	 */
+	seat = (struct weston_seat *) ec->seat;
 	pixman_region32_init(&overlap);
 	wl_list_for_each_safe(es, next, &ec->surface_list, link) {
 		/*
@@ -702,7 +703,6 @@ drm_assign_planes(struct weston_output *output)
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);
 
-		seat = (struct weston_seat *) ec->seat;
 		if (es == seat->sprite) {
 			weston_output_set_cursor(output, seat,
 						 &surface_overlap);
@@ -721,6 +721,9 @@ drm_assign_planes(struct weston_output *output)
 		pixman_region32_fini(&surface_overlap);
 	}
 	pixman_region32_fini(&overlap);
+
+	if (!seat->sprite || !weston_surface_is_mapped(seat->sprite))
+		drm_output_set_cursor(output, NULL);
 
 	drm_disable_unused_sprites(output);
 }
