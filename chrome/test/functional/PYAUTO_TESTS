@@ -511,7 +511,7 @@
       '-translate.TranslateTest.testToggleTranslateOption',
       # crbug.com/133774
       '-youtube.YoutubeTest.testPlayerBytes',
-      'youtube.YoutubeTest.testPlayerResolution',
+      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'win': [
