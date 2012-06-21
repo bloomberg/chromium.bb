@@ -2338,9 +2338,10 @@
         "chrome_ex_oauthsimple.js",
         "contacts.html",
         "contacts.js",
-        "manifest.json"
+        "manifest.json",
+        "onload.js"
       ],
-      "source_hash": "3dc54318943ee65fca84c06c4e1249820a485cb1",
+      "source_hash": "194d8d5d6ec2ef0e06d8ed8134fcaf174dc7e811",
       "zip_path": "examples/extensions/oauth_contacts.zip"
     },
     {
