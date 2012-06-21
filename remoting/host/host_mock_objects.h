@@ -13,6 +13,7 @@
 #include "remoting/host/continue_window.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/host_status_observer.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/user_authenticator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -135,6 +136,22 @@ class MockEventExecutor : public EventExecutor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
+};
+
+class MockHostStatusObserver : public HostStatusObserver {
+ public:
+  MockHostStatusObserver();
+  virtual ~MockHostStatusObserver();
+
+  MOCK_METHOD1(OnAccessDenied, void(const std::string& jid));
+  MOCK_METHOD1(OnClientAuthenticated, void(const std::string& jid));
+  MOCK_METHOD1(OnClientConnected, void(const std::string& jid));
+  MOCK_METHOD1(OnClientDisconnected, void(const std::string& jid));
+  MOCK_METHOD3(OnClientRouteChange,
+               void(const std::string& jid,
+                    const std::string& channel_name,
+                    const protocol::TransportRoute& route));
+  MOCK_METHOD0(OnShutdown, void());
 };
 
 class MockUserAuthenticator : public UserAuthenticator {

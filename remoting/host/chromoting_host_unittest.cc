@@ -91,6 +91,7 @@ class ChromotingHostTest : public testing::Test {
     host_ = new ChromotingHost(
         &context_, &signal_strategy_, desktop_environment_.get(),
         scoped_ptr<protocol::SessionManager>(session_manager_));
+    host_->AddStatusObserver(&host_status_observer_);
 
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
@@ -237,6 +238,7 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
+  MockHostStatusObserver host_status_observer_;
   MockChromotingHostContext context_;
   protocol::MockSessionManager* session_manager_;
   MockConnectionToClient* connection_;
@@ -265,9 +267,10 @@ class ChromotingHostTest : public testing::Test {
 };
 
 TEST_F(ChromotingHostTest, StartAndShutdown) {
-  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
-  EXPECT_CALL(*disconnect_window_, Hide());
-  EXPECT_CALL(*continue_window_, Hide());
+  Expectation start = EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  EXPECT_CALL(*disconnect_window_, Hide()).After(start);
+  EXPECT_CALL(*continue_window_, Hide()).After(start);
+  EXPECT_CALL(host_status_observer_, OnShutdown()).After(start);
 
   host_->Start();
 
@@ -287,8 +290,15 @@ TEST_F(ChromotingHostTest, Connect) {
 
   // When the video packet is received we first shut down ChromotingHost,
   // then execute the done task.
-  Expectation start = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
-  Expectation stop = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+  Expectation status_authenticated =
+      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_));
+  EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid_))
+      .After(status_authenticated);
+  Expectation start =
+      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
+      .After(status_authenticated);
+  Expectation stop =
+      EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .After(start)
       .WillOnce(DoAll(
           InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost),
@@ -303,8 +313,12 @@ TEST_F(ChromotingHostTest, Connect) {
       .WillOnce(
           InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
       .RetiresOnSaturation();
+  Expectation status_disconnected =
+      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
+      .After(stop);
   EXPECT_CALL(*event_executor_, OnSessionFinished())
       .After(stop);
+  EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected);
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
@@ -319,7 +333,13 @@ TEST_F(ChromotingHostTest, Reconnect) {
 
   // When the video packet is received we first disconnect the mock
   // connection, then run the done task, then quit the message loop.
-  Expectation start1 = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+  Expectation status_authenticated1 =
+      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_));
+  EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid_))
+      .After(status_authenticated1);
+  Expectation start1 =
+      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
+      .After(status_authenticated1);
   Expectation stop1 = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .After(start1)
       .WillOnce(DoAll(
@@ -333,12 +353,19 @@ TEST_F(ChromotingHostTest, Reconnect) {
       .WillRepeatedly(RunDoneTask());
   EXPECT_CALL(*event_executor_, OnSessionFinished())
       .After(stop1);
+  EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
+      .After(stop1);
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
 
-  Expectation start2 = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
-      .After(stop1);
+  Expectation status_authenticated2 =
+      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session2_jid_));
+  EXPECT_CALL(host_status_observer_, OnClientConnected(session2_jid_))
+      .After(status_authenticated2);
+  Expectation start2 =
+      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
+      .After(status_authenticated2);
   Expectation stop2 = EXPECT_CALL(video_stub2_, ProcessVideoPacketPtr(_, _))
       .After(start2)
       .WillOnce(DoAll(
@@ -356,6 +383,10 @@ TEST_F(ChromotingHostTest, Reconnect) {
       .RetiresOnSaturation();
   EXPECT_CALL(*event_executor_, OnSessionFinished())
       .After(stop2);
+  Expectation status_disconnected2 =
+      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session2_jid_))
+      .After(stop2);
+  EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected2);
 
   SimulateClientConnection(1, true);
   message_loop_.Run();
@@ -370,7 +401,13 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
 
   // When a video packet is received we connect the second mock
   // connection.
-  Expectation start1 = EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+  Expectation status_authenticated1 =
+      EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_));
+  EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid_))
+      .After(status_authenticated1);
+  Expectation start1 =
+      EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
+      .After(status_authenticated1);
   Expectation start2 = EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .After(start1)
       .WillOnce(DoAll(
@@ -385,6 +422,12 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
       .After(start2)
       .WillRepeatedly(RunDoneTask());
   EXPECT_CALL(*event_executor_, OnSessionFinished()).After(start2);
+  EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
+      .After(start2);
+  EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session2_jid_))
+      .After(start2);
+  EXPECT_CALL(host_status_observer_, OnClientConnected(session2_jid_))
+      .After(start2);
   EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_)).After(start2);
   EXPECT_CALL(*connection_, Disconnect())
       .After(start2)
@@ -401,12 +444,17 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
       .Times(AnyNumber())
       .After(stop2)
       .WillRepeatedly(RunDoneTask());
+  Expectation status_disconnected2 =
+      EXPECT_CALL(host_status_observer_, OnClientDisconnected(session2_jid_))
+      .After(stop2);
   EXPECT_CALL(*event_executor_, OnSessionFinished()).After(stop2);
   EXPECT_CALL(*connection2_, Disconnect())
       .After(stop2)
       .WillOnce(
           InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
       .RetiresOnSaturation();
+  EXPECT_CALL(host_status_observer_, OnShutdown())
+      .After(status_disconnected2);
 
   SimulateClientConnection(0, true);
   message_loop_.Run();

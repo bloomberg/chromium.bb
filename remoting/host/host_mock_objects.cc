@@ -66,6 +66,10 @@ MockClientSessionEventHandler::MockClientSessionEventHandler() {}
 
 MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
 
+MockHostStatusObserver::MockHostStatusObserver() {}
+
+MockHostStatusObserver::~MockHostStatusObserver() {}
+
 MockUserAuthenticator::MockUserAuthenticator() {}
 
 MockUserAuthenticator::~MockUserAuthenticator() {}
