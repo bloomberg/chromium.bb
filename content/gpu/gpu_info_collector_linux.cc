@@ -5,6 +5,7 @@
 #include "content/gpu/gpu_info_collector.h"
 
 #include <dlfcn.h>
+#include <X11/Xlib.h>
 #include <vector>
 
 #include "base/command_line.h"
@@ -12,10 +13,14 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "content/public/browser/browser_thread.h"
+#include "third_party/libXNVCtrl/NVCtrl.h"
+#include "third_party/libXNVCtrl/NVCtrlLib.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -165,6 +170,33 @@ std::string CollectDriverVersionATI() {
   return "";
 }
 
+// Use NVCtrl extention to query NV driver version.
+std::string CollectDriverVersionNVidia() {
+  Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
+  if (!display) {
+    LOG(ERROR) << "XOpenDisplay failed.";
+    return "";
+  }
+  int event_base = 0, error_base = 0;
+  if (!XNVCTRLQueryExtension(display, &event_base, &error_base)) {
+    LOG(INFO) << "NVCtrl extension does not exits.";
+    return "";
+  }
+  int screen_count = ScreenCount(display);
+  for (int screen = 0; screen < screen_count; ++screen) {
+    char* buffer = NULL;
+    if (XNVCTRLIsNvScreen(display, screen) &&
+        XNVCTRLQueryStringAttribute(display, screen, 0,
+                                    NV_CTRL_STRING_NVIDIA_DRIVER_VERSION,
+                                    &buffer)) {
+      std::string driver_version(buffer);
+      XFree(buffer);
+      return driver_version;
+    }
+  }
+  return "";
+}
+
 const uint32 kVendorIDIntel = 0x8086;
 const uint32 kVendorIDNVidia = 0x10de;
 const uint32 kVendorIDAMD = 0x1002;
@@ -196,15 +228,26 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
 
 bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   bool rt = CollectVideoCardInfo(gpu_info);
 
-  if (gpu_info->gpu.vendor_id == kVendorIDAMD) {
-    std::string ati_driver_version = CollectDriverVersionATI();
-    if (!ati_driver_version.empty()) {
-      gpu_info->driver_vendor = "ATI / AMD";
-      gpu_info->driver_version = ati_driver_version;
-    }
+  std::string driver_version;
+  switch (gpu_info->gpu.vendor_id) {
+    case kVendorIDAMD:
+      driver_version = CollectDriverVersionATI();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "ATI / AMD";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
+    case kVendorIDNVidia:
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+      }
+      break;
   }
 
   return rt;
