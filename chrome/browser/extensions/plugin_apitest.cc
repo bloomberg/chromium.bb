@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -14,26 +15,13 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 
-#if defined(OS_WIN) && defined(NDEBUG)
-#define MAYBE_PluginLoadUnload PluginLoadUnload
-#elif defined(OS_WIN) && !defined(NDEBUG)
-// http://crbug.com/123851 Debug builds are flaky.
-#define MAYBE_PluginLoadUnload FLAKY_PluginLoadUnload
-#elif defined(OS_LINUX)
-// http://crbug.com/47598
-#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
-#else
-// TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
-#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
-#endif
-
 using content::NavigationController;
 using content::WebContents;
 using extensions::Extension;
 
 // Tests that a renderer's plugin list is properly updated when we load and
 // unload an extension that contains a plugin.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
@@ -59,7 +47,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   // Now the plugin should be in the cache.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
+  // We don't allow extension plugins to run on ChromeOS.
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(result);
+#else
   EXPECT_TRUE(result);
+#endif
 
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   UnloadExtension(extension->id());
@@ -85,18 +78,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   }
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
-  EXPECT_TRUE(result);
+    // We don't allow extension plugins to run on ChromeOS.
+  #if defined(OS_CHROMEOS)
+    EXPECT_FALSE(result);
+  #else
+    EXPECT_TRUE(result);
+  #endif
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_PluginPrivate PluginPrivate
-#else
-// TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
-#define MAYBE_PluginPrivate DISABLED_PluginPrivate
-#endif
-
 // Tests that private extension plugins are only visible to the extension.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
+                                               true);
+
   FilePath extension_dir =
       test_data_dir_.AppendASCII("uitest").AppendASCII("plugins_private");
 
@@ -115,6 +109,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
   // We don't allow extension plugins to run on ChromeOS.
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(result);
+#else
+  // TODO(bauerb): This might wrongly fail if the plug-in takes too long
+  // to load. Extension-private plug-ins don't appear in navigator.plugins, so
+  // we can't check for the plug-in in Javascript.
+  EXPECT_TRUE(result);
+#endif
+
+  // Regression test for http://crbug.com/131811: The plug-in should be
+  // whitelisted for the extension (and only for the extension), so it should be
+  // loaded even if content settings are set to block plug-ins.
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
 #else

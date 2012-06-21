@@ -5,6 +5,7 @@
   "description": "An extension for an extension UITest.",
   "plugins": [
     {"path": "plugin.dll", "public": true},
+    {"path": "plugin.plugin", "public": true},
     {"path": "plugin32.so", "public": true},
     {"path": "plugin64.so", "public": true}
   ]

@@ -5,6 +5,7 @@
   "description": "Tests that private publics are only visible to the extension",
   "plugins": [
     {"path": "plugin.dll"},
+    {"path": "plugin.plugin"},
     {"path": "plugin32.so"},
     {"path": "plugin64.so"}
   ]
