@@ -181,7 +181,7 @@ list > .folder > .label,
 .tree-label,
 .tree-row[may-have-children] > .tree-label,
 .tree-item[expanded] > .tree-row > .tree-label {
-  background-image: url('../../../../app/theme/bookmark_bar_folder_mac.png');
+  background-image: url('../../../../app/theme/default_100_percent/bookmark_bar_folder_mac.png');
 }
 </if>
 

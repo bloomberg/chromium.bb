@@ -9,7 +9,7 @@ body {
 h1 {
   -webkit-padding-start: 75px;
   /* TODO(stuartmorgan): Get real art for this image */
-  background-image: url('../../app/theme/sadtab.png');
+  background-image: url('../../app/theme/default_100_percent/sadtab.png');
   background-position: left;
   background-repeat: no-repeat;
   font-size: 156%;
