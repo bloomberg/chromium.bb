@@ -40,11 +40,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
-#include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/widget/widget.h"
 
 using content::BrowserThread;
 
@@ -56,14 +51,6 @@ const int kMainIndexMask = 0x1000;
 const int kVPNIndexMask  = 0x2000;
 const int kMoreIndexMask = 0x4000;
 
-// Default minimum width in pixels of the menu to prevent unnecessary
-// resizing as networks are updated.
-const int kDefaultMinimumWidth = 280;
-
-// Menu item margins.
-const int kTopMargin = 5;
-const int kBottomMargin = 7;
-
 // Replace '&' in a string with "&&" to allow it to be a menu item label.
 std::string EscapeAmpersands(const std::string& input) {
   std::string str = input;
@@ -73,23 +60,6 @@ std::string EscapeAmpersands(const std::string& input) {
     found = str.find('&', found + 2);
   }
   return str;
-}
-
-// Set vertical menu margins for entire menu hierarchy.
-void SetMenuMargins(views::MenuItemView* menu_item_view, int top, int bottom) {
-  menu_item_view->SetMargins(top, bottom);
-  if (menu_item_view->HasSubmenu()) {
-    views::SubmenuView* submenu = menu_item_view->GetSubmenu();
-    for (int i = 0; i < submenu->child_count(); ++i) {
-      // Must skip separators.
-      views::View* item = submenu->child_at(i);
-      if (item->id() == views::MenuItemView::kMenuItemViewID) {
-        views::MenuItemView* menu_item =
-            static_cast<views::MenuItemView*>(item);
-        SetMenuMargins(menu_item, top, bottom);
-      }
-    }
-  }
 }
 
 // Activate a cellular network.
@@ -108,6 +78,14 @@ bool ShouldHighlightNetwork(const chromeos::Network* network) {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   return cros->connected_network() ? network == cros->connected_network() :
                                      network == cros->connecting_network();
+}
+
+// Returns the last active browser. If there is no such browser, creates a new
+// browser window with an empty tab and returns it.
+Browser* GetAppropriateBrowser() {
+  DCHECK(chromeos::UserManager::Get()->IsSessionStarted());
+  return browser::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
 }  // namespace
@@ -160,7 +138,7 @@ class NetworkMenuModel : public ui::MenuModel {
                           const std::string& ssid,
                           int remember) const;
 
-  // Called by NetworkMenu::RunMenu to initialize list of menu items.
+  // Called by NetworkMenu::UpdateMenu to initialize menu items.
   virtual void InitMenuItems(bool should_open_button_options) = 0;
 
   // Menu item field accessors.
@@ -350,78 +328,6 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
       LOG(WARNING) << "VPN does not exist to connect to: " << service_path;
       // TODO(stevenjb): Show notification.
     }
-  }
-}
-
-void NetworkMenu::ConnectToNetwork(Network* network) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  switch (network->type()) {
-    case TYPE_ETHERNET: {
-      ShowTabbedNetworkSettings(network);
-      break;
-    }
-    case TYPE_WIFI: {
-      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-      if (wifi->connecting_or_connected()) {
-        ShowTabbedNetworkSettings(wifi);
-      } else {
-        wifi->SetEnrollmentDelegate(
-            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
-                                     wifi->name(),
-                                     ProfileManager::GetLastUsedProfile()));
-        wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                           weak_pointer_factory_.GetWeakPtr(),
-                                           wifi));
-      }
-      break;
-    }
-
-    case TYPE_WIMAX: {
-      WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
-      if (wimax->connecting_or_connected()) {
-        ShowTabbedNetworkSettings(wimax);
-      } else {
-        wimax->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                            weak_pointer_factory_.GetWeakPtr(),
-                                            wimax));
-      }
-      break;
-    }
-
-    case TYPE_CELLULAR: {
-      CellularNetwork* cell = static_cast<CellularNetwork*>(network);
-      if (cell->NeedsActivation()) {
-        ActivateCellular(cell);
-      } else if (cell->connecting_or_connected()) {
-        // Cellular network is connecting or connected,
-        // so we show the config settings for the cellular network.
-        ShowTabbedNetworkSettings(cell);
-      } else {
-        // Clicked on a disconnected cellular network, so connect to it.
-        cros->ConnectToCellularNetwork(cell);
-      }
-      break;
-    }
-
-    case TYPE_VPN: {
-      VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
-      // Connect or reconnect.
-      if (vpn->connecting_or_connected()) {
-        ShowTabbedNetworkSettings(vpn);
-      } else {
-        vpn->SetEnrollmentDelegate(
-            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
-                                     vpn->name(),
-                                     ProfileManager::GetLastUsedProfile()));
-        vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                          weak_pointer_factory_.GetWeakPtr(),
-                                          vpn));
-      }
-      break;
-    }
-
-    default:
-      break;
   }
 }
 
@@ -1006,15 +912,8 @@ int MoreMenuModel::GetCommandIdAt(int index) const {
 NetworkMenu::NetworkMenu(Delegate* delegate)
     : delegate_(delegate),
       refreshing_menu_(false),
-      menu_item_view_(NULL),
-      min_width_(kDefaultMinimumWidth),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
   main_menu_model_.reset(new MainMenuModel(weak_pointer_factory_.GetWeakPtr()));
-  menu_model_adapter_.reset(
-      new views::MenuModelAdapter(main_menu_model_.get()));
-  menu_item_view_ = new views::MenuItemView(menu_model_adapter_.get());
-  menu_item_view_->set_has_icons(true);
-  menu_runner_.reset(new views::MenuRunner(menu_item_view_));
 }
 
 NetworkMenu::~NetworkMenu() {
@@ -1024,37 +923,12 @@ ui::MenuModel* NetworkMenu::GetMenuModel() {
   return main_menu_model_.get();
 }
 
-void NetworkMenu::CancelMenu() {
-  menu_runner_->Cancel();
-}
-
 void NetworkMenu::UpdateMenu() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   refreshing_menu_ = true;
   main_menu_model_->InitMenuItems(delegate_->ShouldOpenButtonOptions());
-
-  menu_model_adapter_->BuildMenu(menu_item_view_);
-  SetMenuMargins(menu_item_view_, kTopMargin, kBottomMargin);
-  menu_item_view_->ChildrenChanged();
-
   refreshing_menu_ = false;
-}
-
-void NetworkMenu::RunMenu(views::View* source) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  cros->RequestNetworkScan();
-
-  UpdateMenu();
-
-  gfx::Point screen_location;
-  views::View::ConvertPointToScreen(source, &screen_location);
-  gfx::Rect bounds(screen_location, source->size());
-  menu_item_view_->GetSubmenu()->set_minimum_preferred_width(min_width_);
-  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-          delegate_->GetMenuButton(), bounds, views::MenuItemView::TOPRIGHT,
-          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
-    return;
 }
 
 void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
@@ -1113,6 +987,78 @@ void NetworkMenu::DoConnect(Network* network) {
   }
 }
 
+void NetworkMenu::ConnectToNetwork(Network* network) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  switch (network->type()) {
+    case TYPE_ETHERNET: {
+      ShowTabbedNetworkSettings(network);
+      break;
+    }
+    case TYPE_WIFI: {
+      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
+      if (wifi->connecting_or_connected()) {
+        ShowTabbedNetworkSettings(wifi);
+      } else {
+        wifi->SetEnrollmentDelegate(
+            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
+                                     wifi->name(),
+                                     ProfileManager::GetLastUsedProfile()));
+        wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                           weak_pointer_factory_.GetWeakPtr(),
+                                           wifi));
+      }
+      break;
+    }
+
+    case TYPE_WIMAX: {
+      WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
+      if (wimax->connecting_or_connected()) {
+        ShowTabbedNetworkSettings(wimax);
+      } else {
+        wimax->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                            weak_pointer_factory_.GetWeakPtr(),
+                                            wimax));
+      }
+      break;
+    }
+
+    case TYPE_CELLULAR: {
+      CellularNetwork* cell = static_cast<CellularNetwork*>(network);
+      if (cell->NeedsActivation()) {
+        ActivateCellular(cell);
+      } else if (cell->connecting_or_connected()) {
+        // Cellular network is connecting or connected,
+        // so we show the config settings for the cellular network.
+        ShowTabbedNetworkSettings(cell);
+      } else {
+        // Clicked on a disconnected cellular network, so connect to it.
+        cros->ConnectToCellularNetwork(cell);
+      }
+      break;
+    }
+
+    case TYPE_VPN: {
+      VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
+      // Connect or reconnect.
+      if (vpn->connecting_or_connected()) {
+        ShowTabbedNetworkSettings(vpn);
+      } else {
+        vpn->SetEnrollmentDelegate(
+            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
+                                     vpn->name(),
+                                     ProfileManager::GetLastUsedProfile()));
+        vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                          weak_pointer_factory_.GetWeakPtr(),
+                                          vpn));
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+}
+
 void NetworkMenu::ToggleWifi() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
@@ -1156,16 +1102,6 @@ void NetworkMenu::ShowOtherWifi() {
 
 void NetworkMenu::ShowOtherCellular() {
   ChooseMobileNetworkDialog::ShowDialog(delegate_->GetNativeWindow());
-}
-
-bool NetworkMenu::ShouldHighlightNetwork(const Network* network) {
-  return ::ShouldHighlightNetwork(network);
-}
-
-Browser* NetworkMenu::GetAppropriateBrowser() const {
-  DCHECK(chromeos::UserManager::Get()->IsSessionStarted());
-  return browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
 }  // namespace chromeos

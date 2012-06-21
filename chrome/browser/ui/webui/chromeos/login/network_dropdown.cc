@@ -121,11 +121,6 @@ void NetworkDropdown::OnItemChosen(int id) {
   network_menu_->OnItemChosen(id);
 }
 
-views::MenuButton* NetworkDropdown::GetMenuButton() {
-  NOTREACHED();
-  return NULL;
-}
-
 gfx::NativeWindow NetworkDropdown::GetNativeWindow() const {
   return BaseLoginDisplayHost::default_host()->GetNativeWindow();
 }

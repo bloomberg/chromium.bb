@@ -972,10 +972,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // Overridden from NetworkMenu::Delegate.
-  virtual views::MenuButton* GetMenuButton() OVERRIDE {
-    return NULL;
-  }
-
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE {
     return ash::Shell::GetContainer(
         ash::Shell::GetPrimaryRootWindow(),

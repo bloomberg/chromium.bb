@@ -34,7 +34,6 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   void OnItemChosen(int id);
 
   // NetworkMenu::Delegate implementation:
-  virtual views::MenuButton* GetMenuButton() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual void OpenButtonOptions() OVERRIDE;
   virtual bool ShouldOpenButtonOptions() const OVERRIDE;

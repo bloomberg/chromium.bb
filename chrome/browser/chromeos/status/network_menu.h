@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"  // ConnectionType
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
-#include "ui/views/controls/button/menu_button_listener.h"
 
 class Browser;
 
@@ -32,11 +31,12 @@ namespace chromeos {
 
 class NetworkMenuModel;
 
-// Menu for network menu button in the status area/welcome screen.
-// This class will populating the menu with the list of networks.
-// It will also handle connecting to another wifi/cellular network.
+// This class builds and manages a ui::MenuModel used to build network
+// menus. It does not represent an actual menu widget. The menu is populated
+// with the list of networks, and handles connecting to existing networks or
+// spawning UI to configure a new network.
 //
-// The network menu looks like this:
+// The network menu model looks like this:
 //
 // <icon>  Ethernet
 // <icon>  Wifi Network A
@@ -67,7 +67,6 @@ class NetworkMenu {
  public:
   class Delegate {
    public:
-    virtual views::MenuButton* GetMenuButton() = 0;
     virtual gfx::NativeWindow GetNativeWindow() const = 0;
     virtual void OpenButtonOptions() = 0;
     virtual bool ShouldOpenButtonOptions() const = 0;
@@ -79,14 +78,8 @@ class NetworkMenu {
   // Access to menu definition.
   ui::MenuModel* GetMenuModel();
 
-  // Cancels the active menu.
-  void CancelMenu();
-
   // Update the menu (e.g. when the network list or status has changed).
   virtual void UpdateMenu();
-
-  // Run the menu.
-  void RunMenu(views::View* source);
 
   // Shows network details in Web UI options window.
   void ShowTabbedNetworkSettings(const Network* network) const;
@@ -94,15 +87,9 @@ class NetworkMenu {
   // Getters.
   Delegate* delegate() const { return delegate_; }
 
-  // Setters.
-  void set_min_width(int min_width) { min_width_ = min_width; }
-
   // Attempts to connect to the specified network. If the network is already
   // connected, or is connecting, then it shows the settings for the network.
   void ConnectToNetwork(Network* network);
-
-  // Used in a closure for doing actual network connection.
-  void DoConnect(Network* network);
 
   // Enables/disables wifi/cellular network device.
   void ToggleWifi();
@@ -114,15 +101,11 @@ class NetworkMenu {
   // Shows UI to user to search for cellular networks.
   void ShowOtherCellular();
 
-  // Decides whether a network should be highlighted in the UI.
-  bool ShouldHighlightNetwork(const Network* network);
-
  private:
   friend class NetworkMenuModel;
 
-  // Returns the last active browser. If there is no such browser, creates a new
-  // browser window with an empty tab and returns it.
-  Browser* GetAppropriateBrowser() const;
+  // Used in a closure for doing actual network connection.
+  void DoConnect(Network* network);
 
   // Weak ptr to delegate.
   Delegate* delegate_;
@@ -132,12 +115,6 @@ class NetworkMenu {
 
   // The network menu.
   scoped_ptr<NetworkMenuModel> main_menu_model_;
-  scoped_ptr<views::MenuModelAdapter> menu_model_adapter_;
-  views::MenuItemView* menu_item_view_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
-
-  // Holds minimum width of the menu.
-  int min_width_;
 
   // Weak pointer factory so we can start connections at a later time
   // without worrying that they will actually try to happen after the lifetime
