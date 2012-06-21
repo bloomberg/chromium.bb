@@ -209,7 +209,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Insecure content may be permitted for the duration of this render view.
   bool allow_displaying_insecure_content_;
   bool allow_running_insecure_content_;
-  bool warned_about_insecure_content_;
   std::set<std::string> strict_security_hosts_;
 
   // External host exposed through automation controller.

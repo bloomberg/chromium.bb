@@ -101,7 +101,7 @@ void ContentSettingsObserver::DidBlockContentType(
   if (!content_blocked_[settings_type] || !resource_identifier.empty()) {
     content_blocked_[settings_type] = true;
     Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
-                                        resource_identifier));
+                                              resource_identifier));
   }
 }
 
@@ -288,12 +288,16 @@ bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
   return result;
 }
 
-void ContentSettingsObserver::DidNotAllowPlugins(WebFrame* frame) {
+void ContentSettingsObserver::DidNotAllowPlugins() {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
 }
 
-void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
+void ContentSettingsObserver::DidNotAllowScript() {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
+}
+
+void ContentSettingsObserver::DidNotAllowMixedScript() {
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, std::string());
 }
 
 void ContentSettingsObserver::OnLoadBlockedPlugins(

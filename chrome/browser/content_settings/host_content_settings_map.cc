@@ -343,6 +343,10 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
       return false;
   }
 
+  // We don't yet support stored content settings for mixed scripting.
+  if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT)
+    return false;
+
   // BLOCK semantics are not implemented for fullscreen.
   if (content_type == CONTENT_SETTINGS_TYPE_FULLSCREEN &&
       setting == CONTENT_SETTING_BLOCK) {

@@ -61,8 +61,9 @@ class ContentSettingsObserver
   bool AllowScriptFromSource(WebKit::WebFrame* frame, bool enabled_per_settings,
                              const WebKit::WebURL& script_url);
   bool AllowStorage(WebKit::WebFrame* frame, bool local);
-  void DidNotAllowPlugins(WebKit::WebFrame* frame);
-  void DidNotAllowScript(WebKit::WebFrame* frame);
+  void DidNotAllowPlugins();
+  void DidNotAllowScript();
+  void DidNotAllowMixedScript();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);

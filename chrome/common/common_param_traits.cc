@@ -92,6 +92,9 @@ void ParamTraits<ContentSettingsType>::Log(const param_type& p,
     case CONTENT_SETTINGS_TYPE_INTENTS:
       setting_type = "CONTENT_SETTINGS_TYPE_INTENTS";
       break;
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+      setting_type = "CONTENT_SETTINGS_TYPE_MIXEDSCRIPT";
+      break;
     default:
       setting_type = "UNKNOWN";
       break;

@@ -229,7 +229,6 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
-      warned_about_insecure_content_(false),
       capture_timer_(false, false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   render_view->GetWebView()->setPermissionClient(this);
@@ -630,10 +629,8 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    if (!warned_about_insecure_content_ && !IsStrictSecurityHost(origin_host)) {
-      warned_about_insecure_content_ = true;
-      Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
-    }
+    if (!IsStrictSecurityHost(origin_host))
+      content_settings_->DidNotAllowMixedScript();
     return false;
   }
 
@@ -641,11 +638,11 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
 }
 
 void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {
-  content_settings_->DidNotAllowPlugins(frame);
+  content_settings_->DidNotAllowPlugins();
 }
 
 void ChromeRenderViewObserver::didNotAllowScript(WebFrame* frame) {
-  content_settings_->DidNotAllowScript(frame);
+  content_settings_->DidNotAllowScript();
 }
 
 void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {

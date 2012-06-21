@@ -91,6 +91,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
       {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_MESSAGE},
       {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
+      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+           IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
     };
     // Fields as for kBlockedTitleIDs, above.
     static const ContentSettingsTypeIdEntry
@@ -125,6 +127,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_LINK},
       {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_LINK},
       {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_GEOLOCATION_BUBBLE_MANAGE_LINK},
+      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_LEARN_MORE},
     };
     set_manage_link(l10n_util::GetStringUTF8(
         GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -157,6 +160,7 @@ class ContentSettingTitleLinkAndCustomModel
     static const ContentSettingsTypeIdEntry kCustomIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_INFO},
       {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_LOAD_ALL},
+      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_ALLOW_INSECURE_CONTENT_BUTTON},
     };
     int custom_link_id =
         GetIdForContentType(kCustomIDs, arraysize(kCustomIDs), content_type());
@@ -510,6 +514,32 @@ class ContentSettingDomainListBubbleModel
   }
 };
 
+class ContentSettingMixedScriptBubbleModel
+    : public ContentSettingTitleLinkAndCustomModel {
+ public:
+  ContentSettingMixedScriptBubbleModel(Delegate* delegate,
+                                       TabContents* tab_contents,
+                                       Profile* profile,
+                                       ContentSettingsType content_type)
+      : ContentSettingTitleLinkAndCustomModel(
+            delegate, tab_contents, profile, content_type) {
+    DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+    set_custom_link_enabled(true);
+  }
+
+  virtual ~ContentSettingMixedScriptBubbleModel() {}
+
+ private:
+  virtual void OnCustomLinkClicked() OVERRIDE {
+    content::RecordAction(UserMetricsAction("MixedScript_LoadAnyway_Bubble"));
+    DCHECK(tab_contents());
+    content::RenderViewHost* host =
+        tab_contents()->web_contents()->GetRenderViewHost();
+    host->Send(new ChromeViewMsg_SetAllowRunningInsecureContent(
+        host->GetRoutingID(), true));
+  }
+};
+
 // static
 ContentSettingBubbleModel*
     ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -532,6 +562,10 @@ ContentSettingBubbleModel*
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     return new ContentSettingPluginBubbleModel(delegate, tab_contents, profile,
                                                content_type);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
+    return new ContentSettingMixedScriptBubbleModel(delegate, tab_contents,
+                                                    profile, content_type);
   }
   return new ContentSettingSingleRadioGroup(delegate, tab_contents, profile,
                                             content_type);

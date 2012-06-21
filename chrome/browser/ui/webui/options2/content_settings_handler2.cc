@@ -337,6 +337,7 @@ const ContentSettingsHandler::ExContentSettingsTypeNameEntry
   {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
+  {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script"},
   {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
 };
 
@@ -664,11 +665,6 @@ void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     const ExContentSettingsType& type) {
-  // Don't update intents settings at this point.
-  // Turn on when enable_web_intents_tag is enabled.
-  if (type == CONTENT_SETTINGS_TYPE_INTENTS)
-    return;
-
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       UpdateGeolocationExceptionsView();
@@ -678,6 +674,13 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       break;
     case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
       UpdateFlashCameraMicExceptionsView();
+      break;
+    case CONTENT_SETTINGS_TYPE_INTENTS:
+      // Don't update intents settings at this point.
+      // Turn on when enable_web_intents_tag is enabled.
+      break;
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+      // We don't yet support exceptions for mixed scripting.
       break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(
@@ -693,6 +696,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
     case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
       break;
     default:

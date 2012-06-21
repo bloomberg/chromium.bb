@@ -33,7 +33,8 @@ const char* kTypeNames[] = {
   "intents",
   "auto-select-certificate",
   "fullscreen",
-  "mouselock"
+  "mouselock",
+  "mixed-script",
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);
