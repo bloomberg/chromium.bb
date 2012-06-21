@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,6 @@ class Browser;
   BrowserWindowController* owner_;  // weak
   Browser* browser_; // weak
   GURL url_;
-  BOOL showButtons_;
   FullscreenExitBubbleType bubbleType_;
 
  @protected
@@ -56,9 +55,5 @@ class Browser;
 
 // Positions the fullscreen exit bubble in the top-center of the window.
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth;
-
-// Updates the bubble contents with |url| and |bubbleType|.
-- (void)updateURL:(const GURL&)url
-       bubbleType:(FullscreenExitBubbleType)bubbleType;
 
 @end

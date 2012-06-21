@@ -96,8 +96,6 @@ const float kHideDuration = 0.7;
   DCHECK(fullscreen_bubble::ShowButtonsForType(bubbleType_));
   browser_->OnAcceptFullscreenPermission(
       url_, bubbleType_);
-  [self showButtons:NO];
-  [self hideSoon];
 }
 
 - (void)deny:(id)sender {
@@ -146,36 +144,6 @@ const float kHideDuration = 0.7;
       (int)(NSWidth(ownerWindowFrame)/2 - NSWidth(windowFrame)/2);
   origin.y = ownerWindowFrame.origin.y + maxY - NSHeight(windowFrame);
   [[self window] setFrameOrigin:origin];
-}
-
-- (void)updateURL:(const GURL&)url
-       bubbleType:(FullscreenExitBubbleType)bubbleType {
-  bubbleType_ = bubbleType;
-
-  [messageLabel_ setStringValue:[self getLabelText]];
-
-  // Make sure the bubble is visible.
-  [hideAnimation_.get() stopAnimation];
-  [hideTimer_ invalidate];
-  [[[self window] animator] setAlphaValue:1.0];
-
-  if (fullscreen_bubble::ShowButtonsForType(bubbleType)) {
-    [denyButton_ setTitle:SysUTF16ToNSString(
-        fullscreen_bubble::GetDenyButtonTextForType(bubbleType))];
-    [self showButtons:YES];
-
-    // Reenable mouse events if they were disabled previously.
-    [[self window] setIgnoresMouseEvents:NO];
-  } else {
-    [self showButtons:NO];
-    // Only button-less bubbles auto-hide.
-    [self hideSoon];
-  }
-  // TODO(jeremya): show "Press Esc to exit" instead of a link on mouselock.
-
-  // Relayout. A bit jumpy, but functional.
-  [tweaker_ tweakUI:[self window]];
-  [owner_ layoutSubviews];
 }
 
 // Called when someone clicks on the embedded link.

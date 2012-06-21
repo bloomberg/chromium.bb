@@ -795,14 +795,20 @@ willPositionSheet:(NSWindow*)sheet
 - (void)showFullscreenExitBubbleIfNecessary {
   [presentationModeController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
 
-  [fullscreenExitBubbleController_ closeImmediately];
-  fullscreenExitBubbleController_.reset(
-      [[FullscreenExitBubbleController alloc]
-          initWithOwner:self
-                browser:browser_.get()
-                    url:fullscreenUrl_
-             bubbleType:fullscreenBubbleType_]);
-  [fullscreenExitBubbleController_ showWindow];
+  if (fullscreenBubbleType_ == FEB_TYPE_NONE ||
+      fullscreenBubbleType_ == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+    // Show no exit instruction bubble on Mac when in Browser Fullscreen.
+    [self destroyFullscreenExitBubbleIfNecessary];
+  } else {
+    [fullscreenExitBubbleController_ closeImmediately];
+    fullscreenExitBubbleController_.reset(
+        [[FullscreenExitBubbleController alloc]
+            initWithOwner:self
+                  browser:browser_.get()
+                      url:fullscreenUrl_
+               bubbleType:fullscreenBubbleType_]);
+    [fullscreenExitBubbleController_ showWindow];
+  }
 }
 
 - (void)destroyFullscreenExitBubbleIfNecessary {

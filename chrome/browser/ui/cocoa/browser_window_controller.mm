@@ -1982,16 +1982,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
                            bubbleType:(FullscreenExitBubbleType)bubbleType {
   fullscreenUrl_ = url;
   fullscreenBubbleType_ = bubbleType;
-  if (bubbleType == FEB_TYPE_NONE ||
-      bubbleType == FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
-    // Show no exit instruction bubble on Mac when in Browser Fullscreen.
-    [self destroyFullscreenExitBubbleIfNecessary];
-  } else {
-    if (!fullscreenExitBubbleController_.get()) {
-      [self showFullscreenExitBubbleIfNecessary];
-    }
-    [fullscreenExitBubbleController_.get() updateURL:url bubbleType:bubbleType];
-  }
+  [self showFullscreenExitBubbleIfNecessary];
 }
 
 - (BOOL)isFullscreen {
