@@ -9,14 +9,18 @@ in manifest.
 
 import buildbot_common
 import csv
+import cStringIO
+import email
 import manifest_util
 import optparse
 import os
 import posixpath
 import re
+import smtplib
 import subprocess
 import sys
 import time
+import traceback
 import urllib2
 
 
@@ -160,7 +164,8 @@ class Delegate(object):
 
 
 class RealDelegate(Delegate):
-  def __init__(self, gsutil=None):
+  def __init__(self, dryrun=False, gsutil=None):
+    self.dryrun = dryrun
     if gsutil:
       self.gsutil = gsutil
     else:
@@ -202,6 +207,9 @@ class RealDelegate(Delegate):
 
   def GsUtil_cp(self, src, dest, stdin=None):
     """See Delegate.GsUtil_cp"""
+    if self.dryrun:
+      return
+
     # -p ensures we keep permissions when copying "in-the-cloud".
     return self._RunGsUtil(stdin, 'cp', '-p', '-a', 'public-read', src, dest)
 
@@ -225,9 +233,10 @@ class RealDelegate(Delegate):
 
     process = subprocess.Popen(cmd, stdin=stdin_pipe, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    stdout, _ = process.communicate(stdin)
+    stdout, stderr = process.communicate(stdin)
 
     if process.returncode != 0:
+      sys.stderr.write(stderr)
       raise subprocess.CalledProcessError(process.returncode, ' '.join(cmd))
     return stdout
 
@@ -540,14 +549,76 @@ def Run(delegate, platforms):
   updater.Update(manifest)
 
 
+def SendMail(send_from, send_to, subject, text, smtp='localhost'):
+  """Send an email.
+
+  Args:
+    send_from: The sender's email address.
+    send_to: A list of addresses to send to.
+    subject: The subject of the email.
+    text: The text of the email.
+    smtp: The smtp server to use. Default is localhost.
+  """
+  msg = email.MIMEMultipart.MIMEMultipart()
+  msg['From'] = send_from
+  msg['To'] = ', '.join(send_to)
+  msg['Date'] = email.Utils.formatdate(localtime=True)
+  msg['Subject'] = subject
+  msg.attach(email.MIMEText.MIMEText(text))
+  smtp_obj = smtplib.SMTP(smtp)
+  smtp_obj.sendmail(send_from, send_to, msg.as_string())
+  smtp_obj.close()
+
+
+class CapturedFile(object):
+  """A file-like object that captures text written to it, but also passes it
+  through to an underlying file-like object."""
+  def __init__(self, passthrough):
+    self.passthrough = passthrough
+    self.written = cStringIO.StringIO()
+
+  def write(self, s):
+    self.written.write(s)
+    if self.passthrough:
+      self.passthrough.write(s)
+
+  def getvalue(self):
+    return self.written.getvalue()
+
+
 def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--gsutil', help='path to gsutil', dest='gsutil',
       default=None)
+  parser.add_option('--mailfrom', help='email address of sender',
+      dest='mailfrom', default=None)
+  parser.add_option('--mailto', help='send error mails to...', dest='mailto',
+      default=[], action='append')
+  parser.add_option('--dryrun', help='don\'t upload the manifest.',
+      dest='dryrun', action='store_true', default=False)
   options, args = parser.parse_args(args[1:])
 
-  delegate = RealDelegate(options.gsutil)
-  Run(delegate, ('mac', 'win', 'linux'))
+  if (options.mailfrom is None) != (not options.mailto):
+    options.mailfrom = None
+    options.mailto = None
+    sys.stderr.write('warning: Disabling email, one of --mailto or --mailfrom '
+        'was missing.\n')
+
+  if options.mailfrom and options.mailto:
+    # Capture stderr so it can be emailed, if necessary.
+    sys.stderr = CapturedFile(sys.stderr)
+
+  try:
+    delegate = RealDelegate(dryrun=options.dryrun, gsutil=options.gsutil)
+    Run(delegate, ('mac', 'win', 'linux'))
+  except Exception, e:
+    if options.mailfrom and options.mailto:
+      traceback.print_exc()
+      scriptname = os.path.basename(sys.argv[0])
+      subject = '[%s] Failed to update manifest' % (scriptname,)
+      text = '%s failed.\n\nSTDERR:\n%s\n' % (scriptname, sys.stderr.getvalue())
+      SendMail(options.mailfrom, options.mailto, subject, text)
+    sys.exit(1)
 
 
 if __name__ == '__main__':
