@@ -2004,6 +2004,13 @@ static void
 input_remove_keyboard_focus(struct input *input)
 {
 	struct window *window = input->keyboard_focus;
+	struct itimerspec its;
+
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 0;
+	its.it_value.tv_sec = 0;
+	its.it_value.tv_nsec = 0;
+	timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
 
 	if (!window)
 		return;
