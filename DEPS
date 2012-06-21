@@ -1,7 +1,11 @@
 # DEPS files look like -*- Python -*-
 
 vars = {
-  # These two should be updated to the same revision whenever possible.
+  # Each of these toolchain revision numbers should only be updated
+  # whenever there has been a real change to the corresponding
+  # toolchain, so that new toolchain tarballs are not downloaded
+  # unnecessarily.  There is no need to keep these numbers in sync
+  # with each other.
   "x86_toolchain_version": "8953",
   "pnacl_toolchain_version": "8890",
 
