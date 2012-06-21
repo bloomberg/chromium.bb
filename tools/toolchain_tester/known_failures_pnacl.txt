@@ -23,6 +23,8 @@ pr34971.c
 # ======================================================================
 # failures in phase translate
 # ======================================================================
+# Unanalyzed. http://code.google.com/p/nativeclient/issues/detail?id=2864
+pr20621-1.c arm
 # llvm does not know that "fabs(x) >= 0"
 20020720-1.c O3
 # undef signal
