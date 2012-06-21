@@ -2086,6 +2086,7 @@ move_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
 		case SHELL_SURFACE_SCREENSAVER:
+		case SHELL_SURFACE_INPUT_PANEL:
 			return;
 		default:
 			break;
@@ -2115,6 +2116,7 @@ resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
 		case SHELL_SURFACE_SCREENSAVER:
+		case SHELL_SURFACE_INPUT_PANEL:
 			return;
 		default:
 			break;
@@ -2359,6 +2361,7 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
 		case SHELL_SURFACE_SCREENSAVER:
+		case SHELL_SURFACE_INPUT_PANEL:
 			return;
 		default:
 			break;
