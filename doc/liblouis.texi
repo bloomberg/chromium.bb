@@ -2116,7 +2116,9 @@ cursor will be translated in computer braille. If the
 the cursor will be in computer braille. This bit overrides
 @code{compbrlAtCursor}.
 When the @code{dotsIO} bit is set, during translation, produce output as dot patterns. During
-back-translation accept input as dot patterns. Which dot patterns are produced is dependant on the dis file being used.
+back-translation accept input as dot patterns. Note that the produced
+dot patterns are affected if you have any @opcoderef{display} defined
+in any of your tables. 
 The @code{ucBrl} (Unicode Braille) bit is used by @code{lou_charToDots} and @code{lou_translate}.  It causes the dot
 patterns to be Unicode Braille rather than the liblouis representation.
 Note that you will not notice any change when setting @code{ucBrl}  unless @code{dotsIO} is also set.
