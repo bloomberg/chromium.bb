@@ -85,6 +85,16 @@ bool NativeComboboxViews::OnMouseDragged(const views::MouseEvent& mouse_event) {
   return true;
 }
 
+ui::GestureStatus NativeComboboxViews::OnGestureEvent(
+    const views::GestureEvent& gesture_event) {
+  if (gesture_event.type() == ui::ET_GESTURE_TAP) {
+    UpdateFromModel();
+    ShowDropDownMenu();
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+  return View::OnGestureEvent(gesture_event);
+}
+
 bool NativeComboboxViews::OnKeyPressed(const views::KeyEvent& key_event) {
   // TODO(oshima): handle IME.
   DCHECK_EQ(key_event.type(), ui::ET_KEY_PRESSED);

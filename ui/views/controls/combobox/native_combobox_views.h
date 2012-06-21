@@ -34,6 +34,8 @@ class NativeComboboxViews : public views::View,
   // views::View overrides:
   virtual bool OnMousePressed(const views::MouseEvent& mouse_event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& mouse_event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& gesture_event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& key_event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& key_event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
