@@ -60,6 +60,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
       const gfx::Rect& restored_bounds) OVERRIDE;
   virtual void ShowWithWindowState(ui::WindowShowState show_state) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
@@ -101,6 +102,11 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Called when the frame is closed. Only applies to Windows 8 metro mode.
   void CloseImmersiveFrame();
 
+  // Calculates and caches the minimize button delta, i.e. the offset to be
+  // applied to the left/right coordinates of the client rectangle in case
+  // we fail to retrieve the offset of the minimize button.
+  void CacheMinimizeButtonDelta();
+
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 
@@ -113,6 +119,9 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
   // The wrapped system menu itself.
   scoped_ptr<views::NativeMenuWin> system_menu_;
+
+  // See CacheMinimizeButtonDelta() for details about this member.
+  int cached_minimize_button_x_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };
