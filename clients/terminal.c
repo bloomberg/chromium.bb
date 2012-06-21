@@ -2243,9 +2243,9 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 			else if (sym == '2') sym = 0x00;
 			else if (sym == '/') sym = 0x1F;
 			else if (sym == '8' || sym == '?') sym = 0x7F;
-		} else if ((terminal->mode & MODE_ALT_SENDS_ESC) && 
-			   (modifiers & MOD_ALT_MASK))
-		{
+		}
+		if ((terminal->mode & MODE_ALT_SENDS_ESC) &&
+		    (modifiers & MOD_ALT_MASK)) {
 			ch[len++] = 0x1b;
 		} else if (modifiers & MOD_ALT_MASK) {
 			sym = sym | 0x80;
