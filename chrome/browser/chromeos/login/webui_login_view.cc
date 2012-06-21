@@ -221,6 +221,10 @@ content::WebUI* WebUILoginView::GetWebUI() {
   return webui_login_->web_contents()->GetWebUI();
 }
 
+content::WebContents* WebUILoginView::GetWebContents() {
+  return webui_login_->web_contents();
+}
+
 void WebUILoginView::OpenProxySettings() {
   ProxySettingsDialog* dialog =
       new ProxySettingsDialog(NULL, GetNativeWindow());

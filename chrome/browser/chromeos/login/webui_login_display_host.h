@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace gfx {
 class Rect;
@@ -22,7 +23,8 @@ class WebUILoginView;
 
 // WebUI-specific implementation of the OOBE/login screen host. Uses
 // WebUILoginDisplay as the login screen UI implementation,
-class WebUILoginDisplayHost : public BaseLoginDisplayHost {
+class WebUILoginDisplayHost : public BaseLoginDisplayHost,
+                              public content::WebContentsObserver {
  public:
   explicit WebUILoginDisplayHost(const gfx::Rect& background_bounds);
   virtual ~WebUILoginDisplayHost();
@@ -48,6 +50,9 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   OobeUI* GetOobeUI() const;
 
  private:
+  // Overridden from content::WebContentsObserver:
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);
 
@@ -62,6 +67,22 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
 
   // True if the login display is the current screen.
   bool is_showing_login_;
+
+  content::NotificationRegistrar registrar_;
+
+  // How many times renderer has crashed.
+  int crash_count_;
+
+  // Way to restore if renderer have crashed.
+  enum {
+    RESTORE_UNKNOWN,
+    RESTORE_WIZARD,
+    RESTORE_SIGN_IN
+  } restore_path_;
+
+  // Stored parameters for StartWizard, required to restore in case of crash.
+  std::string wizard_first_screen_name_;
+  scoped_ptr<DictionaryValue> wizard_screen_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplayHost);
 };

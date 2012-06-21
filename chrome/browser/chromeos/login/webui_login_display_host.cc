@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "base/values.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -33,6 +35,9 @@ const char kOobeURL[] = "chrome://oobe";
 // Duration of sign-in transition animation.
 const int kLoginFadeoutTransitionDurationMs = 700;
 
+// Number of retries to recover on crash.
+const int kCrashCountLimit = 5;
+
 }  // namespace
 
 // WebUILoginDisplayHost -------------------------------------------------------
@@ -42,7 +47,9 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
       login_window_(NULL),
       login_view_(NULL),
       webui_login_display_(NULL),
-      is_showing_login_(false) {
+      is_showing_login_(false),
+      crash_count_(0),
+      restore_path_(RESTORE_UNKNOWN) {
 }
 
 WebUILoginDisplayHost::~WebUILoginDisplayHost() {
@@ -86,6 +93,13 @@ void WebUILoginDisplayHost::SetStatusAreaVisible(bool visible) {
 
 void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
                                         DictionaryValue* screen_parameters) {
+  // Keep parameters to restore if renderer crashes.
+  restore_path_ = RESTORE_WIZARD;
+  wizard_first_screen_name_ = first_screen_name;
+  if (screen_parameters)
+    wizard_screen_parameters_.reset(screen_parameters->DeepCopy());
+  else
+    wizard_screen_parameters_.reset(NULL);
   is_showing_login_ = false;
 
   scoped_ptr<DictionaryValue> scoped_parameters(screen_parameters);
@@ -118,6 +132,8 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
 }
 
 void WebUILoginDisplayHost::StartSignInScreen() {
+  restore_path_ = RESTORE_SIGN_IN;
+
   is_showing_login_ = true;
 
   if (!login_window_)
@@ -177,7 +193,37 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     login_window_->GetNativeView()->SetName("WebUILoginView");
     login_view_->OnWindowCreated();
   }
+  // Subscribe to crash events.
+  content::WebContentsObserver::Observe(login_view_->GetWebContents());
   login_view_->LoadURL(url);
+}
+
+void WebUILoginDisplayHost::RenderViewGone(base::TerminationStatus status) {
+  // Do not try to restore on shutdown
+  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+    return;
+
+  crash_count_++;
+  if (crash_count_ > kCrashCountLimit)
+    return;
+
+  if (status != base::TERMINATION_STATUS_NORMAL_TERMINATION) {
+    // Restart if renderer has crashed.
+    LOG(ERROR) << "Renderer crash on login window";
+    switch (restore_path_) {
+      case RESTORE_WIZARD:
+        StartWizard(
+            wizard_first_screen_name_,
+            wizard_screen_parameters_.release());
+        break;
+      case RESTORE_SIGN_IN:
+        StartSignInScreen();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 OobeUI* WebUILoginDisplayHost::GetOobeUI() const {

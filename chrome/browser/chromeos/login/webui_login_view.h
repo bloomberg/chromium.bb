@@ -65,6 +65,9 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Returns current WebUI.
   content::WebUI* GetWebUI();
 
+  // Returns current WebContents.
+  content::WebContents* GetWebContents();
+
   // Opens proxy settings dialog.
   void OpenProxySettings();
 
