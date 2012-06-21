@@ -618,7 +618,9 @@ def main(args):
       subject = '[%s] Failed to update manifest' % (scriptname,)
       text = '%s failed.\n\nSTDERR:\n%s\n' % (scriptname, sys.stderr.getvalue())
       SendMail(options.mailfrom, options.mailto, subject, text)
-    sys.exit(1)
+      sys.exit(1)
+    else:
+      raise
 
 
 if __name__ == '__main__':
