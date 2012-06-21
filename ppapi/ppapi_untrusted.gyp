@@ -80,7 +80,7 @@
         ],
       },
       'conditions': [
-        ['target_arch!="arm"', {
+        ['target_arch!="arm" and disable_glibc==0', {
           'variables': {
             'build_glibc': 1,
             # NOTE: Use /lib, not /lib64 here; it is a symbolic link which
