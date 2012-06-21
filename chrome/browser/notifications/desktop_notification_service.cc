@@ -337,11 +337,15 @@ void DesktopNotificationService::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     // Remove all notifications currently shown or queued by the extension
-    // which was unloaded.
+    // which was unloaded. Don't use GetUIManager() here, because this may
+    // get called during shutdown.
     const extensions::Extension* extension =
         content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-    if (extension)
-      GetUIManager()->CancelAllBySourceOrigin(extension->url());
+    if (extension &&
+        g_browser_process && g_browser_process->notification_ui_manager()) {
+      g_browser_process->notification_ui_manager()->
+          CancelAllBySourceOrigin(extension->url());
+    }
   } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     StopObserving();
   }
