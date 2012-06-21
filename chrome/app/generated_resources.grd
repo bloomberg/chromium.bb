@@ -16552,6 +16552,27 @@ Battery full
       ClientLogin uses ASPs during authentication. ClientOAuth uses verification codes (i.e. OTPs) during authentication.
     </message>
 
+    <!-- Windows 8 Metro mode. -->
+    <message name="IDS_METRO_FLOW_TAB_TITLE" desc="The dialog window title.">
+        Welcome to Chrome
+    </message>
+    <message name="IDS_METRO_FLOW_TITLE_SHORT"
+             desc="The title at the top of the window guiding user through making Chrome default in Metro.">
+      You're almost done.
+    </message>
+    <message name="IDS_METRO_FLOW_DESCRIPTION"
+             desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
+      Click next to choose your default browser.
+    </message>
+    <message name="IDS_METRO_FLOW_SET_DEFAULT"
+             desc="The label of the button invoking Windows8 default app settings window.">
+        Next
+    </message>
+    <message name="IDS_METRO_FLOW_SET_DEFAULT_CANCEL"
+             desc="The label of the button closing the flow and returning to Chrome.">
+        No thanks
+    </message>
+
     </messages>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->
