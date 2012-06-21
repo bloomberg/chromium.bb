@@ -61,6 +61,9 @@
       'filepath': 'chrome/browser/download/.*|'\
         'content/browser/download/.*',
     },
+    'fullscreen_controller': {
+      'filepath': 'fullscreen_controller',
+    },
     'history': {
       'filepath': 'chrome/browser/history/.*',
     },
@@ -340,6 +343,9 @@
                   '|content/public/browser/user_metrics.h'\
                   '|chrome/tools/extract_actions.py'
     },
+    'mouse_lock': {
+      'filepath': 'mouse_lock',
+    },
     'speech': {
       'filepath': 'chrome/browser/speech/.*'\
                   '|content/browser/speech/.*'\
@@ -486,5 +492,7 @@
     'installer': ['grt+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'shell_window': ['jeremya+watch@chromium.org'],
+    'fullscreen_controller': ['scheib+watch@chromium.org'],
+    'mouse_lock': ['scheib+watch@chromium.org'],
   },
 }
