@@ -5629,13 +5629,6 @@
    fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager18GetLastUsedProfileERK8FilePath
 }
-{
-   bug_133508
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6policy17DevicePolicyCache9SetPolicyERKN21enterprise_management19PolicyFetchResponseE
-   fun:_ZN6policy55DevicePolicyCacheTest_SetPolicyOtherUserSameDomain_Test8TestBodyEv
-}
 
 
 #-----------------------------------------------------------------------

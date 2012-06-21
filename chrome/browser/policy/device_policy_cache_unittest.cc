@@ -208,11 +208,17 @@ TEST_F(DevicePolicyCacheTest, SetPolicyOtherUserSameDomain) {
   Mock::VerifyAndClearExpectations(&signed_settings_helper_);
 
   // Set new policy information. This should succeed as the domain is the same.
+  chromeos::SignedSettingsHelper::StorePolicyCallback store_callback;
   em::PolicyFetchResponse new_policy;
   CreateRefreshRatePolicy(&new_policy, "another_user@example.com", 300);
-  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(1);
+  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).WillOnce(
+      SaveArg<1>(&store_callback));
+  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get())).Times(1);
   EXPECT_TRUE(cache_->SetPolicy(new_policy));
+  cache_->SetFetchingDone();
+  store_callback.Run(chromeos::SignedSettings::OPERATION_FAILED);
   Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  Mock::VerifyAndClearExpectations(&observer_);
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyOtherUserOtherDomain) {
