@@ -2148,6 +2148,8 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		break;
 
 	case XKB_KEY_BackSpace:
+		if (modifiers & MOD_ALT_MASK)
+			ch[len++] = 0x1b;
 		ch[len++] = 0x7f;
 		break;
 	case XKB_KEY_Tab:
