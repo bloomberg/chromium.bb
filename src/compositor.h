@@ -690,6 +690,9 @@ clipboard_create(struct weston_seat *seat);
 void
 text_cursor_position_notifier_create(struct weston_compositor *ec);
 
+void
+input_method_create(struct weston_compositor *ec);
+
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,
 					    int status);

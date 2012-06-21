@@ -11,3 +11,5 @@ xserver-protocol.c
 xserver-server-protocol.h
 desktop-shell-protocol.c
 desktop-shell-server-protocol.h
+text-protocol.c
+text-server-protocol.h

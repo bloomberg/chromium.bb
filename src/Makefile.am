@@ -26,6 +26,9 @@ weston_SOURCES =				\
 	text-cursor-position-protocol.c		\
 	text-cursor-position-server-protocol.h	\
 	zoom.c					\
+	text-backend.c				\
+	text-protocol.c				\
+	text-server-protocol.h			\
 	util.c					\
 	matrix.c				\
 	matrix.h				\
@@ -181,6 +184,8 @@ BUILT_SOURCES =					\
 	tablet-shell-server-protocol.h		\
 	desktop-shell-protocol.c		\
 	desktop-shell-server-protocol.h		\
+	text-protocol.c				\
+	text-server-protocol.h			\
 	git-version.h
 
 CLEANFILES = $(BUILT_SOURCES)
