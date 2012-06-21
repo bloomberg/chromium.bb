@@ -9,6 +9,33 @@
 
 namespace gestures {
 
+void CombineButtonsGestures(Gesture* gesture, const Gesture* addend);
+
+// Returns a priority for a given gesture type. Lower number is more important.
+int CombineGesturePriority(const Gesture* gesture) {
+  int priority = 0;
+
+  // Use a switch with no default so that if a new gesture type is added,
+  // we get a compiler warning here.
+  // Least important at top
+  switch (gesture->type) {
+    case kGestureTypeNull: priority++;  // falthrough
+    case kGestureTypeContactInitiated: priority++;  // falthrough
+
+    // Midrange, equal priority
+    case kGestureTypePinch:  // falthrough
+    case kGestureTypeSwipe:  // falthrough
+    case kGestureTypeMove:  // falthrough
+    case kGestureTypeScroll: priority++;  // falthrough
+
+    case kGestureTypeFling: priority++;  // falthrough
+    case kGestureTypeButtonsChange: priority++;  // falthrough
+  }
+  // Most important at bottom
+
+  return priority;
+}
+
 void CombineGestures(Gesture* gesture, const Gesture* addend) {
   if (!gesture) {
     Err("gesture must be non-NULL.");
@@ -20,31 +47,45 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
     *gesture = *addend;
     return;
   }
-  if (gesture->type == addend->type &&
-      gesture->type != kGestureTypeButtonsChange) {
+  if (gesture->type == addend->type) {
     // Same type; merge them
-    if (gesture->type == kGestureTypeMove) {
-      gesture->details.move.dx += addend->details.move.dx;
-      gesture->details.move.dy += addend->details.move.dy;
-    } else if (gesture->type == kGestureTypeScroll) {
-      gesture->details.scroll.dx += addend->details.scroll.dx;
-      gesture->details.scroll.dy += addend->details.scroll.dy;
+    switch (gesture->type) {
+      case kGestureTypeNull:  // fallthrough
+      case kGestureTypeContactInitiated:  // fallthrough
+      case kGestureTypeFling:
+        break;
+      case kGestureTypeButtonsChange:
+        CombineButtonsGestures(gesture, addend);
+        break;
+        // These we actually combine:
+      case kGestureTypeMove:
+        gesture->details.move.dx += addend->details.move.dx;
+        gesture->details.move.dy += addend->details.move.dy;
+        break;
+      case kGestureTypeScroll:
+        gesture->details.scroll.dx += addend->details.scroll.dx;
+        gesture->details.scroll.dy += addend->details.scroll.dy;
+        break;
+      case kGestureTypeSwipe:
+        gesture->details.swipe.dx += addend->details.swipe.dx;
+        break;
+      case kGestureTypePinch:
+        gesture->details.pinch.dz += addend->details.pinch.dz;
+        break;
     }
+    gesture->start_time = std::min(gesture->start_time, addend->start_time);
+    gesture->end_time = std::max(gesture->end_time, addend->end_time);
     return;
   }
-  if (gesture->type != kGestureTypeButtonsChange) {
-    // Either |addend| is a button gesture, or neither is. Either way, use
-    // |addend|.
-    Log("Losing gesture");
-    *gesture = *addend;
+  if (CombineGesturePriority(gesture) < CombineGesturePriority(addend)) {
+    Log("Losing gesture");  // losing 'addend'
     return;
   }
-  // |gesture| must be a button gesture if we get to here.
-  if (addend->type != kGestureTypeButtonsChange) {
-    Err("Losing gesture");
-    return;
-  }
+  Log("Losing gesture");  // losing 'gesture'
+  *gesture = *addend;
+}
 
+void CombineButtonsGestures(Gesture* gesture, const Gesture* addend) {
   // We have 2 button events. merge them
   unsigned buttons[] = { GESTURES_BUTTON_LEFT,
                          GESTURES_BUTTON_MIDDLE,

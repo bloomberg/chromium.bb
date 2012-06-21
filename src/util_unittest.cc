@@ -80,6 +80,12 @@ TEST(UtilTest, CombineGesturesTest) {
                            0,  // end time
                            GESTURES_BUTTON_RIGHT,  // down
                            GESTURES_BUTTON_RIGHT);  // up
+  Gesture tapdown = Gesture(kGestureFling,
+                            0,  // start time
+                            0,  // end time
+                            0,  // vx
+                            0,  // vy
+                            GESTURES_FLING_TAP_DOWN);  // flags
 
   GesturesRec recs[] = {
     { null, null, null },
@@ -97,6 +103,8 @@ TEST(UtilTest, CombineGesturesTest) {
     { rdown, scroll, rdown },
     { null, click, click },
     { click, null, click },
+    { tapdown, move, tapdown },
+    { move, tapdown, tapdown },
     // button only tests:
     { up, down, null },  // the special case
     { up, click, up },
