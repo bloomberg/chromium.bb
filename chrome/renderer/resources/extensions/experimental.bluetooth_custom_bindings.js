@@ -34,6 +34,6 @@ chromeHidden.registerCustomHook('experimental.bluetooth', function(api) {
   });
   apiFunctions.setHandleRequest('stopDiscovery', function() {
     chromeHidden.bluetooth.handler = null;
-    sendRequest(this.name, args, this.definition.parameters);
+    sendRequest(this.name, arguments, this.definition.parameters);
   });
 });
