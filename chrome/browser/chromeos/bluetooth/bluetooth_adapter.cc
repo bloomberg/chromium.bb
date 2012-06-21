@@ -370,15 +370,16 @@ void BluetoothAdapter::ReadLocalOutOfBandPairingData(
 }
 
 void BluetoothAdapter::ClearDevices() {
-  for (DevicesMap::iterator iter = devices_.begin();
-       iter != devices_.end(); ++iter) {
+  DevicesMap replace;
+  devices_.swap(replace);
+  for (DevicesMap::iterator iter = replace.begin();
+       iter != replace.end(); ++iter) {
     BluetoothDevice* device = iter->second;
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceRemoved(this, device));
 
     delete device;
   }
-  devices_.clear();
 }
 
 void BluetoothAdapter::DeviceCreated(const dbus::ObjectPath& adapter_path,
