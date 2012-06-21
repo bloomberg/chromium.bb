@@ -292,9 +292,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   /* Load the integrated runtime (IRT) library. */
   NaClLoadIrt(nap, args->irt_fd);
 
-  free(args);
-  args = NULL;
-
   NaClEnvCleanserCtor(&env_cleanser, 1);
   if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
@@ -309,6 +306,10 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
       goto done;
     }
   }
+
+  free(args);
+  args = NULL;
+
   if (!NaClCreateMainThread(nap, ac, av,
                             NaClEnvCleanserEnvironment(&env_cleanser))) {
     fprintf(stderr, "creating main thread failed\n");
