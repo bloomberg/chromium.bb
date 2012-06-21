@@ -623,9 +623,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 }
 
 bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info,
-                           const nacl::string& url,
-                           void** ipc_channel_handle) {
+                           ErrorInfo* error_info, const nacl::string& url) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
@@ -645,9 +643,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
 #ifdef NACL_STANDALONE
   bool started = tmp_subprocess->Start(url.c_str());
 #else
-  bool started = tmp_subprocess->Start(plugin_->pp_instance(),
-                                       url.c_str(),
-                                       ipc_channel_handle);
+  bool started = tmp_subprocess->Start(plugin_->pp_instance(), url.c_str());
 #endif
   if (!started) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));

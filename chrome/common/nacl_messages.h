@@ -7,7 +7,6 @@
 // Multiply-included message file, no traditional include guard.
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START NaClMsgStart
@@ -19,7 +18,6 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(version)
   IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
   IPC_STRUCT_TRAITS_MEMBER(enable_debug_stub)
-  IPC_STRUCT_TRAITS_MEMBER(enable_ipc_proxy)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
@@ -74,9 +72,3 @@ IPC_SYNC_MESSAGE_CONTROL1_1(NaClProcessMsg_QueryKnownToValidate,
 // database in the browser.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_SetKnownToValidate,
                      std::string /* A validation signature */)
-
-// Notify the browser process that the server side of the PPAPI channel was
-// created successfully.
-IPC_MESSAGE_CONTROL1(NaClProcessHostMsg_PpapiChannelCreated,
-                     IPC::ChannelHandle /* channel_handle */)
-

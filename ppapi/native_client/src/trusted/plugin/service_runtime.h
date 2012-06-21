@@ -216,12 +216,10 @@ class ServiceRuntime {
   // Spawn a sel_ldr instance and establish an SrpcClient to it.  The nexe
   // to be started is passed through |nacl_file_desc|.  On success, returns
   // true.  On failure, returns false and |error_string| is set to something
-  // describing the error. |ipc_channel_handle| returns information for
-  // connecting the Chrome IPC-based proxy.
+  // describing the error.
   bool Start(nacl::DescWrapper* nacl_file_desc,
              ErrorInfo* error_info,
-             const nacl::string& url,
-             void** ipc_channel_handle);
+             const nacl::string& url);
 
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();
