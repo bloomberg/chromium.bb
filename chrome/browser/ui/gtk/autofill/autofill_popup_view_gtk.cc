@@ -6,6 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
@@ -276,6 +277,15 @@ void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
   pango_attr_list_unref(attrs);
 }
 
+void AutofillPopupViewGtk::SetLayoutText(const string16& text) {
+  gtk_util::SetLayoutText(layout_, text);
+
+  // We add one pixel to the width because if the text fills up the width
+  // pango will try to split it over 2 lines.
+  int required_width = font_.GetStringWidth(text) + 1;
+
+  pango_layout_set_width(layout_, required_width * PANGO_SCALE);
+}
 
 void AutofillPopupViewGtk::DrawSeparator(cairo_t* cairo_context,
                                          const gfx::Rect& separator_rect) {
@@ -305,19 +315,24 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
       entry_rect.y() + ((kRowHeight - actual_content_height) / 2));
 
   // Draw the value.
-  gtk_util::SetLayoutText(layout_, autofill_values()[index]);
+  SetLayoutText(autofill_values()[index]);
+  int value_text_width = font_.GetStringWidth(autofill_values()[index]);
 
+  bool is_rtl = base::i18n::IsRTL();
   cairo_save(cairo_context);
-  cairo_move_to(cairo_context, 0, content_y);
+  cairo_move_to(cairo_context,
+                is_rtl ? entry_rect.width() - value_text_width - kEndPadding :
+                    kEndPadding,
+                content_y);
   pango_cairo_show_layout(cairo_context, layout_);
   cairo_restore(cairo_context);
 
   // Use this to figure out where all the other Autofill items should be placed.
-  int x_align_left = entry_rect.width() - kEndPadding;
+  int x_align_left = is_rtl ? kEndPadding : entry_rect.width() - kEndPadding;
 
   // Draw the delete icon, if one is needed.
   if (CanDelete(autofill_unique_ids()[index])) {
-    x_align_left -= kDeleteIconWidth;
+    x_align_left += is_rtl ? 0 : -kDeleteIconWidth;
 
     const gfx::Image* delete_icon;
     if (static_cast<int>(index) == selected_line() && delete_icon_selected_)
@@ -337,7 +352,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     cairo_restore(cairo_context);
     cairo_save(cairo_context);
 
-    x_align_left -= kIconPadding;
+    x_align_left += is_rtl ? kDeleteIconWidth + kIconPadding : -kIconPadding;
   }
 
   // Draw the Autofill icon, if one exists
@@ -345,7 +360,8 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     int icon = GetIconResourceID(autofill_icons()[index]);
     DCHECK_NE(-1, icon);
     int icon_y = entry_rect.y() + ((kRowHeight - kAutofillIconHeight) / 2);
-    x_align_left -= kAutofillIconWidth;
+
+    x_align_left += is_rtl ? 0 : -kAutofillIconWidth;
 
     cairo_save(cairo_context);
     gtk_util::DrawFullImage(cairo_context,
@@ -355,12 +371,12 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
                             icon_y);
     cairo_restore(cairo_context);
 
-    x_align_left -= kIconPadding;
+    x_align_left += is_rtl ? kAutofillIconWidth + kIconPadding : -kIconPadding;
   }
 
   // Draw the label text.
-  gtk_util::SetLayoutText(layout_, autofill_labels()[index]);
-  x_align_left -= font_.GetStringWidth(autofill_labels()[index]);
+  SetLayoutText(autofill_labels()[index]);
+  x_align_left += is_rtl ? 0 : -font_.GetStringWidth(autofill_labels()[index]);
 
   cairo_save(cairo_context);
   cairo_move_to(cairo_context, x_align_left, content_y);
@@ -401,7 +417,8 @@ int AutofillPopupViewGtk::GetPopupRequiredWidth() {
   int popup_width = element_bounds().width();
   DCHECK_EQ(autofill_values().size(), autofill_labels().size());
   for (size_t i = 0; i < autofill_values().size(); ++i) {
-    int row_size = font_.GetStringWidth(autofill_values()[i]) +
+    int row_size = kEndPadding +
+        font_.GetStringWidth(autofill_values()[i]) +
         kLabelPadding +
         font_.GetStringWidth(autofill_labels()[i]);
 

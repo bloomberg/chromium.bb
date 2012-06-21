@@ -64,8 +64,12 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   //  KeyboardListener implementation.
   virtual bool HandleKeyPressEvent(GdkEventKey* event) OVERRIDE;
 
-  // Setup the pango layout to display the autofill results.
+  // Set up the pango layout to display the autofill results.
   void SetupLayout(const gfx::Rect& window_rect, const GdkColor& text_color);
+
+  // Set up the pango layout to print the given text and have it's width match
+  // the text's (this gives us better control when placing the text box).
+  void SetLayoutText(const string16& text);
 
   // Draw the separator as the given |separator_rect|.
   void DrawSeparator(cairo_t* cairo_context, const gfx::Rect& separator_rect);
