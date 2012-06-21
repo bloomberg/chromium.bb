@@ -27,8 +27,8 @@
 
 class AutocompleteEditController;
 class AutocompleteEditModel;
-class AutocompletePopupView;
 class LocationBarView;
+class OmniboxPopupView;
 
 namespace views {
 class MenuRunner;
@@ -408,7 +408,7 @@ class OmniboxViewWin
 
   scoped_ptr<AutocompleteEditModel> model_;
 
-  scoped_ptr<AutocompletePopupView> popup_view_;
+  scoped_ptr<OmniboxPopupView> popup_view_;
 
   AutocompleteEditController* controller_;
 

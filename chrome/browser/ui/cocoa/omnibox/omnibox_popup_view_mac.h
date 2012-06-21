@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_MAC_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_POPUP_VIEW_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_POPUP_VIEW_MAC_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -13,28 +13,28 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "ui/gfx/font.h"
 
 class AutocompleteEditModel;
-class AutocompletePopupModel;
 @class NSImage;
+class OmniboxPopupModel;
 class OmniboxView;
 
-// Implements AutocompletePopupView using a raw NSWindow containing an
+// Implements OmniboxPopupView using a raw NSWindow containing an
 // NSTableView.
 //
 // TODO(rohitrao): This class is set up in a way that makes testing hard.
 // Refactor and write unittests.  http://crbug.com/9977
 
-class OmniboxPopupViewMac : public AutocompletePopupView {
+class OmniboxPopupViewMac : public OmniboxPopupView {
  public:
   OmniboxPopupViewMac(OmniboxView* omnibox_view,
                       AutocompleteEditModel* edit_model,
                       NSTextField* field);
   virtual ~OmniboxPopupViewMac();
 
-  // Implement the AutocompletePopupView interface.
+  // Overridden from OmniboxPopupView:
   virtual bool IsOpen() const OVERRIDE;
   virtual void InvalidateLine(size_t line) OVERRIDE {
     // TODO(shess): Verify that there is no need to implement this.
@@ -120,7 +120,7 @@ class OmniboxPopupViewMac : public AutocompletePopupView {
   // TODO(shess): |omnibox_view_| should already be accessible via
   // |field_|, or perhaps via |model_|.  Consider refactoring.
   OmniboxView* omnibox_view_;
-  scoped_ptr<AutocompletePopupModel> model_;
+  scoped_ptr<OmniboxPopupModel> model_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.
@@ -130,4 +130,4 @@ class OmniboxPopupViewMac : public AutocompletePopupView {
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_POPUP_VIEW_MAC_H_

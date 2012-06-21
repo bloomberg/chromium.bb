@@ -11,9 +11,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -292,7 +292,7 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
     } else if (model_->popup_model()->IsOpen()) {
       if (event.IsShiftDown() &&
           model_->popup_model()->selected_line_state() ==
-              AutocompletePopupModel::KEYWORD) {
+              OmniboxPopupModel::KEYWORD) {
         model_->ClearKeyword(GetText());
       } else {
         model_->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);

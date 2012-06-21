@@ -399,7 +399,7 @@ class AutocompleteProvider
   //
   // |minimal_changes| is an optimization that lets the provider do less work
   // when the |input|'s text hasn't changed.  See the body of
-  // AutocompletePopupModel::StartAutocomplete().
+  // OmniboxPopupModel::StartAutocomplete().
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) = 0;
 
@@ -812,7 +812,7 @@ struct AutocompleteLog {
   bool just_deleted_text;
   // The detected type of the user's input.
   AutocompleteInput::Type input_type;
-  // Selected index (if selected) or -1 (AutocompletePopupModel::kNoMatch).
+  // Selected index (if selected) or -1 (OmniboxPopupModel::kNoMatch).
   size_t selected_index;
   // ID of the tab the selected autocomplete suggestion was opened in.
   // Set to -1 if we haven't yet determined the destination tab.

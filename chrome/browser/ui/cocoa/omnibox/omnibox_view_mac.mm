@@ -12,10 +12,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -805,7 +805,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
 
     if (cmd == @selector(insertBacktab:) &&
         model_->popup_model()->selected_line_state() ==
-            AutocompletePopupModel::KEYWORD) {
+            OmniboxPopupModel::KEYWORD) {
       model_->ClearKeyword(GetText());
       return true;
     }

@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -573,7 +573,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void DesiredTLDTest() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     // Test ctrl-Enter.
@@ -605,7 +605,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void EnterToSearchTest() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     // Test Enter to search.
@@ -649,7 +649,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void EscapeToDefaultMatchTest() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     // Input something to trigger inline autocomplete.
@@ -887,7 +887,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     omnibox_view->SetUserText(string16());
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
     ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model->IsOpen());
     ASSERT_EQ(ASCIIToUTF16("foobar.com"), omnibox_view->GetText());
     omnibox_view->model()->OnUpOrDownKeyPressed(1);
@@ -937,7 +937,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void NonSubstitutingKeywordTest() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     Profile* profile = browser()->profile();
@@ -998,7 +998,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     string16 old_text = omnibox_view->GetText();
@@ -1139,7 +1139,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void TabTraverseResultsTest() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     // Input something to trigger results.
@@ -1251,7 +1251,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void CtrlKeyPressedWithInlineAutocompleteTest() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
     // Input something to trigger inline autocomplete.
@@ -1597,7 +1597,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PrimarySelection) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PasteReplacingAll) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
 
   SetClipboardText(kSearchText);

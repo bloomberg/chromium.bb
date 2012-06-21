@@ -28,8 +28,8 @@
 
 class AutocompleteEditController;
 class AutocompleteEditModel;
-class AutocompletePopupView;
 class Browser;
+class OmniboxPopupView;
 class Profile;
 
 namespace gfx {
@@ -367,7 +367,7 @@ class OmniboxViewGtk : public OmniboxView,
   GtkTextMark* instant_mark_;
 
   scoped_ptr<AutocompleteEditModel> model_;
-  scoped_ptr<AutocompletePopupView> popup_view_;
+  scoped_ptr<OmniboxPopupView> popup_view_;
   AutocompleteEditController* controller_;
   ToolbarModel* toolbar_model_;
 

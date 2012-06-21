@@ -17,7 +17,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
@@ -1619,7 +1619,7 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   } else if (model_->popup_model()->IsOpen()) {
     if (shift_was_pressed_ &&
         model_->popup_model()->selected_line_state() ==
-            AutocompletePopupModel::KEYWORD)
+            OmniboxPopupModel::KEYWORD)
       model_->ClearKeyword(GetText());
     else
       model_->OnUpOrDownKeyPressed(shift_was_pressed_ ? -1 : 1);

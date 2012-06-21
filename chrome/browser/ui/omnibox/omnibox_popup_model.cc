@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 
 #include <algorithm>
 
@@ -12,21 +12,21 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "ui/gfx/rect.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupModel
+// OmniboxPopupModel
 
-const size_t AutocompletePopupModel::kNoMatch = -1;
+const size_t OmniboxPopupModel::kNoMatch = -1;
 
-AutocompletePopupModel::AutocompletePopupModel(
-    AutocompletePopupView* popup_view,
+OmniboxPopupModel::OmniboxPopupModel(
+    OmniboxPopupView* popup_view,
     AutocompleteEditModel* edit_model)
     : view_(popup_view),
       edit_model_(edit_model),
@@ -36,14 +36,14 @@ AutocompletePopupModel::AutocompletePopupModel(
   edit_model->set_popup_model(this);
 }
 
-AutocompletePopupModel::~AutocompletePopupModel() {
+OmniboxPopupModel::~OmniboxPopupModel() {
 }
 
-bool AutocompletePopupModel::IsOpen() const {
+bool OmniboxPopupModel::IsOpen() const {
   return view_->IsOpen();
 }
 
-void AutocompletePopupModel::SetHoveredLine(size_t line) {
+void OmniboxPopupModel::SetHoveredLine(size_t line) {
   const bool is_disabling = (line == kNoMatch);
   DCHECK(is_disabling || (line < result().size()));
 
@@ -61,9 +61,9 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
     view_->InvalidateLine(hovered_line_);
 }
 
-void AutocompletePopupModel::SetSelectedLine(size_t line,
-                                             bool reset_to_default,
-                                             bool force) {
+void OmniboxPopupModel::SetSelectedLine(size_t line,
+                                        bool reset_to_default,
+                                        bool force) {
   const AutocompleteResult& result = this->result();
   if (result.empty())
     return;
@@ -129,14 +129,14 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
   view_->PaintUpdatesNow();
 }
 
-void AutocompletePopupModel::ResetToDefaultMatch() {
+void OmniboxPopupModel::ResetToDefaultMatch() {
   const AutocompleteResult& result = this->result();
   CHECK(!result.empty());
   SetSelectedLine(result.default_match() - result.begin(), true, false);
   view_->OnDragCanceled();
 }
 
-void AutocompletePopupModel::Move(int count) {
+void OmniboxPopupModel::Move(int count) {
   const AutocompleteResult& result = this->result();
   if (result.empty())
     return;
@@ -151,7 +151,7 @@ void AutocompletePopupModel::Move(int count) {
                   false, false);
 }
 
-void AutocompletePopupModel::SetSelectedLineState(LineState state) {
+void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   DCHECK(!result().empty());
   DCHECK_NE(kNoMatch, selected_line_);
 
@@ -162,7 +162,7 @@ void AutocompletePopupModel::SetSelectedLineState(LineState state) {
   view_->InvalidateLine(selected_line_);
 }
 
-void AutocompletePopupModel::TryDeletingCurrentItem() {
+void OmniboxPopupModel::TryDeletingCurrentItem() {
   // We could use InfoForCurrentSelection() here, but it seems better to try
   // and shift-delete the actual selection, rather than any "in progress, not
   // yet visible" one.
@@ -194,7 +194,7 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
   }
 }
 
-const SkBitmap* AutocompletePopupModel::GetIconIfExtensionMatch(
+const SkBitmap* OmniboxPopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   Profile* profile = edit_model_->profile();
   const TemplateURL* template_url = match.GetTemplateURL(profile);
@@ -203,7 +203,7 @@ const SkBitmap* AutocompletePopupModel::GetIconIfExtensionMatch(
           template_url->GetExtensionId()) : NULL;
 }
 
-void AutocompletePopupModel::OnResultChanged() {
+void OmniboxPopupModel::OnResultChanged() {
   const AutocompleteResult& result = this->result();
   selected_line_ = result.default_match() == result.end() ?
       kNoMatch : static_cast<size_t>(result.default_match() - result.begin());

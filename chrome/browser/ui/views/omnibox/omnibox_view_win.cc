@@ -25,13 +25,13 @@
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -929,8 +929,8 @@ gfx::NativeView OmniboxViewWin::GetNativeView() const {
 gfx::NativeView OmniboxViewWin::GetRelativeWindowForNativeView(
     gfx::NativeView edit_native_view) {
   // When an IME is attached to the rich-edit control, retrieve its window
-  // handle, and the popup window of AutocompletePopupView will be shown
-  // under the IME windows.
+  // handle, and the popup window of OmniboxPopupView will be shown under the
+  // IME windows.
   // Otherwise, the popup window will be shown under top-most windows.
   // TODO(hbono): http://b/1111369 if we exclude this popup window from the
   // display area of IME windows, this workaround becomes unnecessary.
@@ -2119,7 +2119,7 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
         model_->AcceptKeyword();
       } else if (shift_pressed &&
                  model_->popup_model()->selected_line_state() ==
-                    AutocompletePopupModel::KEYWORD) {
+                    OmniboxPopupModel::KEYWORD) {
         model_->ClearKeyword(GetText());
       } else {
         model_->OnUpOrDownKeyPressed(shift_pressed ? -count : count);

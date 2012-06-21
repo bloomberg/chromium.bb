@@ -8,8 +8,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -29,7 +29,7 @@ class BubbleBorder;
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,
                                  public OmniboxResultViewModel,
-                                 public AutocompletePopupView,
+                                 public OmniboxPopupView,
                                  public ui::AnimationDelegate {
  public:
   // Creates the appropriate type of omnibox dropdown for the
@@ -46,7 +46,7 @@ class OmniboxPopupContentsView : public views::View,
 
   virtual void LayoutChildren();
 
-  // Overridden from AutocompletePopupView:
+  // Overridden from OmniboxPopupView:
   virtual bool IsOpen() const OVERRIDE;
   virtual void InvalidateLine(size_t line) OVERRIDE;
   virtual void UpdatePopupAppearance() OVERRIDE;
@@ -101,7 +101,7 @@ class OmniboxPopupContentsView : public views::View,
   // the view hierarchy does not "accidentally" trigger this.
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
-  scoped_ptr<AutocompletePopupModel> model_;
+  scoped_ptr<OmniboxPopupModel> model_;
 
  private:
   class AutocompletePopupWidget;
@@ -130,8 +130,8 @@ class OmniboxPopupContentsView : public views::View,
   void OpenIndex(size_t index, WindowOpenDisposition disposition);
 
   // Find the index of the match under the given |point|, specified in window
-  // coordinates. Returns AutocompletePopupModel::kNoMatch if there isn't a
-  // match at the specified point.
+  // coordinates. Returns OmniboxPopupModel::kNoMatch if there isn't a match at
+  // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
   // Processes a located event (e.g. mouse/gesture) and sets the selection/hover

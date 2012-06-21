@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -23,8 +23,8 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;
-class AutocompletePopupModel;
 class GtkThemeService;
+class OmniboxPopupModel;
 class OmniboxView;
 class SkBitmap;
 
@@ -36,7 +36,7 @@ namespace ui {
 class GtkSignalRegistrar;
 }
 
-class OmniboxPopupViewGtk : public AutocompletePopupView,
+class OmniboxPopupViewGtk : public OmniboxPopupView,
                             public content::NotificationObserver {
  public:
   OmniboxPopupViewGtk(const gfx::Font& font,
@@ -45,7 +45,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
                       GtkWidget* location_bar);
   virtual ~OmniboxPopupViewGtk();
 
-  // Overridden from AutocompletePopupView:
+  // Overridden from OmniboxPopupView:
   virtual bool IsOpen() const OVERRIDE;
   virtual void InvalidateLine(size_t line) OVERRIDE;
   virtual void UpdatePopupAppearance() OVERRIDE;
@@ -106,7 +106,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
                        GdkEventExpose*);
 
   scoped_ptr<ui::GtkSignalRegistrar> signal_registrar_;
-  scoped_ptr<AutocompletePopupModel> model_;
+  scoped_ptr<OmniboxPopupModel> model_;
   OmniboxView* omnibox_view_;
   GtkWidget* location_bar_;
 

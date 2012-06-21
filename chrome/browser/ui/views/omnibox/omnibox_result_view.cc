@@ -14,7 +14,7 @@
 #include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
 #include "grit/generated_resources.h"

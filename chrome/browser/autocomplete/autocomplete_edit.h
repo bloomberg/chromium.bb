@@ -21,9 +21,9 @@
 class AutocompleteController;
 class AutocompleteEditController;
 class AutocompleteEditModel;
-class AutocompletePopupModel;
 class AutocompleteResult;
 class InstantController;
+class OmniboxPopupModel;
 class OmniboxView;
 class Profile;
 class SkBitmap;
@@ -111,13 +111,13 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
     return autocomplete_controller_.get();
   }
 
-  void set_popup_model(AutocompletePopupModel* popup_model) {
+  void set_popup_model(OmniboxPopupModel* popup_model) {
     popup_ = popup_model;
   }
 
   // TODO: The edit and popup should be siblings owned by the LocationBarView,
   // making this accessor unnecessary.
-  AutocompletePopupModel* popup_model() const { return popup_; }
+  OmniboxPopupModel* popup_model() const { return popup_; }
 
   AutocompleteEditController* controller() const { return controller_; }
 
@@ -456,7 +456,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   OmniboxView* view_;
 
-  AutocompletePopupModel* popup_;
+  OmniboxPopupModel* popup_;
 
   AutocompleteEditController* controller_;
 

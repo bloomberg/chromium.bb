@@ -15,8 +15,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
@@ -40,6 +38,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -433,10 +433,9 @@ void AutocompleteEditModel::StartAutocomplete(
   ClearPopupKeywordMode();
 
   bool keyword_is_selected = KeywordIsSelected();
-  popup_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
-  // We don't explicitly clear AutocompletePopupModel::manually_selected_match,
-  // as Start ends up invoking AutocompletePopupModel::OnResultChanged which
-  // clears it.
+  popup_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
+  // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
+  // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
   autocomplete_controller_->Start(
       user_text_, GetDesiredTLD(),
       prevent_inline_autocomplete || just_deleted_text_ ||
@@ -469,7 +468,7 @@ bool AutocompleteEditModel::CanPasteAndGo(const string16& text) const {
 void AutocompleteEditModel::PasteAndGo() {
   view_->RevertAll();
   view_->OpenMatch(paste_and_go_match_, CURRENT_TAB,
-      paste_and_go_alternate_nav_url_, AutocompletePopupModel::kNoMatch);
+      paste_and_go_alternate_nav_url_, OmniboxPopupModel::kNoMatch);
 }
 
 void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
@@ -508,7 +507,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     GoogleURLTracker::GoogleURLSearchCommitted(profile_);
 
   view_->OpenMatch(match, disposition, alternate_nav_url,
-                   AutocompletePopupModel::kNoMatch);
+                   OmniboxPopupModel::kNoMatch);
 }
 
 void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
@@ -532,7 +531,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     DCHECK(user_input_in_progress_) << "We didn't get here through the "
         "expected series of calls.  time_user_first_modified_omnibox_ is "
         "not set correctly and other things may be wrong.";
-    if (index != AutocompletePopupModel::kNoMatch)
+    if (index != OmniboxPopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)
       log.inline_autocompleted_length = inline_autocomplete_text_.length();
@@ -564,7 +563,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         GetInfoForCurrentText(&current_match, NULL);
 
         const AutocompleteMatch& match =
-            (index == AutocompletePopupModel::kNoMatch) ?
+            (index == OmniboxPopupModel::kNoMatch) ?
                 current_match : result().match_at(index);
 
         // Strip the keyword + leading space off the input.
@@ -624,7 +623,7 @@ bool AutocompleteEditModel::AcceptKeyword() {
   is_keyword_hint_ = false;
 
   if (popup_->IsOpen())
-    popup_->SetSelectedLineState(AutocompletePopupModel::KEYWORD);
+    popup_->SetSelectedLineState(OmniboxPopupModel::KEYWORD);
   else
     StartAutocomplete(false, true);
 
@@ -969,8 +968,8 @@ bool AutocompleteEditModel::KeywordIsSelected() const {
 
 void AutocompleteEditModel::ClearPopupKeywordMode() const {
   if (popup_->IsOpen() &&
-      popup_->selected_line_state() == AutocompletePopupModel::KEYWORD)
-    popup_->SetSelectedLineState(AutocompletePopupModel::NORMAL);
+      popup_->selected_line_state() == OmniboxPopupModel::KEYWORD)
+    popup_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }
 
 string16 AutocompleteEditModel::DisplayTextFromUserText(

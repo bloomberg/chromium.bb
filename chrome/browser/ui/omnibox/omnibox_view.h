@@ -165,10 +165,10 @@ class OmniboxView {
   // Returns the gfx::NativeView of the edit view.
   virtual gfx::NativeView GetNativeView() const = 0;
 
-  // Gets the relative window for the pop up window of AutocompletePopupView.
-  // The pop up window will be shown under the relative window. When an IME
-  // is attached to the rich edit control, the IME window is the relative
-  // window. Otherwise, the top-most window is the relative window.
+  // Gets the relative window for the pop up window of OmniboxPopupView. The pop
+  // up window will be shown under the relative window. When an IME is attached
+  // to the rich edit control, the IME window is the relative window. Otherwise,
+  // the top-most window is the relative window.
   virtual gfx::NativeView GetRelativeWindowForPopup() const = 0;
 
   // Returns the command updater for this view.

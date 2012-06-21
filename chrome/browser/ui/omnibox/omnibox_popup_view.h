@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file defines the interface class AutocompletePopupView.  Each toolkit
+// This file defines the interface class OmniboxPopupView.  Each toolkit
 // will implement the popup view differently, so that code is inheriently
-// platform specific.  However, the AutocompletePopupModel needs to do some
+// platform specific.  However, the OmniboxPopupModel needs to do some
 // communication with the view.  Since the model is shared between platforms,
 // we need to define an interface that all view implementations will share.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -18,9 +18,9 @@ namespace gfx {
 class Rect;
 }
 
-class AutocompletePopupView {
+class OmniboxPopupView {
  public:
-  virtual ~AutocompletePopupView() {}
+  virtual ~OmniboxPopupView() {}
 
   // Returns true if the popup is currently open.
   virtual bool IsOpen() const = 0;
@@ -47,4 +47,4 @@ class AutocompletePopupView {
   virtual void OnDragCanceled() = 0;
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_H_

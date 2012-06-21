@@ -24,8 +24,8 @@
 
 class AutocompleteEditController;
 class AutocompleteEditModel;
-class AutocompletePopupView;
 class LocationBarView;
+class OmniboxPopupView;
 class Profile;
 
 namespace ui {
@@ -193,7 +193,7 @@ class OmniboxViewViews
   bool popup_window_mode_;
 
   scoped_ptr<AutocompleteEditModel> model_;
-  scoped_ptr<AutocompletePopupView> popup_view_;
+  scoped_ptr<OmniboxPopupView> popup_view_;
   AutocompleteEditController* controller_;
   ToolbarModel* toolbar_model_;
 

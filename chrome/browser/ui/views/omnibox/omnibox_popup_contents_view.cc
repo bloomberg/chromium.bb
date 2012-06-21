@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -102,7 +101,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
     views::View* location_bar)
-    : model_(new AutocompletePopupModel(this, edit_model)),
+    : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       profile_(edit_model->profile()),
       location_bar_(location_bar),
@@ -169,7 +168,7 @@ void OmniboxPopupContentsView::LayoutChildren() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxPopupContentsView, AutocompletePopupView overrides:
+// OmniboxPopupContentsView, OmniboxPopupView overrides:
 
 bool OmniboxPopupContentsView::IsOpen() const {
   return popup_ != NULL;
@@ -182,7 +181,7 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
 
   if (HasMatchAt(line) && GetMatchAtIndex(line).associated_keyword.get()) {
     result->ShowKeyword(IsSelectedIndex(line) &&
-        model_->selected_line_state() == AutocompletePopupModel::KEYWORD);
+        model_->selected_line_state() == OmniboxPopupModel::KEYWORD);
   }
 }
 
@@ -368,7 +367,7 @@ void OmniboxPopupContentsView::OnMouseEntered(
 
 void OmniboxPopupContentsView::OnMouseExited(
     const views::MouseEvent& event) {
-  model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
+  model_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 }
 
 ui::GestureStatus OmniboxPopupContentsView::OnGestureEvent(
@@ -516,7 +515,7 @@ void OmniboxPopupContentsView::OpenIndex(size_t index,
 size_t OmniboxPopupContentsView::GetIndexForPoint(
     const gfx::Point& point) {
   if (!HitTest(point))
-    return AutocompletePopupModel::kNoMatch;
+    return OmniboxPopupModel::kNoMatch;
 
   int nb_match = model_->result().size();
   DCHECK(nb_match <= child_count());
@@ -527,7 +526,7 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(
     if (child->HitTest(point_in_child_coords))
       return i;
   }
-  return AutocompletePopupModel::kNoMatch;
+  return OmniboxPopupModel::kNoMatch;
 }
 
 gfx::Rect OmniboxPopupContentsView::CalculateTargetBounds(int h) {

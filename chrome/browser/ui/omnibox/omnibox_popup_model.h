@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_MODEL_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_MODEL_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 
-class AutocompletePopupView;
+class OmniboxPopupView;
 class SkBitmap;
 
-class AutocompletePopupModel {
+class OmniboxPopupModel {
  public:
   // See selected_line_state_ for details.
   enum LineState {
@@ -21,14 +21,14 @@ class AutocompletePopupModel {
     KEYWORD
   };
 
-  AutocompletePopupModel(AutocompletePopupView* popup_view,
-                         AutocompleteEditModel* edit_model);
-  ~AutocompletePopupModel();
+  OmniboxPopupModel(OmniboxPopupView* popup_view,
+                    AutocompleteEditModel* edit_model);
+  ~OmniboxPopupModel();
 
   // Returns true if the popup is currently open.
   bool IsOpen() const;
 
-  AutocompletePopupView* view() const { return view_; }
+  OmniboxPopupView* view() const { return view_; }
 
   // Returns the AutocompleteController used by this popup.
   AutocompleteController* autocomplete_controller() const {
@@ -105,7 +105,7 @@ class AutocompletePopupModel {
   static const size_t kNoMatch;
 
  private:
-  AutocompletePopupView* view_;
+  OmniboxPopupView* view_;
 
   AutocompleteEditModel* edit_model_;
 
@@ -125,7 +125,7 @@ class AutocompletePopupModel {
   // The match the user has manually chosen, if any.
   AutocompleteResult::Selection manually_selected_match_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupModel);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_MODEL_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_MODEL_H_
