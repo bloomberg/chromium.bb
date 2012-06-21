@@ -246,10 +246,14 @@ void CloudPolicyController::OnPolicyFetchCompleted(
 }
 
 void CloudPolicyController::OnDeviceTokenChanged() {
-  if (data_store_->device_token().empty())
+  if (data_store_->device_token().empty()) {
+    // Additionally clear the generated device id to ensure we don't reuse old
+    // ids which could be potentially used for user tracking.
+    data_store_->set_device_id(std::string());
     SetState(STATE_TOKEN_UNAVAILABLE);
-  else
+  } else {
     SetState(STATE_TOKEN_VALID);
+  }
 }
 
 void CloudPolicyController::OnCredentialsChanged() {
@@ -317,9 +321,10 @@ bool CloudPolicyController::ReadyToFetchToken() {
 void CloudPolicyController::FetchToken() {
   if (ReadyToFetchToken()) {
     if (CanBeInManagedDomain(data_store_->user_name())) {
-      // Generate a new random device id. (It'll only be kept if registration
-      // succeeds.)
-      data_store_->set_device_id(base::GenerateGUID());
+      // Either use an already prepopulated id or generate a new random device
+      // id. (It'll only be kept if registration succeeds.)
+      if (data_store_->device_id().empty())
+        data_store_->set_device_id(base::GenerateGUID());
       token_fetcher_->FetchToken();
     } else {
       SetState(STATE_TOKEN_UNMANAGED);

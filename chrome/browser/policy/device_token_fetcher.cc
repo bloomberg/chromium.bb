@@ -178,6 +178,8 @@ void DeviceTokenFetcher::FetchTokenInternal() {
     request->set_machine_model(data_store_->machine_model());
   if (data_store_->known_machine_id())
     request->set_auto_enrolled(true);
+  if (data_store_->reregister())
+    request->set_reregister(true);
   request_job_->Start(base::Bind(&DeviceTokenFetcher::OnTokenFetchCompleted,
                                  base::Unretained(this)));
   UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchRequested,
@@ -192,6 +194,8 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
     status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
 
+  LOG_IF(ERROR, status != DM_STATUS_SUCCESS) << "DMServer returned error code: "
+                                             << status;
   SampleErrorStatus(status);
 
   switch (status) {
