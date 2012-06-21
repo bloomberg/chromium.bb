@@ -371,6 +371,15 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-instant-extended-api",
+    IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API,
+    IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableInstantExtendedAPI)
+  },
+#endif
   {
     "static-ip-config",
     IDS_FLAGS_STATIC_IP_CONFIG_NAME,

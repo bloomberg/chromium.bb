@@ -154,6 +154,7 @@ extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFileCookies[];
 extern const char kEnableHttpPipelining[];
 extern const char kEnableHtml5Camera[];
+extern const char kEnableInstantExtendedAPI[];
 extern const char kEnableIPv6[];
 extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];
