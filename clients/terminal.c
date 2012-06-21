@@ -401,6 +401,7 @@ struct terminal {
 	struct terminal_color color_table[256];
 	cairo_font_extents_t extents;
 	cairo_scaled_font_t *font_normal, *font_bold;
+	uint32_t hide_cursor_serial;
 
 	struct wl_data_source *selection;
 	int32_t dragging;
@@ -2127,7 +2128,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 {
 	struct terminal *terminal = data;
 	char ch[MAX_RESPONSE];
-	uint32_t modifiers;
+	uint32_t modifiers, serial;
 	int len = 0;
 
 	modifiers = input_get_modifiers(input);
@@ -2137,7 +2138,12 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	    handle_bound_key(terminal, input, sym, time))
 		return;
 
-	input_set_pointer_image(input, CURSOR_BLANK);
+	serial = display_get_serial(terminal->display);
+	if (terminal->hide_cursor_serial != serial &&
+	    state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		input_set_pointer_image(input, CURSOR_BLANK);
+		terminal->hide_cursor_serial = serial;
+	}
 
 	switch (sym) {
 	case XKB_KEY_F11:
