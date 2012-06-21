@@ -52,7 +52,6 @@
 #endif
 
 using content::BrowserThread;
-using content::PepperPrintSettingsInitializer;
 using content::RenderViewHostImpl;
 using ppapi::NetAddressPrivateImpl;
 
@@ -78,15 +77,13 @@ PepperMessageFilter::PepperMessageFilter(
       process_id_(process_id),
       resource_context_(browser_context->GetResourceContext()),
       host_resolver_(NULL),
-      next_socket_id_(1),
-      print_settings_initializer_(new PepperPrintSettingsInitializer) {
+      next_socket_id_(1) {
   DCHECK(type == RENDERER);
   DCHECK(browser_context);
   // Keep BrowserContext data in FILE-thread friendly storage.
   browser_path_ = browser_context->GetPath();
   incognito_ = browser_context->IsOffTheRecord();
   DCHECK(resource_context_);
-  print_settings_initializer_->Initialize();
 }
 
 PepperMessageFilter::PepperMessageFilter(ProcessType type,
@@ -96,11 +93,9 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
       resource_context_(NULL),
       host_resolver_(host_resolver),
       next_socket_id_(1),
-      incognito_(false),
-      print_settings_initializer_(new PepperPrintSettingsInitializer) {
+      incognito_(false) {
   DCHECK(type == PLUGIN);
   DCHECK(host_resolver);
-  print_settings_initializer_->Initialize();
 }
 
 void PepperMessageFilter::OverrideThreadForMessage(
@@ -170,10 +165,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
     IPC_MESSAGE_HANDLER(PepperMsg_GetDeviceID, OnGetDeviceID)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashDeviceID_Get, OnGetDeviceIDAsync)
-
-    // PPBInstance messages.
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings,
-                        OnGetDefaultPrintSettings);
 
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -704,12 +695,6 @@ void PepperMessageFilter::OnGetDeviceIDAsync(int32_t routing_id,
                                               result.empty() ? PP_ERROR_FAILED
                                                              : PP_OK,
                                               result));
-}
-
-void PepperMessageFilter::OnGetDefaultPrintSettings(
-    PP_PrintSettings_Dev* settings,
-    bool* result) {
-  *result = print_settings_initializer_->GetDefaultPrintSettings(settings);
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

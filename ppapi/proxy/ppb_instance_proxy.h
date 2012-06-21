@@ -156,6 +156,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             SerializedVarReceiveInput message);
   void OnHostMsgLockMouse(PP_Instance instance);
   void OnHostMsgUnlockMouse(PP_Instance instance);
+  void OnHostMsgGetDefaultPrintSettings(PP_Instance instance,
+                                        PP_PrintSettings_Dev* settings,
+                                        bool* result);
   void OnHostMsgSetCursor(PP_Instance instance,
                           int32_t type,
                           const ppapi::HostResource& custom_image,

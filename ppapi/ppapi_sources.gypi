@@ -428,8 +428,6 @@
       'tests/test_net_address_private.h',
       'tests/test_network_monitor_private.cc',
       'tests/test_network_monitor_private.h',
-      'tests/test_printing.cc',
-      'tests/test_printing.h',
       'tests/test_resource_array.cc',
       'tests/test_resource_array.h',
       'tests/test_struct_sizes.c',
