@@ -149,6 +149,8 @@
           'proxy/proxy_object_var.h',
           'proxy/resource_creation_proxy.cc',
           'proxy/resource_creation_proxy.h',
+          'proxy/resource_message_params.cc',
+          'proxy/resource_message_params.h',
           'proxy/serialized_flash_menu.cc',
           'proxy/serialized_flash_menu.h',
           'proxy/serialized_structs.cc',

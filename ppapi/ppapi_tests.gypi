@@ -129,6 +129,8 @@
       'sources': [
         'proxy/ppapi_proxy_test.cc',
         'proxy/ppapi_proxy_test.h',
+        'proxy/resource_message_test_sink.cc',
+        'proxy/resource_message_test_sink.h',
         'shared_impl/test_globals.cc',
         'shared_impl/test_globals.h',
       ],

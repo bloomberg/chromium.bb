@@ -37,6 +37,7 @@
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
@@ -1385,4 +1386,41 @@ IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
 // PPB_Font.
 IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
                             std::string /* result */)
+
 #endif  // !defined(OS_NACL)
+
+//-----------------------------------------------------------------------------
+// Resource call/reply messages.
+//
+// These are the new-style resource implementations where the resource is only
+// implemented in the proxy and "resource messages" are sent between this and a
+// host object. Resource messages are a wrapper around some general routing
+// information and a separate message of a type defined by the specific resource
+// sending/receiving it. The extra paremeters allow the nested message to be
+// routed automatically to the correct resource.
+
+// Notification that a resource has been created in the plugin. The nested
+// message will be resource-type-specific.
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_ResourceCreated,
+                     ppapi::proxy::ResourceMessageCallParams /* call_params */,
+                     PP_Instance  /* instance */,
+                     IPC::Message /* nested_msg */)
+
+// Notification that a resource has been destroyed in the plugin.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_ResourceDestroyed,
+                     PP_Resource /* resource */)
+
+// A resource call is a request from the plugin to the host. It may or may not
+// require a reply, depending on the params. The nested message will be
+// resource-type-specific.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_ResourceCall,
+                     ppapi::proxy::ResourceMessageCallParams /* call_params */,
+                     IPC::Message /* nested_msg */)
+
+// A resource reply is a response to a ResourceCall from a host to the
+// plugin. The resource ID + sequence number in the params will correspond to
+// that of the previous ResourceCall.
+IPC_MESSAGE_CONTROL2(
+    PpapiPluginMsg_ResourceReply,
+    ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
+    IPC::Message /* nested_msg */)
