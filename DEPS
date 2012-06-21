@@ -412,9 +412,6 @@ deps_os = {
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
 
-    "src/rlz":
-      (Var("googlecode_url") % "rlz") + "/trunk@" + Var("rlz_revision"),
-
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
       "/trunk/deps/third_party/nss@" + Var("nss_revision"),
