@@ -283,7 +283,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       last_movement_timestamp_(0.0),
       last_swipe_timestamp_(0.0),
       current_gesture_type_(kGestureTypeNull),
-      scroll_buffer_(3),
+      scroll_buffer_(6),
       prev_result_high_pressure_change_(false),
       finger_metrics_(finger_metrics),
       pinch_guess_start_(-1.0),
@@ -355,7 +355,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       pinch_guess_min_movement_(prop_reg, "Pinch Guess Minimal Movement", 4.0),
       pinch_certain_min_movement_(prop_reg,
                                   "Pinch Certain Minimal Movement", 8.0),
-      pinch_enable_(prop_reg, "Pinch Enable", 1.0) {
+      pinch_enable_(prop_reg, "Pinch Enable", 1.0),
+      fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 3) {
   memset(&prev_state_, 0, sizeof(prev_state_));
   if (!finger_metrics_) {
     test_finger_metrics_.reset(new FingerMetrics(prop_reg));
@@ -1508,7 +1509,8 @@ size_t ImmediateInterpreter::ScrollEventsForFlingCount() const {
   enum Direction { kNone, kUp, kDown, kLeft, kRight };
   size_t i = 0;
   Direction prev_direction = kNone;
-  for (; i < scroll_buffer_.Size(); i++) {
+  size_t fling_buffer_depth = static_cast<size_t>(fling_buffer_depth_.val_);
+  for (; i < scroll_buffer_.Size() && i < fling_buffer_depth; i++) {
     const ScrollEvent& event = scroll_buffer_.Get(i);
     if (FloatEq(event.dx, 0.0) && FloatEq(event.dy, 0.0))
       break;

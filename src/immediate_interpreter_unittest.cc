@@ -3309,4 +3309,97 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
 
   EXPECT_EQ(gesture->type, kGestureTypeButtonsChange);
 }
+
+// Test that fling_buffer_depth controls the number of scroll samples to use
+// to compute fling.
+TEST(ImmediateInterpreterTest, FlingDepthTest) {
+  ImmediateInterpreter ii(NULL, NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    1,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // Consistent movement for 6 frames
+    {0, 0, 0, 0, 20, 0, 40, 20, 1, 0}, // 0
+    {0, 0, 0, 0, 20, 0, 60, 20, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 25, 1, 0}, // 2
+    {0, 0, 0, 0, 20, 0, 60, 25, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 30, 1, 0}, // 4
+    {0, 0, 0, 0, 20, 0, 60, 30, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 35, 1, 0}, // 6
+    {0, 0, 0, 0, 20, 0, 60, 35, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 40, 1, 0}, // 8
+    {0, 0, 0, 0, 20, 0, 60, 40, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 45, 1, 0}, // 10
+    {0, 0, 0, 0, 20, 0, 60, 45, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 50, 1, 0}, // 12
+    {0, 0, 0, 0, 20, 0, 60, 50, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 55, 1, 0}, // 14
+    {0, 0, 0, 0, 20, 0, 60, 55, 2, 0},
+};
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 1.00, 0, 2, 2, &finger_states[0] },
+    { 1.01, 0, 2, 2, &finger_states[2] },
+    { 1.02, 0, 2, 2, &finger_states[4] },
+    { 1.03, 0, 2, 2, &finger_states[6] },
+    { 1.04, 0, 2, 2, &finger_states[8] },
+    { 1.05, 0, 2, 2, &finger_states[10] },
+    { 1.06, 0, 2, 2, &finger_states[12] },
+    { 1.07, 0, 2, 2, &finger_states[14] },
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  ii.fling_buffer_depth_.val_ = 6;
+  size_t fling_buffer_depth = (size_t)ii.fling_buffer_depth_.val_;
+
+  // The unittest is only meaningful if there are enough hwstates
+  ASSERT_GT(arraysize(hardware_states) - 1, fling_buffer_depth)
+    << "Hardware state list must be > fling buffer depth + 1";
+
+  // Fill scroll buffer with a set of scrolls
+  ii.scroll_buffer_.Clear();
+  const HardwareState* prev_hs = NULL;
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
+    const HardwareState* hs = &hardware_states[idx];
+    if (prev_hs != NULL) {
+      // Cheating here, only using first finger to compute scroll
+      const FingerState* fs = &hs->fingers[0];
+      const FingerState* prev_fs = prev_hs->GetFingerState(fs->tracking_id);
+      EXPECT_NE(reinterpret_cast<const FingerState*>(NULL), prev_fs);
+      float dx = fs->position_x - prev_fs->position_x;
+      float dy = fs->position_y - prev_fs->position_y;
+      float dt = hs->timestamp - prev_hs->timestamp;
+      ii.scroll_buffer_.Insert(dx, dy, dt);
+      // Enforce assumption that all scrolls are positive in Y only
+      EXPECT_DOUBLE_EQ(dx, 0);
+      EXPECT_GT(dy, 0);
+      EXPECT_GT(dt, 0);
+      size_t expected_fling_events = std::min(idx, fling_buffer_depth);
+      EXPECT_EQ(ii.ScrollEventsForFlingCount(), expected_fling_events);
+    }
+    prev_hs = hs;
+  }
+}
 }  // namespace gestures
