@@ -278,6 +278,9 @@ struct weston_compositor {
 	struct wl_signal lock_signal;
 	struct wl_signal unlock_signal;
 
+	struct wl_signal show_input_panel_signal;
+	struct wl_signal hide_input_panel_signal;
+
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
 

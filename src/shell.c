@@ -69,6 +69,8 @@ struct desktop_shell {
 	struct wl_listener lock_listener;
 	struct wl_listener unlock_listener;
 	struct wl_listener destroy_listener;
+	struct wl_listener show_input_panel_listener;
+	struct wl_listener hide_input_panel_listener;
 
 	struct weston_layer fullscreen_layer;
 	struct weston_layer panel_layer;
@@ -117,6 +119,11 @@ struct desktop_shell {
 		struct weston_process process;
 	} screensaver;
 
+	struct {
+		struct wl_resource *binding;
+		struct wl_list surfaces;
+	} input_panel;
+
 	uint32_t binding_modifier;
 	enum animation_type win_animation_type;
 	struct weston_surface *debug_repaint_surface;
@@ -129,6 +136,7 @@ enum shell_surface_type {
 	SHELL_SURFACE_BACKGROUND,
 	SHELL_SURFACE_LOCK,
 	SHELL_SURFACE_SCREENSAVER,
+	SHELL_SURFACE_INPUT_PANEL,
 
 	SHELL_SURFACE_TOPLEVEL,
 	SHELL_SURFACE_TRANSIENT,
@@ -1222,6 +1230,7 @@ reset_shell_surface_type(struct shell_surface *surface)
 		break;
 	case SHELL_SURFACE_PANEL:
 	case SHELL_SURFACE_BACKGROUND:
+	case SHELL_SURFACE_INPUT_PANEL:
 		wl_list_remove(&surface->link);
 		wl_list_init(&surface->link);
 		break;
@@ -1908,6 +1917,26 @@ hide_screensaver(struct desktop_shell *shell, struct shell_surface *surface)
 }
 
 static void
+show_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
+{
+	wl_list_remove(&surface->surface->layer_link);
+	wl_list_insert(&shell->panel_layer.surface_list, &surface->surface->layer_link);
+	surface->surface->output = surface->output;
+	weston_surface_damage(surface->surface);
+}
+
+static void
+hide_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
+{
+	weston_surface_damage_below(surface->surface);
+	wl_list_remove(&surface->surface->layer_link);
+	wl_list_init(&surface->surface->layer_link);
+	surface->surface->output = NULL;
+
+	weston_compositor_schedule_repaint(surface->surface->compositor);
+}
+
+static void
 desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *resource,
 			     struct wl_resource *output_resource,
@@ -2401,6 +2430,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	case SHELL_SURFACE_BACKGROUND:
 	case SHELL_SURFACE_PANEL:
 	case SHELL_SURFACE_LOCK:
+	case SHELL_SURFACE_INPUT_PANEL:
 		break;
 
 	case SHELL_SURFACE_SCREENSAVER:
@@ -2533,11 +2563,46 @@ unlock(struct wl_listener *listener, void *data)
 }
 
 static void
+show_input_panels(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell =
+		container_of(listener, struct desktop_shell, show_input_panel_listener);
+	struct shell_surface *priv;
+
+	wl_list_for_each(priv, &shell->input_panel.surfaces, link) {
+		show_input_panel(shell, priv);
+	}
+}
+
+static void
+hide_input_panels(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell =
+		container_of(listener, struct desktop_shell, hide_input_panel_listener);
+	struct shell_surface *priv;
+
+	wl_list_for_each(priv, &shell->input_panel.surfaces, link) {
+		hide_input_panel(shell, priv);
+	}
+}
+
+static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
 	struct weston_mode *mode = output->current;
 	GLfloat x = (mode->width - surface->geometry.width) / 2;
 	GLfloat y = (mode->height - surface->geometry.height) / 2;
+
+	weston_surface_set_position(surface, output->x + x, output->y + y);
+}
+
+
+static void
+bottom_center_on_output(struct weston_surface *surface, struct weston_output *output)
+{
+	struct weston_mode *mode = output->current;
+	GLfloat x = (mode->width - surface->geometry.width) / 2;
+	GLfloat y = mode->height - surface->geometry.height;
 
 	weston_surface_set_position(surface, output->x + x, output->y + y);
 }
@@ -2578,6 +2643,9 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_LOCK:
 		center_on_output(surface, get_default_output(compositor));
+		break;
+	case SHELL_SURFACE_INPUT_PANEL:
+		bottom_center_on_output(surface, get_default_output(compositor));
 		break;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
@@ -2625,6 +2693,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_NONE:
+	case SHELL_SURFACE_INPUT_PANEL:
 		break;
 	default:
 		ws = get_current_workspace(shell);
@@ -2880,6 +2949,58 @@ bind_screensaver(struct wl_client *client,
 	if (shell->screensaver.binding == NULL) {
 		resource->destroy = unbind_screensaver;
 		shell->screensaver.binding = resource;
+		return;
+	}
+
+	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+			       "interface object already bound");
+	wl_resource_destroy(resource);
+}
+
+static void
+input_panel_set_surface(struct wl_client *client,
+			struct wl_resource *resource,
+			struct wl_resource *shell_surface_resource,
+			struct wl_resource *output_resource)
+{
+	struct desktop_shell *shell = resource->data;
+	struct shell_surface *surface = shell_surface_resource->data;
+	struct weston_output *output = output_resource->data;
+
+	surface->next_type = SHELL_SURFACE_INPUT_PANEL;
+
+	surface->fullscreen_output = output;
+	surface->output = output;
+	wl_list_insert(shell->input_panel.surfaces.prev, &surface->link);
+}
+
+static const struct input_panel_interface input_panel_implementation = {
+	input_panel_set_surface
+};
+
+static void
+unbind_input_panel(struct wl_resource *resource)
+{
+	struct desktop_shell *shell = resource->data;
+
+	shell->input_panel.binding = NULL;
+	free(resource);
+}
+
+static void
+bind_input_panel(struct wl_client *client,
+	      void *data, uint32_t version, uint32_t id)
+{
+	struct desktop_shell *shell = data;
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &input_panel_interface,
+					&input_panel_implementation,
+					id, shell);
+
+	if (shell->input_panel.binding == NULL) {
+		resource->destroy = unbind_input_panel;
+		shell->input_panel.binding = resource;
 		return;
 	}
 
@@ -3158,6 +3279,8 @@ shell_destroy(struct wl_listener *listener, void *data)
 
 	wl_list_remove(&shell->lock_listener.link);
 	wl_list_remove(&shell->unlock_listener.link);
+	wl_list_remove(&shell->show_input_panel_listener.link);
+	wl_list_remove(&shell->hide_input_panel_listener.link);
 
 	wl_array_for_each(ws, &shell->workspaces.array)
 		workspace_destroy(*ws);
@@ -3253,6 +3376,10 @@ shell_init(struct weston_compositor *ec)
 	wl_signal_add(&ec->lock_signal, &shell->lock_listener);
 	shell->unlock_listener.notify = unlock;
 	wl_signal_add(&ec->unlock_signal, &shell->unlock_listener);
+	shell->show_input_panel_listener.notify = show_input_panels;
+	wl_signal_add(&ec->show_input_panel_signal, &shell->show_input_panel_listener);
+	shell->hide_input_panel_listener.notify = hide_input_panels;
+	wl_signal_add(&ec->hide_input_panel_signal, &shell->hide_input_panel_listener);
 	ec->ping_handler = ping_handler;
 	ec->shell_interface.create_shell_surface = create_shell_surface;
 	ec->shell_interface.set_toplevel = set_toplevel;
@@ -3263,6 +3390,7 @@ shell_init(struct weston_compositor *ec)
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
 	wl_list_init(&shell->screensaver.surfaces);
+	wl_list_init(&shell->input_panel.surfaces);
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
@@ -3298,6 +3426,10 @@ shell_init(struct weston_compositor *ec)
 
 	if (wl_display_add_global(ec->wl_display, &screensaver_interface,
 				  shell, bind_screensaver) == NULL)
+		return -1;
+
+	if (wl_display_add_global(ec->wl_display, &input_panel_interface,
+				  shell, bind_input_panel) == NULL)
 		return -1;
 
 	shell->child.deathstamp = weston_compositor_get_time();
