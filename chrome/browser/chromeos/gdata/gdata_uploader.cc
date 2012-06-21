@@ -386,10 +386,12 @@ void GDataUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
   RemoveUpload(upload_file_info->upload_id);
 
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
-  if (!upload_file_info->completion_callback.is_null()) {
-    upload_file_info->completion_callback.Run(error,
-                                              upload_file_info.Pass());
-  }
+  // This is subtle but we should take the callback reference before
+  // calling upload_file_info.Pass(). Otherwise, it'll crash.
+  const UploadFileInfo::UploadCompletionCallback& callback =
+      upload_file_info->completion_callback;
+  if (!callback.is_null())
+    callback.Run(error, upload_file_info.Pass());
 }
 
 void GDataUploader::RemoveUpload(int upload_id) {
