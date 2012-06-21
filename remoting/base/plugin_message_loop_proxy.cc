@@ -27,14 +27,6 @@ void PluginMessageLoopProxy::Detach() {
 bool PluginMessageLoopProxy::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    int64 delay_ms) {
-  return PostDelayedTask(
-      from_here, task, base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-bool PluginMessageLoopProxy::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
     base::TimeDelta delay) {
   base::AutoLock auto_lock(lock_);
   if (!delegate_)
@@ -44,14 +36,6 @@ bool PluginMessageLoopProxy::PostDelayedTask(
       &PluginMessageLoopProxy::RunClosureIf, this, task));
   return delegate_->RunOnPluginThread(
       delay, &PluginMessageLoopProxy::TaskSpringboard, springpad_closure);
-}
-
-bool PluginMessageLoopProxy::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    int64 delay_ms) {
-  // All tasks running on this message loop are non-nestable.
-  return PostDelayedTask(from_here, task, delay_ms);
 }
 
 bool PluginMessageLoopProxy::PostNonNestableDelayedTask(

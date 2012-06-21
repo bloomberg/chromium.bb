@@ -180,8 +180,9 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   request.set_method("POST");
   request.Start();
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), kRequestTimeoutMs);
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs));
 
   MessageLoop::current()->Run();
 

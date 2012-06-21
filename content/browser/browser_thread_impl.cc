@@ -186,22 +186,10 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
   // MessageLoopProxy implementation.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
-      const base::Closure& task, int64 delay_ms) OVERRIDE {
-    return BrowserThread::PostDelayedTask(id_, from_here, task, delay_ms);
-  }
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
       const base::Closure& task, base::TimeDelta delay) OVERRIDE {
     return BrowserThread::PostDelayedTask(id_, from_here, task, delay);
   }
 
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      int64 delay_ms) OVERRIDE {
-    return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
-                                                     delay_ms);
-  }
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
@@ -301,19 +289,6 @@ bool BrowserThread::PostTask(ID identifier,
 bool BrowserThread::PostDelayedTask(ID identifier,
                                     const tracked_objects::Location& from_here,
                                     const base::Closure& task,
-                                    int64 delay_ms) {
-  return BrowserThreadImpl::PostTaskHelper(
-      identifier,
-      from_here,
-      task,
-      base::TimeDelta::FromMilliseconds(delay_ms),
-      true);
-}
-
-// static
-bool BrowserThread::PostDelayedTask(ID identifier,
-                                    const tracked_objects::Location& from_here,
-                                    const base::Closure& task,
                                     base::TimeDelta delay) {
   return BrowserThreadImpl::PostTaskHelper(
       identifier, from_here, task, delay, true);
@@ -326,20 +301,6 @@ bool BrowserThread::PostNonNestableTask(
     const base::Closure& task) {
   return BrowserThreadImpl::PostTaskHelper(
       identifier, from_here, task, base::TimeDelta(), false);
-}
-
-// static
-bool BrowserThread::PostNonNestableDelayedTask(
-    ID identifier,
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    int64 delay_ms) {
-  return BrowserThreadImpl::PostTaskHelper(
-      identifier,
-      from_here,
-      task,
-      base::TimeDelta::FromMilliseconds(delay_ms),
-      false);
 }
 
 // static

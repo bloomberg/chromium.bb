@@ -17,14 +17,6 @@ bool DomStorageTaskRunner::RunsTasksOnCurrentThread() const {
   return IsRunningOnSequence(PRIMARY_SEQUENCE);
 }
 
-bool DomStorageTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    int64 delay_ms) {
-  return PostDelayedTask(
-      from_here, task, base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
 // DomStorageWorkerPoolTaskRunner
 
 DomStorageWorkerPoolTaskRunner::DomStorageWorkerPoolTaskRunner(
