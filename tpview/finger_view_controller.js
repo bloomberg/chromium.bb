@@ -80,6 +80,100 @@ FingerViewController.prototype = {
     }
     return -1;
   },
+  getPreviousHardwareStateTimestamp: function(index) {
+    if (index < 0 && index >= this.entries.length)
+      return -1;
+    for (var i = index; i >= 0; i--) {
+      if (this.entries[i].type == 'hardwareState')
+        return this.entries[i].timestamp;
+    }
+    return -1;
+  },
+  lastEntryIndex: function() {
+    return this.entries.length - 1;
+  },
+  isFirstFTS: function(index) {
+    return index <= this.fts[0][1];
+  },
+  isLastFTS: function(index) {
+    return index >= this.fts[this.fts.length - 1][0];
+  },
+  getNextNon0TouchCountHardwareState: function(index) {
+    for (var i = index; i < this.entries.length; i++) {
+      var e = this.entries[i];
+      if (e.type == 'hardwareState' && e.touchCount > 0)
+        return i;
+    }
+    return -1;
+  },
+  getNext0TouchCountHardwareState: function(index) {
+    for (var i = index; i < this.entries.length; i++) {
+      var e = this.entries[i];
+      if (e.type == 'hardwareState' && e.touchCount == 0)
+        return i;
+    }
+    return -1;
+  },
+  // Every FTS begins with a hwstate with non-0 touchCount, and ends at
+  // any entry just preceding the next FTS. If the FTS is the last one, it
+  // ends at whatever the very last entry is.
+  initFTS: function() {
+    this.fts = [];
+    var beginEntry;
+    var endEntry = -1;
+    var hwstate;
+    while (1) {
+      beginEntry = this.getNextNon0TouchCountHardwareState(endEntry + 1);
+      if (beginEntry == -1)
+        break;
+      hwstate = this.getNext0TouchCountHardwareState(beginEntry);
+      if (hwstate == -1) {
+        this.fts.push([beginEntry, this.lastEntryIndex()]);
+        break;
+      }
+      hwstate = this.getNextNon0TouchCountHardwareState(hwstate);
+      endEntry = (hwstate == -1) ? this.lastEntryIndex() : (hwstate - 1);
+      this.fts.push([beginEntry, endEntry]);
+    }
+  },
+  getNumFTS: function() {
+    return this.fts.length;
+  },
+  getFTSIndex: function(value) {
+    for (var i = 0; i < this.fts.length; i++) {
+      if (value >= this.fts[i][0] && value <= this.fts[i][1])
+        return i;
+    }
+    return 0;
+  },
+  // Get the first Finger Touch Section
+  getFirstFTS: function() {
+    return this.fts[0];
+  },
+  // Get the last Finger Touch Section
+  getLastFTS: function() {
+    return this.fts[this.fts.length - 1];
+  },
+  // Get previous Finger Touch Section
+  getPrevFTS: function(indexes) {
+    // If it is the whole range, or the indexes are in the first FTS,
+    // return the first FTS.
+    if (this.isFirstFTS(indexes[0]))
+      return this.getFirstFTS();
+    return this.fts[this.getFTSIndex(indexes[0]) -1];
+  },
+  // Get next Finger Touch Section
+  getNextFTS: function(indexes) {
+    // If it is the whole range, or the indexes are in the last FTS,
+    // return the last FTS.
+    if (this.isLastFTS(indexes[1]))
+      return this.getLastFTS();
+    return this.fts[this.getFTSIndex(indexes[1]) + 1];
+  },
+  // Get all entries
+  getAllEntries: function() {
+    return [0, this.lastEntryIndex()];
+  },
   setRange: function(begin, end) {
     this.begin = begin;
     this.end = end;

@@ -25,12 +25,19 @@ function update_range(event, ui) {
     $('#input_begin_time').val(beginTimestamp);
   var end_event = finger_view_controller.getEvent(ui.values[1]);
   $("#end_event").text(end_event);
-  if ((endTimestamp = finger_view_controller.getTimestamp(ui.values[1])) > 0)
+  endTimestamp = finger_view_controller.getPreviousHardwareStateTimestamp(
+      ui.values[1]);
+  if (endTimestamp > 0)
     $('#input_end_time').val(endTimestamp);
+  var values = $("#slider").slider("option", "values");
+  $('#num_fts').text('Finger Touch Section (' +
+                     finger_view_controller.getFTSIndex(values[1]) + ' / ' +
+                     '0 ~ ' + (finger_view_controller.getNumFTS() - 1) + '): ');
 }
 
 function loadLogObj(obj) {
   finger_view_controller.setEntriesLog(obj);
+  finger_view_controller.initFTS();
   var MAX_SIZE = 10000;
   var min = Math.max(0, obj.entries.length - MAX_SIZE);
   var max = obj.entries.length - 1;
@@ -178,6 +185,34 @@ function setEndTimestamp() {
   }
 }
 
+function gotoPrevFTS() {
+  var values = $('#slider').slider('option', 'values');
+  var fts = finger_view_controller.getPrevFTS(values);
+  $('#slider').slider('option', 'values', fts);
+}
+
+function gotoNextFTS() {
+  var values = $('#slider').slider('option', 'values');
+  var fts = finger_view_controller.getNextFTS(values);
+  $('#slider').slider('option', 'values', fts);
+}
+
+function gotoFirstFTS() {
+  var fts = finger_view_controller.getFirstFTS();
+  $('#slider').slider('option', 'values', fts);
+}
+
+function gotoLastFTS() {
+  var fts = finger_view_controller.getLastFTS();
+  $('#slider').slider('option', 'values', fts);
+}
+
+function expandAllFTS() {
+  var values = finger_view_controller.getAllEntries();
+  $('#slider').slider('option', 'values', values);
+}
+
+
 function shrink() {
   var values = $("#slider").slider("option", "values");
   var snippet = finger_view_controller.getSnippet(values[0], values[1]);
@@ -259,12 +294,42 @@ $(document).ready(function() {
   $("#shrink").button({
     text: true,
   }).click(shrink);
+  $("#prev_finger_touch").button({
+    text: true,
+  }).click(gotoPrevFTS);
+  $("#next_finger_touch").button({
+    text: true,
+  }).click(gotoNextFTS);
+  $("#first_finger_touch").button({
+    text: true,
+  }).click(gotoFirstFTS);
+  $("#last_finger_touch").button({
+    text: true,
+  }).click(gotoLastFTS);
+  $("#all_finger_touch").button({
+    text: true,
+  }).click(expandAllFTS);
   $("#unittest").button({
     text: true,
   }).click(generateUnittest);
 
   $(window).keypress(function (event) {
     switch (event.keyCode) {
+    case 44:  // ','  move the slider to previous fts
+      gotoPrevFTS();
+      break;
+    case 46:  // '.'  move the slider to next fts
+      gotoNextFTS();
+      break;
+    case 109:  // 'm' move the slider to the first fts
+      gotoFirstFTS();
+      break;
+    case 47:  // '/'  move the slider to the last fts
+      gotoLastFTS();
+      break;
+    case 97:  // 'a'  expand the slider to all entries
+      expandAllFTS();
+      break;
     case 107:  // 'k'
       end_stepBack();
       break;
@@ -312,6 +377,12 @@ Set begin time: <input type='text' id='input_begin_time'
 Set end time: <input type='text' id='input_end_time'
                   onkeyup="setEndTimestamp()" />
 <div id="end_event"></div><br/>
+<div id='num_fts'></div>
+<button id="first_finger_touch"> &lt;&lt; </button>
+<button id="prev_finger_touch"> &lt; </button>
+<button id="all_finger_touch"> all </button>
+<button id="next_finger_touch"> &gt; </button>
+<button id="last_finger_touch"> &gt;&gt; </button><br/><br/>
 <button id="shrink">Shrink Range</button>
 </div>
 <div id="textdiv">
