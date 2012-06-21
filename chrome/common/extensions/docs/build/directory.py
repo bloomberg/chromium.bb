@@ -81,6 +81,57 @@ def parse_idl_file(path):
     path: Path to a file containing JSON-encoded data.
   """
   api_def = idl_schema.Load(path)
+  for namespace_def in api_def:
+    namespace_dot = namespace_def['namespace'] + '.'
+    types = dict((type_['id'], type_)
+                for type_ in namespace_def.get('types', [])
+                if type_)
+    def SubstituteInlineDoc(prop):
+      prop_ref_type = prop.get('$ref', '')
+      type_obj = types.get(namespace_dot + prop_ref_type,
+                              types.get(prop_ref_type, {}))
+      if not type_obj:
+        return
+      if 'properties' in type_obj:
+        del prop['$ref']
+        prop['properties'] = dict(type_obj['properties'])
+        prop['type'] = 'object'
+        for sub_prop in prop['properties'].values():
+          if isinstance(sub_prop, dict):
+            if 'nodoc' in sub_prop:
+              del sub_prop['nodoc']
+            if 'name' in sub_prop:
+              del sub_prop['name']
+      elif 'enum' in type_obj and 'type' in type_obj:
+        del prop['$ref']
+        prop['type'] = type_obj['type']
+        prop['enum'] = type_obj['enum']
+    def FixReferences(prop):
+      # Strip namespace_dot from $ref names.
+      if prop.get('$ref', '').startswith(namespace_dot):
+        prop['$ref'] = prop['$ref'][len(namespace_dot):]
+      if (prop.get('type', '') == 'array' and
+          prop.get('items', {}).get('$ref', '').startswith(namespace_dot)):
+        prop['items']['$ref'] = prop['items']['$ref'][len(namespace_dot):]
+      if prop.get('inline_doc', False):
+        del prop['inline_doc']
+        SubstituteInlineDoc(prop)
+        if 'items' in prop:
+          SubstituteInlineDoc(prop['items'])
+
+    for type_ in namespace_def.get('types', []):
+      if type_.get('id', '').startswith(namespace_dot):
+        type_['id'] = type_['id'][len(namespace_dot):]
+      for prop in type_.get('properties', {}).values():
+        FixReferences(prop)
+    for func in namespace_def.get('functions', []):
+      for param in func.get('parameters', []):
+        FixReferences(param)
+        for cb_param in param.get('parameters', []):
+          FixReferences(cb_param)
+    for event in namespace_def.get('events', []):
+      for param in event.get('parameters', []):
+        FixReferences(param)
   return api_def
 
 def write_json_to_file(manifest, path):

@@ -6,16 +6,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
 class DownloadsApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
-
   void SetUpTempDownloadsDir() {
     ASSERT_TRUE(tmpdir.CreateUniqueTempDir());
     browser()->profile()->GetPrefs()->SetFilePath(

@@ -57,6 +57,7 @@ class ExtensionPermissionMessage {
     kInput,
     kAudioCapture,
     kVideoCapture,
+    kDownloads,
     kEnumBoundary
   };
 
@@ -120,6 +121,7 @@ class ExtensionAPIPermission {
     kDeclarativeWebRequest,
     kDevtools,
     kEchoPrivate,
+    kDownloads,
     kExperimental,
     kFileBrowserHandler,
     kFileBrowserHandlerInternal,

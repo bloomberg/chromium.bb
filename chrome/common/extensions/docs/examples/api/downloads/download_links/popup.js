@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This extension demonstrates using chrome.experimental.downloads.download() to
+// This extension demonstrates using chrome.downloads.download() to
 // download URLs.
 
 var allLinks = [];
@@ -46,7 +46,7 @@ function toggleAll() {
 function downloadCheckedLinks() {
   for (var i = 0; i < visibleLinks.length; ++i) {
     if (document.getElementById('check' + i).checked) {
-      chrome.experimental.downloads.download({url: visibleLinks[i]},
+      chrome.downloads.download({url: visibleLinks[i]},
                                              function(id) {
       });
     }

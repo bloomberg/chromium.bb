@@ -14,11 +14,17 @@ function debugObject(obj) {
   }
 }
 
-var downloads = chrome.experimental.downloads;
 window.requestFileSystem  = (window.requestFileSystem ||
                              window.webkitRequestFileSystem);
 window.BlobBuilder = (window.BlobBuilder ||
                       window.WebKitBlobBuilder);
+
+var downloads = chrome.downloads;
+
+// These strings may change. Do not rely on them in non-test extensions.
+var ERROR_GENERIC = "I'm afraid I can't do that.";
+var ERROR_INVALID_URL = 'Invalid URL.';
+var ERROR_INVALID_OPERATION = 'Invalid operation.';
 
 chrome.test.getConfig(function(testConfig) {
   function getURL(path) {
@@ -85,7 +91,7 @@ chrome.test.getConfig(function(testConfig) {
     //   function myListener(delta) {
     //     if ((delta.id != downloadId) ||
     //         !delta.filename ||
-    //         (delta.filename.new.indexOf('/foo/slow') == -1))
+    //         (delta.filename.current.indexOf('/foo/slow') == -1))
     //       return;
     //     downloads.onChanged.removeListener(myListener);
     //     callbackCompleted();
@@ -164,11 +170,11 @@ chrome.test.getConfig(function(testConfig) {
       console.debug(downloadId);
       var callbackCompleted = chrome.test.callbackAdded();
       function myListener(delta) {
-        console.debug(delta.id);
+        console.debug(JSON.stringify(delta));
         if ((delta.id != downloadId) ||
             !delta.state)
           return;
-        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        chrome.test.assertEq('complete', delta.state.current);
         console.debug(downloadId);
         downloads.onChanged.removeListener(myListener);
         callbackCompleted();
@@ -196,8 +202,8 @@ chrome.test.getConfig(function(testConfig) {
             !delta.error)
           return;
         console.debug(downloadId);
-        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
-        chrome.test.assertEq(30, delta.error.new);
+        chrome.test.assertEq('interrupted', delta.state.current);
+        chrome.test.assertEq(30, delta.error.current);
         downloads.onChanged.removeListener(changedListener);
         if (changedCompleted) {
           changedCompleted();
@@ -220,9 +226,10 @@ chrome.test.getConfig(function(testConfig) {
         console.debug(downloadId);
         downloads.onCreated.removeListener(createdListener);
         createdCompleted();
-        if (createdItem.state == downloads.STATE_INTERRUPTED) {
-          changedListener({id: downloadId, state: {new: createdItem.state},
-                                           error: {new: createdItem.error}});
+        if (createdItem.state == 'interrupted') {
+          changedListener({id: downloadId,
+                           state: {current: createdItem.state},
+                           error: {current: createdItem.error}});
         }
       }
       downloads.onCreated.addListener(createdListener);
@@ -248,7 +255,7 @@ chrome.test.getConfig(function(testConfig) {
         if ((delta.id != downloadId) ||
             !delta.state)
           return;
-        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        chrome.test.assertEq('complete', delta.state.current);
         console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
         changedCompleted();
@@ -278,7 +285,7 @@ chrome.test.getConfig(function(testConfig) {
         if ((delta.id != downloadId) ||
             !delta.state)
           return;
-        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        chrome.test.assertEq('complete', delta.state.current);
         console.debug(downloadId);
         downloads.search({id: downloadId},
                           chrome.test.callback(function(items) {
@@ -323,8 +330,8 @@ chrome.test.getConfig(function(testConfig) {
             !delta.state ||
             !delta.error)
           return;
-        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
-        chrome.test.assertEq(33, delta.error.new);
+        chrome.test.assertEq('interrupted', delta.state.current);
+        chrome.test.assertEq(33, delta.error.current);
         console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
         if (changedCompleted) {
@@ -348,9 +355,10 @@ chrome.test.getConfig(function(testConfig) {
         console.debug(downloadId);
         downloads.onCreated.removeListener(createdListener);
         createdCompleted();
-        if (createdItem.state == downloads.STATE_INTERRUPTED) {
-          changedListener({id: downloadId, state: {new: createdItem.state},
-                                           error: {new: createdItem.error}});
+        if (createdItem.state == 'interrupted') {
+          changedListener({id: downloadId,
+                           state: {current: createdItem.state},
+                           error: {current: createdItem.error}});
         }
       }
       downloads.onCreated.addListener(createdListener);
@@ -383,9 +391,9 @@ chrome.test.getConfig(function(testConfig) {
             !delta.state ||
             !delta.error)
           return;
-        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
-        chrome.test.assertEq(33, delta.error.new);
-        if (delta.error) console.debug(delta.error.new);
+        chrome.test.assertEq('interrupted', delta.state.current);
+        chrome.test.assertEq(33, delta.error.current);
+        if (delta.error) console.debug(delta.error.current);
         console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
         if (changedCompleted) {
@@ -409,9 +417,10 @@ chrome.test.getConfig(function(testConfig) {
         console.debug(downloadId);
         downloads.onCreated.removeListener(createdListener);
         createdCompleted();
-        if (createdItem.state == downloads.STATE_INTERRUPTED) {
-          changedListener({id: downloadId, state: {new: createdItem.state},
-                                           error: {new: createdItem.error}});
+        if (createdItem.state == 'interrupted') {
+          changedListener({id: downloadId,
+                           state: {current: createdItem.state},
+                           error: {current: createdItem.error}});
         }
       }
       downloads.onCreated.addListener(createdListener);
@@ -438,7 +447,7 @@ chrome.test.getConfig(function(testConfig) {
         if ((delta.id != downloadId) ||
             !delta.state)
           return;
-        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        chrome.test.assertEq('complete', delta.state.current);
         console.debug(downloadId);
         downloads.search({id: downloadId},
                           chrome.test.callback(function(items) {
@@ -465,45 +474,6 @@ chrome.test.getConfig(function(testConfig) {
           }));
     },
 
-    function downloadHeadersBinarySuccess() {
-      // Test the |header| download option.
-      var downloadId = getNextId();
-      console.debug(downloadId);
-      var changedCompleted = chrome.test.callbackAdded();
-      function changedListener(delta) {
-        console.debug(delta.id);
-        // Ignore onChanged events for downloads besides our own, or events that
-        // signal any change besides completion.
-        if ((delta.id != downloadId) ||
-            !delta.state)
-          return;
-        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
-        console.debug(downloadId);
-        downloads.search({id: downloadId},
-                          chrome.test.callback(function(items) {
-          console.debug(downloadId);
-          chrome.test.assertEq(1, items.length);
-          chrome.test.assertEq(downloadId, items[0].id);
-          debugObject(items[0]);
-          var EXPECTED_SIZE = 164;
-          chrome.test.assertEq(EXPECTED_SIZE, items[0].bytesReceived);
-        }));
-        downloads.onChanged.removeListener(changedListener);
-        changedCompleted();
-      }
-      downloads.onChanged.addListener(changedListener);
-
-      downloads.download(
-          {'url': HEADERS_URL,
-           'filename': downloadId + '.txt',  // Prevent 'file' danger.
-           'headers': [{'name': 'Foo', 'binaryValue': [98, 97, 114]},
-                       {'name': 'Qx', 'binaryValue': [121, 111]}]},
-          chrome.test.callback(function(id) {
-            console.debug(downloadId);
-            chrome.test.assertEq(downloadId, id);
-          }));
-    },
-
     function downloadHeadersWouldFail() {
       // Test that downloadHeadersSuccess() would fail if the resource requires
       // the headers, and chrome fails to propagate them back to the server.
@@ -522,8 +492,8 @@ chrome.test.getConfig(function(testConfig) {
             !delta.state ||
             !delta.error)
           return;
-        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
-        chrome.test.assertEq(33, delta.error.new);
+        chrome.test.assertEq('interrupted', delta.state.current);
+        chrome.test.assertEq(33, delta.error.current);
         console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
         if (changedCompleted) {
@@ -547,9 +517,10 @@ chrome.test.getConfig(function(testConfig) {
         console.debug(downloadId);
         downloads.onCreated.removeListener(createdListener);
         createdCompleted();
-        if (createdItem.state == downloads.STATE_INTERRUPTED) {
-          changedListener({id: downloadId, state: {new: createdItem.state},
-                                           error: {new: createdItem.error}});
+        if (createdItem.state == 'interrupted') {
+          changedListener({id: downloadId,
+                           state: {current: createdItem.state},
+                           error: {current: createdItem.error}});
         }
       }
       downloads.onCreated.addListener(createdListener);
@@ -567,7 +538,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'Accept-chArsEt', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid1() {
@@ -575,7 +546,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'accept-eNcoding', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid2() {
@@ -583,7 +554,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'coNNection', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid3() {
@@ -591,7 +562,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'coNteNt-leNgth', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid4() {
@@ -599,7 +570,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'cooKIE', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid5() {
@@ -607,7 +578,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'cOOkie2', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid6() {
@@ -615,7 +586,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'coNteNt-traNsfer-eNcodiNg', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid7() {
@@ -623,7 +594,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'dAtE', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid8() {
@@ -631,7 +602,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'ExpEcT', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid9() {
@@ -639,7 +610,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'hOsT', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid10() {
@@ -647,7 +618,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'kEEp-aLivE', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid11() {
@@ -655,7 +626,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'rEfErEr', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid12() {
@@ -663,7 +634,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'tE', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid13() {
@@ -671,7 +642,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'trAilER', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid14() {
@@ -679,7 +650,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'trANsfer-eNcodiNg', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid15() {
@@ -687,7 +658,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'upGRAde', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid16() {
@@ -695,7 +666,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'usER-agENt', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid17() {
@@ -703,7 +674,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'viA', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid18() {
@@ -711,7 +682,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'pRoxY-', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid19() {
@@ -719,7 +690,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'sEc-', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid20() {
@@ -727,7 +698,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'pRoxY-probably-not-evil', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid21() {
@@ -735,7 +706,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'sEc-probably-not-evil', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid22() {
@@ -743,7 +714,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'oRiGiN', 'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid23() {
@@ -752,7 +723,7 @@ chrome.test.getConfig(function(testConfig) {
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'Access-Control-Request-Headers',
                         'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadHeadersInvalid24() {
@@ -761,7 +732,7 @@ chrome.test.getConfig(function(testConfig) {
           {'url': SAFE_FAST_URL,
            'headers': [{'name': 'Access-Control-Request-Method',
                         'value': 'evil'}]},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadInterrupted() {
@@ -800,8 +771,8 @@ chrome.test.getConfig(function(testConfig) {
             !delta.state ||
             !delta.error)
           return;
-        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
-        chrome.test.assertEq(40, delta.error.new);
+        chrome.test.assertEq('interrupted', delta.state.current);
+        chrome.test.assertEq(40, delta.error.current);
         console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
         changedCompleted();
@@ -827,7 +798,7 @@ chrome.test.getConfig(function(testConfig) {
         console.debug(delta.id);
         if ((delta.id != downloadId) ||
             !delta.filename ||
-            (delta.filename.new.indexOf(FILENAME) == -1))
+            (delta.filename.current.indexOf(FILENAME) == -1))
           return;
         console.debug(downloadId);
         downloads.onChanged.removeListener(myListener);
@@ -847,7 +818,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadFilenameDisallowSlashes() {
       downloads.download(
           {'url': SAFE_FAST_URL, 'filename': 'subdirectory/file.txt'},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadOnCreated() {
@@ -876,7 +847,7 @@ chrome.test.getConfig(function(testConfig) {
       // Test that we disallow invalid filenames for new downloads.
       downloads.download(
           {'url': SAFE_FAST_URL, 'filename': '../../../../../etc/passwd'},
-          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+          chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadEmpty() {
@@ -903,7 +874,7 @@ chrome.test.getConfig(function(testConfig) {
       // Test that download() requires a valid url.
       downloads.download(
           {'url': 'foo bar'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL1() {
@@ -911,7 +882,7 @@ chrome.test.getConfig(function(testConfig) {
       // hostname.
       downloads.download(
           {'url': '../hello'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL2() {
@@ -919,14 +890,14 @@ chrome.test.getConfig(function(testConfig) {
       // hostname.
       downloads.download(
           {'url': '/hello'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL3() {
       // Test that download() requires a valid url, including protocol.
       downloads.download(
           {'url': 'google.com/'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL4() {
@@ -934,7 +905,7 @@ chrome.test.getConfig(function(testConfig) {
       // hostname.
       downloads.download(
           {'url': 'http://'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL5() {
@@ -942,7 +913,7 @@ chrome.test.getConfig(function(testConfig) {
       // hostname.
       downloads.download(
           {'url': '#frag'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL6() {
@@ -950,7 +921,7 @@ chrome.test.getConfig(function(testConfig) {
       // hostname.
       downloads.download(
           {'url': 'foo/bar.html#frag'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadAllowFragments() {
@@ -988,14 +959,14 @@ chrome.test.getConfig(function(testConfig) {
       // Test that download() rejects javascript urls.
       downloads.download(
           {'url': 'javascript:document.write("hello");'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL8() {
       // Test that download() rejects javascript urls.
       downloads.download(
           {'url': 'javascript:return false;'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     function downloadInvalidURL9() {
@@ -1003,7 +974,7 @@ chrome.test.getConfig(function(testConfig) {
       // permissions check.
       downloads.download(
           {'url': 'ftp://example.com/example.txt'},
-          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+          chrome.test.callbackFail(ERROR_INVALID_URL));
     },
 
     // TODO(benjhayden): Set up a test ftp server, add ftp://localhost* to
@@ -1032,7 +1003,7 @@ chrome.test.getConfig(function(testConfig) {
           {'url': SAFE_FAST_URL,
            'headers': [{ 'name': 'Cookie', 'value': 'fake'}]
         },
-        chrome.test.callbackFail(downloads.ERROR_GENERIC));
+        chrome.test.callbackFail(ERROR_GENERIC));
     },
 
     function downloadGetFileIconInvalidOptions() {
@@ -1050,31 +1021,31 @@ chrome.test.getConfig(function(testConfig) {
 
     function downloadGetFileIconInvalidId() {
       downloads.getFileIcon(-42, {size: 32},
-        chrome.test.callbackFail(downloads.ERROR_INVALID_OPERATION));
+        chrome.test.callbackFail(ERROR_INVALID_OPERATION));
     },
 
     function downloadPauseInvalidId() {
       downloads.pause(-42, chrome.test.callbackFail(
-            downloads.ERROR_INVALID_OPERATION));
+            ERROR_INVALID_OPERATION));
     },
 
     function downloadPauseInvalidType() {
-      assertThrows(('Invocation of form experimental.downloads.pause(string,' +
-                    ' function) doesn\'t match definition experimental.' +
-                    'downloads.pause(integer id, optional function callback)'),
+      assertThrows(('Invocation of form downloads.pause(string, function) ' +
+                    'doesn\'t match definition downloads.pause(integer ' +
+                    'downloadId, optional function NullCallback)'),
                    downloads.pause,
                    'foo');
     },
 
     function downloadResumeInvalidId() {
       downloads.resume(-42, chrome.test.callbackFail(
-            downloads.ERROR_INVALID_OPERATION));
+            ERROR_INVALID_OPERATION));
     },
 
     function downloadResumeInvalidType() {
-      assertThrows(('Invocation of form experimental.downloads.resume(string,' +
-                    ' function) doesn\'t match definition experimental.' +
-                    'downloads.resume(integer id, optional function callback)'),
+      assertThrows(('Invocation of form downloads.resume(string, function) ' +
+                    'doesn\'t match definition downloads.resume(integer ' +
+                    'downloadId, optional function NullCallback)'),
                    downloads.resume,
                    'foo');
     },
@@ -1087,9 +1058,9 @@ chrome.test.getConfig(function(testConfig) {
     },
 
     function downloadCancelInvalidType() {
-      assertThrows(('Invocation of form experimental.downloads.cancel(string,' +
-                    ' function) doesn\'t match definition experimental.' +
-                    'downloads.cancel(integer id, optional function callback)'),
+      assertThrows(('Invocation of form downloads.cancel(string, function) ' +
+                    'doesn\'t match definition downloads.cancel(integer ' +
+                    'downloadId, optional function NullCallback)'),
                    downloads.cancel, 'foo');
     },
 

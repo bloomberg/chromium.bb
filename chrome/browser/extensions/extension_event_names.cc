@@ -45,9 +45,9 @@ const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 const char kOnContextMenus[] = "contextMenus";
 const char kOnContextMenuClicked[] = "contextMenus.onClicked";
 
-const char kOnDownloadCreated[] = "experimental.downloads.onCreated";
-const char kOnDownloadChanged[] = "experimental.downloads.onChanged";
-const char kOnDownloadErased[] = "experimental.downloads.onErased";
+const char kOnDownloadCreated[] = "downloads.onCreated";
+const char kOnDownloadChanged[] = "downloads.onChanged";
+const char kOnDownloadErased[] = "downloads.onErased";
 
 const char kOnSettingsChanged[] = "storage.onChanged";
 

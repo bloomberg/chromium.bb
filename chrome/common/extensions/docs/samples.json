@@ -96,6 +96,15 @@
     "chrome.devtools.panels.ExtensionSidebarPane.setPage": "devtools.panels.html#method-ExtensionSidebarPane-setPage",
     "chrome.devtools.panels.create": "devtools.panels.html#method-create",
     "chrome.devtools.panels.setOpenResourceHandler": "devtools.panels.html#method-setOpenResourceHandler",
+    "chrome.downloads.cancel": "downloads.html#method-cancel",
+    "chrome.downloads.download": "downloads.html#method-download",
+    "chrome.downloads.getFileIcon": "downloads.html#method-getFileIcon",
+    "chrome.downloads.onChanged": "downloads.html#event-onChanged",
+    "chrome.downloads.onCreated": "downloads.html#event-onCreated",
+    "chrome.downloads.onErased": "downloads.html#event-onErased",
+    "chrome.downloads.pause": "downloads.html#method-pause",
+    "chrome.downloads.resume": "downloads.html#method-resume",
+    "chrome.downloads.search": "downloads.html#method-search",
     "chrome.events.Event.addListener": "events.html#method-Event-addListener",
     "chrome.events.Event.addRules": "events.html#method-Event-addRules",
     "chrome.events.Event.getRules": "events.html#method-Event-getRules",
@@ -136,7 +145,6 @@
     "chrome.experimental.discovery.removeSuggestion": "experimental.discovery.html#method-removeSuggestion",
     "chrome.experimental.discovery.suggest": "experimental.discovery.html#method-suggest",
     "chrome.experimental.dns.resolve": "experimental.dns.html#method-resolve",
-    "chrome.experimental.downloads.download": "experimental.downloads.html#method-download",
     "chrome.experimental.fontSettings.clearDefaultFixedFontSize": "experimental.fontSettings.html#method-clearDefaultFixedFontSize",
     "chrome.experimental.fontSettings.clearDefaultFontSize": "experimental.fontSettings.html#method-clearDefaultFontSize",
     "chrome.experimental.fontSettings.clearFont": "experimental.fontSettings.html#method-clearFont",
@@ -1068,7 +1076,7 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.downloads.download",
+        "chrome.downloads.download",
         "chrome.tabs.executeScript",
         "chrome.tabs.query",
         "chrome.windows.get",
@@ -1090,14 +1098,14 @@
         "http://",
         "https://"
       ],
-      "search_string": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DOWNLOADS.DOWNLOAD CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+      "search_string": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.DOWNLOADS.DOWNLOAD CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
       "source_files": [
         "manifest.json",
         "popup.html",
         "popup.js",
         "send_links.js"
       ],
-      "source_hash": "9e80e668e1605243ca746022842e5d33b7d467ba",
+      "source_hash": "5d2781d8cb399f87803a944c33098f399db176b8",
       "zip_path": "examples/api/downloads/download_links.zip"
     },
     {

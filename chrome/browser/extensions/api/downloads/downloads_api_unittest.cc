@@ -7,11 +7,11 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/download/download_extension_api.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_test_observer.h"
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -378,7 +378,8 @@ class ScopedItemVectorCanceller {
 
 } // namespace
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_PauseResumeCancel) {
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest, DownloadExtensionTest_PauseResumeCancel) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
@@ -436,7 +437,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_PauseResumeCancel) {
 
 // Test downloads.getFileIcon() on in-progress, finished, cancelled and deleted
 // download items.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_Active) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_FileIcon_Active) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
@@ -535,7 +537,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_Active) {
 // whether they exist or not.  If the file doesn't exist we should receive a
 // generic icon from the OS/toolkit that may or may not be specific to the file
 // type.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_History) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_FileIcon_History) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("real.txt"),
       DownloadItem::COMPLETE,
@@ -583,7 +586,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_History) {
   // The temporary files should be cleaned up when the ScopedTempDir is removed.
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchEmptyQuery) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchEmptyQuery) {
   ScopedCancellingItem item(CreateSlowTestDownload());
   ASSERT_TRUE(item.get());
 
@@ -596,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchEmptyQuery) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadsApi_SearchFilenameRegex) {
+    DownloadExtensionTest_SearchFilenameRegex) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("foobar"),
       DownloadItem::COMPLETE,
@@ -622,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(0, item_id);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchId) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -641,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchId) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadsApi_SearchIdAndFilename) {
+    DownloadExtensionTest_SearchIdAndFilename) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -654,7 +658,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(0UL, result_list->GetSize());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderBy) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchOrderBy) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("zzz"),
       DownloadItem::COMPLETE,
@@ -684,7 +689,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderBy) {
   ASSERT_LT(item0_name, item1_name);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderByEmpty) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchOrderByEmpty) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("zzz"),
       DownloadItem::COMPLETE,
@@ -714,7 +720,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderByEmpty) {
   ASSERT_GT(item0_name, item1_name);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchDanger) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchDanger) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("zzz"),
       DownloadItem::COMPLETE,
@@ -735,7 +742,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchDanger) {
   ASSERT_EQ(1UL, result_list->GetSize());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchState) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchState) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -750,7 +758,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchState) {
   ASSERT_EQ(1UL, result_list->GetSize());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchLimit) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -763,7 +772,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchLimit) {
   ASSERT_EQ(1UL, result_list->GetSize());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchInvalid) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchInvalid) {
   std::string error = RunFunctionAndReturnError(
       new DownloadsSearchFunction(), "[{\"filenameRegex\": \"(\"}]");
   EXPECT_STREQ(download_extension_errors::kInvalidFilterError,
@@ -786,7 +796,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchInvalid) {
       error.c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchPlural) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+    DownloadExtensionTest_SearchPlural) {
   const HistoryDownloadInfo kHistoryInfo[] = {
     { FILE_PATH_LITERAL("aaa"),
       DownloadItem::CANCELLED,
@@ -820,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchPlural) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTestIncognito,
-                       DownloadsApi_SearchIncognito) {
+    DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
   scoped_ptr<base::Value> result_value;
   base::ListValue* result_list = NULL;
   base::DictionaryValue* result_dict = NULL;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_EXTENSION_API_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_EXTENSION_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_
 #pragma once
 
 #include <map>
@@ -12,7 +12,6 @@
 
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -28,7 +27,7 @@ class ResourceContext;
 class ResourceDispatcherHost;
 }
 
-// Functions in the chrome.experimental.downloads namespace facilitate
+// Functions in the chrome.downloads namespace facilitate
 // controlling downloads from extensions. See the full API doc at
 // http://goo.gl/6hO1n
 
@@ -123,7 +122,7 @@ class AsyncDownloadsFunction : public AsyncExtensionFunction,
 
 class DownloadsDownloadFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.download");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.download");
 
   DownloadsDownloadFunction();
 
@@ -162,7 +161,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
 
 class DownloadsSearchFunction : public SyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.search");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.search");
 
   DownloadsSearchFunction();
 
@@ -185,7 +184,7 @@ class DownloadsSearchFunction : public SyncDownloadsFunction {
 
 class DownloadsPauseFunction : public SyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.pause");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.pause");
 
   DownloadsPauseFunction();
 
@@ -203,7 +202,7 @@ class DownloadsPauseFunction : public SyncDownloadsFunction {
 
 class DownloadsResumeFunction : public SyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.resume");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.resume");
 
   DownloadsResumeFunction();
 
@@ -221,7 +220,7 @@ class DownloadsResumeFunction : public SyncDownloadsFunction {
 
 class DownloadsCancelFunction : public SyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.cancel");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.cancel");
 
   DownloadsCancelFunction();
 
@@ -239,7 +238,7 @@ class DownloadsCancelFunction : public SyncDownloadsFunction {
 
 class DownloadsEraseFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.erase");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.erase");
 
   DownloadsEraseFunction();
 
@@ -256,7 +255,7 @@ class DownloadsEraseFunction : public AsyncDownloadsFunction {
 
 class DownloadsSetDestinationFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.setDestination");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.setDestination");
 
   DownloadsSetDestinationFunction();
 
@@ -273,7 +272,7 @@ class DownloadsSetDestinationFunction : public AsyncDownloadsFunction {
 
 class DownloadsAcceptDangerFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.acceptDanger");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.acceptDanger");
 
   DownloadsAcceptDangerFunction();
 
@@ -290,7 +289,7 @@ class DownloadsAcceptDangerFunction : public AsyncDownloadsFunction {
 
 class DownloadsShowFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.show");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.show");
 
   DownloadsShowFunction();
 
@@ -307,7 +306,7 @@ class DownloadsShowFunction : public AsyncDownloadsFunction {
 
 class DownloadsDragFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.drag");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.drag");
 
   DownloadsDragFunction();
 
@@ -324,7 +323,7 @@ class DownloadsDragFunction : public AsyncDownloadsFunction {
 
 class DownloadsGetFileIconFunction : public AsyncDownloadsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.getFileIcon");
+  DECLARE_EXTENSION_FUNCTION_NAME("downloads.getFileIcon");
 
   DownloadsGetFileIconFunction();
   void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
@@ -376,10 +375,9 @@ class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
   content::DownloadManager* manager_;
   ItemMap downloads_;
   ItemJsonMap item_jsons_;
-  STLValueDeleter<ItemJsonMap> delete_item_jsons_;
   OnChangedStatMap on_changed_stats_;
-  STLValueDeleter<OnChangedStatMap> delete_on_changed_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_EXTENSION_API_H_
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_DOWNLOADS_API_H_

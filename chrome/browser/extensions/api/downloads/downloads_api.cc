@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_extension_api.h"
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
 
 #include <algorithm>
 #include <cctype>
@@ -35,7 +35,7 @@
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -91,7 +91,6 @@ const char kFilenameKey[] = "filename";
 const char kFilenameRegexKey[] = "filenameRegex";
 const char kHeaderNameKey[] = "name";
 const char kHeaderValueKey[] = "value";
-const char kHeaderBinaryValueKey[] = "binaryValue";
 const char kHeadersKey[] = "headers";
 const char kIdKey[] = "id";
 const char kIncognito[] = "incognito";
@@ -117,7 +116,7 @@ const char kUrlKey[] = "url";
 const char kUrlRegexKey[] = "urlRegex";
 
 // Note: Any change to the danger type strings, should be accompanied by a
-// corresponding change to {experimental.}downloads.json.
+// corresponding change to downloads.json.
 const char* kDangerStrings[] = {
   kDangerSafe,
   kDangerFile,
@@ -130,7 +129,7 @@ COMPILE_ASSERT(arraysize(kDangerStrings) == content::DOWNLOAD_DANGER_TYPE_MAX,
                download_danger_type_enum_changed);
 
 // Note: Any change to the state strings, should be accompanied by a
-// corresponding change to {experimental.}downloads.json.
+// corresponding change to downloads.json.
 const char* kStateStrings[] = {
   kStateInProgress,
   kStateComplete,
@@ -463,20 +462,6 @@ bool DownloadsDownloadFunction::ParseArgs() {
             index, &header));
       EXTENSION_FUNCTION_VALIDATE(header->GetString(
             kHeaderNameKey, &name));
-      if (header->HasKey(kHeaderBinaryValueKey)) {
-        base::ListValue* binary_value = NULL;
-        EXTENSION_FUNCTION_VALIDATE(header->GetList(
-              kHeaderBinaryValueKey, &binary_value));
-        for (size_t char_i = 0; char_i < binary_value->GetSize(); ++char_i) {
-          int char_value = 0;
-          EXTENSION_FUNCTION_VALIDATE(binary_value->GetInteger(
-                char_i, &char_value));
-        }
-      } else if (header->HasKey(kHeaderValueKey)) {
-        std::string value;
-        EXTENSION_FUNCTION_VALIDATE(header->GetString(
-              kHeaderValueKey, &value));
-      }
       if (!net::HttpUtil::IsSafeHeader(name)) {
         error_ = download_extension_errors::kGenericError;
         return false;
@@ -517,20 +502,7 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
       std::string name, value;
       CHECK(iodata_->extra_headers->GetDictionary(index, &header));
       CHECK(header->GetString(kHeaderNameKey, &name));
-      if (header->HasKey(kHeaderBinaryValueKey)) {
-        base::ListValue* binary_value = NULL;
-        CHECK(header->GetList(kHeaderBinaryValueKey, &binary_value));
-        for (size_t char_i = 0; char_i < binary_value->GetSize(); ++char_i) {
-          int char_value = 0;
-          CHECK(binary_value->GetInteger(char_i, &char_value));
-          if ((0 <= char_value) &&
-              (char_value <= 0xff)) {
-            value.push_back(char_value);
-          }
-        }
-      } else if (header->HasKey(kHeaderValueKey)) {
-        CHECK(header->GetString(kHeaderValueKey, &value));
-      }
+      CHECK(header->GetString(kHeaderValueKey, &value));
       request->SetExtraRequestHeaderByName(name, value, false/*overwrite*/);
     }
   }
@@ -894,7 +866,7 @@ bool DownloadsGetFileIconFunction::ParseArgs() {
   if (options->HasKey(kSizeKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSizeKey, &icon_size_));
     // We only support 16px and 32px icons. This is enforced in
-    // experimental.downloads.json.
+    // downloads.json.
     DCHECK(icon_size_ == 16 || icon_size_ == 32);
   }
 
@@ -939,9 +911,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
 
 ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
   : profile_(profile),
-    manager_(NULL),
-    delete_item_jsons_(&item_jsons_),
-    delete_on_changed_stats_(&on_changed_stats_) {
+    manager_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   // Register a callback with the DownloadService for this profile to be called
@@ -969,6 +939,8 @@ ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
     if (iter->second != NULL)
       iter->second->RemoveObserver(this);
   }
+  STLDeleteValues(&item_jsons_);
+  STLDeleteValues(&on_changed_stats_);
 }
 
 ExtensionDownloadsEventRouter::OnChangedStat::OnChangedStat()
@@ -982,6 +954,8 @@ ExtensionDownloadsEventRouter::OnChangedStat::~OnChangedStat() {
 }
 
 void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
+  if (!profile_)
+    return;
   int download_id = item->GetId();
   if (item->GetState() == DownloadItem::REMOVING) {
     // The REMOVING state indicates that this item is being erased.
@@ -1018,9 +992,9 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
       if (!old_json->HasKey(iter.key()) ||
           (old_json->Get(iter.key(), &old_value) &&
            !iter.value().Equals(old_value))) {
-        delta->Set(iter.key() + ".new", iter.value().DeepCopy());
+        delta->Set(iter.key() + ".current", iter.value().DeepCopy());
         if (old_value)
-          delta->Set(iter.key() + ".old", old_value->DeepCopy());
+          delta->Set(iter.key() + ".previous", old_value->DeepCopy());
         changed = true;
       }
     }
@@ -1031,7 +1005,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
   for (base::DictionaryValue::Iterator iter(*old_json);
        iter.HasNext(); iter.Advance()) {
     if (new_fields.find(iter.key()) == new_fields.end()) {
-      delta->Set(iter.key() + ".old", iter.value().DeepCopy());
+      delta->Set(iter.key() + ".previous", iter.value().DeepCopy());
       changed = true;
     }
   }
@@ -1050,6 +1024,8 @@ void ExtensionDownloadsEventRouter::OnDownloadOpened(DownloadItem* item) {
 }
 
 void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
+  if (!profile_)
+    return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(manager_ == manager);
   typedef std::set<int> DownloadIdSet;
@@ -1106,11 +1082,14 @@ void ExtensionDownloadsEventRouter::ManagerGoingDown(
     DownloadManager* manager) {
   manager_->RemoveObserver(this);
   manager_ = NULL;
+  profile_ = NULL;
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(
     const char* event_name, base::Value* arg) {
-  ListValue args;
+  if (!profile_ || !profile_->GetExtensionEventRouter())
+    return;
+  base::ListValue args;
   args.Append(arg);
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);

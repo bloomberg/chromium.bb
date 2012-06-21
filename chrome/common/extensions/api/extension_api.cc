@@ -352,6 +352,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
   RegisterSchema("devtools", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEVTOOLS));
+  RegisterSchema("downloads", ReadFromResource(
+      IDR_EXTENSION_API_JSON_DOWNLOADS));
   RegisterSchema("events", ReadFromResource(
       IDR_EXTENSION_API_JSON_EVENTS));
   RegisterSchema("experimental.accessibility", ReadFromResource(
@@ -360,8 +362,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
   RegisterSchema("experimental.bookmarkManager", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER));
-  RegisterSchema("experimental.downloads", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS));
   RegisterSchema("experimental.fontSettings", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTSSETTINGS));
   RegisterSchema("experimental.identity", ReadFromResource(

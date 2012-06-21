@@ -222,11 +222,11 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-alarms.Alarm">alarms.Alarm</a>
+                <a href="#type-Alarm">Alarm</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-alarms.AlarmCreateInfo">alarms.AlarmCreateInfo</a>
+                <a href="#type-AlarmCreateInfo">AlarmCreateInfo</a>
                 <ol>
                 </ol>
               </li>
@@ -329,7 +329,7 @@
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.alarms.create</span>(<span class="optional"><span>string</span>
-                      <var><span>name</span></var></span><span class="null"><span>, </span><span>alarms.AlarmCreateInfo</span>
+                      <var><span>name</span></var></span><span class="null"><span>, </span><span>AlarmCreateInfo</span>
                       <var><span>alarmInfo</span></var></span>)</div>
               <div class="description">
                 <p>Creates an alarm.  Near the time(s) specified by <var>alarmInfo</var>, the <code>onAlarm</code> event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm. Note that granularity is not guaranteed: times are more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing.</p>
@@ -370,7 +370,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="alarms.html#type-alarms.AlarmCreateInfo">alarms.AlarmCreateInfo</a>
+                        <a href="alarms.html#type-AlarmCreateInfo">AlarmCreateInfo</a>
                       </span>
                     </span>
                   )
@@ -466,7 +466,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="alarms.html#type-alarms.Alarm">alarms.Alarm</a>
+                        <a href="alarms.html#type-Alarm">Alarm</a>
                       </span>
                     </span>
                   )
@@ -500,7 +500,7 @@
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>alarms.Alarm alarm</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>Alarm alarm</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -512,7 +512,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="alarms.html#type-alarms.Alarm">alarms.Alarm</a>
+                        <a href="alarms.html#type-Alarm">Alarm</a>
                       </span>
                     </span>
                   )
@@ -586,7 +586,7 @@
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="alarms.html#type-alarms.Alarm">alarms.Alarm</a>
+                        <a href="alarms.html#type-Alarm">Alarm</a>
                       </span>
                     </span></span>
                         </span>
@@ -623,7 +623,7 @@
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of alarms.Alarm alarms</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of Alarm alarms</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -638,7 +638,7 @@
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="alarms.html#type-alarms.Alarm">alarms.Alarm</a>
+                        <a href="alarms.html#type-Alarm">Alarm</a>
                       </span>
                     </span></span>
                         </span>
@@ -674,7 +674,7 @@
               <h4>onAlarm</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.alarms.</span><span>onAlarm</span><span class="subdued">.addListener</span>(function(<span>alarms.Alarm alarm</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.alarms.</span><span>onAlarm</span><span class="subdued">.addListener</span>(function(<span>Alarm alarm</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when an alarm has elapsed. Useful for transient background pages.</p>
@@ -692,7 +692,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="alarms.html#type-alarms.Alarm">alarms.Alarm</a>
+                        <a href="alarms.html#type-Alarm">Alarm</a>
                       </span>
                     </span>
                   )
@@ -722,8 +722,8 @@
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-alarms.Alarm"></a>
-              <h4>alarms.Alarm</h4>
+              <a name="type-Alarm"></a>
+              <h4>Alarm</h4>
               <div>
           <dt>
               <em>
@@ -823,8 +823,8 @@
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-alarms.AlarmCreateInfo"></a>
-              <h4>alarms.AlarmCreateInfo</h4>
+              <a name="type-AlarmCreateInfo"></a>
+              <h4>AlarmCreateInfo</h4>
               <div>
           <dt>
               <em>

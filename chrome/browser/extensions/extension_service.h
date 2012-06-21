@@ -53,7 +53,6 @@ class AppNotificationManager;
 class BookmarkExtensionEventRouter;
 class CrxInstaller;
 class ExtensionBrowserEventRouter;
-class ExtensionDownloadsEventRouter;
 class ExtensionFontSettingsEventRouter;
 class ExtensionGlobalError;
 class ExtensionManagedModeEventRouter;
@@ -795,8 +794,6 @@ class ExtensionService
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
-
-  scoped_ptr<ExtensionDownloadsEventRouter> downloads_event_router_;
 
   scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
 

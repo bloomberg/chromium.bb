@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package_file_picker.h"
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -117,6 +118,7 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_history_->Load(
       base::Bind(&DownloadManager::OnPersistentStoreQueryComplete,
                  base::Unretained(dm)));
+  extension_event_router_.reset(new ExtensionDownloadsEventRouter(profile_));
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {

@@ -4195,8 +4195,6 @@
             'browser/chromeos/extensions/file_browser_private_api.h',
             'browser/chromeos/media/media_player_extension_api.cc',
             'browser/chromeos/media/media_player_extension_api.h',
-            'browser/download/download_extension_api.cc',
-            'browser/download/download_extension_api.h',
             'browser/history/history_extension_api.cc',
             'browser/history/history_extension_api.h',
             'browser/history/top_sites_extension_api.cc',

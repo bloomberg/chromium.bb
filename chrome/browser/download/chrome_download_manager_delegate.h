@@ -21,6 +21,7 @@
 class CrxInstaller;
 class DownloadHistory;
 class DownloadPrefs;
+class ExtensionDownloadsEventRouter;
 class Profile;
 
 namespace content {
@@ -200,6 +201,14 @@ class ChromeDownloadManagerDelegate
   CrxInstallerMap crx_installers_;
 
   content::NotificationRegistrar registrar_;
+
+  // The ExtensionDownloadsEventRouter dispatches download creation, change, and
+  // erase events to extensions. Like ChromeDownloadManagerDelegate, it's a
+  // chrome-level concept and its lifetime should match DownloadManager. There
+  // should be a separate EDER for on-record and off-record managers.
+  // There does not appear to be a separate ExtensionSystem for on-record and
+  // off-record profiles, so ExtensionSystem cannot own the EDER.
+  scoped_ptr<ExtensionDownloadsEventRouter> extension_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };
