@@ -2137,6 +2137,8 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	    handle_bound_key(terminal, input, sym, time))
 		return;
 
+	input_set_pointer_image(input, CURSOR_BLANK);
+
 	switch (sym) {
 	case XKB_KEY_F11:
 		if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
