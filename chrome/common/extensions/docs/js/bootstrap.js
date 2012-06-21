@@ -83,5 +83,11 @@ if (window.location.search == "?regenerate" ||
         location.href = officialURL + this.value + "/";
       };
     }
+
+    if (currentBranch != 'stable' && currentBranch != 'beta') {
+      var warning = document.getElementById('eventPageWarning');
+      if (warning)
+        warning.style.display = 'block';
+    }
   }
 }

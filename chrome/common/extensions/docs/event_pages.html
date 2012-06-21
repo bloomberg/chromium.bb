@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>Background Pages - Google Chrome Extensions - Google Code</title></head>
+  <title>Event Pages - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -131,7 +131,7 @@
               <li>Implementation
                 <ul>
                   <li><a href="a11y.html">Accessibility</a></li>
-                  <li class="leftNavSelected">Background Pages</li>
+                  <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="i18n.html">Internationalization</a></li>
@@ -185,7 +185,7 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Background Pages</h1>
+        <h1 class="page_title">Event Pages</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -196,11 +196,7 @@
               <ol>
               </ol>
             </li><li>
-              <a href="#H2-1">Details</a>
-              <ol>
-              </ol>
-            </li><li>
-              <a href="#example">Example</a>
+              <a href="#lifetime">Lifetime</a>
               <ol>
               </ol>
             </li>
@@ -209,140 +205,74 @@
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Background Pages</div>
+        <div id="static"><div id="pageData-name" class="pageData">Event Pages</div>
 <div id="pageData-showTOC" class="pageData">true</div>
-<p id="eventPageWarning" class="warning">
-  <em>Caution:</em> Consider using event pages instead.
-  <a href="event_pages.html">Learn more</a>.
+<p class="warning">
+  <!-- Standard content lead-in for APIs that are not yet available on
+  the stable channel. -->
+  <em>Warning:</em> This API is still under development. It is only
+  available for Chrome users on the
+  <span>
+    <strong>dev</strong>
+      <a href="http://www.chromium.org/getting-involved/dev-channel">early
+      release channel</a>.</span>
 </p>
 <p>
-A common need for extensions is to have
-a single long-running script to manage some task or state.
-Background pages to the rescue.
-</p>
-<p>
-As the <a href="overview.html#arch">architecture overview</a> explains,
-the background page is an HTML page that runs in the extension process.
-It exists for the lifetime of your extension,
-and only one instance of it at a time is active.
-</p>
-<p>
-In a typical extension with a background page,
-the UI —
-for example, the browser action or page action
-and any options page —
-is implemented by dumb views.
-When the view needs some state,
-it requests the state from the background page.
-When the background page notices a state change,
-the background page tells the views to update.
+Event pages are very similar to
+<a href="background_pages.html">background pages</a>,
+with one important difference:
+event pages are loaded only when they are needed.
+When the event page is not actively doing something,
+it is unloaded, freeing memory and other system resources.
 </p>
 <h2 id="manifest">Manifest</h2>
 <p>
-Register your background page in the
-<a href="manifest.html">extension manifest</a>.
-In the common case, a background page
-does not require any HTML markup.
-These kind of background pages can be
-implemented using JavaScript files alone,
-like this:
+Register your event page in the
+<a href="manifest.html">extension manifest</a>:
 </p>
 <pre>{
   "name": "My extension",
   ...
   <b>"background": {
-    "scripts": ["background.js"]
+    "scripts": ["eventPage.js"],
+    "persistent": false
   }</b>,
   ...
 }</pre>
 <p>
-A background page will be generated
-by the extension system
-that includes each of the files listed
-in the <code>scripts</code> property.
+Notice that without the "persistent" key, you have
+a regular background page. Persistence is what differentiates
+an event page from a background page.
+</p>
+<h2 id="lifetime">Lifetime</h2>
+<p>
+The event page is loaded when it is "needed", and unloaded
+when it goes idle again. Here are some examples of things
+that will cause the event page to load:
+</p>
+<ul>
+<li>The extension is first installed.
+</li><li>The event page listens for an event and the event is dispatched.
+</li><li>A content script or other extension
+<a href="messaging.html">sends a message.</a>
+</li><li>Another view in the extension (for example, a popup) calls
+<code><a href="runtime.html#method-getBackgroundPage">chrome.runtime.getBackgroundPage()</a></code>.
+</li></ul>
+<p>
+Once it has been loaded, the event page will stay running
+as long as it is active (for example, calling an extension
+API or issuing a network request). Additionally, the
+event page will not unload until all visible views (for example,
+popup windows) are closed.
 </p>
 <p>
-If you need to specify HTML
-in your background page, you can
-do that using the <code>page</code>
-property instead:
+Once the event page has been idle a short time
+(a few seconds), the
+<code><a href="runtime.html#event-onSuspend">chrome.runtime.onSuspend</a></code>
+event is dispatched. The event page has a few more seconds to handle this
+event before it is forcibly unloaded. Note that once the event is dispatched,
+new activity will not keep the event page open.
 </p>
-<pre>{
-  "name": "My extension",
-  ...
-  <b>"background": {
-    "page": "background.html"
-  }</b>,
-  ...
-}</pre>
-<p>
-If you need the browser to start up early—so
-you can display notifications, for example—then
-you might also want to specify the
-<a href="manifest.html#permissions">"background" permission</a>.
-</p>
-<a name="H2-1"></a><h2>Details</h2>
-<p>
-You can communicate between your various pages using direct script calls,
-similar to how frames can communicate.
-The <a href="extension.html#method-getViews"><code>chrome.extension.getViews()</code></a> method
-returns a list of window objects
-for every active page belonging to your extension,
-and the
-<a href="extension.html#method-getBackgroundPage"><code>chrome.extension.getBackgroundPage()</code></a> method
-returns the background page.
-</p>
-<h2 id="example">Example</h2>
-<p>
-The following code snippet demonstrates
-how the background page
-can interact with other pages in the extension.
-It also shows how you can use
-the background page to handle events
-such as user clicks.
-</p>
-<p>
-The extension in this example
-has a background page
-and multiple pages created
-(with
-<a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>)
-from a file named <code>image.html</code>.
-<!-- [PENDING: Once we have our set of samples, we should point to the example this is from and to other relevant examples.  This is currently untested code derived from the screenshot sample.] -->
-</p>
-<pre><em>//In background.js:</em>
-// React when a browser action's icon is clicked.
-chrome.browserAction.onClicked.addListener(function(tab) {
-  var viewTabUrl = chrome.extension.getURL('image.html');
-  var imageUrl = <em>/* an image's URL */</em>;
-  // Look through all the pages in this extension to find one we can use.
-  var views = chrome.extension.getViews();
-  for (var i = 0; i &lt; views.length; i++) {
-    var view = views[i];
-    // If this view has the right URL and hasn't been used yet...
-    if (view.location.href == viewTabUrl &amp;&amp; !view.imageAlreadySet) {
-      // ...call one of its functions and set a property.
-      view.setImageUrl(imageUrl);
-      view.imageAlreadySet = true;
-      break; // we're done
-    }
-  }
-});
-<em>//In image.html:</em>
-&lt;html&gt;
-  &lt;script&gt;
-    function setImageUrl(url) {
-      document.getElementById('target').src = url;
-    }
-  &lt;/script&gt;
-  &lt;body&gt;
-    &lt;p&gt;
-    Image here:
-    &lt;/p&gt;
-    &lt;img id="target" src="white.png" width="640" height="480"&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-</pre>
 </div>
         <!-- API PAGE -->
          <!-- /apiPage -->
