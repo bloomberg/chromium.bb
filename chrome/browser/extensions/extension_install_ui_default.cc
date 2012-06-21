@@ -65,17 +65,15 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual string16 GetLinkText() const OVERRIDE {
-    // TODO(aa): Return the learn more link once we have the help article
-    // posted.
-    // return error_.type() == CrxInstallerError::ERROR_OFF_STORE ?
-    //    l10n_util::GetStringUTF16(IDS_LEARN_MORE) : ASCIIToUTF16("");
-    return ASCIIToUTF16("");
+    return error_.type() == CrxInstallerError::ERROR_OFF_STORE ?
+        l10n_util::GetStringUTF16(IDS_LEARN_MORE) : ASCIIToUTF16("");
   }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE {
-    browser::NavigateParams params(browser_,
-                                   GURL("http://www.google.com/"),
-                                   content::PAGE_TRANSITION_LINK);
+    browser::NavigateParams params(
+        browser_,
+        GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
+        content::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
     browser::Navigate(&params);
     return false;
