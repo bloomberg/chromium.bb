@@ -165,9 +165,18 @@ void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+// http://crbug.com/133831
+#define MAYBE_FullscreenMouseLockContentSettings \
+    FLAKY_FullscreenMouseLockContentSettings
+#else
+#define MAYBE_FullscreenMouseLockContentSettings \
+    FullscreenMouseLockContentSettings
+#endif
+
 // Tests fullscreen and Mouse Lock with varying content settings ALLOW & BLOCK.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerBrowserTest,
-                       FullscreenMouseLockContentSettings) {
+                       MAYBE_FullscreenMouseLockContentSettings) {
   TestFullscreenMouseLockContentSettings();
 }
 
@@ -330,4 +339,3 @@ IN_PROC_BROWSER_TEST_F(
   }
 }
 #endif
-
