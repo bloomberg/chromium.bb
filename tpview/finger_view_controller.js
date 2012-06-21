@@ -98,7 +98,7 @@ FingerViewController.prototype = {
       }
       snippet[key] = this.log[key];
     }
-    snippet.entries = snippet.entries.slice(begin, end);
+    snippet.entries = snippet.entries.slice(begin, end + 1);
     return snippet;
   },
   getUnitTest: function(begin, end, interpreterName, testName) {
