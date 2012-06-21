@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
@@ -154,7 +155,7 @@ class CertLibraryImpl
     // make sure that that case still works.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kLoadOpencryptoki) ||
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kStubCros)) {
+        !base::chromeos::IsRunningOnChromeOS()) {
       crypto::EnableTPMTokenForNSS();
       // Note: this calls crypto::EnsureTPMTokenReady()
       RequestCertificates();
@@ -527,7 +528,9 @@ CertLibrary::~CertLibrary() {
 
 // static
 CertLibrary* CertLibrary::GetImpl(bool stub) {
-  // No libcros dependencies, so always return CertLibraryImpl() (no stub).
+  // |stub| is ignored since we have no stub of CertLibrary.
+  // TODO(stevenjb): Disassociate CertLibrary from CrosLibrary entirely.
+  // crbug.com/133752
   return new CertLibraryImpl();
 }
 

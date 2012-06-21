@@ -13,7 +13,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -158,10 +157,6 @@ class LoginUtilsTest : public testing::Test,
 
     CrosLibrary::TestApi* test_api = CrosLibrary::Get()->GetTestApi();
     ASSERT_TRUE(test_api);
-
-    MockLibraryLoader* loader = new MockLibraryLoader();
-    ON_CALL(*loader, Load(_)).WillByDefault(Return(true));
-    test_api->SetLibraryLoader(loader, true);
 
     cryptohome_ = new MockCryptohomeLibrary();
     EXPECT_CALL(*cryptohome_, InstallAttributesIsReady())

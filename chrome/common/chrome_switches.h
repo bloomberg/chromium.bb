@@ -376,7 +376,6 @@ extern const char kNoDiscardTabs[];
 extern const char kGuestSession[];
 extern const char kEchoExtensionPath[];
 extern const char kShowVolumeStatus[];
-extern const char kStubCros[];
 extern const char kStubCrosSettings[];
 extern const char kCompressSystemFeedback[];
 extern const char kAuthExtensionPath[];

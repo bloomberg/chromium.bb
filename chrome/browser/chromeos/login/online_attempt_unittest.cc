@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/mock_auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
@@ -42,25 +41,10 @@ class OnlineAttemptTest : public testing::Test {
   virtual ~OnlineAttemptTest() {}
 
   virtual void SetUp() {
-    CrosLibrary::TestApi* test_api = CrosLibrary::Get()->GetTestApi();
-
-    MockLibraryLoader* loader = new MockLibraryLoader();
-    ON_CALL(*loader, Load(_))
-        .WillByDefault(Return(true));
-    EXPECT_CALL(*loader, Load(_))
-        .Times(AnyNumber());
-
-    // Passes ownership of |loader| to CrosLibrary.
-    test_api->SetLibraryLoader(loader, true);
-
     attempt_.reset(new OnlineAttempt(false, &state_, resolver_.get()));
   }
 
   virtual void TearDown() {
-    // Prevent bogus gMock leak check from firing.
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-    test_api->SetLibraryLoader(NULL, false);
   }
 
   void RunFailureTest(const GoogleServiceAuthError& error) {

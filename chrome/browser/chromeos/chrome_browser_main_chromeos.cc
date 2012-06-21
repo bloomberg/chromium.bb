@@ -244,7 +244,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // Initialize CrosLibrary only for the browser, unless running tests
   // (which do their own CrosLibrary setup).
   if (!parameters().ui_task) {
-    bool use_stub = parameters().command_line.HasSwitch(switches::kStubCros);
+    const bool use_stub = !base::chromeos::IsRunningOnChromeOS();
     chromeos::CrosLibrary::Initialize(use_stub);
   }
   // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
