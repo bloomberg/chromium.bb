@@ -16,5 +16,3 @@ bb_baseline_setup "${ROOT}"/../..
 bb_install_build_deps "${ROOT}"/../..
 bb_compile
 bb_run_tests
-bb_compile_apk_tests
-bb_run_apk_tests

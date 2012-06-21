@@ -15,13 +15,4 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_install_build_deps "$BB_SRC_ROOT"
 bb_extract_build
-# TODO(ilevy): Reenable after we fix broken apk tests:
-# base-unittests
-#  -JNIAndroidTest.GetMethodIDFromClassNameCaching (crash)
-# content-unittests
-#  -AppCacheDatabaseTest.ReCreate (fail)
-#  -AppCacheDatabaseTest.UpgradeSchema3to4 (crash)
-# ipc-tests
-#  -IPCChannelPosixTest.ResetState (fail)
-#
-# bb_run_apk_tests
+bb_run_tests

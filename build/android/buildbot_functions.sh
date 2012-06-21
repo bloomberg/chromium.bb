@@ -223,20 +223,6 @@ function bb_compile {
   bb_goma_make
 }
 
-# Re-gyp and compile with unit test bundles configured as shlibs for
-# the native test runner.  Experimental for now.  Once the native test
-# loader is on by default, this entire function becomes obsolete.
-function bb_compile_apk_tests {
-  echo "@@@BUILD_STEP Re-gyp for the native test runner@@@"
-  # Setup goma again. Not doing this breaks the android_gyp step.
-  bb_setup_goma_internal
-
-  GYP_DEFINES="$GYP_DEFINES gtest_target_type=shared_library" android_gyp
-
-  echo "@@@BUILD_STEP Native test runner compile@@@"
-  bb_goma_make
-}
-
 # Experimental compile step; does not turn the tree red if it fails.
 function bb_compile_experimental {
   # Linking DumpRenderTree appears to hang forever?
@@ -261,12 +247,6 @@ function bb_run_tests_emulator {
 # Run tests on an actual device.  (Better have one plugged in!)
 function bb_run_tests {
   echo "@@@BUILD_STEP Run Tests on actual hardware@@@"
-  build/android/run_tests.py --xvfb --verbose
-}
-
-# Run APK tests on an actual device.
-function bb_run_apk_tests {
-  echo "@@@BUILD_STEP Run APK Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose --apk=True
 }
 

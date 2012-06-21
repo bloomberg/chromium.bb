@@ -15,5 +15,5 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_install_build_deps "$BB_SRC_ROOT"
-bb_compile_apk_tests
+bb_compile
 bb_zip_build
