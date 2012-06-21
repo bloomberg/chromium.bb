@@ -23,9 +23,10 @@ exit /B 1
 SHIFT
 set TOOL_NAME=%1
 :: }}}
-if "%TOOL_NAME%" == "drmemory"       GOTO :SETUP_DRMEMORY
-if "%TOOL_NAME%" == "drmemory_light" GOTO :SETUP_DRMEMORY
-if "%TOOL_NAME%" == "drmemory_full"  GOTO :SETUP_DRMEMORY
+if "%TOOL_NAME%" == "drmemory"          GOTO :SETUP_DRMEMORY
+if "%TOOL_NAME%" == "drmemory_light"    GOTO :SETUP_DRMEMORY
+if "%TOOL_NAME%" == "drmemory_full"     GOTO :SETUP_DRMEMORY
+if "%TOOL_NAME%" == "drmemory_pattern"  GOTO :SETUP_DRMEMORY
 if "%TOOL_NAME%" == "tsan"     GOTO :SETUP_TSAN
 echo "Unknown tool: `%TOOL_NAME%`! Only tsan and drmemory are supported right now"
 exit /B 1

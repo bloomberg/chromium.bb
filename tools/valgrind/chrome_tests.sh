@@ -43,7 +43,7 @@ case "$tool" in
       NEEDS_VALGRIND=1
     fi
     ;;
-  "drmemory" | "drmemory_light" | "drmemory_full")
+  "drmemory" | "drmemory_light" | "drmemory_full" | "drmemory_pattern")
     NEEDS_DRMEMORY=1
     ;;
 esac
