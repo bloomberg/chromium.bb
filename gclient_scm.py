@@ -198,7 +198,7 @@ class GitWrapper(SCMWrapper):
     submod_cmd = ['git', 'config', '-f', '$toplevel/.git/config',
                   'submodule.$name.ignore', '||',
                   'git', 'config', '-f', '$toplevel/.git/config',
-                  'submodule.$name.ignore', 'dirty']
+                  'submodule.$name.ignore', 'all']
     cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
     try:
       gclient_utils.CheckCallAndFilter(
