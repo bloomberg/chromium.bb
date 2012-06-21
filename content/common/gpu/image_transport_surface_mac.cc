@@ -52,6 +52,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
  private:
   virtual ~IOSurfaceImageTransportSurface() OVERRIDE;
 
+  void AdjustBufferAllocation();
   void UnrefIOSurface();
   void CreateIOSurface();
 
@@ -166,22 +167,27 @@ void IOSurfaceImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   if (backbuffer_suggested_allocation_ == allocation)
     return;
   backbuffer_suggested_allocation_ = allocation;
-
-  if (backbuffer_suggested_allocation_)
-    CreateIOSurface();
-  else
-    UnrefIOSurface();
+  AdjustBufferAllocation();
 }
 
 void IOSurfaceImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
   if (frontbuffer_suggested_allocation_ == allocation)
     return;
   frontbuffer_suggested_allocation_ = allocation;
+  AdjustBufferAllocation();
+}
 
-  // We recreate frontbuffer by recreating backbuffer and swapping.
-  // But we release frontbuffer by telling UI to release its handle on it.
-  if (!frontbuffer_suggested_allocation_)
+void IOSurfaceImageTransportSurface::AdjustBufferAllocation() {
+  // On mac, the frontbuffer and backbuffer are the same buffer. The buffer is
+  // free'd when both the browser and gpu processes have Unref'd the IOSurface.
+  if (!backbuffer_suggested_allocation_ &&
+      !frontbuffer_suggested_allocation_ &&
+      io_surface_.get()) {
+    UnrefIOSurface();
     helper_->Suspend();
+  } else if (backbuffer_suggested_allocation_ && !io_surface_.get()) {
+    CreateIOSurface();
+  }
 }
 
 bool IOSurfaceImageTransportSurface::SwapBuffers() {
