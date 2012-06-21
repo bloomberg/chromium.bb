@@ -41,6 +41,16 @@
 static int option_fullscreen;
 static char *option_font = "mono";
 static char *option_term = "xterm";
+static char *option_shell;
+
+static struct wl_list terminal_list;
+
+static struct terminal *
+terminal_create(struct display *display, int fullscreen);
+static void
+terminal_destroy(struct terminal *terminal);
+static int
+terminal_run(struct terminal *terminal, const char *path);
 
 #define MOD_SHIFT	0x01
 #define MOD_ALT		0x02
@@ -396,6 +406,7 @@ struct terminal {
 	int32_t dragging;
 	int selection_start_x, selection_start_y;
 	int selection_end_x, selection_end_y;
+	struct wl_list link;
 };
 
 /* Create default tab stops, every 8 characters */
@@ -2073,6 +2084,8 @@ static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
 {
+	struct terminal *new_terminal;
+
 	switch (sym) {
 	case XKB_KEY_X:
 		/* Cut selection; terminal doesn't do cut, fall
@@ -2093,6 +2106,15 @@ handle_bound_key(struct terminal *terminal,
 						   terminal->master);
 
 		return 1;
+
+	case XKB_KEY_N:
+		new_terminal =
+			terminal_create(terminal->display, option_fullscreen);
+		if (terminal_run(new_terminal, option_shell))
+			terminal_destroy(new_terminal);
+
+		return 1;
+
 	default:
 		return 0;
 	}
@@ -2344,7 +2366,21 @@ terminal_create(struct display *display, int fullscreen)
 
 	terminal_resize(terminal, 80, 25);
 
+	wl_list_insert(terminal_list.prev, &terminal->link);
+
 	return terminal;
+}
+
+static void
+terminal_destroy(struct terminal *terminal)
+{
+	window_destroy(terminal->window);
+	close(terminal->master);
+	wl_list_remove(&terminal->link);
+	free(terminal);
+
+	if (wl_list_empty(&terminal_list))
+		exit(0);
 }
 
 static void
@@ -2355,14 +2391,16 @@ io_handler(struct task *task, uint32_t events)
 	char buffer[256];
 	int len;
 
-	if (events & EPOLLHUP)
-		exit(0);
+	if (events & EPOLLHUP) {
+		terminal_destroy(terminal);
+		return;
+	}
 
 	len = read(terminal->master, buffer, sizeof buffer);
 	if (len < 0)
-		exit(0);
-
-	terminal_data(terminal, buffer, len);
+		terminal_destroy(terminal);
+	else
+		terminal_data(terminal, buffer, len);
 }
 
 static int
@@ -2410,14 +2448,18 @@ static const struct config_section config_sections[] = {
 static const struct weston_option terminal_options[] = {
 	{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &option_fullscreen },
 	{ WESTON_OPTION_STRING, "font", 0, &option_font },
+	{ WESTON_OPTION_STRING, "shell", 0, &option_shell },
 };
 
 int main(int argc, char *argv[])
 {
 	struct display *d;
 	struct terminal *terminal;
-	const char *shell;
 	char *config_file;
+
+	option_shell = getenv("SHELL");
+	if (!option_shell)
+		option_shell = "/bin/bash";
 
 	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file,
@@ -2434,12 +2476,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	shell = getenv("SHELL");
-	if (!shell)
-		shell = "/bin/bash";
-
+	wl_list_init(&terminal_list);
 	terminal = terminal_create(d, option_fullscreen);
-	if (terminal_run(terminal, shell))
+	if (terminal_run(terminal, option_shell))
 		exit(EXIT_FAILURE);
 
 	display_run(d);
