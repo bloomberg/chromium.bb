@@ -24,6 +24,17 @@ const char kOnSpeak[] = "ttsEngine.onSpeak";
 const char kOnStop[] = "ttsEngine.onStop";
 };  // namespace events
 
+namespace {
+// Given a language/region code of the form 'fr-FR', returns just the basic
+// language portion, e.g. 'fr'.
+std::string TrimLanguageCode(std::string lang) {
+  if (lang.size() >= 5 && lang[2] == '-')
+    return lang.substr(0, 2);
+  else
+    return lang;
+}
+}
+
 void GetExtensionVoices(Profile* profile, ListValue* result_voices) {
   ExtensionService* service = profile->GetExtensionService();
   DCHECK(service);
@@ -97,58 +108,69 @@ bool GetMatchingExtensionVoice(
   *voice_index = -1;
   const ExtensionSet* extensions = service->extensions();
   ExtensionSet::const_iterator iter;
-  for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
-    const Extension* extension = *iter;
 
-    if (!event_router->ExtensionHasEventListener(
-            extension->id(), events::kOnSpeak) ||
-        !event_router->ExtensionHasEventListener(
-            extension->id(), events::kOnStop)) {
-      continue;
-    }
+  // Make two passes: the first time, do strict language matching
+  // ('fr-FR' does not match 'fr-CA'). The second time, do prefix
+  // language matching ('fr-FR' matches 'fr' and 'fr-CA')
+  for (int pass = 0; pass < 2; ++pass) {
+    for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
+      const Extension* extension = *iter;
 
-    if (!utterance->extension_id().empty() &&
-        utterance->extension_id() != extension->id()) {
-      continue;
-    }
-
-    const std::vector<Extension::TtsVoice>& tts_voices =
-        extension->tts_voices();
-    for (size_t i = 0; i < tts_voices.size(); ++i) {
-      const Extension::TtsVoice& voice = tts_voices[i];
-      if (!voice.voice_name.empty() &&
-          !utterance->voice_name().empty() &&
-          voice.voice_name != utterance->voice_name()) {
+      if (!event_router->ExtensionHasEventListener(
+              extension->id(), events::kOnSpeak) ||
+          !event_router->ExtensionHasEventListener(
+              extension->id(), events::kOnStop)) {
         continue;
       }
-      if (!voice.lang.empty() &&
-          !utterance->lang().empty() &&
-          voice.lang != utterance->lang()) {
+
+      if (!utterance->extension_id().empty() &&
+          utterance->extension_id() != extension->id()) {
         continue;
       }
-      if (!voice.gender.empty() &&
-          !utterance->gender().empty() &&
-          voice.gender != utterance->gender()) {
-        continue;
-      }
-      if (utterance->required_event_types().size() > 0) {
-        bool has_all_required_event_types = true;
-        for (std::set<std::string>::const_iterator iter =
-                 utterance->required_event_types().begin();
-             iter != utterance->required_event_types().end();
-             ++iter) {
-          if (voice.event_types.find(*iter) == voice.event_types.end()) {
-            has_all_required_event_types = false;
-            break;
-          }
-        }
-        if (!has_all_required_event_types)
+
+      const std::vector<Extension::TtsVoice>& tts_voices =
+          extension->tts_voices();
+      for (size_t i = 0; i < tts_voices.size(); ++i) {
+        const Extension::TtsVoice& voice = tts_voices[i];
+        if (!voice.voice_name.empty() &&
+            !utterance->voice_name().empty() &&
+            voice.voice_name != utterance->voice_name()) {
           continue;
-      }
+        }
+        if (!voice.lang.empty() && !utterance->lang().empty()) {
+          std::string voice_lang = voice.lang;
+          std::string utterance_lang = utterance->lang();
+          if (pass == 1) {
+            voice_lang = TrimLanguageCode(voice_lang);
+            utterance_lang = TrimLanguageCode(utterance_lang);
+          }
+          if (voice_lang != utterance_lang)
+            continue;
+        }
+        if (!voice.gender.empty() &&
+            !utterance->gender().empty() &&
+            voice.gender != utterance->gender()) {
+          continue;
+        }
+        if (utterance->required_event_types().size() > 0) {
+          bool has_all_required_event_types = true;
+          for (std::set<std::string>::const_iterator iter =
+                   utterance->required_event_types().begin();
+               iter != utterance->required_event_types().end();
+               ++iter) {
+            if (voice.event_types.find(*iter) == voice.event_types.end()) {
+              has_all_required_event_types = false;
+              break;
+            }
+          }
+          if (!has_all_required_event_types)
+            continue;
+        }
 
-      *matching_extension = extension;
-      *voice_index = i;
-      return true;
+        *matching_extension = extension;
+        *voice_index = i;
+        return true;
+      }
     }
   }
 

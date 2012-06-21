@@ -318,6 +318,14 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineWordCallbacks) {
   ASSERT_TRUE(RunExtensionTest("tts_engine/engine_word_callbacks")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(TtsApiTest, LangMatching) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillRepeatedly(Return(true));
+
+  ASSERT_TRUE(RunExtensionTest("tts_engine/lang_matching")) << message_;
+}
+
 // http://crbug.com/122474
 IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineApi) {
   ASSERT_TRUE(RunExtensionTest("tts_engine/engine_api")) << message_;
