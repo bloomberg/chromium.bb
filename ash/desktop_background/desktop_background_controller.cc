@@ -30,16 +30,31 @@ internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
 }
 }  // namespace
 
+// Stores the current wallpaper data.
+struct DesktopBackgroundController::WallpaperData {
+  explicit WallpaperData(int index)
+      : wallpaper_index(index),
+        wallpaper_layout(GetWallpaperInfo(index).layout),
+        wallpaper_image(*(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            GetWallpaperInfo(index).id).ToImageSkia())) {
+  }
+  WallpaperData(WallpaperLayout layout, const gfx::ImageSkia& image)
+      : wallpaper_index(-1),
+        wallpaper_layout(layout),
+        wallpaper_image(image) {
+  }
+  const int wallpaper_index;
+  const WallpaperLayout wallpaper_layout;
+  const gfx::ImageSkia wallpaper_image;
+};
+
 // DesktopBackgroundController::WallpaperOperation wraps background wallpaper
 // loading.
 class DesktopBackgroundController::WallpaperOperation
     : public base::RefCountedThreadSafe<
     DesktopBackgroundController::WallpaperOperation> {
  public:
-  WallpaperOperation(int index)
-      : wallpaper_(NULL),
-        layout_(CENTER_CROPPED),
-        index_(index) {
+  explicit WallpaperOperation(int index) : index_(index) {
   }
 
   static void Run(scoped_refptr<WallpaperOperation> wo) {
@@ -49,27 +64,15 @@ class DesktopBackgroundController::WallpaperOperation
   void LoadingWallpaper() {
     if (cancel_flag_.IsSet())
       return;
-    wallpaper_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      GetWallpaperInfo(index_).id).ToImageSkia();
-    if (cancel_flag_.IsSet())
-      return;
-    layout_ = GetWallpaperInfo(index_).layout;
+    wallpaper_data_.reset(new WallpaperData(index_));
   }
 
   void Cancel() {
     cancel_flag_.Set();
   }
 
-  const gfx::ImageSkia* wallpaper() {
-    return wallpaper_;
-  }
-
-  WallpaperLayout wallpaper_layout() {
-    return layout_;
-  }
-
-  int index() {
-    return index_;
+  WallpaperData* ReleaseWallpaperData() {
+    return wallpaper_data_.release();
   }
 
  private:
@@ -78,8 +81,8 @@ class DesktopBackgroundController::WallpaperOperation
 
   base::CancellationFlag cancel_flag_;
 
-  const gfx::ImageSkia* wallpaper_;
-  WallpaperLayout layout_;
+  scoped_ptr<WallpaperData> wallpaper_data_;
+
   int index_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperOperation);
@@ -87,12 +90,29 @@ class DesktopBackgroundController::WallpaperOperation
 
 DesktopBackgroundController::DesktopBackgroundController()
     : desktop_background_mode_(BACKGROUND_IMAGE),
-      previous_index_(-1),
+      background_color_(SK_ColorGRAY),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
   CancelPendingWallpaperOperation();
+}
+
+void DesktopBackgroundController::OnRootWindowAdded(
+    aura::RootWindow* root_window) {
+  switch (desktop_background_mode_) {
+    case BACKGROUND_IMAGE:
+      if (current_wallpaper_.get()) {
+        SetDesktopBackgroundImage(root_window);
+      } else {
+        gfx::ImageSkia dummy;
+        internal::CreateDesktopBackground(dummy, CENTER, root_window);
+      }
+      break;
+    case BACKGROUND_SOLID_COLOR:
+      SetDesktopBackgroundSolidColorMode(background_color_);
+      break;
+  }
 }
 
 void DesktopBackgroundController::SetDefaultWallpaper(int index) {
@@ -106,7 +126,7 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
     return;
   }
 
-  if (previous_index_ == index)
+  if (current_wallpaper_.get() && current_wallpaper_->wallpaper_index == index)
     return;
 
   CancelPendingWallpaperOperation();
@@ -124,14 +144,9 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
 void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& wallpaper,
     WallpaperLayout layout) {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
-    internal::CreateDesktopBackground(wallpaper, layout, root_window);
-    desktop_background_mode_ = BACKGROUND_IMAGE;
-  }
+  CancelPendingWallpaperOperation();
+  current_wallpaper_.reset(new WallpaperData(layout, wallpaper));
+  UpdateDesktopBackgroundImageMode();
 }
 
 void DesktopBackgroundController::CancelPendingWallpaperOperation() {
@@ -163,28 +178,35 @@ void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode(
         background_layer);
     GetRootWindowLayoutManager(root_window)->SetBackgroundWidget(NULL);
   }
+  background_color_ = color;
   desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
 }
 
-void DesktopBackgroundController::SetDesktopBackgroundImageMode(
-    scoped_refptr<WallpaperOperation> wo) {
+void DesktopBackgroundController::SetDesktopBackgroundImage(
+    aura::RootWindow* root_window) {
+  GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
+  if (!current_wallpaper_->wallpaper_image.empty()) {
+    internal::CreateDesktopBackground(
+        current_wallpaper_->wallpaper_image,
+        current_wallpaper_->wallpaper_layout,
+        root_window);
+  }
+}
+
+void DesktopBackgroundController::UpdateDesktopBackgroundImageMode() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
-    if (wo->wallpaper()) {
-      internal::CreateDesktopBackground(
-          *wo->wallpaper(), wo->wallpaper_layout(), root_window);
-    }
+    SetDesktopBackgroundImage(*iter);
   }
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
 void DesktopBackgroundController::OnWallpaperLoadCompleted(
     scoped_refptr<WallpaperOperation> wo) {
-  SetDesktopBackgroundImageMode(wo);
-  previous_index_ = wo->index();
+  current_wallpaper_.reset(wo->ReleaseWallpaperData());
+
+  UpdateDesktopBackgroundImageMode();
 
   DCHECK(wo.get() == wallpaper_op_.get());
   wallpaper_op_ = NULL;

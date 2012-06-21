@@ -632,6 +632,7 @@ void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
     controller->CreateContainers();
     InitRootWindowController(controller);
     controller->root_window_layout()->OnWindowResized();
+    desktop_background_controller_->OnRootWindowAdded(root);
     root->ShowRootWindow();
     // Activate new root for testing.
     active_root_window_ = root;

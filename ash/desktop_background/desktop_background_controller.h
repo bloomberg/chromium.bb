@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -54,6 +55,9 @@ class ASH_EXPORT DesktopBackgroundController {
     return desktop_background_mode_;
   }
 
+  // Initialize root window's background.
+  void OnRootWindowAdded(aura::RootWindow* root_window);
+
   // Loads default wallpaper at |index| asynchronously and sets to current
   // wallpaper after loaded.
   void SetDefaultWallpaper(int index);
@@ -82,10 +86,15 @@ class ASH_EXPORT DesktopBackgroundController {
   // An operation to asynchronously loads wallpaper.
   class WallpaperOperation;
 
-  // Sets the desktop background to image mode and creates a new background
-  // widget with user selected wallpaper or default wallpaper. Deletes the old
-  // widget if any.
-  void SetDesktopBackgroundImageMode(scoped_refptr<WallpaperOperation> wo);
+  struct WallpaperData;
+
+  // Creates a new background widget using the current wallpapaer image and
+  // use it as a background of the |root_window|. Deletes the old widget if any.
+  void SetDesktopBackgroundImage(aura::RootWindow* root_window);
+
+  // Update the background of all root windows using the current wallpaper image
+  // in |current_wallpaper_|.
+  void UpdateDesktopBackgroundImageMode();
 
   // Creates a new background widget and sets the background mode to image mode.
   // Called after wallpaper loaded successfully.
@@ -94,8 +103,10 @@ class ASH_EXPORT DesktopBackgroundController {
   // Can change at runtime.
   BackgroundMode desktop_background_mode_;
 
-  // The previous successfully loaded wallpaper.
-  int previous_index_;
+  SkColor background_color_;
+
+  // The current wallpaper.
+  scoped_ptr<WallpaperData> current_wallpaper_;
 
   scoped_refptr<WallpaperOperation> wallpaper_op_;
 
