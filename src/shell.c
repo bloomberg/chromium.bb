@@ -782,6 +782,8 @@ move_grab_motion(struct wl_pointer_grab *grab,
 
 	weston_surface_configure(es, dx, dy,
 				 es->geometry.width, es->geometry.height);
+
+	weston_compositor_schedule_repaint(es->compositor);
 }
 
 static void
