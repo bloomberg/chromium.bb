@@ -5,7 +5,6 @@
 #include "chromeos/dbus/ibus/ibus_object.h"
 
 #include "base/logging.h"
-#include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "dbus/message.h"
 
@@ -147,20 +146,6 @@ bool IBusObjectReader::PopStringFromIBusText(std::string* text) {
       contents_reader_.get(), text);
 }
 
-bool IBusObjectReader::PopIBusProperty(IBusProperty* property) {
-  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
-  DCHECK(contents_reader_.get());
-  return IsValid() && chromeos::ibus::PopIBusProperty(contents_reader_.get(),
-                                                      property);
-}
-
-bool IBusObjectReader::PopIBusPropertyList(IBusPropertyList* properties) {
-  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
-  DCHECK(contents_reader_.get());
-  return IsValid() && chromeos::ibus::PopIBusPropertyList(
-      contents_reader_.get(), properties);
-}
-
 bool IBusObjectReader::HasMoreData() {
   DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
   DCHECK(contents_reader_.get());
@@ -228,17 +213,6 @@ void IBusObjectWriter::AppendIBusText(const IBusText& text) {
 void IBusObjectWriter::AppendStringAsIBusText(const std::string& text) {
   DCHECK(IsInitialized());
   chromeos::ibus::AppendStringAsIBusText(text, contents_writer_.get());
-}
-
-void IBusObjectWriter::AppendIBusProperty(const IBusProperty& property) {
-  DCHECK(IsInitialized());
-  chromeos::ibus::AppendIBusProperty(property, contents_writer_.get());
-}
-
-void IBusObjectWriter::AppendIBusPropertyList(
-    const IBusPropertyList& property_list) {
-  DCHECK(IsInitialized());
-  chromeos::ibus::AppendIBusPropertyList(property_list, contents_writer_.get());
 }
 
 void IBusObjectWriter::CloseContainer(dbus::MessageWriter* writer) {

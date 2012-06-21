@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 
 namespace dbus {
@@ -123,12 +122,6 @@ class CHROMEOS_EXPORT IBusObjectReader {
   // Return true on success.
   bool PopStringFromIBusText(std::string* text);
 
-  // Pops a IBusProperty.
-  bool PopIBusProperty(ibus::IBusProperty* property);
-
-  // Pops a IBusPropertyList.
-  bool PopIBusPropertyList(ibus::IBusPropertyList* property_list);
-
  private:
   enum CheckResult {
     IBUS_OBJECT_VALID,  // Already checked and valid type.
@@ -203,12 +196,6 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   // Appends a string as IBusText without any attributes. Use AppendIBusText
   // instead in the case of using any attribute entries.
   void AppendStringAsIBusText(const std::string& text);
-
-  // Appends a IBusProperty.
-  void AppendIBusProperty(const ibus::IBusProperty& property);
-
-  // Appends a IBusPropertyList.
-  void AppendIBusPropertyList(const ibus::IBusPropertyList& property_list);
 
  private:
   // Appends IBusObject headers, should be called once.
