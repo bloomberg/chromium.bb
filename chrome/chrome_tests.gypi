@@ -91,6 +91,8 @@
         'browser/chromeos/cros/mock_cert_library.h',
         'browser/chromeos/cros/mock_cryptohome_library.cc',
         'browser/chromeos/cros/mock_cryptohome_library.h',
+        'browser/chromeos/cros/mock_library_loader.cc',
+        'browser/chromeos/cros/mock_library_loader.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/cryptohome/mock_async_method_caller.cc',

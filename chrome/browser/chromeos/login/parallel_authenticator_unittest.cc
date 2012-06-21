@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cert_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
@@ -76,6 +77,14 @@ class ParallelAuthenticatorTest : public testing::Test {
     chromeos::CrosLibrary::TestApi* test_api =
         chromeos::CrosLibrary::Get()->GetTestApi();
 
+    loader_ = new MockLibraryLoader();
+    ON_CALL(*loader_, Load(_))
+        .WillByDefault(Return(true));
+    EXPECT_CALL(*loader_, Load(_))
+        .Times(AnyNumber());
+
+    test_api->SetLibraryLoader(loader_, true);
+
     mock_cryptohome_library_ = new MockCryptohomeLibrary();
     test_api->SetCryptohomeLibrary(mock_cryptohome_library_, true);
 
@@ -100,6 +109,7 @@ class ParallelAuthenticatorTest : public testing::Test {
     // Prevent bogus gMock leak check from firing.
     chromeos::CrosLibrary::TestApi* test_api =
         chromeos::CrosLibrary::Get()->GetTestApi();
+    test_api->SetLibraryLoader(NULL, false);
     test_api->SetCryptohomeLibrary(NULL, false);
 
     cryptohome::AsyncMethodCaller::Shutdown();
@@ -214,6 +224,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Mocks, destroyed by CrosLibrary class.
   MockCertLibrary* mock_cert_library_;
   MockCryptohomeLibrary* mock_cryptohome_library_;
+  MockLibraryLoader* loader_;
   ScopedMockUserManagerEnabler mock_user_manager_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;

@@ -6,6 +6,7 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"

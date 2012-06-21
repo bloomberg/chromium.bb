@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@ namespace chromeos {
 class BurnLibrary;
 class CertLibrary;
 class CryptohomeLibrary;
+class LibraryLoader;
 class NetworkLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
@@ -31,8 +32,14 @@ class CrosLibrary {
   // mock objects).
   class TestApi {
    public:
+    // Resets the stub implementation of the library and loads libcros.
+    // Used by tests that need to run with libcros (i.e. on a device).
+    void ResetUseStubImpl();
+
     // Passing true for own for these setters will cause them to be deleted
     // when the CrosLibrary is deleted (or other mocks are set).
+    // Setter for LibraryLoader.
+    void SetLibraryLoader(LibraryLoader* loader, bool own);
     void SetCertLibrary(CertLibrary* library, bool own);
     void SetBurnLibrary(BurnLibrary* library, bool own);
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
@@ -63,14 +70,12 @@ class CrosLibrary {
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
 
-  // Note: Since we are no longer loading Libcros, we can return true here
-  // whenever the used libraries are not stub.
-  // TODO(hashimoto): Remove this method.
-  bool libcros_loaded() { return !use_stub_impl_; }
+  bool libcros_loaded() { return libcros_loaded_; }
 
   // Returns an unlocalized string describing the last load error (if any).
-  // TODO(hashimoto): Remove this method.
-  std::string load_error_string() { return std::string(); }
+  const std::string& load_error_string() {
+    return load_error_string_;
+  }
 
  private:
   friend struct base::DefaultLazyInstanceTraits<chromeos::CrosLibrary>;
@@ -78,6 +83,12 @@ class CrosLibrary {
 
   explicit CrosLibrary(bool use_stub);
   virtual ~CrosLibrary();
+
+  bool LoadLibcros();
+
+  LibraryLoader* library_loader_;
+
+  bool own_library_loader_;
 
   // This template supports the creation, setting and optional deletion of
   // the cros libraries.
@@ -120,6 +131,12 @@ class CrosLibrary {
 
   // Stub implementations of the libraries should be used.
   bool use_stub_impl_;
+  // True if libcros was successfully loaded.
+  bool libcros_loaded_;
+  // True if the last load attempt had an error.
+  bool load_error_;
+  // Contains the error string from the last load attempt.
+  std::string load_error_string_;
   scoped_ptr<TestApi> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosLibrary);
