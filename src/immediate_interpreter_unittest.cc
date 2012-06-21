@@ -3402,4 +3402,71 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
     prev_hs = hs;
   }
 }
+
+TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
+  ImmediateInterpreter ii(NULL, NULL);
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    96.085106,  // right edge
+    57.492310,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    25.4,  // screen DPI x
+    25.4,  // screen DPI y
+    2,  // max fingers
+    3,  // max touch
+    0,  // t5r2
+    1,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_state[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 71.180000, 0, 58.446808, 24.000002, 0, 3 },  // index 0
+    { 0, 0, 0, 0, 71.180000, 0, 75.042549, 23.676924, 1, 3 },
+
+    { 0, 0, 0, 0, 82.070000, 0, 55.276596, 23.492308, 0, 3 },  // index 2
+    { 0, 0, 0, 0, 82.070000, 0, 70.361702, 23.015387, 1, 3 },
+
+    { 0, 0, 0, 0, 76.625000, 0, 58.542553, 23.030769, 0, 3 },  // index 4
+    { 0, 0, 0, 0, 76.625000, 0, 59.127659, 22.500002, 1, 1 },
+
+    // prev_result will be scroll, we expect the tap state will be idle
+    // after the sample is processed.
+    { 0, 0, 0, 0, 71.180000, 0, 61.808510, 22.569231, 0, 3 },  // index 6
+    { 0, 0, 0, 0, 71.180000, 0, 47.893616, 21.984617, 1, 1 },
+
+    { 0, 0, 0, 0, 16.730000, 0, 57.617020, 20.830770, 0, 3 },  // index 8
+  };
+
+  HardwareState hardware_states[] = {
+    // time, buttons down, finger count, touch count, finger states pointer
+    { 1296.498245, 0, 2, 2, &finger_state[0] },
+    { 1296.510735, 0, 2, 2, &finger_state[2] },
+    { 1296.523224, 0, 2, 2, &finger_state[4] },
+    { 1296.535753, 0, 2, 2, &finger_state[6] },
+    { 1296.548282, 0, 1, 1, &finger_state[8] },
+  };
+
+  // SemiMt-specific properties
+  ii.tapping_finger_min_separation_.val_ = 0.0;
+  ii.scroll_stationary_finger_max_distance_.val_ = 20.0;
+
+  ii.tap_enable_.val_ = 1;
+  ii.SetHardwareProperties(hwprops);
+
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
+    Gesture* gs = ii.SyncInterpret(&hardware_states[idx], NULL);
+    if (gs != NULL) {
+      if (idx == 2)
+        EXPECT_EQ(kGestureTypeScroll, gs->type);
+      else
+        EXPECT_NE(kGestureTypeButtonsChange, gs->type);
+    }
+    if (idx >= 3)
+      EXPECT_EQ(kIdl, ii.tap_to_click_state_);
+  }
+}
 }  // namespace gestures

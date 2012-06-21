@@ -1109,7 +1109,8 @@ void ImmediateInterpreter::UpdateTapState(
 
   // If you are updating the code, keep this diagram correct.
   // We have a TapRecord which stores current tap state.
-  // Also, if the physical button is down, we go to (or stay in) Idle state.
+  // Also, if the physical button is down or previous gesture type is scroll,
+  // we go to (or stay in) Idle state.
 
   //     Start
   //       ↓
@@ -1144,7 +1145,8 @@ void ImmediateInterpreter::UpdateTapState(
   Log("TTC State: %s", TapToClickStateName(tap_to_click_state_));
   if (!hwstate)
     Log("This is a timer callback");
-  if (phys_button_down || KeyboardRecentlyUsed(now)) {
+  if (phys_button_down || KeyboardRecentlyUsed(now) ||
+      prev_result_.type == kGestureTypeScroll) {
     Log("Physical button down or keyboard recently used. Going to Idle state");
     SetTapToClickState(kTtcIdle, now);
     return;
