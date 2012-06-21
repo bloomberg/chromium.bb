@@ -63,7 +63,6 @@ vars = {
   "webrtc_revision": "2406",
   "jsoncpp_revision": "248",
   "nss_revision": "142261",
-  "rlz_revision": "132",
 }
 
 deps = {
@@ -385,9 +384,6 @@ deps_os = {
     "src/third_party/mingw-w64/mingw/bin":
       (Var("nacl_trunk") + "/deps/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_tools_revision")),
-
-    "src/rlz":
-      (Var("googlecode_url") % "rlz") + "/trunk@" + Var("rlz_revision"),
 
     # Dependencies used by libjpeg-turbo
     "src/third_party/yasm/binaries":
