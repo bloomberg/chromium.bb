@@ -248,9 +248,7 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
         connector->device_cloud_policy_subsystem(), this));
     // Push the credentials to the policy infrastructure. It'll start enrollment
     // and notify us of progress through CloudPolicySubsystem::Observer.
-    connector->RegisterForDevicePolicy(user_, token,
-                                       is_auto_enrollment_,
-                                       connector->IsEnterpriseManaged());
+    connector->RegisterForDevicePolicy(user_, token, is_auto_enrollment_);
     return;
   }
   NOTREACHED();

@@ -78,8 +78,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // on the machine_id used for the request.
   void RegisterForDevicePolicy(const std::string& owner_email,
                                const std::string& token,
-                               bool known_machine_id,
-                               bool reregister);
+                               bool known_machine_id);
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

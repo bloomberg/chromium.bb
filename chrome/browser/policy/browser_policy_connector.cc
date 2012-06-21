@@ -186,21 +186,15 @@ PolicyService* BrowserPolicyConnector::CreatePolicyService(
 void BrowserPolicyConnector::RegisterForDevicePolicy(
     const std::string& owner_email,
     const std::string& token,
-    bool known_machine_id,
-    bool reregister) {
+    bool known_machine_id) {
 #if defined(OS_CHROMEOS)
   if (device_data_store_.get()) {
     if (!device_data_store_->device_token().empty()) {
       LOG(ERROR) << "Device policy data store already has a DMToken; "
                  << "RegisterForDevicePolicy won't trigger a new registration.";
     }
-
     device_data_store_->set_user_name(owner_email);
     device_data_store_->set_known_machine_id(known_machine_id);
-    if (reregister) {
-      device_data_store_->set_device_id(install_attributes_->GetDeviceId());
-      device_data_store_->set_reregister(true);
-    }
     device_data_store_->set_policy_fetching_enabled(false);
     device_data_store_->SetOAuthToken(token);
   }
