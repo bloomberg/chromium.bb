@@ -27,10 +27,11 @@ namespace internal {
 
 namespace {
 
-const float kContainerAnimationScaleFactor = 1.05f;
-
 // Duration for show/hide animation in milliseconds.
-const int kAnimationDurationMs = 150;
+const int kAnimationDurationMs = 200;
+
+// Offset in pixels to animation away/towards the launcher.
+const int kAnimationOffset = 8;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -39,8 +40,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
   DCHECK(Shell::HasInstance());
-  ash::ShelfAlignment shelf_alignment =
-      Shell::GetInstance()->shelf()->alignment();
+  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment();
   switch (shelf_alignment) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
       return views::BubbleBorder::BOTTOM_RIGHT;
@@ -52,6 +52,29 @@ views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
       NOTREACHED() << "Unknown shelf alignment " << shelf_alignment;
       return views::BubbleBorder::BOTTOM_RIGHT;
   }
+}
+
+// Offset given |rect| towards shelf.
+gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect) {
+  DCHECK(Shell::HasInstance());
+  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment();
+  gfx::Rect offseted(rect);
+  switch(shelf_alignment) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      offseted.Offset(0, kAnimationOffset);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      offseted.Offset(-kAnimationOffset, 0);
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      offseted.Offset(kAnimationOffset, 0);
+      break;
+    default:
+      NOTREACHED() << "Unknown shelf alignment " << shelf_alignment;
+      break;
+  }
+
+  return offseted;
 }
 
 }  // namespace
@@ -150,13 +173,19 @@ void AppListController::ResetView() {
 }
 
 void AppListController::ScheduleAnimation() {
-  second_animation_timer_.Stop();
-
   // Stop observing previous animation.
   StopObservingImplicitAnimations();
 
   ui::Layer* layer = GetLayer(view_->GetWidget());
   layer->GetAnimator()->StopAnimating();
+
+  gfx::Rect target_bounds;
+  if (is_visible_) {
+    target_bounds = layer->bounds();
+    layer->SetBounds(OffsetTowardsShelf(layer->bounds()));
+  } else {
+    target_bounds = OffsetTowardsShelf(layer->bounds());
+  }
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetTransitionDuration(
@@ -164,6 +193,7 @@ void AppListController::ScheduleAnimation() {
   animation.AddObserver(this);
 
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
+  layer->SetBounds(target_bounds);
 }
 
 void AppListController::ProcessLocatedEvent(const aura::LocatedEvent& event) {

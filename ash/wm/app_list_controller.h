@@ -111,10 +111,6 @@ class AppListController : public aura::EventFilter,
   // The AppListView this class manages, owned by its widget.
   app_list::AppListView* view_;
 
-  // Timer to schedule the 2nd step animation, started when the first step
-  // animation is scheduled in ScheduleAnimation.
-  base::OneShotTimer<AppListController> second_animation_timer_;
-
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
 
