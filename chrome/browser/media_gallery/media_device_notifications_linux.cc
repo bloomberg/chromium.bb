@@ -16,7 +16,6 @@
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -43,46 +42,6 @@ namespace chrome {
 using base::SystemMonitor;
 using content::BrowserThread;
 
-// A simple pass-through class. MediaDeviceNotificationsLinux cannot directly
-// inherit from FilePathWatcher::Delegate due to multiple inheritance.
-class MediaDeviceNotificationsLinux::WatcherDelegate
-    : public base::files::FilePathWatcher::Delegate {
- public:
-  explicit WatcherDelegate(MediaDeviceNotificationsLinux* notifier);
-
-  // base::files::FilePathWatcher::Delegate implementation.
-  virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
-
- private:
-  friend class base::RefCountedThreadSafe<WatcherDelegate>;
-
-  // Avoids code deleting the object while there are references to it.
-  // Aside from the base::RefCountedThreadSafe friend class, any attempts to
-  // call this dtor will result in a compile-time error.
-  virtual ~WatcherDelegate();
-
-  // The MediaDeviceNotificationsLinux instance that owns this WatcherDelegate.
-  // Since |notifier_| will destroy this WatcherDelegate before it goes away,
-  // the pointer is always valid. No need to add a reference count, as that
-  // would create a circular reference.
-  MediaDeviceNotificationsLinux* const notifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(WatcherDelegate);
-};
-
-MediaDeviceNotificationsLinux::WatcherDelegate::WatcherDelegate(
-    MediaDeviceNotificationsLinux* notifier)
-    : notifier_(notifier) {
-}
-
-MediaDeviceNotificationsLinux::WatcherDelegate::~WatcherDelegate() {
-}
-
-void MediaDeviceNotificationsLinux::WatcherDelegate::OnFilePathChanged(
-    const FilePath& path) {
-  notifier_->OnFilePathChanged(path);
-}
-
 MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
     const FilePath& path)
     : initialized_(false),
@@ -97,6 +56,7 @@ MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
 }
 
 MediaDeviceNotificationsLinux::~MediaDeviceNotificationsLinux() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
 void MediaDeviceNotificationsLinux::Init() {
@@ -105,11 +65,16 @@ void MediaDeviceNotificationsLinux::Init() {
       base::Bind(&MediaDeviceNotificationsLinux::InitOnFileThread, this));
 }
 
-void MediaDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path) {
+void MediaDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path,
+                                                      bool error) {
   if (path != mtab_path_) {
-    // This cannot happen unless FileWatcher is buggy. Just ignore this
+    // This cannot happen unless FilePathWatcher is buggy. Just ignore this
     // notification and do nothing.
     NOTREACHED();
+    return;
+  }
+  if (error) {
+    LOG(ERROR) << "Error watching " << mtab_path_.value();
     return;
   }
 
@@ -121,8 +86,14 @@ void MediaDeviceNotificationsLinux::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   initialized_ = true;
 
-  watcher_delegate_ = new WatcherDelegate(this);
-  if (!file_watcher_.Watch(mtab_path_, watcher_delegate_)) {
+  // The callback passed to Watch() has to be unretained. Otherwise
+  // MediaDeviceNotificationsLinux will live longer than expected, and
+  // FilePathWatcher will get in trouble at shutdown time.
+  bool ret = file_watcher_.Watch(
+      mtab_path_,
+      base::Bind(&MediaDeviceNotificationsLinux::OnFilePathChanged,
+                 base::Unretained(this)));
+  if (!ret) {
     LOG(ERROR) << "Adding watch for " << mtab_path_.value() << " failed";
     return;
   }

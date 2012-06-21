@@ -54,8 +54,8 @@ class MediaDeviceNotificationsLinuxTestWrapper
   // call this dtor will result in a compile-time error.
   ~MediaDeviceNotificationsLinuxTestWrapper() {}
 
-  virtual void OnFilePathChanged(const FilePath& path) {
-    MediaDeviceNotificationsLinux::OnFilePathChanged(path);
+  virtual void OnFilePathChanged(const FilePath& path, bool error) OVERRIDE {
+    MediaDeviceNotificationsLinux::OnFilePathChanged(path, error);
     message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
@@ -87,7 +87,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
   virtual ~MediaDeviceNotificationsLinuxTest() {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     mock_devices_changed_observer_.reset(new base::MockDevicesChangedObserver);
     system_monitor_.AddDevicesChangedObserver(
         mock_devices_changed_observer_.get());
@@ -112,7 +112,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     message_loop_.RunAllPending();
     notifications_ = NULL;
     system_monitor_.RemoveDevicesChangedObserver(

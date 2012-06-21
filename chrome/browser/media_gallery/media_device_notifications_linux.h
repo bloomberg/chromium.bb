@@ -23,13 +23,15 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
+#include "content/public/browser/browser_thread.h"
 
 class FilePath;
 
 namespace chrome {
 
 class MediaDeviceNotificationsLinux
-    : public base::RefCountedThreadSafe<MediaDeviceNotificationsLinux> {
+    : public base::RefCountedThreadSafe<MediaDeviceNotificationsLinux,
+          content::BrowserThread::DeleteOnFileThread> {
  public:
   explicit MediaDeviceNotificationsLinux(const FilePath& path);
 
@@ -43,12 +45,13 @@ class MediaDeviceNotificationsLinux
   // error.
   virtual ~MediaDeviceNotificationsLinux();
 
-  virtual void OnFilePathChanged(const FilePath& path);
+  virtual void OnFilePathChanged(const FilePath& path, bool error);
 
  private:
   friend class base::RefCountedThreadSafe<MediaDeviceNotificationsLinux>;
-
-  class WatcherDelegate;
+  friend class base::DeleteHelper<MediaDeviceNotificationsLinux>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::FILE>;
 
   // (mount device, device id)
   typedef std::pair<std::string,
@@ -85,10 +88,9 @@ class MediaDeviceNotificationsLinux
 
   // Mtab file that lists the mount points.
   const FilePath mtab_path_;
+
   // Watcher for |mtab_path_|.
   base::files::FilePathWatcher file_watcher_;
-  // Delegate to receive watcher notifications.
-  scoped_refptr<WatcherDelegate> watcher_delegate_;
 
   // Mapping of relevent mount points and their corresponding mount devices.
   // Keep in mind on Linux, a device can be mounted at multiple mount points,
