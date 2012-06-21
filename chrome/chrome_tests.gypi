@@ -2372,6 +2372,7 @@
             'browser/browser_commands_unittest.cc',
             'browser/managed_mode_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
+            'browser/page_cycler/page_cycler_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
