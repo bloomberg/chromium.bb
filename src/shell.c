@@ -2488,6 +2488,15 @@ click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 	if (is_black_surface(focus, &upper))
 		focus = upper;
 
+	switch (get_shell_surface_type(focus)) {
+		case SHELL_SURFACE_BACKGROUND:
+		case SHELL_SURFACE_SCREENSAVER:
+		case SHELL_SURFACE_INPUT_PANEL:
+			return;
+		default:
+			break;
+	}
+
 	if (seat->pointer->grab == &seat->pointer->default_grab)
 		activate(shell, focus, ws);
 }
