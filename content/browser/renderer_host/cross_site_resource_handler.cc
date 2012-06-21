@@ -52,6 +52,8 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
 }
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
+  // Cleanup back-pointer stored on the request info.
+  ResourceRequestInfoImpl::ForRequest(request_)->set_cross_site_handler(NULL);
 }
 
 bool CrossSiteResourceHandler::OnRequestRedirected(

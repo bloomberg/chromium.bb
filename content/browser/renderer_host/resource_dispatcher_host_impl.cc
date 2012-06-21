@@ -1476,6 +1476,9 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
 
     IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
                                            info->GetChildID());
+
+    // A ResourceHandler must not outlive its associated URLRequest.
+    handler.reset();
     return;
   }
 

@@ -97,6 +97,8 @@ AsyncResourceHandler::AsyncResourceHandler(
 }
 
 AsyncResourceHandler::~AsyncResourceHandler() {
+  // Cleanup back-pointer stored on the request info.
+  ResourceRequestInfoImpl::ForRequest(request_)->set_async_handler(NULL);
 }
 
 void AsyncResourceHandler::OnFollowRedirect(
@@ -334,11 +336,8 @@ void AsyncResourceHandler::MarkAsDeferred(bool deferred) {
 
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request_);
-  if (deferred) {
+  if (deferred)
     info->set_async_handler(this);
-  } else {
-    info->set_async_handler(NULL);
-  }
 }
 
 void AsyncResourceHandler::ResumeIfDeferred() {
