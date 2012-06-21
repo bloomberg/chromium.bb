@@ -58,6 +58,69 @@ namespace content {
 //
 // Class methods are virtual to allow mocking for tests; these classes
 // aren't intended to be base classes for other classes.
+//
+// Sample usage (note that this does not show callback usage):
+//
+//    void OriginatingClass::Initialize() {
+//      // Create a stream for sending bytes from IO->FILE threads.
+//      scoped_ptr<ByteStreamWriter> writer;
+//      scoped_ptr<ByteStreamReader> reader;
+//      content::CreateByteStream(
+//          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+//          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+//          kStreamBufferSize /* e.g. 10240.  */,
+//          &writer,
+//          &reader);         // Presumed passed to FILE thread for reading.
+//
+//      // Setup callback for writing.
+//      writer->RegisterCallback(base::Bind(&SpaceAvailable, this));
+//
+//      // Do initial round of writing.
+//      SpaceAvailable();
+//    }
+//
+//    // May only be run on first argument task runner, in this case the IO
+//    // thread.
+//    void OriginatingClass::SpaceAvailable() {
+//      while (<data available>) {
+//        scoped_ptr<net::IOBuffer> buffer;
+//        size_t buffer_length;
+//        // Create IOBuffer, fill in with data, and set buffer_length.
+//        if (!writer->Write(buffer, buffer_length)) {
+//          // No more space; return and we'll be called again
+//          // when there is space.
+//          return;
+//        }
+//      }
+//      writer->Close(<operation status>);
+//      writer.reset(NULL);
+//    }
+//
+//    // On File thread; containing class setup not shown.
+//
+//    void ReceivingClass::Initialize() {
+//      // Initialization
+//      reader->RegisterCallback(base::Bind(&DataAvailable, obj));
+//    }
+//
+//    // Called whenever there's something to read.
+//    void ReceivingClass::DataAvailable() {
+//      scoped_refptr<net::IOBuffer> data;
+//      size_t length = 0;
+//
+//      while (content::ByteStreamReader::STREAM_HAS_DATA ==
+//             (state = reader->Read(&data, &length))) {
+//        // Process |data|.
+//      }
+//
+//      if (content::ByteStreamReader::STREAM_COMPLETE == state) {
+//        content::DownloadInterruptReason status = reader->GetStatus();
+//        // Process error or successful completion in |status|.
+//      }
+//
+//      // if |state| is STREAM_EMPTY, we're done for now; we'll be called
+//      // again when there's more data.
+//    }
 class CONTENT_EXPORT ByteStreamWriter {
 public:
   virtual ~ByteStreamWriter() = 0;

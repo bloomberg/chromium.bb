@@ -594,4 +594,3 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
   EXPECT_EQ(1, num_callbacks);
 }
 
-

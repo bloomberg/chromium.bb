@@ -33,8 +33,8 @@ class ByteStreamReaderImpl;
 // to support SequencedTaskRunners.
 struct LifetimeFlag : public base::RefCountedThreadSafe<LifetimeFlag> {
  public:
-  LifetimeFlag() : is_alive_(true) { }
-  bool is_alive_;
+  LifetimeFlag() : is_alive(true) { }
+  bool is_alive;
 
  protected:
   friend class base::RefCountedThreadSafe<LifetimeFlag>;
@@ -50,8 +50,8 @@ struct LifetimeFlag : public base::RefCountedThreadSafe<LifetimeFlag> {
 class ByteStreamWriterImpl : public content::ByteStreamWriter {
  public:
   ByteStreamWriterImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                      scoped_refptr<LifetimeFlag> lifetime_flag,
-                      size_t buffer_size);
+                       scoped_refptr<LifetimeFlag> lifetime_flag,
+                       size_t buffer_size);
   virtual ~ByteStreamWriterImpl();
 
   // Must be called before any operations are performed.
@@ -192,11 +192,11 @@ ByteStreamWriterImpl::ByteStreamWriterImpl(
       output_size_used_(0),
       peer_(NULL) {
   DCHECK(my_lifetime_flag_.get());
-  my_lifetime_flag_->is_alive_ = true;
+  my_lifetime_flag_->is_alive = true;
 }
 
 ByteStreamWriterImpl::~ByteStreamWriterImpl() {
-  my_lifetime_flag_->is_alive_ = false;
+  my_lifetime_flag_->is_alive = false;
 }
 
 void ByteStreamWriterImpl::SetPeer(
@@ -239,7 +239,7 @@ void ByteStreamWriterImpl::UpdateWindow(
     scoped_refptr<LifetimeFlag> lifetime_flag, ByteStreamWriterImpl* target,
     size_t bytes_consumed) {
   // If the target object isn't alive anymore, we do nothing.
-  if (!lifetime_flag->is_alive_) return;
+  if (!lifetime_flag->is_alive) return;
 
   target->UpdateWindowInternal(bytes_consumed);
 }
@@ -297,11 +297,11 @@ ByteStreamReaderImpl::ByteStreamReaderImpl(
       unreported_consumed_bytes_(0),
       peer_(NULL) {
   DCHECK(my_lifetime_flag_.get());
-  my_lifetime_flag_->is_alive_ = true;
+  my_lifetime_flag_->is_alive = true;
 }
 
 ByteStreamReaderImpl::~ByteStreamReaderImpl() {
-  my_lifetime_flag_->is_alive_ = false;
+  my_lifetime_flag_->is_alive = false;
 }
 
 void ByteStreamReaderImpl::SetPeer(
@@ -356,7 +356,7 @@ void ByteStreamReaderImpl::TransferData(
     bool source_complete,
     content::DownloadInterruptReason status) {
   // If our target is no longer alive, do nothing.
-  if (!object_lifetime_flag->is_alive_) return;
+  if (!object_lifetime_flag->is_alive) return;
 
   target->TransferDataInternal(
       transfer_buffer.Pass(), buffer_size, source_complete, status);
