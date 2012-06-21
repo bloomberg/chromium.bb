@@ -1759,8 +1759,6 @@ class Dtrace(ApiBase):
       trace_child_process.py starts the executable to trace.
       """
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
-      logging.info('Running: %s' % cmd)
-      logging.debug('Our pid: %d' % os.getpid())
       with self._lock:
         if not self._initialized:
           raise TracingFailure(
@@ -1873,10 +1871,15 @@ class Dtrace(ApiBase):
   @classmethod
   def parse_log(cls, logname, blacklist):
     logging.info('parse_log(%s, %s)' % (logname, blacklist))
+
+    def blacklist_more(filepath):
+      # All the HFS metadata is in the form /.vol/...
+      return blacklist(filepath) or re.match(r'^\/\.vol\/.+$', filepath)
+
     data = read_json(logname)
     out = []
     for item in data['traces']:
-      context = cls.Context(blacklist, item['pid'], item['cwd'])
+      context = cls.Context(blacklist_more, item['pid'], item['cwd'])
       for line in open(logname + '.log', 'rb'):
         context.on_line(line)
       out.append(

@@ -6,6 +6,7 @@
 thread-local result storage.
 """
 
+import logging
 import Queue
 import sys
 import time
@@ -55,7 +56,8 @@ class WorkerThread(threading.Thread):
       try:
         func, args, kwargs = task
         self.outputs.append(func(*args, **kwargs))
-      except Exception:
+      except Exception, e:
+        logging.error('Caught exception! %s' % e)
         self.exceptions.append(sys.exc_info())
       finally:
         self._tasks.task_done()
