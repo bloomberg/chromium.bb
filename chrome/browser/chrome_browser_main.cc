@@ -1819,74 +1819,74 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
 
-    // Most general initialization is behind us, but opening a
-    // tab and/or session restore and such is still to be done.
-    base::TimeTicks browser_open_start = base::TimeTicks::Now();
+  // Most general initialization is behind us, but opening a
+  // tab and/or session restore and such is still to be done.
+  base::TimeTicks browser_open_start = base::TimeTicks::Now();
 
-    // We are in regular browser boot sequence. Open initial tabs and enter the
-    // main message loop.
-    int result_code;
+  // We are in regular browser boot sequence. Open initial tabs and enter the
+  // main message loop.
+  int result_code;
 #if defined(OS_CHROMEOS)
-    // On ChromeOS multiple profiles doesn't apply, and will break if we load
-    // them this early as the cryptohome hasn't yet been mounted (which happens
-    // only once we log in.
-    std::vector<Profile*> last_opened_profiles;
+  // On ChromeOS multiple profiles doesn't apply, and will break if we load
+  // them this early as the cryptohome hasn't yet been mounted (which happens
+  // only once we log in.
+  std::vector<Profile*> last_opened_profiles;
 #else
-    std::vector<Profile*> last_opened_profiles =
-        g_browser_process->profile_manager()->GetLastOpenedProfiles();
+  std::vector<Profile*> last_opened_profiles =
+      g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
-    if (browser_creator_->Start(parsed_command_line(), FilePath(),
-                                profile_, last_opened_profiles, &result_code)) {
+  if (browser_creator_->Start(parsed_command_line(), FilePath(),
+                              profile_, last_opened_profiles, &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-      // Initialize autoupdate timer. Timer callback costs basically nothing
-      // when browser is not in persistent mode, so it's OK to let it ride on
-      // the main thread. This needs to be done here because we don't want
-      // to start the timer when Chrome is run inside a test harness.
-      browser_process_->StartAutoupdateTimer();
+    // Initialize autoupdate timer. Timer callback costs basically nothing
+    // when browser is not in persistent mode, so it's OK to let it ride on
+    // the main thread. This needs to be done here because we don't want
+    // to start the timer when Chrome is run inside a test harness.
+    browser_process_->StartAutoupdateTimer();
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-      // On Linux, the running exe will be updated if an upgrade becomes
-      // available while the browser is running.  We need to save the last
-      // modified time of the exe, so we can compare to determine if there is
-      // an upgrade while the browser is kept alive by a persistent extension.
-      upgrade_util::SaveLastModifiedTimeOfExe();
+    // On Linux, the running exe will be updated if an upgrade becomes
+    // available while the browser is running.  We need to save the last
+    // modified time of the exe, so we can compare to determine if there is
+    // an upgrade while the browser is kept alive by a persistent extension.
+    upgrade_util::SaveLastModifiedTimeOfExe();
 #endif
 
-      // Record now as the last successful chrome start.
-      GoogleUpdateSettings::SetLastRunTime();
+    // Record now as the last successful chrome start.
+    GoogleUpdateSettings::SetLastRunTime();
 
 #if defined(OS_MACOSX)
-      // Call Recycle() here as late as possible, before going into the loop
-      // because Start() will add things to it while creating the main window.
-      if (parameters().autorelease_pool)
-        parameters().autorelease_pool->Recycle();
+    // Call Recycle() here as late as possible, before going into the loop
+    // because Start() will add things to it while creating the main window.
+    if (parameters().autorelease_pool)
+      parameters().autorelease_pool->Recycle();
 #endif
 
-      RecordPreReadExperimentTime("Startup.BrowserOpenTabs",
-                                  base::TimeTicks::Now() - browser_open_start);
+    RecordPreReadExperimentTime("Startup.BrowserOpenTabs",
+                                base::TimeTicks::Now() - browser_open_start);
 
-      // TODO(mad): Move this call in a proper place on CrOS.
-      // http://crosbug.com/17687
+    // TODO(mad): Move this call in a proper place on CrOS.
+    // http://crosbug.com/17687
 #if !defined(OS_CHROMEOS)
-      // If we're running tests (ui_task is non-null), then we don't want to
-      // call FetchLanguageListFromTranslateServer or
-      // StartFetchingVariationsSeed.
-      if (parameters().ui_task == NULL) {
-        // Request new variations seed information from server.
-        browser_process_->variations_service()->StartFetchingVariationsSeed();
+    // If we're running tests (ui_task is non-null), then we don't want to
+    // call FetchLanguageListFromTranslateServer or
+    // StartFetchingVariationsSeed.
+    if (parameters().ui_task == NULL) {
+      // Request new variations seed information from server.
+      browser_process_->variations_service()->StartFetchingVariationsSeed();
 
-        if (translate_manager_ != NULL) {
-          translate_manager_->FetchLanguageListFromTranslateServer(
-              profile_->GetPrefs());
-        }
+      if (translate_manager_ != NULL) {
+        translate_manager_->FetchLanguageListFromTranslateServer(
+            profile_->GetPrefs());
       }
+    }
 #endif
 
-      run_message_loop_ = true;
-    } else {
-      run_message_loop_ = false;
-    }
+    run_message_loop_ = true;
+  } else {
+    run_message_loop_ = false;
+  }
   browser_creator_.reset();
 
   PostBrowserStart();
