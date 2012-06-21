@@ -1380,18 +1380,18 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         description='LIB $out',
         command='$ar /nologo /ignore:4221 /OUT:$out @$out.rsp',
         rspfile='$out.rsp',
-        rspfile_content='$in $libflags')
+        rspfile_content='$in_newline $libflags')
     dlldesc = 'LINK(DLL) $dll'
     dllcmd = ('python gyp-win-tool link-wrapper '
               '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
               '/PDB:$dll.pdb @$dll.rsp')
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp',
-                      rspfile_content='$libs $in $ldflags',
+                      rspfile_content='$libs $in_newline $ldflags',
                       restat=True)
     master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp',
-                      rspfile_content='$libs $in $ldflags',
+                      rspfile_content='$libs $in_newline $ldflags',
                       restat=True)
     # Note that ldflags goes at the end so that it has the option of
     # overriding default settings earlier in the command line.
@@ -1401,7 +1401,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         command=('python gyp-win-tool link-wrapper '
                  '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp'),
         rspfile='$out.rsp',
-        rspfile_content='$in $libs $ldflags')
+        rspfile_content='$in_newline $libs $ldflags')
   else:
     master_ninja.rule(
       'objc',
