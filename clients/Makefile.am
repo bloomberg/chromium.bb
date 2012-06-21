@@ -51,6 +51,8 @@ clients_programs =				\
 	resizor					\
 	eventdemo				\
 	clickdot				\
+	editor					\
+	keyboard				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -97,6 +99,20 @@ eventdemo_LDADD = $(toolkit_libs)
 clickdot_SOURCES = clickdot.c
 clickdot_LDADD = $(toolkit_libs)
 
+editor_SOURCES = 				\
+	editor.c				\
+	text-protocol.c				\
+	text-client-protocol.h
+editor_LDADD = $(toolkit_libs)
+
+keyboard_SOURCES = 				\
+	keyboard.c				\
+	desktop-shell-client-protocol.h		\
+	desktop-shell-protocol.c		\
+	text-client-protocol.h			\
+	text-protocol.c
+keyboard_LDADD = $(toolkit_libs)
+
 weston_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
 	desktop-shell-client-protocol.h		\
@@ -114,6 +130,8 @@ BUILT_SOURCES =					\
 	screenshooter-protocol.c		\
 	text-cursor-position-client-protocol.h	\
 	text-cursor-position-protocol.c		\
+	text-protocol.c				\
+	text-client-protocol.h			\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	tablet-shell-client-protocol.h		\

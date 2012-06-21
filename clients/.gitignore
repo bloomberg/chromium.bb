@@ -24,3 +24,7 @@ weston-tablet-shell
 weston-screenshooter
 weston-terminal
 wscreensaver
+editor
+text-protocol.c
+text-client-protocol.h
+keyboard
