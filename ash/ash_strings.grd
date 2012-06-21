@@ -345,7 +345,11 @@ CAPS LOCK is on.
 Press Search key to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when an IME is enabled">
-        Your input method has changed.
+        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>.
+        Press Shift + Alt to switch.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when a third party IME is enabled">
+        Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>*(<ph name="BEGIN_LINK">&lt;a target="_blank" href="$2"&gt;</ph>3rd party<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>).
         Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISABLE_SPOKEN_FEEDBACK" desc="The label used in the tray popup to disable spoken feedback.">

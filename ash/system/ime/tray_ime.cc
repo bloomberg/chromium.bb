@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources_standard.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -170,9 +171,16 @@ class IMENotificationView : public TrayNotificationView {
   explicit IMENotificationView(TrayIME* tray)
       : TrayNotificationView(IDR_AURA_UBER_TRAY_IME),
         tray_(tray) {
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    IMEInfo current;
+    delegate->GetCurrentIME(&current);
+
+    // TODO(zork): Use IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE for
+    // third party IMEs
     InitView(new views::Label(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE)));
+        l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
+            current.short_name)));
   }
 
   void StartAutoCloseTimer(int seconds) {
@@ -229,8 +237,7 @@ TrayIME::~TrayIME() {
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
   if (tray_label_) {
     if (current.third_party) {
-      // TODO(zork): Update this decoration.
-      tray_label_->label()->SetText(current.short_name + UTF8ToUTF16("(3rd)"));
+      tray_label_->label()->SetText(current.short_name + UTF8ToUTF16("*"));
     } else {
       tray_label_->label()->SetText(current.short_name);
     }
