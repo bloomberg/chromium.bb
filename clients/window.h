@@ -153,7 +153,9 @@ enum cursor_type {
 	CURSOR_TOP,
 	CURSOR_IBEAM,
 	CURSOR_HAND1,
-	CURSOR_WATCH
+	CURSOR_WATCH,
+
+	CURSOR_BLANK
 };
 
 typedef void (*window_key_handler_t)(struct window *window, struct input *input,

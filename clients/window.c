@@ -2398,6 +2398,12 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 		input->cursor_frame_cb = NULL;
 	}
 
+	if (input->current_cursor == CURSOR_BLANK) {
+		wl_pointer_set_cursor(input->pointer, input->display->serial,
+				      NULL, 0, 0);
+		return;
+	}
+
 	if (input->current_cursor == CURSOR_UNSET)
 		return;
 	cursor = input->display->cursors[input->current_cursor];
