@@ -693,7 +693,10 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:inlineDispositionTitleField_];
   textFrame = [inlineDispositionTitleField_ frame];
 
-  if (model_->GetSuggestedExtensionCount()) {
+  // Add link for "choose another service" if other suggestions are available
+  // or if we have more than one (the current) service installed.
+  if (model_->GetInstalledServiceCount() > 1 ||
+    model_->GetSuggestedExtensionCount()) {
     NSRect frame = NSMakeRect(
         NSMaxX(textFrame) + kFramePadding, offset,
         kTitleLinkMaxWidth, 1);
