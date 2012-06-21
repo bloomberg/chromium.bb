@@ -105,4 +105,20 @@ TEST_F(GoogleServiceAuthErrorTest, TwoFactorChallenge) {
   ExpectDictIntegerValue(10, *two_factor_value, "fieldLength");
 }
 
+TEST_F(GoogleServiceAuthErrorTest, ClientOAuthError) {
+  // Test that a malformed/incomplete ClientOAuth response generates
+  // a connection problem error.
+  GoogleServiceAuthError error1(
+      GoogleServiceAuthError::FromClientOAuthError("{}"));
+  EXPECT_EQ(GoogleServiceAuthError::CONNECTION_FAILED, error1.state());
+
+  // Test that a well formed ClientOAuth response generates an invalid
+  // credentials error with the given error message.
+  GoogleServiceAuthError error2(
+      GoogleServiceAuthError::FromClientOAuthError(
+          "{\"cause\":\"foo\",\"explanation\":\"error_message\"}"));
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error2.state());
+  EXPECT_EQ("error_message", error2.error_message());
+}
+
 }  // namespace

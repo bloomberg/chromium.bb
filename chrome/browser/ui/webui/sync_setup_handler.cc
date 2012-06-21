@@ -508,6 +508,8 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   // CloseSyncSetup() will ensure they are logged out.
   configuring_sync_ = false;
 
+  string16 local_error_message(error_message);
+
   // Setup args for the GAIA login screen:
   //   error_message: custom error message to display.
   //   fatalError: fatal error message to display.
@@ -524,6 +526,9 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
     error = last_signin_error_.state();
     captcha = last_signin_error_.captcha().image_url.spec();
     editable_user = true;
+
+    if (local_error_message.empty())
+      local_error_message = UTF8ToUTF16(last_signin_error_.error_message());
   } else {
     // Fresh login attempt - lock in the authenticated username if there is
     // one (don't let the user change it).
@@ -545,8 +550,8 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
     args.SetBoolean("hideEmailAndPassword", IsClientOAuthEnabled());
 
   args.SetBoolean("editableUser", editable_user);
-  if (!error_message.empty())
-    args.SetString("errorMessage", error_message);
+  if (!local_error_message.empty())
+    args.SetString("errorMessage", local_error_message);
   if (fatal_error)
     args.SetBoolean("fatalError", true);
   args.SetString("captchaUrl", captcha);

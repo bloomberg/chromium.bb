@@ -710,7 +710,7 @@ cr.define('options', function() {
           $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();
         } else {
-          $('errormsg-1-password').hidden = false;
+          $('errormsg-1-password').hidden = (args.errorMessage != undefined);
         }
         this.setBlurbError_(args.errorMessage);
       } else if (3 == args.error) {

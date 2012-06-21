@@ -159,6 +159,10 @@ class GoogleServiceAuthError {
       const std::string& alternate_text,
       int field_length);
 
+  // Construct an INVALID_GAIA_CREDENTIALS error from a ClientOAuth response.
+  // |data| is the JSON response from the server explaning the error.
+  static GoogleServiceAuthError FromClientOAuthError(const std::string& data);
+
   // Provided for convenience for clients needing to reset an instance to NONE.
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
   // to explicit class and State enum relation. Note: shouldn't be inlined!
@@ -170,6 +174,7 @@ class GoogleServiceAuthError {
   const SecondFactor& second_factor() const;
   int network_error() const;
   const std::string& token() const;
+  const std::string& error_message() const;
 
   // Returns info about this object in a dictionary.  Caller takes
   // ownership of returned dictionary.
@@ -180,6 +185,8 @@ class GoogleServiceAuthError {
 
  private:
   GoogleServiceAuthError(State s, int error);
+
+  explicit GoogleServiceAuthError(const std::string& error_message);
 
   GoogleServiceAuthError(State s, const std::string& captcha_token,
                          const GURL& captcha_audio_url,
@@ -197,6 +204,7 @@ class GoogleServiceAuthError {
   Captcha captcha_;
   SecondFactor second_factor_;
   int network_error_;
+  std::string error_message_;
 };
 
 #endif  // CHROME_COMMON_NET_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_

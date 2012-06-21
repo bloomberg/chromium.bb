@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -74,6 +75,12 @@ GoogleServiceAuthError::GoogleServiceAuthError(State s)
   }
 }
 
+GoogleServiceAuthError::GoogleServiceAuthError(const std::string& error_message)
+    : state_(INVALID_GAIA_CREDENTIALS),
+      network_error_(0),
+      error_message_(error_message) {
+}
+
 // static
 GoogleServiceAuthError
     GoogleServiceAuthError::FromConnectionError(int error) {
@@ -111,6 +118,27 @@ GoogleServiceAuthError GoogleServiceAuthError::FromSecondFactorChallenge(
                                alternate_text, field_length);
 }
 
+// static
+GoogleServiceAuthError GoogleServiceAuthError::FromClientOAuthError(
+    const std::string& data) {
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
+    return GoogleServiceAuthError(CONNECTION_FAILED, 0);
+
+  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+
+  std::string cause;
+  if (!dict->GetStringWithoutPathExpansion("cause", &cause))
+    return GoogleServiceAuthError(CONNECTION_FAILED, 0);
+
+  // The explanation field is optional.
+  std::string explanation;
+  if (!dict->GetStringWithoutPathExpansion("explanation", &explanation))
+    explanation.clear();
+
+ return GoogleServiceAuthError(explanation);
+}
+
 GoogleServiceAuthError GoogleServiceAuthError::None() {
   return GoogleServiceAuthError(NONE);
 }
@@ -144,6 +172,10 @@ const std::string& GoogleServiceAuthError::token() const {
       NOTREACHED();
   }
   return EmptyString();
+}
+
+const std::string& GoogleServiceAuthError::error_message() const {
+  return error_message_;
 }
 
 DictionaryValue* GoogleServiceAuthError::ToValue() const {

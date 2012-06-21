@@ -512,22 +512,18 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
 
   std::string cause;
   if (!dict->GetStringWithoutPathExpansion("cause", &cause))
-    return GenerateAuthError(data, status);
+    return GoogleServiceAuthError::FromClientOAuthError(data);
 
-  if (cause == kBadAuthenticationError) {
-    return GoogleServiceAuthError(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  } else if (cause != kNeedsAdditional) {
-    return GenerateAuthError(data, status);
-  }
+  if (cause != kNeedsAdditional)
+    return GoogleServiceAuthError::FromClientOAuthError(data);
 
   DictionaryValue* challenge;
   if (!dict->GetDictionaryWithoutPathExpansion("challenge", &challenge))
-    return GenerateAuthError(data, status);
+    return GoogleServiceAuthError::FromClientOAuthError(data);
 
   std::string name;
   if (!challenge->GetStringWithoutPathExpansion("name", &name))
-    return GenerateAuthError(data, status);
+    return GoogleServiceAuthError::FromClientOAuthError(data);
 
   if (name == kCaptcha) {
     std::string token;
@@ -542,7 +538,7 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
                                                    &image_width) ||
         !challenge->GetIntegerWithoutPathExpansion("image_height",
                                                    &image_height)) {
-      return GenerateAuthError(data, status);
+      return GoogleServiceAuthError::FromClientOAuthError(data);
     }
     return GoogleServiceAuthError::FromCaptchaChallenge(token, GURL(audio_url),
                                                         GURL(image_url),
@@ -560,14 +556,14 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
     challenge->GetStringWithoutPathExpansion("alternate_text", &alternate_text);
     challenge->GetIntegerWithoutPathExpansion("field_length", &field_length);
     if (!challenge->GetStringWithoutPathExpansion("challenge_token", &token))
-      return GenerateAuthError(data, status);
+      return GoogleServiceAuthError::FromClientOAuthError(data);
 
     return GoogleServiceAuthError::FromSecondFactorChallenge(token, prompt_text,
                                                              alternate_text,
                                                              field_length);
   }
 
-  return GenerateAuthError(data, status);
+  return GoogleServiceAuthError::FromClientOAuthError(data);
 }
 
 void GaiaAuthFetcher::StartClientLogin(
