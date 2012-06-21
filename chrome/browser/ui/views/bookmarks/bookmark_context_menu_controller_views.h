@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 
+class Browser;
 class Profile;
 
 namespace content {
@@ -52,6 +53,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   // bookmark context menu.
   // |parent_widget| is the window that this menu should be added to.
   // |delegate| is described above.
+  // |browser| is used to open the bookmark manager and is NULL in tests.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
@@ -59,6 +61,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   static BookmarkContextMenuControllerViews* Create(
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
@@ -89,6 +92,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   // Creates the bookmark context menu.
   // |parent_widget| is the window that this menu should be added to.
   // |delegate| is described above.
+   // |browser| is used to open the bookmark manager and is NULL in tests.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
@@ -96,6 +100,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   BookmarkContextMenuControllerViews(
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
@@ -114,6 +119,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
 
   views::Widget* parent_widget_;
   BookmarkContextMenuControllerViewsDelegate* delegate_;
+  Browser* browser_;
   Profile* profile_;
   content::PageNavigator* navigator_;
   const BookmarkNode* parent_;

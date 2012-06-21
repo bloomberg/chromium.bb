@@ -18,24 +18,27 @@ using content::UserMetricsAction;
 BookmarkContextMenuControllerViews* BookmarkContextMenuControllerViews::Create(
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection) {
   return new BookmarkContextMenuControllerViewsWin(parent_widget, delegate,
-                                                   profile, navigator, parent,
-                                                   selection);
+                                                   browser, profile, navigator,
+                                                   parent, selection);
 }
 
 BookmarkContextMenuControllerViewsWin::BookmarkContextMenuControllerViewsWin(
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection)
-    : BookmarkContextMenuControllerViews(parent_widget, delegate, profile,
-                                         navigator, parent, selection) {
+    : BookmarkContextMenuControllerViews(parent_widget, delegate, browser,
+                                         profile, navigator, parent,
+                                         selection) {
 }
 
 BookmarkContextMenuControllerViewsWin

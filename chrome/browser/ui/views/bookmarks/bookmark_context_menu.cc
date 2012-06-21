@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -24,6 +23,7 @@ using content::PageNavigator;
 
 BookmarkContextMenu::BookmarkContextMenu(
     views::Widget* parent_widget,
+    Browser* browser,
     Profile* profile,
     PageNavigator* page_navigator,
     const BookmarkNode* parent,
@@ -31,7 +31,7 @@ BookmarkContextMenu::BookmarkContextMenu(
     bool close_on_remove)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           controller_(BookmarkContextMenuControllerViews::Create(parent_widget,
-              this, profile, page_navigator, parent, selection))),
+              this, browser, profile, page_navigator, parent, selection))),
       parent_widget_(parent_widget),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
       menu_runner_(new views::MenuRunner(menu_)),

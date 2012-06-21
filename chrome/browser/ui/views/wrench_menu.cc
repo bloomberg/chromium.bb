@@ -958,7 +958,7 @@ void WrenchMenu::CreateBookmarkMenu() {
   views::Widget* parent = views::Widget::GetWidgetForNativeWindow(
       browser_->window()->GetNativeWindow());
   bookmark_menu_delegate_.reset(
-      new BookmarkMenuDelegate(browser_->profile(),
+      new BookmarkMenuDelegate(browser_,
                                NULL,
                                parent,
                                first_bookmark_command_id_));

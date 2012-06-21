@@ -16,6 +16,7 @@ class BookmarkContextMenuControllerViewsWin
   BookmarkContextMenuControllerViewsWin(
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,

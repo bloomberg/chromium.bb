@@ -17,6 +17,7 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class BookmarkNode;
+class Browser;
 class Profile;
 
 namespace content {
@@ -50,7 +51,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
     HIDE_PERMANENT_FOLDERS
   };
 
-  BookmarkMenuDelegate(Profile* profile,
+  BookmarkMenuDelegate(Browser* browser,
                        content::PageNavigator* navigator,
                        views::Widget* parent,
                        int first_menu_id);
@@ -161,6 +162,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // Returns the menu whose id is |id|.
   views::MenuItemView* GetMenuByID(int id);
 
+  Browser* browser_;
   Profile* profile_;
 
   content::PageNavigator* page_navigator_;

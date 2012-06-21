@@ -30,13 +30,13 @@ using content::PageNavigator;
 using content::UserMetricsAction;
 using views::MenuItemView;
 
-BookmarkMenuController::BookmarkMenuController(Profile* profile,
+BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                PageNavigator* page_navigator,
                                                views::Widget* parent,
                                                const BookmarkNode* node,
                                                int start_child_index)
     : menu_delegate_(
-        new BookmarkMenuDelegate(profile, page_navigator, parent, 1)),
+        new BookmarkMenuDelegate(browser, page_navigator, parent, 1)),
       node_(node),
       observer_(NULL),
       for_drop_(false),

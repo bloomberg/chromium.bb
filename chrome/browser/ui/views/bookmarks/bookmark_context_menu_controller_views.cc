@@ -13,7 +13,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
@@ -28,13 +27,14 @@ using content::UserMetricsAction;
 BookmarkContextMenuControllerViews* BookmarkContextMenuControllerViews::Create(
       views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection) {
   return new BookmarkContextMenuControllerViews(parent_widget, delegate,
-                                                profile, navigator, parent,
-                                                selection);
+                                                browser, profile, navigator,
+                                                parent, selection);
 }
 #endif  // !defined(OS_WIN)
 
@@ -139,17 +139,14 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
     case IDC_BOOKMARK_MANAGER: {
       content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-      Browser* browser = browser::FindLastActiveWithProfile(profile_);
-      if (!browser) NOTREACHED();
-
       if (selection_.size() != 1)
-        browser->OpenBookmarkManager();
+        browser_->OpenBookmarkManager();
       else if (selection_[0]->is_folder())
-        browser->OpenBookmarkManagerForNode(selection_[0]->id());
+        browser_->OpenBookmarkManagerForNode(selection_[0]->id());
       else if (parent_)
-        browser->OpenBookmarkManagerForNode(parent_->id());
+        browser_->OpenBookmarkManagerForNode(parent_->id());
       else
-        browser->OpenBookmarkManager();
+        browser_->OpenBookmarkManager();
       break;
     }
 
@@ -292,12 +289,14 @@ void BookmarkContextMenuControllerViews::BuildMenu() {
 BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
     views::Widget* parent_widget,
     BookmarkContextMenuControllerViewsDelegate* delegate,
+    Browser* browser,
     Profile* profile,
     PageNavigator* navigator,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection)
     : parent_widget_(parent_widget),
       delegate_(delegate),
+      browser_(browser),
       profile_(profile),
       navigator_(navigator),
       parent_(parent),

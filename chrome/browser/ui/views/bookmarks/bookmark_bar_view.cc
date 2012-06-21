@@ -1015,7 +1015,7 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
-  bookmark_menu_ = new BookmarkMenuController(browser_->profile(),
+  bookmark_menu_ = new BookmarkMenuController(browser_,
       page_navigator_, GetWidget(), node, start_index);
   bookmark_menu_->set_observer(this);
   bookmark_menu_->RunMenuAt(this, false);
@@ -1086,7 +1086,7 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
   bool close_on_remove =
       (parent == profile->GetBookmarkModel()->other_node()) &&
       (parent->child_count() == 1);
-  context_menu_.reset(new BookmarkContextMenu(GetWidget(), profile,
+  context_menu_.reset(new BookmarkContextMenu(GetWidget(), browser_, profile,
       browser_->GetActiveWebContents(), parent, nodes, close_on_remove));
   context_menu_->RunMenuAt(point);
 }
@@ -1335,7 +1335,7 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     start_index = GetFirstHiddenNodeIndex();
 
   drop_info_->is_menu_showing = true;
-  bookmark_drop_menu_ = new BookmarkMenuController(browser_->profile(),
+  bookmark_drop_menu_ = new BookmarkMenuController(browser_,
       page_navigator_, GetWidget(), node, start_index);
   bookmark_drop_menu_->set_observer(this);
   bookmark_drop_menu_->RunMenuAt(this, true);

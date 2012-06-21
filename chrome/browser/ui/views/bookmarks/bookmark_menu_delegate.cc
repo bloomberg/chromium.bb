@@ -11,6 +11,7 @@
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
@@ -35,11 +36,12 @@ using views::MenuItemView;
 // both IE and FF restrict the max width of a menu.
 static const int kMaxMenuWidth = 400;
 
-BookmarkMenuDelegate::BookmarkMenuDelegate(Profile* profile,
+BookmarkMenuDelegate::BookmarkMenuDelegate(Browser* browser,
                                            PageNavigator* navigator,
                                            views::Widget* parent,
                                            int first_menu_id)
-    : profile_(profile),
+    : browser_(browser),
+      profile_(browser->profile()),
       page_navigator_(navigator),
       parent_(parent),
       menu_(NULL),
@@ -270,6 +272,7 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
   context_menu_.reset(
       new BookmarkContextMenu(
           parent_,
+          browser_,
           profile_,
           page_navigator_,
           nodes[0]->parent(),

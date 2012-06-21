@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
+class Browser;
+
 namespace views {
 class MenuRunner;
 class Widget;
@@ -32,8 +34,10 @@ class BookmarkContextMenuObserver {
 class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
                             public views::MenuDelegate {
  public:
+  // |browser| is used to open the bookmark manager, and is NULL in tests.
   BookmarkContextMenu(
       views::Widget* parent_widget,
+      Browser* browser,
       Profile* profile,
       content::PageNavigator* page_navigator,
       const BookmarkNode* parent,
