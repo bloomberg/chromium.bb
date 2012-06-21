@@ -19,12 +19,10 @@
 typedef bool (*LaunchNaClProcessFunc)(PP_Instance instance,
                                       const char* url,
                                       int socket_count,
-                                      nacl::Handle* result_sockets);
-
-typedef bool (*StartPpapiProxyFunc)(PP_Instance instance);
+                                      nacl::Handle* result_sockets,
+                                      void** ipc_channel_handle);
 
 
 extern LaunchNaClProcessFunc launch_nacl_process;
-extern StartPpapiProxyFunc start_ppapi_proxy;
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
