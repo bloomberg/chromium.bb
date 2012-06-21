@@ -431,11 +431,6 @@ class BrowserView : public BrowserWindow,
   // override to implement different layout policy.
   virtual views::LayoutManager* CreateLayoutManager() const;
 
-  // Factory Method.
-  // Returns a new ToolbarView for this browser view. A subclass may
-  // override to implement different layout policy.
-  virtual ToolbarView* CreateToolbar() const;
-
   // Browser window related initializations.
   virtual void Init();
 

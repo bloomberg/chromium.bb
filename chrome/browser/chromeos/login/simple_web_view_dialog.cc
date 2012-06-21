@@ -228,7 +228,7 @@ void SimpleWebViewDialog::Init() {
   layout->AddView(web_view_container_.release());
   layout->AddPaddingRow(0, kInnerMargin);
 
-  location_bar_->Init();
+  location_bar_->Init(NULL);
   UpdateReload(web_view_->web_contents()->IsLoading(), true);
 
   Layout();

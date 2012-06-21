@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/omnibox/inline_omnibox_popup_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
 #include "grit/chromium_strings.h"
@@ -78,11 +79,24 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, public:
 
-OmniboxPopupContentsView* OmniboxPopupContentsView::CreateForEnvironment(
+OmniboxPopupView* OmniboxPopupContentsView::Create(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
-    views::View* location_bar) {
+    views::View* location_bar,
+    views::View* popup_parent_view) {
+  // TODO(sky): add a flag to enable this.
+  /*
+  if (...) {
+    InlineOmniboxPopupView* inline_view =
+        new InlineOmniboxPopupView(font, omnibox_view, edit_model,
+                                   location_bar);
+    inline_view->Init();
+    popup_parent_view->AddChildView(inline_view);
+    return inline_view;
+  }
+  */
+
   OmniboxPopupContentsView* view = NULL;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     view = new TouchOmniboxPopupContentsView(

@@ -18,15 +18,17 @@ OmniboxView* CreateOmniboxView(AutocompleteEditController* controller,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               LocationBarView* location_bar) {
+                               LocationBarView* location_bar,
+                               views::View* popup_parent_view) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
     return new OmniboxViewWin(controller, toolbar_model, location_bar,
-                              command_updater, popup_window_mode, location_bar);
+                              command_updater, popup_window_mode, location_bar,
+                              popup_parent_view);
 #endif
   OmniboxViewViews* omnibox = new OmniboxViewViews(controller, toolbar_model,
       profile, command_updater, popup_window_mode, location_bar);
-  omnibox->Init();
+  omnibox->Init(popup_parent_view);
   return omnibox;
 }

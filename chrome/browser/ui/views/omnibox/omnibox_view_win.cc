@@ -438,11 +438,13 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
                                LocationBarView* parent_view,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               views::View* location_bar)
+                               views::View* location_bar,
+                               views::View* popup_parent_view)
     : model_(new AutocompleteEditModel(this, controller,
                                        parent_view->profile())),
-      popup_view_(OmniboxPopupContentsView::CreateForEnvironment(
-          parent_view->font(), this, model_.get(), location_bar)),
+      popup_view_(OmniboxPopupContentsView::Create(
+          parent_view->font(), this, model_.get(), location_bar,
+          popup_parent_view)),
       controller_(controller),
       parent_view_(parent_view),
       toolbar_model_(toolbar_model),

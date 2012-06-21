@@ -1815,10 +1815,6 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout;
 }
 
-ToolbarView* BrowserView::CreateToolbar() const {
-  return new ToolbarView(browser_.get());
-}
-
 void BrowserView::Init() {
   GetWidget()->AddObserver(this);
 
@@ -1849,14 +1845,14 @@ void BrowserView::Init() {
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
 
-  SetToolbar(CreateToolbar());
-
   infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
 
   contents_container_ = new views::WebView(browser_->profile());
   contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
   contents_ = new ContentsContainer(contents_container_);
+
+  SetToolbar(new ToolbarView(browser_.get()));
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeService::COLOR_TOOLBAR);
@@ -2409,7 +2405,7 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
   toolbar_ = toolbar;
   if (toolbar) {
     AddChildView(toolbar_);
-    toolbar_->Init();
+    toolbar_->Init(contents_->header());
   }
 }
 

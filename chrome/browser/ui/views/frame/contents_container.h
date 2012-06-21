@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,12 @@ class ContentsContainer : public views::View {
 
   explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
+
+  // View positioned above the contents. The returned view is owned by this.
+  // The header is sized to the preferred height of its single child (width
+  // fills the available width). If the child is not visible the header is
+  // sized to an empty rect.
+  views::View* header();
 
   // Makes the preview view the active view and nulls out the old active view.
   // It's assumed the caller will delete or remove the old active view
@@ -48,6 +54,9 @@ class ContentsContainer : public views::View {
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
+  class HeaderView;
+
+  HeaderView* header_;
   views::View* active_;
   views::View* preview_;
   content::WebContents* preview_web_contents_;

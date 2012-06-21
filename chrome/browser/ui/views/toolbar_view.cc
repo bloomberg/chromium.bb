@@ -160,7 +160,7 @@ ToolbarView::~ToolbarView() {
   // already gone.
 }
 
-void ToolbarView::Init() {
+void ToolbarView::Init(views::View* popup_parent_view) {
   back_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   forward_menu_model_.reset(new BackForwardMenuModel(
@@ -238,7 +238,7 @@ void ToolbarView::Init() {
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
 
-  location_bar_->Init();
+  location_bar_->Init(popup_parent_view);
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(), this);
   browser_actions_->Init();

@@ -193,7 +193,7 @@ LocationBarView::~LocationBarView() {
     template_url_service_->RemoveObserver(this);
 }
 
-void LocationBarView::Init() {
+void LocationBarView::Init(views::View* popup_parent_view) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (mode_ == POPUP) {
     font_ = rb.GetFont(ui::ResourceBundle::BaseFont);
@@ -222,7 +222,7 @@ void LocationBarView::Init() {
   // URL edit field.
   // View container for URL edit field.
   location_entry_.reset(CreateOmniboxView(this, model_, profile_,
-      command_updater_, mode_ == POPUP, this));
+      command_updater_, mode_ == POPUP, this, popup_parent_view));
   SetLocationEntryFocusable(true);
 
   location_entry_view_ = location_entry_->AddToView(this);

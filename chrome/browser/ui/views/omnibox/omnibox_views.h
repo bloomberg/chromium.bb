@@ -13,11 +13,16 @@ class OmniboxView;
 class Profile;
 class ToolbarModel;
 
+namespace views {
+class View;
+}
+
 OmniboxView* CreateOmniboxView(AutocompleteEditController* controller,
                                ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               LocationBarView* location_bar);
+                               LocationBarView* location_bar,
+                               views::View* popup_parent_view);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEWS_H_

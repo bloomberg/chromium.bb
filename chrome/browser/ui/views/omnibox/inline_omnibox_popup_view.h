@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_INLINE_OMNIBOX_POPUP_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_OMNIBOX_INLINE_OMNIBOX_POPUP_VIEW_H_
 #pragma once
 
 #include "base/memory/weak_ptr.h"
@@ -26,18 +26,19 @@ namespace views {
 class BubbleBorder;
 }
 
-// A view representing the contents of the autocomplete popup.
-class OmniboxPopupContentsView : public views::View,
-                                 public OmniboxResultViewModel,
-                                 public OmniboxPopupView,
-                                 public ui::AnimationDelegate {
+// A view representing the contents of the omnibox popup.
+class InlineOmniboxPopupView : public views::View,
+                               public OmniboxResultViewModel,
+                               public OmniboxPopupView,
+                               public ui::AnimationDelegate {
  public:
-  // Factory method for creating the AutocompletePopupView.
-  static OmniboxPopupView* Create(const gfx::Font& font,
-                                  OmniboxView* omnibox_view,
-                                  AutocompleteEditModel* edit_model,
-                                  views::View* location_bar,
-                                  views::View* popup_parent_view);
+  InlineOmniboxPopupView(const gfx::Font& font,
+                         OmniboxView* omnibox_view,
+                         AutocompleteEditModel* edit_model,
+                         views::View* location_bar);
+
+  // Call immediately after construction.
+  void Init();
 
   // Returns the bounds the popup should be shown at. This is the display bounds
   // and includes offsets for the dropshadow which this view's border renders.
@@ -45,7 +46,7 @@ class OmniboxPopupContentsView : public views::View,
 
   virtual void LayoutChildren();
 
-  // Overridden from OmniboxPopupView:
+  // Overridden from AutocompletePopupView:
   virtual bool IsOpen() const OVERRIDE;
   virtual void InvalidateLine(size_t line) OVERRIDE;
   virtual void UpdatePopupAppearance() OVERRIDE;
@@ -62,6 +63,7 @@ class OmniboxPopupContentsView : public views::View,
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
@@ -76,13 +78,7 @@ class OmniboxPopupContentsView : public views::View,
       const views::GestureEvent& event) OVERRIDE;
 
  protected:
-  OmniboxPopupContentsView(const gfx::Font& font,
-                           OmniboxView* omnibox_view,
-                           AutocompleteEditModel* edit_model,
-                           views::View* location_bar);
-  virtual ~OmniboxPopupContentsView();
-
-  virtual void PaintResultViews(gfx::Canvas* canvas);
+  virtual ~InlineOmniboxPopupView();
 
   // Calculates the height needed to show all the results in the model.
   virtual int CalculatePopupHeight();
@@ -92,21 +88,10 @@ class OmniboxPopupContentsView : public views::View,
       const gfx::Font& font,
       const gfx::Font& bold_font);
 
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  // This method should not be triggered directly as we paint our children
-  // in an un-conventional way inside OnPaint. We use a separate canvas to
-  // paint the children. Hence we override this method to a no-op so that
-  // the view hierarchy does not "accidentally" trigger this.
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-
   scoped_ptr<OmniboxPopupModel> model_;
 
  private:
   class AutocompletePopupWidget;
-
-  // Call immediately after construction.
-  void Init();
 
   // Returns true if the model has a match at the specified index.
   bool HasMatchAt(size_t index) const;
@@ -118,19 +103,13 @@ class OmniboxPopupContentsView : public views::View,
   // bounds the path.
   void MakeContentsPath(gfx::Path* path, const gfx::Rect& bounding_rect);
 
-  // Updates the window's blur region for the current size.
-  void UpdateBlurRegion();
-
-  // Makes the contents of the canvas slightly transparent.
-  void MakeCanvasTransparent(gfx::Canvas* canvas);
-
   // Called when the line at the specified index should be opened with the
   // provided disposition.
   void OpenIndex(size_t index, WindowOpenDisposition disposition);
 
   // Find the index of the match under the given |point|, specified in window
-  // coordinates. Returns OmniboxPopupModel::kNoMatch if there isn't a match at
-  // the specified point.
+  // coordinates. Returns AutocompletePopupModel::kNoMatch if there isn't a
+  // match at the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
   // Processes a located event (e.g. mouse/gesture) and sets the selection/hover
@@ -144,13 +123,8 @@ class OmniboxPopupContentsView : public views::View,
                         WindowOpenDisposition disposition);
 
   // Returns the target bounds given the specified content height.
+  // TODO(sky): convert to size.
   gfx::Rect CalculateTargetBounds(int h);
-
-  // The popup that contains this view.  We create this, but it deletes itself
-  // when its window is destroyed.  This is a WeakPtr because it's possible for
-  // the OS to destroy the window and thus delete this object before we're
-  // deleted, or without our knowledge.
-  base::WeakPtr<AutocompletePopupWidget> popup_;
 
   // The edit view that invokes us.
   OmniboxView* omnibox_view_;
@@ -159,9 +133,6 @@ class OmniboxPopupContentsView : public views::View,
 
   // An object that the popup positions itself against.
   views::View* location_bar_;
-
-  // Our border, which can compute our desired bounds.
-  const views::BubbleBorder* bubble_border_;
 
   // The font that we should use for result rows. This is based on the font used
   // by the edit that created us.
@@ -181,10 +152,11 @@ class OmniboxPopupContentsView : public views::View,
   // The popup sizes vertically using an animation when the popup is getting
   // shorter (not larger, that makes it look "slow").
   ui::SlideAnimation size_animation_;
+  // TODO(sky): convert to sizes.
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
+  DISALLOW_COPY_AND_ASSIGN(InlineOmniboxPopupView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_INLINE_OMNIBOX_POPUP_VIEW_H_

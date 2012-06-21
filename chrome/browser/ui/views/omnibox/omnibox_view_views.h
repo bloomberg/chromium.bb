@@ -61,7 +61,7 @@ class OmniboxViewViews
   virtual ~OmniboxViewViews();
 
   // Initialize, create the underlying views, etc;
-  void Init();
+  void Init(views::View* popup_parent_view);
 
   // Sets the colors of the text view according to the theme.
   void SetBaseColor();
