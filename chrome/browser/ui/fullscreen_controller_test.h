@@ -58,6 +58,7 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void AddTabAtIndexAndWait(int index, const GURL& url,
                             content::PageTransition transition);
   void GoBack();
+  void Reload();
   static const char kFullscreenMouseLockHTML[];
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerTest);

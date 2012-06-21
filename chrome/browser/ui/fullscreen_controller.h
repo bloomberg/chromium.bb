@@ -119,11 +119,7 @@ class FullscreenController : public base::RefCounted<FullscreenController>,
   // mode if necessary.
   void NotifyTabOfExitIfNecessary();
 
-  // Makes the browser exit fullscreen mode when a navigation occurs.
-  void EnterCancelFullscreenOnNavigateMode();
-
-  // Makes the browser no longer exit fullscreen mode when a navigation occurs.
-  void ExitCancelFullscreenOnNavigateMode();
+  void UpdateNotificationRegistrations();
 
   // Make the current tab exit fullscreen mode or mouse lock if it is in it.
   void ExitTabFullscreenOrMouseLockIfNecessary();
@@ -139,12 +135,16 @@ class FullscreenController : public base::RefCounted<FullscreenController>,
   // TODO(koz): Change |for_tab| to an enum.
   void ToggleFullscreenModeInternal(bool for_tab);
 
+  void SetFullscreenedTab(TabContents* tab);
+  void SetMouseLockTab(TabContents* tab);
+
   BrowserWindow* window_;
   Profile* profile_;
   Browser* browser_;
 
   // If there is currently a tab in fullscreen mode (entered via
   // webkitRequestFullScreen), this is its TabContents.
+  // Assign using SetFullscreenedTab().
   TabContents* fullscreened_tab_;
 
   // The URL of the extension which trigerred "browser fullscreen" mode.
@@ -160,15 +160,12 @@ class FullscreenController : public base::RefCounted<FullscreenController>,
   bool toggled_into_fullscreen_;
 
   // TabContents for current tab requesting or currently in mouse lock.
+  // Assign using SetMouseLockTab().
   TabContents* mouse_lock_tab_;
 
   MouseLockState mouse_lock_state_;
 
   content::NotificationRegistrar registrar_;
-
-  // If this is true then we are listening for navigation events and will
-  // cancel fullscreen when one occurs.
-  bool cancel_fullscreen_on_navigate_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };

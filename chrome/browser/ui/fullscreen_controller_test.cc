@@ -142,3 +142,12 @@ void FullscreenControllerTest::GoBack() {
 
   observer.Wait();
 }
+
+void FullscreenControllerTest::Reload() {
+  content::TestNavigationObserver observer(
+      content::NotificationService::AllSources(), NULL, 1);
+
+  browser()->Reload(CURRENT_TAB);
+
+  observer.Wait();
+}
