@@ -21,6 +21,10 @@ namespace {
 const int kTooltipMargin = 3;
 const int kTooltipAppearanceDelay = 200;  // msec
 
+// The maximum width of the tooltip bubble.  Borrowed the value from
+// ash/tooltip/tooltip_controller.cc
+const int kTooltipMaxWidth = 400;
+
 views::BubbleBorder::ArrowLocation GetArrowLocation(ShelfAlignment alignment) {
   switch (alignment) {
     case SHELF_ALIGNMENT_LEFT:
@@ -40,9 +44,10 @@ class LauncherTooltipManager::LauncherTooltipBubble
     : public views::BubbleDelegateView {
  public:
   LauncherTooltipBubble(views::View* anchor,
-                        const string16& text,
                         views::BubbleBorder::ArrowLocation arrow_location,
                         LauncherTooltipManager* host);
+
+  void SetText(const string16& text);
 
  private:
   // views::View overrides:
@@ -52,11 +57,11 @@ class LauncherTooltipManager::LauncherTooltipBubble
   virtual void WindowClosing() OVERRIDE;
 
   LauncherTooltipManager* host_;
+  views::Label* label_;
 };
 
 LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     views::View* anchor,
-    const string16& text,
     views::BubbleBorder::ArrowLocation arrow_location,
     LauncherTooltipManager* host)
     : views::BubbleDelegateView(anchor, arrow_location),
@@ -73,9 +78,17 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
         root_window, ash::internal::kShellWindowId_SettingBubbleContainer));
   }
-  views::Label* label = new views::Label(text);
-  label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-  AddChildView(label);
+  label_ = new views::Label;
+  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label_);
+}
+
+void LauncherTooltipManager::LauncherTooltipBubble::SetText(
+    const string16& text) {
+  label_->SetText(text);
+  label_->SetMultiLine(true);
+  label_->SizeToFit(kTooltipMaxWidth);
+  SizeToContents();
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::OnMouseExited(
@@ -191,8 +204,9 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
   anchor_ = anchor;
   text_ = text;
   view_ = new LauncherTooltipBubble(
-      anchor, text, GetArrowLocation(alignment_), this);
+      anchor, GetArrowLocation(alignment_), this);
   views::BubbleDelegateView::CreateBubble(view_);
+  view_->SetText(text_);
 }
 
 }  // namespace internal
