@@ -448,6 +448,7 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
  private:
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> gl_surface_;
+  unsigned next_texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebGraphicsContext3D);
 };

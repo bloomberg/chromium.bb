@@ -9,7 +9,9 @@
 
 namespace ui {
 
-TestWebGraphicsContext3D::TestWebGraphicsContext3D() {}
+TestWebGraphicsContext3D::TestWebGraphicsContext3D()
+    : next_texture_id_(1) {}
+
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {}
 
 void TestWebGraphicsContext3D::Initialize() {
@@ -216,7 +218,7 @@ WebKit::WebGLId TestWebGraphicsContext3D::createShader(
 }
 
 WebKit::WebGLId TestWebGraphicsContext3D::createTexture() {
-  return 1;
+  return next_texture_id_++;
 }
 
 WebKit::WebGLId TestWebGraphicsContext3D::createQueryEXT()
