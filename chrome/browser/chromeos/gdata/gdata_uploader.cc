@@ -31,9 +31,8 @@ const int kMaxFileOpenTries = 5;
 
 namespace gdata {
 
-GDataUploader::GDataUploader(GDataFileSystem* file_system,
-                             DocumentsServiceInterface* documents_service)
-  : file_system_(file_system),
+GDataUploader::GDataUploader(DocumentsServiceInterface* documents_service)
+  : file_system_(NULL),
     documents_service_(documents_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {

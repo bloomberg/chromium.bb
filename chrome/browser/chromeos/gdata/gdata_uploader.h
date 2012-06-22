@@ -27,21 +27,46 @@ class GDataFileSystem;
 class DocumentsServiceInterface;
 struct UploadFileInfo;
 
-class GDataUploader {
+class GDataUploaderInterface {
  public:
-  explicit GDataUploader(GDataFileSystem* file_system,
-                         DocumentsServiceInterface* documents_service);
-  virtual ~GDataUploader();
+  ~GDataUploaderInterface() {}
 
   // Uploads a file specified by |upload_file_info|. Transfers ownership.
   // Returns the upload_id.
-  int UploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
+  //
+  // WARNING: This is not mockable by gmock because it takes scoped_ptr<>.
+  // See "Announcing scoped_ptr<>::Pass(). The latest in pointer ownership
+  // technology!" thread on chromium-dev.
+  virtual int UploadFile(scoped_ptr<UploadFileInfo> upload_file_info) = 0;
 
   // Updates attributes of streaming upload.
-  void UpdateUpload(int upload_id, content::DownloadItem* download);
+  virtual void UpdateUpload(int upload_id,
+                            content::DownloadItem* download) = 0;
 
   // Returns the count of bytes confirmed as uploaded so far.
-  int64 GetUploadedBytes(int upload_id) const;
+  virtual int64 GetUploadedBytes(int upload_id) const = 0;
+};
+
+class GDataUploader : public GDataUploaderInterface {
+ public:
+  explicit GDataUploader(DocumentsServiceInterface* documents_service);
+  virtual ~GDataUploader();
+
+  // Sets the file system. This must be called before calling other member
+  // functions.
+  //
+  // TODO(satorux): The dependency to GDataFileSystem should be
+  // eliminated. http://crbug.com/133860
+  void set_file_system(GDataFileSystem* file_system) {
+    file_system_ = file_system;
+  }
+
+  // GDataUploaderInterface overrides.
+  virtual int UploadFile(
+      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE;
+  virtual void UpdateUpload(
+      int upload_id, content::DownloadItem* download) OVERRIDE;
+  virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE;
 
  private:
   // Lookup UploadFileInfo* in pending_uploads_.

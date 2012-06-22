@@ -60,8 +60,8 @@ class GDataSystemService : public ProfileKeyedService  {
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
   GDataCache* cache_;
   scoped_ptr<DocumentsServiceInterface> documents_service_;
-  scoped_ptr<GDataFileSystem> file_system_;
   scoped_ptr<GDataUploader> uploader_;
+  scoped_ptr<GDataFileSystem> file_system_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;

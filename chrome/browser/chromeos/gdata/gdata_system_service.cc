@@ -34,15 +34,20 @@ GDataSystemService::GDataSystemService(Profile* profile)
           BrowserThread::GetBlockingPool(),
           sequence_token_)),
       documents_service_(new DocumentsService),
+      uploader_(new GDataUploader(docs_service())),
       file_system_(new GDataFileSystem(profile,
                                        cache(),
                                        docs_service(),
+                                       uploader(),
                                        sequence_token_)),
-      uploader_(new GDataUploader(file_system(), docs_service())),
       download_observer_(new GDataDownloadObserver),
       sync_client_(new GDataSyncClient(profile, file_system(), cache())),
       webapps_registry_(new DriveWebAppsRegistry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(satorux): The dependency to GDataFileSystem should be
+  // eliminated. http://crbug.com/133860
+  uploader_->set_file_system(file_system());
 }
 
 GDataSystemService::~GDataSystemService() {
@@ -74,8 +79,8 @@ void GDataSystemService::Shutdown() {
   webapps_registry_.reset();
   sync_client_.reset();
   download_observer_.reset();
-  uploader_.reset();
   file_system_.reset();
+  uploader_.reset();
   documents_service_.reset();
 }
 

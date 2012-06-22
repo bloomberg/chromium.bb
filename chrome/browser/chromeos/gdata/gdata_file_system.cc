@@ -692,9 +692,11 @@ GDataFileSystem::GDataFileSystem(
     Profile* profile,
     GDataCache* cache,
     DocumentsServiceInterface* documents_service,
+    GDataUploaderInterface* uploader,
     const base::SequencedWorkerPool::SequenceToken& sequence_token)
     : profile_(profile),
       cache_(cache),
+      uploader_(uploader),
       documents_service_(documents_service),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
@@ -1127,14 +1129,6 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   DCHECK(error);
   DCHECK(upload_file_info);
 
-  GDataSystemService* service =
-      GDataSystemServiceFactory::GetForProfile(profile_);
-
-  if (*error == base::PLATFORM_FILE_OK) {
-    if (!service)
-      *error = base::PLATFORM_FILE_ERROR_FAILED;
-  }
-
   if (*error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
       callback.Run(*error);
@@ -1147,7 +1141,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
                  ui_weak_ptr_,
                  callback);
 
-  service->uploader()->UploadFile(scoped_ptr<UploadFileInfo>(upload_file_info));
+  uploader_->UploadFile(scoped_ptr<UploadFileInfo>(upload_file_info));
 }
 
 void GDataFileSystem::OnTransferCompleted(

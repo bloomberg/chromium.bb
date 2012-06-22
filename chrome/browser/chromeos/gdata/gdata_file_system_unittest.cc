@@ -159,6 +159,20 @@ class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
   MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
 };
 
+class MockGDataUploader : public GDataUploaderInterface {
+ public:
+  virtual ~MockGDataUploader() {}
+  // This function is not mockable by gmock.
+  virtual int UploadFile(
+      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
+    return -1;
+  }
+
+  MOCK_METHOD2(UpdateUpload, void(int upload_id,
+                                  content::DownloadItem* download));
+  MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));
+};
+
 class GDataFileSystemTest : public testing::Test {
  protected:
   GDataFileSystemTest()
@@ -166,6 +180,7 @@ class GDataFileSystemTest : public testing::Test {
         io_thread_(content::BrowserThread::IO),
         sequence_token_(
             content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
+        cache_(NULL),
         file_system_(NULL),
         mock_doc_service_(NULL),
         num_callback_invocations_(0),
@@ -199,10 +214,13 @@ class GDataFileSystemTest : public testing::Test {
         content::BrowserThread::GetBlockingPool(),
         sequence_token_);
 
+    mock_uploader_.reset(new StrictMock<MockGDataUploader>);
+
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
                                        cache_,
                                        mock_doc_service_,
+                                       mock_uploader_.get(),
                                        sequence_token_);
 
     mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
@@ -1269,6 +1287,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataCache* cache_;
+  scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;

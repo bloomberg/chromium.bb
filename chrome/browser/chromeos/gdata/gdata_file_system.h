@@ -362,6 +362,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       Profile* profile,
       GDataCache* cache,
       DocumentsServiceInterface* documents_service,
+      GDataUploaderInterface* uploader,
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
   virtual ~GDataFileSystem();
 
@@ -1134,6 +1135,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // The cache owned by GDataSystemService.
   GDataCache* cache_;
+
+  // The uploader owned by GDataSystemService.
+  GDataUploaderInterface* uploader_;
 
   // The document service owned by GDataSystemService.
   DocumentsServiceInterface* documents_service_;
