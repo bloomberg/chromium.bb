@@ -21,6 +21,7 @@
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
+#include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
@@ -86,6 +87,7 @@ void ExpectDataFromBookmarkFaviconEquals(BaseTransaction* trans,
 
 class SyncableGeneralTest : public testing::Test {
  public:
+  static const char kIndexTestName[];
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     db_path_ = temp_dir_.path().Append(
@@ -103,9 +105,12 @@ class SyncableGeneralTest : public testing::Test {
   FilePath db_path_;
 };
 
+const char SyncableGeneralTest::kIndexTestName[] = "IndexTest";
+
 TEST_F(SyncableGeneralTest, General) {
-  Directory dir(&encryptor_, &handler_, NULL);
-  ASSERT_EQ(OPENED, dir.OpenInMemoryForTest(
+  Directory dir(&encryptor_, &handler_, NULL,
+                new InMemoryDirectoryBackingStore("SimpleTest"));
+  ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
   int64 root_metahandle;
@@ -204,8 +209,9 @@ TEST_F(SyncableGeneralTest, General) {
 }
 
 TEST_F(SyncableGeneralTest, ChildrenOps) {
-  Directory dir(&encryptor_, &handler_, NULL);
-  ASSERT_EQ(OPENED, dir.OpenInMemoryForTest(
+  Directory dir(&encryptor_, &handler_, NULL,
+                new InMemoryDirectoryBackingStore("SimpleTest"));
+  ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
   int64 written_metahandle;
@@ -277,8 +283,9 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 
   // Test creating a new meta entry.
   {
-    Directory dir(&encryptor_, &handler_, NULL);
-    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
+    Directory dir(&encryptor_, &handler_, NULL,
+        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    ASSERT_EQ(OPENED, dir.Open(kIndexTestName, &delegate_,
                                NullTransactionObserver()));
     {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
@@ -294,8 +301,9 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 
   // The DB was closed. Now reopen it. This will cause index regeneration.
   {
-    Directory dir(&encryptor_, &handler_, NULL);
-    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest",
+    Directory dir(&encryptor_, &handler_, NULL,
+        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    ASSERT_EQ(OPENED, dir.Open(kIndexTestName,
                                &delegate_, NullTransactionObserver()));
 
     ReadTransaction trans(FROM_HERE, &dir);
@@ -315,8 +323,9 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 
   // Test creating a deleted, unsynced, server meta entry.
   {
-    Directory dir(&encryptor_, &handler_, NULL);
-    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
+    Directory dir(&encryptor_, &handler_, NULL,
+        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    ASSERT_EQ(OPENED, dir.Open(kIndexTestName, &delegate_,
                                 NullTransactionObserver()));
     {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
@@ -334,8 +343,9 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   // The DB was closed. Now reopen it. This will cause index regeneration.
   // Should still be present and valid in the client tag index.
   {
-    Directory dir(&encryptor_, &handler_, NULL);
-    ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
+    Directory dir(&encryptor_, &handler_, NULL,
+        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    ASSERT_EQ(OPENED, dir.Open(kIndexTestName, &delegate_,
                                NullTransactionObserver()));
 
     ReadTransaction trans(FROM_HERE, &dir);
@@ -349,8 +359,9 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 }
 
 TEST_F(SyncableGeneralTest, ToValue) {
-  Directory dir(&encryptor_, &handler_, NULL);
-  ASSERT_EQ(OPENED, dir.OpenInMemoryForTest(
+  Directory dir(&encryptor_, &handler_, NULL,
+                new InMemoryDirectoryBackingStore("SimpleTest"));
+  ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
   const Id id = TestIdFactory::FromNumber(99);
@@ -386,8 +397,6 @@ TEST_F(SyncableGeneralTest, ToValue) {
 // A Directory whose backing store always fails SaveChanges by returning false.
 class TestUnsaveableDirectory : public Directory {
  public:
-  TestUnsaveableDirectory() : Directory(&encryptor_, &handler_, NULL) {}
-
   class UnsaveableBackingStore : public OnDiskDirectoryBackingStore {
    public:
      UnsaveableBackingStore(const std::string& dir_name,
@@ -398,19 +407,10 @@ class TestUnsaveableDirectory : public Directory {
      }
   };
 
-  DirOpenResult OpenUnsaveable(
-      const FilePath& file_path, const std::string& name,
-      DirectoryChangeDelegate* delegate,
-      const csync::WeakHandle<TransactionObserver>&
-          transaction_observer) {
-    DirectoryBackingStore *store = new UnsaveableBackingStore(name, file_path);
-    DirOpenResult result =
-        OpenImpl(store, name, delegate, transaction_observer);
-    if (OPENED != result)
-      Close();
-    return result;
-  }
-
+  TestUnsaveableDirectory(const std::string& dir_name,
+                          const FilePath& backing_filepath)
+      : Directory(&encryptor_, &handler_, NULL,
+                  new UnsaveableBackingStore(dir_name, backing_filepath)) {}
  private:
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
@@ -424,10 +424,11 @@ class SyncableDirectoryTest : public testing::Test {
   static const char kName[];
 
   virtual void SetUp() {
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL,
+                             new InMemoryDirectoryBackingStore(kName)));
     ASSERT_TRUE(dir_.get());
-    ASSERT_EQ(OPENED, dir_->OpenInMemoryForTest(kName, &delegate_,
-                                                NullTransactionObserver()));
+    ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_,
+                                 NullTransactionObserver()));
     ASSERT_TRUE(dir_->good());
   }
 
@@ -1337,10 +1338,11 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     file_path_ = temp_dir_.path().Append(
         FILE_PATH_LITERAL("Test.sqlite3"));
     file_util::Delete(file_path_, true);
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL,
+        new OnDiskDirectoryBackingStore(kName, file_path_)));
     ASSERT_TRUE(dir_.get());
-    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                                 &delegate_, NullTransactionObserver()));
+    ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_,
+                                 NullTransactionObserver()));
     ASSERT_TRUE(dir_->good());
   }
 
@@ -1352,10 +1354,11 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
   }
 
   void ReloadDir() {
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL,
+        new OnDiskDirectoryBackingStore(kName, file_path_)));
     ASSERT_TRUE(dir_.get());
-    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                                 &delegate_, NullTransactionObserver()));
+    ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_,
+                                 NullTransactionObserver()));
   }
 
   void SaveAndReloadDir() {
@@ -1368,10 +1371,10 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
 
     // We first assign the object to a pointer of type TestUnsaveableDirectory
     // because the OpenUnsaveable function is not available in the parent class.
-    scoped_ptr<TestUnsaveableDirectory> dir(new TestUnsaveableDirectory());
+    scoped_ptr<TestUnsaveableDirectory> dir(new TestUnsaveableDirectory(
+        kName, file_path_));
     ASSERT_TRUE(dir.get());
-    ASSERT_EQ(OPENED, dir->OpenUnsaveable(
-            file_path_, kName, &delegate_, NullTransactionObserver()));
+    ASSERT_EQ(OPENED, dir->Open(kName, &delegate_, NullTransactionObserver()));
 
     // Finally, move the unsaveable directory to the dir_ variable.
     dir_ = dir.Pass();
@@ -1509,10 +1512,10 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
 
   dir_->SaveChanges();
-  dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+  dir_.reset(new Directory(&encryptor_, &handler_, NULL,
+      new OnDiskDirectoryBackingStore(kName, file_path_)));
   ASSERT_TRUE(dir_.get());
-  ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                               &delegate_, NullTransactionObserver()));
+  ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
 
   {
@@ -1714,17 +1717,14 @@ DirOpenResult SyncableDirectoryTest::SimulateSaveAndReloadDir() {
     return FAILED_IN_UNITTEST;
 
   // Do some tricky things to preserve the backing store.
-  DirectoryBackingStore* saved_store = dir_->store_;
-  dir_->store_ = NULL;
+  DirectoryBackingStore* saved_store = dir_->store_.release();
 
   // Close the current directory.
   dir_->Close();
   dir_.reset();
 
-  dir_.reset(new Directory(&encryptor_, &handler_, NULL));
-  if (!dir_.get())
-    return FAILED_IN_UNITTEST;
-  DirOpenResult result = dir_->OpenImpl(saved_store, kName, &delegate_,
+  dir_.reset(new Directory(&encryptor_, &handler_, NULL, saved_store));
+  DirOpenResult result = dir_->OpenImpl(kName, &delegate_,
                                         NullTransactionObserver());
 
   // If something went wrong, we need to clear this member.  If we don't,
@@ -1757,9 +1757,10 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   FilePath path = temp_dir_.path().Append(
       Directory::kSyncDatabaseFilename);
 
-  syncable::Directory dir(&encryptor_, &handler_, NULL);
+  syncable::Directory dir(&encryptor_, &handler_, NULL,
+      new OnDiskDirectoryBackingStore("ScopeTest", path));
   DirOpenResult result =
-      dir.Open(path, "ScopeTest", &delegate_, NullTransactionObserver());
+      dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
   ASSERT_EQ(result, OPENED);
   dir.Close();
 
@@ -1817,11 +1818,10 @@ TEST(SyncableDirectory, StressTransactions) {
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
   NullDirectoryChangeDelegate delegate;
-  Directory dir(&encryptor, &handler, NULL);
-  FilePath path = temp_dir.path().Append(Directory::kSyncDatabaseFilename);
-  file_util::Delete(path, true);
   std::string dirname = "stress";
-  dir.Open(path, dirname, &delegate, NullTransactionObserver());
+  Directory dir(&encryptor, &handler, NULL,
+                new InMemoryDirectoryBackingStore(dirname));
+  dir.Open(dirname, &delegate, NullTransactionObserver());
 
   const int kThreadCount = 7;
   base::PlatformThreadHandle threads[kThreadCount];
@@ -1838,7 +1838,6 @@ TEST(SyncableDirectory, StressTransactions) {
   }
 
   dir.Close();
-  file_util::Delete(path, true);
 }
 
 class SyncableClientTagTest : public SyncableDirectoryTest {

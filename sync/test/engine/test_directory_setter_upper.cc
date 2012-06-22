@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/string_util.h"
 #include "sync/syncable/directory.h"
+#include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/test/null_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,9 +24,10 @@ TestDirectorySetterUpper::TestDirectorySetterUpper() : name_("Test") {}
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::SetUp() {
-  directory_.reset(new syncable::Directory(&encryptor_, &handler_, NULL));
+  directory_.reset(new syncable::Directory(&encryptor_, &handler_, NULL,
+      new syncable::InMemoryDirectoryBackingStore(name_)));
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  ASSERT_EQ(syncable::OPENED, directory_->OpenInMemoryForTest(
+  ASSERT_EQ(syncable::OPENED, directory_->Open(
           name_, &delegate_, NullTransactionObserver()));
 }
 

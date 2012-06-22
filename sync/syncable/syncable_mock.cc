@@ -5,10 +5,13 @@
 #include "sync/syncable/syncable_mock.h"
 
 #include "base/location.h"
+#include "sync/syncable/in_memory_directory_backing_store.h"
+
 #include "sync/test/null_transaction_observer.h"
 
 MockDirectory::MockDirectory(csync::UnrecoverableErrorHandler* handler)
-    : Directory(&encryptor_, handler, NULL) {
+    : Directory(&encryptor_, handler, NULL,
+                new syncable::InMemoryDirectoryBackingStore("store")) {
   InitKernelForTest("myk", &delegate_, syncable::NullTransactionObserver());
 }
 

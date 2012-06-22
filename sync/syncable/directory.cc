@@ -180,10 +180,11 @@ Directory::Kernel::~Kernel() {
 Directory::Directory(
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
+    DirectoryBackingStore* store)
     : cryptographer_(encryptor),
       kernel_(NULL),
-      store_(NULL),
+      store_(store),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(
           report_unrecoverable_error_function),
@@ -195,33 +196,15 @@ Directory::~Directory() {
 }
 
 DirOpenResult Directory::Open(
-    const FilePath& file_path, const string& name,
+    const string& name,
     DirectoryChangeDelegate* delegate,
     const csync::WeakHandle<TransactionObserver>&
         transaction_observer) {
   TRACE_EVENT0("sync", "SyncDatabaseOpen");
 
-  FilePath db_path(file_path);
-  file_util::AbsolutePath(&db_path);
-  DirectoryBackingStore* store = new OnDiskDirectoryBackingStore(name, db_path);
-
   const DirOpenResult result =
-      OpenImpl(store, name, delegate, transaction_observer);
+      OpenImpl(name, delegate, transaction_observer);
 
-  if (OPENED != result)
-    Close();
-  return result;
-}
-
-DirOpenResult Directory::OpenInMemoryForTest(
-    const string& name, DirectoryChangeDelegate* delegate,
-    const csync::WeakHandle<TransactionObserver>&
-        transaction_observer) {
-
-  DirectoryBackingStore* store = new InMemoryDirectoryBackingStore(name);
-
-  const DirOpenResult result =
-      OpenImpl(store, name, delegate, transaction_observer);
   if (OPENED != result)
     Close();
   return result;
@@ -247,13 +230,10 @@ void Directory::InitializeIndices() {
 }
 
 DirOpenResult Directory::OpenImpl(
-    DirectoryBackingStore* store,
     const string& name,
     DirectoryChangeDelegate* delegate,
     const csync::WeakHandle<TransactionObserver>&
         transaction_observer) {
-  DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
-  store_ = store;
 
   KernelLoadInfo info;
   // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
@@ -273,9 +253,7 @@ DirOpenResult Directory::OpenImpl(
 }
 
 void Directory::Close() {
-  if (store_)
-    delete store_;
-  store_ = NULL;
+  store_.reset();
   if (kernel_) {
     delete kernel_;
     kernel_ = NULL;
@@ -547,7 +525,6 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
 
 bool Directory::SaveChanges() {
   bool success = false;
-  DCHECK(store_);
 
   base::AutoLock scoped_lock(kernel_->save_changes_mutex);
 

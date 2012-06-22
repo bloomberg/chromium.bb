@@ -200,29 +200,23 @@ class Directory {
 
   // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
+  // Takes ownership of |store|.
   Directory(
       csync::Encryptor* encryptor,
       csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
       csync::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function);
+          report_unrecoverable_error_function,
+      DirectoryBackingStore* store);
   virtual ~Directory();
 
   // Does not take ownership of |delegate|, which must not be NULL.
   // Starts sending events to |delegate| if the returned result is
   // OPENED.  Note that events to |delegate| may be sent from *any*
   // thread.  |transaction_observer| must be initialized.
-  DirOpenResult Open(const FilePath& file_path, const std::string& name,
+  DirOpenResult Open(const std::string& name,
                      DirectoryChangeDelegate* delegate,
                      const csync::WeakHandle<TransactionObserver>&
                          transaction_observer);
-
-  // Same as above, but does not create a file to persist the database.  This is
-  // useful for tests where we were not planning to persist this data and don't
-  // want to pay the performance penalty of using a real database.
-  DirOpenResult OpenInMemoryForTest(
-      const std::string& name, DirectoryChangeDelegate* delegate,
-      const csync::WeakHandle<TransactionObserver>&
-          transaction_observer);
 
   // Stops sending events to the delegate and the transaction
   // observer.
@@ -233,7 +227,7 @@ class Directory {
   // by the server only.
   Id NextId();
 
-  bool good() const { return NULL != store_; }
+  bool good() const { return NULL != kernel_; }
 
   // The download progress is an opaque token provided by the sync server
   // to indicate the continuation state of the next GetUpdates operation.
@@ -313,7 +307,7 @@ class Directory {
                             UnlinkReason unlink_reason);
 
   DirOpenResult OpenImpl(
-      DirectoryBackingStore* store, const std::string& name,
+      const std::string& name,
       DirectoryChangeDelegate* delegate,
       const csync::WeakHandle<TransactionObserver>&
           transaction_observer);
@@ -603,7 +597,7 @@ class Directory {
 
   Kernel* kernel_;
 
-  DirectoryBackingStore* store_;
+  scoped_ptr<DirectoryBackingStore> store_;
 
   csync::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
   const csync::ReportUnrecoverableErrorFunction

@@ -55,6 +55,8 @@
 #include "sync/syncable/directory.h"
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/syncable/entry.h"
+#include "sync/syncable/in_memory_directory_backing_store.h"
+#include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/get_session_name.h"
 #include "sync/util/time.h"
@@ -895,10 +897,26 @@ bool SyncManager::SyncInternal::Init(
   encryptor_ = encryptor;
   unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
+
+  syncable::DirectoryBackingStore* backing_store = NULL;
+  if (testing_mode_ == TEST_IN_MEMORY) {
+    // TODO(tim): 117836. Use a factory or delegate to create this and don't
+    // depend on TEST_IN_MEMORY here.
+    backing_store =
+        new syncable::InMemoryDirectoryBackingStore(credentials.email);
+  } else {
+    FilePath absolute_db_path(database_path_);
+    file_util::AbsolutePath(&absolute_db_path);
+    backing_store = new syncable::OnDiskDirectoryBackingStore(
+        credentials.email, absolute_db_path);
+  }
+
+  DCHECK(backing_store);
   share_.directory.reset(
       new syncable::Directory(encryptor_,
                               unrecoverable_error_handler_,
-                              report_unrecoverable_error_function_));
+                              report_unrecoverable_error_function_,
+                              backing_store));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, post_factory));
@@ -1124,13 +1142,8 @@ bool SyncManager::SyncInternal::OpenDirectory() {
       csync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
-  if (testing_mode_ == TEST_IN_MEMORY) {
-    open_result = directory()->OpenInMemoryForTest(
-        username_for_share(), this, transaction_observer);
-  } else {
-    open_result = directory()->Open(
-        database_path_, username_for_share(), this, transaction_observer);
-  }
+  open_result = directory()->Open(username_for_share(), this,
+                                  transaction_observer);
   if (open_result != syncable::OPENED) {
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
@@ -1180,9 +1193,8 @@ void SyncManager::SyncInternal::UpdateCredentials(
   if (connection_manager()->set_auth_token(credentials.sync_token)) {
     sync_notifier_->UpdateCredentials(
         credentials.email, credentials.sync_token);
-    if (testing_mode_ == NON_TEST && initialized_) {
-      if (scheduler())
-        scheduler()->OnCredentialsUpdated();
+    if (initialized_ && scheduler()) {
+      scheduler()->OnCredentialsUpdated();
     }
   }
 }
