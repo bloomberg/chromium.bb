@@ -34,6 +34,7 @@
   ],
   'sources': [
     '<(src_dir)/chrome/test/base/chrome_test_launcher.cc',
+    '<(src_dir)/content/app/startup_helper_win.cc',
     '<(src_dir)/content/test/gpu/test_switches.cc',
     '<(src_dir)/content/test/gpu/test_switches.h',
   ],

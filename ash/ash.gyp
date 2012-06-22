@@ -526,6 +526,7 @@
         'shell/window_watcher.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '../content/app/startup_helper_win.cc',
         '../ui/views/test/test_views_delegate.cc',
       ],
       'conditions': [

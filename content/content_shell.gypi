@@ -250,6 +250,7 @@
         '..',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'shell/shell_main.cc',
       ],
       'mac_bundle_resources': [

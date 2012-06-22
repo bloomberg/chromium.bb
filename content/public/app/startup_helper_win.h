@@ -6,8 +6,6 @@
 #define CONTENT_PUBLIC_APP_STARTUP_HELPER_WIN_H_
 #pragma once
 
-#include "content/common/content_export.h"
-
 class CommandLine;
 
 namespace sandbox {
@@ -16,13 +14,15 @@ struct SandboxInterfaceInfo;
 
 // This file contains functions that any embedder that's not using ContentMain
 // will want to call at startup.
+// NOTE: we never want to CONTENT_EXPORT these functions, they must run in the
+// same module that calls them.
 namespace content {
 
 // Initializes the sandbox code and turns on DEP. Note: This function
 // must be *statically* linked into the executable (along with the static
 // sandbox library); it will not work correctly if it is exported from a
 // DLL and linked in.
-CONTENT_EXPORT void InitializeSandboxInfo(
+void InitializeSandboxInfo(
     sandbox::SandboxInterfaceInfo* sandbox_info);
 
 // Register the invalid param handler and pure call handler to be able to

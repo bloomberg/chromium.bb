@@ -220,6 +220,7 @@
         '..',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
@@ -522,6 +523,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'public/test/test_launcher.h',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
