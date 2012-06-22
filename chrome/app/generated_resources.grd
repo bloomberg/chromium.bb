@@ -15496,9 +15496,6 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         New Incognito window
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_PIN_TO_START_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (Pin to start screen).">
-        Pin to Start Screen
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         New tab
       </message>
