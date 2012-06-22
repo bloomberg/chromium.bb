@@ -444,13 +444,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableShortcutsProvider)
   },
   {
-    "downloads-new-ui",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DOWNLOADS_NEW_UI_NAME,
-    IDS_FLAGS_DOWNLOADS_NEW_UI_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDownloadsNewUI)
-  },
-  {
+    // See http://crbug.com/120416 for how to remove this flag.
     "save-page-as-mhtml",  // FLAGS:RECORD_UMA
     IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,
     IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION,

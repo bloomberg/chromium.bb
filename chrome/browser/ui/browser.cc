@@ -281,11 +281,6 @@ bool AllowPanels(const std::string& app_name) {
       web_app::GetExtensionIdFromApplicationName(app_name));
 }
 
-bool DisplayOldDownloadsUI() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDownloadsNewUI);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3147,24 +3142,22 @@ void Browser::OnStartDownload(WebContents* source,
   if (!window())
     return;
 
-  if (DisplayOldDownloadsUI()) {
-    // GetDownloadShelf creates the download shelf if it was not yet created.
-    DownloadShelf* shelf = window()->GetDownloadShelf();
-    shelf->AddDownload(new DownloadItemModel(download));
-    // Don't show the animation for "Save file" downloads.
-    // For non-theme extensions, we don't show the download animation.
-    // Show animation in same window as the download shelf. Download shelf
-    // may not be in the same window that initiated the download, e.g.
-    // Panels.
-    // Don't show the animation if the selected tab is not visible (i.e. the
-    // window is minimized, we're in a unit test, etc.).
-    WebContents* shelf_tab = shelf->browser()->GetActiveWebContents();
-    if ((download->GetTotalBytes() > 0) &&
-        !download_crx_util::IsExtensionDownload(*download) &&
-        platform_util::IsVisible(shelf_tab->GetNativeView()) &&
-        ui::Animation::ShouldRenderRichAnimation()) {
-      DownloadStartedAnimation::Show(shelf_tab);
-    }
+  // GetDownloadShelf creates the download shelf if it was not yet created.
+  DownloadShelf* shelf = window()->GetDownloadShelf();
+  shelf->AddDownload(new DownloadItemModel(download));
+  // Don't show the animation for "Save file" downloads.
+  // For non-theme extensions, we don't show the download animation.
+  // Show animation in same window as the download shelf. Download shelf
+  // may not be in the same window that initiated the download, e.g.
+  // Panels.
+  // Don't show the animation if the selected tab is not visible (i.e. the
+  // window is minimized, we're in a unit test, etc.).
+  WebContents* shelf_tab = shelf->browser()->GetActiveWebContents();
+  if ((download->GetTotalBytes() > 0) &&
+      !download_crx_util::IsExtensionDownload(*download) &&
+      platform_util::IsVisible(shelf_tab->GetNativeView()) &&
+      ui::Animation::ShouldRenderRichAnimation()) {
+    DownloadStartedAnimation::Show(shelf_tab);
   }
 
   // If the download occurs in a new tab, close it.

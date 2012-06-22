@@ -450,9 +450,6 @@ const char kDnsLogDetails[]                 = "dns-log-details";
 // Disables prefetching of DNS information.
 const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
-// Replaces the download shelf with a new experimental UI.
-const char kDownloadsNewUI[]                = "downloads-new-ui";
-
 // Dump any accumualted histograms to the log when browser terminates (requires
 // logging to be enabled to really do anything). Used by developers and test
 // scripts.
@@ -1098,8 +1095,7 @@ const char kRestoreLastSession[]            = "restore-last-session";
 
 // Disable saving pages as HTML-only, disable saving pages as HTML Complete
 // (with a directory of sub-resources). Enable only saving pages as MHTML.
-// TODO(benjhayden): Remove this switch/flag when SavePackageFilePicker and all
-// platform-specific file pickers support switching save-as filetypes.
+// See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[] = "save-page-as-mhtml";
 
 // URL prefix used by safebrowsing to fetch hash, download data and report
