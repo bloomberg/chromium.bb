@@ -715,19 +715,16 @@ weston_watch_process(struct weston_process *process);
 int
 weston_xserver_init(struct weston_compositor *compositor);
 
-struct weston_zoom;
-typedef	void (*weston_zoom_done_func_t)(struct weston_zoom *zoom, void *data);
+struct weston_surface_animation;
+typedef	void (*weston_surface_animation_done_func_t)(struct weston_surface_animation *animation, void *data);
 
-struct weston_zoom *
+struct weston_surface_animation *
 weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
-		weston_zoom_done_func_t done, void *data);
+		weston_surface_animation_done_func_t done, void *data);
 
-struct weston_fade;
-typedef	void (*weston_fade_done_func_t)(struct weston_fade *fade, void *data);
-
-struct weston_fade *
+struct weston_surface_animation *
 weston_fade_run(struct weston_surface *surface,
-		weston_fade_done_func_t done, void *data);
+		weston_surface_animation_done_func_t done, void *data);
 
 
 void

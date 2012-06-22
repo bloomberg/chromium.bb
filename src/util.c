@@ -85,116 +85,153 @@ weston_spring_done(struct weston_spring *spring)
 		fabs(spring->current - spring->target) < 0.0002;
 }
 
-struct weston_zoom {
+typedef	void (*weston_surface_animation_frame_func_t)(struct weston_surface_animation *animation);
+
+struct weston_surface_animation {
 	struct weston_surface *surface;
 	struct weston_animation animation;
 	struct weston_spring spring;
 	struct weston_transform transform;
 	struct wl_listener listener;
 	GLfloat start, stop;
-	void (*done)(struct weston_zoom *zoom, void *data);
-	void *data;
-};
-
-struct weston_fade {
-	struct weston_surface *surface;
-	struct weston_animation animation;
-	struct weston_spring spring;
-	struct wl_listener listener;
-	void (*done)(struct weston_fade *fade, void *data);
+	weston_surface_animation_frame_func_t frame;
+	weston_surface_animation_done_func_t done;
 	void *data;
 };
 
 static void
-weston_zoom_destroy(struct weston_zoom *zoom)
+weston_surface_animation_destroy(struct weston_surface_animation *animation)
 {
-	wl_list_remove(&zoom->animation.link);
-	wl_list_remove(&zoom->listener.link);
-	wl_list_remove(&zoom->transform.link);
-	zoom->surface->geometry.dirty = 1;
-	if (zoom->done)
-		zoom->done(zoom, zoom->data);
-	free(zoom);
+	wl_list_remove(&animation->animation.link);
+	wl_list_remove(&animation->listener.link);
+	wl_list_remove(&animation->transform.link);
+	animation->surface->geometry.dirty = 1;
+	if (animation->done)
+		animation->done(animation, animation->data);
+	free(animation);
 }
 
 static void
-handle_zoom_surface_destroy(struct wl_listener *listener, void *data)
+handle_animation_surface_destroy(struct wl_listener *listener, void *data)
 {
-	struct weston_zoom *zoom =
-		container_of(listener, struct weston_zoom, listener);
+	struct weston_surface_animation *animation =
+		container_of(listener,
+			     struct weston_surface_animation, listener);
 
-	weston_zoom_destroy(zoom);
+	weston_surface_animation_destroy(animation);
 }
 
 static void
-weston_zoom_frame(struct weston_animation *animation,
-		struct weston_output *output, uint32_t msecs)
+weston_surface_animation_frame(struct weston_animation *base,
+			       struct weston_output *output, uint32_t msecs)
 {
-	struct weston_zoom *zoom =
-		container_of(animation, struct weston_zoom, animation);
-	struct weston_surface *es = zoom->surface;
-	GLfloat scale;
+	struct weston_surface_animation *animation =
+		container_of(base,
+			     struct weston_surface_animation, animation);
 
-	if (animation->frame_counter <= 1)
-		zoom->spring.timestamp = msecs;
+	if (base->frame_counter <= 1)
+		animation->spring.timestamp = msecs;
 
-	weston_spring_update(&zoom->spring, msecs);
+	weston_spring_update(&animation->spring, msecs);
 
-	if (weston_spring_done(&zoom->spring)) {
-		weston_zoom_destroy(zoom);
+	if (weston_spring_done(&animation->spring)) {
+		weston_surface_animation_destroy(animation);
 		return;
 	}
 
-	scale = zoom->start +
-		(zoom->stop - zoom->start) * zoom->spring.current;
-	weston_matrix_init(&zoom->transform.matrix);
-	weston_matrix_translate(&zoom->transform.matrix,
+	if (animation->frame)
+		animation->frame(animation);
+
+	animation->surface->geometry.dirty = 1;
+	weston_compositor_schedule_repaint(animation->surface->compositor);
+}
+
+static struct weston_surface_animation *
+weston_surface_animation_run(struct weston_surface *surface,
+			     GLfloat start, GLfloat stop,
+			     weston_surface_animation_frame_func_t frame,
+			     weston_surface_animation_done_func_t done,
+			     void *data)
+{
+	struct weston_surface_animation *animation;
+
+	animation = malloc(sizeof *animation);
+	if (!animation)
+		return NULL;
+
+	animation->surface = surface;
+	animation->frame = frame;
+	animation->done = done;
+	animation->data = data;
+	animation->start = start;
+	animation->stop = stop;
+	weston_matrix_init(&animation->transform.matrix);
+	wl_list_insert(&surface->geometry.transformation_list,
+		       &animation->transform.link);
+	weston_spring_init(&animation->spring, 200.0, 0.0, 1.0);
+	animation->spring.friction = 700;
+	animation->animation.frame_counter = 0;
+	animation->animation.frame = weston_surface_animation_frame;
+	weston_surface_animation_frame(&animation->animation, NULL, 0);
+
+	animation->listener.notify = handle_animation_surface_destroy;
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		      &animation->listener);
+
+	wl_list_insert(&surface->output->animation_list,
+		       &animation->animation.link);
+
+	return animation;
+}
+
+static void
+zoom_frame(struct weston_surface_animation *animation)
+{
+	struct weston_surface *es = animation->surface;
+	GLfloat scale;
+
+	scale = animation->start +
+		(animation->stop - animation->start) *
+		animation->spring.current;
+	weston_matrix_init(&animation->transform.matrix);
+	weston_matrix_translate(&animation->transform.matrix,
 				-0.5f * es->geometry.width,
 				-0.5f * es->geometry.height, 0);
-	weston_matrix_scale(&zoom->transform.matrix, scale, scale, scale);
-	weston_matrix_translate(&zoom->transform.matrix,
+	weston_matrix_scale(&animation->transform.matrix, scale, scale, scale);
+	weston_matrix_translate(&animation->transform.matrix,
 				0.5f * es->geometry.width,
 				0.5f * es->geometry.height, 0);
 
-	es->alpha = zoom->spring.current;
+	es->alpha = animation->spring.current;
 	if (es->alpha > 1.0)
 		es->alpha = 1.0;
-
-	zoom->surface->geometry.dirty = 1;
-	weston_compositor_schedule_repaint(es->compositor);
 }
 
-WL_EXPORT struct weston_zoom *
+WL_EXPORT struct weston_surface_animation *
 weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
-	      weston_zoom_done_func_t done, void *data)
+		weston_surface_animation_done_func_t done, void *data)
 {
-	struct weston_zoom *zoom;
+	return weston_surface_animation_run(surface, start, stop,
+					    zoom_frame, done, data);
+}
 
-	zoom = malloc(sizeof *zoom);
-	if (!zoom)
-		return NULL;
+static void
+fade_frame(struct weston_surface_animation *animation)
+{
+	if (animation->spring.current > 1)
+		animation->surface->alpha = 1;
+	else if (animation->spring.current < 0 )
+		animation->surface->alpha = 0;
+	else
+		animation->surface->alpha = animation->spring.current;
+}
 
-	zoom->surface = surface;
-	zoom->done = done;
-	zoom->data = data;
-	zoom->start = start;
-	zoom->stop = stop;
-	wl_list_insert(&surface->geometry.transformation_list,
-		       &zoom->transform.link);
-	weston_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
-	zoom->spring.friction = 700;
-	zoom->animation.frame_counter = 0;
-	zoom->animation.frame = weston_zoom_frame;
-	weston_zoom_frame(&zoom->animation, NULL, 0);
-
-	zoom->listener.notify = handle_zoom_surface_destroy;
-	wl_signal_add(&surface->surface.resource.destroy_signal,
-		      &zoom->listener);
-
-	wl_list_insert(&surface->output->animation_list,
-		       &zoom->animation.link);
-
-	return zoom;
+WL_EXPORT struct weston_surface_animation *
+weston_fade_run(struct weston_surface *surface,
+		weston_surface_animation_done_func_t done, void *data)
+{
+	return weston_surface_animation_run(surface, 0, 0,
+					    fade_frame, done, data);
 }
 
 struct weston_binding {
@@ -441,83 +478,4 @@ weston_environment_get_fd(const char *env)
 	unsetenv(env);
 
 	return fd;
-}
-/*fade in and fade out animation*/
-static void
-weston_fade_destroy(struct weston_fade *fade)
-{
-	wl_list_remove(&fade->animation.link);
-	wl_list_remove(&fade->listener.link);
-	fade->surface->geometry.dirty = 1;
-	if (fade->done)
-		fade->done(fade, fade->data);
-	free(fade);
-}
-
-static void
-handle_fade_surface_destroy(struct wl_listener *listener, void *data)
-{
-	struct weston_fade *fade =
-		container_of(listener, struct weston_fade, listener);
-
-	weston_fade_destroy(fade);
-}
-
-static void
-weston_fade_frame(struct weston_animation *animation,
-		struct weston_output *output, uint32_t msecs)
-{
-	struct weston_fade *fade =
-		container_of(animation, struct weston_fade, animation);
-	struct weston_surface *es = fade->surface;
-	float fade_factor;
-
-	if (animation->frame_counter <= 1)
-		fade->spring.timestamp = msecs;
-
-	weston_spring_update(&fade->spring, msecs);
-
-	if (weston_spring_done(&fade->spring)) {
-		weston_fade_destroy(fade);
-		return;
-	}
-	if (fade->spring.current > 1)
-		fade_factor = 1;
-	else if (fade->spring.current < 0 )
-		fade_factor = 0;
-	else
-		fade_factor = fade->spring.current;
-	es->alpha = fade_factor;
-
-	fade->surface->geometry.dirty = 1;
-	weston_compositor_schedule_repaint(es->compositor);
-}
-
-WL_EXPORT struct weston_fade *
-weston_fade_run(struct weston_surface *surface,
-	      weston_fade_done_func_t done, void *data)
-{
-	struct weston_fade *fade;
-
-	fade = malloc(sizeof *fade);
-	if (!fade)
-		return NULL;
-
-	fade->surface = surface;
-	fade->done = done;
-	fade->data = data;
-	weston_spring_init(&fade->spring, 200.0, 0, 1.0);
-	fade->spring.friction = 700;
-	fade->animation.frame_counter = 0;
-	fade->animation.frame = weston_fade_frame;
-	weston_fade_frame(&fade->animation, NULL, 0);
-
-	fade->listener.notify = handle_fade_surface_destroy;
-	wl_signal_add(&surface->surface.resource.destroy_signal,
-		      &fade->listener);
-
-	wl_list_insert(&surface->output->animation_list,
-		       &fade->animation.link);
-
-	return fade;
 }

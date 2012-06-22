@@ -239,7 +239,7 @@ tablet_shell_set_homescreen(struct wl_client *client,
 }
 
 static void
-minimize_zoom_done(struct weston_zoom *zoom, void *data)
+minimize_zoom_done(struct weston_surface_animation *zoom, void *data)
 {
 	struct tablet_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;

@@ -1923,6 +1923,8 @@ show_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
 	wl_list_insert(&shell->panel_layer.surface_list, &surface->surface->layer_link);
 	surface->surface->output = surface->output;
 	weston_surface_damage(surface->surface);
+
+	weston_zoom_run(surface->surface, 0.8, 1.0, NULL, NULL);
 }
 
 static void
