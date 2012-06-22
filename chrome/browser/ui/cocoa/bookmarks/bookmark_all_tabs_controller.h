@@ -28,6 +28,8 @@ typedef std::vector<ActiveTabNameURLPair> ActiveTabsNameURLPairVector;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
+                       url:(const GURL&)url
+                     title:(const string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
 
 @end

@@ -132,7 +132,8 @@ class BookmarkEditorViewTest : public testing::Test {
 // Makes sure the tree model matches that of the bookmark bar model.
 TEST_F(BookmarkEditorViewTest, ModelsMatch) {
   CreateEditor(profile_.get(), NULL,
-               BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
+               BookmarkEditor::EditDetails::AddNodeInFolder(
+                   NULL, -1, GURL(), string16()),
                BookmarkEditorView::SHOW_TREE);
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two or three children: bookmark bar, other bookmarks
@@ -263,7 +264,8 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorViewTest, NewURL) {
   CreateEditor(profile_.get(), NULL,
-               BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
+               BookmarkEditor::EditDetails::AddNodeInFolder(
+                   NULL, -1, GURL(), string16()),
                BookmarkEditorView::SHOW_TREE);
 
   SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));

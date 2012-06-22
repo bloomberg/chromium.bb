@@ -787,9 +787,14 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* parent = [self nodeFromMenuItem:sender];
   if (!parent)
     parent = bookmarkModel_->bookmark_bar_node();
+  GURL url;
+  string16 title;
+  bookmark_utils::GetURLAndTitleToBookmark(
+      browser_->GetActiveWebContents(), &url, &title);
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
-                       BookmarkEditor::EditDetails::AddNodeInFolder(parent, -1),
+                       BookmarkEditor::EditDetails::AddNodeInFolder(
+                           parent, -1, url, title),
                        BookmarkEditor::SHOW_TREE);
 }
 

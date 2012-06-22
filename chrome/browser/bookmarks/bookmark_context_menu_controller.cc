@@ -170,10 +170,15 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       int index;
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
+      GURL url;
+      string16 title;
+      bookmark_utils::GetURLAndTitleToBookmark(
+          browser_->GetActiveWebContents(), &url, &title);
       BookmarkEditor::Show(
           parent_window_,
           profile_,
-          BookmarkEditor::EditDetails::AddNodeInFolder(parent, index),
+          BookmarkEditor::EditDetails::AddNodeInFolder(
+              parent, index, url, title),
           BookmarkEditor::SHOW_TREE);
       break;
     }

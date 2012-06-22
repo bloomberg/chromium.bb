@@ -26,6 +26,8 @@
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                       node:(const BookmarkNode*)node
+                       url:(const GURL&)url
+                     title:(const string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
 
 @end

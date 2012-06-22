@@ -22,12 +22,16 @@ using content::WebContents;
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
+                       url:(const GURL&)url
+                     title:(const string16&)title
              configuration:(BookmarkEditor::Configuration)configuration {
   NSString* nibName = @"BookmarkAllTabs";
   if ((self = [super initWithParentWindow:parentWindow
                                   nibName:nibName
                                   profile:profile
                                    parent:parent
+                                      url:url
+                                    title:title
                             configuration:configuration])) {
   }
   return self;

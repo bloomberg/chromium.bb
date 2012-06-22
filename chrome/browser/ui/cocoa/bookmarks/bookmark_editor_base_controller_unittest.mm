@@ -69,6 +69,8 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
                          nibName:@"BookmarkAllTabs"
                          profile:profile()
                           parent:folder_b_0_
+                             url:GURL()
+                           title:string16()
                    configuration:BookmarkEditor::SHOW_TREE];
   }
 

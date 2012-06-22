@@ -303,8 +303,8 @@ void BookmarkEditorView::Init() {
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
   } else if (details_.type == EditDetails::NEW_URL) {
-    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile_,
-        &url, &title);
+    url = details_.url;
+    title = details_.title;
   }
   title_tf_ = new views::Textfield;
   title_tf_->SetText(title);

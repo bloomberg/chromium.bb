@@ -72,6 +72,8 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                   initWithParentWindow:parent_hwnd
                                profile:profile
                                 parent:details.parent_node
+                                   url:details.url
+                                 title:details.title
                          configuration:configuration];
   } else {
     controller = [[BookmarkEditorController alloc]
@@ -79,6 +81,8 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                                profile:profile
                                 parent:details.parent_node
                                   node:details.existing_node
+                                   url:details.url
+                                 title:details.title
                          configuration:configuration];
   }
   [controller runAsModalSheet];
@@ -169,6 +173,8 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                    nibName:(NSString*)nibName
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
+                       url:(const GURL&)url
+                     title:(const string16&)title
              configuration:(BookmarkEditor::Configuration)configuration {
   NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:nibName
@@ -177,6 +183,8 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
     parentWindow_ = parentWindow;
     profile_ = profile;
     parentNode_ = parent;
+    url_ = url;
+    title_ = title;
     configuration_ = configuration;
     initialName_ = [@"" retain];
     observer_.reset(new BookmarkEditorBaseControllerBridge(self));
@@ -298,6 +306,14 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 
 - (const BookmarkNode*)parentNode {
   return parentNode_;
+}
+
+- (const GURL&)url {
+  return url_;
+}
+
+- (const string16&)title{
+  return title_;
 }
 
 - (BookmarkFolderInfo*)folderForIndexPath:(NSIndexPath*)indexPath {

@@ -8,7 +8,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,11 +30,15 @@
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
                       node:(const BookmarkNode*)node
+                       url:(const GURL&)url
+                     title:(const string16&)title
              configuration:(BookmarkEditor::Configuration)configuration {
   if ((self = [super initWithParentWindow:parentWindow
                                   nibName:@"BookmarkEditor"
                                   profile:profile
                                    parent:parent
+                                      url:url
+                                    title:title
                             configuration:configuration])) {
     // "Add Page..." has no "node" so this may be NULL.
     node_ = node;
@@ -66,11 +69,8 @@
     initialUrl_.reset([[NSString stringWithUTF8String:url_string.c_str()]
                         retain]);
   } else {
-    GURL url;
-    string16 title16;
-    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab([self profile],
-        &url, &title16);
-    [self setInitialName:base::SysUTF16ToNSString(title16)];
+    GURL url = [self url];
+    [self setInitialName:base::SysUTF16ToNSString([self title])];
     if (url.is_valid())
       initialUrl_.reset([[NSString stringWithUTF8String:url.spec().c_str()]
                           retain]);

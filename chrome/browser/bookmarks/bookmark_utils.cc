@@ -667,16 +667,6 @@ void GetURLAndTitleToBookmark(WebContents* web_contents,
   *title = web_contents->GetTitle();
 }
 
-void GetURLAndTitleToBookmarkFromCurrentTab(Profile* profile,
-                                            GURL* url,
-                                            string16* title) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  WebContents* web_contents = browser ? browser->GetActiveWebContents()
-                                        : NULL;
-  if (web_contents)
-    GetURLAndTitleToBookmark(web_contents, url, title);
-}
-
 void GetURLsForOpenTabs(
     Browser* browser,
     std::vector<std::pair<GURL, string16> >* urls) {

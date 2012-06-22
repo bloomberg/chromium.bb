@@ -344,10 +344,8 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
   } else if (details_.type == EditDetails::NEW_URL) {
-    string16 title16;
-    bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile_,
-        &url, &title16);
-    title = UTF16ToUTF8(title16);
+    url = details_.url;
+    title = UTF16ToUTF8(details_.title);
   }
   gtk_entry_set_text(GTK_ENTRY(name_entry_), title.c_str());
   g_signal_connect(name_entry_, "changed",

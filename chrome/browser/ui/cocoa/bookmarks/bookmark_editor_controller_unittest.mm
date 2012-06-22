@@ -38,6 +38,8 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
                                 profile:profile()
                                  parent:default_parent_
                                    node:default_node
+                                    url:GURL()
+                                  title:string16()
                           configuration:BookmarkEditor::NO_TREE];
     [controller_ runAsModalSheet];
   }
@@ -145,6 +147,8 @@ class BookmarkEditorControllerNoNodeTest : public CocoaProfileTest {
                                 profile:profile()
                                  parent:parent
                                    node:NULL
+                                    url:GURL()
+                                  title:string16()
                           configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
@@ -184,6 +188,8 @@ class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
                                 profile:profile()
                                  parent:parent
                                    node:node
+                                    url:GURL()
+                                  title:string16()
                           configuration:BookmarkEditor::NO_TREE];
 
     [controller_ runAsModalSheet];
@@ -267,6 +273,8 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
                             profile:profile()
                              parent:folder_bb_
                                node:bookmark_bb_3_
+                                url:GURL()
+                              title:string16()
                       configuration:BookmarkEditor::SHOW_TREE];
   }
 
@@ -412,6 +420,8 @@ class BookmarkEditorControllerTreeNoNodeTest :
                             profile:profile()
                              parent:folder_bb_
                                node:nil
+                                url:GURL()
+                              title:string16()
                       configuration:BookmarkEditor::SHOW_TREE];
   }
 

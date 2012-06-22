@@ -52,6 +52,8 @@ class BookmarkAllTabsControllerTest : public CocoaProfileTest {
             initWithParentWindow:test_window()
                          profile:profile()
                           parent:folder_a_
+                             url:GURL()
+                           title:string16()
                    configuration:BookmarkEditor::SHOW_TREE];
   }
 

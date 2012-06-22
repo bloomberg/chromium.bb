@@ -107,7 +107,8 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
       NULL,
       profile_.get(),
       NULL,
-      BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
+      BookmarkEditor::EditDetails::AddNodeInFolder(
+          NULL, -1, GURL(), string16()),
       BookmarkEditor::SHOW_TREE);
 
   // The root should have two or three children, one for the bookmark bar node,
@@ -283,7 +284,8 @@ TEST_F(BookmarkEditorGtkTest, NewURL) {
       NULL,
       profile_.get(),
       NULL,
-      BookmarkEditor::EditDetails::AddNodeInFolder(NULL, -1),
+      BookmarkEditor::EditDetails::AddNodeInFolder(
+          NULL, -1, GURL(), string16()),
       BookmarkEditor::SHOW_TREE);
 
   gtk_entry_set_text(GTK_ENTRY(editor.url_entry_),
