@@ -520,29 +520,33 @@ def RunLLCSandboxed():
   needed_libs = [ lib for lib in needed_str.split(r'\n') if lib]
   return is_shared, soname, needed_libs
 
+def BuildLLCCommandLine(flags):
+  # command_line is a NUL (\x00) terminated sequence.
+  kTerminator = '\0'
+  command_line = kTerminator.join(['llc'] + flags) + kTerminator
+  command_line_escaped = command_line.replace(kTerminator, '\\x00')
+  return len(command_line), command_line_escaped
+
 def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
   stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
-  if stream_rate != 0 and not UseDefaultCommandlineLLC():
-    # TODO(dschuff): Add non-default command line support to llc streaming
-    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2195
-    Log.Error('Warning: non-default command lines not supported with '
-              'bitcode streaming yet: using non-streaming translation')
-  if stream_rate == 0 or not UseDefaultCommandlineLLC():
+  if stream_rate == 0:
     script.append('readonly_file myfile %s' % infile)
     if UseDefaultCommandlineLLC():
       script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
                     ' i() s() s()');
     else:
-      # command_line is a NUL (\x00) terminated sequence.
-      kTerminator = '\0'
-      command_line = kTerminator.join(['llc'] + flags) + kTerminator
-      command_line_escaped = command_line.replace(kTerminator, '\\x00')
+      cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
       script.append('rpc Run h(myfile) h(objfile) C(%d,%s) * i() s() s()' %
-                    (len(command_line), command_line_escaped))
+                    (cmdline_len, cmdline_escaped))
   else:
-    script.append('rpc StreamInit h(objfile) * s()')
+    if UseDefaultCommandlineLLC():
+      script.append('rpc StreamInit h(objfile) * s()')
+    else:
+      cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
+      script.append('rpc StreamInitWithCommandLine h(objfile) C(%d,%s) * s()' %
+                    (cmdline_len, cmdline_escaped))
     # specify filename, chunk size and rate in bits/s
     script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
     script.append('rpc StreamEnd * i() s() s() s()')
