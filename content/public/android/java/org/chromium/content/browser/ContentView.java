@@ -15,6 +15,14 @@ import org.chromium.base.WeakContext;
 import org.chromium.content.common.TraceEvent;
 
 public class ContentView extends FrameLayout {
+
+    // The following constants match the ones in chrome/common/page_transition_types.h.
+    // Add more if you need them.
+    public static final int PAGE_TRANSITION_LINK = 0;
+    public static final int PAGE_TRANSITION_TYPED = 1;
+    public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
+    public static final int PAGE_TRANSITION_START_PAGE = 6;
+
     private static final String TAG = "ContentView";
 
     // Personality of the ContentView.
@@ -210,11 +218,47 @@ public class ContentView extends FrameLayout {
      * @param url The url to load.
      */
     public void loadUrlWithoutUrlSanitization(String url) {
-        // TODO(tedchoc): Implement.
+        loadUrlWithoutUrlSanitization(url, PAGE_TRANSITION_TYPED);
+    }
+
+    /**
+     * Load url without fixing up the url string. Consumers of ContentView are responsible for
+     * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
+     * off during user input).
+     *
+     * @param url The url to load.
+     * @param pageTransition Page transition id that describes the action that led to this
+     *                       navigation. It is important for ranking URLs in the history so the
+     *                       omnibox can report suggestions correctly.
+     */
+    public void loadUrlWithoutUrlSanitization(String url, int pageTransition) {
+        if (mNativeContentView != 0) {
+            if (isPersonalityView()) {
+                nativeLoadUrlWithoutUrlSanitizationWithUserAgentOverride(
+                        mNativeContentView,
+                        url,
+                        pageTransition,
+                        mWebSettings.getUserAgentString());
+            } else {
+                // Chrome stores overridden UA strings in navigation history
+                // items, so they stay the same on going back / forward.
+                nativeLoadUrlWithoutUrlSanitization(
+                        mNativeContentView,
+                        url,
+                        pageTransition);
+            }
+        }
     }
 
     void setAllUserAgentOverridesInHistory() {
         // TODO(tedchoc): Pass user agent override down to native.
+    }
+
+    /**
+     * Stops loading the current web contents.
+     */
+    public void stopLoading() {
+        if (mNativeContentView != 0) nativeStopLoading(mNativeContentView);
     }
 
     /**
@@ -223,45 +267,88 @@ public class ContentView extends FrameLayout {
      * @return The URL of the current page.
      */
     public String getUrl() {
-        // TODO(tedchoc): Implement.
+        if (mNativeContentView != 0) return nativeGetURL(mNativeContentView);
         return null;
+    }
+
+    /**
+     * Get the title of the current page.
+     *
+     * @return The title of the current page.
+     */
+    public String getTitle() {
+        if (mNativeContentView != 0) return nativeGetTitle(mNativeContentView);
+        return null;
+    }
+
+    /**
+     * @return The load progress of current web contents (range is 0 - 100).
+     */
+    public int getProgress() {
+        if (mNativeContentView != 0) {
+            return (int) (100.0 * nativeGetLoadProgress(mNativeContentView));
+        }
+        return 100;
     }
 
     /**
      * @return Whether the current WebContents has a previous navigation entry.
      */
     public boolean canGoBack() {
-        // TODO(tedchoc): Implement.
-        return false;
+        return mNativeContentView != 0 && nativeCanGoBack(mNativeContentView);
     }
 
     /**
      * @return Whether the current WebContents has a navigation entry after the current one.
      */
     public boolean canGoForward() {
-        // TODO(tedchoc): Implement.
-        return false;
+        return mNativeContentView != 0 && nativeCanGoForward(mNativeContentView);
+    }
+
+    /**
+     * @param offset The offset into the navigation history.
+     * @return Whether we can move in history by given offset
+     */
+    public boolean canGoToOffset(int offset) {
+        return mNativeContentView != 0 && nativeCanGoToOffset(mNativeContentView, offset);
+    }
+
+    /**
+     * Navigates to the specified offset from the "current entry". Does nothing if the offset is out
+     * of bounds.
+     * @param offset The offset into the navigation history.
+     */
+    public void goToOffset(int offset) {
+        if (mNativeContentView != 0) nativeGoToOffset(mNativeContentView, offset);
     }
 
     /**
      * Goes to the navigation entry before the current one.
      */
     public void goBack() {
-        // TODO(tedchoc): Implement.
+        if (mNativeContentView != 0) nativeGoBack(mNativeContentView);
     }
 
     /**
      * Goes to the navigation entry following the current one.
      */
     public void goForward() {
-        // TODO(tedchoc): Implement.
+        if (mNativeContentView != 0) nativeGoForward(mNativeContentView);
     }
 
     /**
      * Reload the current page.
      */
     public void reload() {
-        // TODO(tedchoc): Implement.
+        if (mNativeContentView != 0) nativeReload(mNativeContentView);
+    }
+
+    /**
+     * Clears the WebView's page history in both the backwards and forwards
+     * directions.
+     */
+    public void clearHistory() {
+        if (mNativeContentView != 0) nativeClearHistory(mNativeContentView);
     }
 
     /**
@@ -373,6 +460,21 @@ public class ContentView extends FrameLayout {
     }
 
     /**
+     * @return Whether the native ContentView has crashed.
+     */
+    public boolean isCrashed() {
+        if (mNativeContentView == 0) return false;
+        return nativeCrashed(mNativeContentView);
+    }
+
+    /**
+     * @return Whether a reload happens when this ContentView is activated.
+     */
+    public boolean needsReload() {
+        return mNativeContentView != 0 && nativeNeedsReload(mNativeContentView);
+    }
+
+    /**
      * Checks whether the WebView can be zoomed in.
      *
      * @return True if the WebView can be zoomed in.
@@ -476,6 +578,41 @@ public class ContentView extends FrameLayout {
      */
     private native int nativeInit(int webContentsPtr);
 
-    private native void nativeDestroy(int nativeContentView);
+    private native void nativeDestroy(int nativeContentViewImpl);
 
+    private native void nativeLoadUrlWithoutUrlSanitization(int nativeContentViewImpl,
+            String url, int pageTransition);
+    private native void nativeLoadUrlWithoutUrlSanitizationWithUserAgentOverride(
+            int nativeContentViewImpl, String url, int pageTransition, String userAgentOverride);
+
+    private native String nativeGetURL(int nativeContentViewImpl);
+
+    private native String nativeGetTitle(int nativeContentViewImpl);
+
+    private native double nativeGetLoadProgress(int nativeContentViewImpl);
+
+    private native boolean nativeIsIncognito(int nativeContentViewImpl);
+
+    // Returns true if the native side crashed so that java side can draw a sad tab.
+    private native boolean nativeCrashed(int nativeContentViewImpl);
+
+    private native boolean nativeCanGoBack(int nativeContentViewImpl);
+
+    private native boolean nativeCanGoForward(int nativeContentViewImpl);
+
+    private native boolean nativeCanGoToOffset(int nativeContentViewImpl, int offset);
+
+    private native void nativeGoToOffset(int nativeContentViewImpl, int offset);
+
+    private native void nativeGoBack(int nativeContentViewImpl);
+
+    private native void nativeGoForward(int nativeContentViewImpl);
+
+    private native void nativeStopLoading(int nativeContentViewImpl);
+
+    private native void nativeReload(int nativeContentViewImpl);
+
+    private native boolean nativeNeedsReload(int nativeContentViewImpl);
+
+    private native void nativeClearHistory(int nativeContentViewImpl);
 }

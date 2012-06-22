@@ -80,6 +80,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void LoadIfNecessary() OVERRIDE;
   virtual bool CanGoBack() const OVERRIDE;
   virtual bool CanGoForward() const OVERRIDE;
+  virtual bool CanGoToOffset(int offset) const OVERRIDE;
   virtual void GoBack() OVERRIDE;
   virtual void GoForward() OVERRIDE;
   virtual void GoToIndex(int index) OVERRIDE;
@@ -269,6 +270,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // (last_committed_entry_index_, pending_entry_index_ or
   // transient_entry_index_).
   void InsertEntriesFrom(const NavigationControllerImpl& source, int max_index);
+
+  // Returns the navigation index that differs from the current entry by the
+  // specified |offset|.  The index returned is not guaranteed to be valid.
+  int GetIndexForOffset(int offset) const;
 
   // ---------------------------------------------------------------------------
 

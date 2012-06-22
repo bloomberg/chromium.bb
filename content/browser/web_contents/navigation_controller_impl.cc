@@ -428,13 +428,17 @@ NavigationEntry* NavigationControllerImpl::GetEntryAtIndex(
 
 NavigationEntry* NavigationControllerImpl::GetEntryAtOffset(
     int offset) const {
-  int index = (transient_entry_index_ != -1) ?
-                  transient_entry_index_ + offset :
-                  last_committed_entry_index_ + offset;
+  int index = GetIndexForOffset(offset);
   if (index < 0 || index >= GetEntryCount())
     return NULL;
 
   return entries_[index].get();
+}
+
+int NavigationControllerImpl::GetIndexForOffset(int offset) const {
+  return (transient_entry_index_ != -1) ?
+             transient_entry_index_ + offset :
+             last_committed_entry_index_ + offset;
 }
 
 bool NavigationControllerImpl::CanGoBack() const {
@@ -444,6 +448,11 @@ bool NavigationControllerImpl::CanGoBack() const {
 bool NavigationControllerImpl::CanGoForward() const {
   int index = GetCurrentEntryIndex();
   return index >= 0 && index < (static_cast<int>(entries_.size()) - 1);
+}
+
+bool NavigationControllerImpl::CanGoToOffset(int offset) const {
+  int index = GetIndexForOffset(offset);
+  return index >= 0 && index < GetEntryCount();
 }
 
 void NavigationControllerImpl::GoBack() {
@@ -519,13 +528,10 @@ void NavigationControllerImpl::GoToIndex(int index) {
 }
 
 void NavigationControllerImpl::GoToOffset(int offset) {
-  int index = (transient_entry_index_ != -1) ?
-                  transient_entry_index_ + offset :
-                  last_committed_entry_index_ + offset;
-  if (index < 0 || index >= GetEntryCount())
+  if (!CanGoToOffset(offset))
     return;
 
-  GoToIndex(index);
+  GoToIndex(GetIndexForOffset(offset));
 }
 
 void NavigationControllerImpl::RemoveEntryAtIndex(int index) {
