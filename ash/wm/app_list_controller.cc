@@ -59,7 +59,7 @@ gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect) {
   DCHECK(Shell::HasInstance());
   ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment();
   gfx::Rect offseted(rect);
-  switch(shelf_alignment) {
+  switch (shelf_alignment) {
     case SHELF_ALIGNMENT_BOTTOM:
       offseted.Offset(0, kAnimationOffset);
       break;
@@ -91,7 +91,11 @@ AppListController::AppListController()
 }
 
 AppListController::~AppListController() {
-  ResetView();
+  // Ensures app list view goes before the controller since pagination model
+  // lives in the controller and app list view would access it on destruction.
+  if (view_ && view_->GetWidget())
+    view_->GetWidget()->CloseNow();
+
   app_list::IconCache::DeleteInstance();
   Shell::GetInstance()->RemoveShellObserver(this);
 }
