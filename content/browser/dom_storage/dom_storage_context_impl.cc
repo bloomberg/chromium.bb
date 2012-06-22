@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/message_loop_proxy.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/dom_storage/dom_storage_area.h"
 #include "webkit/dom_storage/dom_storage_context.h"
@@ -82,6 +83,13 @@ void DOMStorageContextImpl::DeleteOrigin(const GURL& origin) {
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DomStorageContext::DeleteOrigin, context_, origin));
+}
+
+scoped_refptr<content::SessionStorageNamespace>
+DOMStorageContextImpl::RecreateSessionStorage(
+    const std::string& persistent_id) {
+  return scoped_refptr<content::SessionStorageNamespace>(
+      new SessionStorageNamespaceImpl(this, persistent_id));
 }
 
 void DOMStorageContextImpl::PurgeMemory() {

@@ -34,6 +34,10 @@ const std::string& SessionStorageNamespaceImpl::persistent_id() const {
   return session_->persistent_namespace_id();
 }
 
+void SessionStorageNamespaceImpl::SetShouldPersist(bool should_persist) {
+  session_->SetShouldPersist(should_persist);
+}
+
 SessionStorageNamespaceImpl* SessionStorageNamespaceImpl::Clone() {
   return new SessionStorageNamespaceImpl(session_->Clone());
 }

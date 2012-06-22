@@ -34,6 +34,7 @@ class DomStorageSession
   const std::string& persistent_namespace_id() const {
     return persistent_namespace_id_;
   }
+  void SetShouldPersist(bool should_persist);
   DomStorageSession* Clone();
 
   // Constructs a |DomStorageSession| by cloning
@@ -52,6 +53,7 @@ class DomStorageSession
   scoped_refptr<DomStorageContext> context_;
   int64 namespace_id_;
   std::string persistent_namespace_id_;
+  bool should_persist_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DomStorageSession);
 };

@@ -172,6 +172,9 @@ struct SessionTab {
 
   std::vector<TabNavigation> navigations;
 
+  // For reassociating sessionStorage.
+  std::string session_storage_persistent_id;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };

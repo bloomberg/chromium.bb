@@ -94,7 +94,7 @@ SimpleDomStorageSystem::NamespaceImpl::~NamespaceImpl() {
       namespace_id_ == kInvalidNamespaceId || !Context()) {
     return;
   }
-  Context()->DeleteSessionNamespace(namespace_id_);
+  Context()->DeleteSessionNamespace(namespace_id_, false);
 }
 
 WebStorageArea* SimpleDomStorageSystem::NamespaceImpl::createStorageArea(

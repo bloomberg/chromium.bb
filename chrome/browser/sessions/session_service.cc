@@ -37,6 +37,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_MACOSX)
@@ -72,6 +73,7 @@ static const SessionCommand::id_type kCommandSetWindowAppName = 15;
 static const SessionCommand::id_type kCommandTabClosed = 16;
 static const SessionCommand::id_type kCommandWindowClosed = 17;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 18;
+static const SessionCommand::id_type kCommandSessionStorageAssociated = 19;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
@@ -599,6 +601,15 @@ void SessionService::Observe(int type,
             tab->restore_tab_helper()->session_id(),
             tab->extension_tab_helper()->extension_app()->id());
       }
+
+      // Record the association between the SessionStorageNamespace and the
+      // tab.
+      content::SessionStorageNamespace* session_storage_namespace =
+          tab->web_contents()->GetController().GetSessionStorageNamespace();
+      ScheduleCommand(CreateSessionStorageAssociatedCommand(
+          tab->restore_tab_helper()->session_id(),
+          session_storage_namespace->persistent_id()));
+      session_storage_namespace->SetShouldPersist(true);
       break;
     }
 
@@ -606,6 +617,11 @@ void SessionService::Observe(int type,
       TabContents* tab = content::Source<TabContents>(source).ptr();
       if (!tab || tab->profile() != profile())
         return;
+      // Allow the associated sessionStorage to get deleted; it won't be needed
+      // in the session restore.
+      content::SessionStorageNamespace* session_storage_namespace =
+          tab->web_contents()->GetController().GetSessionStorageNamespace();
+      session_storage_namespace->SetShouldPersist(false);
       TabClosed(tab->restore_tab_helper()->window_id(),
                 tab->restore_tab_helper()->session_id(),
                 tab->web_contents()->GetClosedByUserGesture());
@@ -836,6 +852,15 @@ SessionCommand* SessionService::CreatePinnedStateCommand(
       new SessionCommand(kCommandSetPinnedState, sizeof(payload));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
+}
+
+SessionCommand* SessionService::CreateSessionStorageAssociatedCommand(
+    const SessionID& tab_id,
+    const std::string& session_storage_persistent_id) {
+  Pickle pickle;
+  pickle.WriteInt(tab_id.id());
+  pickle.WriteString(session_storage_persistent_id);
+  return new SessionCommand(kCommandSessionStorageAssociated, pickle);
 }
 
 void SessionService::OnGotSessionCommands(
@@ -1234,6 +1259,20 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
+      case kCommandSessionStorageAssociated: {
+        scoped_ptr<Pickle> command_pickle(command->PayloadAsPickle());
+        SessionID::id_type command_tab_id;
+        std::string session_storage_persistent_id;
+        PickleIterator iter(*command_pickle.get());
+        if (!command_pickle->ReadInt(&iter, &command_tab_id) ||
+            !command_pickle->ReadString(&iter, &session_storage_persistent_id))
+          return true;
+        // Associate the session storage back.
+        GetTab(command_tab_id, tabs)->session_storage_persistent_id =
+            session_storage_persistent_id;
+        break;
+      }
+
       default:
         VLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
@@ -1303,6 +1342,13 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(
         CreateSetTabIndexInWindowCommand(session_id, index_in_window));
   }
+
+  // Record the association between the sessionStorage namespace and the tab.
+  content::SessionStorageNamespace* session_storage_namespace =
+      tab->web_contents()->GetController().GetSessionStorageNamespace();
+  ScheduleCommand(CreateSessionStorageAssociatedCommand(
+      tab->restore_tab_helper()->session_id(),
+      session_storage_namespace->persistent_id()));
 }
 
 void SessionService::BuildCommandsForBrowser(

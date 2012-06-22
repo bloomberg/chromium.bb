@@ -32,12 +32,14 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/network_change_notifier.h"
@@ -878,6 +880,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     RecordAppLaunchForTab(browser, tab, selected_index);
 
+    // Associate sessionStorage (if any) to the restored tab.
+    scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
+    if (!tab.session_storage_persistent_id.empty()) {
+      session_storage_namespace =
+          content::BrowserContext::GetDOMStorageContext(profile_)->
+          RecreateSessionStorage(tab.session_storage_persistent_id);
+    }
+
     WebContents* web_contents =
         browser->AddRestoredTab(tab.navigations,
                                 tab_index,
@@ -886,7 +896,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 false,  // select
                                 tab.pinned,
                                 true,
-                                NULL);
+                                session_storage_namespace.get());
     // Regression check: check that the tab didn't start loading right away. The
     // focused tab will be loaded by Browser, and TabLoader will load the rest.
     DCHECK(web_contents->GetController().NeedsReload());

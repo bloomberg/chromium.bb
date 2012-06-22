@@ -761,3 +761,22 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   EXPECT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
   EXPECT_EQ(url2_, new_browser->GetWebContentsAt(1)->GetURL());
 }
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorage) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  const content::NavigationController& controller =
+      browser()->GetActiveWebContents()->GetController();
+  ASSERT_TRUE(controller.GetSessionStorageNamespace());
+  std::string session_storage_persistent_id =
+      controller.GetSessionStorageNamespace()->persistent_id();
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
+  const content::NavigationController& new_controller =
+      new_browser->GetActiveWebContents()->GetController();
+  ASSERT_TRUE(new_controller.GetSessionStorageNamespace());
+  std::string restored_session_storage_persistent_id =
+      new_controller.GetSessionStorageNamespace()->persistent_id();
+  EXPECT_EQ(session_storage_persistent_id,
+            restored_session_storage_persistent_id);
+}

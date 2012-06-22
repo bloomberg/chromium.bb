@@ -156,7 +156,7 @@ class DomStorageContext
   // Must be called on the background thread.
   void CreateSessionNamespace(int64 namespace_id,
                               const std::string& persistent_namespace_id);
-  void DeleteSessionNamespace(int64 namespace_id);
+  void DeleteSessionNamespace(int64 namespace_id, bool should_persist_data);
   void CloneSessionNamespace(int64 existing_id, int64 new_id,
                              const std::string& new_persistent_id);
 
