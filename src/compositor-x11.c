@@ -148,6 +148,9 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 	return;
 #else
 	const xcb_query_extension_reply_t *ext;
+	xcb_generic_error_t *error;
+	xcb_xkb_per_client_flags_cookie_t pcf;
+	xcb_xkb_per_client_flags_reply_t *pcf_reply;
 
 	c->has_xkb = 0;
 	c->xkb_event_base = 0;
@@ -158,6 +161,21 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 		return;
 	}
 	c->xkb_event_base = ext->first_event;
+
+	pcf = xcb_xkb_per_client_flags(c->conn,
+				       XCB_XKB_ID_USE_CORE_KBD,
+				       XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT,
+				       XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT,
+				       0,
+				       0,
+				       0);
+	pcf_reply = xcb_xkb_per_client_flags_reply(c->conn, pcf, &error);
+	free(pcf_reply);
+	if (error) {
+		weston_log("failed to set XKB per-client flags, not using "
+			   "detectable repeat\n");
+		return;
+	}
 
 	c->has_xkb = 1;
 #endif
@@ -672,9 +690,10 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	while (x11_compositor_next_event(c, &event, mask)) {
 		switch (prev ? prev->response_type & ~0x80 : 0x80) {
 		case XCB_KEY_RELEASE:
+			/* Suppress key repeat events; this is only used if we
+			 * don't have XCB XKB support. */
 			key_release = (xcb_key_press_event_t *) prev;
 			key_press = (xcb_key_press_event_t *) event;
-			/* XXX use XkbSetDetectableAutoRepeat */
 			if ((event->response_type & ~0x80) == XCB_KEY_PRESS &&
 			    key_release->time == key_press->time &&
 			    key_release->detail == key_press->detail) {
@@ -737,7 +756,17 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				   WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case XCB_KEY_RELEASE:
-			prev = event;
+			/* If we don't have XKB, we need to use the lame
+			 * autorepeat detection above. */
+			if (!c->has_xkb) {
+				prev = event;
+				break;
+			}
+			key_release = (xcb_key_press_event_t *) event;
+			notify_key(&c->base.seat->seat,
+				   weston_compositor_get_time(),
+				   key_release->detail - 8,
+				   WL_KEYBOARD_KEY_STATE_RELEASED);
 			break;
 		case XCB_BUTTON_PRESS:
 			x11_compositor_deliver_button_event(c, event, 1);
