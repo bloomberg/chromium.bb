@@ -4,6 +4,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include <cmath>
+
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
@@ -13,6 +15,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/magnifier/magnification_controller.h"
 #include "ash/monitor/monitor_controller.h"
 #include "ash/monitor/multi_monitor_manager.h"
 #include "ash/root_window_controller.h"
@@ -46,6 +49,11 @@
 
 namespace ash {
 namespace {
+
+// Factor of magnification scale. For example, when this value is 1.189, scale
+// value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
+// Note: this value is 2.0 ^ (1 / 4).
+const float kMagnificationFactor = 1.18920712;
 
 bool DebugShortcutsEnabled() {
 #if defined(NDEBUG)
@@ -233,6 +241,22 @@ bool HandlePrintWindowHierarchy() {
       Shell::GetPrimaryRootWindowController()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   PrintWindowHierarchy(container, 0);
+  return true;
+}
+
+// Magnify the screen
+bool HandleMagnifyScreen(int delta_index) {
+  float scale =
+       ash::Shell::GetInstance()->magnification_controller()->GetScale();
+  // Calculate rounded logarithm (base kMagnificationFactor) of scale.
+  int scale_index =
+      std::floor(std::log(scale) / std::log(kMagnificationFactor) + 0.5);
+
+  int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
+
+  ash::Shell::GetInstance()->magnification_controller()->
+      SetScale(std::pow(kMagnificationFactor, new_scale_index), true);
+
   return true;
 }
 
@@ -564,6 +588,10 @@ bool AcceleratorController::PerformAction(int action,
         internal::MultiMonitorManager::ToggleMonitorScale();
       return true;
 #if !defined(NDEBUG)
+    case MAGNIFY_SCREEN_ZOOM_IN:
+      return HandleMagnifyScreen(1);
+    case MAGNIFY_SCREEN_ZOOM_OUT:
+      return HandleMagnifyScreen(-1);
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
     case PRINT_WINDOW_HIERARCHY:

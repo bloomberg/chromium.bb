@@ -418,13 +418,15 @@ void Shell::Init() {
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddEnvEventFilter(window_modality_controller_.get());
 
+  magnification_controller_.reset(
+      internal::MagnificationController::CreateInstance());
+
   if (internal::MonitorController::IsExtendedDesktopEnabled()) {
     mouse_cursor_filter_.reset(
         new internal::MouseCursorEventFilter(monitor_controller_.get()));
     AddEnvEventFilter(mouse_cursor_filter_.get());
   }
 
-  magnification_controller_.reset(new internal::MagnificationController);
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);

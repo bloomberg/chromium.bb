@@ -118,6 +118,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     MONITOR_TOGGLE_SCALE },
 #if !defined(NDEBUG)
+  { true, ui::VKEY_OEM_4, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
+  { true, ui::VKEY_OEM_6, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_OUT},
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_LAYER_HIERARCHY },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
