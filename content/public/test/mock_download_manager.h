@@ -85,6 +85,7 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_METHOD1(RestartDownload, void(int32 download_id));
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownloadItem, content::DownloadItem*(int id));
+  MOCK_METHOD1(GetDownload, content::DownloadItem*(int id));
   MOCK_METHOD1(SavePageDownloadFinished, void(content::DownloadItem* download));
   MOCK_METHOD1(GetActiveDownloadItem, content::DownloadItem*(int id));
   MOCK_METHOD0(GenerateFileHash, bool());

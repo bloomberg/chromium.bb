@@ -232,6 +232,10 @@ class CONTENT_EXPORT DownloadManager
   // been removed from the active map, or was retrieved from the history DB.
   virtual DownloadItem* GetDownloadItem(int id) = 0;
 
+  // Get the download item for |id| if present, no matter what type of download
+  // it is or state it's in.
+  virtual DownloadItem* GetDownload(int id) = 0;
+
   // Called when Save Page download is done.
   virtual void SavePageDownloadFinished(DownloadItem* download) = 0;
 

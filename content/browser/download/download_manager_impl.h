@@ -91,6 +91,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void RestartDownload(int32 download_id) OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
   virtual content::DownloadItem* GetDownloadItem(int id) OVERRIDE;
+  virtual content::DownloadItem* GetDownload(int id) OVERRIDE;
   virtual void SavePageDownloadFinished(
       content::DownloadItem* download) OVERRIDE;
   virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
@@ -226,7 +227,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   // system are placed directly into |history_downloads_| since they have valid
   // handles in the history system.
 
-  DownloadSet downloads_;
+  DownloadMap downloads_;
   DownloadMap history_downloads_;
   DownloadMap active_downloads_;
   DownloadMap save_page_downloads_;

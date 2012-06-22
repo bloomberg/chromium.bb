@@ -263,8 +263,8 @@ void DownloadManagerImpl::Shutdown() {
 
   // Go through all downloads in downloads_.  Dangerous ones we need to
   // remove on disk, and in progress ones we need to cancel.
-  for (DownloadSet::iterator it = downloads_.begin(); it != downloads_.end();) {
-    DownloadItem* download = *it;
+  for (DownloadMap::iterator it = downloads_.begin(); it != downloads_.end();) {
+    DownloadItem* download = it->second;
 
     // Save iterator from potential erases in this set done by called code.
     // Iterators after an erasure point are still valid for lists and
@@ -295,12 +295,12 @@ void DownloadManagerImpl::Shutdown() {
 
   // Copy downloads_ to separate container so as not to set off checks
   // in DownloadItem destruction.
-  DownloadSet downloads_to_delete;
+  DownloadMap downloads_to_delete;
   downloads_to_delete.swap(downloads_);
 
   active_downloads_.clear();
   history_downloads_.clear();
-  STLDeleteElements(&downloads_to_delete);
+  STLDeleteValues(&downloads_to_delete);
 
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
@@ -505,11 +505,11 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
       scoped_ptr<DownloadRequestHandleInterface>(
           new DownloadRequestHandle(info->request_handle)).Pass(),
       browser_context_->IsOffTheRecord(), bound_net_log);
-  int32 download_id = info->download_id.local();
 
-  DCHECK(!ContainsKey(active_downloads_, download_id));
-  downloads_.insert(download);
-  active_downloads_[download_id] = download;
+  DCHECK(!ContainsKey(downloads_, download->GetId()));
+  downloads_[download->GetId()] = download;
+  DCHECK(!ContainsKey(active_downloads_, download->GetId()));
+  active_downloads_[download->GetId()] = download;
 
   return bound_net_log;
 }
@@ -533,8 +533,9 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
 
   download->AddObserver(observer);
 
+  DCHECK(!ContainsKey(downloads_, download->GetId()));
+  downloads_[download->GetId()] = download;
   DCHECK(!ContainsKey(save_page_downloads_, download->GetId()));
-  downloads_.insert(download);
   save_page_downloads_[download->GetId()] = download;
 
   // Will notify the observer in the callback.
@@ -549,11 +550,8 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
 void DownloadManagerImpl::OnTargetPathAvailable(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download);
-
-  int32 download_id = download->GetId();
-
-  DCHECK(ContainsKey(downloads_, download));
-  DCHECK(ContainsKey(active_downloads_, download_id));
+  DCHECK(ContainsKey(downloads_, download->GetId()));
+  DCHECK(ContainsKey(active_downloads_, download->GetId()));
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
@@ -616,14 +614,14 @@ void DownloadManagerImpl::OnResponseCompleted(int32 download_id,
 
 void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
   if (download->GetState() == DownloadItem::REMOVING) {
-    DCHECK(!ContainsKey(downloads_, download));
+    DCHECK(!ContainsKey(downloads_, download->GetId()));
     DCHECK(!ContainsKey(active_downloads_, download->GetId()));
     DCHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
     return;
   }
 
   // Should be in downloads_ if we're not REMOVING.
-  CHECK(ContainsKey(downloads_, download));
+  CHECK(ContainsKey(downloads_, download->GetId()));
 
   // Check history_downloads_ consistency.
   if (download->IsPersisted()) {
@@ -826,7 +824,7 @@ int DownloadManagerImpl::RemoveDownloadItems(
     DCHECK(download);
     history_downloads_.erase(download->GetDbHandle());
     save_page_downloads_.erase(download->GetId());
-    downloads_.erase(download);
+    downloads_.erase(download->GetId());
   }
 
   // Tell observers to refresh their views.
@@ -958,7 +956,8 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
         net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
     DownloadItem* download = factory_->CreatePersistedItem(
         this, GetNextId(), entries->at(i), bound_net_log);
-    downloads_.insert(download);
+    DCHECK(!ContainsKey(downloads_, download->GetId()));
+    downloads_[download->GetId()] = download;
     history_downloads_[download->GetDbHandle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
@@ -1090,6 +1089,10 @@ DownloadItem* DownloadManagerImpl::GetDownloadItem(int download_id) {
   return NULL;
 }
 
+DownloadItem* DownloadManagerImpl::GetDownload(int download_id) {
+  return ContainsKey(downloads_, download_id) ? downloads_[download_id] : NULL;
+}
+
 DownloadItem* DownloadManagerImpl::GetActiveDownloadItem(int download_id) {
   if (ContainsKey(active_downloads_, download_id))
     return active_downloads_[download_id];
@@ -1114,13 +1117,19 @@ void DownloadManagerImpl::AssertContainersConsistent() const {
     }
   }
 
+  DownloadSet all_downloads;
+  for (DownloadMap::const_iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    all_downloads.insert(it->second);
+  }
+
   // Check if each set is fully present in downloads, and create a union.
   DownloadSet downloads_union;
   for (int i = 0; i < static_cast<int>(ARRAYSIZE_UNSAFE(all_sets)); i++) {
     DownloadSet remainder;
     std::insert_iterator<DownloadSet> insert_it(remainder, remainder.begin());
     std::set_difference(all_sets[i]->begin(), all_sets[i]->end(),
-                        downloads_.begin(), downloads_.end(),
+                        all_downloads.begin(), all_downloads.end(),
                         insert_it);
     DCHECK(remainder.empty());
     std::insert_iterator<DownloadSet>
@@ -1134,7 +1143,7 @@ void DownloadManagerImpl::AssertContainersConsistent() const {
   DownloadSet remainder;
   std::insert_iterator<DownloadSet>
       insert_remainder(remainder, remainder.begin());
-  std::set_difference(downloads_.begin(), downloads_.end(),
+  std::set_difference(all_downloads.begin(), all_downloads.end(),
                       downloads_union.begin(), downloads_union.end(),
                       insert_remainder);
   DCHECK(remainder.empty());

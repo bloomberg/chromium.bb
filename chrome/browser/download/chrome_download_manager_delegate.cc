@@ -298,7 +298,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
     int download_id,
     const base::Closure& user_complete_callback) {
-  DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
+  DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
     return;
   if (IsDownloadReadyForCompletion(item, base::Bind(
