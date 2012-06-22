@@ -141,6 +141,9 @@ pp::InstancePrivate {
   // Set once the tests are run so we know not to re-run when the view is sized.
   bool executed_tests_;
 
+  // The number of tests executed so far.
+  int32_t number_tests_executed_;
+
   // Collects all errors to send the the browser. Empty indicates no error yet.
   std::string errors_;
 

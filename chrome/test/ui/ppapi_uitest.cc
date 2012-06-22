@@ -535,8 +535,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
                        DISABLED_Instance_RecursiveObjects) {
   RunTestAndReload("Instance_RecursiveObjects");
 }
-TEST_PPAPI_IN_PROCESS(Instance_TestLeakedObjectDestructors);
-TEST_PPAPI_OUT_OF_PROCESS(Instance_TestLeakedObjectDestructors);
+TEST_PPAPI_IN_PROCESS(Instance_LeakedObjectDestructors);
+TEST_PPAPI_OUT_OF_PROCESS(Instance_LeakedObjectDestructors);
 // ScriptableObjects aren't supported in NaCl, so Instance_RecursiveObjects and
 // Instance_TestLeakedObjectDestructors don't make sense for NaCl.
 
@@ -576,15 +576,12 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_NACL_VIA_HTTP(TCPServerSocketPrivate)
 
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_Create)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPV4)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Create)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPV4)
-TEST_PPAPI_NACL_VIA_HTTP(HostResolverPrivate_Create)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
 TEST_PPAPI_NACL_VIA_HTTP(HostResolverPrivate_Resolve)
-TEST_PPAPI_NACL_VIA_HTTP(HostResolverPrivate_ResolveIPV4)
+TEST_PPAPI_NACL_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
 
 // URLLoader tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicGET)
@@ -606,8 +603,8 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
 // http://crbug.com/103062
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(
     DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRestriction)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRequests)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRequests)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_FollowURLRedirect)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_AuditURLRedirect)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
@@ -633,8 +630,8 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
 // http://crbug.com/103062
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(
     DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRestriction)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRestriction)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRequests)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRequests)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_FollowURLRedirect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AuditURLRedirect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
@@ -653,7 +650,7 @@ TEST_PPAPI_NACL_VIA_HTTP(URLLoader_StreamToFile)
 TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedSameOriginRestriction)
 TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedCrossOriginRequest)
 TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
-TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedHttpRestriction)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntrustedHttpRequests)
 TEST_PPAPI_NACL_VIA_HTTP(URLLoader_FollowURLRedirect)
 TEST_PPAPI_NACL_VIA_HTTP(URLLoader_AuditURLRedirect)
 TEST_PPAPI_NACL_VIA_HTTP(URLLoader_AbortCalls)
@@ -938,7 +935,6 @@ TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAnyAddress)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetFamily)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetPort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAddress)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetScopeID)
 
 TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_Basic)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_Basic)
@@ -1043,9 +1039,9 @@ TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_Failures)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
 
-TEST_PPAPI_IN_PROCESS(View_CreateVisible);
-TEST_PPAPI_OUT_OF_PROCESS(View_CreateVisible);
-TEST_PPAPI_NACL_VIA_HTTP(View_CreateVisible);
+TEST_PPAPI_IN_PROCESS(View_CreatedVisible);
+TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible);
+TEST_PPAPI_NACL_VIA_HTTP(View_CreatedVisible);
 // This test ensures that plugins created in a background tab have their
 // initial visibility set to false. We don't bother testing in-process for this
 // custom test since the out of process code also exercises in-process.

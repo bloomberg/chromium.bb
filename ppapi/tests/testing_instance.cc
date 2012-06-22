@@ -30,6 +30,7 @@ TestingInstance::TestingInstance(PP_Instance instance)
 #endif
       current_case_(NULL),
       executed_tests_(false),
+      number_tests_executed_(0),
       nacl_mode_(false),
       ssl_server_port_(-1),
       websocket_port_(-1) {
@@ -120,6 +121,8 @@ void TestingInstance::LogTest(const std::string& test_name,
   // Tell the browser we're still working.
   ReportProgress(kProgressSignal);
 
+  number_tests_executed_++;
+
   std::string html;
   html.append("<div class=\"test_line\"><span class=\"test_name\">");
   html.append(test_name);
@@ -160,10 +163,18 @@ void TestingInstance::ExecuteTests(int32_t unused) {
     errors_.append("FAIL: Only listed tests");
   } else {
     current_case_->RunTests(test_filter_);
-    // Automated PyAuto tests rely on finding the exact strings below.
-    LogHTML(errors_.empty() ?
-            "<span class=\"pass\">[SHUTDOWN]</span> All tests passed." :
-            "<span class=\"fail\">[SHUTDOWN]</span> Some tests failed.");
+
+    if (number_tests_executed_ == 0) {
+      errors_.append("No tests executed. The test filter might be too "
+                     "restrictive: '" + test_filter_ + "'.");
+      LogError(errors_);
+    }
+    else {
+      // Automated PyAuto tests rely on finding the exact strings below.
+      LogHTML(errors_.empty() ?
+              "<span class=\"pass\">[SHUTDOWN]</span> All tests passed." :
+              "<span class=\"fail\">[SHUTDOWN]</span> Some tests failed.");
+    }
   }
 
   // Declare we're done by setting a cookie to either "PASS" or the errors.
