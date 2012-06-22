@@ -95,7 +95,15 @@ var KEYCODE_TO_LABEL = {
 };
 
 // The labels that close the keyboard overlay when pressed
-var CLOSE_LABELS = ['esc', 'pageup', 'pagedown', 'end', 'home', 'delete'];
+var CLOSE_LABELS = [
+  'delete',
+  'end',
+  'esc',
+  'home',
+  'pagedown',
+  'pageup',
+  'switch window',
+];
 
 var keyboardOverlayId = 'en_US';
 var identifierMap = {};
