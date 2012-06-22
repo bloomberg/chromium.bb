@@ -147,8 +147,7 @@ Directory::Kernel::Kernel(
     const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
     const csync::WeakHandle<TransactionObserver>&
         transaction_observer)
-    : refcount(1),
-      next_write_transaction_id(0),
+    : next_write_transaction_id(0),
       name(name),
       metahandles_index(new Directory::MetahandlesIndex),
       ids_index(new Directory::IdsIndex),
@@ -167,17 +166,7 @@ Directory::Kernel::Kernel(
   DCHECK(transaction_observer.IsInitialized());
 }
 
-void Directory::Kernel::AddRef() {
-  base::subtle::NoBarrier_AtomicIncrement(&refcount, 1);
-}
-
-void Directory::Kernel::Release() {
-  if (!base::subtle::NoBarrier_AtomicIncrement(&refcount, -1))
-    delete this;
-}
-
 Directory::Kernel::~Kernel() {
-  CHECK_EQ(0, refcount);
   delete unsynced_metahandles;
   delete dirty_metahandles;
   delete metahandles_to_purge;
@@ -288,10 +277,7 @@ void Directory::Close() {
     delete store_;
   store_ = NULL;
   if (kernel_) {
-    bool del = !base::subtle::NoBarrier_AtomicIncrement(&kernel_->refcount, -1);
-    DCHECK(del) << "Kernel should only have a single ref";
-    if (del)
-      delete kernel_;
+    delete kernel_;
     kernel_ = NULL;
   }
 }

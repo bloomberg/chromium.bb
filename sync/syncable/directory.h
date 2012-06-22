@@ -497,12 +497,6 @@ class Directory {
 
     ~Kernel();
 
-    void AddRef();  // For convenience.
-    void Release();
-
-    // TODO(timsteele): audit use of the member and remove if possible
-    volatile base::subtle::AtomicWord refcount;
-
     // Implements ReadTransaction / WriteTransaction using a simple lock.
     base::Lock transaction_mutex;
 
