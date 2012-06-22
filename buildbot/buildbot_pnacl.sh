@@ -339,7 +339,7 @@ browser-tests() {
     # Use streaming translator. TODO(dschuff): remove this when env var
     # goes away in Chrome and we use it by default
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2195
-    export NACL_STREAMING_TRANSLATION
+    export NACL_STREAMING_TRANSLATION=true
     single-browser-test ${platform} "${extra}" "chrome_browser_tests"
   fi
 }
