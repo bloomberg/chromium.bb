@@ -89,6 +89,9 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   success = base::HexStringToInt(
       command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
       reinterpret_cast<int*>(&(gpu_info.gpu.device_id)));
+  DCHECK(success);
+  gpu_info.driver_vendor =
+      command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
   gpu_info.driver_version =
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
   content::GetContentClient()->SetGpuInfo(gpu_info);
@@ -99,10 +102,13 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     // We collect full GPU info on demand in Win/Mac, i.e., when about:gpu
     // page opens.  This is because we can make blacklist decisions based on
     // preliminary GPU info.
-    // However, on Linux, blacklist decisions are based on full GPU info.
-    if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
-      VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
-    content::GetContentClient()->SetGpuInfo(gpu_info);
+    // However, on Linux, we may not have enough info for blacklisting.
+    if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id ||
+        gpu_info.driver_vendor.empty() || gpu_info.driver_version.empty()) {
+      if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
+        VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+      content::GetContentClient()->SetGpuInfo(gpu_info);
+    }
 
 #if !defined(OS_CHROMEOS)
     if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA

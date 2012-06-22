@@ -399,6 +399,9 @@ const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 // Passes gpu device_id from browser process to GPU process.
 const char kGpuDeviceID[]                   = "gpu-device-id";
 
+// Passes gpu driver_vendor from browser process to GPU process.
+const char kGpuDriverVendor[]               = "gpu-driver-vendor";
+
 // Passes gpu driver_version from browser process to GPU process.
 const char kGpuDriverVersion[]              = "gpu-driver-version";
 

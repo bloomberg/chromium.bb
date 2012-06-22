@@ -124,6 +124,7 @@ CONTENT_EXPORT extern const char kForceCompositingMode[];
 extern const char kForceFieldTrials[];
 CONTENT_EXPORT extern const char kForceRendererAccessibility[];
 extern const char kGpuDeviceID[];
+extern const char kGpuDriverVendor[];
 extern const char kGpuDriverVersion[];
 extern const char kGpuLauncher[];
 CONTENT_EXPORT extern const char kGpuProcess[];
