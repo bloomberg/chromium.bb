@@ -414,6 +414,8 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
     int64 surface_handle,
     const base::Callback<void(bool)>& completion_task) {
   if (!surface_handle) {
+    TRACE_EVENT1("gpu", "EarlyOut_ZeroSurfaceHandle",
+                 "surface_handle", surface_handle);
     completion_task.Run(true);
     return;
   }

@@ -611,13 +611,18 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
-  if (!handle)
+  if (!handle) {
+    TRACE_EVENT1("gpu", "EarlyOut_SurfaceIDNotFound",
+                 "surface_id", params.surface_id);
     return;
+  }
 
   scoped_refptr<AcceleratedPresenter> presenter(
       AcceleratedPresenter::GetForWindow(handle));
-  if (!presenter)
+  if (!presenter) {
+    TRACE_EVENT1("gpu", "EarlyOut_NativeWindowNotFound", "handle", handle);
     return;
+  }
 
   scoped_completion_runner.Release();
   presenter->AsyncPresentAndAcknowledge(
