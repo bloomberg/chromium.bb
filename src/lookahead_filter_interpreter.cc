@@ -32,7 +32,8 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
       drumroll_max_speed_ratio_(prop_reg,
                                 "Drumroll Max Speed Change Factor",
                                 15.0),
-      quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0) {
+      quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0),
+      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {
   next_.reset(next);
 }
 
@@ -249,6 +250,8 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
 }
 
 Gesture LookaheadFilterInterpreter::TapDownOccurringGesture(stime_t now) const {
+  if (suppress_immediate_tapdown_.val_)
+    return Gesture();
   if (queue_.size() < 2)
     return Gesture();  // Not enough data to know
   HardwareState& hs = queue_.Tail()->state_;

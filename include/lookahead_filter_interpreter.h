@@ -137,6 +137,9 @@ class LookaheadFilterInterpreter : public Interpreter {
   // HardwareState, it is considered to be a quick move and the tracking ID
   // reassignment due to drumroll detection may get corrected.
   DoubleProperty quick_move_thresh_;
+  // Temporary property to turn on/off the generation of TapDown gestures
+  // (i.e., stop flinging gestures).
+  BoolProperty suppress_immediate_tapdown_;
 };
 
 }  // namespace gestures
