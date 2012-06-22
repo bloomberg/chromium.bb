@@ -388,8 +388,8 @@ PP_Resource CreateTouchInputEvent(PP_Instance instance,
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  // TODO(sad):
-  return 0;
+  return enter.functions()->CreateTouchInputEvent(instance, type, time_stamp,
+                                                  modifiers);
 }
 
 void AddTouchPoint(PP_Resource touch_event,

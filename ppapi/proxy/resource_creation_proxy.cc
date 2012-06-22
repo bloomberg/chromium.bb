@@ -118,6 +118,15 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
       mouse_button, mouse_position, click_count, mouse_movement);
 }
 
+PP_Resource ResourceCreationProxy::CreateTouchInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers) {
+  return PPB_InputEvent_Shared::CreateTouchInputEvent(
+      OBJECT_IS_PROXY, instance, type, time_stamp, modifiers);
+}
+
 PP_Resource ResourceCreationProxy::CreateResourceArray(
     PP_Instance instance,
     const PP_Resource elements[],

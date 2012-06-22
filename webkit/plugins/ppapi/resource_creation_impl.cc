@@ -226,6 +226,15 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
       mouse_button, mouse_position, click_count, mouse_movement);
 }
 
+PP_Resource ResourceCreationImpl::CreateTouchInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers) {
+  return PPB_InputEvent_Shared::CreateTouchInputEvent(
+      ::ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, modifiers);
+}
+
 PP_Resource ResourceCreationImpl::CreateNetworkMonitor(
     PP_Instance instance,
     PPB_NetworkMonitor_Callback callback,

@@ -131,6 +131,11 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
                                            const PP_FloatPoint* wheel_delta,
                                            const PP_FloatPoint* wheel_ticks,
                                            PP_Bool scroll_by_page);
+  static PP_Resource CreateTouchInputEvent(ResourceObjectType type,
+                                           PP_Instance instance,
+                                           PP_InputEvent_Type event_type,
+                                           PP_TimeTicks time_stamp,
+                                           uint32_t modifiers);
 
  private:
   InputEventData data_;

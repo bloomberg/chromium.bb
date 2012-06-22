@@ -93,6 +93,11 @@ class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
       const PP_Point* mouse_position,
       int32_t click_count,
       const PP_Point* mouse_movement) OVERRIDE;
+  virtual PP_Resource CreateTouchInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers) OVERRIDE;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,

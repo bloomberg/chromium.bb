@@ -324,4 +324,24 @@ PP_Resource PPB_InputEvent_Shared::CreateWheelInputEvent(
   return (new PPB_InputEvent_Shared(type, instance, data))->GetReference();
 }
 
+// static
+PP_Resource PPB_InputEvent_Shared::CreateTouchInputEvent(
+    ResourceObjectType type,
+    PP_Instance instance,
+    PP_InputEvent_Type event_type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers) {
+  if (event_type != PP_INPUTEVENT_TYPE_TOUCHSTART &&
+      event_type != PP_INPUTEVENT_TYPE_TOUCHMOVE &&
+      event_type != PP_INPUTEVENT_TYPE_TOUCHEND &&
+      event_type != PP_INPUTEVENT_TYPE_TOUCHCANCEL)
+    return 0;
+
+  InputEventData data;
+  data.event_type = event_type;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  return (new PPB_InputEvent_Shared(type, instance, data))->GetReference();
+}
+
 }  // namespace ppapi
