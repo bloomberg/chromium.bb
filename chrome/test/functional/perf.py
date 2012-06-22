@@ -2057,7 +2057,7 @@ class PageCyclerTest(BasePageCyclerTest):
     self.RunPageCyclerTest('moz2', 'Moz2File')
 
 
-class PageCyclerNetSimTest(BasePageCyclerTest):
+class WebPageReplay(object):
   """Run page cycler tests with network simulation via Web Page Replay.
 
   Web Page Replay is a proxy that can record and "replay" web pages with
@@ -2067,10 +2067,9 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
   bandwidth throttling.
 
   Environment Variables:
-    PC_NO_AUTO: if set, avoids automatically loading pages.
-    PC_RECORD: if set, puts Web Page Replay in record mode instead of replay.
-    PC_REPLAY_DIR: path to alternate Web Page Replay source (for development).
-    PC_ARCHIVE_PATH: path to alternate archive file (e.g. '/tmp/foo.wpr').
+    WPR_RECORD: if set, puts Web Page Replay in record mode instead of replay.
+    WPR_REPLAY_DIR: path to alternate Web Page Replay source (for development).
+    WPR_ARCHIVE_PATH: path to alternate archive file (e.g. '/tmp/foo.wpr').
   """
   _PATHS = {
       'archive':    'src/data/page_cycler/webpagereplay/{test_name}.wpr',
@@ -2082,35 +2081,63 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
 
   _BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                            '..', '..', '..', '..'))
-  _IS_DNS_FORWARDED = False
-  MAX_ITERATION_SECONDS = 180
-
-  def setUp(self):
-    """Performs necessary setup work before running each test."""
-    super(PageCyclerNetSimTest, self).setUp()
-    self.replay_dir = os.environ.get('PC_REPLAY_DIR')
-    self.archive_path = os.environ.get('PC_ARCHIVE_PATH')
-    self.is_record_mode = 'PC_RECORD' in os.environ
-    if self.is_record_mode:
-      self._num_iterations = 1
+  CHROME_FLAGS = [
+      '--host-resolver-rules=MAP * %s' % webpagereplay.REPLAY_HOST,
+      '--testing-fixed-http-port=%s' % webpagereplay.HTTP_PORT,
+      '--testing-fixed-https-port=%s' % webpagereplay.HTTPS_PORT,
+      '--log-level=0',
+      '--disable-background-networking',
+      '--enable-experimental-extension-apis',
+      '--enable-logging',
+      '--enable-stats-table',
+      '--enable-benchmarking',
+      '--ignore-certificate-errors',
+      '--metrics-recording-only',
+      '--activate-on-launch',
+      '--no-first-run',
+      '--no-proxy-server',
+      ]
 
   @classmethod
-  def _Path(cls, key, **kwargs):
-    """Provide paths for page cycler tests with Web Page Replay."""
+  def Path(cls, key, **kwargs):
+    """Provide paths for tests using Web Page Replay."""
     chromium_path = cls._PATHS[key].format(**kwargs)
     return os.path.join(cls._BASE_DIR, *chromium_path.split('/'))
 
   def _ArchivePath(self, test_name):
-    archive_path = self.archive_path or self._Path('archive',
-                                                   test_name=test_name)
+    archive_path = self.archive_path or self.Path('archive',
+                                                  test_name=test_name)
     if self.is_record_mode:
       archive_dir = os.path.dirname(archive_path)
-      self.assertTrue(os.path.exists(archive_dir),
-                      msg='Archive directory does not exist: %s' % archive_dir)
+      assert os.path.exists(archive_dir), \
+          'Archive directory does not exist: %s' % archive_dir
     else:
-      self.assertTrue(os.path.exists(archive_path),
-                      msg='Archive file path does not exist: %s' % archive_path)
+      assert os.path.exists(archive_path), \
+          'Archive file path does not exist: %s' % archive_path
     return archive_path
+
+  def __init__(self):
+    self.archive_path = os.environ.get('WPR_ARCHIVE_PATH')
+    self.replay_dir = os.environ.get('WPR_REPLAY_DIR', self.Path('replay'))
+    self.is_record_mode = 'WPR_RECORD' in os.environ
+    if self.is_record_mode:
+      self._num_iterations = 1
+
+  def GetReplayServer(self, test_name):
+    replay_options = []
+    replay_options.append('--no-dns_forwarding')
+    if self.is_record_mode:
+      replay_options.append('--record')
+    return webpagereplay.ReplayServer(
+        self.replay_dir,
+        self._ArchivePath(test_name),
+        self.Path('logs'),
+        replay_options)
+
+
+class PageCyclerNetSimTest(BasePageCyclerTest):
+  """Tests to run Web Page Replay backed page cycler tests."""
+  MAX_ITERATION_SECONDS = 180
 
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
@@ -2119,32 +2146,13 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
       A list of extra flags to pass to Chrome when it is launched.
     """
     flags = super(PageCyclerNetSimTest, self).ExtraChromeFlags()
-    flags.append('--load-extension=%s' % self._Path('extension'))
-    if not self._IS_DNS_FORWARDED:
-      flags.append('--host-resolver-rules=MAP * %s' % webpagereplay.REPLAY_HOST)
-    flags.extend([
-        '--testing-fixed-http-port=%s' % webpagereplay.HTTP_PORT,
-        '--testing-fixed-https-port=%s' % webpagereplay.HTTPS_PORT,
-        '--log-level=0',
-        ])
-    extra_flags = [
-        '--disable-background-networking',
-        '--enable-experimental-extension-apis',
-        '--enable-logging',
-        '--enable-stats-table',
-        '--enable-benchmarking',
-        '--ignore-certificate-errors',
-        '--metrics-recording-only',
-        '--activate-on-launch',
-        '--no-first-run',
-        '--no-proxy-server',
-        ]
-    flags.extend(f for f in extra_flags if f not in flags)
+    flags.append('--load-extension=%s' % WebPageReplay.Path('extension'))
+    flags.extend(WebPageReplay.CHROME_FLAGS)
     return flags
 
   def StartUrl(self, test_name, iterations):
     start_url = 'file://%s?test=%s&iterations=%d' % (
-        self._Path('start_page'), test_name, iterations)
+        WebPageReplay.Path('start_page'), test_name, iterations)
     if self.use_auto:
       start_url += '&auto=1'
     return start_url
@@ -2156,20 +2164,7 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
       test_name: name for archive (.wpr) and config (.js) files.
       description: a string description for the test
     """
-    replay_options = []
-    if not self._IS_DNS_FORWARDED:
-      replay_options.append('--no-dns_forwarding')
-    if self.is_record_mode:
-      replay_options.append('--record')
-    if self.replay_dir:
-      replay_dir = self.replay_dir
-    else:
-      replay_dir = self._Path('replay')
-    with webpagereplay.ReplayServer(
-        replay_dir,
-        self._ArchivePath(test_name),
-        self._Path('logs'),
-        replay_options):
+    with WebPageReplay().GetReplayServer(test_name):
       super_self = super(PageCyclerNetSimTest, self)
       super_self.RunPageCyclerTest(test_name, description)
 
