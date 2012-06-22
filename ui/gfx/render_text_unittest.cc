@@ -1017,6 +1017,13 @@ TEST_F(RenderTextTest, StringSizeHeight) {
   }
 }
 
+TEST_F(RenderTextTest, GetBaselineSanity) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  render_text->SetText(UTF8ToUTF16("Hello World"));
+  const int baseline = render_text->GetBaseline();
+  EXPECT_GT(baseline, 0);
+}
+
 TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   render_text->SetText(ASCIIToUTF16("abcdefg"));

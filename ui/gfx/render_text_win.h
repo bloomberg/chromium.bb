@@ -69,6 +69,7 @@ class RenderTextWin : public RenderText {
   // Overridden from RenderText:
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
   virtual Size GetStringSize() OVERRIDE;
+  virtual int GetBaseline() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
 

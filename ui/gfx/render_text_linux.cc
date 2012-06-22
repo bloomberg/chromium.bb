@@ -100,6 +100,11 @@ Size RenderTextLinux::GetStringSize() {
   return Size(width, height);
 }
 
+int RenderTextLinux::GetBaseline() {
+  EnsureLayout();
+  return PANGO_PIXELS(pango_layout_get_baseline(layout_));
+}
+
 SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
   EnsureLayout();
 

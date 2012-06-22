@@ -303,6 +303,11 @@ Size RenderTextWin::GetStringSize() {
   return string_size_;
 }
 
+int RenderTextWin::GetBaseline() {
+  EnsureLayout();
+  return common_baseline_;
+}
+
 SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
   if (text().empty())
     return SelectionModel();
