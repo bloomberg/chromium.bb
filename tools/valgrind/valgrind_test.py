@@ -393,9 +393,15 @@ class ValgrindTool(BaseTool):
       proc.append(wrapper)
       return proc
 
+    # Valgrind doesn't play nice with the Chrome sandbox.  Empty this env var
+    # set by runtest.py to disable the sandbox.
+    if os.environ.get("CHROME_DEVEL_SANDBOX", None):
+      logging.info("Removing CHROME_DEVEL_SANDBOX fron environment")
+      os.environ["CHROME_DEVEL_SANDBOX"] = ''
+
     if self._options.indirect:
       wrapper = self.CreateBrowserWrapper(proc)
-      os.putenv("BROWSER_WRAPPER", wrapper)
+      os.environ["BROWSER_WRAPPER"] = wrapper
       logging.info('export BROWSER_WRAPPER=' + wrapper)
       proc = []
     proc += self._args
