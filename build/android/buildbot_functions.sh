@@ -255,6 +255,7 @@ function bb_zip_build {
   echo "@@@BUILD_STEP Zip build@@@"
   python ../../../../scripts/slave/zip_build.py \
     --src-dir "$SRC_ROOT" \
+    --exclude-files "lib.target" \
     --factory-properties "$FACTORY_PROPERTIES" \
     --build-properties "$BUILD_PROPERTIES"
 }
