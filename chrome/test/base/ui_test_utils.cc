@@ -29,6 +29,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -601,6 +602,12 @@ int FindInPage(TabContents* tab_contents, const string16& search_string,
   if (ordinal)
     *ordinal = observer.active_match_ordinal();
   return observer.number_of_matches();
+}
+
+void CloseAllInfoBars(TabContents* tab) {
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  while (infobar_helper->infobar_count() > 0)
+    infobar_helper->RemoveInfoBar(infobar_helper->GetInfoBarDelegateAt(0));
 }
 
 void SimulateMouseClick(content::WebContents* tab) {

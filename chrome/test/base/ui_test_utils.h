@@ -216,6 +216,10 @@ int FindInPage(TabContents* tab,
                bool case_sensitive,
                int* ordinal);
 
+// Closes all infobars |tab| has open, if any.  Tests that depend on there being
+// no InfoBar open when the test starts may need to use this.
+void CloseAllInfoBars(TabContents* tab);
+
 // Simulates clicking at the center of the given tab asynchronously. Unlike
 // ClickOnView, this works even if the browser isn't in the foreground.
 void SimulateMouseClick(content::WebContents* tab);

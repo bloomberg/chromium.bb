@@ -21,16 +21,6 @@ using extensions::Extension;
 
 class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
  public:
-  // The test counts infobars, so make sure nothing else has opened one.
-  void CloseAllInfobars() {
-    TabContents* tab = browser()->GetActiveTabContents();
-    ASSERT_TRUE(tab);
-
-    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-    while (infobar_helper->infobar_count() > 0)
-      infobar_helper->RemoveInfoBar(infobar_helper->GetInfoBarDelegateAt(0));
-  }
-
   // Checks that a theme info bar is currently visible and issues an undo to
   // revert to the previous theme.
   void VerifyThemeInfoBarAndUndoInstall() {
@@ -60,7 +50,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_TestThemeInstallUndoResetsToDefault) {
-  CloseAllInfobars();
+  ui_test_utils::CloseAllInfoBars(browser()->GetActiveTabContents());
 
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
@@ -89,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        TestThemeInstallUndoResetsToPreviousTheme) {
-  CloseAllInfobars();
+  ui_test_utils::CloseAllInfoBars(browser()->GetActiveTabContents());
 
   // Install first theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme");
