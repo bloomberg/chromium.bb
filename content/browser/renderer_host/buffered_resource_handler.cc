@@ -383,13 +383,6 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
   net::URLRequestStatus status(net::URLRequestStatus::HANDLED_EXTERNALLY, 0);
   next_handler_->OnResponseCompleted(request_id, status, std::string());
 
-  // Remove the non-owning pointer to the CrossSiteResourceHandler, if any,
-  // from the extra request info because the CrossSiteResourceHandler (part of
-  // the original ResourceHandler chain) will be deleted by the next statement.
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  info->set_cross_site_handler(NULL);
-
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
   next_handler_ = handler.Pass();

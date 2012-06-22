@@ -11,6 +11,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
@@ -30,6 +32,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -53,6 +56,14 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
   int request_id;
   ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, &request_id));
   ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, response_head));
+}
+
+void GenerateIPCMessage(
+    scoped_refptr<ResourceMessageFilter> filter,
+    scoped_ptr<IPC::Message> message) {
+  bool msg_is_ok;
+  ResourceDispatcherHostImpl::Get()->OnMessageReceived(
+      *message, filter.get(), &msg_is_ok);
 }
 
 }  // namespace
@@ -114,6 +125,7 @@ class ResourceIPCAccumulator {
   typedef std::vector< std::vector<IPC::Message> > ClassifiedMessages;
   void GetClassifiedMessages(ClassifiedMessages* msgs);
 
+ private:
   std::vector<IPC::Message> messages_;
 };
 
@@ -289,7 +301,45 @@ class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
   virtual bool NextReadAsync() OVERRIDE { return true; }
 };
 
+class URLRequestBigJob : public net::URLRequestSimpleJob {
+ public:
+  URLRequestBigJob(net::URLRequest* request)
+      : net::URLRequestSimpleJob(request) {
+  }
 
+  virtual bool GetData(std::string* mime_type,
+                       std::string* charset,
+                       std::string* data) const {
+    *mime_type = "text/plain";
+    *charset = "UTF-8";
+
+    std::string text;
+    int count;
+    if (!ParseURL(request_->url(), &text, &count))
+      return false;
+
+    data->reserve(text.size() * count);
+    for (int i = 0; i < count; ++i)
+      data->append(text);
+
+    return true;
+  }
+
+ private:
+  virtual ~URLRequestBigJob() {}
+
+  // big-job:substring,N
+  static bool ParseURL(const GURL& url, std::string* text, int* count) {
+    std::vector<std::string> parts;
+    base::SplitString(url.path(), ',', &parts);
+
+    if (parts.size() != 2)
+      return false;
+
+    *text = parts[0];
+    return base::StringToInt(parts[1], count);
+  }
+};
 
 // Associated with an URLRequest to determine if the URLRequest gets deleted.
 class TestUserData : public base::SupportsUserData::Data {
@@ -379,7 +429,8 @@ class ResourceDispatcherHostTest : public testing::Test,
         cache_thread_(BrowserThread::CACHE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         old_factory_(NULL),
-        resource_type_(ResourceType::SUB_RESOURCE) {
+        resource_type_(ResourceType::SUB_RESOURCE),
+        send_data_received_acks_(false) {
     browser_context_.reset(new content::TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     message_loop_.RunAllPending();
@@ -389,6 +440,12 @@ class ResourceDispatcherHostTest : public testing::Test,
   // IPC::Message::Sender implementation
   virtual bool Send(IPC::Message* msg) {
     accum_.AddMessage(*msg);
+
+    if (send_data_received_acks_ &&
+        msg->type() == ResourceMsg_DataReceived::ID) {
+      GenerateDataReceivedACK(*msg);
+    }
+
     delete msg;
     return true;
   }
@@ -447,11 +504,15 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   void CompleteStartRequest(int request_id);
 
-  void EnsureTestSchemeIsAllowed() {
+  void EnsureSchemeIsAllowed(const std::string& scheme) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
-    if (!policy->IsWebSafeScheme("test"))
-      policy->RegisterWebSafeScheme("test");
+    if (!policy->IsWebSafeScheme(scheme))
+      policy->RegisterWebSafeScheme(scheme);
+  }
+
+  void EnsureTestSchemeIsAllowed() {
+    EnsureSchemeIsAllowed("test");
   }
 
   // Sets a particular response for any request from now on. To switch back to
@@ -467,6 +528,10 @@ class ResourceDispatcherHostTest : public testing::Test,
     resource_type_ = type;
   }
 
+  void SendDataReceivedACKs(bool send_acks) {
+    send_data_received_acks_ = send_acks;
+  }
+
   // Intercepts requests for the given protocol.
   void HandleScheme(const std::string& scheme) {
     DCHECK(scheme_.empty());
@@ -474,6 +539,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     scheme_ = scheme;
     old_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         scheme_, &ResourceDispatcherHostTest::Factory);
+    EnsureSchemeIsAllowed(scheme);
   }
 
   // Our own net::URLRequestJob factory.
@@ -484,6 +550,8 @@ class ResourceDispatcherHostTest : public testing::Test,
         return new URLRequestTestDelayedStartJob(request);
       } else if (delay_complete_) {
         return new URLRequestTestDelayedCompletionJob(request);
+      } else if (scheme == "big-job") {
+        return new URLRequestBigJob(request);
       } else {
         return new net::URLRequestTestJob(request);
       }
@@ -513,6 +581,18 @@ class ResourceDispatcherHostTest : public testing::Test,
     delay_complete_ = delay_job_complete;
   }
 
+  void GenerateDataReceivedACK(const IPC::Message& msg) {
+    EXPECT_EQ(ResourceMsg_DataReceived::ID, msg.type());
+
+    int request_id = IPC::MessageIterator(msg).NextInt();
+    scoped_ptr<IPC::Message> ack(
+        new ResourceHostMsg_DataReceived_ACK(msg.routing_id(), request_id));
+
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&GenerateIPCMessage, filter_, base::Passed(&ack)));
+  }
+
   MessageLoopForIO message_loop_;
   BrowserThreadImpl ui_thread_;
   BrowserThreadImpl file_thread_;
@@ -527,6 +607,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   std::string scheme_;
   net::URLRequest::ProtocolFactory* old_factory_;
   ResourceType::Type resource_type_;
+  bool send_data_received_acks_;
   static ResourceDispatcherHostTest* test_fixture_;
   static bool delay_start_;
   static bool delay_complete_;
@@ -1432,6 +1513,70 @@ TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
   EXPECT_EQ(1, request_id);
   EXPECT_EQ(net::URLRequestStatus::FAILED, status.status());
   EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, status.error());
+}
+
+TEST_F(ResourceDispatcherHostTest, DataReceivedACKs) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  SendDataReceivedACKs(true);
+
+  HandleScheme("big-job");
+  MakeTestRequest(0, 1, GURL("big-job:0123456789,1000000"));
+
+  // Sort all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  size_t size = msgs[0].size();
+
+  EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
+  for (size_t i = 1; i < size - 1; ++i)
+    EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+  EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][size - 1].type());
+}
+
+TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  HandleScheme("big-job");
+  MakeTestRequest(0, 1, GURL("big-job:0123456789,1000000"));
+
+  // Sort all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  // We expect 1x ReceivedResponse + Nx ReceivedData messages.
+  EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
+  for (size_t i = 1; i < msgs[0].size(); ++i)
+    EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+
+  // NOTE: If we fail the above checks then it means that we probably didn't
+  // load a big enough response to trigger the delay mechanism we are trying to
+  // test!
+
+  msgs[0].erase(msgs[0].begin());
+
+  // ACK all DataReceived messages until we find a RequestComplete message.
+  bool complete = false;
+  while (!complete) {
+    for (size_t i = 0; i < msgs[0].size(); ++i) {
+      if (msgs[0][i].type() == ResourceMsg_RequestComplete::ID) {
+        complete = true;
+        break;
+      }
+
+      EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+
+      ResourceHostMsg_DataReceived_ACK msg(0, 1);
+      bool msg_was_ok;
+      host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+    }
+
+    MessageLoop::current()->RunAllPending();
+
+    msgs.clear();
+    accum_.GetClassifiedMessages(&msgs);
+  }
 }
 
 }  // namespace content

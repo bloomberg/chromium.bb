@@ -122,11 +122,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                      int request_id,
                      bool from_renderer);
 
-  // Returns true if it's ok to send the data. If there are already too many
-  // data messages pending, it pauses the request and returns false. In this
-  // case the caller should not send the data.
-  bool WillSendData(int child_id, int request_id, bool* defer);
-
   // Marks the request as "parked". This happens if a request is
   // redirected cross-site and needs to be resumed by a new render view.
   void MarkAsTransferredNavigation(const GlobalRequestID& id);
@@ -192,11 +187,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Cancels any blocked request for the specified route id.
   void CancelBlockedRequestsForRoute(int child_id, int route_id);
-
-  // Decrements the pending_data_count for the request and resumes
-  // the request if it was paused due to too many pending data
-  // messages sent.
-  void DataReceivedACK(int child_id, int request_id);
 
   // Maintains a collection of temp files created in support of
   // the download_to_file capability. Used to grant access to the
