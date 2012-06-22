@@ -176,4 +176,8 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   EXPECT_EQ(ui::kCursorCopy, root_windows[1]->last_cursor().native_type());
 }
 
+TEST_F(ExtendedDesktopTest, CycleWindow) {
+  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+}
+
 }  // namespace ash
