@@ -62,9 +62,7 @@ void ResourceBundle::LoadCommonResources() {
   if (base::mac::IsOSLionOrLater()) {
     AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil),
                 SCALE_FACTOR_200P);
-    AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard_2x", nil),
-                SCALE_FACTOR_200P);
-    AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard_2x", nil),
+    AddDataPack(GetResourcesPakFilePath(@"ui_resources_2x", nil),
                 SCALE_FACTOR_200P);
   }
 #endif
