@@ -39,7 +39,7 @@ chrome.experimental.app.onLaunched.addListener(function() {
          }));
    },
 
-   function testRestore() {
+   /*function testRestore() {
      chrome.appWindow.create('test.html', {width: 200, height: 200},
          callbackPass(function(win) {
            var oldWidth = win.innerWidth;
@@ -61,6 +61,6 @@ chrome.experimental.app.onLaunched.addListener(function() {
            });
            win.chrome.appWindow.maximize();
          }));
-   },
+   },*/
   ]);
 });
