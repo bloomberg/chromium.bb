@@ -74,6 +74,8 @@ extern const char kDisableSharedWorkers[];
 extern const char kDisableSiteSpecificQuirks[];
 CONTENT_EXPORT extern const char kDisableSpeechInput[];
 CONTENT_EXPORT extern const char kEnableScriptedSpeech[];
+extern const char kSpeechRecognitionWebserviceURL[];
+extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kDisableThreadedAnimation[];
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 extern const char kDisableWebSecurity[];

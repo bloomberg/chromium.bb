@@ -32,7 +32,7 @@ typedef std::vector<SpeechRecognitionHypothesis>
 
 struct CONTENT_EXPORT SpeechRecognitionResult {
   SpeechRecognitionHypothesisArray hypotheses;
-  bool provisional;
+  bool is_provisional;
 
   SpeechRecognitionResult();
   ~SpeechRecognitionResult();

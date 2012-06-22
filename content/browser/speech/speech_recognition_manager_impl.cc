@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/speech/google_one_shot_remote_engine.h"
+#include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,12 +102,20 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.hardware_info = hardware_info;
   remote_engine_config.origin_url = can_report_metrics ? config.origin_url : "";
 
-  SpeechRecognitionEngine* google_remote_engine =
+  SpeechRecognitionEngine* google_remote_engine;
+  if (config.is_one_shot) {
+    google_remote_engine =
         new GoogleOneShotRemoteEngine(config.url_request_context_getter);
+  } else {
+    google_remote_engine =
+        new GoogleStreamingRemoteEngine(config.url_request_context_getter);
+  }
+
   google_remote_engine->SetConfig(remote_engine_config);
 
   session.recognizer = new SpeechRecognizerImpl(this,
                                                 session_id,
+                                                config.is_one_shot,
                                                 google_remote_engine);
   return session_id;
 }

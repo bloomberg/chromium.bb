@@ -56,9 +56,13 @@ void SpeechRecognitionDispatcher::start(
     const WebSpeechRecognitionHandle& handle,
     const WebSpeechRecognitionParams& params,
     WebSpeechRecognizerClient* recognizer_client) {
-  //TODO(primiano) What to do if a start is issued to an already started object?
   DCHECK(!recognizer_client_ || recognizer_client_ == recognizer_client);
   recognizer_client_ = recognizer_client;
+
+  // TODO(primiano): Should return false in order to communicate the failure
+  // and let WebKit throw an exception (need a hans@ patch to do that).
+  if (HandleExists(handle))
+    return;
 
   SpeechRecognitionHostMsg_StartRequest_Params msg_params;
   for (size_t i = 0; i < params.grammars().size(); ++i) {
@@ -71,23 +75,29 @@ void SpeechRecognitionDispatcher::start(
   msg_params.is_one_shot = !params.continuous();
   msg_params.origin_url = params.origin().toString().utf8();
   msg_params.render_view_id = routing_id();
-  msg_params.request_id = GetIDForHandle(handle);
+  msg_params.request_id = GetOrCreateIDForHandle(handle);
+  // The handle mapping will be removed in |OnRecognitionEnd|.
   Send(new SpeechRecognitionHostMsg_StartRequest(msg_params));
 }
 
 void SpeechRecognitionDispatcher::stop(
     const WebSpeechRecognitionHandle& handle,
     WebSpeechRecognizerClient* recognizer_client) {
-  DCHECK(recognizer_client_ == recognizer_client);
-  Send(new SpeechRecognitionHostMsg_StopCaptureRequest(routing_id(),
-                                                       GetIDForHandle(handle)));
+  // Ignore a |stop| issued without a matching |start|.
+  if (recognizer_client_ != recognizer_client || !HandleExists(handle))
+    return;
+  Send(new SpeechRecognitionHostMsg_StopCaptureRequest(
+      routing_id(), GetOrCreateIDForHandle(handle)));
 }
 
 void SpeechRecognitionDispatcher::abort(
     const WebSpeechRecognitionHandle& handle,
     WebSpeechRecognizerClient* recognizer_client) {
-  Send(new SpeechRecognitionHostMsg_AbortRequest(routing_id(),
-                                                 GetIDForHandle(handle)));
+  // Ignore an |abort| issued without a matching |start|.
+  if (recognizer_client_ != recognizer_client || !HandleExists(handle))
+    return;
+  Send(new SpeechRecognitionHostMsg_AbortRequest(
+      routing_id(), GetOrCreateIDForHandle(handle)));
 }
 
 void SpeechRecognitionDispatcher::OnRecognitionStarted(int request_id) {
@@ -116,8 +126,8 @@ void SpeechRecognitionDispatcher::OnErrorOccurred(
     recognizer_client_->didReceiveNoMatch(GetHandleFromID(request_id),
                                           WebSpeechRecognitionResult());
   } else {
-    // TODO(primiano) speech_recognition_error.h must be updated with the new
-    // API specs soon.
+    // TODO(primiano): speech_recognition_error.h must be updated to match the
+    // new enums defined in the the API specs (thus removing the code below).
     WebSpeechRecognizerClient::ErrorCode wk_error_code;
     switch (error.code) {
       case content::SPEECH_RECOGNITION_ERROR_ABORTED:
@@ -140,7 +150,7 @@ void SpeechRecognitionDispatcher::OnErrorOccurred(
         wk_error_code = WebSpeechRecognizerClient::OtherError;
     }
     recognizer_client_->didReceiveError(GetHandleFromID(request_id),
-                                        WebString(), // TODO(primiano) message?
+                                        WebString(), // TODO(primiano): message?
                                         wk_error_code);
   }
 }
@@ -160,8 +170,8 @@ void SpeechRecognitionDispatcher::OnResultRetrieved(
     transcripts[i] = result.hypotheses[i].utterance;
     confidences[i] = static_cast<float>(result.hypotheses[i].confidence);
   }
-  webkit_result.assign(transcripts, confidences, !result.provisional);
-  // TODO(primiano) Handle history, currently empty.
+  webkit_result.assign(transcripts, confidences, !result.is_provisional);
+  // TODO(primiano): Handle history, currently empty.
   WebVector<WebSpeechRecognitionResult> empty_history;
   recognizer_client_->didReceiveResult(GetHandleFromID(request_id),
                                        webkit_result,
@@ -169,7 +179,8 @@ void SpeechRecognitionDispatcher::OnResultRetrieved(
                                        empty_history);
 }
 
-int SpeechRecognitionDispatcher::GetIDForHandle(
+
+int SpeechRecognitionDispatcher::GetOrCreateIDForHandle(
     const WebSpeechRecognitionHandle& handle) {
   // Search first for an existing mapping.
   for (HandleMap::iterator iter = handle_map_.begin();
@@ -183,6 +194,17 @@ int SpeechRecognitionDispatcher::GetIDForHandle(
   handle_map_[new_id] = handle;
   ++next_id_;
   return new_id;
+}
+
+bool SpeechRecognitionDispatcher::HandleExists(
+    const WebSpeechRecognitionHandle& handle) {
+  for (HandleMap::iterator iter = handle_map_.begin();
+      iter != handle_map_.end();
+      ++iter) {
+    if (iter->second.equals(handle))
+      return true;
+  }
+  return false;
 }
 
 const WebSpeechRecognitionHandle& SpeechRecognitionDispatcher::GetHandleFromID(

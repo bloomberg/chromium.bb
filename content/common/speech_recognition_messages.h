@@ -29,7 +29,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionHypothesis)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionResult)
-  IPC_STRUCT_TRAITS_MEMBER(provisional)
+  IPC_STRUCT_TRAITS_MEMBER(is_provisional)
   IPC_STRUCT_TRAITS_MEMBER(hypotheses)
 IPC_STRUCT_TRAITS_END()
 

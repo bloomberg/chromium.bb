@@ -80,6 +80,7 @@ COMPILE_ASSERT(SpeechRecognizerImpl::kNumBitsPerAudioSample % 8 == 0,
 SpeechRecognizerImpl::SpeechRecognizerImpl(
     SpeechRecognitionEventListener* listener,
     int session_id,
+    bool is_single_shot,
     SpeechRecognitionEngine* engine)
     : listener_(listener),
       testing_audio_manager_(NULL),
@@ -87,6 +88,7 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
       endpointer_(kAudioSampleRate),
       session_id_(session_id),
       is_dispatching_event_(false),
+      is_single_shot_(is_single_shot),
       state_(STATE_IDLE) {
   DCHECK(listener_ != NULL);
   DCHECK(recognition_engine_ != NULL);
@@ -197,7 +199,7 @@ void SpeechRecognizerImpl::OnSpeechRecognitionEngineError(
 }
 
 // -----------------------  Core FSM implementation ---------------------------
-// TODO(primiano) After the changes in the media package (r129173), this class
+// TODO(primiano): After the changes in the media package (r129173), this class
 // slightly violates the SpeechRecognitionEventListener interface contract. In
 // particular, it is not true anymore that this class can be freed after the
 // OnRecognitionEnd event, since the audio_controller_.Close() asynchronous
@@ -240,7 +242,7 @@ SpeechRecognizerImpl::ExecuteTransitionAndGetNextState(
   switch (state_) {
     case STATE_IDLE:
       switch (event) {
-        // TODO(primiano) restore UNREACHABLE_CONDITION on EVENT_ABORT and
+        // TODO(primiano): restore UNREACHABLE_CONDITION on EVENT_ABORT and
         // EVENT_STOP_CAPTURE below once speech input extensions are fixed.
         case EVENT_ABORT:
           return DoNothing(event_args);
@@ -349,7 +351,7 @@ SpeechRecognizerImpl::ExecuteTransitionAndGetNextState(
 //  - The class won't be freed in the meanwhile due to callbacks;
 //  - IsCapturingAudio() returns true if and only if audio_controller_ != NULL.
 
-// TODO(primiano) the audio pipeline is currently serial. However, the
+// TODO(primiano): the audio pipeline is currently serial. However, the
 // clipper->endpointer->vumeter chain and the sr_engine could be parallelized.
 // We should profile the execution to see if it would be worth or not.
 void SpeechRecognizerImpl::ProcessAudioPipeline(const AudioChunk& raw_audio) {
@@ -464,9 +466,10 @@ SpeechRecognizerImpl::DetectUserSpeechOrTimeout(const FSMEventArgs&) {
 
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::DetectEndOfSpeech(const FSMEventArgs& event_args) {
-  if (endpointer_.speech_input_complete()) {
+  // End-of-speech detection is performed only in one-shot mode.
+  // TODO(primiano): What about introducing a longer timeout for continuous rec?
+  if (is_single_shot_ && endpointer_.speech_input_complete())
     return StopCaptureAndWaitForResult(event_args);
-  }
   return STATE_RECOGNIZING;
 }
 
@@ -532,21 +535,43 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
   return STATE_IDLE;
 }
 
-SpeechRecognizerImpl::FSMState
-SpeechRecognizerImpl::ProcessIntermediateResult(const FSMEventArgs&) {
-  // This is in preparation for future speech recognition functions.
-  NOTREACHED();
+SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::ProcessIntermediateResult(
+    const FSMEventArgs& event_args) {
+  // Provisional results can occur only during continuous (non one-shot) mode.
+  // If this check is reached it means that a continuous speech recognition
+  // engine is being used for a one shot recognition.
+  DCHECK_EQ(false, is_single_shot_);
+  const SpeechRecognitionResult& result = event_args.engine_result;
+  listener_->OnRecognitionResult(session_id_, result);
   return state_;
 }
 
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::ProcessFinalResult(const FSMEventArgs& event_args) {
   const SpeechRecognitionResult& result = event_args.engine_result;
-  DVLOG(1) << "Got valid result";
-  recognition_engine_->EndRecognition();
-  listener_->OnRecognitionResult(session_id_, result);
-  listener_->OnRecognitionEnd(session_id_);
-  return STATE_IDLE;
+  if (result.is_provisional) {
+    DCHECK(!is_single_shot_);
+    listener_->OnRecognitionResult(session_id_, result);
+    // We don't end the recognition if a provisional result is received in
+    // STATE_WAITING_FINAL_RESULT. A definitive result will come next and will
+    // end the recognition.
+    return state_;
+  } else {
+    recognition_engine_->EndRecognition();
+    // We could receive an empty result (which we won't propagate further)
+    // in the following (continuous) scenario:
+    //  1. The caller start pushing audio and receives some results;
+    //  2. A |StopAudioCapture| is issued later;
+    //  3. The final audio frames captured in the interval ]1,2] do not lead to
+    //     any result (nor any error);
+    //  4. The speech recognition engine, therefore, emits an empty result to
+    //     notify that the recognition is ended with no error, yet neither any
+    //     further result.
+    if (result.hypotheses.size() > 0)
+      listener_->OnRecognitionResult(session_id_, result);
+    listener_->OnRecognitionEnd(session_id_);
+    return STATE_IDLE;
+  }
 }
 
 SpeechRecognizerImpl::FSMState
@@ -563,7 +588,7 @@ SpeechRecognizerImpl::NotFeasible(const FSMEventArgs& event_args) {
 
 void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   DCHECK(IsCapturingAudio());
-  DVLOG(1) << "SpeechRecognizerImpl stopping audio capture.";
+  DVLOG(1) << "SpeechRecognizerImpl closing audio controller.";
   // Issues a Close on the audio controller, passing an empty callback. The only
   // purpose of such callback is to keep the audio controller refcounted until
   // Close has completed (in the audio thread) and automatically destroy it
@@ -581,7 +606,7 @@ void SpeechRecognizerImpl::UpdateSignalAndNoiseLevels(const float& rms,
                                                       bool clip_detected) {
   // Calculate the input volume to display in the UI, smoothing towards the
   // new level.
-  // TODO(primiano) Do we really need all this floating point arith here?
+  // TODO(primiano): Do we really need all this floating point arith here?
   // Perhaps it might be quite expensive on mobile.
   float level = (rms - kAudioMeterMinDb) /
       (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);

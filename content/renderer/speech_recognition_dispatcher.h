@@ -54,7 +54,8 @@ class SpeechRecognitionDispatcher : public content::RenderViewObserver,
   void OnResultRetrieved(int request_id,
                          const content::SpeechRecognitionResult& result);
 
-  int GetIDForHandle(const WebKit::WebSpeechRecognitionHandle& handle);
+  int GetOrCreateIDForHandle(const WebKit::WebSpeechRecognitionHandle& handle);
+  bool HandleExists(const WebKit::WebSpeechRecognitionHandle& handle);
   const WebKit::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
 
   // The WebKit client class that we use to send events back to the JS world.

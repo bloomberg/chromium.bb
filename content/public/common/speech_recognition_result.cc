@@ -7,10 +7,11 @@
 namespace content {
 
 SpeechRecognitionResult::SpeechRecognitionResult()
-    : provisional(false) {
+    : is_provisional(false) {
 }
 
 SpeechRecognitionResult::~SpeechRecognitionResult() {
 }
 
 }  // namespace content
+

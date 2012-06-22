@@ -201,6 +201,15 @@ const char kDisableSpeechInput[]            = "disable-speech-input";
 // Enables scripted speech api.
 const char kEnableScriptedSpeech[]          = "enable-scripted-speech";
 
+// TODO(primiano): Remove the two switches below when the URL becomes public.
+// Specifies the webservice URL for continuous speech recognition.
+const char kSpeechRecognitionWebserviceURL[] =
+    "speech-service";
+
+// Specifies the request key for the continuous speech recognition webservice.
+const char kSpeechRecognitionWebserviceKey[] =
+    "speech-service-key";
+
 // Disables animation on the compositor thread.
 const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 

@@ -45,6 +45,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   SpeechRecognizerImpl(
       content::SpeechRecognitionEventListener* listener,
       int session_id,
+      bool is_single_shot,
       SpeechRecognitionEngine* engine);
 
   void StartRecognition();
@@ -153,6 +154,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   int num_samples_recorded_;
   float audio_level_;
   bool is_dispatching_event_;
+  bool is_single_shot_;
   FSMState state_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);

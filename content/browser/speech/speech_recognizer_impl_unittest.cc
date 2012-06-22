@@ -117,7 +117,10 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
     config.filter_profanities = false;
     sr_engine->SetConfig(config);
 
-    recognizer_ = new SpeechRecognizerImpl(this, 1, sr_engine);
+    const int kTestingSessionId = 1;
+    const bool kOneShotMode = true;
+    recognizer_ = new SpeechRecognizerImpl(
+        this, kTestingSessionId, kOneShotMode, sr_engine);
     recognizer_->SetAudioManagerForTesting(audio_manager_.get());
 
     int audio_packet_length_bytes =
