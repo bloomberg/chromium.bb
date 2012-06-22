@@ -1,5 +1,5 @@
 {
-  "name": "Calculator (Platform App)",
+  "name": "Calculator (Packaged App)",
   "description": "Add numbers. Now includes subtraction!",
   "manifest_version": 2,
   "version": "1.0.1",

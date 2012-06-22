@@ -701,11 +701,11 @@
       ],
       "icon": "icon_128.png",
       "id": "3fb3045783163c0eaaf0d0ce139f254502192a92",
-      "name": "Calculator (Platform App)",
+      "name": "Calculator (Packaged App)",
       "packaged_app": false,
       "path": "examples/extensions/calculator/",
       "protocols": [],
-      "search_string": "CALCULATOR (PLATFORM APP) ADD NUMBERS. NOW INCLUDES SUBTRACTION! APPWINDOW EXPERIMENTAL CHROME.APPWINDOW.CREATE",
+      "search_string": "CALCULATOR (PACKAGED APP) ADD NUMBERS. NOW INCLUDES SUBTRACTION! APPWINDOW EXPERIMENTAL CHROME.APPWINDOW.CREATE",
       "source_files": [
         "calculator.html",
         "controller.js",
@@ -716,7 +716,7 @@
         "style.css",
         "view.js"
       ],
-      "source_hash": "9ffcc4ae67840e1ac102c0dd1922dac92e6bf3f8",
+      "source_hash": "20ae06f77aba6b84da3e7a0b7ed2bfc45551428a",
       "zip_path": "examples/extensions/calculator.zip"
     },
     {

@@ -161,7 +161,7 @@ const char kBackgroundPermissionNeeded[] =
     "Hosted apps that use 'background_page' must have the 'background' "
     "permission.";
 const char kBackgroundRequiredForPlatformApps[] =
-    "Platform apps must have a background page or background scripts.";
+    "Packaged apps must have a background page or background scripts.";
 const char kCannotAccessPage[] =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
@@ -272,14 +272,14 @@ const char kInvalidIntent[] =
 const char kInvalidIntentDisposition[] =
     "Invalid value for intents[*].disposition";
 const char kInvalidIntentDispositionInPlatformApp[] =
-    "Invalid value for intents[*].disposition. Platform apps cannot specify "
+    "Invalid value for intents[*].disposition. Packaged apps cannot specify "
     "a disposition";
 const char kInvalidIntentHref[] =
     "Invalid value for intents[*].href";
 const char kInvalidIntentHrefEmpty[] =
     "Missing value for intents[*].href";
 const char kInvalidIntentHrefInPlatformApp[] =
-    "Invalid value for intents[*].href. Platform apps cannot specifiy a "
+    "Invalid value for intents[*].href. Packaged apps cannot specify a "
     "URL for intents";
 const char kInvalidIntentHrefOldAndNewKey[] =
     "intents[*]: Key \"*\" is deprecated.  Key \"*\" has the same meaning. "
@@ -483,7 +483,7 @@ const char kOneUISurfaceOnly[] =
 const char kPermissionNotAllowed[] =
     "Access to permission '*' denied.";
 const char kPlatformAppNeedsManifestVersion2[] =
-    "Platform apps need manifest_version set to >= 2";
+    "Packaged apps need manifest_version set to >= 2";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
 const char kScriptBadgeRequiresFlag[] =
