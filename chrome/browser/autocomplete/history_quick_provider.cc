@@ -45,7 +45,8 @@ bool HistoryQuickProvider::disabled_ = false;
 HistoryQuickProvider::HistoryQuickProvider(ACProviderListener* listener,
                                            Profile* profile)
     : HistoryProvider(listener, profile, "HistoryQuickProvider"),
-      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) {
+      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      reorder_for_inlining_(false) {
   enum InliningOption {
     INLINING_PROHIBITED = 0,
     INLINING_ALLOWED = 1,
@@ -102,6 +103,11 @@ HistoryQuickProvider::HistoryQuickProvider(ACProviderListener* listener,
   UMA_HISTOGRAM_ENUMERATION(
       "Omnibox.InlineHistoryQuickProviderFieldTrialBeacon",
       inlining_option, NUM_OPTIONS);
+
+  reorder_for_inlining_ = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::
+                          kOmniboxHistoryQuickProviderReorderForInlining) ==
+      switches::kOmniboxHistoryQuickProviderReorderForInliningEnabled;
 }
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
@@ -151,27 +157,32 @@ void HistoryQuickProvider::DoAutocomplete() {
   if (matches.empty())
     return;
 
+  if (reorder_for_inlining_) {
+    // If we're allowed to reorder results in order to get an
+    // inlineable result to appear first (and hence have a
+    // HistoryQuickProvider suggestion possibly appear first), find
+    // the first inlineable result and then swap it to the front.
+    for (ScoredHistoryMatches::iterator i(matches.begin());
+         (i != matches.end()) &&
+             (i->raw_score >= AutocompleteResult::kLowestDefaultScore);
+         ++i) {
+      if (i->can_inline) {  // this test is only true once because of the break
+        if (i != matches.begin())
+          std::rotate(matches.begin(), i, i + 1);
+        break;
+      }
+    }
+  }
+
   // Loop over every result and add it to matches_.  In the process,
   // guarantee that scores are decreasing.  |max_match_score| keeps
   // track of the highest score we can assign to any later results we
   // see.  Also, if we're not allowing inline autocompletions in
-  // general, artificially reduce the starting |max_match_score|
-  // (which therefore applies to all results) to something low enough
-  // that guarantees no result will be offered as an autocomplete
-  // suggestion.  In addition, even if we allow inlining of
-  // suggestions in general, we also reduce the starting
-  // |max_match_score| if our top suggestion is not inlineable to make
-  // sure it never gets attempted to be offered as an inline
-  // suggestion.  Note that this strategy will allow a funky case:
-  // suppose we're allowing inlining in general.  If the second result
-  // is marked as cannot inline yet has a score that would make it
-  // inlineable, it will keep its score.  This is a bit odd--a
-  // non-inlineable result with a score high enough to make it
-  // eligible for inlining will keep its high score--but it's okay
-  // because there is a higher scoring result that is required to be
-  // shown before this result.  Hence, this result, the second in the
-  // set, will never be inlined.  (The autocomplete UI keeps results
-  // in relevance score order.)
+  // general or the current best suggestion isn't inlineable,
+  // artificially reduce the starting |max_match_score| (which
+  // therefore applies to all results) to something low enough that
+  // guarantees no result will be offered as an autocomplete
+  // suggestion.
   int max_match_score = (PreventInlineAutocomplete(autocomplete_input_) ||
       !matches.begin()->can_inline) ?
       (AutocompleteResult::kLowestDefaultScore - 1) :

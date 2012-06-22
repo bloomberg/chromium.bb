@@ -82,6 +82,19 @@ const Experiment::Choice kOmniboxHistoryQuickProviderNewScoringChoices[] = {
     switches::kOmniboxHistoryQuickProviderNewScoringDisabled }
 };
 
+const Experiment::Choice
+    kOmniboxHistoryQuickProviderReorderForInliningChoices[] = {
+  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_AUTOMATIC,
+    "",
+    "" },
+  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_ENABLED,
+    switches::kOmniboxHistoryQuickProviderReorderForInlining,
+    switches::kOmniboxHistoryQuickProviderReorderForInliningEnabled },
+  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DISABLED,
+    switches::kOmniboxHistoryQuickProviderReorderForInlining,
+    switches::kOmniboxHistoryQuickProviderReorderForInliningDisabled }
+};
+
 const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
   { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_AUTOMATIC, "", "" },
   { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_ALLOWED,
@@ -421,6 +434,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kOmniboxHistoryQuickProviderNewScoringChoices)
+  },
+  {
+    "omnibox-history-quick-provider-reorder-for-inlining",
+    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_NAME,
+    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kOmniboxHistoryQuickProviderReorderForInliningChoices)
   },
   {
     "omnibox-inline-history-quick-provider",

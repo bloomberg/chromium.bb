@@ -76,6 +76,24 @@ class HistoryQuickProvider : public HistoryProvider {
   AutocompleteInput autocomplete_input_;
   std::string languages_;
 
+  // True if we're allowed to reorder results depending on
+  // inlineability in order to assign higher relevance scores.
+  // Consider a case where ScoredHistoryMatch provides results x and
+  // y, where x is not inlineable and has a score of 3000 and y is
+  // inlineable and has a score of 2500.  If reorder_for_inlining_ is
+  // false, then x gets demoted to a non-inlineable score (1199) and y
+  // gets demoted to a lower score (1198) because we try to preserve
+  // the order.  On the other hand, if reorder_for_inlining_ is true,
+  // then y keeps its score of 2500 and x gets demoted to 2499 in
+  // order to follow y.  There will not be any problems with an
+  // unexpected inline because the non-inlineable result x scores
+  // lower than the inlineable one.
+  // TODO(mpearson): remove this variable after we're done experimenting.
+  // (This member is meant to only exist for experimentation purposes.
+  // Once we know which behavior is better, we should rip out this variable
+  // and make the best behavior the default.)
+  bool reorder_for_inlining_;
+
   // Only used for testing.
   scoped_ptr<history::InMemoryURLIndex> index_for_testing_;
 

@@ -928,6 +928,18 @@ const char kOmniboxHistoryQuickProviderNewScoringEnabled[] = "1";
 // 0 means use old scoring ( == current behavior as of 6/2012).
 const char kOmniboxHistoryQuickProviderNewScoringDisabled[] = "0";
 
+// Controls whether HistoryQuickProvider is allowed to reorder results
+// according to inlineability in order to more aggressively assign/keep
+// high relevance scores.
+const char kOmniboxHistoryQuickProviderReorderForInlining[] =
+    "omnibox-history-quick-provider-reorder-for-inlining";
+// The value the kOmniboxHistoryQuickProviderReorderForInlining switch may
+// have, as in "--omnibox-history-quick-provider-reorder-for-inlining=1".
+// 1 means allow reordering results.
+const char kOmniboxHistoryQuickProviderReorderForInliningEnabled[] = "1";
+// 0 means don't allow reordering results ( == current behavior as of 6/2012).
+const char kOmniboxHistoryQuickProviderReorderForInliningDisabled[] = "0";
+
 // Controls whether the omnibox's HistoryQuickProvider is allowed to
 // inline suggestions.
 const char kOmniboxInlineHistoryQuickProvider[] =
