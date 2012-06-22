@@ -81,6 +81,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/conflicts_ui.h"
+#include "chrome/browser/ui/webui/set_as_default_browser_ui.h"
 #endif
 
 #if (defined(USE_NSS) || defined(USE_OPENSSL)) && defined(USE_AURA)
@@ -251,6 +252,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
     return &NewWebUI<ConflictsUI>;
+  if (url.host() == chrome::kChromeUIMetroFlowHost)
+    return &NewWebUI<SetAsDefaultBrowserUI>;
 #endif
 #if (defined(USE_NSS) || defined(USE_OPENSSL)) && defined(USE_AURA)
   if (url.host() == chrome::kChromeUICertificateViewerHost)

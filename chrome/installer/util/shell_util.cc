@@ -1243,6 +1243,7 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   // "Set Program Associations" section of the "Default Programs"
   // control panel, which is a mess, or pop the concise "How you want to open
   // webpages?" dialog.  We choose the latter.
+  // Return true only when the user took an action and there was no error.
   return LaunchSelectDefaultProtocolHandlerDialog(L"http");
 }
 

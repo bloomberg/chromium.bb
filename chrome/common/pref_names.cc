@@ -832,6 +832,10 @@ const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 
+// TODO(motek): Remove this once a firm decision is made regarding how the UI
+// should be presented.
+const char kDefaultBrowserFlowDialog[] = "browser.set_default_flow_dialog";
+
 // Policy setting whether default browser check should be disabled and default
 // browser registration should take place.
 const char kDefaultBrowserSettingEnabled[] =

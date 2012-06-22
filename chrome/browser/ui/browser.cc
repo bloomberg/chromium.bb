@@ -1692,6 +1692,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDefaultBrowserFlowDialog,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
                              true,
                              PrefService::UNSYNCABLE_PREF);

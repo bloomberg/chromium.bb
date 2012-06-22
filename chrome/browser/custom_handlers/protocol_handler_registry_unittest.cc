@@ -119,7 +119,7 @@ class FakeProtocolClientWorker
  private:
   virtual ~FakeProtocolClientWorker() {}
 
-  virtual ShellIntegration::DefaultWebClientState CheckIsDefault() {
+  virtual ShellIntegration::DefaultWebClientState CheckIsDefault() OVERRIDE {
     if (force_failure_) {
       return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
     } else {
@@ -127,7 +127,9 @@ class FakeProtocolClientWorker
     }
   }
 
-  virtual void SetAsDefault(bool interactive_permitted) {}
+  virtual bool SetAsDefault(bool interactive_permitted) OVERRIDE {
+    return true;
+  }
 
  private:
   bool force_failure_;

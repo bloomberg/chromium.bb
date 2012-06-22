@@ -34,11 +34,20 @@ namespace {
 // Calls the appropriate function for setting Chrome as the default browser.
 // This requires IO access (registry) and may result in interaction with a
 // modal system UI.
-void SetChromeAsDefaultBrowser(bool interactive_flow) {
+void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
   if (interactive_flow) {
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUI", 1);
-    if (!ShellIntegration::SetAsDefaultBrowserInteractive())
+    if (!ShellIntegration::SetAsDefaultBrowserInteractive()) {
       UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUIFailed", 1);
+    } else if (!ShellIntegration::IsDefaultBrowser()) {
+      // If the interaction succeeded but we are still not the default browser
+      // it likely means the user simply selected another browser from the
+      // panel. We will respect this choice and write it down as 'no, thanks'.
+      UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
+      // User clicked "Don't ask me again", remember that.
+      if (prefs)
+        prefs->SetBoolean(prefs::kCheckDefaultBrowser, false);
+    }
   } else {
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
     ShellIntegration::SetAsDefaultBrowser();
@@ -134,7 +143,8 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&SetChromeAsDefaultBrowser, interactive_flow_required_));
+      base::Bind(&SetChromeAsDefaultBrowser, interactive_flow_required_,
+                 prefs_));
 
   return true;
 }
@@ -195,6 +205,11 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
                           base::Bind(&CheckDefaultBrowserCallback));
 
 }
+
+#if !defined(OS_WIN)
+void ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
+}
+#endif
 
 namespace internal {
 

@@ -3279,6 +3279,7 @@
         'browser/ui/startup/bad_flags_prompt.h',
         'browser/ui/startup/default_browser_prompt.cc',
         'browser/ui/startup/default_browser_prompt.h',
+        'browser/ui/startup/default_browser_prompt_win.cc',
         'browser/ui/startup/obsolete_os_prompt.cc',
         'browser/ui/startup/obsolete_os_prompt.h',
         'browser/ui/startup/obsolete_os_prompt_gtk.cc',
@@ -3885,6 +3886,8 @@
         'browser/ui/webui/media/media_internals_ui.h',
         'browser/ui/webui/metrics_handler.cc',
         'browser/ui/webui/metrics_handler.h',
+        'browser/ui/webui/set_as_default_browser_ui.cc',
+        'browser/ui/webui/set_as_default_browser_ui.h',
         'browser/ui/webui/net_internals/net_internals_ui.cc',
         'browser/ui/webui/net_internals/net_internals_ui.h',
         'browser/ui/webui/ntp/app_launcher_handler.cc',
@@ -5015,6 +5018,8 @@
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
             ['exclude', '^browser/google/google_update.cc'],
             ['exclude', '^browser/importer/ie_importer.cc'],
+            ['exclude', '^browser/ui/webui/set_as_default_browser_ui.cc'],
+            ['exclude', '^browser/ui/webui/set_as_default_browser_ui.h'],
 
             # Exclude all of hang_monitor.
             ['exclude', '^browser/hang_monitor/'],

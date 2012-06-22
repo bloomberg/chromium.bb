@@ -23,11 +23,13 @@ class FakeExternalProtocolHandlerWorker
  private:
   virtual ~FakeExternalProtocolHandlerWorker() {}
 
-  virtual ShellIntegration::DefaultWebClientState CheckIsDefault() {
+  virtual ShellIntegration::DefaultWebClientState CheckIsDefault() OVERRIDE {
     return os_state_;
   }
 
-  virtual void SetAsDefault(bool interactive_permitted) {}
+  virtual bool SetAsDefault(bool interactive_permitted) OVERRIDE {
+    return true;
+  }
 
   ShellIntegration::DefaultWebClientState os_state_;
 };

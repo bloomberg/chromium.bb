@@ -102,6 +102,15 @@ bool ShellIntegration::SetAsDefaultBrowserInteractive() {
 }
 #endif
 
+bool ShellIntegration::DefaultWebClientObserver::IsOwnedByWorker() {
+  return false;
+}
+
+bool ShellIntegration::DefaultWebClientObserver::
+    IsInteractiveSetDefaultPermitted() {
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ShellIntegration::DefaultWebClientWorker
 //
@@ -122,13 +131,15 @@ void ShellIntegration::DefaultWebClientWorker::StartCheckIsDefault() {
 }
 
 void ShellIntegration::DefaultWebClientWorker::StartSetAsDefault() {
+  bool interactive_permitted = false;
   if (observer_) {
     observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
+    interactive_permitted = observer_->IsInteractiveSetDefaultPermitted();
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &DefaultWebClientWorker::ExecuteSetAsDefault, this));
+      base::Bind(&DefaultWebClientWorker::ExecuteSetAsDefault, this,
+                 interactive_permitted));
 }
 
 void ShellIntegration::DefaultWebClientWorker::ObserverDestroyed() {
@@ -162,17 +173,22 @@ void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
   }
 }
 
-void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault() {
+void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault(
+    bool interactive_permitted) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  SetAsDefault(observer_ && observer_->IsInteractiveSetDefaultPermitted());
+
+  bool result = SetAsDefault(interactive_permitted);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DefaultWebClientWorker::CompleteSetAsDefault, this));
+      base::Bind(&DefaultWebClientWorker::CompleteSetAsDefault, this, result));
 }
 
-void ShellIntegration::DefaultWebClientWorker::CompleteSetAsDefault() {
+void ShellIntegration::DefaultWebClientWorker::CompleteSetAsDefault(
+    bool succeeded) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // First tell the observer what the SetAsDefault call has returned.
+  if (observer_)
+    observer_->OnSetAsDefaultConcluded(succeeded);
   // Set as default completed, check again to make sure it stuck...
   StartCheckIsDefault();
 }
@@ -213,19 +229,22 @@ ShellIntegration::DefaultBrowserWorker::CheckIsDefault() {
   return ShellIntegration::IsDefaultBrowser();
 }
 
-void ShellIntegration::DefaultBrowserWorker::SetAsDefault(
+bool ShellIntegration::DefaultBrowserWorker::SetAsDefault(
     bool interactive_permitted) {
+  bool result = false;
   switch (ShellIntegration::CanSetAsDefaultBrowser()) {
     case ShellIntegration::SET_DEFAULT_UNATTENDED:
-      ShellIntegration::SetAsDefaultBrowser();
+      result = ShellIntegration::SetAsDefaultBrowser();
       break;
     case ShellIntegration::SET_DEFAULT_INTERACTIVE:
       if (interactive_permitted)
-        ShellIntegration::SetAsDefaultBrowserInteractive();
+        result = ShellIntegration::SetAsDefaultBrowserInteractive();
       break;
     default:
       NOTREACHED();
   }
+
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,7 +265,7 @@ ShellIntegration::DefaultProtocolClientWorker::CheckIsDefault() {
   return ShellIntegration::IsDefaultProtocolClient(protocol_);
 }
 
-void ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
+bool ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
     bool interactive_permitted) {
-  ShellIntegration::SetAsDefaultProtocolClient(protocol_);
+  return ShellIntegration::SetAsDefaultProtocolClient(protocol_);
 }

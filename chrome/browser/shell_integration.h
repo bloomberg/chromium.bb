@@ -169,12 +169,15 @@ class ShellIntegration {
     virtual ~DefaultWebClientObserver() {}
     // Updates the UI state to reflect the current default browser state.
     virtual void SetDefaultWebClientUIState(DefaultWebClientUIState state) = 0;
+    // Called to notify the UI of the immediate result of invoking
+    // SetAsDefault.
+    virtual void OnSetAsDefaultConcluded(bool succeeded) {}
     // Observer classes that return true to OwnedByWorker are automatically
-    // freed by the worker when they are no longer needed.
-    virtual bool IsOwnedByWorker() { return false; }
+    // freed by the worker when they are no longer needed. False by default.
+    virtual bool IsOwnedByWorker();
     // An observer can permit or decline set-as-default operation if it
-    // requires triggering user interaction.
-    virtual bool IsInteractiveSetDefaultPermitted() { return false; }
+    // requires triggering user interaction. By default not allowed.
+    virtual bool IsInteractiveSetDefaultPermitted();
   };
 
   //  Helper objects that handle checking if Chrome is the default browser
@@ -209,8 +212,9 @@ class ShellIntegration {
     // Function that performs the check.
     virtual DefaultWebClientState CheckIsDefault() = 0;
 
-    // Function that sets Chrome as the default web client.
-    virtual void SetAsDefault(bool interactive_permitted) = 0;
+    // Function that sets Chrome as the default web client. Returns false if
+    // the operation fails or has been cancelled by the user.
+    virtual bool SetAsDefault(bool interactive_permitted) = 0;
 
     // Function that handles performing the check on the file thread. This
     // function is posted as a task onto the file thread, where it performs
@@ -224,7 +228,10 @@ class ShellIntegration {
     // Once it is finished the CompleteSetAsDefault function is posted to the
     // UI thread which will check the status of Chrome as the default, and
     // send this to the observer.
-    void ExecuteSetAsDefault();
+    // |interactive_permitted| indicates if the routine is allowed to carry on
+    // in context where user interaction is required (CanSetAsDefault*
+    // returns SET_DEFAULT_INTERACTIVE).
+    void ExecuteSetAsDefault(bool interactive_permitted);
 
     // Communicate results to the observer. This function is posted as a task
     // onto the UI thread by the ExecuteCheckIsDefault function running in the
@@ -236,7 +243,9 @@ class ShellIntegration {
     // ExecuteSetAsDefault function running in the file thread. This function
     // will the start the check process, which, if an observer is present,
     // reports to it the new status.
-    void CompleteSetAsDefault();
+    // |succeeded| is true if the actual call to a set-default function (from
+    // ExecuteSetAsDefault) was successful.
+    void CompleteSetAsDefault(bool succeeded);
 
     // Updates the UI in our associated view with the current default web
     // client state.
@@ -259,7 +268,7 @@ class ShellIntegration {
     virtual DefaultWebClientState CheckIsDefault() OVERRIDE;
 
     // Set Chrome as the default browser.
-    virtual void SetAsDefault(bool interactive_permitted) OVERRIDE;
+    virtual bool SetAsDefault(bool interactive_permitted) OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
   };
@@ -283,7 +292,7 @@ class ShellIntegration {
     virtual DefaultWebClientState CheckIsDefault() OVERRIDE;
 
     // Set Chrome as the default handler for this protocol.
-    virtual void SetAsDefault(bool interactive_permitted) OVERRIDE;
+    virtual bool SetAsDefault(bool interactive_permitted) OVERRIDE;
 
     std::string protocol_;
 

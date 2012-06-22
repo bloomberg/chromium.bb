@@ -519,6 +519,10 @@ void FirstRunBubbleLauncher::Observe(
     if (contents->GetURL().host() == chrome::kChromeUISyncPromoHost)
       return;
 
+    // Suppress the first run bubble if 'make chrome metro' flow is showing.
+    if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
+      return;
+
     // Suppress the first run bubble if the NTP sync promo bubble is showing.
     if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
       NewTabUI* new_tab_ui =
