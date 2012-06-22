@@ -463,7 +463,6 @@
         <include name="IDR_STATUSBAR_NETWORK_LTE" file="default_100_percent/statusbar_network_lte.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="default_100_percent/statusbar_network_lte_advanced.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ROAMING" file="default_100_percent/statusbar_network_roaming.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_WARNING" file="default_100_percent/statusbar_network_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_ICON1" file="default_100_percent/statusbar_volume_icon1.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_ICON2" file="default_100_percent/statusbar_volume_icon2.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_ICON3" file="default_100_percent/statusbar_volume_icon3.png" type="BINDATA" />

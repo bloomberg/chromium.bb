@@ -387,10 +387,6 @@ class NetworkIcon {
       default:
         break;
     }
-    // Display warning badge if cros is not loaded.
-    if (is_status_bar_ && !CrosLibrary::Get()->load_error_string().empty())
-      top_right_badge_ = rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_WARNING);
-
     // Display the VPN badge too.
     if (resource_color_theme_ == NetworkMenuIcon::COLOR_DARK &&
         cros->virtual_network() &&
