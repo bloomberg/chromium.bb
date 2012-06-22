@@ -271,7 +271,10 @@ else:  # OSes other than Windows and OSX.
           'Can\'t get native path case for a non-absolute path: %s' % path,
           path)
     # Give up on cygwin, as GetLongPathName() can't be called.
-    return path
+    # Linux traces tends to not be normalized so use this occasion to normalize
+    # it. This function implementation already normalizes the path on the other
+    # OS so this needs to be done here to be coherent between OSes.
+    return os.path.normpath(path)
 
 
 def fix_python_path(cmd):
