@@ -419,8 +419,7 @@ PluginModule::PluginModule(const std::string& name,
       library_(NULL),
       name_(name),
       path_(path),
-      reserve_instance_id_(NULL),
-      nacl_ipc_proxy_(false) {
+      reserve_instance_id_(NULL) {
   // Ensure the globals object is created.
   if (!host_globals)
     host_globals = new HostGlobals;
@@ -497,13 +496,9 @@ void PluginModule::InitAsProxied(
 }
 
 void PluginModule::InitAsProxiedNaCl(
-    scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy,
+    PluginDelegate::OutOfProcessProxy* out_of_process_proxy,
     PP_Instance instance) {
-  // TODO(bbudge) We need to switch the mode of the PluginModule on a
-  // per-instance basis. Fix this so out_of_process_proxy and other
-  // state is stored in a map, indexed by instance.
-  nacl_ipc_proxy_ = true;
-  InitAsProxied(out_of_process_proxy.release());
+  InitAsProxied(out_of_process_proxy);
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
   // PluginInstance was already created as in-process, so we missed the proxy
@@ -565,11 +560,6 @@ void PluginModule::InstanceDeleted(PluginInstance* instance) {
   if (out_of_process_proxy_.get())
     out_of_process_proxy_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);
-
-  if (nacl_ipc_proxy_) {
-    out_of_process_proxy_.reset();
-    reserve_instance_id_ = NULL;
-  }
 }
 
 scoped_refptr< ::ppapi::CallbackTracker> PluginModule::GetCallbackTracker() {

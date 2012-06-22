@@ -17,7 +17,6 @@
 #include "chrome/common/nacl_types.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel_handle.h"
 
 class ChromeRenderMessageFilter;
 class CommandLine;
@@ -87,7 +86,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Sends the reply message to the renderer who is waiting for the plugin
   // to load. Returns true on success.
-  bool ReplyToRenderer(const IPC::ChannelHandle& channel_handle);
+  bool ReplyToRenderer();
 
   // Sends the message to the NaCl process to load the plugin. Returns true
   // on success.
@@ -113,8 +112,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool AttachDebugExceptionHandler(const std::string& info,
                                    IPC::Message* reply_msg);
 #endif
-
-  void OnPpapiChannelCreated(const IPC::ChannelHandle& channel_handle);
 
   GURL manifest_url_;
 
@@ -154,8 +151,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool enable_exception_handling_;
 
   bool off_the_record_;
-
-  bool enable_ipc_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

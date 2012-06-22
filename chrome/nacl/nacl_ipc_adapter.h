@@ -77,10 +77,6 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // NaClDesc is reference-counted, and a reference is returned.
   NaClDesc* MakeNaClDesc();
 
-#if defined(OS_POSIX)
-  int TakeClientFileDescriptor();
-#endif
-
   // Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
