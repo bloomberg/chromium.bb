@@ -53,6 +53,11 @@ SessionEventExecutorWin::SessionEventExecutorWin(
       message_loop_(message_loop),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
+  // Let weak_ptr_ be used on the message_loop_ thread.
+  // weak_ptr_ and weak_ptr_factory_ share a ThreadChecker, so the following
+  // line affects both of them.
+  weak_ptr_factory_.DetachFromThread();
+
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kProcessChannelId);
 
