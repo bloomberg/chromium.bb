@@ -2138,13 +2138,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	    handle_bound_key(terminal, input, sym, time))
 		return;
 
-	serial = display_get_serial(terminal->display);
-	if (terminal->hide_cursor_serial != serial &&
-	    state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		input_set_pointer_image(input, CURSOR_BLANK);
-		terminal->hide_cursor_serial = serial;
-	}
-
 	switch (sym) {
 	case XKB_KEY_F11:
 		if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
@@ -2262,8 +2255,17 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		break;
 	}
 
-	if (state == WL_KEYBOARD_KEY_STATE_PRESSED && len > 0)
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED && len > 0) {
 		terminal_write(terminal, ch, len);
+
+		/* Hide cursor, except if this was coming from a
+		 * repeating key press. */
+		serial = display_get_serial(terminal->display);
+		if (terminal->hide_cursor_serial != serial) {
+			input_set_pointer_image(input, CURSOR_BLANK);
+			terminal->hide_cursor_serial = serial;
+		}
+	}
 }
 
 static void
