@@ -2714,7 +2714,8 @@ TEST_F(GDataFileSystemTest, DirtyCachePinned) {
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
-TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
+// Test is disabled because it is flaky (http://crbug.com/134146)
+TEST_F(GDataFileSystemTest, DISABLED_PinAndUnpinDirtyCache) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
