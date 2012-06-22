@@ -147,8 +147,8 @@ class BluetoothReadFunction : public AsyncAPIFunction {
   virtual void Work() OVERRIDE;
 
  private:
-  bool success_;
 #if defined(OS_CHROMEOS)
+  bool success_;
   scoped_refptr<chromeos::BluetoothSocket> socket_;
 #endif
 };
@@ -167,9 +167,9 @@ class BluetoothWriteFunction : public AsyncAPIFunction {
   virtual void Work() OVERRIDE;
 
  private:
+#if defined(OS_CHROMEOS)
   bool success_;
   const base::BinaryValue* data_to_write_;  // memory is owned by args_
-#if defined(OS_CHROMEOS)
   scoped_refptr<chromeos::BluetoothSocket> socket_;
 #endif
 };

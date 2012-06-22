@@ -62,9 +62,11 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   // A JSON-RPC client that calls the Spelling service in the background.
   scoped_ptr<SpellingServiceClient> client_;
 
+#if !defined(OS_MACOSX)
   int route_id_;
   int identifier_;
   int document_tag_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_

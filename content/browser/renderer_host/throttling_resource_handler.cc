@@ -16,7 +16,6 @@ ThrottlingResourceHandler::ThrottlingResourceHandler(
     ScopedVector<ResourceThrottle> throttles)
     : LayeredResourceHandler(next_handler.Pass()),
       deferred_stage_(DEFERRED_NONE),
-      child_id_(child_id),
       request_id_(request_id),
       throttles_(throttles.Pass()),
       index_(0) {

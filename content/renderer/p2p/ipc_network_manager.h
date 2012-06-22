@@ -35,7 +35,6 @@ class IpcNetworkManager : public talk_base::NetworkManagerBase,
  private:
   void SendNetworksChangedSignal();
 
-  MessageLoop* message_loop_;
   P2PSocketDispatcher* socket_dispatcher_;
   int start_count_;
   bool network_list_received_;

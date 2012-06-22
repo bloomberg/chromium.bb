@@ -19,10 +19,14 @@
 using content::BrowserThread;
 
 SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
-    : render_process_id_(render_process_id),
+    : render_process_id_(render_process_id)
+#if !defined(OS_MACOSX)
+      ,
       route_id_(0),
       identifier_(0),
-      document_tag_(0) {
+      document_tag_(0)
+#endif
+      {
 }
 
 void SpellCheckMessageFilter::OverrideThreadForMessage(
