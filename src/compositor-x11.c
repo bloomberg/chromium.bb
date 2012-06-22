@@ -35,6 +35,10 @@
 #include <linux/input.h>
 
 #include <xcb/xcb.h>
+#ifdef HAVE_XCB_XKB
+#include <xcb/xkb.h>
+#endif
+
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 
@@ -59,6 +63,8 @@ struct x11_compositor {
 	struct wl_array		 keys;
 	struct wl_event_source	*xcb_source;
 	struct xkb_keymap	*xkb_keymap;
+	unsigned int		 has_xkb;
+	uint8_t			 xkb_event_base;
 	struct {
 		xcb_atom_t		 wm_protocols;
 		xcb_atom_t		 wm_normal_hints;
@@ -132,6 +138,31 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 	return ret;
 }
 
+static void
+x11_compositor_setup_xkb(struct x11_compositor *c)
+{
+#ifndef HAVE_XCB_XKB
+	weston_log("XCB-XKB not available during build\n");
+	c->has_xkb = 0;
+	c->xkb_event_base = 0;
+	return;
+#else
+	const xcb_query_extension_reply_t *ext;
+
+	c->has_xkb = 0;
+	c->xkb_event_base = 0;
+
+	ext = xcb_get_extension_data(c->conn, &xcb_xkb_id);
+	if (!ext) {
+		weston_log("XKB extension not available on host X11 server\n");
+		return;
+	}
+	c->xkb_event_base = ext->first_event;
+
+	c->has_xkb = 1;
+#endif
+}
+
 static int
 x11_input_create(struct x11_compositor *c, int no_input)
 {
@@ -150,6 +181,8 @@ x11_input_create(struct x11_compositor *c, int no_input)
 		return 0;
 
 	weston_seat_init_pointer(&input->base);
+
+	x11_compositor_setup_xkb(c);
 
 	keymap = x11_compositor_get_keymap(c);
 	weston_seat_init_keyboard(&input->base, keymap);

@@ -65,8 +65,26 @@ if test x$enable_x11_compositor = xyes; then
   LIBS=$xcb_save_LIBS
   CFLAGS=$xcb_save_CFLAGS
 
+  X11_COMPOSITOR_MODULES="x11 x11-xcb"
+
+  PKG_CHECK_MODULES(X11_COMPOSITOR_XKB, [xcb-xkb],
+		    [have_xcb_xkb="yes"], [have_xcb_xkb="no"])
+  if test "x$have_xcb_xkb" = xyes; then
+	# Most versions of XCB have totally broken XKB bindings, where the
+	# events don't work.  Make sure we can actually use them.
+	xcb_xkb_save_CFLAGS=$CFLAGS
+	CFLAGS=$X11_COMPOSITOR_XKB_CFLAGS
+	AC_CHECK_MEMBER([struct xcb_xkb_state_notify_event_t.xkbType],
+			[], [have_xcb_xkb=no], [[#include <xcb/xkb.h>]])
+	CFLAGS=$xcb_xkb_save_CFLAGS
+  fi
+  if test "x$have_xcb_xkb" = xyes; then
+	X11_COMPOSITOR_MODULES="$X11_COMPOSITOR_MODULES xcb-xkb"
+	AC_DEFINE([HAVE_XCB_XKB], [1], [libxcb supports XKB protocol])
+  fi
+
+  PKG_CHECK_MODULES(X11_COMPOSITOR, [$X11_COMPOSITOR_MODULES])
   AC_DEFINE([BUILD_X11_COMPOSITOR], [1], [Build the X11 compositor])
-  PKG_CHECK_MODULES(X11_COMPOSITOR, [x11 x11-xcb])
 fi
 
 
