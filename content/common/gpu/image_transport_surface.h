@@ -67,6 +67,8 @@ class ImageTransportSurface {
   virtual void OnPostSubBufferACK() = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
+  virtual void OnSetFrontSurfaceIsProtected(bool is_protected,
+                                            uint32 protection_state_id);
 
   // Creates the appropriate surface depending on the GL implementation.
   static scoped_refptr<gfx::GLSurface>
@@ -138,6 +140,8 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   void OnBuffersSwappedACK();
   void OnPostSubBufferACK();
   void OnResizeViewACK();
+  void OnSetFrontSurfaceIsProtected(bool is_protected,
+                                    uint32 protection_state_id);
 
   // Backbuffer resize callback.
   void Resize(gfx::Size size);

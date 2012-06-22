@@ -309,7 +309,11 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
   TransportDIB::Handle shm_handle = TransportDIB::DefaultHandleValue();
 
   view->AcceleratedSurfaceNew(
-      params.width, params.height, &surface_handle, &shm_handle);
+      params.width,
+      params.height,
+      &surface_handle,
+      &shm_handle,
+      params.route_id);
   delayed_send.Cancel();
   Send(new AcceleratedSurfaceMsg_NewACK(
       params.route_id, surface_handle, shm_handle));
