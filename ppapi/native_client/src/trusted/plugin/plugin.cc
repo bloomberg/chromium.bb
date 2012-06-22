@@ -34,6 +34,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/json_manifest.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
@@ -54,6 +55,7 @@
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_mouse_lock.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/dev/find_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
@@ -119,6 +121,13 @@ const uint32_t kTimeLargeBuckets = 100;
 const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
+
+const PPB_NaCl_Private* GetNaclInterface() {
+  pp::Module *module = pp::Module::Get();
+  CHECK(module);
+  return static_cast<const PPB_NaCl_Private*>(
+      module->GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
+}
 
 const PPB_UMA_Private* GetUMAInterface() {
   pp::Module *module = pp::Module::Get();
@@ -603,11 +612,24 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   }
 
   bool service_runtime_started =
-      new_service_runtime->Start(wrapper, error_info, manifest_base_url());
+      new_service_runtime->Start(wrapper,
+                                 error_info,
+                                 manifest_base_url());
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {
     return false;
+  }
+
+  // Try to start the Chrome IPC-based proxy.
+  const PPB_NaCl_Private* ppb_nacl = GetNaclInterface();
+  if (ppb_nacl->StartPpapiProxy(pp_instance())) {
+    using_ipc_proxy_ = true;
+    // We need to explicitly schedule this here. It is normally called in
+    // response to starting the SRPC proxy.
+    CHECK(init_done_cb.pp_completion_callback().func != NULL);
+    PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon, started ipc proxy.\n"));
+    pp::Module::Get()->core()->CallOnMainThread(0, init_done_cb, PP_OK);
   }
   return true;
 }
@@ -631,6 +653,11 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
+  // If we are using the IPC proxy, StartSrpcServices and StartJSObjectProxy
+  // don't makes sense. Return 'true' so that the plugin continues loading.
+  if (using_ipc_proxy_)
+    return true;
+
   if (!main_subprocess_.StartSrpcServices()) {
     error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
                           "SRPC connection failure for " +
@@ -862,7 +889,8 @@ Plugin::Plugin(PP_Instance pp_instance)
       init_time_(0),
       ready_time_(0),
       nexe_size_(0),
-      time_of_last_progress_event_(0) {
+      time_of_last_progress_event_(0),
+      using_ipc_proxy_(false) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   callback_factory_.Initialize(this);

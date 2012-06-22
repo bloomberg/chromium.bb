@@ -55,6 +55,7 @@ struct NaClStartParams {
 
   bool enable_exception_handling;
   bool enable_debug_stub;
+  bool enable_ipc_proxy;
 };
 
 }  // namespace nacl
