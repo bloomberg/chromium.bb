@@ -20,14 +20,16 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/pango_util.h"
 #include "ui/gfx/rect.h"
 
 using WebKit::WebAutofillClient;
 
 namespace {
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xc7, 0xca, 0xce);
-const GdkColor kHoveredBackgroundColor = GDK_COLOR_RGB(0x0CD, 0xCD, 0xCD);
-const GdkColor kTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
+const GdkColor kHoveredBackgroundColor = GDK_COLOR_RGB(0xcd, 0xcd, 0xcd);
+const GdkColor kValueTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
+const GdkColor kLabelTextColor = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
 
 // The vertical height of each row in pixels.
 const int kRowHeight = 24;
@@ -58,6 +60,9 @@ const int kDeleteIconWidth = 16;
 
 // Height of the delete icon in pixels.
 const int kDeleteIconHeight = 16;
+
+// Size difference between value text and label text in pixels.
+const int kLabelFontSizeDelta = -2;
 
 gfx::Rect GetWindowRect(GdkWindow* window) {
   return gfx::Rect(gdk_window_get_width(window),
@@ -102,6 +107,8 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
                    G_CALLBACK(HandleMotionThunk), this);
   g_signal_connect(window_, "button-release-event",
                    G_CALLBACK(HandleButtonReleaseThunk), this);
+
+  label_font_ = value_font_.DeriveFont(kLabelFontSizeDelta);
 
   // Cache the layout so we don't have to create it for every expose.
   layout_ = gtk_widget_create_pango_layout(window_, NULL);
@@ -180,12 +187,7 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
   cairo_rectangle(cr, 0, 0, window_rect.width(), window_rect.height());
   cairo_stroke(cr);
 
-  SetupLayout(window_rect, kTextColor);
-
-  int actual_content_width, actual_content_height;
-  pango_layout_get_size(layout_, &actual_content_width, &actual_content_height);
-  actual_content_width /= PANGO_SCALE;
-  actual_content_height /= PANGO_SCALE;
+  SetupLayout(window_rect);
 
   for (size_t i = 0; i < autofill_values().size(); ++i) {
     gfx::Rect line_rect = GetRectForRow(i, window_rect.width());
@@ -196,7 +198,7 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     if (autofill_unique_ids()[i] == WebAutofillClient::MenuItemIDSeparator)
       DrawSeparator(cr, line_rect);
     else
-      DrawAutofillEntry(cr, i, actual_content_height, line_rect);
+      DrawAutofillEntry(cr, i, line_rect);
   }
 
   cairo_destroy(cr);
@@ -259,12 +261,15 @@ bool AutofillPopupViewGtk::HandleKeyPressEvent(GdkEventKey* event) {
   return false;
 }
 
-void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
-                                       const GdkColor& text_color) {
+void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect) {
   int allocated_content_width = window_rect.width();
   pango_layout_set_width(layout_, allocated_content_width * PANGO_SCALE);
   pango_layout_set_height(layout_, kRowHeight * PANGO_SCALE);
+}
 
+void AutofillPopupViewGtk::SetLayoutText(const string16& text,
+                                         const gfx::Font& font,
+                                         const GdkColor text_color) {
   PangoAttrList* attrs = pango_attr_list_new();
 
   PangoAttribute* fg_attr = pango_attr_foreground_new(text_color.red,
@@ -272,17 +277,17 @@ void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
                                                       text_color.blue);
   pango_attr_list_insert(attrs, fg_attr);  // Ownership taken.
 
-
   pango_layout_set_attributes(layout_, attrs);  // Ref taken.
   pango_attr_list_unref(attrs);
-}
 
-void AutofillPopupViewGtk::SetLayoutText(const string16& text) {
+  gfx::ScopedPangoFontDescription font_description(font.GetNativeFont());
+  pango_layout_set_font_description(layout_, font_description.get());
+
   gtk_util::SetLayoutText(layout_, text);
 
   // We add one pixel to the width because if the text fills up the width
   // pango will try to split it over 2 lines.
-  int required_width = font_.GetStringWidth(text) + 1;
+  int required_width = font.GetStringWidth(text) + 1;
 
   pango_layout_set_width(layout_, required_width * PANGO_SCALE);
 }
@@ -300,7 +305,6 @@ void AutofillPopupViewGtk::DrawSeparator(cairo_t* cairo_context,
 
 void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
                                              size_t index,
-                                             int actual_content_height,
                                              const gfx::Rect& entry_rect) {
   if (selected_line() == static_cast<int>(index)) {
     gdk_cairo_set_source_color(cairo_context, &kHoveredBackgroundColor);
@@ -309,21 +313,21 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     cairo_fill(cairo_context);
   }
 
-  // Center the text within the line.
-  int content_y = std::max(
-      entry_rect.y(),
-      entry_rect.y() + ((kRowHeight - actual_content_height) / 2));
-
   // Draw the value.
-  SetLayoutText(autofill_values()[index]);
-  int value_text_width = font_.GetStringWidth(autofill_values()[index]);
+  SetLayoutText(autofill_values()[index], value_font_, kValueTextColor);
+  int value_text_width = value_font_.GetStringWidth(autofill_values()[index]);
+
+  // Center the text within the line.
+  int value_content_y = std::max(
+      entry_rect.y(),
+      entry_rect.y() + ((kRowHeight - value_font_.GetHeight()) / 2));
 
   bool is_rtl = base::i18n::IsRTL();
   cairo_save(cairo_context);
   cairo_move_to(cairo_context,
                 is_rtl ? entry_rect.width() - value_text_width - kEndPadding :
                     kEndPadding,
-                content_y);
+                value_content_y);
   pango_cairo_show_layout(cairo_context, layout_);
   cairo_restore(cairo_context);
 
@@ -375,11 +379,17 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   }
 
   // Draw the label text.
-  SetLayoutText(autofill_labels()[index]);
-  x_align_left += is_rtl ? 0 : -font_.GetStringWidth(autofill_labels()[index]);
+  SetLayoutText(autofill_labels()[index], label_font_, kLabelTextColor);
+  x_align_left +=
+      is_rtl ? 0 : -label_font_.GetStringWidth(autofill_labels()[index]);
+
+  // Center the text within the line.
+  int label_content_y = std::max(
+      entry_rect.y(),
+      entry_rect.y() + ((kRowHeight - label_font_.GetHeight()) / 2));
 
   cairo_save(cairo_context);
-  cairo_move_to(cairo_context, x_align_left, content_y);
+  cairo_move_to(cairo_context, x_align_left, label_content_y);
   pango_cairo_show_layout(cairo_context, layout_);
   cairo_restore(cairo_context);
 }
@@ -418,9 +428,9 @@ int AutofillPopupViewGtk::GetPopupRequiredWidth() {
   DCHECK_EQ(autofill_values().size(), autofill_labels().size());
   for (size_t i = 0; i < autofill_values().size(); ++i) {
     int row_size = kEndPadding +
-        font_.GetStringWidth(autofill_values()[i]) +
+        value_font_.GetStringWidth(autofill_values()[i]) +
         kLabelPadding +
-        font_.GetStringWidth(autofill_labels()[i]);
+        label_font_.GetStringWidth(autofill_labels()[i]);
 
     // Add the Autofill icon size, if required.
     if (!autofill_icons()[i].empty())
