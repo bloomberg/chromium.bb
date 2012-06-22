@@ -135,9 +135,6 @@ struct arch_sigsys {
 namespace playground2 {
 
 class Sandbox {
-  friend class Util;
-  friend class Verifier;
-
  public:
   enum SandboxStatus {
     STATUS_UNKNOWN,      // Status prior to calling supportsSeccompSandbox()
@@ -322,6 +319,8 @@ class Sandbox {
   static int getProcFd() { return proc_fd_; }
 
  private:
+  friend class Util;
+  friend class Verifier;
   struct Range {
     Range(uint32_t f, uint32_t t, ErrorCode e) :
       from(f),
@@ -367,6 +366,7 @@ class Sandbox {
   static TrapIds       trapIds_;
   static ErrorCode     *trapArray_;
   static size_t        trapArraySize_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
 
 }  // namespace
