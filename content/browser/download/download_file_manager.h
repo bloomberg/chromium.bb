@@ -173,11 +173,6 @@ class CONTENT_EXPORT DownloadFileManager
   friend class DownloadManagerTest;
   FRIEND_TEST_ALL_PREFIXES(DownloadManagerTest, StartDownload);
 
-  // Timer helpers for updating the UI about the current progress of a download.
-  void StartUpdateTimer();
-  void StopUpdateTimer();
-  void UpdateInProgressDownloads();
-
   // Clean up helper that runs on the download thread.
   void OnShutdown();
 

@@ -450,13 +450,6 @@ TEST_F(DownloadFileManagerTest, TwoDownloads) {
 }
 
 
-// TODO(ahendrickson) -- A test for updating progress.
-// Expected call sequence:
-//  UpdateInProgressDownloads
-//    DownloadFile::GetDownloadFile
-//  Process one message in the message loop
-//    DownloadManager::UpdateDownload
-
 // TODO(ahendrickson) -- A test for download manager shutdown.
 // Expected call sequence:
 //  OnDownloadManagerShutdown

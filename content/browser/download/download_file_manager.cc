@@ -117,25 +117,6 @@ DownloadFile* DownloadFileManager::GetDownloadFile(
   return it == downloads_.end() ? NULL : it->second;
 }
 
-void DownloadFileManager::UpdateInProgressDownloads() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  for (DownloadFileMap::iterator i = downloads_.begin();
-       i != downloads_.end(); ++i) {
-    DownloadId global_id = i->first;
-    DownloadFile* download_file = i->second;
-    DownloadManager* manager = download_file->GetDownloadManager();
-    if (manager) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&DownloadManager::UpdateDownload,
-                     manager,
-                     global_id.local(),
-                     download_file->BytesSoFar(),
-                     download_file->CurrentSpeed(),
-                     download_file->GetHashState()));
-    }
-  }
-}
-
 // This method will be sent via a user action, or shutdown on the UI thread, and
 // run on the download thread. Since this message has been sent from the UI
 // thread, the download may have already completed and won't exist in our map.
