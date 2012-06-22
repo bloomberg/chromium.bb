@@ -98,16 +98,21 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
 
   // All the public static methods below can be called on any thread.
 
-  // Fails all active URLRequestFailOnDemandJobs with connection timeouts.
-  // Must only be called when there are requests that have been started but not
-  // yet timed out.
-  static void FailRequests();
+  // Fails all active URLRequestTimeoutOnDemandJobs with connection timeouts.
+  // Furthermore, any future Jobs will be cancelled when they are issued,
+  // until StopFailingRequests is called.
+  //
+  // This behavior is needed because it's difficult to be sure when a resource
+  // request will start for a provisional load without waiting for a frame to
+  // be committed, which doesn't work for hung resources.  This issue is
+  // compounded by not knowing how many requests will be issued - depending on
+  // timing, there may or may not be favicon requests issued.
+  static void StartFailingRequests();
 
-  // Clears the |waiting_jobs_list_| without having the jobs return anything.
-  // Used to allow an assertion that jobs are not in the |waiting_jobs_list_|
-  // when destroyed.  Must only be called when there are requests that have
-  // been started but not yet timed out.
-  static void AbandonRequests();
+  // Stops failing new URLRequestTimeoutOnDemandJobs as they are issued.  This
+  // should only be called once it's confirmed that all relevant effects of
+  // requests that StartFailingRequests should have failed have been observed.
+  static void StopFailingRequests();
 
  private:
   friend class URLRequestMockCaptivePortalJobFactory;
@@ -119,10 +124,18 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
   // from the list.
   bool RemoveFromList();
 
-  // These do all the work of the corresponding public functions, with the only
-  // difference being that they must be called on the IO thread.
+  // Sets |fail_all_requests_| to true and then fails all requests.
+  static void StartFailingRequestsOnIOThread();
+
+  // Sets |fail_all_requests_| to false.
+  static void StopFailingRequestsOnIOThread();
+
+  // Fails all requests.
   static void FailRequestsOnIOThread();
-  static void AbandonRequestsOnIOThread();
+
+  // All class variables are only accessed on the IO thread.
+
+  static bool fail_all_requests_;
 
   // Head of linked list of jobs that have been started and are now waiting to
   // be timed out.
@@ -134,6 +147,7 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
   DISALLOW_COPY_AND_ASSIGN(URLRequestTimeoutOnDemandJob);
 };
 
+bool URLRequestTimeoutOnDemandJob::fail_all_requests_ = false;
 URLRequestTimeoutOnDemandJob* URLRequestTimeoutOnDemandJob::job_list_ = NULL;
 
 void URLRequestTimeoutOnDemandJob::Start() {
@@ -142,20 +156,29 @@ void URLRequestTimeoutOnDemandJob::Start() {
   // Insert at start of the list.
   next_job_ = job_list_;
   job_list_ = this;
+
+  if (fail_all_requests_) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &URLRequestTimeoutOnDemandJob::FailRequestsOnIOThread));
+  }
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::FailRequests() {
+void URLRequestTimeoutOnDemandJob::StartFailingRequests() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestTimeoutOnDemandJob::FailRequestsOnIOThread));
+      base::Bind(
+          &URLRequestTimeoutOnDemandJob::StartFailingRequestsOnIOThread));
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::AbandonRequests() {
+void URLRequestTimeoutOnDemandJob::StopFailingRequests() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestTimeoutOnDemandJob::AbandonRequestsOnIOThread));
+      base::Bind(
+          &URLRequestTimeoutOnDemandJob::StopFailingRequestsOnIOThread));
 }
 
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
@@ -165,8 +188,10 @@ URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
 }
 
 URLRequestTimeoutOnDemandJob::~URLRequestTimeoutOnDemandJob() {
-  // |this| shouldn't be in the list.
-  EXPECT_FALSE(RemoveFromList());
+  // Allow URL request jobs to be abandoned while still active.  Some tests
+  // deliberately do this, and it's best not to depend on favicon requests
+  // having some specific behavior relative to main frame resource loads.
+  RemoveFromList();
 }
 
 bool URLRequestTimeoutOnDemandJob::RemoveFromList() {
@@ -186,9 +211,28 @@ bool URLRequestTimeoutOnDemandJob::RemoveFromList() {
 }
 
 // static
+void URLRequestTimeoutOnDemandJob::StartFailingRequestsOnIOThread() {
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ASSERT_FALSE(fail_all_requests_);
+  fail_all_requests_ = true;
+
+  FailRequestsOnIOThread();
+}
+
+// static
+void URLRequestTimeoutOnDemandJob::StopFailingRequestsOnIOThread() {
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ASSERT_TRUE(fail_all_requests_);
+  fail_all_requests_ = false;
+}
+
+// static
 void URLRequestTimeoutOnDemandJob::FailRequestsOnIOThread() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EXPECT_TRUE(job_list_);
+  EXPECT_TRUE(fail_all_requests_);
+
   while (job_list_) {
     URLRequestTimeoutOnDemandJob* job = job_list_;
     // Since the error notification may result in the job's destruction, remove
@@ -198,14 +242,6 @@ void URLRequestTimeoutOnDemandJob::FailRequestsOnIOThread() {
                               net::URLRequestStatus::FAILED,
                               net::ERR_CONNECTION_TIMED_OUT));
   }
-}
-
-// static
-void URLRequestTimeoutOnDemandJob::AbandonRequestsOnIOThread() {
-  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EXPECT_TRUE(job_list_);
-  while (job_list_)
-    EXPECT_TRUE(job_list_->RemoveFromList());
 }
 
 // URLRequestCaptivePortalJobFactory emulates captive portal behavior.
@@ -877,8 +913,8 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
   // First tab should still be loading.
   EXPECT_EQ(1, NumLoadingTabs());
 
-  // Original request times out.
-  URLRequestTimeoutOnDemandJob::FailRequests();
+  // Time out original request(s).
+  URLRequestTimeoutOnDemandJob::StartFailingRequests();
   navigation_observer.WaitForNavigations(1);
 
   ASSERT_EQ(1, browser->tab_count());
@@ -888,6 +924,9 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
 
   // Set a slow SSL load time to prevent the timer from triggering.
   SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
+
+  // It's safe to stop failing requests now.
+  URLRequestTimeoutOnDemandJob::StopFailingRequests();
 }
 
 void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
@@ -1181,8 +1220,8 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
 
   CaptivePortalObserver portal_observer(browser->profile());
   FailLoadsAfterLoginObserver fail_loads_observer;
-  // Connection finally times out.
-  URLRequestTimeoutOnDemandJob::FailRequests();
+  // Connection(s) finally time out.
+  URLRequestTimeoutOnDemandJob::StartFailingRequests();
 
   fail_loads_observer.WaitForNavigations();
 
@@ -1196,6 +1235,9 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
 
   EXPECT_EQ(0, NumNeedReloadTabs());
   EXPECT_EQ(0, NumLoadingTabs());
+
+  // It's safe to stop failing requests now.
+  URLRequestTimeoutOnDemandJob::StopFailingRequests();
 }
 
 void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
@@ -1212,8 +1254,8 @@ void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
 
   CaptivePortalObserver portal_observer(browser->profile());
   MultiNavigationObserver navigation_observer;
-  // Connection finally times out.
-  URLRequestTimeoutOnDemandJob::FailRequests();
+  // Connection(s) finally time out.
+  URLRequestTimeoutOnDemandJob::StartFailingRequests();
 
   navigation_observer.WaitForNavigations(num_loading_tabs);
 
@@ -1233,6 +1275,9 @@ void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
 
   EXPECT_EQ(0, navigation_observer.NumNavigationsForTab(
                    browser->GetWebContentsAt(login_tab)));
+
+  // It's safe to stop failing requests now.
+  URLRequestTimeoutOnDemandJob::StopFailingRequests();
 }
 
 void CaptivePortalBrowserTest::SetSlowSSLLoadTime(
@@ -1292,14 +1337,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RequestFailsFastTimout) {
   FastTimeoutNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
 }
 
-// This test is flaky on linux: http://crbug.com/133734
-#if defined(OS_LINUX)
-#define MAYBE_Disabled DISABLED_Disabled
-#else
-#define MAYBE_Disabled Disabled
-#endif
 // Checks the case that captive portal detection is disabled.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_Disabled) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Disabled) {
   EnableCaptivePortalDetection(browser()->profile(), false);
   SlowLoadNoCaptivePortal(browser(), RESULT_INTERNET_CONNECTED);
 }
@@ -1477,11 +1516,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, AbortLoad) {
-  // Go to the error page.
+  // The slow load this starts will end up being abandoned.
   SlowLoadBehindCaptivePortal(browser(), true);
-  // The load will be destroyed without returning any result, so remove it from
-  // the list of jobs that will timeout.
-  URLRequestTimeoutOnDemandJob::AbandonRequests();
 
   CaptivePortalObserver portal_observer(browser()->profile());
   MultiNavigationObserver navigation_observer;
@@ -1521,13 +1557,12 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
   Login(browser(), 0, 0);
 }
 
-// Navigates a broken, but still loading, tab to another timeout before logging
-// in.
+// Navigates a broken, but still loading, tab to another such page before
+// logging in.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        NavigateBrokenToTimeoutTabWhileLoading) {
-  // Go to the error page.
+  // Go to the error page.  The first load will be abandoned.
   SlowLoadBehindCaptivePortal(browser(), true);
-  URLRequestTimeoutOnDemandJob::AbandonRequests();
 
   CaptivePortalTabReloader* tab_reloader =
       GetTabReloader(browser()->GetTabContentsAt(0));
@@ -1537,9 +1572,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   CaptivePortalObserver portal_observer(browser()->profile());
   MultiNavigationObserver navigation_observer;
 
-  // Navigate the error tab to a non-error page.  Can't have ui_test_utils
-  // do the navigation because it will wait for loading tabs to stop loading
-  // before navigating.
+  // Navigate the error tab to another slow loading page.  Can't have
+  // ui_test_utils do the navigation because it will wait for loading tabs to
+  // stop loading before navigating.
   browser()->ActivateTabAt(0, true);
   browser()->OpenURL(content::OpenURLParams(GURL(kMockHttpsUrl),
                                             content::Referrer(),
