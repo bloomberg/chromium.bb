@@ -746,7 +746,7 @@ wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 			kr = find_resource_for_surface(&kbd->resource_list,
 						       surface);
 			if (kr) {
-				wl_keyboard_send_modifiers(resource,
+				wl_keyboard_send_modifiers(kr,
 							   serial,
 							   kbd->modifiers.mods_depressed,
 							   kbd->modifiers.mods_latched,
