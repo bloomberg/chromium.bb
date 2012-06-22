@@ -25,7 +25,7 @@ set -o errexit
 ARCHIVED_PEXE_SCONS_REV=8918
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=8834
+ARCHIVED_PEXE_TRANSLATOR_REV=9019
 
 
 readonly PNACL_BUILD="pnacl/build.sh"
@@ -171,7 +171,6 @@ archived-pexe-translator-test() {
   local dir="$(pwd)/pexe_archive"
   local tarball="${dir}/pexes.tar.bz2"
   local measure_cmd="/usr/bin/time -v"
-  local strip="toolchain/pnacl_linux_x86_64/newlib/bin/pnacl-strip"
   local sb_translator="${measure_cmd} \
                        toolchain/pnacl_translator/bin/pnacl-translate"
   rm -rf ${dir}
@@ -181,15 +180,12 @@ archived-pexe-translator-test() {
       ${ARCHIVED_PEXE_TRANSLATOR_REV} ${tarball}
   tar jxf ${tarball} --directory ${dir}
 
-  # do different kinds of stripping - so we can compare sizes
-  # we will use the smallest, i.e.  "ext=.strip-all" for translation
-  # Note: other tests using archived pexes do not use stripped versions
-  #       so we get some coverage for the debug info handling inside of the
-  #       translator.
-  ${strip} --strip-all   ${dir}/ld-new -o ${dir}/ld-new.strip-all
-  ${strip} --strip-debug ${dir}/ld-new -o ${dir}/ld-new.strip-debug
-  ${strip} --strip-all   ${dir}/llc    -o ${dir}/llc.strip-all
-  ${strip} --strip-debug ${dir}/llc    -o ${dir}/llc.strip-debug
+  # Note, the archive provides both stripped (ext="") and unstripped
+  #       (ext=".strip-all") versions of the pexes ("ld-new", "llc").
+  #       We do not want to strip them here as the "translator"
+  #       package and the toolchain package maybe out of sync and
+  #       strip does more than just stripping, it also upgrades
+  #       bitcode versions if there was a format change.
   # http://code.google.com/p/nativeclient/issues/detail?id=2840
   # x86-64 will crash when ext=""
   # pexe archive rev: 8834
