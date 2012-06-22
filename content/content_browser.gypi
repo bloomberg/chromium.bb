@@ -201,6 +201,8 @@
     'browser/android/device_info.h',
     'browser/android/download_controller.cc',
     'browser/android/download_controller.h',
+    'browser/android/ime_utils.cc',
+    'browser/android/ime_utils.h',
     'browser/android/sandboxed_process_launcher.cc',
     'browser/android/sandboxed_process_launcher.h',
     'browser/android/touch_point.cc',

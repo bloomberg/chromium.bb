@@ -206,6 +206,10 @@ public class ContentViewClient {
         // the system. Investigate if this is at all possible.
     }
 
+    @CalledByNative
+    void handleKeyboardEvent(KeyEvent event) {
+        onUnhandledKeyEvent(event);
+    }
 
     @CalledByNative
     public void runFileChooser(FileChooserParams params) {

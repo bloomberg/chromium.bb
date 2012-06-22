@@ -11,6 +11,7 @@
 #include "content/browser/android/content_util.h"
 #include "content/browser/android/content_view_impl.h"
 #include "content/browser/android/download_controller.h"
+#include "content/browser/android/ime_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/find_match_rect_android.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -443,14 +444,14 @@ bool ContentViewClient::ShouldOverrideLoading(const GURL& url) {
 
 void ContentViewClient::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  /* TODO(jrg): to upstream this implementation, we need these files as well:
-     browser/android/ime_helper.cc
-     browser/android/ime_helper.h
-     browser/renderer_host/native_web_keyboard_event_android.h
-     browser/renderer_host/native_web_keyboard_event_android.cc
-     Also the @CalledByNative handleKeyboardEvent() in ContentViewClient.java.
-  */
-  NOTREACHED();
+  jobject key_event = KeyEventFromNative(event);
+  if (key_event) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_ContentViewClient_handleKeyboardEvent(
+        env,
+        weak_java_client_.get(env).obj(),
+        key_event);
+  }
 }
 
 bool ContentViewClient::TakeFocus(bool reverse) {
