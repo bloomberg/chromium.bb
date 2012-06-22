@@ -151,9 +151,17 @@ int DoUninstallTasks(bool chrome_still_running) {
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchEvents);
+  if (base::win::IsMetroProcess()) {
+    typedef const wchar_t* (*GetMetroSwitches)(void);
+    GetMetroSwitches metro_switches_proc = reinterpret_cast<GetMetroSwitches>(
+        GetProcAddress(base::win::GetMetroModule(),
+                       "GetMetroCommandLineSwitches"));
+    string16 metro_switches = (*metro_switches_proc)();
+    if (!metro_switches.empty()) {
+      CommandLine extra_switches(CommandLine::NO_PROGRAM);
+      extra_switches.ParseFromString(metro_switches);
+      CommandLine::ForCurrentProcess()->AppendArguments(extra_switches, false);
+    }
   }
 }
 
