@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
@@ -61,13 +62,14 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
                                    const gfx::Size& new_size) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   typedef std::vector<gfx::Display> Displays;
 
   void Init();
   void AddRemoveMonitorImpl();
   void CycleMonitorImpl();
   void ScaleMonitorImpl();
-  gfx::Display& FindDisplayById(int id);
+  gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
 
   Displays displays_;
 

@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/test_window_delegate.h"
 
+#include "base/stringprintf.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -131,6 +132,85 @@ bool MaskedWindowDelegate::HasHitTestMask() const {
 
 void MaskedWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
   mask->addRect(RectToSkRect(mask_rect_));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EventCountDelegate
+
+EventCountDelegate::EventCountDelegate()
+  : mouse_enter_count_(0),
+    mouse_move_count_(0),
+    mouse_leave_count_(0),
+    mouse_press_count_(0),
+    mouse_release_count_(0),
+    key_press_count_(0),
+    key_release_count_(0) {
+}
+
+bool EventCountDelegate::OnMouseEvent(MouseEvent* event) {
+  switch (event->type()) {
+    case ui::ET_MOUSE_MOVED:
+      mouse_move_count_++;
+      break;
+    case ui::ET_MOUSE_ENTERED:
+      mouse_enter_count_++;
+      break;
+    case ui::ET_MOUSE_EXITED:
+      mouse_leave_count_++;
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      mouse_press_count_++;
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      mouse_release_count_++;
+      break;
+    default:
+      break;
+  }
+  return false;
+}
+
+bool EventCountDelegate::OnKeyEvent(KeyEvent* event) {
+  switch (event->type()) {
+    case ui::ET_KEY_PRESSED:
+      key_press_count_++;
+      break;
+    case ui::ET_KEY_RELEASED:
+      key_release_count_++;
+    default:
+      break;
+  }
+  return false;
+}
+
+std::string EventCountDelegate::GetMouseMotionCountsAndReset() {
+  std::string result = StringPrintf("%d %d %d",
+                                    mouse_enter_count_,
+                                    mouse_move_count_,
+                                    mouse_leave_count_);
+  mouse_enter_count_ = 0;
+  mouse_move_count_ = 0;
+  mouse_leave_count_ = 0;
+  return result;
+}
+
+std::string EventCountDelegate::GetMouseButtonCountsAndReset() {
+  std::string result = StringPrintf("%d %d",
+                                    mouse_press_count_,
+                                    mouse_release_count_);
+  mouse_press_count_ = 0;
+  mouse_release_count_ = 0;
+  return result;
+}
+
+
+std::string EventCountDelegate::GetKeyCountsAndReset() {
+  std::string result = StringPrintf("%d %d",
+                                    key_press_count_,
+                                    key_release_count_);
+  key_press_count_ = 0;
+  key_release_count_ = 0;
+  return result;
 }
 
 }  // namespace test

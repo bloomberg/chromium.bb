@@ -405,7 +405,22 @@ void Window::ConvertPointToWindow(const Window* source,
                                   gfx::Point* point) {
   if (!source)
     return;
-  ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
+  if (source->GetRootWindow() != target->GetRootWindow()) {
+    const gfx::Point source_origin =
+        gfx::Screen::GetDisplayNearestWindow(
+            const_cast<Window*>(source)).bounds().origin();
+    const gfx::Point target_origin =
+        gfx::Screen::GetDisplayNearestWindow(
+            const_cast<Window*>(target)).bounds().origin();
+    ui::Layer::ConvertPointToLayer(
+        source->layer(), source->GetRootWindow()->layer(), point);
+    const gfx::Point offset = source_origin.Subtract(target_origin);
+    point->Offset(offset.x(), offset.y());
+    ui::Layer::ConvertPointToLayer(
+        target->GetRootWindow()->layer(), target->layer(), point);
+  } else {
+    ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
+  }
 }
 
 void Window::MoveCursorTo(const gfx::Point& point_in_window) {

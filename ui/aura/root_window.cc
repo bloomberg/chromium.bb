@@ -626,10 +626,8 @@ FocusManager* RootWindow::GetFocusManager() {
 
 void RootWindow::UpdateCapture(Window* old_capture,
                                Window* new_capture) {
-  DCHECK(!new_capture || new_capture->GetRootWindow() == this);
-  DCHECK(!old_capture || old_capture->GetRootWindow() == this);
-
-  if (old_capture && old_capture->delegate()) {
+  if (old_capture && old_capture->GetRootWindow() == this &&
+      old_capture->delegate()) {
     // Send a capture changed event with bogus location data.
     MouseEvent event(
         ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(), gfx::Point(), 0);
@@ -638,11 +636,19 @@ void RootWindow::UpdateCapture(Window* old_capture,
     old_capture->delegate()->OnCaptureLost();
   }
 
+  // Reset the mouse_moved_handler_ if the mouse_moved_handler_ belongs
+  // to another root window when losing the capture.
+  if (mouse_moved_handler_ && old_capture &&
+      old_capture->Contains(mouse_moved_handler_) &&
+      old_capture->GetRootWindow() != this) {
+    mouse_moved_handler_ = NULL;
+  }
+
   if (new_capture) {
     // Make all subsequent mouse events and touch go to the capture window. We
     // shouldn't need to send an event here as OnCaptureLost should take care of
     // that.
-    if (mouse_moved_handler_ || mouse_button_flags_ != 0)
+    if (mouse_moved_handler_ || Env::GetInstance()->is_mouse_button_down())
       mouse_moved_handler_ = new_capture;
   } else {
     // Make sure mouse_moved_handler gets updated.

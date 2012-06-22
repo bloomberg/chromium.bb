@@ -285,8 +285,6 @@ void Layer::ConvertPointToLayer(const Layer* source,
   const Layer* root_layer = GetRoot(source);
   CHECK_EQ(root_layer, GetRoot(target));
 
-  // TODO(oshima): We probably need to handle source's root != target's root
-  // case under multi monitor environment.
   if (source != root_layer)
     source->ConvertPointForAncestor(root_layer, point);
   if (target != root_layer)

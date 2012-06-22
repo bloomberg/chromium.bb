@@ -139,10 +139,8 @@ const gfx::Display& MultiMonitorManager::GetDisplayNearestWindow(
     return manager->GetDisplayAt(0);
   }
   const RootWindow* root = window->GetRootWindow();
-  MultiMonitorManager* that = const_cast<MultiMonitorManager*>(this);
-  return root ?
-      that->FindDisplayById(root->GetProperty(kMonitorIdKey)) :
-      GetInvalidDisplay();
+  MultiMonitorManager* manager = const_cast<MultiMonitorManager*>(this);
+  return root ? manager->FindDisplayForRootWindow(root) : GetInvalidDisplay();
 }
 
 const gfx::Display& MultiMonitorManager::GetDisplayNearestPoint(
@@ -156,8 +154,7 @@ const gfx::Display& MultiMonitorManager::GetDisplayNearestPoint(
 void MultiMonitorManager::OnRootWindowResized(const aura::RootWindow* root,
                                               const gfx::Size& old_size) {
   if (!use_fullscreen_host_window()) {
-    int monitor_id = root->GetProperty(kMonitorIdKey);
-    gfx::Display& display = FindDisplayById(monitor_id);
+    gfx::Display& display = FindDisplayForRootWindow(root);
     display.SetSize(root->GetHostSize());
     NotifyBoundsChanged(display);
   }
@@ -167,7 +164,7 @@ bool MultiMonitorManager::UpdateWorkAreaOfMonitorNearestWindow(
     const aura::Window* window,
     const gfx::Insets& insets) {
   const RootWindow* root = window->GetRootWindow();
-  gfx::Display& display = FindDisplayById(root->GetProperty(kMonitorIdKey));
+  gfx::Display& display = FindDisplayForRootWindow(root);
   gfx::Rect old_work_area = display.work_area();
   display.UpdateWorkAreaFromInsets(insets);
   return old_work_area != display.work_area();
@@ -234,7 +231,9 @@ void MultiMonitorManager::ScaleMonitorImpl() {
   }
 }
 
-gfx::Display& MultiMonitorManager::FindDisplayById(int id) {
+gfx::Display& MultiMonitorManager::FindDisplayForRootWindow(
+    const aura::RootWindow* root_window) {
+  int id = root_window->GetProperty(kMonitorIdKey);
   for (Displays::iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     if ((*iter).id() == id)

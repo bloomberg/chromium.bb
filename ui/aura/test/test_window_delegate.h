@@ -6,6 +6,8 @@
 #define UI_AURA_TEST_TEST_WINDOW_DELEGATE_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_delegate.h"
@@ -89,6 +91,39 @@ class MaskedWindowDelegate : public TestWindowDelegate {
   gfx::Rect mask_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(MaskedWindowDelegate);
+};
+
+// Keeps track of mouse/key events.
+class EventCountDelegate : public TestWindowDelegate {
+ public:
+  EventCountDelegate();
+
+  // Overridden from TestWindowDelegate:
+  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE;
+  virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE;
+
+  // Returns the counts of mouse motion events in the
+  // form of "<enter> <move> <leave>".
+  std::string GetMouseMotionCountsAndReset();
+
+  // Returns the counts of mouse button events in the
+  // form of "<press> <release>".
+  std::string GetMouseButtonCountsAndReset();
+
+  // Returns the counts of key events in the form of
+  // "<press> <release>".
+  std::string GetKeyCountsAndReset();
+
+ private:
+  int mouse_enter_count_;
+  int mouse_move_count_;
+  int mouse_leave_count_;
+  int mouse_press_count_;
+  int mouse_release_count_;
+  int key_press_count_;
+  int key_release_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventCountDelegate);
 };
 
 }  // namespace test
