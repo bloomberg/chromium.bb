@@ -449,9 +449,9 @@ div.root-eject:hover {
 }
 
 #search-box {
-  background: url('../images/icon_search.png') no-repeat scroll 2px 1.5px;
+  background: url('../images/icon_search.png') no-repeat scroll 4px 3.5px;
   display: -webkit-box;
-  height: 20px;
+  height: 25px;
   margin-right: 10px;
   padding-left: 22px;
 }
