@@ -910,15 +910,15 @@ x11_compositor_create(struct wl_display *display,
 				   config_file) < 0)
 		return NULL;
 
+	if (x11_input_create(c, no_input) < 0)
+		return NULL;
+
 	for (i = 0, x = 0; i < count; i++) {
 		if (x11_compositor_create_output(c, x, 0, width, height,
 						 fullscreen, no_input) < 0)
 			return NULL;
 		x += width;
 	}
-
-	if (x11_input_create(c, no_input) < 0)
-		return NULL;
 
 	c->xcb_source =
 		wl_event_loop_add_fd(c->base.input_loop,
