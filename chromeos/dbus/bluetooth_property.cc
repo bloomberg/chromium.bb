@@ -40,4 +40,4 @@ void BluetoothPropertySet::GetAll() {
                                       GetWeakPtr()));
 }
 
-}
+}  // namespace chromeos

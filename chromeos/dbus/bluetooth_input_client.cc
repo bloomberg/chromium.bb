@@ -5,6 +5,7 @@
 #include "chromeos/dbus/bluetooth_input_client.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
