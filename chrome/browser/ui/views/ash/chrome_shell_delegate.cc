@@ -136,8 +136,12 @@ void ChromeShellDelegate::Exit() {
 
 void ChromeShellDelegate::NewTab() {
   Browser* browser = GetTargetBrowser();
+  // If the browser was not active, we call BrowserWindow::Show to make it
+  // visible. Otherwise, we let Browser::NewTab handle the active window change.
+  const bool was_active = browser->window()->IsActive();
   browser->NewTab();
-  browser->window()->Show();
+  if (!was_active)
+    browser->window()->Show();
 }
 
 void ChromeShellDelegate::NewWindow(bool is_incognito) {
