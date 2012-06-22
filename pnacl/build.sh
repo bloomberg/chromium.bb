@@ -1225,6 +1225,9 @@ prune() {
   echo "removing llvm headers"
   rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
+  echo "removing llvm static libs"
+  rm -rf "${LLVM_INSTALL_DIR}"/lib/*.a
+
   echo "removing .pyc files"
   rm -f "${INSTALL_NEWLIB_BIN}"/pydir/*.pyc
   rm -f "${INSTALL_GLIBC_BIN}"/pydir/*.pyc
