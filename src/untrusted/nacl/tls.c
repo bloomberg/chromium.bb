@@ -47,6 +47,17 @@ extern char __tls_template_end __attribute__((weak));
 #define TLS_PRESUMED_ALIGNMENT   16
 
 /*
+ * The next-generation (upstream) linkers define this symbol when
+ * the ELF file and program headers are visible in the address space.
+ * We can use this to bootstrap finding PT_TLS when it's available.
+ * We use a weak reference to be compatible with the old nacl-binutils
+ * linkers and layout, where this symbol is not defined and the headers
+ * are not visible in the address space.
+ */
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+extern const Elf32_Ehdr __ehdr_start __attribute__((weak));
+
+/*
  * Collect information about the TLS initializer data here.
  * The first call to get_tls_info() fills in all the data,
  * based either on PT_TLS or on link-time values and presumptions.
@@ -66,11 +77,16 @@ static const struct tls_info *get_tls_info(void) {
      * This is the first call, so we have to figure out the data.
      * See if we have access to our own PT_TLS fields to tell from there.
      */
-    if (__nacl_auxv != NULL) {
+    const Elf32_Phdr *phdr = NULL;
+    int phnum = 0;
+    bool phentsize_ok = false;
+    if (&__ehdr_start != NULL && __ehdr_start.e_ident[EI_CLASS] == ELFCLASS32) {
+      phentsize_ok = __ehdr_start.e_phentsize == sizeof(Elf32_Phdr);
+      phnum = __ehdr_start.e_phnum;
+      phdr = (const Elf32_Phdr *) ((const char *) &__ehdr_start +
+                                   __ehdr_start.e_phoff);
+    } else if (__nacl_auxv != NULL) {
       const Elf32_auxv_t *av;
-      const Elf32_Phdr *phdr = NULL;
-      int phnum = 0;
-      bool phentsize_ok = false;
       for (av = __nacl_auxv; av->a_type != AT_NULL; ++av) {
         switch (av->a_type) {
           case AT_PHENT:
@@ -88,18 +104,18 @@ static const struct tls_info *get_tls_info(void) {
         if (phentsize_ok && phdr != NULL && phnum != 0)
           break;
       }
-      if (phentsize_ok && phdr != NULL) {
-        /*
-         * We have phdrs we can see.  Now find our PT_TLS.
-         */
-        for (int i = 0; i < phnum; ++i) {
-          if (phdr[i].p_type == PT_TLS) {
-            cached_tls_info.tls_alignment = phdr[i].p_align;
-            cached_tls_info.tdata_start = (const void *) phdr[i].p_vaddr;
-            cached_tls_info.tdata_size = phdr[i].p_filesz;
-            cached_tls_info.tbss_size = phdr[i].p_memsz - phdr[i].p_filesz;
-            break;
-          }
+    }
+    if (phentsize_ok && phdr != NULL) {
+      /*
+       * We have phdrs we can see.  Now find our PT_TLS.
+       */
+      for (int i = 0; i < phnum; ++i) {
+        if (phdr[i].p_type == PT_TLS) {
+          cached_tls_info.tls_alignment = phdr[i].p_align;
+          cached_tls_info.tdata_start = (const void *) phdr[i].p_vaddr;
+          cached_tls_info.tdata_size = phdr[i].p_filesz;
+          cached_tls_info.tbss_size = phdr[i].p_memsz - phdr[i].p_filesz;
+          break;
         }
       }
     }
