@@ -2380,12 +2380,19 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 {
 	char *keymap_str;
 
+	xkb_info->shift_mod = xkb_map_mod_get_index(xkb_info->keymap,
+						    XKB_MOD_NAME_SHIFT);
+	xkb_info->caps_mod = xkb_map_mod_get_index(xkb_info->keymap,
+						   XKB_MOD_NAME_CAPS);
 	xkb_info->ctrl_mod = xkb_map_mod_get_index(xkb_info->keymap,
 						   XKB_MOD_NAME_CTRL);
 	xkb_info->alt_mod = xkb_map_mod_get_index(xkb_info->keymap,
 						  XKB_MOD_NAME_ALT);
+	xkb_info->mod2_mod = xkb_map_mod_get_index(xkb_info->keymap, "Mod2");
+	xkb_info->mod3_mod = xkb_map_mod_get_index(xkb_info->keymap, "Mod3");
 	xkb_info->super_mod = xkb_map_mod_get_index(xkb_info->keymap,
 						    XKB_MOD_NAME_LOGO);
+	xkb_info->mod5_mod = xkb_map_mod_get_index(xkb_info->keymap, "Mod5");
 
 	xkb_info->num_led = xkb_map_led_get_index(xkb_info->keymap,
 						  XKB_LED_NAME_NUM);

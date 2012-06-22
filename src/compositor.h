@@ -189,9 +189,14 @@ struct weston_xkb_info {
 	int keymap_fd;
 	size_t keymap_size;
 	char *keymap_area;
+	xkb_mod_index_t shift_mod;
+	xkb_mod_index_t caps_mod;
 	xkb_mod_index_t ctrl_mod;
 	xkb_mod_index_t alt_mod;
+	xkb_mod_index_t mod2_mod;
+	xkb_mod_index_t mod3_mod;
 	xkb_mod_index_t super_mod;
+	xkb_mod_index_t mod5_mod;
 	xkb_led_index_t num_led;
 	xkb_led_index_t caps_led;
 	xkb_led_index_t scroll_led;
