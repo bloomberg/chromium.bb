@@ -148,7 +148,13 @@ const char* kPredefinedAllowedSocketOrigins[] = {
   "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
   "odkaodonbgfohohmklejpjiejmcipmib",  // Dogfood Chrome Remote Desktop
   "ojoimpklfciegopdfgeenehpalipignm",  // Chromoting canary
-  "cbkkbcmdlboombapidmoeolnmdacpkch"   // see crbug.com/129089
+  "cbkkbcmdlboombapidmoeolnmdacpkch",  // see crbug.com/129089
+  "hhnbmknkdabfoieppbbljkhkfjcmcbjh",  // see crbug.com/134099
+  "mablfbjkhmhkmefkjjacnbaikjkipphg",  // see crbug.com/134099
+  "pdeelgamlgannhelgoegilelnnojegoh",  // see crbug.com/134099
+  "cabapfdbkniadpollkckdnedaanlciaj",  // see crbug.com/134099
+  "mapljbgnjledlpdmlchihnmeclmefbba",  // see crbug.com/134099
+  "ghbfeebgmiidnnmeobbbaiamklmpbpii"   // see crbug.com/134099
 };
 
 // Handles rewriting Web UI URLs.
