@@ -725,7 +725,9 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 struct weston_surface_animation *
 weston_fade_run(struct weston_surface *surface,
 		weston_surface_animation_done_func_t done, void *data);
-
+struct weston_surface_animation *
+weston_slide_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
+		 weston_surface_animation_done_func_t done, void *data);
 
 void
 weston_surface_set_color(struct weston_surface *surface,

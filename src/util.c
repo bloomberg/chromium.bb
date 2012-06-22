@@ -234,6 +234,32 @@ weston_fade_run(struct weston_surface *surface,
 					    fade_frame, done, data);
 }
 
+static void
+slide_frame(struct weston_surface_animation *animation)
+{
+	GLfloat scale;
+
+	scale = animation->start +
+		(animation->stop - animation->start) *
+		animation->spring.current;
+	weston_matrix_init(&animation->transform.matrix);
+	weston_matrix_translate(&animation->transform.matrix, 0, scale, 0);
+}
+
+WL_EXPORT struct weston_surface_animation *
+weston_slide_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
+		weston_surface_animation_done_func_t done, void *data)
+{
+	struct weston_surface_animation *animation;
+
+	animation = weston_surface_animation_run(surface, start, stop,
+						 slide_frame, done, data);
+	animation->spring.friction = 900;
+	animation->spring.k = 300;
+
+	return animation;
+}
+
 struct weston_binding {
 	uint32_t key;
 	uint32_t button;

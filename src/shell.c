@@ -1919,12 +1919,17 @@ hide_screensaver(struct desktop_shell *shell, struct shell_surface *surface)
 static void
 show_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
 {
+	if (weston_surface_is_mapped(surface->surface))
+		return;
+
 	wl_list_remove(&surface->surface->layer_link);
 	wl_list_insert(&shell->panel_layer.surface_list, &surface->surface->layer_link);
 	surface->surface->output = surface->output;
 	weston_surface_damage(surface->surface);
 
-	weston_zoom_run(surface->surface, 0.8, 1.0, NULL, NULL);
+	weston_slide_run(surface->surface,
+			 surface->surface->geometry.height, 0,
+			 NULL, NULL);
 }
 
 static void
@@ -2660,7 +2665,9 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_INPUT_PANEL:
 		bottom_center_on_output(surface, get_default_output(compositor));
-		break;
+		/* Don't map the input panel here, wait for
+		 * show_input_panels signal. */
+		return;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
 	case SHELL_SURFACE_NONE:
