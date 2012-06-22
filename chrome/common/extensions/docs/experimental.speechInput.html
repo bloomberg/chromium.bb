@@ -249,19 +249,19 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-SpeechInputStartOptions">SpeechInputStartOptions</a>
+                <a href="#type-experimental.speechInput.SpeechInputStartOptions">SpeechInputStartOptions</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-SpeechInputError">SpeechInputError</a>
+                <a href="#type-experimental.speechInput.SpeechInputError">SpeechInputError</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
+                <a href="#type-experimental.speechInput.SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-SpeechInputResultEvent">SpeechInputResultEvent</a>
+                <a href="#type-experimental.speechInput.SpeechInputResultEvent">SpeechInputResultEvent</a>
                 <ol>
                 </ol>
               </li>
@@ -316,7 +316,7 @@ results.</p>
 chrome.experimental.speechInput.onResult.addListener(callback);
 </pre>
 <p>The <code>result</code> object contains an array of
-<a href="#type-SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
+<a href="#type-experimental.speechinput.SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
 sorted by decreasing likelihood.</p>
 <p>Recording automatically stops when results are received. It is safe to call
 <code>start()</code> again from the results callback.</p>
@@ -458,7 +458,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
               <h4>start</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.speechInput.start</span>(<span class="optional"><span>SpeechInputStartOptions</span>
+                  <span>chrome.experimental.speechInput.start</span>(<span class="optional"><span>experimental.speechInput.SpeechInputStartOptions</span>
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -477,7 +477,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.speechInput.html#type-SpeechInputStartOptions">SpeechInputStartOptions</a>
+                        <a href="experimental.speechInput.html#type-experimental.speechInput.SpeechInputStartOptions">experimental.speechInput.SpeechInputStartOptions</a>
                       </span>
                     </span>
                   )
@@ -604,7 +604,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
               <h4>onError</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.speechInput.</span><span>onError</span><span class="subdued">.addListener</span>(function(<span>SpeechInputError error</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.speechInput.</span><span>onError</span><span class="subdued">.addListener</span>(function(<span>experimental.speechInput.SpeechInputError error</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Called in case of an error in speech recognition.</p>
@@ -622,7 +622,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.speechInput.html#type-SpeechInputError">SpeechInputError</a>
+                        <a href="experimental.speechInput.html#type-experimental.speechInput.SpeechInputError">experimental.speechInput.SpeechInputError</a>
                       </span>
                     </span>
                   )
@@ -649,7 +649,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
               <h4>onResult</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.speechInput.</span><span>onResult</span><span class="subdued">.addListener</span>(function(<span>SpeechInputResultEvent event</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.speechInput.</span><span>onResult</span><span class="subdued">.addListener</span>(function(<span>experimental.speechInput.SpeechInputResultEvent event</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Called when speech recognition results are available.</p>
@@ -667,7 +667,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.speechInput.html#type-SpeechInputResultEvent">SpeechInputResultEvent</a>
+                        <a href="experimental.speechInput.html#type-experimental.speechInput.SpeechInputResultEvent">experimental.speechInput.SpeechInputResultEvent</a>
                       </span>
                     </span>
                   )
@@ -729,8 +729,8 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-SpeechInputStartOptions"></a>
-              <h4>SpeechInputStartOptions</h4>
+              <a name="type-experimental.speechInput.SpeechInputStartOptions"></a>
+              <h4>experimental.speechInput.SpeechInputStartOptions</h4>
               <div>
           <dt>
               <em>
@@ -830,8 +830,8 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-SpeechInputError"></a>
-              <h4>SpeechInputError</h4>
+              <a name="type-experimental.speechInput.SpeechInputError"></a>
+              <h4>experimental.speechInput.SpeechInputError</h4>
               <div>
           <dt>
               <em>
@@ -884,8 +884,8 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-SpeechInputResultHypothesis"></a>
-              <h4>SpeechInputResultHypothesis</h4>
+              <a name="type-experimental.speechInput.SpeechInputResultHypothesis"></a>
+              <h4>experimental.speechInput.SpeechInputResultHypothesis</h4>
               <div>
           <dt>
               <em>
@@ -959,8 +959,8 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-SpeechInputResultEvent"></a>
-              <h4>SpeechInputResultEvent</h4>
+              <a name="type-experimental.speechInput.SpeechInputResultEvent"></a>
+              <h4>experimental.speechInput.SpeechInputResultEvent</h4>
               <div>
           <dt>
               <em>
@@ -994,7 +994,7 @@ chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="experimental.speechInput.html#type-SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
+                        <a href="experimental.speechInput.html#type-experimental.speechInput.SpeechInputResultHypothesis">experimental.speechInput.SpeechInputResultHypothesis</a>
                       </span>
                     </span></span>
                         </span>

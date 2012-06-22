@@ -236,19 +236,19 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-ProxyServer">ProxyServer</a>
+                <a href="#type-proxy.ProxyServer">ProxyServer</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-ProxyRules">ProxyRules</a>
+                <a href="#type-proxy.ProxyRules">ProxyRules</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-PacScript">PacScript</a>
+                <a href="#type-proxy.PacScript">PacScript</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-ProxyConfig">ProxyConfig</a>
+                <a href="#type-proxy.ProxyConfig">ProxyConfig</a>
                 <ol>
                 </ol>
               </li>
@@ -285,9 +285,9 @@ For example:</p>
 <h2 id="description">Objects and properties</h2>
 <p>
 Proxy settings are defined in a
-<a href="#type-ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
+<a href="#type-proxy.ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
 Chrome's proxy settings, the settings may contain
-<a href="#type-ProxyRules"><code>ProxyRules</code></a> or a <a href="#type-PacScript"><code>PacScript</code></a>.
+<a href="#type-proxy.ProxyRules"><code>ProxyRules</code></a> or a <a href="#type-proxy.PacScript"><code>PacScript</code></a>.
 </p>
 <h3 id="proxy_modes">Proxy modes</h3>
 <p>
@@ -308,14 +308,14 @@ values:
   <dt><code>pac_script</code></dt>
   <dd>In <code>pac_script</code> mode the proxy configuration is determined by
   a PAC script that is either retrieved from the URL specified in the
-  <a href="#type-PacScript"><code>PacScript</code></a> object or
+  <a href="#type-proxy.PacScript"><code>PacScript</code></a> object or
   taken literally from the <code>data</code> element specified in the
-  <a href="#type-PacScript"><code>PacScript</code></a> object.
+  <a href="#type-proxy.PacScript"><code>PacScript</code></a> object.
   Besides this, this mode allows no further parameters in the
   <code>ProxyConfig</code> object.</dd>
   <dt><code>fixed_servers</code></dt>
   <dd>In <code>fixed_servers</code> mode the proxy configuration is codified in
-  a <a href="#type-ProxyRules&gt;&lt;code&gt;ProxyRules"><code>ProxyRules</code></a>
+  a <a href="#type-proxy.ProxyRules&gt;&lt;code&gt;ProxyRules"><code>ProxyRules</code></a>
   object. Its structure is described in <a href="#proxy_rules">Proxy rules</a>.
   Besides this, the <code>fixed_servers</code> mode allows no further parameters
   in the <code>ProxyConfig</code> object.</dd>
@@ -330,7 +330,7 @@ values:
 <p></p>
 <h3 id="proxy_rules">Proxy rules</h3>
 <p>
-The <a href="#type-ProxyRules"><code>ProxyRules</code></a> object can contain
+The <a href="#type-proxy.ProxyRules"><code>ProxyRules</code></a> object can contain
 either a <code>singleProxy</code> attribute or a subset of
 <code>proxyForHttp</code>, <code>proxyForHttps</code>, <code>proxyForFtp</code>,
 and <code>fallbackProxy</code>.
@@ -348,14 +348,14 @@ proxy server.
 <h3 id="proxy_server_objects">Proxy server objects</h3>
 <p>
 A proxy server is configured in a
-<a href="#type-ProxyServer"><code>ProxyServer</code></a> object. The connection
+<a href="#type-proxy.ProxyServer"><code>ProxyServer</code></a> object. The connection
 to the proxy server (defined by the <code>host</code> attribute) uses the
 protocol defined in the <code>scheme</code> attribute. If no <code>scheme</code>
 is specified, the proxy connection defaults to <code>http</code>.
 </p>
 <p>
 If no <code>port</code> is defined in a
-<a href="#type-ProxyServer"><code>ProxyServer</code></a> object, the port is
+<a href="#type-proxy.ProxyServer"><code>ProxyServer</code></a> object, the port is
 derived from the scheme. The default ports are:
 </p><table>
   <tbody><tr><th>Scheme</th><th>Port</th></tr>
@@ -468,7 +468,7 @@ identical to the <code>value</code> object passed to callback function of
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a>types.ChromeSetting</a>
+                        <a href="types.html#type-types.ChromeSetting">types.ChromeSetting</a>
                       </span>
                     </span>
                   )
@@ -619,8 +619,8 @@ identical to the <code>value</code> object passed to callback function of
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-ProxyServer"></a>
-              <h4>ProxyServer</h4>
+              <a name="type-proxy.ProxyServer"></a>
+              <h4>proxy.ProxyServer</h4>
               <div>
           <dt>
               <em>
@@ -721,8 +721,8 @@ identical to the <code>value</code> object passed to callback function of
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-ProxyRules"></a>
-              <h4>ProxyRules</h4>
+              <a name="type-proxy.ProxyRules"></a>
+              <h4>proxy.ProxyRules</h4>
               <div>
           <dt>
               <em>
@@ -753,7 +753,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-proxy.ProxyServer">proxy.ProxyServer</a>
                       </span>
                     </span>
                   )
@@ -777,7 +777,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-proxy.ProxyServer">proxy.ProxyServer</a>
                       </span>
                     </span>
                   )
@@ -801,7 +801,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-proxy.ProxyServer">proxy.ProxyServer</a>
                       </span>
                     </span>
                   )
@@ -825,7 +825,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-proxy.ProxyServer">proxy.ProxyServer</a>
                       </span>
                     </span>
                   )
@@ -849,7 +849,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-ProxyServer">ProxyServer</a>
+                        <a href="proxy.html#type-proxy.ProxyServer">proxy.ProxyServer</a>
                       </span>
                     </span>
                   )
@@ -900,8 +900,8 @@ identical to the <code>value</code> object passed to callback function of
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-PacScript"></a>
-              <h4>PacScript</h4>
+              <a name="type-proxy.PacScript"></a>
+              <h4>proxy.PacScript</h4>
               <div>
           <dt>
               <em>
@@ -1001,8 +1001,8 @@ identical to the <code>value</code> object passed to callback function of
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-ProxyConfig"></a>
-              <h4>ProxyConfig</h4>
+              <a name="type-proxy.ProxyConfig"></a>
+              <h4>proxy.ProxyConfig</h4>
               <div>
           <dt>
               <em>
@@ -1033,7 +1033,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-ProxyRules">ProxyRules</a>
+                        <a href="proxy.html#type-proxy.ProxyRules">proxy.ProxyRules</a>
                       </span>
                     </span>
                   )
@@ -1057,7 +1057,7 @@ identical to the <code>value</code> object passed to callback function of
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="proxy.html#type-PacScript">PacScript</a>
+                        <a href="proxy.html#type-proxy.PacScript">proxy.PacScript</a>
                       </span>
                     </span>
                   )

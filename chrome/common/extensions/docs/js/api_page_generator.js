@@ -114,6 +114,9 @@ var module;
 // Mapping from typeId to module.
 var typeModule = {};
 
+// Mapping from typeId to type.
+var typeIdType = {};
+
 // Auto-created page name as default
 var pageName;
 
@@ -200,9 +203,44 @@ function fetchSchema() {
   var schemas_retrieved = 0;
   schema = [];
 
+  function qualifyRefs(namespace, obj) {
+    if (typeof(obj) == "object") {
+      for (var i in obj) {
+        if (typeof(obj[i]) == "object") {
+          obj[i] = qualifyRefs(namespace, obj[i]);
+        } else if (i == "$ref") {
+          if (obj[i].indexOf('.') == -1) {
+            obj[i] = namespace + '.' + obj[i];
+          }
+        }
+      }
+    }
+    return obj;
+  }
+
+  function qualifyTypes(schema) {
+    schema.forEach(function(mod) {
+      if (mod.types) {
+        mod.types.forEach(function(type) {
+          type.prettyId = type.id;
+          if (type.prettyId.indexOf(mod.namespace) == 0) {
+            type.prettyId = type.prettyId.substring(mod.namespace.length + 1);
+          }
+          if (type.id.indexOf(mod.namespace) != 0) {
+            type.id = mod.namespace + '.' + type.id;
+          }
+          typeModule[type.id] = mod;
+          typeIdType[type.id] = type;
+        });
+      }
+      mod = qualifyRefs(mod.namespace, mod);
+    });
+    return schema;
+  }
+
   function onSchemaContent(content) {
     if (content)
-      schema = schema.concat(JSON.parse(JSON.minify(content)));
+      schema = schema.concat(qualifyTypes(JSON.parse(JSON.minify(content))));
     if (++schemas_retrieved < schemas_to_retrieve.length)
       return;
     if (pageName.toLowerCase() == 'samples') {
@@ -714,6 +752,10 @@ function getTypeName(schema) {
     return schema.isInstanceOf;
 
   return schema.type;
+}
+
+function getPrettyTypeId(typeName) {
+  return typeIdType[typeName].prettyId;
 }
 
 function hasPrimitiveValue(schema) {

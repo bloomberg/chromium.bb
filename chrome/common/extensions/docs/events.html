@@ -214,35 +214,35 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-Event">Event</a>
+                <a href="#type-events.Event">Event</a>
                 <ol>
                   <li>
-            <a href="#global-Event-methods">Methods</a>
+            <a href="#global-events.Event-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-Event-addListener">addListener</a>
+                <a href="#method-events.Event-addListener">addListener</a>
               </li><li>
-                <a href="#method-Event-addRules">addRules</a>
+                <a href="#method-events.Event-addRules">addRules</a>
               </li><li>
-                <a href="#method-Event-getRules">getRules</a>
+                <a href="#method-events.Event-getRules">getRules</a>
               </li><li>
-                <a href="#method-Event-hasListener">hasListener</a>
+                <a href="#method-events.Event-hasListener">hasListener</a>
               </li><li>
-                <a href="#method-Event-hasListeners">hasListeners</a>
+                <a href="#method-events.Event-hasListeners">hasListeners</a>
               </li><li>
-                <a href="#method-Event-removeListener">removeListener</a>
+                <a href="#method-events.Event-removeListener">removeListener</a>
               </li><li>
-                <a href="#method-Event-removeRules">removeRules</a>
+                <a href="#method-events.Event-removeRules">removeRules</a>
               </li>
             </ol>
           </li>
                 </ol>
               </li><li>
-                <a href="#type-Rule">Rule</a>
+                <a href="#type-events.Rule">Rule</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-UrlFilter">UrlFilter</a>
+                <a href="#type-events.UrlFilter">UrlFilter</a>
                 <ol>
                 </ol>
               </li>
@@ -281,7 +281,7 @@ which event you're handling.
 Checking the documentation for
 <a href="tabs.html#event-onCreated"><code>chrome.tabs.onCreated</code></a>,
 you can see that the function has a single parameter:
-a <a href="tabs.html#type-Tab">Tab</a> object
+a <a href="tabs.html#type-tabs.Tab">Tab</a> object
 that has details about the newly created tab.
 </p>
 <h2 id="declarative">Declarative Event Handlers</h2>
@@ -393,8 +393,8 @@ refers to an array of rules including filled optional parameters.
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-Event"></a>
-              <h4>Event</h4>
+              <a name="type-events.Event"></a>
+              <h4>events.Event</h4>
               <div>
           <dt>
               <em>
@@ -415,15 +415,15 @@ refers to an array of rules including filled optional parameters.
           <!-- OBJECT METHODS -->
           <dd>
             <div class="apiGroup">
-            <a name="global-Event-methods"></a>
-            <h3>Methods of Event</h3>
+            <a name="global-events.Event-methods"></a>
+            <h3>Methods of events.Event</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-Event-addListener"></a> <!-- method-anchor -->
+              <a name="method-events.Event-addListener"></a> <!-- method-anchor -->
               <h4>addListener</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.addListener</span>(<span class="null"><span>function</span>
+                  <span>events.Event.addListener</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Registers an event listener <em>callback</em> to an event.</p>
@@ -462,11 +462,11 @@ refers to an array of rules including filled optional parameters.
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Event-addRules"></a> <!-- method-anchor -->
+              <a name="method-events.Event-addRules"></a> <!-- method-anchor -->
               <h4>addRules</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.addRules</span>(<span class="null"><span>array of Rule</span>
+                  <span>events.Event.addRules</span>(<span class="null"><span>array of events.Rule</span>
                       <var><span>rules</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -487,7 +487,7 @@ refers to an array of rules including filled optional parameters.
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="events.html#type-Rule">Rule</a>
+                        <a href="events.html#type-events.Rule">events.Rule</a>
                       </span>
                     </span></span>
                         </span>
@@ -541,7 +541,7 @@ refers to an array of rules including filled optional parameters.
                     specify a function that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of Rule rules</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of events.Rule rules</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -556,7 +556,7 @@ refers to an array of rules including filled optional parameters.
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="events.html#type-Rule">Rule</a>
+                        <a href="events.html#type-events.Rule">events.Rule</a>
                       </span>
                     </span></span>
                         </span>
@@ -579,11 +579,11 @@ refers to an array of rules including filled optional parameters.
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Event-getRules"></a> <!-- method-anchor -->
+              <a name="method-events.Event-getRules"></a> <!-- method-anchor -->
               <h4>getRules</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.getRules</span>(<span class="optional"><span>array of string</span>
+                  <span>events.Event.getRules</span>(<span class="optional"><span>array of string</span>
                       <var><span>ruleIdentifiers</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -658,7 +658,7 @@ refers to an array of rules including filled optional parameters.
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of Rule rules</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of events.Rule rules</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -673,7 +673,7 @@ refers to an array of rules including filled optional parameters.
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="events.html#type-Rule">Rule</a>
+                        <a href="events.html#type-events.Rule">events.Rule</a>
                       </span>
                     </span></span>
                         </span>
@@ -696,11 +696,11 @@ refers to an array of rules including filled optional parameters.
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Event-hasListener"></a> <!-- method-anchor -->
+              <a name="method-events.Event-hasListener"></a> <!-- method-anchor -->
               <h4>hasListener</h4>
               <div class="summary"><span>boolean</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.hasListener</span>(<span class="null"><span>function</span>
+                  <span>events.Event.hasListener</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <!-- PARAMETERS -->
@@ -762,11 +762,11 @@ refers to an array of rules including filled optional parameters.
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Event-hasListeners"></a> <!-- method-anchor -->
+              <a name="method-events.Event-hasListeners"></a> <!-- method-anchor -->
               <h4>hasListeners</h4>
               <div class="summary"><span>boolean</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.hasListeners</span>()</div>
+                  <span>events.Event.hasListeners</span>()</div>
               <div class="description">
                 <!-- PARAMETERS -->
                 <dl>
@@ -802,11 +802,11 @@ refers to an array of rules including filled optional parameters.
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Event-removeListener"></a> <!-- method-anchor -->
+              <a name="method-events.Event-removeListener"></a> <!-- method-anchor -->
               <h4>removeListener</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.removeListener</span>(<span class="null"><span>function</span>
+                  <span>events.Event.removeListener</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Deregisters an event listener <em>callback</em> from an event.</p>
@@ -845,11 +845,11 @@ refers to an array of rules including filled optional parameters.
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Event-removeRules"></a> <!-- method-anchor -->
+              <a name="method-events.Event-removeRules"></a> <!-- method-anchor -->
               <h4>removeRules</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>event.removeRules</span>(<span class="optional"><span>array of string</span>
+                  <span>events.Event.removeRules</span>(<span class="optional"><span>array of string</span>
                       <var><span>ruleIdentifiers</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -939,8 +939,8 @@ refers to an array of rules including filled optional parameters.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-Rule"></a>
-              <h4>Rule</h4>
+              <a name="type-events.Rule"></a>
+              <h4>events.Rule</h4>
               <div>
           <dt>
               <em>
@@ -1074,8 +1074,8 @@ refers to an array of rules including filled optional parameters.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-UrlFilter"></a>
-              <h4>UrlFilter</h4>
+              <a name="type-events.UrlFilter"></a>
+              <h4>events.UrlFilter</h4>
               <div>
           <dt>
               <em>

@@ -106,7 +106,7 @@
         <div id="conditionAndActionTemplate">
           <dt>
             <a jsvalues=".href: typeModule[$this].namespace + '.html#type-' + $this"
-               jscontent="$this">condition name</a>
+               jscontent="getPrettyTypeId($this)">condition name</a>
           </dt>
           <dd class="todo" jsdisplay="!typeModule[$this].description">
             Undocumented.
@@ -163,7 +163,7 @@
             <a href="#types">Types</a>
             <ol>
               <li jsselect="filterDocumented(types).sort(sortByName)">
-                <a jscontent="id"
+                <a jscontent="getPrettyTypeId(id)"
                    jsvalues=".href:'#type-' + id"
                    href="#id-anchor">id</a>
                 <ol jsvalues="$type:id">

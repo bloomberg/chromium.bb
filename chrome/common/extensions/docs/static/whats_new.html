@@ -48,7 +48,7 @@ check out the
 
  <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The window API's <a href="windows.html#type-Window">Window</a>
+    <li>The window API's <a href="windows.html#type-windows.Window">Window</a>
       object now has an <code>alwaysOnTop</code> property and
        supports the "fullscreen" state.
      <li>The <code>chrome.tabs</code>
@@ -142,7 +142,7 @@ check out the
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The management API's
-    <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+    <a href="management.html#type-management.ExtensionInfo">ExtensionInfo</a> object
     now has a <code>disabledReason</code> property.
   </ul>
 
@@ -195,7 +195,7 @@ check out the
     reloads a tab and includes the option
     to preserve the local cache of the reloaded tab.
     <li>The management API's
-    <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+    <a href="management.html#type-management.ExtensionInfo">ExtensionInfo</a> object
     now has an <code>updateURL</code> property.
     <li>You can now limit the supported locales for an
     <a href="external_extensions.html">external extension</a>
@@ -223,7 +223,7 @@ check out the
     within a wheel group (or an admin group).
     <li>The "experimental" permission is no longer required
     for the
-    <a href="windows.html#type-Window">window "panel"</a> type.
+    <a href="windows.html#type-windows.Window">window "panel"</a> type.
     By default, the "panel" type creates a popup
     unless the <code>--enable-panels</code> flag is set.
   </ul>
@@ -254,7 +254,7 @@ check out the
       and
       <a href="management.html#method-getPermissionWarningsByManifest">getPermissionWarningsByManifest()</a>.
     <li>The management API’s
-      <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object has
+      <a href="management.html#type-management.ExtensionInfo">ExtensionInfo</a> object has
       a new field, <code>offlineEnabled</code>.
     <li>You can now <a href="i18n.html">internationalize</a> content script CSS
       files by using <code>__MSG_messagename__</code> placeholders.
@@ -326,7 +326,7 @@ check out the
     <li>The <a href="proxy.html">proxy API</a>
       lets extensions manage Chrome's proxy settings.
     <li>The
-      <a href="types.html#type-ChromeSetting">chrome.types.ChromeSetting</a> prototype
+      <a href="types.html#type-types.ChromeSetting">chrome.types.ChromeSetting</a> prototype
       provides an interface to browser settings;
       it's used by the proxy API.
     <li> <em>Chrome OS only:</em>
@@ -380,7 +380,7 @@ check out the
       the <code>type</code> field in
       the <a href="windows.html#method-create">chrome.windows.create()</a>
       method
-      or the <a href="windows.html#type-Window">Window</a> type.
+      or the <a href="windows.html#type-windows.Window">Window</a> type.
     <li>The <a href="cookies.html#event-onChanged">onChanged</a>
       event of <code>chrome.cookies</code>
       now has a <code>cause</code> parameter.
@@ -407,13 +407,13 @@ check out the
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The management API's
-      <a href="management.html#type-ExtensionInfo">ExtensionInfo</a> object
+      <a href="management.html#type-management.ExtensionInfo">ExtensionInfo</a> object
       now has a <code>homepageUrl</code> property.
     <li>The management API now lets you get the icons of
       disabled apps and extensions.
       Also, you can now modify the regular icon's URL
       to get its disabled equivalent.
-      See <a href="management.html#type-IconInfo">IconInfo</a> for details.
+      See <a href="management.html#type-management.IconInfo">IconInfo</a> for details.
     <li>The cookies API
       <a href="cookies.html#method-set">set()</a>
       and <a href="cookies.html#method-remove">remove()</a> methods
@@ -457,7 +457,7 @@ check out the
 
 <h4> Additions to existing APIs </h4>
   <ul>
-    <li>The <a href="tabs.html#type-Tab">Tab</a> object
+    <li>The <a href="tabs.html#type-tabs.Tab">Tab</a> object
       now has a <code>pinned</code> property
       that's reflected in various <code>chrome.tabs</code> methods.
       For example,

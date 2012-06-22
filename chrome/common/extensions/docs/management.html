@@ -237,11 +237,11 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-IconInfo">IconInfo</a>
+                <a href="#type-management.IconInfo">IconInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-ExtensionInfo">ExtensionInfo</a>
+                <a href="#type-management.ExtensionInfo">ExtensionInfo</a>
                 <ol>
                 </ol>
               </li>
@@ -319,7 +319,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The ID from an item of <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
+          <dd>The ID from an item of $ref:ExtensionInfo.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -365,7 +365,7 @@ The one method that doesn't require the "management" permission is
                     specify a function that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>ExtensionInfo result</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>management.ExtensionInfo result</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -377,7 +377,7 @@ The one method that doesn't require the "management" permission is
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="management.html#type-management.ExtensionInfo">management.ExtensionInfo</a>
                       </span>
                     </span>
                   )
@@ -450,7 +450,7 @@ The one method that doesn't require the "management" permission is
                     specify a function that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of ExtensionInfo result</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of management.ExtensionInfo result</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -465,7 +465,7 @@ The one method that doesn't require the "management" permission is
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="management.html#type-management.ExtensionInfo">management.ExtensionInfo</a>
                       </span>
                     </span></span>
                         </span>
@@ -833,7 +833,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>This should be the id from an item of <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
+          <dd>This should be the id from an item of $ref:ExtensionInfo.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -940,7 +940,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>This should be the id from an item of <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
+          <dd>This should be the id from an item of $ref:ExtensionInfo.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1060,7 +1060,7 @@ The one method that doesn't require the "management" permission is
               <h4>onDisabled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onDisabled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.management.</span><span>onDisabled</span><span class="subdued">.addListener</span>(function(<span>management.ExtensionInfo info</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when an app or extension has been disabled</p>
@@ -1078,7 +1078,7 @@ The one method that doesn't require the "management" permission is
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="management.html#type-management.ExtensionInfo">management.ExtensionInfo</a>
                       </span>
                     </span>
                   )
@@ -1107,7 +1107,7 @@ The one method that doesn't require the "management" permission is
               <h4>onEnabled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onEnabled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.management.</span><span>onEnabled</span><span class="subdued">.addListener</span>(function(<span>management.ExtensionInfo info</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when an app or extension has been enabled.</p>
@@ -1125,7 +1125,7 @@ The one method that doesn't require the "management" permission is
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="management.html#type-management.ExtensionInfo">management.ExtensionInfo</a>
                       </span>
                     </span>
                   )
@@ -1154,7 +1154,7 @@ The one method that doesn't require the "management" permission is
               <h4>onInstalled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.management.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span>management.ExtensionInfo info</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when an app or extension has been installed.</p>
@@ -1172,7 +1172,7 @@ The one method that doesn't require the "management" permission is
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="management.html#type-management.ExtensionInfo">management.ExtensionInfo</a>
                       </span>
                     </span>
                   )
@@ -1249,8 +1249,8 @@ The one method that doesn't require the "management" permission is
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-IconInfo"></a>
-              <h4>IconInfo</h4>
+              <a name="type-management.IconInfo"></a>
+              <h4>management.IconInfo</h4>
               <div>
           <dt>
               <em>
@@ -1324,8 +1324,8 @@ The one method that doesn't require the "management" permission is
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-ExtensionInfo"></a>
-              <h4>ExtensionInfo</h4>
+              <a name="type-management.ExtensionInfo"></a>
+              <h4>management.ExtensionInfo</h4>
               <div>
           <dt>
               <em>
@@ -1664,7 +1664,7 @@ The one method that doesn't require the "management" permission is
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="management.html#type-IconInfo">IconInfo</a>
+                        <a href="management.html#type-management.IconInfo">management.IconInfo</a>
                       </span>
                     </span></span>
                         </span>

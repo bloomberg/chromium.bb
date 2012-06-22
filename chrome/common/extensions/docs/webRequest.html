@@ -256,15 +256,15 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-RequestFilter">RequestFilter</a>
+                <a href="#type-webRequest.RequestFilter">RequestFilter</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-HttpHeaders">HttpHeaders</a>
+                <a href="#type-webRequest.HttpHeaders">HttpHeaders</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-BlockingResponse">BlockingResponse</a>
+                <a href="#type-webRequest.BlockingResponse">BlockingResponse</a>
                 <ol>
                 </ol>
               </li>
@@ -445,13 +445,13 @@ depends on the specific event type as well as the content of
 <p>If the optional <code>opt_extraInfoSpec</code> array contains the string
 <code>'blocking'</code> (only allowed for specific events), the callback
 function is handled synchronously. That means that the request is blocked until
-the callback function returns. In this case, the callback can return a <a href="#type-BlockingResponse">BlockingResponse</a> that determines the further
+the callback function returns. In this case, the callback can return a <a href="#type-webRequest.BlockingResponse">BlockingResponse</a> that determines the further
 life cycle of the request. Depending on the context, this response allows
 cancelling or redirecting a request (<code>onBeforeRequest</code>), cancelling a
 request or modifying headers (<code>onBeforeSendHeaders</code>,
 <code>onHeadersReceived</code>), or providing authentication credentials
 (<code>onAuthRequired</code>).</p>
-<p>The <a href="#type-RequestFilter">RequestFilter</a>
+<p>The <a href="#type-webRequest.RequestFilter">RequestFilter</a>
 <code>filter</code> allows limiting the requests for which events are
 triggered in various dimensions:
 </p><dl>
@@ -462,7 +462,7 @@ triggered in various dimensions:
   <dd>Request types such as <code>main_frame</code> (a document that is loaded
   for a top-level frame), <code>sub_frame</code> (a document that is loaded for
   an embedded frame), and <code>image</code> (an image on a web site).
-  See <a href="#type-RequestFilter">RequestFilter</a>.</dd>
+  See <a href="#type-webRequest.RequestFilter">RequestFilter</a>.</dd>
   <dt>Tab ID</dt>
   <dd>The identifier for one tab.</dd>
   <dt>Window ID</dt>
@@ -626,7 +626,7 @@ samples</a>.</p>
               <h4>onAuthRequired</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onAuthRequired</span><span class="subdued">.addListener</span>(function(<span>object details, function callback</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onAuthRequired</span><span class="subdued">.addListener</span>(function(<span>object details, function callback</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired when an authentication failure is received. The listener has three options: it can provide authentication credentials, it can cancel the request and display the error page, or it can take no action on the challenge. If bad user credentials are provided, this may be called multiple times for the same request.</p>
@@ -1004,7 +1004,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -1091,7 +1091,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -1151,7 +1151,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-webRequest.BlockingResponse">webRequest.BlockingResponse</a>
                       </span>
                     </span>
                   )
@@ -1173,7 +1173,7 @@ samples</a>.</p>
               <h4>onBeforeRedirect</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onBeforeRedirect</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onBeforeRedirect</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired when a server-initiated redirect is about to occur.</p>
@@ -1496,7 +1496,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -1557,7 +1557,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -1614,7 +1614,7 @@ samples</a>.</p>
               <h4>onBeforeRequest</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onBeforeRequest</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onBeforeRequest</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired when a request is about to occur.</p>
@@ -1857,7 +1857,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -1917,7 +1917,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-webRequest.BlockingResponse">webRequest.BlockingResponse</a>
                       </span>
                     </span>
                   )
@@ -1939,7 +1939,7 @@ samples</a>.</p>
               <h4>onBeforeSendHeaders</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onBeforeSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onBeforeSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired before sending an HTTP request, once the request headers are available. This may occur after a TCP connection is made to the server, but before any HTTP data is sent. </p>
@@ -2169,7 +2169,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -2206,7 +2206,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -2266,7 +2266,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-webRequest.BlockingResponse">webRequest.BlockingResponse</a>
                       </span>
                     </span>
                   )
@@ -2288,7 +2288,7 @@ samples</a>.</p>
               <h4>onCompleted</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onCompleted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onCompleted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired when a request is completed.</p>
@@ -2588,7 +2588,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -2649,7 +2649,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -2706,7 +2706,7 @@ samples</a>.</p>
               <h4>onErrorOccurred</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onErrorOccurred</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onErrorOccurred</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter</span>);
               </div>
               <div class="description">
                 <p>Fired when an error occurs.</p>
@@ -3019,7 +3019,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -3045,7 +3045,7 @@ samples</a>.</p>
               <h4>onHeadersReceived</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onHeadersReceived</span><span class="subdued">.addListener</span>(function(<span>object deails</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onHeadersReceived</span><span class="subdued">.addListener</span>(function(<span>object deails</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired when HTTP response headers of a request have been received.</p>
@@ -3299,7 +3299,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -3336,7 +3336,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -3396,7 +3396,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-webRequest.BlockingResponse">webRequest.BlockingResponse</a>
                       </span>
                     </span>
                   )
@@ -3418,7 +3418,7 @@ samples</a>.</p>
               <h4>onResponseStarted</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onResponseStarted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onResponseStarted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.</p>
@@ -3718,7 +3718,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -3779,7 +3779,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -3836,7 +3836,7 @@ samples</a>.</p>
               <h4>onSendHeaders</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.webRequest.</span><span>onSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, webRequest.RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
               <div class="description">
                 <p>Fired just before a request is going to be sent to the server (modifications of previous onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).</p>
@@ -4066,7 +4066,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -4103,7 +4103,7 @@ samples</a>.</p>
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-webRequest.RequestFilter">webRequest.RequestFilter</a>
                       </span>
                     </span>
                   )
@@ -4163,8 +4163,8 @@ samples</a>.</p>
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-RequestFilter"></a>
-              <h4>RequestFilter</h4>
+              <a name="type-webRequest.RequestFilter"></a>
+              <h4>webRequest.RequestFilter</h4>
               <div>
           <dt>
               <em>
@@ -4304,8 +4304,8 @@ samples</a>.</p>
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-HttpHeaders"></a>
-              <h4>HttpHeaders</h4>
+              <a name="type-webRequest.HttpHeaders"></a>
+              <h4>webRequest.HttpHeaders</h4>
               <div>
           <dt>
               <em>
@@ -4416,8 +4416,8 @@ samples</a>.</p>
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-BlockingResponse"></a>
-              <h4>BlockingResponse</h4>
+              <a name="type-webRequest.BlockingResponse"></a>
+              <h4>webRequest.BlockingResponse</h4>
               <div>
           <dt>
               <em>
@@ -4496,7 +4496,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )
@@ -4520,7 +4520,7 @@ samples</a>.</p>
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-webRequest.HttpHeaders">webRequest.HttpHeaders</a>
                       </span>
                     </span>
                   )

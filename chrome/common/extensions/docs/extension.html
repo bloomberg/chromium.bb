@@ -249,11 +249,11 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-MessageSender">MessageSender</a>
+                <a href="#type-extension.MessageSender">MessageSender</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-Port">Port</a>
+                <a href="#type-extension.Port">Port</a>
                 <ol>
                 </ol>
               </li>
@@ -416,7 +416,7 @@ For details, see
             <div class="apiItem">
               <a name="method-connect"></a> <!-- method-anchor -->
               <h4>connect</h4>
-              <div class="summary"><span>Port</span>
+              <div class="summary"><span>extension.Port</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.extension.connect</span>(<span class="optional"><span>string</span>
                       <var><span>extensionId</span></var></span><span class="optional"><span>, </span><span>object</span>
@@ -519,7 +519,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="extension.html#type-Port">Port</a>
+                        <a href="extension.html#type-extension.Port">extension.Port</a>
                       </span>
                     </span>
                   )
@@ -1176,7 +1176,7 @@ For details, see
               <h4>onConnect</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.extension.</span><span>onConnect</span><span class="subdued">.addListener</span>(function(<span>Port port</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.extension.</span><span>onConnect</span><span class="subdued">.addListener</span>(function(<span>extension.Port port</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when a connection is made from either an extension process or a content script.</p>
@@ -1194,7 +1194,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="extension.html#type-Port">Port</a>
+                        <a href="extension.html#type-extension.Port">extension.Port</a>
                       </span>
                     </span>
                   )
@@ -1223,7 +1223,7 @@ For details, see
               <h4>onConnectExternal</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.extension.</span><span>onConnectExternal</span><span class="subdued">.addListener</span>(function(<span>Port port</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.extension.</span><span>onConnectExternal</span><span class="subdued">.addListener</span>(function(<span>extension.Port port</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when a connection is made from another extension.</p>
@@ -1241,7 +1241,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="extension.html#type-Port">Port</a>
+                        <a href="extension.html#type-extension.Port">extension.Port</a>
                       </span>
                     </span>
                   )
@@ -1334,7 +1334,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="extension.html#type-MessageSender">MessageSender</a>
+                        <a href="extension.html#type-extension.MessageSender">extension.MessageSender</a>
                       </span>
                     </span>
                   )
@@ -1482,7 +1482,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="extension.html#type-MessageSender">MessageSender</a>
+                        <a href="extension.html#type-extension.MessageSender">extension.MessageSender</a>
                       </span>
                     </span>
                   )
@@ -1569,8 +1569,8 @@ For details, see
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-MessageSender"></a>
-              <h4>MessageSender</h4>
+              <a name="type-extension.MessageSender"></a>
+              <h4>extension.MessageSender</h4>
               <div>
           <dt>
               <em>
@@ -1601,7 +1601,7 @@ For details, see
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a>tabs.Tab</a>
+                        <a href="tabs.html#type-tabs.Tab">tabs.Tab</a>
                       </span>
                     </span>
                   )
@@ -1645,8 +1645,8 @@ For details, see
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-Port"></a>
-              <h4>Port</h4>
+              <a name="type-extension.Port"></a>
+              <h4>extension.Port</h4>
               <div>
           <dt>
               <em>
@@ -1701,7 +1701,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a>events.Event</a>
+                        <a href="events.html#type-events.Event">events.Event</a>
                       </span>
                     </span>
                   )
@@ -1726,7 +1726,7 @@ For details, see
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a>events.Event</a>
+                        <a href="events.html#type-events.Event">events.Event</a>
                       </span>
                     </span>
                   )
@@ -1777,7 +1777,7 @@ For details, see
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="extension.html#type-MessageSender">MessageSender</a>
+                        <a href="extension.html#type-extension.MessageSender">extension.MessageSender</a>
                       </span>
                     </span>
                   )

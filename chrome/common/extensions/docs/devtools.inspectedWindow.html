@@ -237,15 +237,15 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-Resource">Resource</a>
+                <a href="#type-devtools.inspectedWindow.Resource">Resource</a>
                 <ol>
                   <li>
-            <a href="#global-Resource-methods">Methods</a>
+            <a href="#global-devtools.inspectedWindow.Resource-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-Resource-getContent">getContent</a>
+                <a href="#method-devtools.inspectedWindow.Resource-getContent">getContent</a>
               </li><li>
-                <a href="#method-Resource-setContent">setContent</a>
+                <a href="#method-devtools.inspectedWindow.Resource-setContent">setContent</a>
               </li>
             </ol>
           </li>
@@ -572,7 +572,7 @@ You can find more examples that use Developer Tools APIs in
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of Resource resources</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of devtools.inspectedWindow.Resource resources</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
@@ -587,7 +587,7 @@ You can find more examples that use Developer Tools APIs in
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="devtools.inspectedWindow.html#type-Resource">Resource</a>
+                        <a href="devtools.inspectedWindow.html#type-devtools.inspectedWindow.Resource">devtools.inspectedWindow.Resource</a>
                       </span>
                     </span></span>
                         </span>
@@ -744,7 +744,7 @@ You can find more examples that use Developer Tools APIs in
               <h4>onResourceAdded</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.devtools.inspectedWindow.</span><span>onResourceAdded</span><span class="subdued">.addListener</span>(function(<span>Resource resource</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.devtools.inspectedWindow.</span><span>onResourceAdded</span><span class="subdued">.addListener</span>(function(<span>devtools.inspectedWindow.Resource resource</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when a new resource is added to the inspected page.</p>
@@ -762,7 +762,7 @@ You can find more examples that use Developer Tools APIs in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="devtools.inspectedWindow.html#type-Resource">Resource</a>
+                        <a href="devtools.inspectedWindow.html#type-devtools.inspectedWindow.Resource">devtools.inspectedWindow.Resource</a>
                       </span>
                     </span>
                   )
@@ -791,7 +791,7 @@ You can find more examples that use Developer Tools APIs in
               <h4>onResourceContentCommitted</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.devtools.inspectedWindow.</span><span>onResourceContentCommitted</span><span class="subdued">.addListener</span>(function(<span>Resource resource, string content</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.devtools.inspectedWindow.</span><span>onResourceContentCommitted</span><span class="subdued">.addListener</span>(function(<span>devtools.inspectedWindow.Resource resource, string content</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when a new revision of the resource is committed (e.g. user saves an edited version of the resource in the Developer Tools).</p>
@@ -809,7 +809,7 @@ You can find more examples that use Developer Tools APIs in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="devtools.inspectedWindow.html#type-Resource">Resource</a>
+                        <a href="devtools.inspectedWindow.html#type-devtools.inspectedWindow.Resource">devtools.inspectedWindow.Resource</a>
                       </span>
                     </span>
                   )
@@ -864,8 +864,8 @@ You can find more examples that use Developer Tools APIs in
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-Resource"></a>
-              <h4>Resource</h4>
+              <a name="type-devtools.inspectedWindow.Resource"></a>
+              <h4>devtools.inspectedWindow.Resource</h4>
               <div>
           <dt>
               <em>
@@ -914,15 +914,15 @@ You can find more examples that use Developer Tools APIs in
           <!-- OBJECT METHODS -->
           <dd>
             <div class="apiGroup">
-            <a name="global-Resource-methods"></a>
-            <h3>Methods of Resource</h3>
+            <a name="global-devtools.inspectedWindow.Resource-methods"></a>
+            <h3>Methods of devtools.inspectedWindow.Resource</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-Resource-getContent"></a> <!-- method-anchor -->
+              <a name="method-devtools.inspectedWindow.Resource-getContent"></a> <!-- method-anchor -->
               <h4>getContent</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>resource.getContent</span>(<span class="null"><span>function</span>
+                  <span>devtools.inspectedWindow.Resource.getContent</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Gets the content of the resource.</p>
@@ -1021,11 +1021,11 @@ You can find more examples that use Developer Tools APIs in
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-Resource-setContent"></a> <!-- method-anchor -->
+              <a name="method-devtools.inspectedWindow.Resource-setContent"></a> <!-- method-anchor -->
               <h4>setContent</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>resource.setContent</span>(<span class="null"><span>string</span>
+                  <span>devtools.inspectedWindow.Resource.setContent</span>(<span class="null"><span>string</span>
                       <var><span>content</span></var></span><span class="null"><span>, </span><span>boolean</span>
                       <var><span>commit</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>

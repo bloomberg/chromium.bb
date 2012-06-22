@@ -306,7 +306,7 @@ form data to fill in. The shared connection allows the extension to keep
 shared state linking the several messages coming from the content script.
 </p><p>
 When establishing a connection, each end is given a
-<a href="extension.html#type-Port">Port</a>
+<a href="extension.html#type-extension.Port">Port</a>
 object which is used for sending and receiving messages through that
 connection.
 </p><p>
@@ -335,7 +335,7 @@ In order to handle incoming connections, you need to set up a
 event listener. This looks the same from a content script or an extension
 page. When another part of your extension calls "connect()", this event is
 fired, along with the
-<a href="extension.html#type-Port">Port</a>
+<a href="extension.html#type-extension.Port">Port</a>
 object you can use to send and receive messages through the connection. Here's
 what it looks like to respond to incoming connections:
 </p><pre>chrome.extension.onConnect.addListener(function(port) {
@@ -353,10 +353,10 @@ what it looks like to respond to incoming connections:
 <p>
 You may want to find out when a connection is closed, for example if you are
 maintaining separate state for each open port. For this you can listen to the
-<a href="extension.html#type-Port">Port.onDisconnect</a>
+<a href="extension.html#type-extension.Port">Port.onDisconnect</a>
 event. This event is fired either when the other side of the channel manually
 calls
-<a href="extension.html#type-Port">Port.disconnect()</a>, or when the page
+<a href="extension.html#type-extension.Port">Port.disconnect()</a>, or when the page
 containing the port is unloaded (for example if the tab is navigated).
 onDisconnect is guaranteed to be fired only once for any given port.
 </p><h2 id="external">Cross-extension messaging</h2>

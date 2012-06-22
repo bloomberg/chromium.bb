@@ -233,7 +233,7 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-Debuggee">Debuggee</a>
+                <a href="#type-debugger.Debuggee">Debuggee</a>
                 <ol>
                 </ol>
               </li>
@@ -298,7 +298,7 @@ You can find samples of this API in
               <h4>attach</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.debugger.attach</span>(<span class="null"><span>Debuggee</span>
+                  <span>chrome.debugger.attach</span>(<span class="null"><span>debugger.Debuggee</span>
                       <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>requiredVersion</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
@@ -317,7 +317,7 @@ You can find samples of this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-debugger.Debuggee">debugger.Debuggee</a>
                       </span>
                     </span>
                   )
@@ -403,7 +403,7 @@ You can find samples of this API in
               <h4>detach</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.debugger.detach</span>(<span class="null"><span>Debuggee</span>
+                  <span>chrome.debugger.detach</span>(<span class="null"><span>debugger.Debuggee</span>
                       <var><span>target</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -421,7 +421,7 @@ You can find samples of this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-debugger.Debuggee">debugger.Debuggee</a>
                       </span>
                     </span>
                   )
@@ -484,7 +484,7 @@ You can find samples of this API in
               <h4>sendCommand</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.debugger.sendCommand</span>(<span class="null"><span>Debuggee</span>
+                  <span>chrome.debugger.sendCommand</span>(<span class="null"><span>debugger.Debuggee</span>
                       <var><span>target</span></var></span><span class="null"><span>, </span><span>string</span>
                       <var><span>method</span></var></span><span class="optional"><span>, </span><span>object</span>
                       <var><span>params</span></var></span><span class="optional"><span>, </span><span>function</span>
@@ -504,7 +504,7 @@ You can find samples of this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-debugger.Debuggee">debugger.Debuggee</a>
                       </span>
                     </span>
                   )
@@ -646,7 +646,7 @@ You can find samples of this API in
               <h4>onDetach</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>Debuggee source</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.debugger.</span><span>onDetach</span><span class="subdued">.addListener</span>(function(<span>debugger.Debuggee source</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when browser terminates debugging session for the tab. This happens when either the tab is being closed or Chrome DevTools is being invoked for the attached tab.</p>
@@ -664,7 +664,7 @@ You can find samples of this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-debugger.Debuggee">debugger.Debuggee</a>
                       </span>
                     </span>
                   )
@@ -691,7 +691,7 @@ You can find samples of this API in
               <h4>onEvent</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Debuggee source, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.debugger.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>debugger.Debuggee source, string method, object params</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired whenever debugging target issues instrumentation event.</p>
@@ -709,7 +709,7 @@ You can find samples of this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="debugger.html#type-Debuggee">Debuggee</a>
+                        <a href="debugger.html#type-debugger.Debuggee">debugger.Debuggee</a>
                       </span>
                     </span>
                   )
@@ -786,8 +786,8 @@ You can find samples of this API in
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-Debuggee"></a>
-              <h4>Debuggee</h4>
+              <a name="type-debugger.Debuggee"></a>
+              <h4>debugger.Debuggee</h4>
               <div>
           <dt>
               <em>

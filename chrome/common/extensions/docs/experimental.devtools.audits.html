@@ -215,55 +215,55 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-AuditCategory">AuditCategory</a>
+                <a href="#type-experimental.devtools.audits.AuditCategory">AuditCategory</a>
                 <ol>
                   <li>
-            <a href="#global-AuditCategory-events">Events</a>
+            <a href="#global-experimental.devtools.audits.AuditCategory-events">Events</a>
             <ol>
               <li>
-                <a href="#event-AuditCategory-onAuditStarted">onAuditStarted</a>
+                <a href="#event-experimental.devtools.audits.AuditCategory-onAuditStarted">onAuditStarted</a>
               </li>
             </ol>
           </li>
                 </ol>
               </li><li>
-                <a href="#type-FormattedValue">FormattedValue</a>
+                <a href="#type-experimental.devtools.audits.FormattedValue">FormattedValue</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-AuditResults">AuditResults</a>
+                <a href="#type-experimental.devtools.audits.AuditResults">AuditResults</a>
                 <ol>
                   <li>
-            <a href="#global-AuditResults-methods">Methods</a>
+            <a href="#global-experimental.devtools.audits.AuditResults-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-AuditResults-addResult">addResult</a>
+                <a href="#method-experimental.devtools.audits.AuditResults-addResult">addResult</a>
               </li><li>
-                <a href="#method-AuditResults-createResult">createResult</a>
+                <a href="#method-experimental.devtools.audits.AuditResults-createResult">createResult</a>
               </li><li>
-                <a href="#method-AuditResults-createSnippet">createSnippet</a>
+                <a href="#method-experimental.devtools.audits.AuditResults-createSnippet">createSnippet</a>
               </li><li>
-                <a href="#method-AuditResults-createURL">createURL</a>
+                <a href="#method-experimental.devtools.audits.AuditResults-createURL">createURL</a>
               </li><li>
-                <a href="#method-AuditResults-done">done</a>
+                <a href="#method-experimental.devtools.audits.AuditResults-done">done</a>
               </li>
             </ol>
           </li>
                 </ol>
               </li><li>
-                <a href="#type-AuditResultNode">AuditResultNode</a>
+                <a href="#type-experimental.devtools.audits.AuditResultNode">AuditResultNode</a>
                 <ol>
                   <li>
-            <a href="#global-AuditResultNode-methods">Methods</a>
+            <a href="#global-experimental.devtools.audits.AuditResultNode-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-AuditResultNode-addChild">addChild</a>
+                <a href="#method-experimental.devtools.audits.AuditResultNode-addChild">addChild</a>
               </li>
             </ol>
           </li>
                 </ol>
               </li><li>
-                <a href="#type-AuditResultSeverity">AuditResultSeverity</a>
+                <a href="#type-experimental.devtools.audits.AuditResultSeverity">AuditResultSeverity</a>
                 <ol>
                 </ol>
               </li>
@@ -354,7 +354,7 @@ You can find more examples that use this API in
             <div class="apiItem">
               <a name="method-addCategory"></a> <!-- method-anchor -->
               <h4>addCategory</h4>
-              <div class="summary"><span>AuditCategory</span>
+              <div class="summary"><span>experimental.devtools.audits.AuditCategory</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.devtools.audits.addCategory</span>(<span class="null"><span>string</span>
                       <var><span>displayName</span></var></span><span class="null"><span>, </span><span>number</span>
@@ -424,7 +424,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditCategory">AuditCategory</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditCategory">experimental.devtools.audits.AuditCategory</a>
                       </span>
                     </span>
                   )
@@ -454,8 +454,8 @@ You can find more examples that use this API in
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-AuditCategory"></a>
-              <h4>AuditCategory</h4>
+              <a name="type-experimental.devtools.audits.AuditCategory"></a>
+              <h4>experimental.devtools.audits.AuditCategory</h4>
               <div>
           <dt>
               <em>
@@ -477,15 +477,15 @@ You can find more examples that use this API in
           <!-- OBJECT EVENT FIELDS -->
           <dd>
             <div class="apiGroup">
-            <a name="global-AuditCategory-events"></a>
-            <h3>Events of AuditCategory</h3>
+            <a name="global-experimental.devtools.audits.AuditCategory-events"></a>
+            <h3>Events of experimental.devtools.audits.AuditCategory</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-AuditCategory-onAuditStarted"></a>
+              <a name="event-experimental.devtools.audits.AuditCategory-onAuditStarted"></a>
               <h4>onAuditStarted</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">auditCategory.</span><span>onAuditStarted</span><span class="subdued">.addListener</span>(function(<span>AuditResults results</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">experimental.devtools.audits.AuditCategory.</span><span>onAuditStarted</span><span class="subdued">.addListener</span>(function(<span>experimental.devtools.audits.AuditResults results</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>If the category is enabled, this event is fired when the audit is started. The event handler is expected to initiate execution of the audit logic that will populate the <code>results</code> collection.</p>
@@ -503,7 +503,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResults">AuditResults</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResults">experimental.devtools.audits.AuditResults</a>
                       </span>
                     </span>
                   )
@@ -533,8 +533,8 @@ You can find more examples that use this API in
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-FormattedValue"></a>
-              <h4>FormattedValue</h4>
+              <a name="type-experimental.devtools.audits.FormattedValue"></a>
+              <h4>experimental.devtools.audits.FormattedValue</h4>
               <div>
           <dt>
               <em>
@@ -557,8 +557,8 @@ You can find more examples that use this API in
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-AuditResults"></a>
-              <h4>AuditResults</h4>
+              <a name="type-experimental.devtools.audits.AuditResults"></a>
+              <h4>experimental.devtools.audits.AuditResults</h4>
               <div>
           <dt>
               <em>
@@ -588,7 +588,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResultSeverity">AuditResultSeverity</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResultSeverity">experimental.devtools.audits.AuditResultSeverity</a>
                       </span>
                     </span>
                   )
@@ -638,7 +638,7 @@ You can find more examples that use this API in
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResultNode">experimental.devtools.audits.AuditResultNode</a>
                       </span>
                     </span></span>
                         </span>
@@ -684,18 +684,18 @@ You can find more examples that use this API in
           <!-- OBJECT METHODS -->
           <dd>
             <div class="apiGroup">
-            <a name="global-AuditResults-methods"></a>
-            <h3>Methods of AuditResults</h3>
+            <a name="global-experimental.devtools.audits.AuditResults-methods"></a>
+            <h3>Methods of experimental.devtools.audits.AuditResults</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-AuditResults-addResult"></a> <!-- method-anchor -->
+              <a name="method-experimental.devtools.audits.AuditResults-addResult"></a> <!-- method-anchor -->
               <h4>addResult</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.addResult</span>(<span class="null"><span>string</span>
+                  <span>experimental.devtools.audits.AuditResults.addResult</span>(<span class="null"><span>string</span>
                       <var><span>displayName</span></var></span><span class="null"><span>, </span><span>string</span>
-                      <var><span>description</span></var></span><span class="null"><span>, </span><span>AuditResultSeverity</span>
-                      <var><span>severity</span></var></span><span class="optional"><span>, </span><span>AuditResultNode</span>
+                      <var><span>description</span></var></span><span class="null"><span>, </span><span>experimental.devtools.audits.AuditResultSeverity</span>
+                      <var><span>severity</span></var></span><span class="optional"><span>, </span><span>experimental.devtools.audits.AuditResultNode</span>
                       <var><span>details</span></var></span>)</div>
               <div class="description">
                 <p>Adds an audit result. The results are rendered as bulleted items under the audit category assoicated with the <code>AuditResults</code> object.</p>
@@ -758,7 +758,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResultSeverity">AuditResultSeverity</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResultSeverity">experimental.devtools.audits.AuditResultSeverity</a>
                       </span>
                     </span>
                   )
@@ -784,7 +784,7 @@ You can find more examples that use this API in
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResultNode">experimental.devtools.audits.AuditResultNode</a>
                       </span>
                     </span>
                   )
@@ -806,11 +806,11 @@ You can find more examples that use this API in
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-AuditResults-createResult"></a> <!-- method-anchor -->
+              <a name="method-experimental.devtools.audits.AuditResults-createResult"></a> <!-- method-anchor -->
               <h4>createResult</h4>
-              <div class="summary"><span>AuditResultNode</span>
+              <div class="summary"><span>experimental.devtools.audits.AuditResultNode</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.createResult</span>(<span class="null"><span>string or FormattedValue</span>
+                  <span>experimental.devtools.audits.AuditResults.createResult</span>(<span class="null"><span>string or experimental.devtools.audits.FormattedValue</span>
                       <var><span>content ...</span></var></span>)</div>
               <div class="description">
                 <p>Creates a result node that may be used as the <code>details</code> parameters to the <code>addResult()</code> method.</p>
@@ -827,7 +827,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>string or FormattedValue</span>
+                        <span>string or experimental.devtools.audits.FormattedValue</span>
                       </span>
                     </span>
                   )
@@ -854,7 +854,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResultNode">experimental.devtools.audits.AuditResultNode</a>
                       </span>
                     </span>
                   )
@@ -875,11 +875,11 @@ You can find more examples that use this API in
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-AuditResults-createSnippet"></a> <!-- method-anchor -->
+              <a name="method-experimental.devtools.audits.AuditResults-createSnippet"></a> <!-- method-anchor -->
               <h4>createSnippet</h4>
-              <div class="summary"><span>FormattedValue</span>
+              <div class="summary"><span>experimental.devtools.audits.FormattedValue</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.createSnippet</span>(<span class="null"><span>string</span>
+                  <span>experimental.devtools.audits.AuditResults.createSnippet</span>(<span class="null"><span>string</span>
                       <var><span>text</span></var></span>)</div>
               <div class="description">
                 <p>Render passed text as a code snippet in the Audits panel.</p>
@@ -923,7 +923,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-FormattedValue">FormattedValue</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.FormattedValue">experimental.devtools.audits.FormattedValue</a>
                       </span>
                     </span>
                   )
@@ -944,11 +944,11 @@ You can find more examples that use this API in
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-AuditResults-createURL"></a> <!-- method-anchor -->
+              <a name="method-experimental.devtools.audits.AuditResults-createURL"></a> <!-- method-anchor -->
               <h4>createURL</h4>
-              <div class="summary"><span>FormattedValue</span>
+              <div class="summary"><span>experimental.devtools.audits.FormattedValue</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.createURL</span>(<span class="null"><span>string</span>
+                  <span>experimental.devtools.audits.AuditResults.createURL</span>(<span class="null"><span>string</span>
                       <var><span>href</span></var></span><span class="optional"><span>, </span><span>string</span>
                       <var><span>displayText</span></var></span>)</div>
               <div class="description">
@@ -1017,7 +1017,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-FormattedValue">FormattedValue</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.FormattedValue">experimental.devtools.audits.FormattedValue</a>
                       </span>
                     </span>
                   )
@@ -1038,11 +1038,11 @@ You can find more examples that use this API in
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-AuditResults-done"></a> <!-- method-anchor -->
+              <a name="method-experimental.devtools.audits.AuditResults-done"></a> <!-- method-anchor -->
               <h4>done</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResults.done</span>()</div>
+                  <span>experimental.devtools.audits.AuditResults.done</span>()</div>
               <div class="description">
                 <p>Signals the DevTools Audits panel that the run of this category is over. The audit run also completes automatically when the number of added top-level results is equal to that declared when AuditCategory was created.</p>
                 <!-- PARAMETERS -->
@@ -1061,8 +1061,8 @@ You can find more examples that use this API in
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-AuditResultNode"></a>
-              <h4>AuditResultNode</h4>
+              <a name="type-experimental.devtools.audits.AuditResultNode"></a>
+              <h4>experimental.devtools.audits.AuditResultNode</h4>
               <div>
           <dt>
               <em>
@@ -1111,15 +1111,15 @@ You can find more examples that use this API in
           <!-- OBJECT METHODS -->
           <dd>
             <div class="apiGroup">
-            <a name="global-AuditResultNode-methods"></a>
-            <h3>Methods of AuditResultNode</h3>
+            <a name="global-experimental.devtools.audits.AuditResultNode-methods"></a>
+            <h3>Methods of experimental.devtools.audits.AuditResultNode</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-AuditResultNode-addChild"></a> <!-- method-anchor -->
+              <a name="method-experimental.devtools.audits.AuditResultNode-addChild"></a> <!-- method-anchor -->
               <h4>addChild</h4>
-              <div class="summary"><span>AuditResultNode</span>
+              <div class="summary"><span>experimental.devtools.audits.AuditResultNode</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>auditResultNode.addChild</span>(<span class="null"><span>string or FormattedValue</span>
+                  <span>experimental.devtools.audits.AuditResultNode.addChild</span>(<span class="null"><span>string or experimental.devtools.audits.FormattedValue</span>
                       <var><span>content ...</span></var></span>)</div>
               <div class="description">
                 <p>Adds a child node to this node.</p>
@@ -1136,7 +1136,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>string or FormattedValue</span>
+                        <span>string or experimental.devtools.audits.FormattedValue</span>
                       </span>
                     </span>
                   )
@@ -1163,7 +1163,7 @@ You can find more examples that use this API in
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.devtools.audits.html#type-AuditResultNode">AuditResultNode</a>
+                        <a href="experimental.devtools.audits.html#type-experimental.devtools.audits.AuditResultNode">experimental.devtools.audits.AuditResultNode</a>
                       </span>
                     </span>
                   )
@@ -1190,8 +1190,8 @@ You can find more examples that use this API in
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-AuditResultSeverity"></a>
-              <h4>AuditResultSeverity</h4>
+              <a name="type-experimental.devtools.audits.AuditResultSeverity"></a>
+              <h4>experimental.devtools.audits.AuditResultSeverity</h4>
               <div>
           <dt>
               <em>
