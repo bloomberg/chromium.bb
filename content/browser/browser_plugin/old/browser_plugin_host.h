@@ -122,7 +122,6 @@ class BrowserPluginHost : public WebContentsObserver,
   // An identifier that uniquely identifies a browser plugin container
   // within an embedder.
   int instance_id_;
-  gfx::Size initial_size_;
   GuestMap guests_;
   ContainerInstanceMap guests_by_container_id_;
 
