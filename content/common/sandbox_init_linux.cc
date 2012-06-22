@@ -463,6 +463,13 @@ void InitializeSandbox() {
 
   InstallSIGSYSHandler();
   InstallFilter(program);
+
+  // TODO(jorgelo): remove this once we surface
+  // seccomp filter sandbox status in about:sandbox.
+#if defined(OS_CHROMEOS)
+  LOG(WARNING) << "Activated seccomp filter sandbox for process "
+               << process_type;
+#endif
 }
 
 }  // namespace content
