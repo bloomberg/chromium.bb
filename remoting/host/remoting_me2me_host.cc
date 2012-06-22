@@ -567,9 +567,11 @@ int CALLBACK WinMain(HINSTANCE instance,
                      HINSTANCE previous_instance,
                      LPSTR command_line,
                      int show_command) {
-  if (remoting::IsCrashReportingEnabled()) {
+#ifdef OFFICIAL_BUILD
+  if (remoting::IsUsageStatsAllowed()) {
     remoting::InitializeCrashReporting();
   }
+#endif  // OFFICIAL_BUILD
 
   g_hModule = instance;
 

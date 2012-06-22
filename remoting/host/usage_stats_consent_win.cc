@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <string>
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/win/registry.h"
 #include "remoting/host/constants.h"
@@ -15,6 +16,7 @@ namespace {
 
 // The following strings are used to construct the registry key names where
 // we record whether the user has consented to crash dump collection.
+// the user's consent to collect crash dumps is recorded.
 const wchar_t kOmahaClientStateKeyFormat[] =
     L"Software\\Google\\Update\\%ls\\%ls";
 const wchar_t kOmahaClientState[] = L"ClientState";
@@ -38,19 +40,52 @@ LONG ReadUsageStatsValue(const wchar_t* state_key, DWORD* usagestats_out) {
 
 namespace remoting {
 
-bool IsCrashReportingEnabled() {
+bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
+  // TODO(alexeypa): report whether the consent is set by pollicy once
+  // supported.
+  *set_by_policy = false;
+
   // The user's consent to collect crash dumps is recored as the "usagestats"
   // value in the ClientState or ClientStateMedium key. Probe
   // the ClientStateMedium key first.
   DWORD value = 0;
   if (ReadUsageStatsValue(kOmahaClientStateMedium, &value) == ERROR_SUCCESS) {
-    return value != 0;
+    *allowed = value != 0;
+    return true;
   }
   if (ReadUsageStatsValue(kOmahaClientState, &value) == ERROR_SUCCESS) {
-    return value != 0;
+    *allowed = value != 0;
+    return true;
   }
 
-  // Do not collect anything unless the user has explicitly allowed it.
+  LOG_GETLASTERROR(ERROR)
+      << "Failed to record the user's consent to crash dump reporting";
+  return false;
+}
+
+bool IsUsageStatsAllowed() {
+  bool allowed;
+  bool set_by_policy;
+  return GetUsageStatsConsent(&allowed, &set_by_policy) && allowed;
+}
+
+bool SetUsageStatsConsent(bool allowed) {
+  DWORD value = allowed;
+  std::wstring client_state = StringPrintf(kOmahaClientStateKeyFormat,
+                                           kOmahaClientStateMedium,
+                                           kHostOmahaAppid);
+  base::win::RegKey key;
+  LONG result = key.Create(HKEY_LOCAL_MACHINE, client_state.c_str(),
+                           KEY_SET_VALUE);
+  if (result == ERROR_SUCCESS) {
+    result = key.WriteValue(kOmahaUsagestatsValue, value);
+    if (result == ERROR_SUCCESS) {
+      return true;
+    }
+  }
+
+  LOG_GETLASTERROR(ERROR)
+      << "Failed to record the user's consent to crash dump reporting";
   return false;
 }
 

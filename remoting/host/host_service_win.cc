@@ -411,9 +411,11 @@ LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
 } // namespace remoting
 
 int main(int argc, char** argv) {
-  if (remoting::IsCrashReportingEnabled()) {
+#ifdef OFFICIAL_BUILD
+  if (remoting::IsUsageStatsAllowed()) {
     remoting::InitializeCrashReporting();
   }
+#endif  // OFFICIAL_BUILD
 
   CommandLine::Init(argc, argv);
 

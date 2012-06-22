@@ -66,6 +66,14 @@ remoting.HostController.prototype.state = function() {
 };
 
 /**
+ * @param {function(boolean, boolean, boolean):void} callback Callback to be
+ *     called when done.
+ */
+remoting.HostController.prototype.getConsent = function(callback) {
+  this.plugin_.getUsageStatsConsent(callback);
+};
+
+/**
  * Show or hide daemon-specific parts of the UI.
  * @return {void} Nothing.
  */
@@ -109,11 +117,12 @@ remoting.HostController.prototype.setTooltips = function() {
 /**
  * Registers and starts the host.
  * @param {string} hostPin Host PIN.
+ * @param {boolean} consent The user's consent to crash dump reporting.
  * @param {function(remoting.HostController.AsyncResult):void} callback
  * callback Callback to be called when done.
  * @return {void} Nothing.
  */
-remoting.HostController.prototype.start = function(hostPin, callback) {
+remoting.HostController.prototype.start = function(hostPin, consent, callback) {
   /** @type {remoting.HostController} */
   var that = this;
   var hostName = this.plugin_.getHostName();
@@ -180,7 +189,7 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
       var onStartDaemon = function(result) {
         onStarted(callback, result, hostName);
       };
-      that.plugin_.startDaemon(hostConfig, onStartDaemon);
+      that.plugin_.startDaemon(hostConfig, consent, onStartDaemon);
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);

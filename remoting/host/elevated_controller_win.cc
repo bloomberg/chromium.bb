@@ -19,6 +19,7 @@
 #include "base/win/scoped_handle.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/elevated_controller_resource.h"
+#include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/verify_config_window_win.h"
 
 namespace {
@@ -478,6 +479,27 @@ STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
   base::JSONWriter::Write(config_old.get(), &config_updated_str);
   return WriteConfig(config_updated_str.c_str(), config_updated_str.size(),
                      owner_window_);
+}
+
+STDMETHODIMP ElevatedControllerWin::GetUsageStatsConsent(BOOL* allowed,
+                                                         BOOL* set_by_policy) {
+  bool local_allowed;
+  bool local_set_by_policy;
+  if (remoting::GetUsageStatsConsent(&local_allowed, &local_set_by_policy)) {
+    *allowed = local_allowed;
+    *set_by_policy = local_set_by_policy;
+    return S_OK;
+  } else {
+    return E_FAIL;
+  }
+}
+
+STDMETHODIMP ElevatedControllerWin::SetUsageStatsConsent(BOOL allowed) {
+  if (remoting::SetUsageStatsConsent(!!allowed)) {
+    return S_OK;
+  } else {
+    return E_FAIL;
+  }
 }
 
 HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {

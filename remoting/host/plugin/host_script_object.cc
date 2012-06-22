@@ -54,6 +54,7 @@ const char* kFuncNameGenerateKeyPair = "generateKeyPair";
 const char* kFuncNameUpdateDaemonConfig = "updateDaemonConfig";
 const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
 const char* kFuncNameGetDaemonVersion = "getDaemonVersion";
+const char* kFuncNameGetUsageStatsConsent = "getUsageStatsConsent";
 const char* kFuncNameStartDaemon = "startDaemon";
 const char* kFuncNameStopDaemon = "stopDaemon";
 
@@ -163,6 +164,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
           method_name == kFuncNameUpdateDaemonConfig ||
           method_name == kFuncNameGetDaemonConfig ||
           method_name == kFuncNameGetDaemonVersion ||
+          method_name == kFuncNameGetUsageStatsConsent ||
           method_name == kFuncNameStartDaemon ||
           method_name == kFuncNameStopDaemon);
 }
@@ -200,6 +202,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return GetDaemonConfig(args, arg_count, result);
   } else if (method_name == kFuncNameGetDaemonVersion) {
     return GetDaemonVersion(args, arg_count, result);
+  } else if (method_name == kFuncNameGetUsageStatsConsent) {
+    return GetUsageStatsConsent(args, arg_count, result);
   } else if (method_name == kFuncNameStartDaemon) {
     return StartDaemon(args, arg_count, result);
   } else if (method_name == kFuncNameStopDaemon) {
@@ -373,6 +377,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameUpdateDaemonConfig,
     kFuncNameGetDaemonConfig,
     kFuncNameGetDaemonVersion,
+    kFuncNameGetUsageStatsConsent,
     kFuncNameStartDaemon,
     kFuncNameStopDaemon
   };
@@ -762,10 +767,32 @@ bool HostNPScriptObject::GetDaemonVersion(const NPVariant* args,
   return true;
 }
 
+bool HostNPScriptObject::GetUsageStatsConsent(const NPVariant* args,
+                                              uint32_t arg_count,
+                                              NPVariant* result) {
+  if (arg_count != 1) {
+    SetException("getUsageStatsConsent: bad number of arguments");
+    return false;
+  }
+
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
+  if (!callback_obj.get()) {
+    SetException("getUsageStatsConsent: invalid callback parameter");
+    return false;
+  }
+
+  // We control lifetime of the |daemon_controller_| so it's safe to
+  // use base::Unretained() here.
+  daemon_controller_->GetUsageStatsConsent(
+      base::Bind(&HostNPScriptObject::InvokeGetUsageStatsConsentCallback,
+                 base::Unretained(this), callback_obj));
+  return true;
+}
+
 bool HostNPScriptObject::StartDaemon(const NPVariant* args,
                                      uint32_t arg_count,
                                      NPVariant* result) {
-  if (arg_count != 2) {
+  if (arg_count != 3) {
     SetException("startDaemon: bad number of arguments");
     return false;
   }
@@ -775,13 +802,18 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
       base::JSONReader::Read(config_str, base::JSON_ALLOW_TRAILING_COMMAS));
   if (config_str.empty() || !config.get() ||
       !config->IsType(base::Value::TYPE_DICTIONARY)) {
-    SetException("updateDaemonConfig: bad config parameter");
+    SetException("startDaemon: bad config parameter");
     return false;
   }
   scoped_ptr<base::DictionaryValue> config_dict(
       reinterpret_cast<base::DictionaryValue*>(config.release()));
 
-  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[1]));
+  if (!NPVARIANT_IS_BOOLEAN(args[1])) {
+    SetException("startDaemon: invalid consent parameter");
+    return false;
+  }
+
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[2]));
   if (!callback_obj.get()) {
     SetException("startDaemon: invalid callback parameter");
     return false;
@@ -789,6 +821,7 @@ bool HostNPScriptObject::StartDaemon(const NPVariant* args,
 
   daemon_controller_->SetConfigAndStart(
       config_dict.Pass(),
+      NPVARIANT_TO_BOOLEAN(args[1]),
       base::Bind(&HostNPScriptObject::InvokeAsyncResultCallback,
                  base::Unretained(this), callback_obj));
   return true;
@@ -1140,6 +1173,30 @@ void HostNPScriptObject::InvokeGetDaemonVersionCallback(
   NPVariant version_val = NPVariantFromString(version);
   InvokeAndIgnoreResult(callback.get(), &version_val, 1);
   g_npnetscape_funcs->releasevariantvalue(&version_val);
+}
+
+void HostNPScriptObject::InvokeGetUsageStatsConsentCallback(
+    const ScopedRefNPObject& callback,
+    bool supported,
+    bool allowed,
+    bool set_by_policy) {
+  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    plugin_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::InvokeGetUsageStatsConsentCallback,
+            base::Unretained(this), callback, supported, allowed,
+            set_by_policy));
+    return;
+  }
+
+  NPVariant params[3];
+  BOOLEAN_TO_NPVARIANT(supported, params[0]);
+  BOOLEAN_TO_NPVARIANT(allowed, params[1]);
+  BOOLEAN_TO_NPVARIANT(set_by_policy, params[2]);
+  InvokeAndIgnoreResult(callback.get(), params, arraysize(params));
+  g_npnetscape_funcs->releasevariantvalue(&(params[0]));
+  g_npnetscape_funcs->releasevariantvalue(&(params[1]));
+  g_npnetscape_funcs->releasevariantvalue(&(params[2]));
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {

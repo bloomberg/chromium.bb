@@ -153,12 +153,19 @@ class HostNPScriptObject : public HostStatusObserver {
                        uint32_t arg_count,
                        NPVariant* result);
 
-  // Loads daemon config version. The first argument specifies the
-  // callback to be called with the config is loaded. The version is
+  // Retrieves daemon config version. The first argument specifies the
+  // callback to be called with the obtained version. The version is
   // returned as a dotted version string, described in daemon_controller.h.
   bool GetDaemonVersion(const NPVariant* args,
                         uint32_t arg_count,
                         NPVariant* result);
+
+  // Retrieves the user's consent to report crash dumps. The first argument
+  // specifies the callback to be called with the recorder consent. Possible
+  // consent codes are defined in remoting/host/breakpad.h.
+  bool GetUsageStatsConsent(const NPVariant* args,
+                            uint32_t arg_count,
+                            NPVariant* result);
 
   // Start the daemon process with the specified config. Args are:
   //   string config
@@ -227,8 +234,8 @@ class HostNPScriptObject : public HostStatusObserver {
                                      const std::string& public_key);
 
 
-  // Callback handler for SetConfigAndStart(), Stop() and SetPin() in
-  // DaemonController.
+  // Callback handler for SetConfigAndStart(), Stop(), SetPin() and
+  // SetUsageStatsConsent() in DaemonController.
   void InvokeAsyncResultCallback(const ScopedRefNPObject& callback,
                                  DaemonController::AsyncResult result);
 
@@ -239,6 +246,12 @@ class HostNPScriptObject : public HostStatusObserver {
   // Callback handler for DaemonController::GetVersion().
   void InvokeGetDaemonVersionCallback(const ScopedRefNPObject& callback,
                                       const std::string& version);
+
+  // Callback handler for DaemonController::GetUsageStatsConsent().
+  void InvokeGetUsageStatsConsentCallback(const ScopedRefNPObject& callback,
+                                          bool supported,
+                                          bool allowed,
+                                          bool set_by_policy);
 
   //////////////////////////////////////////////////////////
   // Basic helper methods used for both It2Me and Me2me.

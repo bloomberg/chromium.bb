@@ -79,6 +79,15 @@ class DaemonController {
   // Callback type for GetVersion().
   typedef base::Callback<void (const std::string&)> GetVersionCallback;
 
+  // Callback type for GetUsageStatsConsent(). |supported| indicates whether
+  // crash dump reporting is supported by the host. |allowed| indicates if
+  // crash dump reporting is allowed by the user. |set_by_policy| carries
+  // information whether the crash dump reporting is controlled by policy.
+  typedef base::Callback<void (
+      bool supported,
+      bool allowed,
+      bool set_by_policy)> GetUsageStatsConsentCallback;
+
   virtual ~DaemonController() {}
 
   // Return the "installed/running" state of the daemon process.
@@ -103,7 +112,8 @@ class DaemonController {
   // into SetConfig() and Start() once we have basic host setup flow
   // working.
   virtual void SetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
-                                 const CompletionCallback& done_callback) = 0;
+                                 bool consent,
+                                 const CompletionCallback& done) = 0;
 
   // Updates current host configuration with the values specified in
   // |config|. Changes must take effect before the call completes.
@@ -128,6 +138,10 @@ class DaemonController {
   // Get the version of the daemon as a dotted decimal string of the form
   // major.minor.build.patch, if it is installed, or "" otherwise.
   virtual void GetVersion(const GetVersionCallback& done_callback) = 0;
+
+  // Get the user's consent to crash reporting.
+  virtual void GetUsageStatsConsent(
+      const GetUsageStatsConsentCallback& done) = 0;
 
   static scoped_ptr<DaemonController> Create();
 };

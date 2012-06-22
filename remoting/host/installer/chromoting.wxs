@@ -270,6 +270,19 @@
           </RegistryKey>
 
           <RegistryKey Key="Interface">
+            <RegistryKey Key="{655bd819-c08c-4b04-80c2-f160739ff6ef}"
+                         Action="create">
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="{00020424-0000-0000-C000-000000000046}"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ControllerTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
+
             <RegistryKey Key="{e051a481-6345-4ba1-bdb1-cf7929955268}"
                          Action="create">
               <RegistryKey Key="ProxyStubClsid32" Action="create">
@@ -286,7 +299,7 @@
 
           <RegistryKey Key="Typelib">
             <RegistryKey Key="$(var.ControllerTypelib)" Action="create">
-              <RegistryKey Key="1.0" Action="create">
+              <RegistryKey Key="1.1" Action="create">
                 <RegistryKey Key="0" Action="create">
                   <RegistryKey Key="win32" Action="create">
                     <RegistryValue Type="string"

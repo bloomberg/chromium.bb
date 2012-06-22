@@ -65,9 +65,6 @@ class BreakpadWin {
   // Returns the Custom information to be used for crash reporting.
   google_breakpad::CustomClientInfo* GetCustomInfo();
 
-  // Checks whether crash dump collection is allowed by the user.
-  bool IsCrashReportingEnabled();
-
   // This callback is executed when the process has crashed and *before*
   // the crash dump is created. To prevent duplicate crash reports we
   // make every thread calling this method, except the very first one,

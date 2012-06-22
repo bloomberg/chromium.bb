@@ -465,7 +465,7 @@ button {
   margin-top: 24px;
 }
 
-#ask-pin-form label {
+#ask-pin-form .table-label {
   min-width: 120px;
   text-align: __MSG_@@bidi_end_edge__;
   display: inline-block;
@@ -473,6 +473,21 @@ button {
 
 #ask-pin-form > div {
   margin-bottom: 8px;
+}
+
+#ask-pin-form #usagestats-consent-checkbox {
+  /*
+   * TODO(alexeypa): 'float' is overkill for such a simple layout. Find
+   * a simpler way to express it. See: http://crbug.com/134063
+   */
+  float: left;
+  height: auto;
+  vertical-align: top;
+}
+
+#ask-pin-form #usagestats-consent-label {
+  font-weight: normal;
+  line-height: normal;
 }
 
 #current-email {

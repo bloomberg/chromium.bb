@@ -63,11 +63,17 @@ remoting.HostPlugin.prototype.getDaemonConfig = function(callback) {};
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.getDaemonVersion = function(callback) {};
 
+/** @param {function(boolean, boolean, boolean):void} callback Callback to be
+ *      called with the consent.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.getUsageStatsConsent = function(callback) {};
+
 /** @param {string} config Host configuration.
  *  @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  *  @return {void} Nothing. */
-remoting.HostPlugin.prototype.startDaemon = function(config, callback) {};
+remoting.HostPlugin.prototype.startDaemon = function(
+    config, consent, callback) {};
 
 /** @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.

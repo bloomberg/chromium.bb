@@ -19,8 +19,8 @@ namespace remoting {
 class ATL_NO_VTABLE ElevatedControllerWin
     : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
       public ATL::CComCoClass<ElevatedControllerWin, &CLSID_ElevatedController>,
-      public ATL::IDispatchImpl<IDaemonControl, &IID_IDaemonControl,
-                                &LIBID_ChromotingElevatedControllerLib, 1, 0> {
+      public ATL::IDispatchImpl<IDaemonControl2, &IID_IDaemonControl2,
+                                &LIBID_ChromotingElevatedControllerLib, 1, 1> {
  public:
   ElevatedControllerWin();
 
@@ -36,6 +36,10 @@ class ATL_NO_VTABLE ElevatedControllerWin
   STDMETHOD(StopDaemon)();
   STDMETHOD(UpdateConfig)(BSTR config);
 
+  // IDaemonControl2 implementation.
+  STDMETHOD(GetUsageStatsConsent)(BOOL* allowed, BOOL* set_by_policy);
+  STDMETHOD(SetUsageStatsConsent)(BOOL allowed);
+
   DECLARE_NO_REGISTRY()
 
  private:
@@ -43,6 +47,7 @@ class ATL_NO_VTABLE ElevatedControllerWin
 
   BEGIN_COM_MAP(ElevatedControllerWin)
     COM_INTERFACE_ENTRY(IDaemonControl)
+    COM_INTERFACE_ENTRY(IDaemonControl2)
     COM_INTERFACE_ENTRY(IDispatch)
   END_COM_MAP()
 

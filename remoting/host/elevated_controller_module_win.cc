@@ -31,9 +31,11 @@ class ElevatedControllerModuleWin
 remoting::ElevatedControllerModuleWin _AtlModule;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
-  if (remoting::IsCrashReportingEnabled()) {
+#ifdef OFFICIAL_BUILD
+  if (remoting::IsUsageStatsAllowed()) {
     remoting::InitializeCrashReporting();
   }
+#endif  // OFFICIAL_BUILD
 
   CommandLine::Init(0, NULL);
 

@@ -7,8 +7,19 @@
 
 namespace remoting {
 
-// Returns true if the user has agreed to crash dump collection and uploading.
-bool IsCrashReportingEnabled();
+// Retrieves the user's consent to collect crash dumps and gather usage
+// statistics.
+bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy);
+
+// Retrieves the effective user's consent to collect crash dumps and gather
+// usage statistics. In most cases the returned value matches |allowed| returned
+// by GetUsageStatsConsent(). If GetUsageStatsConsent() fails this routine
+// reports that crash dump repoting is disabled.
+bool IsUsageStatsAllowed();
+
+// Records the user's consent to collect crash dumps and gather usage
+// statistics.
+bool SetUsageStatsConsent(bool allowed);
 
 }  // remoting
 

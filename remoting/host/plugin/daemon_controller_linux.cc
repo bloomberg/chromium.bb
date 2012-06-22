@@ -25,6 +25,7 @@
 #include "net/base/net_util.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/usage_stats_consent.h"
 
 namespace remoting {
 
@@ -59,19 +60,22 @@ class DaemonControllerLinux : public remoting::DaemonController {
   virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
-      const CompletionCallback& done_callback) OVERRIDE;
+      bool consent,
+      const CompletionCallback& done) OVERRIDE;
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
   virtual void SetWindow(void* window_handle) OVERRIDE;
   virtual void GetVersion(const GetVersionCallback& done_callback) OVERRIDE;
+  virtual void GetUsageStatsConsent(
+      const GetUsageStatsConsentCallback& done) OVERRIDE;
 
  private:
   FilePath GetConfigPath();
 
   void DoGetConfig(const GetConfigCallback& callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
-                           const CompletionCallback& done_callback);
+                           const CompletionCallback& done);
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
@@ -159,13 +163,21 @@ void DaemonControllerLinux::GetConfig(const GetConfigCallback& callback) {
       &DaemonControllerLinux::DoGetConfig, base::Unretained(this), callback));
 }
 
+void DaemonControllerLinux::GetUsageStatsConsent(
+    const GetUsageStatsConsentCallback& done) {
+  // Crash dump collection is not implemented on Linux yet.
+  // http://crbug.com/130678.
+  done.Run(false, false, false);
+}
+
 void DaemonControllerLinux::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
-    const CompletionCallback& done_callback) {
+    bool /* consent */,
+    const CompletionCallback& done) {
   // base::Unretained() is safe because we control lifetime of the thread.
   file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
       &DaemonControllerLinux::DoSetConfigAndStart, base::Unretained(this),
-      base::Passed(&config), done_callback));
+      base::Passed(&config), done));
 }
 
 void DaemonControllerLinux::UpdateConfig(
@@ -221,7 +233,7 @@ void DaemonControllerLinux::DoGetConfig(const GetConfigCallback& callback) {
 
 void DaemonControllerLinux::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
-    const CompletionCallback& done_callback) {
+    const CompletionCallback& done) {
   std::vector<std::string> args;
   args.push_back("--explicit-config");
   std::string config_json;
@@ -235,7 +247,7 @@ void DaemonControllerLinux::DoSetConfigAndStart(
   } else {
     result = RESULT_FAILED;
   }
-  done_callback.Run(result);
+  done.Run(result);
 }
 
 void DaemonControllerLinux::DoUpdateConfig(

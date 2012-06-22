@@ -46,9 +46,28 @@ interface IDaemonControl: IDispatch {
 };
 
 [
+  object,
+  uuid(655bd819-c08c-4b04-80c2-f160739ff6ef),
+  dual,
+  nonextensible,
+  helpstring("IDaemonControl2 Interface"),
+  pointer_default(unique)
+]
+interface IDaemonControl2: IDaemonControl {
+  [ id(8), helpstring("Retrieves the user's consent to collect crash dumps "
+                      "and gather usage statistics.") ]
+  HRESULT GetUsageStatsConsent([out] BOOL* allowed,
+                               [out] BOOL* set_by_policy);
+
+  [ id(9), helpstring("Records the user's consent to collect crash dumps "
+                      "and gather usage statistics.") ]
+  HRESULT SetUsageStatsConsent([in] BOOL allowed);
+};
+
+[
   uuid(9d9a5a2c-576e-4acd-9c75-aabff74b205d),
-  version(1.0),
-  helpstring("Chromoting Elevated Controller 1.0 Type Library")
+  version(1.1),
+  helpstring("Chromoting Elevated Controller 1.1 Type Library")
 ]
 library ChromotingElevatedControllerLib {
   importlib("stdole2.tlb");
@@ -58,6 +77,6 @@ library ChromotingElevatedControllerLib {
     helpstring("ElevatedController Class")
   ]
   coclass ElevatedController {
-    [default] interface IDaemonControl;
+    [default] interface IDaemonControl2;
   };
 };

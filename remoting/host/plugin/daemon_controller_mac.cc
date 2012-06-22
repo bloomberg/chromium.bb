@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "remoting/host/constants_mac.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/usage_stats_consent.h"
 
 namespace remoting {
 
@@ -51,18 +52,21 @@ class DaemonControllerMac : public remoting::DaemonController {
   virtual void GetConfig(const GetConfigCallback& callback) OVERRIDE;
   virtual void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
-      const CompletionCallback& done_callback) OVERRIDE;
+      bool consent,
+      const CompletionCallback& done) OVERRIDE;
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
   virtual void SetWindow(void* window_handle) OVERRIDE;
   virtual void GetVersion(const GetVersionCallback& done_callback) OVERRIDE;
+  virtual void GetUsageStatsConsent(
+      const GetUsageStatsConsentCallback& callback) OVERRIDE;
 
  private:
   void DoGetConfig(const GetConfigCallback& callback);
   void DoGetVersion(const GetVersionCallback& callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
-                           const CompletionCallback& done_callback);
+                           const CompletionCallback& done);
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
@@ -135,11 +139,12 @@ void DaemonControllerMac::GetConfig(const GetConfigCallback& callback) {
 
 void DaemonControllerMac::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
-    const CompletionCallback& done_callback) {
+    bool /* consent */,
+    const CompletionCallback& done) {
   auth_thread_.message_loop_proxy()->PostTask(
       FROM_HERE, base::Bind(
           &DaemonControllerMac::DoSetConfigAndStart, base::Unretained(this),
-          base::Passed(&config), done_callback));
+          base::Passed(&config), done));
 }
 
 void DaemonControllerMac::UpdateConfig(
@@ -165,6 +170,13 @@ void DaemonControllerMac::GetVersion(const GetVersionCallback& callback) {
       FROM_HERE,
       base::Bind(&DaemonControllerMac::DoGetVersion, base::Unretained(this),
                  callback));
+}
+
+void DaemonControllerMac::GetUsageStatsConsent(
+    const GetUsageStatsConsentCallback& callback) {
+  // Crash dump collection is not implemented on Mac yet.
+  // http://crbug.com/130678.
+  callback.Run(false, false, false);
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
@@ -210,10 +222,10 @@ void DaemonControllerMac::DoGetVersion(const GetVersionCallback& callback) {
 
 void DaemonControllerMac::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
-    const CompletionCallback& done_callback) {
+    const CompletionCallback& done) {
   std::string config_data;
   base::JSONWriter::Write(config.get(), &config_data);
-  ShowPreferencePane(config_data, done_callback);
+  ShowPreferencePane(config_data, done);
 }
 
 void DaemonControllerMac::DoUpdateConfig(
