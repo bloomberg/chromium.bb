@@ -5084,23 +5084,6 @@
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf/protobuf.gyp:protoc#host',
               ],
-              'conditions': [
-                ['system_libcros==0', {
-                  'dependencies': [
-                    '../third_party/cros/cros_api.gyp:cros_api',
-                  ],
-                  'include_dirs': [
-                    '../third_party/'
-                  ],
-                }],
-                ['system_libcros==1', {
-                  'link_settings': {
-                    'libraries': [
-                      '-lcrosapi',
-                    ],
-                  },
-                }],
-              ],
             }],
             ['os_posix == 1 and OS != "mac" and OS != "android" and gcc_version == 45', {
               # Avoid gcc 4.5 miscompilation of template_url.cc

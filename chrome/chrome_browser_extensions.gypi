@@ -671,16 +671,6 @@
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf/protobuf.gyp:protoc#host',
               ],
-              'conditions': [
-                ['system_libcros==0', {
-                  'dependencies': [
-                    '../third_party/cros/cros_api.gyp:cros_api',
-                  ],
-                  'include_dirs': [
-                    '../third_party/'
-                  ],
-                }],
-              ],
             }],
           ],
         }],
