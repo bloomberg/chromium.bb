@@ -225,80 +225,6 @@ void GoogleURLTracker::GoogleURLSearchCommitted(Profile* profile) {
     tracker->SearchCommitted();
 }
 
-void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url,
-                                       bool redo_searches) {
-  UpdatedDetails urls(google_url_, new_google_url);
-  google_url_ = new_google_url;
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
-  prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::Source<Profile>(profile_),
-      content::Details<UpdatedDetails>(&urls));
-  need_to_prompt_ = false;
-  CloseAllInfoBars(redo_searches);
-}
-
-void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
-  profile_->GetPrefs()->SetString(prefs::kLastPromptedGoogleURL,
-                                  new_google_url.spec());
-  need_to_prompt_ = false;
-  CloseAllInfoBars(false);
-}
-
-void GoogleURLTracker::InfoBarClosed(const InfoBarTabHelper* infobar_helper) {
-  InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
-  DCHECK(i != infobar_map_.end());
-  infobar_map_.erase(i);
-}
-
-void GoogleURLTracker::SetNeedToFetch() {
-  need_to_fetch_ = true;
-  StartFetchIfDesirable();
-}
-
-void GoogleURLTracker::FinishSleep() {
-  in_startup_sleep_ = false;
-  StartFetchIfDesirable();
-}
-
-void GoogleURLTracker::StartFetchIfDesirable() {
-  // Bail if a fetch isn't appropriate right now.  This function will be called
-  // again each time one of the preconditions changes, so we'll fetch
-  // immediately once all of them are met.
-  //
-  // See comments in header on the class, on RequestServerCheck(), and on the
-  // various members here for more detail on exactly what the conditions are.
-  if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_)
-    return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking))
-    return;
-
-  std::string fetch_url = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kGoogleSearchDomainCheckURL);
-  if (fetch_url.empty())
-    fetch_url = kSearchDomainCheckURL;
-
-  already_fetched_ = true;
-  fetcher_.reset(net::URLFetcher::Create(fetcher_id_, GURL(fetch_url),
-                                         net::URLFetcher::GET, this));
-  ++fetcher_id_;
-  // We don't want this fetch to set new entries in the cache or cookies, lest
-  // we alarm the user.
-  fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(profile_->GetRequestContext());
-
-  // Configure to max_retries at most kMaxRetries times for 5xx errors.
-  static const int kMaxRetries = 5;
-  fetcher_->SetMaxRetries(kMaxRetries);
-
-  fetcher_->Start();
-}
-
 void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the fetcher on this function's exit.
   scoped_ptr<net::URLFetcher> clean_up_fetcher(fetcher_.release());
@@ -442,6 +368,80 @@ void GoogleURLTracker::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   fetcher_.reset();
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
+void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url,
+                                       bool redo_searches) {
+  UpdatedDetails urls(google_url_, new_google_url);
+  google_url_ = new_google_url;
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
+  prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+      content::Source<Profile>(profile_),
+      content::Details<UpdatedDetails>(&urls));
+  need_to_prompt_ = false;
+  CloseAllInfoBars(redo_searches);
+}
+
+void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
+  profile_->GetPrefs()->SetString(prefs::kLastPromptedGoogleURL,
+                                  new_google_url.spec());
+  need_to_prompt_ = false;
+  CloseAllInfoBars(false);
+}
+
+void GoogleURLTracker::InfoBarClosed(const InfoBarTabHelper* infobar_helper) {
+  InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
+  DCHECK(i != infobar_map_.end());
+  infobar_map_.erase(i);
+}
+
+void GoogleURLTracker::SetNeedToFetch() {
+  need_to_fetch_ = true;
+  StartFetchIfDesirable();
+}
+
+void GoogleURLTracker::FinishSleep() {
+  in_startup_sleep_ = false;
+  StartFetchIfDesirable();
+}
+
+void GoogleURLTracker::StartFetchIfDesirable() {
+  // Bail if a fetch isn't appropriate right now.  This function will be called
+  // again each time one of the preconditions changes, so we'll fetch
+  // immediately once all of them are met.
+  //
+  // See comments in header on the class, on RequestServerCheck(), and on the
+  // various members here for more detail on exactly what the conditions are.
+  if (in_startup_sleep_ || already_fetched_ || !need_to_fetch_)
+    return;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking))
+    return;
+
+  std::string fetch_url = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kGoogleSearchDomainCheckURL);
+  if (fetch_url.empty())
+    fetch_url = kSearchDomainCheckURL;
+
+  already_fetched_ = true;
+  fetcher_.reset(net::URLFetcher::Create(fetcher_id_, GURL(fetch_url),
+                                         net::URLFetcher::GET, this));
+  ++fetcher_id_;
+  // We don't want this fetch to set new entries in the cache or cookies, lest
+  // we alarm the user.
+  fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                         net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher_->SetRequestContext(profile_->GetRequestContext());
+
+  // Configure to max_retries at most kMaxRetries times for 5xx errors.
+  static const int kMaxRetries = 5;
+  fetcher_->SetMaxRetries(kMaxRetries);
+
+  fetcher_->Start();
 }
 
 void GoogleURLTracker::SearchCommitted() {

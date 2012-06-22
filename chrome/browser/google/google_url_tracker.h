@@ -104,6 +104,21 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
       GoogleURLTracker* google_url_tracker,
       const GURL& new_google_url);
 
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // NetworkChangeNotifier::IPAddressObserver:
+  virtual void OnIPAddressChanged() OVERRIDE;
+
+  // ProfileKeyedService:
+  virtual void Shutdown() OVERRIDE;
+
+  // Callbacks from GoogleURLTrackerInfoBarDelegate:
   void AcceptGoogleURL(const GURL& google_url, bool redo_searches);
   void CancelGoogleURL(const GURL& google_url);
   void InfoBarClosed(const InfoBarTabHelper* infobar_helper);
@@ -120,20 +135,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // Starts the fetch of the up-to-date Google URL if we actually want to fetch
   // it and can currently do so.
   void StartFetchIfDesirable();
-
-  // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() OVERRIDE;
-
-  // ProfileKeyedService:
-  virtual void Shutdown() OVERRIDE;
 
   // Called each time the user performs a search.  This checks whether we need
   // to prompt the user about a domain change, and if so, starts listening for
