@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,6 @@ class TestShellTest : public testing::Test {
 
   // Don't refactor away; some unittests override this!
   virtual void CreateEmptyWindow();
-
-  static const char* const kJavascriptDelayExitScript;
 
  protected:
   // Location of SOURCE_ROOT/webkit/data/

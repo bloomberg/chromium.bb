@@ -698,8 +698,6 @@ WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
     } else {
       result = WebKit::WebNavigationPolicyIgnore;
     }
-    if (policy_delegate_should_notify_done_)
-      shell_->layout_test_controller()->PolicyDelegateDone();
   } else {
     result = default_policy;
   }
@@ -760,11 +758,6 @@ void TestWebViewDelegate::didStartProvisionalLoad(WebFrame* frame) {
     top_loading_frame_ = frame;
   }
 
-  if (shell_->layout_test_controller()->StopProvisionalFrameLoads()) {
-    printf("%s - stopping load in didStartProvisionalLoadForFrame callback\n",
-           UTF16ToUTF8(GetFrameDescription(frame)).c_str());
-    frame->stopLoading();
-  }
   UpdateAddressBar(frame->view());
 }
 
@@ -815,10 +808,6 @@ void TestWebViewDelegate::didFailProvisionalLoad(
 void TestWebViewDelegate::didCommitProvisionalLoad(
     WebFrame* frame, bool is_new_navigation) {
   UpdateForCommittedLoad(frame, is_new_navigation);
-}
-
-void TestWebViewDelegate::didClearWindowObject(WebFrame* frame) {
-  shell_->BindJSObjectsToWindow(frame);
 }
 
 void TestWebViewDelegate::didReceiveTitle(
@@ -1047,9 +1036,7 @@ void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
 void TestWebViewDelegate::LocationChangeDone(WebFrame* frame) {
   if (frame == top_loading_frame_) {
     top_loading_frame_ = NULL;
-
-    if (shell_->layout_test_mode())
-      shell_->layout_test_controller()->LocationChangeDone();
+    shell_->TestFinished();
   }
 }
 

@@ -32,15 +32,6 @@
 #include "base/path_service.h"
 #endif
 
-const char* const TestShellTest::kJavascriptDelayExitScript =
-  "<script>"
-    "window.layoutTestController.waitUntilDone();"
-    "window.addEventListener('load', function() {"
-    "  var x = document.body.clientWidth;"  // Force a document layout
-    "  window.layoutTestController.notifyDone();"
-    "});"
-  "</script>";
-
 class TestShellTestSuite : public base::TestSuite {
  public:
   TestShellTestSuite(int argc, char** argv)

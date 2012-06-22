@@ -136,7 +136,6 @@ TestShell::TestShell()
       dump_stats_table_on_exit_(false) {
     delegate_.reset(new TestWebViewDelegate(this));
     popup_delegate_.reset(new TestWebViewDelegate(this));
-    layout_test_controller_.reset(new LayoutTestController(this));
     navigation_controller_.reset(new TestNavigationController(this));
     notification_presenter_.reset(new TestNotificationPresenter(this));
 
@@ -403,14 +402,6 @@ void TestShell::Show(WebNavigationPolicy policy) {
   delegate_->show(policy);
 }
 
-void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
-  // Only bind the test classes if we're running tests.
-  if (layout_test_mode_) {
-    layout_test_controller_->BindToJavascript(frame, "layoutTestController");
-    layout_test_controller_->BindToJavascript(frame, "testRunner");
-  }
-}
-
 void TestShell::DumpBackForwardEntry(int index, string16* result) {
   int current_index = navigation_controller_->GetLastCommittedEntryIndex();
 
@@ -443,7 +434,7 @@ void TestShell::CallJSGC() {
 WebView* TestShell::CreateWebView() {
   // If we're running layout tests, only open a new window if the test has
   // called layoutTestController.setCanOpenWindows()
-  if (layout_test_mode_ && !layout_test_controller_->CanOpenWindows())
+  if (layout_test_mode_)
     return NULL;
 
   TestShell* new_win;
@@ -492,7 +483,6 @@ void TestShell::SizeToDefault() {
 }
 
 void TestShell::ResetTestController() {
-  layout_test_controller_->Reset();
   notification_presenter_->Reset();
   delegate_->Reset();
   if (geolocation_client_mock_.get())

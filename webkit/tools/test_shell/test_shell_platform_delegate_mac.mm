@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 
-// #include <Carbon/Carbon.h>
+#include <Carbon/Carbon.h>
 // #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 #import <objc/objc-runtime.h>
