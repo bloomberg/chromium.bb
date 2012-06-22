@@ -1575,7 +1575,7 @@ FileWatcher.prototype.start = function() {
 
   this.dm_.addEventListener('directory-changed',
       this.updateWatchedDirectoryBound_);
-  this.vm_.addEventListener('changed',
+  this.vm_.addEventListener('change',
       this.updateWatchedDirectoryBound_);
 
   this.updateWatchedDirectory_();
@@ -1590,7 +1590,7 @@ FileWatcher.prototype.stop = function() {
 
   this.dm_.removeEventListener('directory-changed',
       this.updateWatchedDirectoryBound_);
-  this.vm_.removeEventListener('changed',
+  this.vm_.removeEventListener('change',
       this.updateWatchedDirectoryBound_);
 
   if (this.watchedDirectoryEntry_)
