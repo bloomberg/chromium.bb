@@ -428,7 +428,6 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
       // positioning.
       pos[i].set(glyph_x + pango_units_to_double(glyph.geometry.x_offset),
                  y + pango_units_to_double(glyph.geometry.y_offset));
-      glyph_x += pango_units_to_double(glyph.geometry.width);
 
       // If this glyph is beyond the current style, draw the glyphs so far and
       // advance to the next style.
@@ -455,6 +454,8 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         } while (style >= 0 && style < static_cast<int>(styles.size()) &&
                  !IndexInRange(style_ranges_utf8[style], glyph_byte_index));
       }
+
+      glyph_x += pango_units_to_double(glyph.geometry.width);
     }
 
     // Draw the remaining glyphs.
