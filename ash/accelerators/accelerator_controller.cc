@@ -539,10 +539,14 @@ bool AcceleratorController::PerformAction(int action,
     }
     case WINDOW_MINIMIZE: {
       aura::Window* window = wm::GetActiveWindow();
+      // Attempt to restore the window that would be cycled through next from
+      // the launcher when there is no active window.
+      if (!window)
+        return HandleCycleWindowMRU(WindowCycleController::FORWARD, false);
       // Disable the shortcut for minimizing full screen window due to
       // crbug.com/131709, which is a crashing issue related to minimizing
       // full screen pepper window.
-      if (window && !wm::IsWindowFullscreen(window)) {
+      if (!wm::IsWindowFullscreen(window)) {
         wm::MinimizeWindow(window);
         return true;
       }
@@ -550,7 +554,11 @@ bool AcceleratorController::PerformAction(int action,
     }
     case WINDOW_MAXIMIZE_RESTORE: {
       aura::Window* window = wm::GetActiveWindow();
-      if (window && !wm::IsWindowFullscreen(window)) {
+      // Attempt to restore the window that would be cycled through next from
+      // the launcher when there is no active window.
+      if (!window)
+        return HandleCycleWindowMRU(WindowCycleController::FORWARD, false);
+      if (!wm::IsWindowFullscreen(window)) {
         if (wm::IsWindowMaximized(window))
           wm::RestoreWindow(window);
         else
