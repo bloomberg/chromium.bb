@@ -953,6 +953,7 @@
               ],
               'sources!': [
                 'ext/vector_platform_device_skia.cc',
+                '../third_party/skia/src/pdf/SkPDFFont.cpp',
                 '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
               ],
               'export_dependent_settings': [
