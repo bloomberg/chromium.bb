@@ -750,7 +750,7 @@
     'chromeos': [
       'chromeos_ephemeral',
       'chromeos_device_policy',
-      # crosbug.com/30221
+      # crosbug.com/32066
       # 'chromeos_onc',
       'policy',
       'policy_prefs_ui',
