@@ -8,13 +8,16 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
-class RootWindow;
+class FocusManager;
 namespace client {
 class ActivationChangeObserver;
 }
@@ -23,15 +26,12 @@ class ActivationChangeObserver;
 // RootWindow. Used only on the Desktop where there can be multiple RootWindow
 // objects.
 class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
+                                            public WindowObserver,
+                                            public EnvObserver,
                                             public FocusChangeObserver {
  public:
-  explicit DesktopActivationClient(RootWindow* root_window);
+  explicit DesktopActivationClient(FocusManager* focus_manager);
   virtual ~DesktopActivationClient();
-
-  // Changes |current_active_| without doing normal activation change. This
-  // should only be used to respond to changes that come from the native
-  // system.
-  void SetActivateWindowInResponseToSystem(Window* window);
 
   // ActivationClient:
   virtual void AddObserver(client::ActivationChangeObserver* observer) OVERRIDE;
@@ -43,7 +43,13 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   virtual bool OnWillFocusWindow(Window* window, const Event* event) OVERRIDE;
   virtual bool CanActivateWindow(Window* window) const OVERRIDE;
 
-  // FocusChangeObserver:
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+  // Overridden from aura::EnvObserver:
+  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
+
+  // Overridden from aura::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  protected:
@@ -51,8 +57,8 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   // try to activate |window|.
   aura::Window* GetActivatableWindow(aura::Window* window);
 
-  // The root window that we handle.
-  RootWindow* root_window_;
+  // The focus manager that we collaborate with.
+  FocusManager* focus_manager_;
 
   // The current active window.
   Window* current_active_;
@@ -62,6 +68,8 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
   bool updating_activation_;
 
   ObserverList<client::ActivationChangeObserver> observers_;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopActivationClient);
 };

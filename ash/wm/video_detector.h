@@ -9,11 +9,11 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/wm/scoped_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/time.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -93,8 +93,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // simulate the passage of time.
   base::TimeTicks now_for_test_;
 
-  internal::ScopedObserver<aura::Window, aura::WindowObserver>
-      observer_manager_;
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDetector);
 };

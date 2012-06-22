@@ -11,12 +11,9 @@
 
 #include "base/message_pump_aurax11.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
-#include "ui/aura/dispatcher_linux.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -51,7 +48,6 @@ const unsigned long kHintsDecorations = (1L << 1);
 
 const char* kAtomsToCache[] = {
   "_MOTIF_WM_HINTS",
-  "_NET_ACTIVE_WINDOW",
   "_NET_WM_MOVERESIZE",
   NULL
 };
@@ -71,21 +67,9 @@ X11WindowEventFilter::X11WindowEventFilter(
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       is_active_(false) {
-  static_cast<aura::DispatcherLinux*>(
-      aura::Env::GetInstance()->GetDispatcher())->
-      AddDispatcherForRootWindow(this);
-
-  XWindowAttributes attr;
-  XGetWindowAttributes(xdisplay_, x_root_window_, &attr);
-  XSelectInput(xdisplay_, x_root_window_,
-               attr.your_event_mask | PropertyChangeMask |
-               StructureNotifyMask | SubstructureNotifyMask);
 }
 
 X11WindowEventFilter::~X11WindowEventFilter() {
-  static_cast<aura::DispatcherLinux*>(
-      aura::Env::GetInstance()->GetDispatcher())->
-      RemoveDispatcherForRootWindow(this);
 }
 
 void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
@@ -156,25 +140,6 @@ ui::GestureStatus X11WindowEventFilter::PreHandleGestureEvent(
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
-bool X11WindowEventFilter::Dispatch(const base::NativeEvent& event) {
-  // Check for a change to the active window.
-  switch (event->type) {
-    case PropertyNotify: {
-      ::Atom active_window = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
-
-      if (event->xproperty.window == x_root_window_ &&
-          event->xproperty.atom == active_window) {
-        int window;
-        if (ui::GetIntProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &window))
-          OnActiveWindowChanged(static_cast< ::Window>(window));
-      }
-      break;
-    }
-  }
-
-  return false;
-}
-
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& screen_location) {
@@ -235,24 +200,6 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
              &event);
 
   return true;
-}
-
-void X11WindowEventFilter::OnActiveWindowChanged(::Window window) {
-  if (xwindow_ == window) {
-    if (!is_active_) {
-      is_active_ = true;
-
-      // Update activation client.
-      activation_client_->SetActivateWindowInResponseToSystem(
-          widget_->GetNativeView());
-      widget_->OnActivated();
-    }
-  } else if (is_active_) {
-    is_active_ = false;
-
-    activation_client_->SetActivateWindowInResponseToSystem(NULL);
-    widget_->OnLostActive();
-  }
 }
 
 }  // namespace views

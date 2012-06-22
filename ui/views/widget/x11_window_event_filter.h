@@ -27,8 +27,7 @@ namespace views {
 class NativeWidgetAura;
 
 // An EventFilter that sets properties on X11 windows.
-class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter,
-                                          public MessageLoop::Dispatcher {
+class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
  public:
   explicit X11WindowEventFilter(
       aura::RootWindow* root_window,
@@ -50,17 +49,11 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter,
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
-  // Overridden from MessageLoop::Dispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
-
  private:
   // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it
   // to act as if a border or titlebar drag occurred.
   bool DispatchHostWindowDragMovement(int hittest,
                                       const gfx::Point& screen_location);
-
-  // Handles changes in activation.
-  void OnActiveWindowChanged(::Window window);
 
   NativeWidgetAura* widget_;
   aura::DesktopActivationClient* activation_client_;

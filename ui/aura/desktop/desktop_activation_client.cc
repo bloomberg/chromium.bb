@@ -5,8 +5,10 @@
 #include "ui/aura/desktop/desktop_activation_client.h"
 
 #include "base/auto_reset.h"
+#include "base/compiler_specific.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/activation_change_observer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -24,21 +26,18 @@ bool IsChildOfRootWindow(aura::Window* window) {
 
 namespace aura {
 
-DesktopActivationClient::DesktopActivationClient(RootWindow* root_window)
-    : root_window_(root_window),
+DesktopActivationClient::DesktopActivationClient(FocusManager* focus_manager)
+    : focus_manager_(focus_manager),
       current_active_(NULL),
-      updating_activation_(false) {
-  root_window_->GetFocusManager()->AddObserver(this);
+      updating_activation_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+  aura::Env::GetInstance()->AddObserver(this);
+  focus_manager->AddObserver(this);
 }
 
 DesktopActivationClient::~DesktopActivationClient() {
-  root_window_->GetFocusManager()->RemoveObserver(this);
-}
-
-
-void DesktopActivationClient::SetActivateWindowInResponseToSystem(
-    Window* window) {
-  current_active_ = window;
+  focus_manager_->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void DesktopActivationClient::AddObserver(
@@ -71,15 +70,17 @@ void DesktopActivationClient::ActivateWindow(Window* window) {
     window->GetFocusManager()->SetFocusedWindow(window, NULL);
   }
 
-  // Send a deactivation to the old window
-  if (current_active_ && client::GetActivationDelegate(current_active_))
-    client::GetActivationDelegate(current_active_)->OnLostActive();
-
   aura::Window* old_active = current_active_;
   current_active_ = window;
   FOR_EACH_OBSERVER(client::ActivationChangeObserver,
                     observers_,
                     OnWindowActivated(window, old_active));
+
+  // Invoke OnLostActive after we've changed the active window. That way if the
+  // delegate queries for active state it doesn't think the window is still
+  // active.
+  if (old_active && client::GetActivationDelegate(old_active))
+    client::GetActivationDelegate(old_active)->OnLostActive();
 
   // Send an activation event to the new window
   if (window && client::GetActivationDelegate(window))
@@ -100,6 +101,23 @@ bool DesktopActivationClient::OnWillFocusWindow(Window* window,
   return CanActivateWindow(GetActivatableWindow(window));
 }
 
+void DesktopActivationClient::OnWindowDestroying(aura::Window* window) {
+  if (current_active_ == window) {
+    current_active_ = NULL;
+    FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
+                      observers_,
+                      OnWindowActivated(NULL, window));
+
+    // ash::ActivationController will also activate the next window here; we
+    // don't do this because that's the desktop environment's job.
+  }
+  observer_manager_.Remove(window);
+}
+
+void DesktopActivationClient::OnWindowInitialized(aura::Window* window) {
+  observer_manager_.Add(window);
+}
+
 void DesktopActivationClient::OnWindowFocused(aura::Window* window) {
   ActivateWindow(GetActivatableWindow(window));
 }
@@ -117,8 +135,11 @@ aura::Window* DesktopActivationClient::GetActivatableWindow(
   aura::Window* parent = window->parent();
   aura::Window* child = window;
   while (parent) {
-    if (CanActivateWindow(child))
+    if (CanActivateWindow(child)) {
+      if (child->transient_parent())
+        child = GetActivatableWindow(child->transient_parent());
       return child;
+    }
     // If |child| isn't activatable, but has transient parent, trace
     // that path instead.
     if (child->transient_parent())

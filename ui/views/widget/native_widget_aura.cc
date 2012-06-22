@@ -188,6 +188,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   delegate_->OnNativeWidgetCreated();
   if (desktop_helper_.get() && desktop_helper_->GetRootWindow()) {
+    if (!params.child && params.GetParent())
+      params.GetParent()->AddTransientChild(window_);
+
     window_->SetParent(desktop_helper_->GetRootWindow());
   } else if (params.child) {
     window_->SetParent(params.GetParent());

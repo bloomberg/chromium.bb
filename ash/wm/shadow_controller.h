@@ -9,10 +9,10 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/wm/scoped_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"

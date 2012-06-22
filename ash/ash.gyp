@@ -249,7 +249,6 @@
         'wm/resize_shadow_controller.h',
         'wm/root_window_layout_manager.cc',
         'wm/root_window_layout_manager.h',
-        'wm/scoped_observer.h',
         'wm/screen_dimmer.cc',
         'wm/screen_dimmer.h',
         'wm/shadow.cc',

@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SCOPED_OBSERVER_H_
-#define ASH_WM_SCOPED_OBSERVER_H_
+#ifndef BASE_SCOPED_OBSERVER_H_
+#define BASE_SCOPED_OBSERVER_H_
 #pragma once
 
 #include <algorithm>
 #include <vector>
 
 #include "base/basictypes.h"
-
-namespace ash {
-namespace internal {
 
 // ScopedObserver is used to keep track of the set of sources an object has
 // attached itself to as an observer. When ScopedObserver is destroyed it
@@ -47,7 +44,4 @@ class ScopedObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedObserver);
 };
 
-}  // namespace internal
-}  // namespace ash
-
-#endif  // ASH_WM_SCOPED_OBSERVER_H_
+#endif  // BASE_SCOPED_OBSERVER_H_

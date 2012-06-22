@@ -6,10 +6,10 @@
 #define ASH_WM_ACTIVATION_CONTROLLER_H_
 #pragma once
 
-#include "ash/wm/scoped_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/focus_change_observer.h"

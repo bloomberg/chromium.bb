@@ -17,6 +17,9 @@ class AURA_EXPORT EnvObserver {
   // Called when |window| has been initialized.
   virtual void OnWindowInitialized(Window* window) = 0;
 
+  // Called right before Env is destroyed.
+  virtual void OnWillDestroyEnv() {}
+
  protected:
   virtual ~EnvObserver() {}
 };

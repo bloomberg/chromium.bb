@@ -21,6 +21,7 @@
 #include "ui/base/win/hwnd_subclass.h"
 #include "ui/views/widget/widget_message_filter.h"
 #elif defined(USE_X11)
+#include "ui/views/widget/x11_desktop_handler.h"
 #include "ui/views/widget/x11_window_event_filter.h"
 #endif
 
@@ -126,10 +127,22 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   // TODO(erg): Implement aura::CursorManager::Delegate to control
   // cursor's shape and visibility.
 
+  aura::FocusManager* focus_manager = NULL;
+  aura::DesktopActivationClient* activation_client = NULL;
+#if defined(USE_X11)
+  focus_manager = X11DesktopHandler::get()->get_focus_manager();
+  activation_client = X11DesktopHandler::get()->get_activation_client();
+#else
+  // TODO(ben): This is almost certainly wrong; I suspect that the windows
+  // build will need a singleton like above.
+  focus_manager = new aura::FocusManager;
+  activation_client = new aura::DesktopActivationClient(focus_manager);
+#endif
+
   root_window_.reset(new aura::RootWindow(bounds));
   root_window_->SetProperty(kViewsWindowForRootWindow, window);
   root_window_->Init();
-  root_window_->set_focus_manager(new aura::FocusManager);
+  root_window_->set_focus_manager(focus_manager);
 
   // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
   root_window_event_filter_ = new aura::shared::CompoundEventFilter;
@@ -142,9 +155,6 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
 
   capture_client_.reset(
       new aura::shared::RootWindowCaptureClient(root_window_.get()));
-
-  aura::DesktopActivationClient* activation_client =
-      new aura::DesktopActivationClient(root_window_.get());
 
 #if defined(USE_X11)
   x11_window_event_filter_.reset(
