@@ -502,6 +502,8 @@ FileManager.prototype = {
     this.addEventListener('selection-summarized',
                           this.onSelectionSummarized_.bind(this));
 
+    this.summarizeSelection_();
+
     this.setupCurrentDirectory_(true /* page loading */);
 
     var stateChangeHandler =
@@ -511,8 +513,6 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.onNetworkConnectionChanged.addListener(
         stateChangeHandler);
     stateChangeHandler();
-
-    this.summarizeSelection_();
 
     var sortField =
         window.localStorage['sort-field-' + this.dialogType_] ||
@@ -4226,7 +4226,7 @@ FileManager.prototype = {
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER &&
         selectedIndexes.length == 0) {
-      var url = this.getSearchOrCurrentDirectoryURL();
+      var url = this.getCurrentDirectoryURL();
       var singleSelection = {
         urls: [url],
         multiple: false,
