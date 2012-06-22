@@ -1849,7 +1849,7 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
 	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+		(struct weston_surface *) seat->keyboard->focus;
 	struct wl_keyboard_grab *grab = seat->keyboard->grab;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
