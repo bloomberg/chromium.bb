@@ -52,7 +52,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       public ChildProcessLauncher::Client,
       public base::WaitableEventWatcher::Delegate {
  public:
-  explicit RenderProcessHostImpl(BrowserContext* browser_context);
+  RenderProcessHostImpl(BrowserContext* browser_context, bool is_guest);
   virtual ~RenderProcessHostImpl();
 
   // RenderProcessHost implementation (public portion).
@@ -69,6 +69,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void WidgetRestored() OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
   virtual int VisibleWidgetCount() const OVERRIDE;
+  virtual bool IsGuest() const OVERRIDE;
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() OVERRIDE;
@@ -265,6 +266,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;
+
+  // Indicates whether this is a RenderProcessHost of a Browser Plugin guest
+  // renderer.
+  bool is_guest_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

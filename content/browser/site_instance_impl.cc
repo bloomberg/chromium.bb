@@ -90,7 +90,8 @@ content::RenderProcessHost* SiteInstanceImpl::GetProcess() {
             browsing_instance_->browser_context());
       } else {
         process_ =
-            new RenderProcessHostImpl(browsing_instance_->browser_context());
+            new RenderProcessHostImpl(browsing_instance_->browser_context(),
+                                      site_.SchemeIs(chrome::kGuestScheme));
       }
     }
 
@@ -187,6 +188,10 @@ SiteInstance* SiteInstance::CreateForURL(
 /*static*/
 GURL SiteInstanceImpl::GetSiteForURL(content::BrowserContext* browser_context,
                                      const GURL& real_url) {
+  // TODO(fsamuel, creis): For some reason appID is not recognized as a host.
+  if (real_url.SchemeIs(chrome::kGuestScheme))
+    return real_url;
+
   GURL url = SiteInstanceImpl::GetEffectiveURL(browser_context, real_url);
 
   // URLs with no host should have an empty site.

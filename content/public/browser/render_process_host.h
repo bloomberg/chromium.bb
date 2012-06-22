@@ -93,6 +93,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void WidgetHidden() = 0;
   virtual int VisibleWidgetCount() const = 0;
 
+  // Indicates whether the current RenderProcessHost associated with a guest
+  // renderer process.
+  virtual bool IsGuest() const = 0;
+
   // Try to shutdown the associated renderer process as fast as possible.
   // If this renderer has any RenderViews with unload handlers, then this
   // function does nothing.  The current implementation uses TerminateProcess.

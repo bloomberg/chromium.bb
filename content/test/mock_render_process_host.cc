@@ -79,6 +79,10 @@ int MockRenderProcessHost::VisibleWidgetCount() const {
   return 1;
 }
 
+bool MockRenderProcessHost::IsGuest() const {
+  return false;
+}
+
 void MockRenderProcessHost::AddWord(const string16& word) {
 }
 

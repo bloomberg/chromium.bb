@@ -98,6 +98,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_constants.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_channel.h"
@@ -261,7 +262,7 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 }
 
 RenderProcessHostImpl::RenderProcessHostImpl(
-    BrowserContext* browser_context)
+    BrowserContext* browser_context, bool is_guest)
         : fast_shutdown_started_(false),
           deleting_soon_(false),
           pending_views_(0),
@@ -274,7 +275,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
           sudden_termination_allowed_(true),
-          ignore_input_events_(false) {
+          ignore_input_events_(false),
+          is_guest_(is_guest) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -599,11 +601,17 @@ int RenderProcessHostImpl::VisibleWidgetCount() const {
   return visible_widgets_;
 }
 
+bool RenderProcessHostImpl::IsGuest() const {
+  return is_guest_;
+}
+
 void RenderProcessHostImpl::AppendRendererCommandLine(
     CommandLine* command_line) const {
   // Pass the process type first, so it shows first in process listings.
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kRendererProcess);
+  if (is_guest_)
+    command_line->AppendSwitch(switches::kGuestRenderer);
 
   // Now send any options from our own command line we want to propagate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -1136,6 +1144,16 @@ bool RenderProcessHostImpl::IsSuitableHost(
     return true;
 
   if (host->GetBrowserContext() != browser_context)
+    return false;
+
+  // All URLs are suitable if this is associated with a guest renderer process.
+  // TODO(fsamuel, creis): Further validation is needed to ensure that only
+  // normal web URLs are permitted in guest processes. We need to investigate
+  // where this validation should happen.
+  if (host->IsGuest())
+    return true;
+
+  if (!host->IsGuest() && site_url.SchemeIs(chrome::kGuestScheme))
     return false;
 
   WebUIControllerFactory* factory =

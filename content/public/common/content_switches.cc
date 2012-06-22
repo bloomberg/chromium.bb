@@ -418,6 +418,10 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 // Passes gpu vendor_id from browser process to GPU process.
 const char kGpuVendorID[]                   = "gpu-vendor-id";
 
+// Used in conjunction with kRendererProcess. This causes the process
+// to run as a guest renderer instead of a regular renderer.
+const char kGuestRenderer[]                 = "guest-renderer";
+
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 

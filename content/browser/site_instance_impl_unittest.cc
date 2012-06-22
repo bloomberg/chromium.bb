@@ -371,6 +371,9 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   test_url = GURL("file:///C:/Downloads/");
   EXPECT_EQ(GURL(), SiteInstanceImpl::GetSiteForURL(NULL, test_url));
 
+  test_url = GURL("guest://abc123");
+  EXPECT_EQ(GURL("guest://abc123"), SiteInstanceImpl::GetSiteForURL(
+      NULL, test_url));
   // TODO(creis): Do we want to special case file URLs to ensure they have
   // either no site or a special "file://" site?  We currently return
   // "file://home/" as the site, which seems broken.

@@ -874,3 +874,63 @@ TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   // Ensure the new RVH has WebUI bindings.
   EXPECT_TRUE(rvh2->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
 }
+
+// Test that we reuse the same guest SiteInstance if we navigate across sites.
+TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
+  content::TestNotificationTracker notifications;
+
+  GURL guest_url("guest://abc123");
+  SiteInstance* instance =
+      SiteInstance::CreateForURL(browser_context(), guest_url);
+  TestWebContents web_contents(browser_context(), instance);
+
+  // Create.
+  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
+
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+
+  RenderViewHost* host;
+
+  // 1) The first navigation. --------------------------
+  const GURL kUrl1("http://www.google.com/");
+  NavigationEntryImpl entry1(
+      NULL /* instance */, -1 /* page_id */, kUrl1, content::Referrer(),
+      string16() /* title */, content::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */);
+  host = manager.Navigate(entry1);
+
+  // The RenderViewHost created in Init will be reused.
+  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
+  EXPECT_EQ(manager.current_host()->GetSiteInstance(), instance);
+
+  // Commit.
+  manager.DidNavigateMainFrame(host);
+  // Commit to SiteInstance should be delayed until RenderView commit.
+  EXPECT_EQ(host, manager.current_host());
+  ASSERT_TRUE(host);
+  EXPECT_TRUE(static_cast<SiteInstanceImpl*>(host->GetSiteInstance())->
+      HasSite());
+
+  // 2) Navigate to a different domain. -------------------------
+  // Guests stay in the same process on navigation.
+  const GURL kUrl2("http://www.chromium.org");
+  NavigationEntryImpl entry2(
+      NULL /* instance */, -1 /* page_id */, kUrl2,
+      content::Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
+      string16() /* title */, content::PAGE_TRANSITION_LINK,
+      true /* is_renderer_init */);
+  host = manager.Navigate(entry2);
+
+  // The RenderViewHost created in Init will be reused.
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
+
+  // Commit.
+  manager.DidNavigateMainFrame(host);
+  EXPECT_EQ(host, manager.current_host());
+  ASSERT_TRUE(host);
+  EXPECT_EQ(static_cast<SiteInstanceImpl*>(host->GetSiteInstance()),
+      instance);
+
+}

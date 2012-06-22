@@ -725,11 +725,13 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
   SiteInstance* new_instance = curr_instance;
   const content::NavigationEntry* curr_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
+  bool is_guest_scheme = curr_instance->GetSite().SchemeIs(
+      chrome::kGuestScheme);
   bool force_swap = ShouldSwapProcessesForNavigation(curr_entry, &entry);
-  if (ShouldTransitionCrossSite() || force_swap)
+  if (!is_guest_scheme && (ShouldTransitionCrossSite() || force_swap))
     new_instance = GetSiteInstanceForEntry(entry, curr_instance);
 
-  if (new_instance != curr_instance || force_swap) {
+  if (!is_guest_scheme && (new_instance != curr_instance || force_swap)) {
     // New SiteInstance.
     DCHECK(!cross_navigation_pending_);
 

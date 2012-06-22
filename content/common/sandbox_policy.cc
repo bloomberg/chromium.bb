@@ -724,9 +724,11 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     if (type == content::PROCESS_TYPE_RENDERER ||
         type == content::PROCESS_TYPE_WORKER) {
       AddBaseHandleClosePolicy(policy);
+    }
 
     // Pepper uses the renderer's policy, whith some tweaks.
-    } else if (type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+    if (cmd_line->HasSwitch(switches::kGuestRenderer) ||
+        type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
       if (!AddPolicyForPepperPlugin(policy))
         return 0;
     }

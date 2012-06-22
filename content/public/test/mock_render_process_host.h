@@ -46,6 +46,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void WidgetRestored() OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
   virtual int VisibleWidgetCount() const OVERRIDE;
+  virtual bool IsGuest() const OVERRIDE;
   virtual void AddWord(const string16& word);
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;

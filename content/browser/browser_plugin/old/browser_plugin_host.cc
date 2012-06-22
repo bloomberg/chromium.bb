@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -81,12 +82,22 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
   WebContentsImpl* guest_web_contents =
       guest_observer ?
           static_cast<WebContentsImpl*>(guest_observer->web_contents()): NULL;
+  GURL url(src);
   if (!guest_observer) {
+    std::string host = render_view_host->GetSiteInstance()->GetSite().host();
+    GURL guest_url(
+        base::StringPrintf("%s://%s", chrome::kGuestScheme, host.c_str()));
+    // The SiteInstance of a given guest is based on the fact that it's a guest
+    // in addition to which platform application the guest belongs to, rather
+    // than the URL that the guest is being navigated to.
+    SiteInstance* guest_site_instance =
+        SiteInstance::CreateForURL(web_contents()->GetBrowserContext(),
+        guest_url);
     guest_web_contents =
         static_cast<WebContentsImpl*>(
             WebContents::Create(
                 web_contents()->GetBrowserContext(),
-                render_view_host->GetSiteInstance(),
+                guest_site_instance,
                 MSG_ROUTING_NONE,
                 NULL, // base WebContents
                 NULL  // session storage namespace
@@ -99,7 +110,6 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
     RegisterContainerInstance(container_instance_id, guest_observer);
     AddGuest(guest_web_contents, frame_id);
   }
-  GURL url(src);
   guest_observer->web_contents()->SetDelegate(guest_observer);
   guest_observer->web_contents()->GetController().LoadURL(
       url,
