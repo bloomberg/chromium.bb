@@ -16,10 +16,6 @@ namespace csync {
 // want to make a subsequent POST.
 class HttpPostProviderInterface {
  public:
-  // Use specified user agent string when POSTing. If not called a default UA
-  // may be used.
-  virtual void SetUserAgent(const char* user_agent) = 0;
-
   // Add additional headers to the request.
   virtual void SetExtraRequestHeaders(const char* headers) = 0;
 

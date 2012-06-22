@@ -168,11 +168,9 @@ ScopedServerStatusWatcher::~ScopedServerStatusWatcher() {
 ServerConnectionManager::ServerConnectionManager(
     const string& server,
     int port,
-    bool use_ssl,
-    const string& user_agent)
+    bool use_ssl)
     : sync_server_(server),
       sync_server_port_(port),
-      user_agent_(user_agent),
       use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
       get_time_path_(kSyncServerGetTimePath),

@@ -653,7 +653,6 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
  public:
   virtual ~TestHttpPostProviderInterface() {}
 
-  virtual void SetUserAgent(const char* user_agent) OVERRIDE {}
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE {}
   virtual void SetURL(const char* url, int port) OVERRIDE {}
   virtual void SetPostPayload(const char* content_type,
@@ -785,7 +784,7 @@ class SyncManagerTest : public testing::Test,
                        "bogus", 0, false,
                        base::MessageLoopProxy::current(),
                        new TestHttpPostProviderFactory(), routing_info, workers,
-                       &extensions_activity_monitor_, this, "bogus",
+                       &extensions_activity_monitor_, this,
                        credentials,
                        sync_notifier_mock_, "",
                        csync::SyncManager::TEST_IN_MEMORY,

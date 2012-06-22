@@ -297,6 +297,7 @@
         'internal_api/public/base_transaction.h',
         'internal_api/public/change_record.h',
         'internal_api/public/configure_reason.h',
+        'internal_api/public/http_bridge.h',
         'internal_api/public/http_post_provider_factory.h',
         'internal_api/public/http_post_provider_interface.h',
         'internal_api/public/read_node.h',
@@ -312,6 +313,7 @@
         'internal_api/change_reorder_buffer.h',
         'internal_api/debug_info_event_listener.cc',
         'internal_api/debug_info_event_listener.h',
+        'internal_api/http_bridge.cc',
         'internal_api/js_mutation_event_observer.cc',
         'internal_api/js_mutation_event_observer.h',
         'internal_api/js_sync_manager_observer.cc',
@@ -639,6 +641,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'protocol/sync_proto.gyp:sync_proto',
@@ -652,6 +655,7 @@
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'protocol/sync_proto.gyp:sync_proto',
@@ -668,6 +672,7 @@
         'sources': [
           'internal_api/public/change_record_unittest.cc',
           'internal_api/debug_info_event_listener_unittest.cc',
+          'internal_api/http_bridge_unittest.cc',
           'internal_api/js_mutation_event_observer_unittest.cc',
           'internal_api/js_sync_manager_observer_unittest.cc',
           'internal_api/syncapi_server_connection_manager_unittest.cc',

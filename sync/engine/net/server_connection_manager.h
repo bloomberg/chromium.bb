@@ -176,8 +176,7 @@ class ServerConnectionManager {
 
   ServerConnectionManager(const std::string& server,
                           int port,
-                          bool use_ssl,
-                          const std::string& user_agent);
+                          bool use_ssl);
 
   virtual ~ServerConnectionManager();
 
@@ -190,8 +189,6 @@ class ServerConnectionManager {
 
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
-
-  inline std::string user_agent() const { return user_agent_; }
 
   inline HttpResponse::ServerConnectionCode server_status() const {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -286,9 +283,6 @@ class ServerConnectionManager {
 
   // The unique id of the user's client.
   std::string client_id_;
-
-  // The user-agent string for HTTP.
-  std::string user_agent_;
 
   // Indicates whether or not requests should be made using HTTPS.
   bool use_ssl_;

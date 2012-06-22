@@ -55,7 +55,6 @@ class SyncAPIServerConnectionManager
   SyncAPIServerConnectionManager(const std::string& server,
                                  int port,
                                  bool use_ssl,
-                                 const std::string& client_version,
                                  HttpPostProviderFactory* factory);
   virtual ~SyncAPIServerConnectionManager();
 

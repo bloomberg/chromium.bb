@@ -2152,8 +2152,6 @@
         'browser/sync/glue/generic_change_processor.h',
         'browser/sync/glue/history_model_worker.cc',
         'browser/sync/glue/history_model_worker.h',
-        'browser/sync/glue/http_bridge.cc',
-        'browser/sync/glue/http_bridge.h',
         'browser/sync/glue/model_association_manager.cc',
         'browser/sync/glue/model_association_manager.h',
         'browser/sync/glue/model_associator.h',

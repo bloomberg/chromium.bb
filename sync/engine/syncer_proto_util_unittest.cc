@@ -206,7 +206,7 @@ TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
 class DummyConnectionManager : public csync::ServerConnectionManager {
  public:
   DummyConnectionManager()
-      : ServerConnectionManager("unused", 0, false, "version"),
+      : ServerConnectionManager("unused", 0, false),
         send_error_(false),
         access_denied_(false) {}
 

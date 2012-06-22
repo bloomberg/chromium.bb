@@ -29,7 +29,6 @@ class BlockingHttpPost : public HttpPostProviderInterface {
   BlockingHttpPost() : wait_for_abort_(false, false) {}
   virtual ~BlockingHttpPost() {}
 
-  virtual void SetUserAgent(const char* user_agent) OVERRIDE {}
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE {}
   virtual void SetURL(const char* url, int port) OVERRIDE {}
   virtual void SetPostPayload(const char* content_type,
@@ -74,7 +73,7 @@ class BlockingHttpPostFactory : public HttpPostProviderFactory {
 
 TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
   SyncAPIServerConnectionManager server(
-      "server", 0, true, "1", new BlockingHttpPostFactory());
+      "server", 0, true, new BlockingHttpPostFactory());
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);
@@ -90,7 +89,7 @@ TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
 
 TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   SyncAPIServerConnectionManager server(
-      "server", 0, true, "1", new BlockingHttpPostFactory());
+      "server", 0, true, new BlockingHttpPostFactory());
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);

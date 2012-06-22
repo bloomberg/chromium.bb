@@ -41,7 +41,7 @@ using syncable::WriteTransaction;
 static char kValidAuthToken[] = "AuthToken";
 
 MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
-    : ServerConnectionManager("unused", 0, false, "version"),
+    : ServerConnectionManager("unused", 0, false),
       server_reachable_(true),
       conflict_all_commits_(false),
       conflict_n_commits_(0),

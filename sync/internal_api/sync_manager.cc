@@ -204,7 +204,6 @@ class SyncManager::SyncInternal
             csync::ExtensionsActivityMonitor*
                 extensions_activity_monitor,
             ChangeDelegate* change_delegate,
-            const std::string& user_agent,
             const SyncCredentials& credentials,
             csync::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
@@ -720,7 +719,6 @@ bool SyncManager::Init(
     const std::vector<csync::ModelSafeWorker*>& workers,
     csync::ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
-    const std::string& user_agent,
     const SyncCredentials& credentials,
     csync::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
@@ -743,7 +741,6 @@ bool SyncManager::Init(
                      workers,
                      extensions_activity_monitor,
                      change_delegate,
-                     user_agent,
                      credentials,
                      sync_notifier,
                      restored_key_for_bootstrapping,
@@ -866,7 +863,6 @@ bool SyncManager::SyncInternal::Init(
     const std::vector<csync::ModelSafeWorker*>& workers,
     csync::ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
-    const std::string& user_agent,
     const SyncCredentials& credentials,
     csync::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
@@ -905,7 +901,7 @@ bool SyncManager::SyncInternal::Init(
                               report_unrecoverable_error_function_));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
-      sync_server_and_path, port, use_ssl, user_agent, post_factory));
+      sync_server_and_path, port, use_ssl, post_factory));
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   observing_ip_address_changes_ = true;

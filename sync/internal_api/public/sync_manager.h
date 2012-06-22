@@ -368,6 +368,9 @@ class SyncManager {
   // HTTP header. Used internally when collecting stats to classify clients.
   // |sync_notifier| is owned and used to listen for notifications.
   // |report_unrecoverable_error_function| may be NULL.
+  //
+  // TODO(akalin): Replace the |post_factory| parameter with a
+  // URLFetcher parameter.
   bool Init(const FilePath& database_location,
             const csync::WeakHandle<csync::JsEventHandler>&
                 event_handler,
@@ -381,7 +384,6 @@ class SyncManager {
             csync::ExtensionsActivityMonitor*
                 extensions_activity_monitor,
             ChangeDelegate* change_delegate,
-            const std::string& user_agent,
             const SyncCredentials& credentials,
             csync::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,

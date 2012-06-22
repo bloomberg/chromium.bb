@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
-#define CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_
+#define SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_
 #pragma once
 
 #include <string>
@@ -50,25 +50,21 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // accept-charsets, and proxy service information for bridged requests.
     // Typically |baseline_context| should be the net::URLRequestContext of the
     // currently active profile.
-    explicit RequestContext(net::URLRequestContext* baseline_context);
+    RequestContext(
+        net::URLRequestContext* baseline_context,
+        const scoped_refptr<base::SingleThreadTaskRunner>&
+            network_task_runner,
+        const std::string& user_agent);
 
     // The destructor MUST be called on the IO thread.
     virtual ~RequestContext();
 
-    // Set the user agent for requests using this context. The default is
-    // the browser's UA string.
-    void set_user_agent(const std::string& ua) { user_agent_ = ua; }
-
-    virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE {
-      // If the user agent is set explicitly return that, otherwise call the
-      // base class method to return default value.
-      return user_agent_.empty() ?
-          net::URLRequestContext::GetUserAgent(url) : user_agent_;
-    }
+    virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 
    private:
-    std::string user_agent_;
-    net::URLRequestContext* baseline_context_;
+    net::URLRequestContext* const baseline_context_;
+    const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+    const std::string user_agent_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestContext);
   };
@@ -76,11 +72,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // Lazy-getter for RequestContext objects.
   class RequestContextGetter : public net::URLRequestContextGetter {
    public:
-    explicit RequestContextGetter(
-        net::URLRequestContextGetter* baseline_context_getter);
-
-    void set_user_agent(const std::string& ua) { user_agent_ = ua; }
-    bool is_user_agent_set() const { return !user_agent_.empty(); }
+    RequestContextGetter(
+        net::URLRequestContextGetter* baseline_context_getter,
+        const std::string& user_agent);
 
     // net::URLRequestContextGetter implementation.
     virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -91,10 +85,10 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     virtual ~RequestContextGetter();
 
    private:
-    // User agent to apply to the net::URLRequestContext.
-    std::string user_agent_;
-
     scoped_refptr<net::URLRequestContextGetter> baseline_context_getter_;
+    const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+    // User agent to apply to the net::URLRequestContext.
+    const std::string user_agent_;
 
     // Lazily initialized by GetURLRequestContext().
     scoped_ptr<RequestContext> context_;
@@ -105,7 +99,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   explicit HttpBridge(RequestContextGetter* context);
 
   // csync::HttpPostProvider implementation.
-  virtual void SetUserAgent(const char* user_agent) OVERRIDE;
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
   virtual void SetURL(const char* url, int port) OVERRIDE;
   virtual void SetPostPayload(const char* content_type, int content_length,
@@ -156,7 +149,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
   // Gets a customized net::URLRequestContext for bridged requests. See
   // RequestContext definition for details.
-  scoped_refptr<RequestContextGetter> context_getter_for_request_;
+  const scoped_refptr<RequestContextGetter> context_getter_for_request_;
+
+  const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   // The message loop of the thread we were created on. This is the thread that
   // will block on MakeSynchronousPost while the IO thread fetches data from
@@ -212,8 +207,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
 class HttpBridgeFactory : public csync::HttpPostProviderFactory {
  public:
-  explicit HttpBridgeFactory(
-      net::URLRequestContextGetter* baseline_context_getter);
+  HttpBridgeFactory(
+      net::URLRequestContextGetter* baseline_context_getter,
+      const std::string& user_agent);
   virtual ~HttpBridgeFactory();
 
   // csync::HttpPostProviderFactory:
@@ -225,11 +221,12 @@ class HttpBridgeFactory : public csync::HttpPostProviderFactory {
   // common components.
   HttpBridge::RequestContextGetter* GetRequestContextGetter();
 
-  scoped_refptr<HttpBridge::RequestContextGetter> request_context_getter_;
+  const scoped_refptr<HttpBridge::RequestContextGetter>
+      request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };
 
 }  //  namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_

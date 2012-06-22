@@ -1,8 +1,6 @@
 include_rules = [
   "+googleurl",
-  "+net/base/net_errors.h",
-  "+net/base/network_change_notifier.h",
-  "+net/http/http_status_code.h",
+  "+net",
   "+sync/engine",
   "+sync/js",
   "+sync/notifier",

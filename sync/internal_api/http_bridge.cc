@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/http_bridge.h"
+#include "sync/internal_api/public/http_bridge.h"
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_client.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -21,13 +19,18 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
-using content::BrowserThread;
-
 namespace browser_sync {
 
 HttpBridge::RequestContextGetter::RequestContextGetter(
-    net::URLRequestContextGetter* baseline_context_getter)
-    : baseline_context_getter_(baseline_context_getter) {
+    net::URLRequestContextGetter* baseline_context_getter,
+    const std::string& user_agent)
+    : baseline_context_getter_(baseline_context_getter),
+      network_task_runner_(
+          baseline_context_getter_->GetNetworkTaskRunner()),
+      user_agent_(user_agent) {
+  DCHECK(baseline_context_getter_);
+  DCHECK(network_task_runner_);
+  DCHECK(!user_agent_.empty());
 }
 
 HttpBridge::RequestContextGetter::~RequestContextGetter() {}
@@ -38,28 +41,26 @@ HttpBridge::RequestContextGetter::GetURLRequestContext() {
   if (!context_.get()) {
     net::URLRequestContext* baseline_context =
         baseline_context_getter_->GetURLRequestContext();
-    context_.reset(new RequestContext(baseline_context));
+    context_.reset(
+        new RequestContext(baseline_context, GetNetworkTaskRunner(),
+                           user_agent_));
     baseline_context_getter_ = NULL;
   }
-
-  // Apply the user agent which was set earlier.
-  if (is_user_agent_set())
-    context_->set_user_agent(user_agent_);
 
   return context_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HttpBridge::RequestContextGetter::GetNetworkTaskRunner() const {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  return network_task_runner_;
 }
 
 HttpBridgeFactory::HttpBridgeFactory(
-    net::URLRequestContextGetter* baseline_context_getter) {
-  DCHECK(baseline_context_getter != NULL);
-  request_context_getter_ =
-      new HttpBridge::RequestContextGetter(baseline_context_getter);
-}
+    net::URLRequestContextGetter* baseline_context_getter,
+    const std::string& user_agent)
+    : request_context_getter_(
+        new HttpBridge::RequestContextGetter(
+            baseline_context_getter, user_agent)) {}
 
 HttpBridgeFactory::~HttpBridgeFactory() {
 }
@@ -75,8 +76,14 @@ void HttpBridgeFactory::Destroy(csync::HttpPostProviderInterface* http) {
 }
 
 HttpBridge::RequestContext::RequestContext(
-    net::URLRequestContext* baseline_context)
-    : baseline_context_(baseline_context) {
+    net::URLRequestContext* baseline_context,
+    const scoped_refptr<base::SingleThreadTaskRunner>&
+        network_task_runner,
+    const std::string& user_agent)
+    : baseline_context_(baseline_context),
+      network_task_runner_(network_task_runner),
+      user_agent_(user_agent) {
+  DCHECK(!user_agent_.empty());
 
   // Create empty, in-memory cookie store.
   set_cookie_store(new net::CookieMonster(NULL, NULL));
@@ -105,16 +112,17 @@ HttpBridge::RequestContext::RequestContext(
   set_accept_language(baseline_context->accept_language());
   set_accept_charset(baseline_context->accept_charset());
 
-  // We default to the browser's user agent. This can (and should) be overridden
-  // with set_user_agent.
-  set_user_agent(content::GetUserAgent(GURL()));
-
   set_net_log(baseline_context->net_log());
 }
 
 HttpBridge::RequestContext::~RequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   delete http_transaction_factory();
+}
+
+const std::string& HttpBridge::RequestContext::GetUserAgent(
+    const GURL& url) const {
+  return user_agent_;
 }
 
 HttpBridge::URLFetchState::URLFetchState() : url_poster(NULL),
@@ -127,20 +135,13 @@ HttpBridge::URLFetchState::~URLFetchState() {}
 
 HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter)
     : context_getter_for_request_(context_getter),
+      network_task_runner_(
+          context_getter_for_request_->GetNetworkTaskRunner()),
       created_on_loop_(MessageLoop::current()),
       http_post_completed_(false, false) {
 }
 
 HttpBridge::~HttpBridge() {
-}
-
-void HttpBridge::SetUserAgent(const char* user_agent) {
-  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
-  if (DCHECK_IS_ON()) {
-    base::AutoLock lock(fetch_state_lock_);
-    DCHECK(!fetch_state_.request_completed);
-  }
-  context_getter_for_request_->set_user_agent(user_agent);
 }
 
 void HttpBridge::SetExtraRequestHeaders(const char * headers) {
@@ -195,8 +196,8 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
   DCHECK(url_for_request_.is_valid()) << "Invalid URL for request";
   DCHECK(!content_type_.empty()) << "Payload not set";
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+  if (!network_task_runner_->PostTask(
+          FROM_HERE,
           base::Bind(&HttpBridge::CallMakeAsynchronousPost, this))) {
     // This usually happens when we're in a unit test.
     LOG(WARNING) << "Could not post CallMakeAsynchronousPost task";
@@ -215,7 +216,7 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
 }
 
 void HttpBridge::MakeAsynchronousPost() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(!fetch_state_.request_completed);
   if (fetch_state_.aborted)
@@ -263,8 +264,8 @@ void HttpBridge::Abort() {
     return;
 
   fetch_state_.aborted = true;
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+  if (!network_task_runner_->PostTask(
+          FROM_HERE,
           base::Bind(&HttpBridge::DestroyURLFetcherOnIOThread, this,
                      fetch_state_.url_poster))) {
     // Madness ensues.
@@ -277,12 +278,12 @@ void HttpBridge::Abort() {
 }
 
 void HttpBridge::DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   delete fetcher;
 }
 
 void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(fetch_state_lock_);
   if (fetch_state_.aborted)
     return;

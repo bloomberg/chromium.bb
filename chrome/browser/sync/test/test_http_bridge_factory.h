@@ -15,8 +15,6 @@ namespace browser_sync {
 class TestHttpBridge : public csync::HttpPostProviderInterface {
  public:
   // Begin csync::HttpPostProviderInterface implementation:
-  virtual void SetUserAgent(const char* user_agent) OVERRIDE {}
-
   virtual void SetExtraRequestHeaders(const char * headers) OVERRIDE {}
 
   virtual void SetURL(const char* url, int port) OVERRIDE {}
