@@ -18,6 +18,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
@@ -31,6 +33,9 @@ namespace {
 const char kDefaultVariationsServerURL[] =
     "https://clients4.google.com/chrome-variations/seed";
 const int kMaxRetrySeedFetch = 5;
+
+// Time between seed fetches, in hours.
+const int kSeedFetchPeriodHours = 5;
 
 // Maps chrome_variations::Study_Channel enum values to corresponding
 // chrome::VersionInfo::Channel enum values.
@@ -88,7 +93,9 @@ GURL GetVariationsServerURL() {
 }  // namespace
 
 VariationsService::VariationsService()
-    : variations_server_url_(GetVariationsServerURL()) {}
+    : variations_server_url_(GetVariationsServerURL()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+}
 
 VariationsService::~VariationsService() {}
 
@@ -119,6 +126,18 @@ bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
 }
 
 void VariationsService::StartFetchingVariationsSeed() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Repeat this periodically. Note that we schedule this here before the next
+  // check so that if the network is down, we still attempt to ping the server
+  // in the future.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&VariationsService::StartFetchingVariationsSeed,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromHours(kSeedFetchPeriodHours));
+
   if (net::NetworkChangeNotifier::IsOffline()) {
     DVLOG(1) << "Network was offline.";
     return;
