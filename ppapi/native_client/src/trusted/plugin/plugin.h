@@ -517,6 +517,9 @@ class Plugin : public pp::InstancePrivate {
   const FileDownloader* FindFileDownloader(PP_Resource url_loader) const;
 
   int64_t time_of_last_progress_event_;
+
+  // Whether we are using IPC-based PPAPI proxy.
+  bool using_ipc_proxy_;
 };
 
 }  // namespace plugin

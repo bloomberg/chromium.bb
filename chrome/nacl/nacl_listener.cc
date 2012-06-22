@@ -13,12 +13,18 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "chrome/common/nacl_messages.h"
+#include "chrome/nacl/nacl_ipc_adapter.h"
 #include "chrome/nacl/nacl_validation_db.h"
 #include "chrome/nacl/nacl_validation_query.h"
+#include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "ipc/ipc_switches.h"
 #include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
 
 #if defined(OS_LINUX)
 #include "content/public/common/child_process_sandbox_support_linux.h"
@@ -186,6 +192,25 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   if (args == NULL) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
     return;
+  }
+
+  if (params.enable_ipc_proxy) {
+    // Create the server side of the channel and notify the process host so it
+    // can reply to the renderer, which will connect as client.
+    IPC::ChannelHandle channel_handle =
+        IPC::Channel::GenerateVerifiedChannelID("nacl");
+
+    scoped_refptr<NaClIPCAdapter> ipc_adapter(new NaClIPCAdapter(
+        channel_handle, io_thread_.message_loop_proxy()));
+    args->initial_ipc_desc = ipc_adapter.get()->MakeNaClDesc();
+
+#if defined(OS_POSIX)
+    channel_handle.socket = base::FileDescriptor(
+        ipc_adapter.get()->TakeClientFileDescriptor(), true);
+#endif
+
+    if (!Send(new NaClProcessHostMsg_PpapiChannelCreated(channel_handle)))
+      LOG(ERROR) << "Failed to send IPC channel handle to renderer.";
   }
 
   std::vector<nacl::FileDescriptor> handles = params.handles;

@@ -26,6 +26,7 @@
 #include "chrome/common/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/webkit_param_traits.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -485,12 +486,14 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
 
 // A renderer sends this to the browser process when it wants to start
 // a new instance of the Native Client process. The browser will launch
-// the process and return a handle to an IMC channel.
-IPC_SYNC_MESSAGE_CONTROL2_1(ChromeViewHostMsg_LaunchNaCl,
+// the process and return an IPC channel handle. This handle will only
+// be valid if the NaCl IPC proxy is enabled.
+IPC_SYNC_MESSAGE_CONTROL2_2(ChromeViewHostMsg_LaunchNaCl,
                             GURL /* manifest_url */,
                             int /* socket count */,
                             std::vector<nacl::FileDescriptor>
-                                /* imc channel handles */)
+                                /* imc channel handles */,
+                            IPC::ChannelHandle /* ipc_channel_handle */)
 
 // Notification that the page has an OpenSearch description document
 // associated with it.
