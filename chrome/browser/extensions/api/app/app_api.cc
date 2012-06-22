@@ -121,6 +121,8 @@ bool AppClearAllNotificationsFunction::RunImpl() {
 // static.
 void AppEventRouter::DispatchOnLaunchedEvent(
     Profile* profile, const Extension* extension) {
+  // TODO(benwells): remove this logging.
+  LOG(ERROR) << "Dispatching onLaunched with no data.";
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension->id(), kOnLaunchedEvent, "[]", NULL, GURL());
 }
@@ -129,6 +131,8 @@ void AppEventRouter::DispatchOnLaunchedEvent(
 void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     Profile* profile, const Extension* extension, const string16& action,
     const std::string& file_system_id, const FilePath& base_name) {
+  // TODO(benwells): remove this logging.
+  LOG(ERROR) << "Dispatching onLaunched with file entry.";
   ListValue args;
   DictionaryValue* launch_data = new DictionaryValue();
   DictionaryValue* intent = new DictionaryValue();
@@ -151,6 +155,8 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
 void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
     Profile* profile, const Extension* extension,
     const webkit_glue::WebIntentData web_intent_data) {
+  // TODO(benwells): remove this logging.
+  LOG(ERROR) << "Dispatching onLaunched with WebIntent.";
   ListValue args;
   DictionaryValue* launch_data = new DictionaryValue();
   DictionaryValue* intent = new DictionaryValue();

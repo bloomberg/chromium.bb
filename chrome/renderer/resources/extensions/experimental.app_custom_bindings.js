@@ -14,6 +14,8 @@ var CreateBlob = appNatives.CreateBlob;
 chromeHidden.registerCustomHook('experimental.app', function(bindingsAPI) {
   chrome.experimental.app.onLaunched.dispatch =
       function(launchData, intentData) {
+    // TODO(benwells): Remove this logging.
+    console.log("In onLaunched dispatch hook.");
     if (launchData && intentData) {
       switch(intentData.format) {
         case('fileEntry'):

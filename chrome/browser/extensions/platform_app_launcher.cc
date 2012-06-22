@@ -280,6 +280,8 @@ namespace extensions {
 void LaunchPlatformApp(Profile* profile,
                        const Extension* extension,
                        const CommandLine* command_line) {
+  // TODO(benwells): remove this logging.
+  LOG(WARNING) << "Launching platform app with command line data.";
   // launcher will be freed when nothing has a reference to it. The message
   // queue will retain a reference for any outstanding task, so when the
   // launcher has finished it will be freed.
@@ -292,6 +294,8 @@ void LaunchPlatformAppWithWebIntent(
     Profile* profile,
     const Extension* extension,
     const webkit_glue::WebIntentData& web_intent_data) {
+  // TODO(benwells): remove this logging.
+  LOG(WARNING) << "Launching platform app with WebIntent.";
   if (web_intent_data.data_type == webkit_glue::WebIntentData::BLOB) {
     scoped_refptr<PlatformAppBlobIntentLauncher> launcher =
         new PlatformAppBlobIntentLauncher(profile, extension, web_intent_data);
