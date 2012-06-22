@@ -13,7 +13,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -92,14 +91,6 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
 }
 
 void VersionInfoUpdater::UpdateVersionLabel() {
-  if (!base::chromeos::IsRunningOnChromeOS()) {
-    if (delegate_) {
-      delegate_->OnOSVersionLabelTextUpdated(
-          CrosLibrary::Get()->load_error_string());
-    }
-    return;
-  }
-
   if (version_text_.empty())
     return;
 
