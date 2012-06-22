@@ -105,6 +105,10 @@ bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
     case PP_INPUTEVENT_TYPE_IME_TEXT:
     case PP_INPUTEVENT_TYPE_UNDEFINED:
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
     default:
       return false;
   }
