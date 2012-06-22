@@ -208,12 +208,6 @@ bool ContentBrowserClient::AllowPepperPrivateFileAPI() {
   return false;
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-int ContentBrowserClient::GetCrashSignalFD(const CommandLine& command_line) {
-  return -1;
-}
-#endif
-
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;

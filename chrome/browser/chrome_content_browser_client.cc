@@ -93,6 +93,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_descriptors.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/ssl_cert_request_info.h"
@@ -291,6 +292,33 @@ void FillFontFamilyMap(const PrefService* prefs,
       (*map)[script] = UTF8ToUTF16(font_family);
   }
 }
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+int GetCrashSignalFD(const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kExtensionProcess)) {
+    ExtensionCrashHandlerHostLinux* crash_handler =
+        ExtensionCrashHandlerHostLinux::GetInstance();
+    return crash_handler->GetDeathSignalSocket();
+  }
+
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  if (process_type == switches::kRendererProcess)
+    return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  if (process_type == switches::kPluginProcess)
+    return PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  if (process_type == switches::kPpapiPluginProcess)
+    return PpapiCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  if (process_type == switches::kGpuProcess)
+    return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+
+  return -1;
+}
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 }  // namespace
 
@@ -1554,30 +1582,14 @@ bool ChromeContentBrowserClient::AllowPepperPrivateFileAPI() {
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-int ChromeContentBrowserClient::GetCrashSignalFD(
-    const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kExtensionProcess)) {
-    ExtensionCrashHandlerHostLinux* crash_handler =
-        ExtensionCrashHandlerHostLinux::GetInstance();
-    return crash_handler->GetDeathSignalSocket();
+void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+    const CommandLine& command_line,
+    base::GlobalDescriptors::Mapping* mappings) {
+  int crash_signal_fd = GetCrashSignalFD(command_line);
+  if (crash_signal_fd >= 0) {
+    mappings->push_back(std::pair<base::GlobalDescriptors::Key, int>(
+        kCrashDumpSignal, crash_signal_fd));
   }
-
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  if (process_type == switches::kRendererProcess)
-    return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-
-  if (process_type == switches::kPluginProcess)
-    return PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-
-  if (process_type == switches::kPpapiPluginProcess)
-    return PpapiCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-
-  if (process_type == switches::kGpuProcess)
-    return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-
-  return -1;
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 

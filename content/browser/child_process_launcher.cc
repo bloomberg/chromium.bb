@@ -132,37 +132,33 @@ class ChildProcessLauncher::Context
     // to reliably detect child termination.
     file_util::ScopedFD ipcfd_closer(&ipcfd);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    // On Linux, we need to add some extra file descriptors for crash handling.
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    int crash_signal_fd =
-        content::GetContentClient()->browser()->GetCrashSignalFD(*cmd_line);
+    base::GlobalDescriptors::Mapping files_to_register;
+    files_to_register.push_back(std::pair<base::GlobalDescriptors::Key, int>(
+        kPrimaryIPCChannel, ipcfd));
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+    content::GetContentClient()->browser()->
+        GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
     if (use_zygote) {
-      base::GlobalDescriptors::Mapping mapping;
-      mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
-      if (crash_signal_fd >= 0) {
-        mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
-                                                   crash_signal_fd));
-      }
       handle = ZygoteHostImpl::GetInstance()->ForkRequest(cmd_line->argv(),
-                                                          mapping,
+                                                          files_to_register,
                                                           process_type);
     } else
     // Fall through to the normal posix case below when we're not zygoting.
-#endif
+#endif  // defined(OS_MACOSX) && !defined(OS_ANDROID)
     {
+      // Convert FD mapping to FileHandleMappingVector
       base::FileHandleMappingVector fds_to_map;
-      fds_to_map.push_back(std::make_pair(
-          ipcfd,
-          kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-      if (crash_signal_fd >= 0) {
+      for (size_t i = 0; i < files_to_register.size(); ++i) {
+        const base::GlobalDescriptors::KeyFDPair& id_file =
+            files_to_register[i];
         fds_to_map.push_back(std::make_pair(
-            crash_signal_fd,
-            kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor));
+            id_file.second,
+            id_file.first + base::GlobalDescriptors::kBaseDescriptor));
       }
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
       if (process_type == switches::kRendererProcess) {
         const int sandbox_fd =
             RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
@@ -170,7 +166,7 @@ class ChildProcessLauncher::Context
             sandbox_fd,
             kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
       }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) && !defined(OS_ANDROID)
 
       // Actually launch the app.
       base::LaunchOptions options;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,8 @@ namespace base {
 class BASE_EXPORT GlobalDescriptors {
  public:
   typedef uint32_t Key;
-  typedef std::vector<std::pair<Key, int> > Mapping;
+  typedef std::pair<Key, int> KeyFDPair;
+  typedef std::vector<KeyFDPair> Mapping;
 
   // Often we want a canonical descriptor for a given Key. In this case, we add
   // the following constant to the key value:

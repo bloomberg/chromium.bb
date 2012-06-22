@@ -15,6 +15,11 @@
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include "base/global_descriptors_posix.h"
+#endif
+
+
 class CommandLine;
 class FilePath;
 class GURL;
@@ -397,9 +402,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool AllowPepperPrivateFileAPI();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Can return an optional fd for crash handling, otherwise returns -1. The
-  // passed |command_line| will be used to start the process in question.
-  virtual int GetCrashSignalFD(const CommandLine& command_line);
+  // Populates |mappings| with all files that need to be mapped before launching
+  // a child process.
+  virtual void GetAdditionalMappedFilesForChildProcess(
+      const CommandLine& command_line,
+      base::GlobalDescriptors::Mapping* mappings) {}
 #endif
 
 #if defined(OS_WIN)

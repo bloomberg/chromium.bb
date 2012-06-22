@@ -180,7 +180,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool AllowPepperPrivateFileAPI() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  virtual int GetCrashSignalFD(const CommandLine& command_line) OVERRIDE;
+  virtual void GetAdditionalMappedFilesForChildProcess(
+      const CommandLine& command_line,
+      base::GlobalDescriptors::Mapping* mappings) OVERRIDE;
 #endif
 #if defined(OS_WIN)
   virtual const wchar_t* GetResourceDllName() OVERRIDE;
