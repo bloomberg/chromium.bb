@@ -171,7 +171,8 @@ LocationBarView::LocationBarView(Profile* profile,
       mode_(mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
-      animation_offset_(0) {
+      animation_offset_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(view_to_focus_(this)) {
   set_id(VIEW_ID_LOCATION_BAR);
 
   if (mode_ == NORMAL) {
@@ -513,14 +514,14 @@ void LocationBarView::SetLocationEntryFocusable(bool focusable) {
   if (omnibox_views)
     omnibox_views->SetLocationEntryFocusable(focusable);
   else
-    set_focusable(focusable);
+    view_to_focus_->set_focusable(focusable);
 }
 
 bool LocationBarView::IsLocationEntryFocusableInRootView() const {
   OmniboxViewViews* omnibox_views = GetOmniboxViewViews(location_entry_.get());
   if (omnibox_views)
     return omnibox_views->IsLocationEntryFocusableInRootView();
-  return views::View::IsFocusable();
+  return view_to_focus_->IsFocusable();
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -959,7 +960,7 @@ void LocationBarView::OnSetFocus() {
     NOTREACHED();
     return;
   }
-  focus_manager->SetFocusedView(this);
+  focus_manager->SetFocusedView(view_to_focus_);
 }
 
 SkBitmap LocationBarView::GetFavicon() const {

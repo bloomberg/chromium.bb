@@ -1,0 +1,83 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_CONTAINER_H_
+#define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_CONTAINER_H_
+
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/view.h"
+#include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
+
+class LocationBarView;
+
+namespace views {
+class NativeViewHost;
+}
+
+// LocationBarContainer contains the LocationBarView. Under aura it directly
+// contains the LocationBarView, on windows an intermediary widget is used.  The
+// intermediary widget is used so that LocationBarContainer can be placed on top
+// of other native views (such as web content).
+// LocationBarContainer is positioned by ToolbarView, but it is a child of
+// BrowserView. This is used when on the NTP.
+class LocationBarContainer : public views::View,
+                             public views::BoundsAnimatorObserver {
+ public:
+  // Creates a new LocationBarContainer as a child of |parent|.
+  explicit LocationBarContainer(views::View* parent);
+  virtual ~LocationBarContainer();
+
+  void SetLocationBarView(LocationBarView* view);
+
+  // Stacks this view at the top. More specifically stacks the layer (aura)
+  // or widget (windows) at the top of the stack. Used to ensure this is over
+  // web contents.
+  void StackAtTop();
+
+  // Animates to the specified position.
+  void AnimateTo(const gfx::Rect& bounds);
+
+  // Returns true if animating.
+  bool IsAnimating() const;
+
+  // Returns the target bounds if animating, or the actual bounds if not
+  // animating.
+  gfx::Rect GetTargetBounds();
+
+  // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(
+      const views::KeyEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+  // views::BoundsAnimatorObserver overrides:
+  virtual void OnBoundsAnimatorProgressed(
+      views::BoundsAnimator* animator) OVERRIDE {}
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
+
+ protected:
+  virtual void OnFocus() OVERRIDE;
+
+ private:
+  // Sets up platform specific state.
+  void PlatformInit();
+
+  // Returns the background color.
+  static SkColor GetBackgroundColor();
+
+  // Used to animate this view.
+  views::BoundsAnimator animator_;
+
+  // Parent the LocationBarView is added to.
+  views::View* view_parent_;
+
+  LocationBarView* location_bar_view_;
+
+  views::NativeViewHost* native_view_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocationBarContainer);
+};
+
+#endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_CONTAINER_H_

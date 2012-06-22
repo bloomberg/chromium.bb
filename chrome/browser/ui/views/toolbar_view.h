@@ -25,6 +25,7 @@
 
 class BrowserActionsContainer;
 class Browser;
+class LocationBarContainer;
 class WrenchMenu;
 
 namespace views {
@@ -46,10 +47,11 @@ class ToolbarView : public views::AccessiblePaneView,
   explicit ToolbarView(Browser* browser);
   virtual ~ToolbarView();
 
-  // Create the contents of the Browser Toolbar. |popup_parent_view| is the
+  // Create the contents of the Browser Toolbar. |location_bar_parent| is the
+  // view the LocationBarContainer is added to. |popup_parent_view| is the
   // View to add the omnibox popup view to.
   // TODO(sky): clearly describe when |popup_parent_view| is used.
-  void Init(views::View* popup_parent_view);
+  void Init(views::View* location_bar_parent, views::View* popup_parent_view);
 
   // Updates the toolbar (and transitively the location bar) with the states of
   // the specified |tab|.  If |should_restore_state| is true, we're switching
@@ -82,6 +84,9 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
+  LocationBarContainer* location_bar_container() const {
+    return location_bar_container_;
+  }
   views::MenuButton* app_menu() const { return app_menu_; }
 
   // Overridden from AccessiblePaneView
@@ -186,6 +191,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // unacknowledged background pages in the system.
   gfx::ImageSkia GetBackgroundPageBadge();
 
+  // Sets the bounds of the LocationBarContainer. |bounds| is in the coordinates
+  // of |this|.
+  void SetLocationBarContainerBounds(const gfx::Rect& bounds);
+
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
   scoped_ptr<BackForwardMenuModel> forward_menu_model_;
 
@@ -198,6 +207,7 @@ class ToolbarView : public views::AccessiblePaneView,
   ReloadButton* reload_;
   views::ImageButton* home_;
   LocationBarView* location_bar_;
+  LocationBarContainer* location_bar_container_;
   BrowserActionsContainer* browser_actions_;
   views::MenuButton* app_menu_;
   Browser* browser_;

@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
@@ -1287,6 +1288,7 @@ void BrowserView::ShowInstant(TabContents* preview) {
   }
   contents_->SetPreview(preview_container_, preview->web_contents());
   preview_container_->SetWebContents(preview->web_contents());
+  RestackLocationBarContainer();
 }
 
 void BrowserView::HideInstant() {
@@ -1887,6 +1889,8 @@ void BrowserView::Init() {
   }
 #endif
 
+  ReorderChildView(toolbar_->location_bar_container(), child_count() - 1);
+
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
 }
@@ -1978,6 +1982,7 @@ void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
   bool should_hide = !devtools_contents && devtools_container_->visible();
 
   devtools_container_->SetWebContents(devtools_contents);
+  RestackLocationBarContainer();
 
   if (should_show)
     ShowDevToolsContainer();
@@ -2371,8 +2376,10 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   }
   UpdateUIForContents(new_contents);
-  if (change_tab_contents)
+  if (change_tab_contents) {
     contents_container_->SetWebContents(new_contents->web_contents());
+    RestackLocationBarContainer();
+  }
 
   UpdateDevToolsForContents(new_contents);
   // TODO(beng): This should be called automatically by ChangeWebContents, but I
@@ -2405,7 +2412,7 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
   toolbar_ = toolbar;
   if (toolbar) {
     AddChildView(toolbar_);
-    toolbar_->Init(contents_->header());
+    toolbar_->Init(this, contents_->header());
   }
 }
 
@@ -2476,4 +2483,8 @@ void BrowserView::ShowPasswordGenerationBubble(
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
   bubble->Show();
+}
+
+void BrowserView::RestackLocationBarContainer() {
+  toolbar_->location_bar_container()->StackAtTop();
 }

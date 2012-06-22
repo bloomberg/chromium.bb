@@ -60,6 +60,10 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // invoking |AnimateViewTo|.
   void SetTargetBounds(View* view, const gfx::Rect& target);
 
+  // Returns the target bounds for the specified view. If |view| is not
+  // animating its current bounds is returned.
+  gfx::Rect GetTargetBounds(View* view);
+
   // Sets the animation for the specified view. BoundsAnimator takes ownership
   // of the specified animation.
   void SetAnimationForView(View* view, ui::SlideAnimation* animation);

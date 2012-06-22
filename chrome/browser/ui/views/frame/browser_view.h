@@ -543,6 +543,11 @@ class BrowserView : public BrowserWindow,
   // Create an icon for this window in the launcher (currently only for Ash).
   void CreateLauncherIcon();
 
+  // Forces the LocationBarContainer to the top of the native window stacking
+  // order. This is needed for the Instant extended API when the location bar
+  // can be placed over web contents.
+  void RestackLocationBarContainer();
+
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;
 

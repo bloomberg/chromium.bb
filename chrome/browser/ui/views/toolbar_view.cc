@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -123,6 +124,7 @@ ToolbarView::ToolbarView(Browser* browser)
       reload_(NULL),
       home_(NULL),
       location_bar_(NULL),
+      location_bar_container_(NULL),
       browser_actions_(NULL),
       app_menu_(NULL),
       browser_(browser),
@@ -160,7 +162,8 @@ ToolbarView::~ToolbarView() {
   // already gone.
 }
 
-void ToolbarView::Init(views::View* popup_parent_view) {
+void ToolbarView::Init(views::View* location_bar_parent,
+                       views::View* popup_parent_view) {
   back_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   forward_menu_model_.reset(new BackForwardMenuModel(
@@ -184,6 +187,7 @@ void ToolbarView::Init(views::View* popup_parent_view) {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
+  location_bar_container_ = new LocationBarContainer(location_bar_parent);
   location_bar_ = new LocationBarView(
       browser_->profile(),
       browser_->command_updater(),
@@ -191,6 +195,10 @@ void ToolbarView::Init(views::View* popup_parent_view) {
       this,
       (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
+  // TODO(sky): if we want this to work on windows we need to make sure the
+  // LocationBarContainer gets focus. This will involve tweaking view_ids.
+  // location_bar_->set_view_to_focus(location_bar_container_);
+  location_bar_container_->SetLocationBarView(location_bar_);
 
   reload_ = new ReloadButton(location_bar_, browser_->command_updater());
   reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
@@ -234,7 +242,6 @@ void ToolbarView::Init(views::View* popup_parent_view) {
   AddChildView(forward_);
   AddChildView(reload_);
   AddChildView(home_);
-  AddChildView(location_bar_);
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
 
@@ -539,7 +546,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
         reload_->GetPreferredSize().width() + kStandardSpacing +
         (show_home_button_.GetValue() ?
             (home_->GetPreferredSize().width() + kButtonSpacing) : 0) +
-        location_bar_->GetPreferredSize().width() +
+        location_bar_container_->GetPreferredSize().width() +
         browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
 
@@ -556,7 +563,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
   int vertical_spacing = PopupTopSpacing() +
       (GetWidget()->ShouldUseNativeFrame() ?
           kPopupBottomSpacingGlass : kPopupBottomSpacingNonGlass);
-  return gfx::Size(0, location_bar_->GetPreferredSize().height() +
+  return gfx::Size(0, location_bar_container_->GetPreferredSize().height() +
       vertical_spacing);
 }
 
@@ -569,8 +576,9 @@ void ToolbarView::Layout() {
   if (!IsDisplayModeNormal()) {
     int edge_width = maximized ?
         0 : kPopupBackgroundEdge->width();  // See OnPaint().
-    location_bar_->SetBounds(edge_width, PopupTopSpacing(),
-        width() - (edge_width * 2), location_bar_->GetPreferredSize().height());
+    SetLocationBarContainerBounds(gfx::Rect(edge_width, PopupTopSpacing(),
+        std::max(0, width() - (edge_width * 2)),
+        location_bar_container_->GetPreferredSize().height()));
     return;
   }
 
@@ -613,12 +621,15 @@ void ToolbarView::Layout() {
   int available_width = width() - kRightEdgeSpacing - app_menu_width -
       browser_actions_width - location_x;
   int location_y = std::min(location_bar_vert_spacing(), height());
-  int location_bar_height = location_bar_->GetPreferredSize().height();
+  int location_bar_height =
+      location_bar_container_->GetPreferredSize().height();
 
-  location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
-                           location_bar_height);
+  gfx::Rect location_bar_container_bounds(
+      location_x, location_y, std::max(available_width, 0),
+      location_bar_height);
+  SetLocationBarContainerBounds(location_bar_container_bounds);
 
-  browser_actions_->SetBounds(location_bar_->x() + location_bar_->width(), 0,
+  browser_actions_->SetBounds(location_bar_container_bounds.right(), 0,
                               browser_actions_width, height());
   // The browser actions need to do a layout explicitly, because when an
   // extension is loaded/unloaded/changed, BrowserActionContainer removes and
@@ -826,4 +837,18 @@ void ToolbarView::UpdateAppMenuState() {
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
   SchedulePaint();
+}
+
+void ToolbarView::SetLocationBarContainerBounds(
+    const gfx::Rect& bounds) {
+  if (location_bar_container_->IsAnimating())
+    return;
+
+  // LocationBarContainer is not a child of the ToolbarView.
+  gfx::Point origin(bounds.origin());
+  views::View::ConvertPointToView(this, location_bar_container_->parent(),
+                                  &origin);
+  gfx::Rect target_bounds(origin, bounds.size());
+  if (location_bar_container_->GetTargetBounds() != target_bounds)
+    location_bar_container_->SetBoundsRect(target_bounds);
 }

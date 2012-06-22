@@ -79,6 +79,12 @@ void BoundsAnimator::SetTargetBounds(View* view, const gfx::Rect& target) {
   data_[view].target_bounds = target;
 }
 
+gfx::Rect BoundsAnimator::GetTargetBounds(View* view) {
+  if (!IsAnimating(view))
+    return view->bounds();
+  return data_[view].target_bounds;
+}
+
 void BoundsAnimator::SetAnimationForView(View* view,
                                          SlideAnimation* animation) {
   DCHECK(animation);
