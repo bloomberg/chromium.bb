@@ -7,9 +7,11 @@ package org.chromium.media;
 import android.media.MediaPlayer;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 // This class implements all the listener interface for android mediaplayer.
 // Callbacks will be sent to the native class for processing.
+@JNINamespace("media")
 class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                                      MediaPlayer.OnCompletionListener,
                                      MediaPlayer.OnBufferingUpdateListener,
@@ -131,24 +133,24 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
      * See media/base/android/media_player_bridge.cc for all the following functions.
      */
     private native void nativeOnMediaError(
-            int nativePtr /* media::MediaPlayerBridge */,
+            int nativeMediaPlayerBridge,
             int errorType);
 
     private native void nativeOnMediaInfo(
-            int nativePtr /* media::MediaPlayerBridge */,
+            int nativeMediaPlayerBridge,
             int infoType);
 
     private native void nativeOnVideoSizeChanged(
-            int nativePtr /* media::MediaPlayerBridge */,
+            int nativeMediaPlayerBridge,
             int width, int height);
 
     private native void nativeOnBufferingUpdate(
-            int nativePtr /* media::MediaPlayerBridge */,
+            int nativeMediaPlayerBridge,
             int percent);
 
-    private native void nativeOnMediaPrepared(int nativePtr /* media::MediaPlayerBridge */);
+    private native void nativeOnMediaPrepared(int nativeMediaPlayerBridge);
 
-    private native void nativeOnPlaybackComplete(int nativePtr /* media::MediaPlayerBridge */);
+    private native void nativeOnPlaybackComplete(int nativeMediaPlayerBridge);
 
-    private native void nativeOnSeekComplete(int nativePtr /* media::MediaPlayerBridge */);
+    private native void nativeOnSeekComplete(int nativeMediaPlayerBridge);
 }

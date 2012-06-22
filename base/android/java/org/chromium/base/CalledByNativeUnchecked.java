@@ -9,14 +9,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-// It only makes sense to use this annotation on methods that declare a throws... spec.
-// However, note that the exception received native side maybe an 'unchecked' (RuntimeExpception)
-// such as NullPointerException, so the native code should differentiate these cases.
-// Usage of this should be very rare; where possible handle exceptions in the Java side and use a
-// return value to indicate success / failure.
-
+/**
+ *  @CalledByNativeUnchecked is used to generate JNI bindings that do not check for exceptions.
+ *  It only makes sense to use this annotation on methods that declare a throws... spec.
+ *  However, note that the exception received native side maybe an 'unchecked' (RuntimeExpception)
+ *  such as NullPointerException, so the native code should differentiate these cases.
+ *  Usage of this should be very rare; where possible handle exceptions in the Java side and use a
+ *  return value to indicate success / failure.
+ */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CalledByNativeUnchecked {
+    /*
+     *  If present, tells which inner class the method belongs to.
+     */
     public String value() default "";
 }

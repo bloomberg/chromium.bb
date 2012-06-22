@@ -14,10 +14,13 @@ import android.util.Log;
 
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
+import org.chromium.base.NativeClassQualifiedName;
 
 /**
  * Triggers updates to the underlying network state in native Chrome
  */
+@JNINamespace("net")
 public class NetworkChangeNotifier extends BroadcastReceiver implements ActivityStatus.Listener {
 
     private static final String TAG = "NetworkChangeNotifier";
@@ -25,8 +28,8 @@ public class NetworkChangeNotifier extends BroadcastReceiver implements Activity
     private final NetworkConnectivityIntentFilter mIntentFilter =
             new NetworkConnectivityIntentFilter();
 
-    private Context mContext;
-    private int mNativeChangeNotifier;
+    private final Context mContext;
+    private final int mNativeChangeNotifier;
     private boolean mRegistered;
     private boolean mIsConnected;
 
@@ -124,6 +127,6 @@ public class NetworkChangeNotifier extends BroadcastReceiver implements Activity
       }
     }
 
-    private native void nativeNotifyObservers(
-        int nativeNetworkChangeNotifier /* net::android::NetworkChangeNotifier */);
+    @NativeClassQualifiedName("android::NetworkChangeNotifier")
+    private native void nativeNotifyObservers(int nativePtr);
 }

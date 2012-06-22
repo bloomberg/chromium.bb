@@ -10,14 +10,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @CalledByNative is used by the JNI generator to create the necessary JNI
- * bindings and expose this method to native code.
+ * @NativeClassQualifiedName is used by the JNI generator to create the necessary JNI
+ * bindings to call into the specified native class name.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CalledByNative {
+public @interface NativeClassQualifiedName {
     /*
-     *  If present, tells which inner class the method belongs to.
+     * Tells which native class the method is going to be bound to.
+     * The first parameter of the annotated method must be an int nativePtr pointing to
+     * an instance of this class.
      */
-    public String value() default "";
+    public String value();
 }

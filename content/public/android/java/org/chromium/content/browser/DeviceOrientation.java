@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 /**
  * Android implementation of the DeviceOrientation API.
  */
+@JNINamespace("device_orientation")
 class DeviceOrientation implements SensorEventListener {
 
     // These fields are lazily initialized by getHandler().
@@ -200,6 +202,7 @@ class DeviceOrientation implements SensorEventListener {
         // If we don't have a background thread, start it now.
         if (mThread == null) {
             mThread = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     Looper.prepare();
                     // Our Handler doesn't actually have to do anything, because
@@ -236,6 +239,6 @@ class DeviceOrientation implements SensorEventListener {
      * See chrome/browser/device_orientation/data_fetcher_impl_android.cc
      */
     private native void nativeGotOrientation(
-            int nativePtr /* device_orientation::DataFetcherImplAndroid */,
+            int nativeDataFetcherImplAndroid,
             double alpha, double beta, double gamma);
 }

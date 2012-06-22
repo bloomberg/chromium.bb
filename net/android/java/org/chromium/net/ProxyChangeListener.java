@@ -9,11 +9,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Proxy;
+
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
+import org.chromium.base.NativeClassQualifiedName;
 
 // This class partners with native ProxyConfigServiceAndroid to listen for
 // proxy change notifications from Android.
-class ProxyChangeListener {
+@JNINamespace("net")
+public class ProxyChangeListener {
     private static final String TAG = "ProxyChangeListener";
 
     private int mNativePtr;
@@ -86,6 +90,6 @@ class ProxyChangeListener {
     /**
      * See net/proxy/proxy_config_service_android.cc
      */
-    private native void nativeProxySettingsChanged(
-            int nativePtr /* net::ProxyConfigServiceAndroid::JNIDelegate */);
+    @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
+    private native void nativeProxySettingsChanged(int nativePtr);
 }
