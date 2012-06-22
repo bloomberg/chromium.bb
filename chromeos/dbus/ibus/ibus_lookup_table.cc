@@ -54,8 +54,53 @@ void AppendIBusLookupTable(const IBusLookupTable& table,
 
 bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
   IBusObjectReader ibus_object_reader("IBusLookupTable", reader);
-  if (!ibus_object_reader.Init())
+
+  dbus::MessageReader attachment_reader(NULL);
+  if (!ibus_object_reader.InitWithAttachmentReader(&attachment_reader))
     return false;
+
+  while (attachment_reader.HasMoreData()) {
+    dbus::MessageReader dictionary_reader(NULL);
+    if (!attachment_reader.PopDictEntry(&dictionary_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The attachment field is array of dictionary entry.";
+      return false;
+    }
+
+    std::string key;
+    if (!dictionary_reader.PopString(&key)) {
+      LOG(ERROR) << "Invalid attachement structure: "
+                 << "The 1st dictionary entry should be string.";
+      return false;
+    }
+    if (key != "mozc.candidates")
+      continue;
+
+    dbus::MessageReader variant_reader(NULL);
+    if (!dictionary_reader.PopVariant(&variant_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The 2nd dictionary entry shuold be variant.";
+      return false;
+    }
+
+    dbus::MessageReader sub_variant_reader(NULL);
+    if (!variant_reader.PopVariant(&sub_variant_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The 2nd variant entry should contain variant.";
+      return false;
+    }
+
+    uint8* bytes = NULL;
+    size_t length = 0;
+    if (!sub_variant_reader.PopArrayOfBytes(&bytes, &length)) {
+      LOG(ERROR) << "Invalid mozc.candidates structure: "
+                 << "The mozc.candidates contains array of bytes.";
+      return false;
+    }
+
+    table->set_serialized_mozc_candidates_data(
+        std::string(reinterpret_cast<char*>(bytes), length));
+  }
 
   uint32 page_size = 0;
   if (!ibus_object_reader.PopUint32(&page_size)) {

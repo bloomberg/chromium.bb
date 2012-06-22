@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 
 namespace dbus {
@@ -27,6 +28,12 @@ namespace ibus {
 //  variant  struct {
 //   string "IBusLookupTable"
 //   array [
+//     dict_entry (
+//       string "mozc.candidates"
+//       variant  variant  array of bytes [
+//         08 01 10 16 ...
+//       ]
+//     )
 //   ]
 //   uint32 9  // Page size
 //   uint32 1  // Cursor position
@@ -60,13 +67,14 @@ namespace ibus {
 //     ... more IBusTexts
 //   ]
 //  }
+//  TODO(nona): Clean up the structure.(crbug.com/129403)
 class IBusLookupTable;
 
 // Pops a IBusLookupTable from |reader|.
 // Returns false if an error occures.
 bool CHROMEOS_EXPORT PopIBusLookupTable(dbus::MessageReader* reader,
                                         IBusLookupTable* table);
-// Appends a IBusLookupTable to |writer|.
+// Appends a IBusLookupTable to |writer| except mozc_candidates_ in |table|.
 void CHROMEOS_EXPORT AppendIBusLookupTable(const IBusLookupTable& table,
                                            dbus::MessageWriter* writer);
 
@@ -91,47 +99,36 @@ class CHROMEOS_EXPORT IBusLookupTable {
   virtual ~IBusLookupTable();
 
   // Returns the number of candidates in one page.
-  uint32 page_size() const {
-    return page_size_;
-  }
-
-  void set_page_size(uint32 page_size) {
-    page_size_ = page_size;
-  }
+  uint32 page_size() const { return page_size_; }
+  void set_page_size(uint32 page_size) { page_size_ = page_size; }
 
   // Returns the cursor index of the currently selected candidate.
-  uint32 cursor_position() const {
-    return cursor_position_;
-  }
-
+  uint32 cursor_position() const { return cursor_position_; }
   void set_cursor_position(uint32 cursor_position) {
     cursor_position_ = cursor_position;
   }
 
   // Returns true if the cusros is visible.
-  bool is_cursor_visible() const {
-    return is_cursor_visible_;
-  }
-
+  bool is_cursor_visible() const { return is_cursor_visible_; }
   void set_is_cursor_visible(bool is_cursor_visible) {
     is_cursor_visible_ = is_cursor_visible;
   }
 
   // Returns the orientation of lookup table.
-  Orientation orientation() const {
-    return orientation_;
-  }
-
+  Orientation orientation() const { return orientation_; }
   void set_orientation(Orientation orientation) {
     orientation_ = orientation;
   }
 
-  const std::vector<Entry>& candidates() const {
-    return candidates_;
-  }
+  const std::vector<Entry>& candidates() const { return candidates_; }
+  std::vector<Entry>* mutable_candidates() { return &candidates_; }
 
-  std::vector<Entry>* mutable_candidates() {
-    return &candidates_;
+  const std::string& serialized_mozc_candidates_data() {
+    return serialized_mozc_candidates_data_;
+  }
+  void set_serialized_mozc_candidates_data(
+      const std::string& serialized_mozc_candidates_data) {
+    serialized_mozc_candidates_data_ = serialized_mozc_candidates_data;
   }
 
  private:
@@ -140,6 +137,9 @@ class CHROMEOS_EXPORT IBusLookupTable {
   bool is_cursor_visible_;
   Orientation orientation_;
   std::vector<Entry> candidates_;
+
+  // TODO(nona): Refine data structure(crbug.com/129403).
+  std::string serialized_mozc_candidates_data_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusLookupTable);
 };
