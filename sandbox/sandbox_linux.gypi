@@ -45,7 +45,7 @@
       'conditions': [
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
           'sources': [
-            'linux/seccomp-bpf/sandbox_bpf_unittest.cc'
+            'linux/seccomp-bpf/sandbox_bpf_unittest.cc',
           ],
         }],
       ],
