@@ -38,6 +38,7 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_IMAGES" file="blocked_images.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIXED_CONTENT" file="blocked_mixed_content.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" />
       <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon.png" />
