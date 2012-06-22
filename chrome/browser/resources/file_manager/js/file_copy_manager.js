@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @constructor
+ * @param {DirectoryEntry} root Root directory entry.
+ */
 function FileCopyManager(root) {
   this.copyTasks_ = [];
   this.cancelObservers_ = [];
@@ -19,6 +23,9 @@ FileCopyManager.prototype = {
  * Multiple copy operations may be queued at any given time.  Additional
  * Tasks may be added while the queue is being serviced.  Though a
  * cancel operation cancels everything in the queue.
+ *
+ * @param {DirectoryEntry} sourceDirEntry Source directory.
+ * @param {DirectoryEntry} targetDirEntry Target directory.
  */
 FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.sourceDirEntry = sourceDirEntry;
@@ -46,6 +53,10 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.renamedDirectories_ = [];
 };
 
+/**
+ * @param {Array.<Entry>} entries Entries.
+ * @param {Function} callback When entries resolved.
+ */
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
 
@@ -63,6 +74,9 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
 };
 
+/**
+ * @return {Entry} Next entry.
+ */
 FileCopyManager.Task.prototype.getNextEntry = function() {
   // We should keep the file in pending list and remove it after complete.
   // Otherwise, if we try to get status in the middle of copying. The returned
@@ -80,6 +94,10 @@ FileCopyManager.Task.prototype.getNextEntry = function() {
   return null;
 };
 
+/**
+ * @param {Entry} entry Entry.
+ * @param {number} size Bytes completed.
+ */
 FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
   // It is probably not safe to directly remove the first entry in pending list.
   // We need to check if the removed entry (srcEntry) corresponding to the added
@@ -112,10 +130,18 @@ FileCopyManager.Task.prototype.updateFileCopyProgress = function(entry, size) {
   }
 };
 
+/**
+ * @param {string} fromName Old name.
+ * @param {string} toName New name.
+ */
 FileCopyManager.Task.prototype.registerRename = function(fromName, toName) {
   this.renamedDirectories_.push({from: fromName + '/', to: toName + '/'});
 };
 
+/**
+ * @param {string} path A path.
+ * @return {string} Path after renames.
+ */
 FileCopyManager.Task.prototype.applyRenames = function(path) {
   // Directories are processed in pre-order, so we will store only the first
   // renaming point:
@@ -134,6 +160,9 @@ FileCopyManager.Task.prototype.applyRenames = function(path) {
 
 /**
  * Error class used to report problems with a copy operation.
+ * @constructor
+ * @param {string} reason Error type.
+ * @param {Object} data Additional data.
  */
 FileCopyManager.Error = function(reason, data) {
   this.reason = reason;
@@ -141,13 +170,21 @@ FileCopyManager.Error = function(reason, data) {
   this.data = data;
 };
 
+/** @const */
 FileCopyManager.Error.CANCELLED = 0;
+/** @const */
 FileCopyManager.Error.UNEXPECTED_SOURCE_FILE = 1;
+/** @const */
 FileCopyManager.Error.TARGET_EXISTS = 2;
+/** @const */
 FileCopyManager.Error.FILESYSTEM_ERROR = 3;
+
 
 // FileCopyManager methods.
 
+/**
+ * @return {Object} Status object.
+ */
 FileCopyManager.prototype.getStatus = function() {
   var rv = {
     pendingItems: 0,  // Files + Directories
@@ -218,6 +255,9 @@ FileCopyManager.prototype.getProgress = function() {
 
 /**
  * Dispatch a simple copy-progress event with reason and optional err data.
+ * @private
+ * @param {string} reason Event type.
+ * @param {FileCopyManager.Error} opt_err Error.
  */
 FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
   var event = new cr.Event('copy-progress');
@@ -229,6 +269,7 @@ FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
 
 /**
  * Dispatch an event of file operation completion (allows to update the UI).
+ * @private
  * @param {string} reason Completed file operation: 'movied|copied|deleted'.
  * @param {Array.<Entry>} affectedEntries deleted ot created entries.
  */
@@ -243,6 +284,7 @@ FileCopyManager.prototype.sendOperationEvent_ = function(reason,
 /**
  * Completely clear out the copy queue, either because we encountered an error
  * or completed successfully.
+ * @private
  */
 FileCopyManager.prototype.resetQueue_ = function() {
   for (var i = 0; i < this.cancelObservers_.length; i++)
@@ -255,6 +297,7 @@ FileCopyManager.prototype.resetQueue_ = function() {
 
 /**
  * Request that the current copy queue be abandoned.
+ * @param {Function} opt_callback On cancel.
  */
 FileCopyManager.prototype.requestCancel = function(opt_callback) {
   this.cancelRequested_ = true;
@@ -264,6 +307,7 @@ FileCopyManager.prototype.requestCancel = function(opt_callback) {
 
 /**
  * Perform the bookeeping required to cancel.
+ * @private
  */
 FileCopyManager.prototype.doCancel_ = function() {
   this.sendProgressEvent_('CANCELLED');
@@ -273,6 +317,8 @@ FileCopyManager.prototype.doCancel_ = function() {
 /**
  * Used internally to check if a cancel has been requested, and handle
  * it if so.
+ * @private
+ * @return {boolean} If canceled.
  */
 FileCopyManager.prototype.maybeCancel_ = function() {
   if (!this.cancelRequested_)
@@ -284,6 +330,9 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 
 /**
  * Convert string in clipboard to entries and kick off pasting.
+ * @param {Object} clipboard Clipboard contents.
+ * @param {string} targetPath Target path.
+ * @param {boolean} targetOnGData If target is on GDrive.
  */
 FileCopyManager.prototype.paste = function(clipboard, targetPath,
                                            targetOnGData) {
@@ -366,6 +415,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
  *
  * @param {DirectoryEntry} sourceEntry An entry from the source.
  * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
+ * @param {boolean} targetOnGData If target is on GDrive.
  * @return {boolean} Whether source and target dir are on the same root.
  */
 FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
@@ -377,6 +427,13 @@ FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
 
 /**
  * Initiate a file copy.
+ * @param {DirectoryEntry} sourceDirEntry Source directory.
+ * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @param {Array.<Entry>} entries Entries to copy.
+ * @param {boolean} deleteAfterCopy In case of move.
+ * @param {boolean} sourceOnGData Source directory on GDrive.
+ * @param {boolean} targetOnGData Target directory on GDrive.
+ * @return {FileCopyManager.Task} Copy task.
  */
 FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
                                                targetDirEntry,
@@ -415,6 +472,7 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
 /**
  * Service all pending tasks, as well as any that might appear during the
  * copy.
+ * @private
  */
 FileCopyManager.prototype.serviceAllTasks_ = function() {
   var self = this;
@@ -450,6 +508,9 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
 
 /**
  * Service all entries in the next copy task.
+ * @private
+ * @param {Function} successCallback On success.
+ * @param {Function} errorCallback On error.
  */
 FileCopyManager.prototype.serviceNextTask_ = function(
     successCallback, errorCallback) {
@@ -511,6 +572,10 @@ FileCopyManager.prototype.serviceNextTask_ = function(
 
 /**
  * Service the next entry in a given task.
+ * @private
+ * @param {FileManager.Task} task A task.
+ * @param {Function} successCallback On success.
+ * @param {Function} errorCallback On error.
  */
 FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     task, successCallback, errorCallback) {
@@ -531,7 +596,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
     // We found an entry in the list that is not relative to the base source
     // path, something is wrong.
-    return onError('UNEXPECTED_SOURCE_FILE', sourceEntry.fullPath);
+    onError('UNEXPECTED_SOURCE_FILE', sourceEntry.fullPath);
+    return;
   }
 
   var targetDirEntry = task.targetDirEntry;
@@ -626,10 +692,10 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
    *
    * @param {DirectoryEntry} dirEntry A directory entry.
    * @param {string} relativePath A path relative to |dirEntry|.
-   * @param {function(Entry,string)} A callback for returning the
-   *        |parentDirEntry| and |fileName| upon success.
-   * @param {function(FileError)} An error callback when there is an error
-   *        getting |parentDirEntry|.
+   * @param {function(Entry,string)} successCallback A callback for returning
+   *     the |parentDirEntry| and |fileName| upon success.
+   * @param {function(FileError)} errorCallback An error callback when there is
+   *     an error getting |parentDirEntry|.
    */
   function resolveDirAndBaseName(dirEntry, relativePath,
                                  successCallback, errorCallback) {
