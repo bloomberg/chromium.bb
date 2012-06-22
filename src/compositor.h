@@ -230,10 +230,6 @@ struct weston_seat {
 	struct weston_xkb_info xkb_info;
 	struct {
 		struct xkb_state *state;
-		uint32_t mods_depressed;
-		uint32_t mods_latched;
-		uint32_t mods_locked;
-		uint32_t group;
 		enum weston_led leds;
 	} xkb_state;
 };

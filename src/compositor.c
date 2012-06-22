@@ -1688,16 +1688,6 @@ weston_surface_activate(struct weston_surface *surface,
 	if (seat->seat.keyboard) {
 		wl_keyboard_set_focus(seat->seat.keyboard, &surface->surface);
 		wl_data_device_set_keyboard_focus(&seat->seat);
-
-		if (seat->seat.keyboard->focus_resource) {
-			wl_keyboard_send_modifiers(
-				seat->seat.keyboard->focus_resource,
-				wl_display_next_serial(compositor->wl_display),
-				seat->xkb_state.mods_depressed,
-				seat->xkb_state.mods_latched,
-				seat->xkb_state.mods_locked,
-				seat->xkb_state.group);
-		}
 	}
 
 	wl_signal_emit(&compositor->activate_signal, surface);
@@ -1785,16 +1775,16 @@ modifier_state_changed(struct weston_seat *seat)
 	group = xkb_state_serialize_group(seat->xkb_state.state,
 					  XKB_STATE_EFFECTIVE);
 
-	if (mods_depressed != seat->xkb_state.mods_depressed ||
-	    mods_latched != seat->xkb_state.mods_latched ||
-	    mods_locked != seat->xkb_state.mods_locked ||
-	    group != seat->xkb_state.group)
+	if (mods_depressed != seat->seat.keyboard->modifiers.mods_depressed ||
+	    mods_latched != seat->seat.keyboard->modifiers.mods_latched ||
+	    mods_locked != seat->seat.keyboard->modifiers.mods_locked ||
+	    group != seat->seat.keyboard->modifiers.group)
 		ret = 1;
 
-	seat->xkb_state.mods_depressed = mods_depressed;
-	seat->xkb_state.mods_latched = mods_latched;
-	seat->xkb_state.mods_locked = mods_locked;
-	seat->xkb_state.group = group;
+	seat->seat.keyboard->modifiers.mods_depressed = mods_depressed;
+	seat->seat.keyboard->modifiers.mods_latched = mods_latched;
+	seat->seat.keyboard->modifiers.mods_locked = mods_locked;
+	seat->seat.keyboard->modifiers.group = group;
 
 	/* And update the modifier_state for bindings. */
 	mods_lookup = mods_depressed | mods_latched;
@@ -1887,10 +1877,10 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	if (mods)
 		grab->interface->modifiers(grab,
 					   wl_display_get_serial(compositor->wl_display),
-					   ws->xkb_state.mods_depressed,
-					   ws->xkb_state.mods_latched,
-					   ws->xkb_state.mods_locked,
-					   ws->xkb_state.group);
+					   seat->keyboard->modifiers.mods_depressed,
+					   seat->keyboard->modifiers.mods_latched,
+					   seat->keyboard->modifiers.mods_locked,
+					   seat->keyboard->modifiers.group);
 }
 
 WL_EXPORT void
@@ -1948,15 +1938,6 @@ notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
 	if (surface) {
 		wl_list_remove(&ws->saved_kbd_focus_listener.link);
 		wl_keyboard_set_focus(ws->seat.keyboard, surface);
-
-		if (seat->keyboard->focus_resource) {
-			wl_keyboard_send_modifiers(seat->keyboard->focus_resource,
-						   wl_display_next_serial(compositor->wl_display),
-						   ws->xkb_state.mods_depressed,
-						   ws->xkb_state.mods_latched,
-						   ws->xkb_state.mods_locked,
-						   ws->xkb_state.group);
-		}
 		ws->saved_kbd_focus = NULL;
 	}
 }
@@ -2482,10 +2463,7 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 		exit(1);
 	}
 
-	seat->xkb_state.mods_depressed = 0;
-	seat->xkb_state.mods_latched = 0;
-	seat->xkb_state.mods_locked = 0;
-	seat->xkb_state.group = 0;
+	seat->xkb_state.leds = 0;
 
 	wl_keyboard_init(&seat->keyboard);
 	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
