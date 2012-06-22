@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,15 @@ ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
 ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 }
 
+// Fails under ASan, http://crbug.com/134060.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_Init DISABLED_Init
+#else
+#define MAYBE_Init Init
+#endif
+
 // Check that the bubble doesn't crash or leak for any settings type
-TEST_F(ContentSettingBubbleControllerTest, Init) {
+TEST_F(ContentSettingBubbleControllerTest, MAYBE_Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
         i == CONTENT_SETTINGS_TYPE_INTENTS ||
