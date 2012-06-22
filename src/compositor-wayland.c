@@ -666,7 +666,8 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	notify_key(&c->base.seat->seat, time, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
-			   WL_KEYBOARD_KEY_STATE_RELEASED);
+			   WL_KEYBOARD_KEY_STATE_RELEASED,
+		   STATE_UPDATE_AUTOMATIC);
 }
 
 static void

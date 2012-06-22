@@ -1833,7 +1833,8 @@ update_modifier_state(struct weston_seat *seat, uint32_t key,
 
 WL_EXPORT void
 notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
-	   enum wl_keyboard_key_state state)
+	   enum wl_keyboard_key_state state,
+	   enum weston_key_state_update update_state)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
@@ -1842,7 +1843,7 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	struct wl_keyboard_grab *grab = seat->keyboard->grab;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
-	int mods;
+	int mods = 0;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		if (compositor->ping_handler && focus)
@@ -1855,7 +1856,8 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 		weston_compositor_idle_release(compositor);
 	}
 
-	mods = update_modifier_state(ws, key, state);
+	if (update_state == STATE_UPDATE_AUTOMATIC)
+		mods = update_modifier_state(ws, key, state);
 	end = seat->keyboard->keys.data + seat->keyboard->keys.size;
 	for (k = seat->keyboard->keys.data; k < end; k++) {
 		if (*k == key) {

@@ -710,7 +710,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				notify_key(&c->base.seat->seat,
 					   weston_compositor_get_time(),
 					   key_release->detail - 8,
-					   WL_KEYBOARD_KEY_STATE_RELEASED);
+					   WL_KEYBOARD_KEY_STATE_RELEASED,
+					   STATE_UPDATE_AUTOMATIC);
 				free(prev);
 				prev = NULL;
 				break;
@@ -753,7 +754,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			notify_key(&c->base.seat->seat,
 				   weston_compositor_get_time(),
 				   key_press->detail - 8,
-				   WL_KEYBOARD_KEY_STATE_PRESSED);
+				   WL_KEYBOARD_KEY_STATE_PRESSED,
+				   STATE_UPDATE_AUTOMATIC);
 			break;
 		case XCB_KEY_RELEASE:
 			/* If we don't have XKB, we need to use the lame
@@ -766,7 +768,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			notify_key(&c->base.seat->seat,
 				   weston_compositor_get_time(),
 				   key_release->detail - 8,
-				   WL_KEYBOARD_KEY_STATE_RELEASED);
+				   WL_KEYBOARD_KEY_STATE_RELEASED,
+				   STATE_UPDATE_AUTOMATIC);
 			break;
 		case XCB_BUTTON_PRESS:
 			x11_compositor_deliver_button_event(c, event, 1);
@@ -848,7 +851,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		notify_key(&c->base.seat->seat,
 			   weston_compositor_get_time(),
 			   key_release->detail - 8,
-			   WL_KEYBOARD_KEY_STATE_RELEASED);
+			   WL_KEYBOARD_KEY_STATE_RELEASED,
+			   STATE_UPDATE_AUTOMATIC);
 		free(prev);
 		prev = NULL;
 		break;

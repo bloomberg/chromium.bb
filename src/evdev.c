@@ -88,7 +88,8 @@ evdev_process_key(struct evdev_input_device *device,
 		notify_key(&device->master->base.seat,
 			   time, e->code,
 			   e->value ? WL_KEYBOARD_KEY_STATE_PRESSED :
-				      WL_KEYBOARD_KEY_STATE_RELEASED);
+				      WL_KEYBOARD_KEY_STATE_RELEASED,
+			   STATE_UPDATE_AUTOMATIC);
 		break;
 	}
 }
