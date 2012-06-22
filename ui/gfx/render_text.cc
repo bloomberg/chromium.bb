@@ -606,11 +606,13 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
 void RenderText::Draw(Canvas* canvas) {
   EnsureLayout();
 
-  gfx::Rect clip_rect(display_rect());
-  clip_rect.Inset(ShadowValue::GetMargin(text_shadows_));
+  if (clip_to_display_rect()) {
+    gfx::Rect clip_rect(display_rect());
+    clip_rect.Inset(ShadowValue::GetMargin(text_shadows_));
 
-  canvas->Save();
-  canvas->ClipRect(clip_rect);
+    canvas->Save();
+    canvas->ClipRect(clip_rect);
+  }
 
   if (!text().empty())
     DrawSelection(canvas);
@@ -619,7 +621,9 @@ void RenderText::Draw(Canvas* canvas) {
 
   if (!text().empty())
     DrawVisualText(canvas);
-  canvas->Restore();
+
+  if (clip_to_display_rect())
+    canvas->Restore();
 }
 
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
@@ -712,6 +716,7 @@ RenderText::RenderText()
       fade_head_(false),
       fade_tail_(false),
       background_is_transparent_(false),
+      clip_to_display_rect_(true),
       cached_bounds_and_offset_valid_(false) {
 }
 

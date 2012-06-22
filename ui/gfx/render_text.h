@@ -168,6 +168,9 @@ class UI_EXPORT RenderText {
   bool focused() const { return focused_; }
   void set_focused(bool focused) { focused_ = focused; }
 
+  bool clip_to_display_rect() const { return clip_to_display_rect_; }
+  void set_clip_to_display_rect(bool clip) { clip_to_display_rect_ = clip; }
+
   const StyleRange& default_style() const { return default_style_; }
   void set_default_style(const StyleRange& style) { default_style_ = style; }
 
@@ -483,6 +486,12 @@ class UI_EXPORT RenderText {
 
   // The local display area for rendering the text.
   Rect display_rect_;
+
+  // Flag to work around a Skia bug with the PDF path (http://crbug.com/133548)
+  // that results in incorrect clipping when drawing to the document margins.
+  // This field allows disabling clipping to work around the issue.
+  // TODO(asvitkine): Remove this when the underlying Skia bug is fixed.
+  bool clip_to_display_rect_;
 
   // The offset for the text to be drawn, relative to the display area.
   // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
