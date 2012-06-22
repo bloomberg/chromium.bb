@@ -704,7 +704,8 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    RunAllPendingForIO();  // Post Unpin() to blocking pool.
+    RunAllPendingForIO();  // Post FreeDiskSpaceIfNeededFor to blocking pool.
   }
 
   void TestGetCacheState(const std::string& resource_id, const std::string& md5,
@@ -2715,7 +2716,7 @@ TEST_F(GDataFileSystemTest, DirtyCachePinned) {
 }
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
-TEST_F(GDataFileSystemTest, DISABLED_PinAndUnpinDirtyCache) {
+TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
