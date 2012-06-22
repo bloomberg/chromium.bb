@@ -324,8 +324,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
 
-    CreateZoomButton();
-    gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
+    // Zoom code is commented out for now because it is not complete for all
+    // platforms, so it should not be present in M21.
+    // TODO(khorimoto): Uncomment the code below once it is ready.
+    // CreateZoomButton();
+    // gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
 
     // Also disable Chrome To Mobile for off-the-record and non-synced profiles,
     // or if the feature is disabled by a command line flag or chrome://flags.
