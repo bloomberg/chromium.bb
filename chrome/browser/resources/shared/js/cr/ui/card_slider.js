@@ -429,6 +429,15 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * This re-syncs the -webkit-transform that's used to position the frame in
+     * the likely event it needs to be updated by a card being inserted or
+     * removed in the flow.
+     */
+    repositionFrame: function() {
+      this.transformToCurrentCard_();
+    },
+
+    /**
      * Checks the the given |index| exists in this.cards_.
      * @param {number} index An index to check.
      * @private

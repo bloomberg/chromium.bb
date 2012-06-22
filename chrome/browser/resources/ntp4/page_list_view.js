@@ -651,8 +651,7 @@ cr.define('ntp', function() {
       // When the second arg passed to insertBefore is falsey, it acts just like
       // appendChild.
       this.pageList.insertBefore(e.addedCard, this.tilePages[e.addedIndex]);
-      if (!this.isStartingUp_())
-        this.updatePageSwitchers();
+      this.onCardAddedOrRemoved_();
     },
 
     /**
@@ -662,8 +661,20 @@ cr.define('ntp', function() {
      */
     onCardRemoved_: function(e) {
       e.removedCard.parentNode.removeChild(e.removedCard);
-      if (!this.isStartingUp_())
-        this.updatePageSwitchers();
+      this.onCardAddedOrRemoved_();
+    },
+
+    /**
+     * Called when a card is removed or added.
+     * @private
+     */
+    onCardAddedOrRemoved_: function() {
+      if (this.isStartingUp_())
+        return;
+
+      // Without repositioning there were issues - http://crbug.com/133457.
+      this.cardSlider.repositionFrame();
+      this.updatePageSwitchers();
     },
 
     /**
