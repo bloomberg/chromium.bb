@@ -532,13 +532,30 @@ default_grab_key(struct wl_keyboard_grab *grab,
 	}
 }
 
+static struct wl_resource *
+find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
+{
+	struct wl_resource *r;
+
+	if (!surface)
+		return NULL;
+
+	wl_list_for_each(r, list, link) {
+		if (r->client == surface->resource.client)
+			return r;
+	}
+
+	return NULL;
+}
+
 static void
 default_grab_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
 		       uint32_t mods_depressed, uint32_t mods_latched,
 		       uint32_t mods_locked, uint32_t group)
 {
 	struct wl_keyboard *keyboard = grab->keyboard;
-	struct wl_resource *resource;
+	struct wl_pointer *pointer = keyboard->seat->pointer;
+	struct wl_resource *resource, *pr;
 
 	resource = keyboard->focus_resource;
 	if (!resource)
@@ -546,6 +563,19 @@ default_grab_modifiers(struct wl_keyboard_grab *grab, uint32_t serial,
 
 	wl_keyboard_send_modifiers(resource, serial, mods_depressed,
 				   mods_latched, mods_locked, group);
+
+	if (pointer && pointer->focus && pointer->focus != keyboard->focus) {
+		pr = find_resource_for_surface(&keyboard->resource_list,
+					       pointer->focus);
+		if (pr) {
+			wl_keyboard_send_modifiers(pr,
+						   serial,
+						   keyboard->modifiers.mods_depressed,
+						   keyboard->modifiers.mods_latched,
+						   keyboard->modifiers.mods_locked,
+						   keyboard->modifiers.group);
+		}
+	}
 }
 
 static const struct wl_keyboard_grab_interface
@@ -702,22 +732,6 @@ wl_seat_set_touch(struct wl_seat *seat, struct wl_touch *touch)
 		touch->seat = seat;
 
 	seat_send_updated_caps(seat);
-}
-
-static struct wl_resource *
-find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
-{
-	struct wl_resource *r;
-
-	if (!surface)
-		return NULL;
-
-	wl_list_for_each(r, list, link) {
-		if (r->client == surface->resource.client)
-			return r;
-	}
-
-	return NULL;
 }
 
 WL_EXPORT void
