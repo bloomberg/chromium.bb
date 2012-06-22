@@ -12,6 +12,7 @@ OBJECTS=\
 	$(OBJDIR)/box_filter_interpreter.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter.o \
 	$(OBJDIR)/finger_metrics.o \
+	$(OBJDIR)/fling_stop_filter_interpreter.o \
 	$(OBJDIR)/gestures.o \
 	$(OBJDIR)/iir_filter_interpreter.o \
 	$(OBJDIR)/immediate_interpreter.o \
@@ -35,6 +36,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/apple_trackpad_filter_interpreter_unittest.o \
 	$(OBJDIR)/box_filter_interpreter_unittest.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter_unittest.o \
+	$(OBJDIR)/fling_stop_filter_interpreter_unittest.o \
 	$(OBJDIR)/gestures_unittest.o \
 	$(OBJDIR)/iir_filter_interpreter_unittest.o \
 	$(OBJDIR)/immediate_interpreter_unittest.o \
