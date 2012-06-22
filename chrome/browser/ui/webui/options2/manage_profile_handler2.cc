@@ -71,9 +71,6 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestDefaultProfileIcons",
       base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestProfileInfo",
-      base::Bind(&ManageProfileHandler::RequestProfileInfo,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
                  base::Unretained(this)));
@@ -234,57 +231,6 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       profile_file_path);
-}
-
-void ManageProfileHandler::RequestProfileInfo(const ListValue* args) {
-  DCHECK(args);
-
-  Value* index_value;
-  double index_double;
-  if (!args->Get(0, &index_value) || !index_value->GetAsDouble(&index_double))
-    return;
-
-  int index = static_cast<int>(index_double);
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  int profile_count = cache.GetNumberOfProfiles();
-  if (index < 0 && index >= profile_count)
-    return;
-
-  FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
-  FilePath current_profile_path = Profile::FromWebUI(web_ui())->GetPath();
-  bool is_current_profile =
-      profile_path == Profile::FromWebUI(web_ui())->GetPath();
-
-  DictionaryValue profile_value;
-  profile_value.SetString("name", cache.GetNameOfProfileAtIndex(index));
-  profile_value.Set("filePath", base::CreateFilePathValue(profile_path));
-  profile_value.SetBoolean("isCurrentProfile", is_current_profile);
-
-  bool is_gaia_picture =
-      cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-      cache.GetGAIAPictureOfProfileAtIndex(index);
-  if (is_gaia_picture) {
-    gfx::Image icon = profiles::GetAvatarIconForWebUI(
-        cache.GetAvatarIconOfProfileAtIndex(index), true);
-    profile_value.SetString("iconURL",
-        web_ui_util::GetImageDataUrl(*icon.ToImageSkia()));
-  } else {
-    size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
-    profile_value.SetString("iconURL",
-                             cache.GetDefaultAvatarIconUrl(icon_index));
-  }
-
-  web_ui()->CallJavascriptFunction("ManageProfileOverlay.setProfileInfo",
-                                   profile_value);
-
-  // Ensure that we have the most up to date GAIA picture.
-  if (is_current_profile) {
-    GAIAInfoUpdateService* service =
-        Profile::FromWebUI(web_ui())->GetGAIAInfoUpdateService();
-    if (service)
-      service->Update();
-  }
 }
 
 void ManageProfileHandler::ProfileIconSelectionChanged(

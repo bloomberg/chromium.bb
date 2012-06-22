@@ -248,9 +248,7 @@ cr.define('options', function() {
           chrome.send('createProfile');
         };
         $('profiles-manage').onclick = function(event) {
-          var selectedProfile = self.getSelectedProfileItem_();
-          if (selectedProfile)
-            ManageProfileOverlay.showManageDialog(selectedProfile);
+          ManageProfileOverlay.showManageDialog();
         };
         $('profiles-delete').onclick = function(event) {
           var selectedProfile = self.getSelectedProfileItem_();
@@ -1019,9 +1017,33 @@ cr.define('options', function() {
       // add it to the list, even if the list is hidden so we can access it
       // later.
       $('profiles-list').dataModel = new ArrayDataModel(profiles);
-      // We got new data, close the open overlay if it's open.
-      ManageProfileOverlay.getInstance().visible = false;
+
+      // Received new data. If showing the "manage" overlay, keep it up to
+      // date. If showing the "delete" overlay, close it.
+      if (ManageProfileOverlay.getInstance().visible &&
+          !$('manage-profile-overlay-manage').hidden) {
+        ManageProfileOverlay.showManageDialog();
+      } else {
+        ManageProfileOverlay.getInstance().visible = false;
+      }
+
       this.setProfileViewButtonsStatus_();
+    },
+
+    /**
+     * Returns the currently active profile for this browser window.
+     * @return {Object} A profile info object.
+     * @private
+     */
+    getCurrentProfile_: function() {
+      for (var i = 0; i < $('profiles-list').dataModel.length; i++) {
+        var profile = $('profiles-list').dataModel.item(i);
+        if (profile.isCurrentProfile)
+          return profile;
+      }
+
+      assert(false,
+             'There should always be a current profile, but none found.');
     },
 
     setGtkThemeButtonEnabled_: function(enabled) {
@@ -1370,6 +1392,7 @@ cr.define('options', function() {
   //Forward public APIs to private implementations.
   [
     'addBluetoothDevice',
+    'getCurrentProfile',
     'getStartStopSyncButton',
     'hideBluetoothSettings',
     'removeCloudPrintConnectorSection',

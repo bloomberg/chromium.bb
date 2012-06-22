@@ -58,17 +58,6 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // |args| is of the form: [ {string} profileFilePath ]
   void DeleteProfile(const base::ListValue* args);
 
-  // Callback for the "requestProfileInfo" message.
-  // Given |args| of the form: [ {number} profileIndex ]
-  // Sends an object to WebUI of the form:
-  //   profileInfo = {
-  //     name: "Profile Name",
-  //     iconURL: "chrome://path/to/icon/image",
-  //     filePath: "/path/to/profile/data/on/disk"
-  //     isCurrentProfile: false,
-  //   };
-  void RequestProfileInfo(const base::ListValue* args);
-
   // Callback for the 'profileIconSelectionChanged' message. Used to update the
   // name in the manager profile dialog based on the selected icon.
   void ProfileIconSelectionChanged(const base::ListValue* args);

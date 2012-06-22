@@ -66,15 +66,10 @@ cr.define('options', function() {
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
 
-      // Use the hash to specify the profile index.
-      var hash = location.hash;
-      if (hash) {
-        $('manage-profile-overlay-manage').hidden = false;
-        $('manage-profile-overlay-delete').hidden = true;
-        ManageProfileOverlay.getInstance().hideErrorBubble_();
-
-        chrome.send('requestProfileInfo', [parseInt(hash.slice(1), 10)]);
-      }
+      // Use the hash to specify the profile index. Note: the actual index
+      // is ignored. Only the current profile may be edited.
+      if (window.location.hash.length > 1)
+        ManageProfileOverlay.getInstance().prepareForManageDialog_();
 
       $('manage-profile-name').focus();
     },
@@ -116,8 +111,6 @@ cr.define('options', function() {
     receiveDefaultProfileIcons_: function(iconURLs) {
       $('manage-profile-icon-grid').dataModel = new ArrayDataModel(iconURLs);
 
-      // Changing the dataModel resets the selectedItem. Re-select it, if there
-      // is one.
       if (this.profileInfo_)
         $('manage-profile-icon-grid').selectedItem = this.profileInfo_.iconURL;
 
@@ -206,16 +199,24 @@ cr.define('options', function() {
     },
 
     /**
-     * Display the "Manage Profile" dialog.
-     * @param {Object} profileInfo The profile object of the profile to manage.
+     * Updates the contents of the "Manage Profile" section of the dialog,
+     * and shows that section.
      * @private
      */
-    showManageDialog_: function(profileInfo) {
+    prepareForManageDialog_: function() {
+      var profileInfo = BrowserOptions.getCurrentProfile();
       ManageProfileOverlay.setProfileInfo(profileInfo);
       $('manage-profile-overlay-manage').hidden = false;
       $('manage-profile-overlay-delete').hidden = true;
-      ManageProfileOverlay.getInstance().hideErrorBubble_();
+      this.hideErrorBubble_();
+    },
 
+    /**
+     * Display the "Manage Profile" dialog.
+     * @private
+     */
+    showManageDialog_: function() {
+      this.prepareForManageDialog_();
       OptionsPage.navigateToPage('manageProfile');
     },
 
