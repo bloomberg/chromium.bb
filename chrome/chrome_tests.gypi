@@ -511,7 +511,6 @@
         'test/base/chrome_test_launcher.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
-        '../content/app/startup_helper_win.cc',
         '../content/browser/mouseleave_browsertest.cc',
       ],
       'conditions': [
@@ -605,7 +604,6 @@
           ],
           'dependencies': [
             'chrome.gyp:chrome_version_resources',
-            '../sandbox/sandbox.gyp:sandbox',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/ui.gyp:ui_resources',
             '../ui/ui.gyp:ui_resources_standard',
@@ -3000,7 +2998,6 @@
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
-        '../content/app/startup_helper_win.cc',
         '../content/browser/accessibility/cross_platform_accessibility_browsertest.cc',
         '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
         '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
@@ -3201,7 +3198,6 @@
           'dependencies': [
             'chrome_version_resources',
             'security_tests',  # run time dependency
-            '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -3419,7 +3415,6 @@
         'test/perf/browser_perf_test.h',
         'test/perf/rendering/latency_tests.cc',
         'test/perf/rendering/throughput_tests.cc',
-        '../content/app/startup_helper_win.cc',
       ],
       'rules': [
         {
@@ -3470,7 +3465,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -3565,7 +3559,6 @@
         'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
         'test/base/chrome_test_launcher.cc',
-        '../content/app/startup_helper_win.cc',
       ],
       'conditions': [
         ['safe_browsing==0', {
@@ -3576,7 +3569,6 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
-            '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
@@ -3929,7 +3921,6 @@
         'browser/sync/test/integration/two_client_typed_urls_sync_test.cc',
         'browser/sync/test/integration/typed_urls_helper.cc',
         'browser/sync/test/integration/typed_urls_helper.h',
-        '../content/app/startup_helper_win.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -3963,7 +3954,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -4052,7 +4042,6 @@
         'browser/sync/test/integration/typed_urls_helper.h',
         'test/base/chrome_test_launcher.cc',
         'test/data/resource.rc',
-        '../content/app/startup_helper_win.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -4086,7 +4075,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

@@ -47,6 +47,7 @@
         'public/test/test_renderer_host.h',
         'public/test/unittest_test_suite.h',
         'public/test/web_contents_tester.h',
+        'app/startup_helper_win.cc',
         # TODO(phajdan.jr): All of those files should live in content/test (if
         # they're only used by content) or content/public/test (if they're used
         # by other embedders).
@@ -131,6 +132,11 @@
         '../webkit/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
+        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
         ['enable_webrtc==1', {
           'sources': [
             'renderer/media/mock_media_stream_dependency_factory.cc',
@@ -224,7 +230,6 @@
         '..',
       ],
       'sources': [
-        'app/startup_helper_win.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
@@ -475,11 +480,6 @@
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
           ],
         }],
-        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
-          'dependencies': [
-            '../sandbox/sandbox.gyp:sandbox',
-          ],
-        }],
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
@@ -532,8 +532,6 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
-        'app/startup_helper_win.cc',
-        'public/test/test_launcher.h',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_test_launcher.cc',
@@ -574,11 +572,6 @@
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-        ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
-          'dependencies': [
-            '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
       ],
