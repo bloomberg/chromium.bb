@@ -4,6 +4,10 @@
 
 {
   'targets': [
+    # We have two principal targets: sandbox and sandbox_linux_unittests
+    # All other targets are listed as dependencies.
+    # FIXME(jln): for historial reasons, sandbox_linux is the setuid sandbox
+    # and is its own target.
     {
       'target_name': 'sandbox',
       'type': 'none',
@@ -16,23 +20,50 @@
             '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
           ],
         }],
-        # This does not include Android.
+        # Similarly, compile seccomp BPF when we support it
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
           'type': 'static_library',
-          # Compile seccomp mode 2 code on Linux
-          'sources': [
-            'linux/seccomp-bpf/sandbox_bpf.cc',
-            'linux/seccomp-bpf/sandbox_bpf.h',
-            'linux/seccomp-bpf/verifier.cc',
-            'linux/seccomp-bpf/verifier.h',
-          ],
           'dependencies': [
-            '../base/base.gyp:base',
-          ],
-          'include_dirs': [
-            '..',
+            'seccomp_bpf',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'sandbox_linux_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'sandbox',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'linux/tests/unit_tests.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'conditions': [
+        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+          'sources': [
+            'linux/seccomp-bpf/sandbox_bpf_unittest.cc'
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'seccomp_bpf',
+      'type': 'static_library',
+      'sources': [
+        'linux/seccomp-bpf/sandbox_bpf.cc',
+        'linux/seccomp-bpf/sandbox_bpf.h',
+        'linux/seccomp-bpf/verifier.cc',
+        'linux/seccomp-bpf/verifier.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
       ],
     },
     {
