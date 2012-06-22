@@ -2988,7 +2988,6 @@ weston_compositor_init(struct weston_compositor *ec,
 		       const char *config_file)
 {
 	struct wl_event_loop *loop;
-	const char *extensions;
 	struct xkb_rule_names xkb_names;
         const struct config_key keyboard_config_keys[] = {
 		{ "keymap_rules", CONFIG_KEY_STRING, &xkb_names.rules },
@@ -3020,7 +3019,40 @@ weston_compositor_init(struct weston_compositor *ec,
 				   ec, compositor_bind))
 		return -1;
 
+	wl_list_init(&ec->surface_list);
+	wl_list_init(&ec->layer_list);
+	wl_list_init(&ec->seat_list);
+	wl_list_init(&ec->output_list);
+	wl_list_init(&ec->key_binding_list);
+	wl_list_init(&ec->button_binding_list);
+	wl_list_init(&ec->axis_binding_list);
+	wl_list_init(&ec->fade.animation.link);
+
+	weston_compositor_xkb_init(ec, &xkb_names);
+
+	ec->ping_handler = NULL;
+
+	screenshooter_create(ec);
+	text_cursor_position_notifier_create(ec);
+	input_method_create(ec);
+
+	wl_data_device_manager_init(ec->wl_display);
+
 	wl_display_init_shm(display);
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
+	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
+
+	ec->input_loop = wl_event_loop_create();
+
+	return 0;
+}
+
+WL_EXPORT int
+weston_compositor_init_gl(struct weston_compositor *ec)
+{
+	const char *extensions;
 
 	log_egl_gl_info(ec->egl_display);
 
@@ -3066,27 +3098,11 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (ec->has_bind_display)
 		ec->bind_display(ec->egl_display, ec->wl_display);
 
-	wl_list_init(&ec->surface_list);
-	wl_list_init(&ec->layer_list);
-	wl_list_init(&ec->seat_list);
-	wl_list_init(&ec->output_list);
-	wl_list_init(&ec->key_binding_list);
-	wl_list_init(&ec->button_binding_list);
-	wl_list_init(&ec->axis_binding_list);
 	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
-	wl_list_init(&ec->fade.animation.link);
 
 	weston_layer_init(&ec->fade_layer, &ec->layer_list);
 	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
-
-	screenshooter_create(ec);
-	text_cursor_position_notifier_create(ec);
-	input_method_create(ec);
-
-	ec->ping_handler = NULL;
-
-	wl_data_device_manager_init(ec->wl_display);
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -3096,14 +3112,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (weston_shader_init(&ec->solid_shader,
 			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
-
-	weston_compositor_xkb_init(ec, &xkb_names);
-
-	loop = wl_display_get_event_loop(ec->wl_display);
-	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
-	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
-
-	ec->input_loop = wl_event_loop_create();
 
 	weston_compositor_schedule_repaint(ec);
 

@@ -759,22 +759,6 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 	wl_seat_set_user_data(input->seat, input);
 }
 
-/* We can't start adding input devices until weston_compositor_init, but
- * also can't call weston_compositor_init until we've handled some of the
- * base display code first.  So, we have a separate global handler for
- * seats. */
-static void
-display_handle_global_input(struct wl_display *display, uint32_t id,
-			    const char *interface, uint32_t version,
-			    void *data)
-{
-	struct wayland_compositor *c = data;
-
-	if (strcmp(interface, "wl_seat") == 0)
-		display_add_seat(c, id);
-}
-
-
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
@@ -791,6 +775,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell =
 			wl_display_bind(display, id, &wl_shell_interface);
+	} else if (strcmp(interface, "wl_seat") == 0) {
+		display_add_seat(c, id);
 	}
 }
 
@@ -833,10 +819,6 @@ wayland_input_create(struct wayland_compositor *c)
 
 	c->base.seat = seat;
 
-	wl_display_add_global_listener(c->parent.wl_display,
-				       display_handle_global_input,
-				       c);
-
 	return 0;
 }
 
@@ -863,6 +845,13 @@ wayland_compositor_create(struct wl_display *display,
 
 	memset(c, 0, sizeof *c);
 
+	if (weston_compositor_init(&c->base, display, argc, argv,
+				   config_file) < 0)
+		return NULL;
+
+	if (wayland_input_create(c) < 0)
+		return NULL;
+
 	c->parent.wl_display = wl_display_connect(display_name);
 
 	if (c->parent.wl_display == NULL) {
@@ -882,16 +871,11 @@ wayland_compositor_create(struct wl_display *display,
 
 	c->base.destroy = wayland_destroy;
 
-	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&c->base, display, argc, argv,
-				   config_file) < 0)
+	if (weston_compositor_init_gl(&c->base) < 0)
 		return NULL;
 
 	create_border(c);
 	if (wayland_compositor_create_output(c, width, height) < 0)
-		return NULL;
-
-	if (wayland_input_create(c) < 0)
 		return NULL;
 
 	loop = wl_display_get_event_loop(c->base.wl_display);

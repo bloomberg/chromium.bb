@@ -645,6 +645,8 @@ weston_compositor_get_time(void);
 int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
 		       int argc, char *argv[], const char *config_file);
+int
+weston_compositor_init_gl(struct weston_compositor *ec);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void

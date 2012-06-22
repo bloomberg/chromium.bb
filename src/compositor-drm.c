@@ -1774,8 +1774,12 @@ drm_compositor_create(struct wl_display *display,
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
 		return NULL;
-
 	memset(ec, 0, sizeof *ec);
+
+	if (weston_compositor_init(&ec->base, display, argc, argv,
+				   config_file) < 0)
+		return NULL;
+
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
 		weston_log("failed to initialize udev context\n");
@@ -1826,9 +1830,7 @@ drm_compositor_create(struct wl_display *display,
 
 	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
-	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&ec->base, display, argc, argv,
-				   config_file) < 0)
+	if (weston_compositor_init_gl(&ec->base) < 0)
 		return NULL;
 
 	for (key = KEY_F1; key < KEY_F9; key++)

@@ -417,6 +417,10 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 	if (compositor == NULL)
 		return NULL;
 
+	if (weston_compositor_init(&compositor->base, display, argc, argv,
+				   config_file) < 0)
+		return NULL;
+
 	compositor->base.destroy = android_compositor_destroy;
 
 	compositor->base.focus = 1;
@@ -430,8 +434,7 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 	if (android_init_egl(compositor, output) < 0)
 		return NULL;
 
-	if (weston_compositor_init(&compositor->base, display, argc, argv,
-				   config_file) < 0)
+	if (weston_compositor_init_gl(&compositor->base) < 0)
 		return NULL;
 
 	android_compositor_add_output(compositor, output);

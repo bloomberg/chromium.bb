@@ -1060,6 +1060,10 @@ x11_compositor_create(struct wl_display *display,
 
 	memset(c, 0, sizeof *c);
 
+	if (weston_compositor_init(&c->base, display, argc, argv,
+				   config_file) < 0)
+		return NULL;
+
 	c->dpy = XOpenDisplay(NULL);
 	if (c->dpy == NULL)
 		return NULL;
@@ -1082,9 +1086,7 @@ x11_compositor_create(struct wl_display *display,
 
 	c->base.destroy = x11_destroy;
 
-	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&c->base, display, argc, argv,
-				   config_file) < 0)
+	if (weston_compositor_init_gl(&c->base) < 0)
 		return NULL;
 
 	if (x11_input_create(c, no_input) < 0)

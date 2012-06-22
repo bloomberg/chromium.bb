@@ -612,6 +612,10 @@ wfd_compositor_create(struct wl_display *display,
 
 	memset(ec, 0, sizeof *ec);
 
+	/* XXX: This is totally broken and doesn't even compile. */
+	if (weston_compositor_init(&ec->base, display) < 0)
+		return NULL;
+
 	gettimeofday(&tv, NULL);
 	ec->start_time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
@@ -645,8 +649,7 @@ wfd_compositor_create(struct wl_display *display,
 	glGenFramebuffers(1, &ec->base.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);
 
-	/* Can't init base class until we have a current egl context */
-	if (weston_compositor_init(&ec->base, display) < 0)
+	if (weston_compositor_init_gl(&ec->base) < 0)
 		return NULL;
 
 	if (create_outputs(ec, connector) < 0) {
