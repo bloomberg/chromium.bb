@@ -11,9 +11,9 @@ if [ "${OS}" = "Linux" ]; then
 elif [ "${OS}" = "Darwin" ]; then
   exec ninja-mac "$@"
 elif [[ ${OS} == CYGWIN* ]]; then
-  exec cmd.exe /c `cygpath -t windows $0`.bat "$@"
+  exec cmd.exe /c `cygpath -t windows $0`.exe "$@"
 elif [[ ${OS} == MINGW32* ]]; then
-  cmd.exe //c $0.bat "$@"
+  cmd.exe //c $0.exe "$@"
 else
   echo "Unsupported OS ${OS}"
   exit 1
