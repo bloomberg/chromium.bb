@@ -267,10 +267,24 @@ function bb_extract_build {
     return 1
   fi
 
+  # When extract_build.py downloads an unversioned build it
+  # issues a warning by exiting with large numbered return code
+  # When it fails to download it build, it exits with return
+  # code 1.  We disable halt on error mode and return normally
+  # unless the python tool returns 1.
+  (
+  set +e
   python ../../../../scripts/slave/extract_build.py \
     --build-dir "$SRC_ROOT" \
     --build-output-dir "out" \
     --target Release \
     --factory-properties "$FACTORY_PROPERTIES" \
     --build-properties "$BUILD_PROPERTIES"
+  extract_exitcode=$?
+  if (( $extract_exitcode > 1 )); then
+    echo "@@@STEP_WARNINGS@@@"
+    return
+  fi
+  return $extract_exitcode
+  )
 }
