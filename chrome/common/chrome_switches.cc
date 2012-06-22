@@ -686,10 +686,6 @@ const char kFeedbackServer[]                = "feedback-server";
 // handled gracefully.
 const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 
-// If true opening a url from the omnibox attepts to focus an existing
-// tab.
-const char kFocusExistingTabOnOpen[]        = "focus-existing-tab-on-open";
-
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";

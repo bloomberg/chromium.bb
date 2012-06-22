@@ -127,7 +127,6 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
-#include "chrome/browser/ui/tabs/tab_finder.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
@@ -429,10 +428,6 @@ Browser::Browser(Type type, Profile* profile)
     service->AddObserver(this);
 
   CreateInstantIfNecessary();
-
-  // Make sure TabFinder has been created. This does nothing if TabFinder is
-  // not enabled.
-  TabFinder::GetInstance();
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
@@ -1246,16 +1241,6 @@ void Browser::OpenCurrentURL() {
     return;
 
   GURL url(location_bar->GetInputString());
-
-  if (open_disposition == CURRENT_TAB && TabFinder::IsEnabled()) {
-    Browser* existing_browser = NULL;
-    WebContents* existing_tab = TabFinder::GetInstance()->FindTab(
-        this, url, &existing_browser);
-    if (existing_tab) {
-      existing_browser->ActivateContents(existing_tab);
-      return;
-    }
-  }
 
   browser::NavigateParams params(this, url, location_bar->GetPageTransition());
   params.disposition = open_disposition;

@@ -358,13 +358,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableInteractiveFormValidation)
   },
   {
-    "focus-existing-tab-on-open",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_NAME,
-    IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kFocusExistingTabOnOpen)
-  },
-  {
     "tab-groups-context-menu",
     IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME,
     IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION,
