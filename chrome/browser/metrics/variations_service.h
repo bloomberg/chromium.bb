@@ -16,6 +16,7 @@
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/common/chrome_version_info.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
@@ -110,6 +111,9 @@ class VariationsService : public net::URLFetcherDelegate {
   // Contains the current seed request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_seed_request_;
+
+  // The URL to use for querying the variations server.
+  GURL variations_server_url_;
 };
 
 #endif  // CHROME_BROWSER_METRICS_VARIATIONS_SERVICE_H_

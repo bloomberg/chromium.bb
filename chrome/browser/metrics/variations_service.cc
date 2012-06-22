@@ -8,12 +8,14 @@
 
 #include "base/base64.h"
 #include "base/build_time.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -26,7 +28,7 @@
 namespace {
 
 // Default server of Variations seed info.
-const char kDefaultVariationsServer[] =
+const char kDefaultVariationsServerURL[] =
     "https://clients4.google.com/chrome-variations/seed";
 const int kMaxRetrySeedFetch = 5;
 
@@ -72,9 +74,22 @@ base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 
+// Determine and return the variations server URL.
+GURL GetVariationsServerURL() {
+  std::string server_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kVariationsServerURL));
+  if (server_url.empty())
+    server_url = kDefaultVariationsServerURL;
+  GURL url_as_gurl = GURL(server_url);
+  DCHECK(url_as_gurl.is_valid());
+  return url_as_gurl;
+}
+
 }  // namespace
 
-VariationsService::VariationsService() {}
+VariationsService::VariationsService()
+    : variations_server_url_(GetVariationsServerURL()) {}
+
 VariationsService::~VariationsService() {}
 
 bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
@@ -104,11 +119,13 @@ bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
 }
 
 void VariationsService::StartFetchingVariationsSeed() {
-  if (net::NetworkChangeNotifier::IsOffline())
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    DVLOG(1) << "Network was offline.";
     return;
+  }
 
   pending_seed_request_.reset(net::URLFetcher::Create(
-      GURL(kDefaultVariationsServer), net::URLFetcher::GET, this));
+      variations_server_url_, net::URLFetcher::GET, this));
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(
@@ -122,9 +139,15 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // When we're done handling the request, the fetcher will be deleted.
   scoped_ptr<const net::URLFetcher> request(
       pending_seed_request_.release());
-  if (request->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      request->GetResponseCode() != 200)
+  if (request->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
+    DVLOG(1) << "Variations server request failed.";
     return;
+  }
+  if (request->GetResponseCode() != 200) {
+    DVLOG(1) << "Variations server request returned non-200 response code: "
+            << request->GetResponseCode();
+    return;
+  }
 
   std::string seed_data;
   bool success = request->GetResponseAsString(&seed_data);

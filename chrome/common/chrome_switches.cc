@@ -1251,6 +1251,10 @@ const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 // all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
 
+// Specifies a custom URL for the server which reports variation data to the
+// client. See variations_service.cc.
+const char kVariationsServerURL[]            = "variations-server-url";
+
 // Prints version information and quits.
 const char kVersion[]                       = "version";
 

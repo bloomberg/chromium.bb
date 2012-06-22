@@ -335,6 +335,7 @@ extern const char kIgnoreCertificateErrors[];
 extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
+extern const char kVariationsServerURL[];
 extern const char kVersion[];
 extern const char kVisitURLs[];
 extern const char kWhitelistedExtensionID[];
