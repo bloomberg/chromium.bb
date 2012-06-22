@@ -1756,13 +1756,16 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 				     value);
 }
 
-static int
-modifier_state_changed(struct weston_seat *seat)
+WL_EXPORT void
+notify_modifiers(struct wl_seat *wl_seat, uint32_t serial)
 {
+	struct weston_seat *seat = (struct weston_seat *) wl_seat;
+	struct wl_keyboard *keyboard = &seat->keyboard;
+	struct wl_keyboard_grab *grab = keyboard->grab;
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
 	uint32_t mods_lookup;
 	enum weston_led leds = 0;
-	int ret = 0;
+	int changed = 0;
 
 	/* Serialize and update our internal state, checking to see if it's
 	 * different to the previous state. */
@@ -1779,7 +1782,7 @@ modifier_state_changed(struct weston_seat *seat)
 	    mods_latched != seat->seat.keyboard->modifiers.mods_latched ||
 	    mods_locked != seat->seat.keyboard->modifiers.mods_locked ||
 	    group != seat->seat.keyboard->modifiers.group)
-		ret = 1;
+		changed = 1;
 
 	seat->seat.keyboard->modifiers.mods_depressed = mods_depressed;
 	seat->seat.keyboard->modifiers.mods_latched = mods_latched;
@@ -1810,11 +1813,18 @@ modifier_state_changed(struct weston_seat *seat)
 		seat->led_update(seat, leds);
 	seat->xkb_state.leds = leds;
 
-	return ret;
+	if (changed) {
+		grab->interface->modifiers(grab,
+					   serial,
+					   keyboard->modifiers.mods_depressed,
+					   keyboard->modifiers.mods_latched,
+					   keyboard->modifiers.mods_locked,
+					   keyboard->modifiers.group);
+	}
 }
 
-static int
-update_modifier_state(struct weston_seat *seat, uint32_t key,
+static void
+update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 		      enum wl_keyboard_key_state state)
 {
 	enum xkb_key_direction direction;
@@ -1828,7 +1838,7 @@ update_modifier_state(struct weston_seat *seat, uint32_t key,
 	 * broken keycode system, which starts at 8. */
 	xkb_state_update_key(seat->xkb_state.state, key + 8, direction);
 
-	return modifier_state_changed(seat);
+	notify_modifiers(&seat->seat, serial);
 }
 
 WL_EXPORT void
@@ -1843,7 +1853,6 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	struct wl_keyboard_grab *grab = seat->keyboard->grab;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
-	int mods = 0;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		if (compositor->ping_handler && focus)
@@ -1856,8 +1865,6 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 		weston_compositor_idle_release(compositor);
 	}
 
-	if (update_state == STATE_UPDATE_AUTOMATIC)
-		mods = update_modifier_state(ws, key, state);
 	end = seat->keyboard->keys.data + seat->keyboard->keys.size;
 	for (k = seat->keyboard->keys.data; k < end; k++) {
 		if (*k == key) {
@@ -1880,13 +1887,13 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	}
 
 	grab->interface->key(grab, time, key, state);
-	if (mods)
-		grab->interface->modifiers(grab,
-					   wl_display_get_serial(compositor->wl_display),
-					   seat->keyboard->modifiers.mods_depressed,
-					   seat->keyboard->modifiers.mods_latched,
-					   seat->keyboard->modifiers.mods_locked,
-					   seat->keyboard->modifiers.group);
+
+	if (update_state == STATE_UPDATE_AUTOMATIC) {
+		update_modifier_state(ws,
+				      wl_display_get_serial(compositor->wl_display),
+				      key,
+				      state);
+	}
 }
 
 WL_EXPORT void
@@ -1935,7 +1942,9 @@ notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
 	wl_array_for_each(k, &seat->keyboard->keys) {
 		weston_compositor_idle_inhibit(compositor);
 		if (update_state == STATE_UPDATE_AUTOMATIC)
-			update_modifier_state(ws, *k,
+			update_modifier_state(ws,
+					      wl_display_next_serial(compositor->wl_display),
+					      *k,
 					      WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
 
