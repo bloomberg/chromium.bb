@@ -5,6 +5,7 @@
 #include "ash/monitor/monitor_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
@@ -24,6 +25,7 @@ views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
   params.bounds = bounds;
   views::Widget* widget = new views::Widget;
   widget->Init(params);
+  widget->Show();
   return widget;
 }
 
@@ -95,14 +97,12 @@ TEST_F(ExtendedDesktopTest, Activation) {
 
   views::Widget* widget_on_2nd = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   EXPECT_EQ(root_windows[1], widget_on_2nd->GetNativeView()->GetRootWindow());
-  widget_on_2nd->Show();
 
   // Move the active root window back to the primary.
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
 
   views::Widget* widget_on_1st = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   EXPECT_EQ(root_windows[0], widget_on_1st->GetNativeView()->GetRootWindow());
-  widget_on_1st->Show();
 
   aura::test::EventGenerator generator_1st(root_windows[0]);
   aura::test::EventGenerator generator_2nd(root_windows[1]);
@@ -129,7 +129,6 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
 
   views::Widget* widget_on_1st = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
-  widget_on_1st->Show();
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_1st->GetNativeView()));
   EXPECT_EQ(root_windows[0], Shell::GetActiveRootWindow());
 
@@ -174,6 +173,60 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   Shell::GetInstance()->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, root_windows[0]->last_cursor().native_type());
   EXPECT_EQ(ui::kCursorCopy, root_windows[1]->last_cursor().native_type());
+}
+
+TEST_F(ExtendedDesktopTest, CycleWindows) {
+  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  WindowCycleController* controller =
+      Shell::GetInstance()->window_cycle_controller();
+
+  // Switch active windows between root windows.
+  Shell::GetInstance()->set_active_root_window(root_windows[0]);
+  views::Widget* d1_w1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
+  EXPECT_EQ(root_windows[0], d1_w1->GetNativeView()->GetRootWindow());
+
+  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+  views::Widget* d2_w1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
+  EXPECT_EQ(root_windows[1], d2_w1->GetNativeView()->GetRootWindow());
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, false);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, false);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
+
+  // Cycle through all windows across root windows.
+  Shell::GetInstance()->set_active_root_window(root_windows[0]);
+  views::Widget* d1_w2 = CreateTestWidget(gfx::Rect(100, 100, 100, 100));
+  EXPECT_EQ(root_windows[0], d1_w2->GetNativeView()->GetRootWindow());
+
+  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+  views::Widget* d2_w2 = CreateTestWidget(gfx::Rect(100, 100, 100, 100));
+  EXPECT_EQ(root_windows[1], d2_w2->GetNativeView()->GetRootWindow());
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w2->GetNativeView()));
+
+  // Backwards
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w2->GetNativeView()));
 }
 
 }  // namespace ash

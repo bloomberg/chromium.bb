@@ -127,12 +127,27 @@ void WindowCycleController::AltKeyReleased() {
 
 // static
 std::vector<aura::Window*> WindowCycleController::BuildWindowList() {
-  // TODO(oshima): Figure out how this should work with multiple root
-  // windows. Just use active root window for now.
+  WindowCycleList::WindowList windows;
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    if (*iter == Shell::GetActiveRootWindow())
+      continue;
+    aura::Window* default_container = Shell::GetContainer(
+        *iter, internal::kShellWindowId_DefaultContainer);
+    WindowCycleList::WindowList children = default_container->children();
+    windows.insert(windows.end(), children.begin(), children.end());
+  }
+  // Add windows in the active root windows last so that the topmost window
+  // in the active root window becomes the front of the list.
   aura::Window* default_container = Shell::GetContainer(
       Shell::GetActiveRootWindow(),
       internal::kShellWindowId_DefaultContainer);
-  WindowCycleList::WindowList windows = default_container->children();
+
+  WindowCycleList::WindowList children = default_container->children();
+  windows.insert(windows.end(), children.begin(), children.end());
+
   // Removes unfocusable windows.
   WindowCycleList::WindowList::iterator last =
       std::remove_if(

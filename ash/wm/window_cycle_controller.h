@@ -54,9 +54,10 @@ class ASH_EXPORT WindowCycleController {
   // Returns the WindowCycleList. Really only useful for testing.
   const WindowCycleList* windows() const { return windows_.get(); }
 
-  // Returns the set of windows to cycle through. This method creates the vector
-  // based on the current set of windows. As a result it is not necessarily the
-  // same as the set of windows being iterated over.
+  // Returns the set of windows to cycle through. This method creates
+  // the vector based on the current set of windows across all valid root
+  // windows. As a result it is not necessarily the same as the set of
+  // windows being iterated over.
   static std::vector<aura::Window*> BuildWindowList();
 
  private:
