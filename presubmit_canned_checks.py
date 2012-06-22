@@ -653,11 +653,24 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   def run_lint(files):
     # We can't import pylint directly due to licensing issues, so we run
     # it in another process. Windows needs help running python files so we
-    # explicitly specify the interpreter to use.
+    # explicitly specify the interpreter to use. It also has limitations on
+    # the size of the command-line, so we pass arguments via a pipe.
     command = [input_api.python_executable,
-               input_api.os_path.join(_HERE, 'third_party', 'pylint.py')]
+               input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
+               '--args-on-stdin']
     try:
-      return input_api.subprocess.call(command + files + extra_args, env=env)
+      child = input_api.subprocess.Popen(command, env=env,
+          stdin=input_api.subprocess.PIPE)
+
+      # Dump the arguments to the child process via a pipe.
+      for filename in files:
+        child.stdin.write(filename + '\n')
+      for arg in extra_args:
+        child.stdin.write(arg + '\n')
+      child.stdin.close()
+
+      child.communicate()
+      return child.returncode
     except OSError:
       return 'Pylint failed!'
 

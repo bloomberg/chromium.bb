@@ -13,7 +13,19 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 """ Copyright (c) 2002-2008 LOGILAB S.A. (Paris, FRANCE).
 http://www.logilab.fr/ -- mailto:contact@logilab.fr
+
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
 """
 import sys
 from pylint import lint
-lint.Run(sys.argv[1:])
+
+args = sys.argv[1:]
+
+# Add support for a custom mode where arguments are fed line by line on
+# stdin. This allows us to get around command line length limitations.
+ARGS_ON_STDIN = '--args-on-stdin'
+if ARGS_ON_STDIN in args:
+  args = [arg for arg in args if arg != ARGS_ON_STDIN]
+  args.extend(arg.strip() for arg in sys.stdin)
+
+lint.Run(args)

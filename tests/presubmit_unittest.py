@@ -10,6 +10,7 @@
 import logging
 import os
 import StringIO
+import subprocess
 import sys
 import time
 
@@ -2143,9 +2144,18 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.os_walk('/foo').AndReturn([('/foo', [], ['file1.py'])])
     pylint = os.path.join(_ROOT, 'third_party', 'pylint.py')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
-    input_api.subprocess.call(
-        ['pyyyyython', pylint, 'file1.py', '--rcfile=%s' % pylintrc],
-        env=mox.IgnoreArg())
+
+    # Create a mock Popen object, and set up its expectations.
+    child = self.mox.CreateMock(subprocess.Popen)
+    child.stdin = self.mox.CreateMock(file)
+    child.stdin.write('file1.py\n')
+    child.stdin.write('--rcfile=%s\n' % pylintrc)
+    child.stdin.close()
+    child.communicate()
+    child.returncode = 0
+
+    input_api.subprocess.Popen(['pyyyyython', pylint, '--args-on-stdin'],
+        env=mox.IgnoreArg(), stdin=subprocess.PIPE).AndReturn(child)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPylint(
