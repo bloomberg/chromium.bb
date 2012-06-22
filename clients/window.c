@@ -194,6 +194,7 @@ struct input {
 	struct wl_surface *pointer_surface;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
+	uint32_t cursor_serial;
 	float sx, sy;
 	struct wl_list link;
 
@@ -2439,10 +2440,12 @@ static const struct wl_callback_listener pointer_surface_listener = {
 void
 input_set_pointer_image(struct input *input, int pointer)
 {
-	if (pointer == input->current_cursor)
+	if (pointer == input->current_cursor &&
+	    input->pointer_enter_serial == input->cursor_serial)
 		return;
 
 	input->current_cursor = pointer;
+	input->cursor_serial = input->pointer_enter_serial;
 	if (!input->cursor_frame_cb)
 		pointer_surface_frame_callback(input, NULL, 0);
 }
