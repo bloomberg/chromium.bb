@@ -3837,6 +3837,8 @@
         'browser/ui/webui/extensions/extension_activity_ui.h',
         'browser/ui/webui/extensions/extension_icon_source.cc',
         'browser/ui/webui/extensions/extension_icon_source.h',
+        'browser/ui/webui/extensions/extension_info_ui.cc',
+        'browser/ui/webui/extensions/extension_info_ui.h',
         'browser/ui/webui/extensions/extension_settings_handler.cc',
         'browser/ui/webui/extensions/extension_settings_handler.h',
         'browser/ui/webui/extensions/extensions_ui.cc',

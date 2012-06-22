@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -1889,6 +1890,14 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       context_menu_.reset(
           new MenuGtk(NULL, context_menu_model_.get()));
       context_menu_->PopupForWidget(sender, event->button, event->time);
+      break;
+
+    case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
+      ExtensionPopupGtk::Show(
+          ExtensionInfoUI::GetURL(extension->id()),
+          owner_->browser_,
+          event_box_.get(),
+          ExtensionPopupGtk::SHOW);
       break;
   }
 

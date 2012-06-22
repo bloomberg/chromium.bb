@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_activity_ui.h"
+#include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
@@ -50,6 +51,7 @@
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -107,11 +109,17 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
   return new T(web_ui);
 }
 
-// Special case for extensions.
+// Special cases for extensions.
 template<>
 WebUIController* NewWebUI<ExtensionWebUI>(WebUI* web_ui,
                                           const GURL& url) {
   return new ExtensionWebUI(web_ui, url);
+}
+
+template<>
+WebUIController* NewWebUI<ExtensionInfoUI>(WebUI* web_ui,
+                                           const GURL& url) {
+  return new ExtensionInfoUI(web_ui, url);
 }
 
 // Special case for older about: handlers.
@@ -349,6 +357,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityUI)) {
     return &NewWebUI<ExtensionActivityUI>;
+  }
+  if (url.host() == chrome::kChromeUIExtensionInfoHost &&
+      extensions::switch_utils::AreScriptBadgesEnabled()) {
+    return &NewWebUI<ExtensionInfoUI>;
   }
 
   DLOG(WARNING) << "Unknown WebUI:" << url;

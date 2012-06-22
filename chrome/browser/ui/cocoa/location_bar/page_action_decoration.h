@@ -62,6 +62,9 @@ class PageActionDecoration : public ImageDecoration,
   virtual NSMenu* GetMenu() OVERRIDE;
 
  private:
+  // Show the popup in the frame, with the given URL.
+  void ShowPopup(const NSRect& frame, const GURL& popup_url);
+
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

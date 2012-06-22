@@ -79,6 +79,9 @@ class PageActionImageView : public views::ImageView,
   void ExecuteAction(int button);
 
  private:
+  // Shows the popup, with the given URL.
+  void ShowPopupWithURL(const GURL& popup_url);
+
   // Hides the active popup, if there is one.
   void HidePopup();
 

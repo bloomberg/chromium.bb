@@ -4823,6 +4823,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Blocked API Call
       </message>
 
+      <!-- chrome://extension-info bubble -->
+      <message name="IDS_EXTENSION_SCRIPT_POPUP_IS_RUNNING" desc="The label in the extension info bubble that indicates the extension is running scripts on this page">
+        <ph name="EXTENSION_NAME">$1<ex>AdBlock</ex></ph> is running on this page.
+      </message>
+      <message name="IDS_EXTENSION_SCRIPT_POPUP_LAST_UPDATED" desc="The label in the extension info bubble indicating the last time an extension was updated.">
+        Last updated:
+      </message>
+
       <!-- Global error messages for extensions -->
       <message name="IDS_EXTENSION_WARNINGS_WRENCH_MENU_ITEM" desc="The wrench menu item indicating that extensions caused problems">
         Extension error

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -105,27 +106,9 @@ void PageActionImageView::ExecuteAction(int button) {
     case LocationBarController::ACTION_NONE:
       break;
 
-    case LocationBarController::ACTION_SHOW_POPUP: {
-      bool popup_showing = popup_ != NULL;
-
-      // Always hide the current popup. Only one popup at a time.
-      HidePopup();
-
-      // If we were already showing, then treat this click as a dismiss.
-      if (popup_showing)
-        return;
-
-      views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
-          views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
-
-      popup_ = ExtensionPopup::ShowPopup(
-          page_action_->GetPopupUrl(current_tab_id_),
-          browser_,
-          this,
-          arrow_location);
-      popup_->GetWidget()->AddObserver(this);
+    case LocationBarController::ACTION_SHOW_POPUP:
+      ShowPopupWithURL(page_action_->GetPopupUrl(current_tab_id_));
       break;
-    }
 
     case LocationBarController::ACTION_SHOW_CONTEXT_MENU:
       // We are never passing OnClicked a right-click button, so assume that
@@ -133,6 +116,10 @@ void PageActionImageView::ExecuteAction(int button) {
       // TODO(kalman): if this changes, update this class to pass the real
       // mouse button through to the LocationBarController.
       NOTREACHED();
+      break;
+
+    case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
+      ShowPopupWithURL(ExtensionInfoUI::GetURL(page_action_->extension_id()));
       break;
   }
 }
@@ -294,6 +281,23 @@ void PageActionImageView::Observe(int type,
       content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
   if (page_action_ == unloaded_extension ->page_action())
     owner_->UpdatePageActions();
+}
+
+void PageActionImageView::ShowPopupWithURL(const GURL& popup_url) {
+  bool popup_showing = popup_ != NULL;
+
+  // Always hide the current popup. Only one popup at a time.
+  HidePopup();
+
+  // If we were already showing, then treat this click as a dismiss.
+  if (popup_showing)
+    return;
+
+  views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
+      views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
+
+  popup_ = ExtensionPopup::ShowPopup(popup_url, browser_, this, arrow_location);
+  popup_->GetWidget()->AddObserver(this);
 }
 
 void PageActionImageView::HidePopup() {

@@ -24,6 +24,7 @@ class LocationBarController {
     ACTION_NONE,
     ACTION_SHOW_POPUP,
     ACTION_SHOW_CONTEXT_MENU,
+    ACTION_SHOW_SCRIPT_POPUP,
   };
 
   virtual ~LocationBarController() {}

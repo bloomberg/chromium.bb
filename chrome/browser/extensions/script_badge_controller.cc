@@ -48,6 +48,7 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
 
   switch (mouse_button) {
     case 1:  // left
+      return ACTION_SHOW_SCRIPT_POPUP;
     case 2:  // middle
       // TODO(kalman): decide what to do here.
       return ACTION_NONE;

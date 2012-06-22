@@ -13,6 +13,7 @@
 #include "chrome/common/net/url_util.h"
 
 namespace extension_urls {
+
 std::string GetWebstoreLaunchURL() {
   std::string gallery_prefix = kGalleryBrowsePrefix;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
@@ -78,9 +79,11 @@ bool IsBlacklistUpdateUrl(const GURL& url) {
 }
 
 const char kGalleryBrowsePrefix[] = "https://chrome.google.com/webstore";
-}
+
+}  // namespace extension_urls
 
 namespace extension_filenames {
+
 const char kTempExtensionName[] = "CRX_INSTALL";
 
 // The file to write our decoded images to, relative to the extension_path.
@@ -104,7 +107,8 @@ namespace extension_info_keys {
   const char kOfflineEnabledKey[] = "offlineEnabled";
   const char kOptionsUrlKey[] = "optionsUrl";
   const char kVersionKey[] = "version";
-}
+
+}  // namespace extension_filenames
 
 namespace extension_misc {
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
@@ -135,4 +139,5 @@ const char kAppStateReadyToRun[] = "ready_to_run";
 const char kAppNotificationsIncognitoError[] =
     "This API is not accessible by 'split' mode "
     "extensions in incognito windows.";
-}
+
+}  // namespace extension_misc

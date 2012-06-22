@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -106,20 +107,9 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
     case LocationBarController::ACTION_NONE:
       break;
 
-    case LocationBarController::ACTION_SHOW_POPUP: {
-      // Anchor popup at the bottom center of the page action icon.
-      AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-      NSPoint anchor = GetBubblePointInFrame(frame);
-      anchor = [field convertPoint:anchor toView:nil];
-
-      const GURL popup_url(page_action_->GetPopupUrl(current_tab_id_));
-      [ExtensionPopupController showURL:popup_url
-                              inBrowser:browser::GetLastActiveBrowser()
-                             anchoredAt:anchor
-                          arrowLocation:info_bubble::kTopRight
-                                devMode:NO];
+    case LocationBarController::ACTION_SHOW_POPUP:
+      ShowPopup(frame, page_action_->GetPopupUrl(current_tab_id_));
       break;
-    }
 
     case LocationBarController::ACTION_SHOW_CONTEXT_MENU:
       // We are never passing OnClicked a right-click button, so assume that
@@ -127,6 +117,10 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
       // TODO(kalman): if this changes, update this class to pass the real
       // mouse button through to the LocationBarController.
       NOTREACHED();
+      break;
+
+    case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
+      ShowPopup(frame, ExtensionInfoUI::GetURL(page_action_->extension_id()));
       break;
   }
 
@@ -261,6 +255,20 @@ NSMenu* PageActionDecoration::GetMenu() {
         extensionAction:page_action_]);
 
   return menu_.get();
+}
+
+void PageActionDecoration::ShowPopup(const NSRect& frame,
+                                     const GURL& popup_url) {
+  // Anchor popup at the bottom center of the page action icon.
+  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
+  NSPoint anchor = GetBubblePointInFrame(frame);
+  anchor = [field convertPoint:anchor toView:nil];
+
+  [ExtensionPopupController showURL:popup_url
+                          inBrowser:browser::GetLastActiveBrowser()
+                         anchoredAt:anchor
+                      arrowLocation:info_bubble::kTopRight
+                            devMode:NO];
 }
 
 void PageActionDecoration::Observe(

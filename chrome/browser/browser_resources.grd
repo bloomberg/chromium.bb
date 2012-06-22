@@ -58,6 +58,9 @@
       <include name="IDR_EXTENSION_LIST_JS" file="resources\extensions\extension_list.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSION_ACTIVITY_HTML" file="resources\extensions\extension_activity.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSION_ACTIVITY_JS" file="resources\extensions\extension_activity.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_EXTENSION_INFO_CSS" file="resources\extensions\extension_info.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_EXTENSION_INFO_HTML" file="resources\extensions\extension_info.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_EXTENSION_INFO_JS" file="resources\extensions\extension_info.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_JS" file="resources\extensions\extensions.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />

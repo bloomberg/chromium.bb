@@ -220,8 +220,12 @@ ExtensionHost* ExtensionProcessManager::CreateViewHost(
   EnsureBrowserWhenRequired(browser, view_type);
   ExtensionService* service = GetProfile()->GetExtensionService();
   if (service) {
+    std::string extension_id = url.host();
+    if (url.SchemeIs(chrome::kChromeUIScheme) &&
+        url.host() == chrome::kChromeUIExtensionInfoHost)
+      extension_id = url.path().substr(1);
     const Extension* extension =
-        service->extensions()->GetByID(url.host());
+        service->extensions()->GetByID(extension_id);
     if (extension)
       return CreateViewHost(extension, url, browser, view_type);
   }
