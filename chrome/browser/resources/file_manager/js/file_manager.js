@@ -4066,7 +4066,8 @@ FileManager.prototype = {
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
   FileManager.prototype.selectFilesAndClose_ = function(selection) {
-    if (!this.isOnGData()) {
+    if (!this.isOnGData() ||
+        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
       return;
     }
