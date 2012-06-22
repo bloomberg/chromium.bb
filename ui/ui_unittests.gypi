@@ -100,6 +100,7 @@
         'gfx/image/image_unittest_util.h',
         'gfx/insets_unittest.cc',
         'gfx/rect_unittest.cc',
+        'gfx/render_text_unittest.cc',
         'gfx/screen_unittest.cc',
         'gfx/shadow_value_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
@@ -194,8 +195,8 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['toolkit_views==1 and OS!="mac"', {
-          'sources': [
+        ['toolkit_views==0 and use_canvas_skia==0', {
+          'sources!': [
             'gfx/render_text_unittest.cc',
           ],
         }],

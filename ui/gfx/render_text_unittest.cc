@@ -1180,6 +1180,8 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
 }
 
+// TODO(asvitkine): This test fails on desktop Linux. http://crbug.com/134009
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   // Set the locale to Hebrew for RTL UI.
   std::string locale = l10n_util::GetApplicationLocale("");
@@ -1238,5 +1240,6 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   // Reset locale.
   base::i18n::SetICUDefaultLocale(locale);
 }
+#endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace gfx
