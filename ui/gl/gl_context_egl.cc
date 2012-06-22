@@ -75,7 +75,16 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
   if (IsCurrent(surface))
       return true;
 
-  TRACE_EVENT0("gpu", "GLContextEGL::MakeCurrent");
+  TRACE_EVENT2("gpu", "GLContextEGL::MakeCurrent",
+               "context", context_,
+               "surface", surface);
+
+  // Mali work-around: glFlush() does not synchronize between contexts
+  // chrome-os-partner:10068
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  if (eglGetCurrentContext() != NULL)
+    glFinish();
+#endif // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
   if (!eglMakeCurrent(display_,
                       surface->GetHandle(),
