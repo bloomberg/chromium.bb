@@ -10,6 +10,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace protector {
 
 namespace {
@@ -25,6 +29,10 @@ class PrefsBackupInvalidChangeTest : public testing::Test {
 
 // Test that correct default values are applied by Init.
 TEST_F(PrefsBackupInvalidChangeTest, Defaults) {
+#if defined(OS_MACOSX)
+  if (base::mac::IsOSLionOrLater())
+    FAIL() << "Broken after r142958; http://crbug.com/134186";
+#endif
   SessionStartupPref startup_pref(SessionStartupPref::URLS);
   startup_pref.urls.push_back(GURL(kStartupUrl));
   SessionStartupPref::SetStartupPref(&profile_, startup_pref);
