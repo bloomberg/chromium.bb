@@ -7,6 +7,8 @@
 *.so
 *.swp
 *~
+ctags
+cscope.out
 .libs
 /aclocal.m4
 /autom4te.cache
