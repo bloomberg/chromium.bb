@@ -290,6 +290,9 @@ void WebPluginImpl::destroy() {
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
+  if (!delegate_)
+    return NULL;
+
   return delegate_->GetPluginScriptableObject();
 }
 
