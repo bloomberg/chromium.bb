@@ -1,0 +1,41 @@
+<!doctype html>
+
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file. -->
+
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <link rel="stylesheet" type="text/css" href="chart.css"/>
+  </head>
+  <body>
+    <div id="chooseBlock">
+      <div id="chooseMetrics">
+        <h2>Choose Metrics</h2>
+      </div>
+      <div id="chooseEvents">
+        <h2>Choose Events</h2>
+      </div>
+      <div id="chooseTimeRange">
+        <h2>Choose Time Range</h2>
+      </div>
+    </div>
+    <div id="charts"></div>
+    <div id="templates" class="hidden">
+      <div id="checkboxTemplate" class="checkbox">
+        <label>
+          <input type="checkbox"></input>
+          <span>Change this label</span>
+        </label>
+      </div>
+      <div id="radioTemplate" class="radio">
+        <label>
+          <input type="radio" name="TimeRange"/>
+          <span>Change this label</span>
+        </label>
+      </div>
+    </div>
+    <script type="text/javascript" src="chart.js"></script>
+  </body>
+</html>
