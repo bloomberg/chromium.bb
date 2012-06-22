@@ -798,24 +798,12 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
-#ifndef NP_NO_QUICKDRAW
-    case NPNVsupportsQuickDrawBool: {
-      // We do not admit to supporting the QuickDraw drawing model. The logic
-      // here is that our QuickDraw plugin support is so rudimentary that we
-      // only want to use it as a fallback to keep plugins from crashing: if a
-      // plugin knows enough to ask, we want them to use CoreGraphics.
-      NPBool* supports_qd = reinterpret_cast<NPBool*>(value);
-      *supports_qd = false;
-      rv = NPERR_NO_ERROR;
-      break;
-    }
-#endif
     case NPNVsupportsCoreGraphicsBool:
 #ifndef NP_NO_CARBON
     case NPNVsupportsCarbonBool:
 #endif
     case NPNVsupportsCocoaBool: {
-      // we do support these drawing and event models.
+      // These drawing and event models are always supported.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
       *supports_model = true;
       rv = NPERR_NO_ERROR;
@@ -841,9 +829,12 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
+#ifndef NP_NO_QUICKDRAW
+    case NPNVsupportsQuickDrawBool:
+#endif
     case NPNVsupportsOpenGLBool: {
-      // This drawing model was never widely supported, and we don't plan to
-      // support it.
+      // These drawing models are never supported. OpenGL was never widely
+      // supported, and QuickDraw has been deprecated for years.
       NPBool* supports_model = reinterpret_cast<NPBool*>(value);
       *supports_model = false;
       rv = NPERR_NO_ERROR;

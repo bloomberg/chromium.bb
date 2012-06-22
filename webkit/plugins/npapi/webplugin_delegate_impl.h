@@ -51,9 +51,6 @@ class PluginInstance;
 #if defined(OS_MACOSX)
 class WebPluginAcceleratedSurface;
 class ExternalDragTracker;
-#ifndef NP_NO_QUICKDRAW
-class QuickDrawDrawingManager;
-#endif  // NP_NO_QUICKDRAW
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -469,10 +466,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
 
 #ifndef NP_NO_CARBON
   NP_CGContext np_cg_context_;
-#endif
-#ifndef NP_NO_QUICKDRAW
-  NP_Port qd_port_;
-  scoped_ptr<QuickDrawDrawingManager> qd_manager_;
 #endif
 
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.

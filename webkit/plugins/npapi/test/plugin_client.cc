@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,6 +108,15 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
           NPAPIClient::PluginClient::HostFunctions());
     }
   }
+
+#if defined(OS_MACOSX)
+  // Set a modern drawing model so that the plugin doesn't require support for
+  // QuickDraw. No support checking or error checking is done because if it
+  // fails it doesn't matter; the plugin will just stay with the older model,
+  // and nothing in the test plugin cares which is used.
+  NPAPIClient::PluginClient::HostFunctions()->setvalue(
+      instance, NPPVpluginDrawingModel, (void*)NPDrawingModelCoreGraphics);
+#endif
 
   NPError ret = new_test->New(mode, argc, (const char**)argn,
       (const char**)argv, saved);
