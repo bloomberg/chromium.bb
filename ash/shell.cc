@@ -18,6 +18,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/monitor/monitor_controller.h"
+#include "ash/monitor/mouse_cursor_event_filter.h"
 #include "ash/monitor/multi_monitor_manager.h"
 #include "ash/monitor/secondary_monitor_view.h"
 #include "ash/root_window_controller.h"
@@ -196,6 +197,8 @@ Shell::~Shell() {
   RemoveEnvEventFilter(partial_screenshot_filter_.get());
   RemoveEnvEventFilter(input_method_filter_.get());
   RemoveEnvEventFilter(window_modality_controller_.get());
+  if (mouse_cursor_filter_.get())
+    RemoveEnvEventFilter(mouse_cursor_filter_.get());
   RemoveEnvEventFilter(system_gesture_filter_.get());
   RemoveEnvEventFilter(slow_animation_filter_.get());
 #if !defined(OS_MACOSX)
@@ -414,6 +417,12 @@ void Shell::Init() {
     user_action_client_.reset(delegate_->CreateUserActionClient());
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddEnvEventFilter(window_modality_controller_.get());
+
+  if (internal::MonitorController::IsExtendedDesktopEnabled()) {
+    mouse_cursor_filter_.reset(
+        new internal::MouseCursorEventFilter(monitor_controller_.get()));
+    AddEnvEventFilter(mouse_cursor_filter_.get());
+  }
 
   magnification_controller_.reset(new internal::MagnificationController);
   high_contrast_controller_.reset(new HighContrastController);

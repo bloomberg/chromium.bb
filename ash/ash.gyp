@@ -99,6 +99,8 @@
         'magnifier/magnification_controller.h',
         'monitor/monitor_controller.cc',
         'monitor/monitor_controller.h',
+        'monitor/mouse_cursor_event_filter.cc',
+        'monitor/mouse_cursor_event_filter.h',
         'monitor/multi_monitor_manager.cc',
         'monitor/multi_monitor_manager.h',
         'monitor/secondary_monitor_view.cc',

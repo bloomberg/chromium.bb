@@ -67,6 +67,14 @@ class ASH_EXPORT MonitorController : public aura::DisplayObserver {
   }
   void SetSecondaryDisplayLayout(SecondaryDisplayLayout layout);
 
+  // Warps the mouse cursor to an alternate root window when the
+  // |location_in_root|, which is the location of the mouse cursor,
+  // hits or exceeds the edge of the |root_window| and the mouse cursor
+  // is considered to be in an alternate display. Returns true if
+  // the cursor was moved.
+  bool WarpMouseCursorIfNecessary(aura::Window* root_window,
+                                  const gfx::Point& location_in_root);
+
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
       const gfx::Display& display) OVERRIDE;
@@ -79,6 +87,10 @@ class ASH_EXPORT MonitorController : public aura::DisplayObserver {
   static void SetExtendedDesktopEnabled(bool enabled);
 
  private:
+  // Creates a root window for |display| and stores it in the |root_windows_|
+  // map.
+  aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);
+
   std::map<int, aura::RootWindow*> root_windows_;
 
   SecondaryDisplayLayout secondary_display_layout_;

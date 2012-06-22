@@ -889,32 +889,33 @@ bool RootWindowHostLinux::ConfineCursorToRootWindow() {
   DCHECK(!pointer_barriers_.get());
   if (pointer_barriers_.get())
     return false;
-  // Pointer barriers extend all the way across the screen to
-  // avoid leaks at the corners.
-  gfx::Size screen_size = RootWindowHost::GetNativeScreenSize();
+  // TODO(oshima): There is a know issue where the pointer barrier
+  // leaks mouse pointer under certain conditions. crbug.com/133694.
   pointer_barriers_.reset(new XID[4]);
-  // Horizontal barriers.
+  // Horizontal, top barriers.
   pointer_barriers_[0] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      0, bounds_.y(), screen_size.width(), bounds_.y(),
+      bounds_.x(), bounds_.y(), bounds_.right(), bounds_.y(),
       BarrierPositiveY,
-      0, NULL);  // default device
+      0, XIAllDevices);
+  // Horizontal, bottom barriers.
   pointer_barriers_[1] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      0, bounds_.bottom(), screen_size.width(),  bounds_.bottom(),
+      bounds_.x(), bounds_.bottom(), bounds_.right(),  bounds_.bottom(),
       BarrierNegativeY,
-      0, NULL);  // default device
-  // Vertical barriers.
+      0, XIAllDevices);
+  // Vertical, left  barriers.
   pointer_barriers_[2] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      bounds_.x(), 0, bounds_.x(), screen_size.height(),
+      bounds_.x(), bounds_.y(), bounds_.x(), bounds_.bottom(),
       BarrierPositiveX,
-      0, NULL);  // default device
+      0, XIAllDevices);
+  // Vertical, right barriers.
   pointer_barriers_[3] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      bounds_.right(), 0, bounds_.right(), screen_size.height(),
+      bounds_.right(), bounds_.y(), bounds_.right(), bounds_.bottom(),
       BarrierNegativeX,
-      0, NULL);  // default device
+      0, XIAllDevices);
 #endif
   return true;
 }
@@ -932,8 +933,9 @@ void RootWindowHostLinux::UnConfineCursor() {
 }
 
 void RootWindowHostLinux::MoveCursorTo(const gfx::Point& location) {
-  XWarpPointer(xdisplay_, None, xwindow_, 0, 0, 0, 0, location.x(),
-      location.y());
+  XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
+               bounds_.x() + location.x(),
+               bounds_.y() + location.y());
 }
 
 void RootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {

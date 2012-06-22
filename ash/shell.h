@@ -84,6 +84,7 @@ class FocusCycler;
 class KeyRewriterEventFilter;
 class MagnificationController;
 class MonitorController;
+class MouseCursorEventFilter;
 class PanelLayoutManager;
 class PartialScreenshotEventFilter;
 class ResizeShadowController;
@@ -429,6 +430,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<internal::MagnificationController> magnification_controller_;
   scoped_ptr<aura::FocusManager> focus_manager_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
+  scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
 
   // An event filter that rewrites or drops a key event.
   scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;
