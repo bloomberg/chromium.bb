@@ -179,7 +179,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_ = profile_->GetBookmarkModel();
     model_->ClearStore();
 
-    bb_view_.reset(new BookmarkBarView(browser_.get()));
+    bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));
     bb_view_->set_owned_by_client();
     bb_view_->SetPageNavigator(&navigator_);
 

@@ -210,6 +210,10 @@ class BrowserView : public BrowserWindow,
 
   void SetWindowSwitcherButton(views::Button* button);
 
+  // Called from BookmarkBarView/DownloadShelfView during their show/hide
+  // animations.
+  void ToolbarSizeChanged(bool is_animating);
+
 #if defined(USE_ASH)
   BrowserLauncherItemController* launcher_item_controller() const {
     return launcher_item_controller_.get();
@@ -229,7 +233,6 @@ class BrowserView : public BrowserWindow,
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
   virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
   virtual StatusBubble* GetStatusBubble() OVERRIDE;
-  virtual void ToolbarSizeChanged(bool is_animating) OVERRIDE;
   virtual void UpdateTitleBar() OVERRIDE;
   virtual void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) OVERRIDE;

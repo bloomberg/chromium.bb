@@ -6,6 +6,7 @@
 
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 
 // The URL for when the user clicks "learn more" on the mixed scripting page
@@ -23,7 +24,7 @@ BrowserContentSettingBubbleModelDelegate::
 
 void BrowserContentSettingBubbleModelDelegate::ShowCollectedCookiesDialog(
     TabContents* contents) {
-  browser_->ShowCollectedCookiesDialog(contents);
+  browser::ShowCollectedCookiesDialog(contents);
 }
 
 void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(

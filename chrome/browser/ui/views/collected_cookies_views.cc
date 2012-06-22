@@ -47,8 +47,7 @@
 namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents) {
+void ShowCollectedCookiesDialog(TabContents* tab_contents) {
   // Deletes itself on close.
   new CollectedCookiesViews(tab_contents);
 }

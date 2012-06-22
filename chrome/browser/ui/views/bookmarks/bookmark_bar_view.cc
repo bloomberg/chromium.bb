@@ -372,7 +372,7 @@ static const gfx::ImageSkia& GetFolderIcon() {
   return *kFolderIcon;
 }
 
-BookmarkBarView::BookmarkBarView(Browser* browser)
+BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
     : page_navigator_(NULL),
       model_(NULL),
       bookmark_menu_(NULL),
@@ -383,6 +383,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser)
       instructions_(NULL),
       bookmarks_separator_view_(NULL),
       browser_(browser),
+      browser_view_(browser_view),
       infobar_visible_(false),
       throbbing_view_(NULL),
       bookmark_bar_state_(BookmarkBar::SHOW),
@@ -822,15 +823,17 @@ void BookmarkBarView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void BookmarkBarView::AnimationProgressed(const ui::Animation* animation) {
-  if (browser_)
-    browser_->BookmarkBarSizeChanged(true);
+  // |browser_view_| can be NULL during tests.
+  if (browser_view_)
+    browser_view_->ToolbarSizeChanged(true);
 }
 
 void BookmarkBarView::AnimationEnded(const ui::Animation* animation) {
-  if (browser_)
-    browser_->BookmarkBarSizeChanged(false);
-
-  SchedulePaint();
+  // |browser_view_| can be NULL during tests.
+  if (browser_view_) {
+    browser_view_->ToolbarSizeChanged(true);
+    SchedulePaint();
+  }
 }
 
 void BookmarkBarView::BookmarkMenuDeleted(BookmarkMenuController* controller) {

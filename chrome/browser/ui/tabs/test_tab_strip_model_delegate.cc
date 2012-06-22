@@ -87,7 +87,3 @@ void TestTabStripModelDelegate::BookmarkAllTabs() {
 bool TestTabStripModelDelegate::CanCloseTab() const {
   return true;
 }
-
-bool TestTabStripModelDelegate::LargeIconsPermitted() const {
-  return true;
-}

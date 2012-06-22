@@ -259,26 +259,6 @@ bool HasInternalURL(const NavigationEntry* entry) {
   return false;
 }
 
-// Parse two comma-separated integers from str. Return true on success.
-bool ParseCommaSeparatedIntegers(const std::string& str,
-                                 int* ret_num1,
-                                 int* ret_num2) {
-  size_t num1_size = str.find_first_of(',');
-  if (num1_size == std::string::npos)
-    return false;
-
-  size_t num2_pos = num1_size + 1;
-  size_t num2_size = str.size() - num2_pos;
-  int num1, num2;
-  if (!base::StringToInt(str.substr(0, num1_size), &num1) ||
-      !base::StringToInt(str.substr(num2_pos, num2_size), &num2))
-    return false;
-
-  *ret_num1 = num1;
-  *ret_num2 = num2;
-  return true;
-}
-
 bool AllowPanels(const std::string& app_name) {
   return PanelManager::ShouldUsePanels(
       web_app::GetExtensionIdFromApplicationName(app_name));
@@ -346,7 +326,7 @@ Browser::Browser(Type type, Profile* profile)
       chrome_updater_factory_(this),
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
-      show_state_(ui::SHOW_STATE_DEFAULT),
+      initial_show_state_(ui::SHOW_STATE_DEFAULT),
       is_session_restore_(false),
       weak_factory_(this),
       block_command_execution_(false),
@@ -510,7 +490,7 @@ Browser* Browser::CreateWithParams(const CreateParams& params) {
   browser->app_name_ = params.app_name;
   browser->app_type_ = params.app_type;
   browser->set_override_bounds(params.initial_bounds);
-  browser->set_show_state(params.initial_show_state);
+  browser->set_initial_show_state(params.initial_show_state);
   browser->set_is_session_restore(params.is_session_restore);
 
   browser->InitBrowserWindow();
@@ -650,126 +630,8 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   browser->window()->Show();
 }
 
-// static
-void Browser::OpenBookmarkManagerWindow(Profile* profile) {
-  Browser* browser = Browser::Create(profile);
-  chrome::ShowBookmarkManager(browser);
-  browser->window()->Show();
-}
-
-// static
-void Browser::OpenExtensionsWindow(Profile* profile) {
-  Browser* browser = Browser::Create(profile);
-  chrome::ShowExtensions(browser);
-  browser->window()->Show();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
-
-std::string Browser::GetWindowPlacementKey() const {
-  std::string name(prefs::kBrowserWindowPlacement);
-  if (!app_name_.empty()) {
-    name.append("_");
-    name.append(app_name_);
-  }
-  return name;
-}
-
-bool Browser::ShouldSaveWindowPlacement() const {
-  switch (type_) {
-    case TYPE_TABBED:
-      return true;
-    case TYPE_POPUP:
-      // Only save the window placement of popups if they are restored,
-      // or the window belongs to DevTools.
-#if defined USE_AURA
-      if (is_app())
-        return true;
-#endif
-      return browser_defaults::kRestorePopups || is_devtools();
-    case TYPE_PANEL:
-      // Do not save the window placement of panels.
-      return false;
-    default:
-      return false;
-  }
-}
-
-void Browser::SaveWindowPlacement(const gfx::Rect& bounds,
-                                  ui::WindowShowState show_state) {
-  // Save to the session storage service, used when reloading a past session.
-  // Note that we don't want to be the ones who cause lazy initialization of
-  // the session service. This function gets called during initial window
-  // showing, and we don't want to bring in the session service this early.
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(profile());
-  if (session_service)
-    session_service->SetWindowBounds(session_id_, bounds, show_state);
-}
-
-gfx::Rect Browser::GetSavedWindowBounds() const {
-  gfx::Rect restored_bounds = override_bounds_;
-  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
-                                      &restored_bounds);
-
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  bool record_mode = parsed_command_line.HasSwitch(switches::kRecordMode);
-  bool playback_mode = parsed_command_line.HasSwitch(switches::kPlaybackMode);
-  if (record_mode || playback_mode) {
-    // In playback/record mode we always fix the size of the browser and
-    // move it to (0,0).  The reason for this is two reasons:  First we want
-    // resize/moves in the playback to still work, and Second we want
-    // playbacks to work (as much as possible) on machines w/ different
-    // screen sizes.
-    restored_bounds = gfx::Rect(0, 0, 800, 600);
-  }
-
-  // The following options override playback/record.
-  if (parsed_command_line.HasSwitch(switches::kWindowSize)) {
-    std::string str =
-        parsed_command_line.GetSwitchValueASCII(switches::kWindowSize);
-    int width, height;
-    if (ParseCommaSeparatedIntegers(str, &width, &height))
-      restored_bounds.set_size(gfx::Size(width, height));
-  }
-  if (parsed_command_line.HasSwitch(switches::kWindowPosition)) {
-    std::string str =
-        parsed_command_line.GetSwitchValueASCII(switches::kWindowPosition);
-    int x, y;
-    if (ParseCommaSeparatedIntegers(str, &x, &y))
-      restored_bounds.set_origin(gfx::Point(x, y));
-  }
-
-  return restored_bounds;
-}
-
-ui::WindowShowState Browser::GetSavedWindowShowState() const {
-  // Only tabbed browsers use the command line or preference state, with the
-  // exception of devtools.
-  bool show_state = !is_type_tabbed() && !is_devtools();
-
-#if defined(USE_AURA)
-  // Apps save state on aura.
-  show_state &= !is_app();
-#endif
-
-  if (show_state)
-    return show_state_;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
-    return ui::SHOW_STATE_MAXIMIZED;
-
-  if (show_state_ != ui::SHOW_STATE_DEFAULT)
-    return show_state_;
-
-  const DictionaryValue* window_pref =
-      profile()->GetPrefs()->GetDictionary(GetWindowPlacementKey().c_str());
-  bool maximized = false;
-  window_pref->GetBoolean("maximized", &maximized);
-
-  return maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_DEFAULT;
-}
 
 SkBitmap Browser::GetCurrentPageIcon() const {
   TabContents* contents = GetActiveTabContents();
@@ -1118,14 +980,6 @@ gfx::NativeWindow Browser::BrowserShowWebDialog(
     parent_window = window_->GetNativeWindow();
 
   return browser::ShowWebDialog(parent_window, profile_, delegate);
-}
-
-void Browser::BrowserRenderWidgetShowing() {
-  RenderWidgetShowing();
-}
-
-void Browser::BookmarkBarSizeChanged(bool is_animating) {
-  window_->ToolbarSizeChanged(is_animating);
 }
 
 void Browser::ReplaceRestoredTab(
@@ -2119,11 +1973,6 @@ void Browser::UpdateUIForNavigationInTab(TabContents* contents,
     contents->web_contents()->Focus();
 }
 
-void Browser::ShowCollectedCookiesDialog(TabContents* tab_contents) {
-  browser::ShowCollectedCookiesDialog(window()->GetNativeWindow(),
-                                      tab_contents);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, PageNavigator implementation:
 
@@ -2403,7 +2252,7 @@ Browser* Browser::CreateNewStripWithContents(
   // Create an empty new browser window the same size as the old one.
   Browser* browser = new Browser(TYPE_TABBED, profile_);
   browser->set_override_bounds(new_window_bounds);
-  browser->set_show_state(
+  browser->set_initial_show_state(
       maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL);
   browser->InitBrowserWindow();
   browser->tab_strip_model()->AppendTabContents(detached_contents, true);
@@ -2571,13 +2420,6 @@ void Browser::RestoreTab() {
     return;
 
   service->RestoreMostRecentEntry(tab_restore_service_delegate());
-}
-
-bool Browser::LargeIconsPermitted() const {
-  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
-  // for those windows, we already have a big icon in the top-left outside any
-  // tab. Having big tab icons too looks kinda redonk.
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

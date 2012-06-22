@@ -28,6 +28,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -93,10 +95,11 @@ const std::string GetInfobarLabel(ContentSetting setting,
 namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents) {
+void ShowCollectedCookiesDialog(TabContents* tab_contents) {
   // Deletes itself on close.
-  new CollectedCookiesGtk(parent_window, tab_contents);
+  new CollectedCookiesGtk(
+      tab_contents->web_contents()->GetView()->GetTopLevelNativeWindow(),
+      tab_contents);
 }
 
 }  // namespace browser

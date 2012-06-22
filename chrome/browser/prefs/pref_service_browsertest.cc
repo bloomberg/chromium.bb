@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -120,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
 
   // Find if launched window is maximized.
   bool is_window_maximized =
-      browser()->GetSavedWindowShowState() == ui::SHOW_STATE_MAXIMIZED;
+      chrome::GetSavedWindowShowState(browser()) == ui::SHOW_STATE_MAXIMIZED;
   bool is_maximized = false;
   EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));
@@ -179,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
 
   // Find if launched window is maximized.
   bool is_window_maximized =
-      browser()->GetSavedWindowShowState() == ui::SHOW_STATE_MAXIMIZED;
+      chrome::GetSavedWindowShowState(browser()) == ui::SHOW_STATE_MAXIMIZED;
   bool is_maximized = false;
   EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));

@@ -29,6 +29,7 @@
 
 class BookmarkContextMenu;
 class Browser;
+class BrowserView;
 
 namespace content {
 class PageNavigator;
@@ -74,7 +75,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // Maximum size of buttons on the bookmark bar.
   static const int kMaxButtonWidth;
 
-  explicit BookmarkBarView(Browser* browser);
+  // |browser_view| can be NULL during tests.
+  BookmarkBarView(Browser* browser, BrowserView* browser_view);
   virtual ~BookmarkBarView();
 
   // Returns the current browser.
@@ -390,8 +392,8 @@ class BookmarkBarView : public DetachableToolbarView,
 
   ButtonSeparatorView* bookmarks_separator_view_;
 
-  // Owning browser.
   Browser* browser_;
+  BrowserView* browser_view_;
 
   // True if the owning browser is showing an infobar.
   bool infobar_visible_;

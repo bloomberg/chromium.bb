@@ -11,20 +11,22 @@
 
 class Profile;
 
-namespace browser {
+namespace chrome {
 
 // Open a new window with history/downloads/help/options (needed on Mac when
 // there are no windows).
 void OpenAboutWindow(Profile* profile);
 void OpenHistoryWindow(Profile* profile);
 void OpenDownloadsWindow(Profile* profile);
-void OpenHelpWindow(Profile* profile, chrome::HelpSource source);
+void OpenHelpWindow(Profile* profile, HelpSource source);
 void OpenOptionsWindow(Profile* profile);
 void OpenSyncSetupWindow(Profile* profile, SyncPromoUI::Source source);
 void OpenClearBrowsingDataDialogWindow(Profile* profile);
 void OpenImportSettingsDialogWindow(Profile* profile);
 void OpenInstantConfirmDialogWindow(Profile* profile);
+void OpenBookmarkManagerWindow(Profile* profile);
+void OpenExtensionsWindow(Profile* profile);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_MAC_H_

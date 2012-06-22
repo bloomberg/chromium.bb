@@ -100,12 +100,6 @@ class BrowserWindow : public BaseWindow {
   // Return the status bubble associated with the frame
   virtual StatusBubble* GetStatusBubble() = 0;
 
-  // Inform the receiving frame that an animation has progressed in the
-  // selected tab.
-  // TODO(beng): Remove. Infobars/Boomarks bars should talk directly to
-  //             BrowserView.
-  virtual void ToolbarSizeChanged(bool is_animating) = 0;
-
   // Inform the frame that the selected tab favicon or title has changed. Some
   // frames may need to refresh their title bar.
   virtual void UpdateTitleBar() = 0;

@@ -227,8 +227,9 @@ class Browser : public TabStripModelDelegate,
   void set_override_bounds(const gfx::Rect& bounds) {
     override_bounds_ = bounds;
   }
-  void set_show_state(ui::WindowShowState show_state) {
-    show_state_ = show_state;
+  ui::WindowShowState initial_show_state() const { return initial_show_state_; }
+  void set_initial_show_state(ui::WindowShowState initial_show_state) {
+    initial_show_state_ = initial_show_state;
   }
   // Return true if the initial window bounds have been overridden.
   bool bounds_overridden() const {
@@ -312,22 +313,7 @@ class Browser : public TabStripModelDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
-  // Opens a new window and opens the bookmark manager.
-  static void OpenBookmarkManagerWindow(Profile* profile);
-
-  // Opens a window with the extensions tab in it - needed by long-lived
-  // extensions which may run with no windows open.
-  static void OpenExtensionsWindow(Profile* profile);
-
   // State Storage and Retrieval for UI ///////////////////////////////////////
-
-  // Save and restore the window position.
-  std::string GetWindowPlacementKey() const;
-  bool ShouldSaveWindowPlacement() const;
-  void SaveWindowPlacement(const gfx::Rect& bounds,
-                           ui::WindowShowState show_state);
-  gfx::Rect GetSavedWindowBounds() const;
-  ui::WindowShowState GetSavedWindowShowState() const;
 
   // Gets the Favicon of the page in the selected tab.
   SkBitmap GetCurrentPageIcon() const;
@@ -451,13 +437,6 @@ class Browser : public TabStripModelDelegate,
   // throbber, default content padding).
   gfx::NativeWindow BrowserShowWebDialog(ui::WebDialogDelegate* delegate,
                                          gfx::NativeWindow parent_window);
-
-  // Called when a popup select is about to be displayed.
-  void BrowserRenderWidgetShowing();
-
-  // Notification that the bookmark bar has changed size.  We need to resize the
-  // content area and notify our InfoBarContainer.
-  void BookmarkBarSizeChanged(bool is_animating);
 
   // Replaces the state of the currently selected tab with the session
   // history restored from the SessionRestore system.
@@ -667,9 +646,6 @@ class Browser : public TabStripModelDelegate,
                                   content::PageTransition transition,
                                   bool user_initiated);
 
-  // Shows the cookies collected in the tab contents.
-  void ShowCollectedCookiesDialog(TabContents* tab_contents);
-
   // Interface implementations ////////////////////////////////////////////////
 
   // Overridden from content::PageNavigator:
@@ -724,7 +700,6 @@ class Browser : public TabStripModelDelegate,
   virtual bool CanCloseTab() const OVERRIDE;
   virtual bool CanRestoreTab() OVERRIDE;
   virtual void RestoreTab() OVERRIDE;
-  virtual bool LargeIconsPermitted() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,
@@ -1349,7 +1324,7 @@ class Browser : public TabStripModelDelegate,
   // obtained from the last window of the same type, or obtained from the
   // shell shortcut's startup info.
   gfx::Rect override_bounds_;
-  ui::WindowShowState show_state_;
+  ui::WindowShowState initial_show_state_;
 
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;

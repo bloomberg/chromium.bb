@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/common/pref_names.h"
 #include "ui/gfx/screen.h"
 
@@ -52,7 +53,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     if (!browser_ || !browser_->profile()->GetPrefs())
       return false;
 
-    std::string window_name(browser_->GetWindowPlacementKey());
+    std::string window_name(chrome::GetWindowPlacementKey(browser_));
     const DictionaryValue* wp_pref =
         browser_->profile()->GetPrefs()->GetDictionary(window_name.c_str());
     int top = 0, left = 0, bottom = 0, right = 0;

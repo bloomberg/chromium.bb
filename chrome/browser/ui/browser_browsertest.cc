@@ -1037,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
     Browser* max_browser = new Browser(types[i], browser()->profile());
-    max_browser->set_show_state(ui::SHOW_STATE_MAXIMIZED);
+    max_browser->set_initial_show_state(ui::SHOW_STATE_MAXIMIZED);
     max_browser->InitBrowserWindow();
     AddBlankTabAndShow(max_browser);
   }
@@ -1057,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
     Browser* min_browser = new Browser(types[i], browser()->profile());
-    min_browser->set_show_state(ui::SHOW_STATE_MINIMIZED);
+    min_browser->set_initial_show_state(ui::SHOW_STATE_MINIMIZED);
     min_browser->InitBrowserWindow();
     AddBlankTabAndShow(min_browser);
   }

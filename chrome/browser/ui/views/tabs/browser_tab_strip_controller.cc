@@ -479,11 +479,6 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   SkBitmap* app_icon = NULL;
   TabContents* tab_contents = TabContents::FromWebContents(contents);
 
-  // Extension App icons are slightly larger than favicons, so only allow
-  // them if permitted by the model.
-  if (model_->delegate()->LargeIconsPermitted())
-    app_icon = tab_contents->extension_tab_helper()->GetExtensionAppIcon();
-
   if (app_icon)
     data->favicon = *app_icon;
   else

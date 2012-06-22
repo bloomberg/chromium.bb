@@ -32,6 +32,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -61,10 +63,11 @@ enum TabViewItemIndices {
 namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents) {
+void ShowCollectedCookiesDialog(TabContents* tab_contents) {
   // Deletes itself on close.
-  new CollectedCookiesMac(parent_window, tab_contents);
+  new CollectedCookiesMac(
+      tab_contents->web_contents()->GetView()->GetTopLevelNativeWindow(),
+      tab_contents);
 }
 
 }  // namespace browser

@@ -10,6 +10,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -49,8 +50,9 @@ void BrowserFrame::InitBrowserFrame() {
   if (browser_view_->browser()->is_type_tabbed()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
-    params.bounds = browser_view_->browser()->GetSavedWindowBounds();
-    params.show_state = browser_view_->browser()->GetSavedWindowShowState();
+    params.bounds = chrome::GetSavedWindowBounds(browser_view_->browser());
+    params.show_state =
+        chrome::GetSavedWindowShowState(browser_view_->browser());
   }
   if (browser_view_->IsPanel()) {
     // We need to set the top-most bit when the panel window is created.

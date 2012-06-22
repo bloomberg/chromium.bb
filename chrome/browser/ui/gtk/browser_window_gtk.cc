@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
@@ -810,11 +811,6 @@ BrowserWindowTesting* BrowserWindowGtk::GetBrowserWindowTesting() {
 
 StatusBubble* BrowserWindowGtk::GetStatusBubble() {
   return status_bubble_.get();
-}
-
-void BrowserWindowGtk::ToolbarSizeChanged(bool is_animating) {
-  // On Windows, this is used for a performance optimization.
-  // http://code.google.com/p/chromium/issues/detail?id=12291
 }
 
 void BrowserWindowGtk::UpdateTitleBar() {
@@ -1770,9 +1766,9 @@ void BrowserWindowGtk::SetGeometryHints() {
   // confused and maximizes the window, but doesn't set the
   // GDK_WINDOW_STATE_MAXIMIZED bit.  So instead, we keep track of whether to
   // maximize and call it after gtk_window_present.
-  show_state_after_show_ = browser_->GetSavedWindowShowState();
+  show_state_after_show_ = chrome::GetSavedWindowShowState(browser_.get());
 
-  gfx::Rect bounds = browser_->GetSavedWindowBounds();
+  gfx::Rect bounds = chrome::GetSavedWindowBounds(browser_.get());
   // We don't blindly call SetBounds here: that sets a forced position
   // on the window and we intentionally *don't* do that for normal
   // windows.  Most programs do not restore their window position on
@@ -2106,8 +2102,8 @@ void BrowserWindowGtk::SaveWindowPosition() {
   else if (IsMinimized())
     show_state = ui::SHOW_STATE_MINIMIZED;
 
-  if (browser_->ShouldSaveWindowPlacement())
-    browser_->SaveWindowPlacement(restored_bounds_, show_state);
+  if (chrome::ShouldSaveWindowPlacement(browser_.get()))
+    chrome::SaveWindowPlacement(browser_.get(), restored_bounds_, show_state);
 
   // We also need to save the placement for startup.
   // This is a web of calls between views and delegates on Windows, but the
@@ -2115,7 +2111,7 @@ void BrowserWindowGtk::SaveWindowPosition() {
   if (!browser_->profile()->GetPrefs())
     return;
 
-  std::string window_name = browser_->GetWindowPlacementKey();
+  std::string window_name = chrome::GetWindowPlacementKey(browser_.get());
   DictionaryPrefUpdate update(browser_->profile()->GetPrefs(),
                               window_name.c_str());
   DictionaryValue* window_preferences = update.Get();

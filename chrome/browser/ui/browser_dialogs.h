@@ -53,8 +53,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 ui::WebDialogDelegate* delegate);
 
 // Shows the collected cookies dialog box.
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents);
+void ShowCollectedCookiesDialog(TabContents* tab_contents);
 
 // Creates the ExtensionInstalledBubble and schedules it to be shown once
 // the extension has loaded. |extension| is the installed extension. |browser|

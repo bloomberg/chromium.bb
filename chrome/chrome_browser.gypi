@@ -2378,6 +2378,8 @@
         'browser/ui/browser_view_prefs.h',
         'browser/ui/browser_win.cc',
         'browser/ui/browser_window.h',
+        'browser/ui/browser_window_state.cc',
+        'browser/ui/browser_window_state.h',
         'browser/ui/certificate_dialogs.cc',
         'browser/ui/certificate_dialogs.h',
         'browser/ui/chrome_pages.cc',

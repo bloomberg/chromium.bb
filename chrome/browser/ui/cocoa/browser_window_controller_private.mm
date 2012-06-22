@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
@@ -113,7 +114,7 @@ const CGFloat kLocBarBottomInset = 1;
 }
 
 - (void)saveWindowPositionIfNeeded {
-  if (!browser_->ShouldSaveWindowPlacement())
+  if (!chrome::ShouldSaveWindowPlacement(browser_.get()))
     return;
 
   // If we're in fullscreen mode, save the position of the regular window
@@ -135,7 +136,7 @@ const CGFloat kLocBarBottomInset = 1;
     show_state = ui::SHOW_STATE_MINIMIZED;
   else if ([self isFullscreen])
     show_state = ui::SHOW_STATE_FULLSCREEN;
-  browser_->SaveWindowPlacement(bounds, show_state);
+  chrome::SaveWindowPlacement(browser_.get(), bounds, show_state);
 
   // |windowScreen| can be nil (for example, if the monitor arrangement was
   // changed while in fullscreen mode).  If we see a nil screen, return without
@@ -154,7 +155,9 @@ const CGFloat kLocBarBottomInset = 1;
   gfx::Rect workArea(NSRectToCGRect([windowScreen visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
 
-  DictionaryPrefUpdate update(prefs, browser_->GetWindowPlacementKey().c_str());
+  DictionaryPrefUpdate update(
+      prefs,
+      chrome::GetWindowPlacementKey(browser_.get()).c_str());
   DictionaryValue* windowPreferences = update.Get();
   windowPreferences->SetInteger("left", bounds.x());
   windowPreferences->SetInteger("top", bounds.y());

@@ -853,7 +853,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         chrome::ShowClearBrowsingDataDialog(browser);
       } else {
-        browser::OpenClearBrowsingDataDialogWindow(lastProfile);
+        chrome::OpenClearBrowsingDataDialogWindow(lastProfile);
       }
       break;
     }
@@ -861,7 +861,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if (Browser* browser = ActivateBrowser(lastProfile)) {
         chrome::ShowImportDialog(browser);
       } else {
-        browser::OpenImportSettingsDialogWindow(lastProfile);
+        chrome::OpenImportSettingsDialogWindow(lastProfile);
       }
       break;
     }
@@ -871,38 +871,38 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
         chrome::ShowBookmarkManager(browser);
       } else {
         // No browser window, so create one for the bookmark manager tab.
-        Browser::OpenBookmarkManagerWindow(lastProfile);
+        chrome::OpenBookmarkManagerWindow(lastProfile);
       }
       break;
     case IDC_SHOW_HISTORY:
       if (Browser* browser = ActivateBrowser(lastProfile))
         chrome::ShowHistory(browser);
       else
-        browser::OpenHistoryWindow(lastProfile);
+        chrome::OpenHistoryWindow(lastProfile);
       break;
     case IDC_SHOW_DOWNLOADS:
       if (Browser* browser = ActivateBrowser(lastProfile))
         chrome::ShowDownloads(browser);
       else
-        browser::OpenDownloadsWindow(lastProfile);
+        chrome::OpenDownloadsWindow(lastProfile);
       break;
     case IDC_MANAGE_EXTENSIONS:
       if (Browser* browser = ActivateBrowser(lastProfile))
         chrome::ShowExtensions(browser);
       else
-        Browser::OpenExtensionsWindow(lastProfile);
+        chrome::OpenExtensionsWindow(lastProfile);
       break;
     case IDC_HELP_PAGE_VIA_MENU:
       if (Browser* browser = ActivateBrowser(lastProfile))
         chrome::ShowHelp(browser, chrome::HELP_SOURCE_MENU);
       else
-        browser::OpenHelpWindow(lastProfile, chrome::HELP_SOURCE_MENU);
+        chrome::OpenHelpWindow(lastProfile, chrome::HELP_SOURCE_MENU);
       break;
     case IDC_SHOW_SYNC_SETUP:
       if (Browser* browser = ActivateBrowser(lastProfile))
         chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_MENU);
       else
-        browser::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
+        chrome::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
       break;
     case IDC_TASK_MANAGER:
       content::RecordAction(UserMetricsAction("TaskManager"));
@@ -1184,7 +1184,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     chrome::ShowSettings(browser);
   } else {
     // No browser window, so create one for the options tab.
-    browser::OpenOptionsWindow([self lastProfile]);
+    chrome::OpenOptionsWindow([self lastProfile]);
   }
 }
 
@@ -1193,7 +1193,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     chrome::ShowAboutChrome(browser);
   } else {
     // No browser window, so create one for the about tab.
-    browser::OpenAboutWindow([self lastProfile]);
+    chrome::OpenAboutWindow([self lastProfile]);
   }
 }
 
@@ -1312,7 +1312,7 @@ void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
   if (Browser* browser = ActivateBrowser(profile)) {
     chrome::ShowInstantConfirmDialog(browser);
   } else {
-    browser::OpenInstantConfirmDialogWindow(profile);
+    chrome::OpenInstantConfirmDialogWindow(profile);
   }
 }
 

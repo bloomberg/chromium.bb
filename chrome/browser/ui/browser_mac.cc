@@ -8,60 +8,72 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 
-namespace browser {
+namespace chrome {
 
 void OpenAboutWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowAboutChrome(browser);
+  ShowAboutChrome(browser);
   browser->window()->Show();
 }
 
 void OpenHistoryWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowHistory(browser);
+  ShowHistory(browser);
   browser->window()->Show();
 }
 
 void OpenDownloadsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowDownloads(browser);
+  ShowDownloads(browser);
   browser->window()->Show();
 }
 
-void OpenHelpWindow(Profile* profile, chrome::HelpSource source) {
+void OpenHelpWindow(Profile* profile, HelpSource source) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowHelp(browser, source);
+  ShowHelp(browser, source);
   browser->window()->Show();
 }
 
 void OpenOptionsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowSettings(browser);
+  ShowSettings(browser);
   browser->window()->Show();
 }
 
 void OpenSyncSetupWindow(Profile* profile, SyncPromoUI::Source source) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowSyncSetup(browser, source);
+  ShowSyncSetup(browser, source);
   browser->window()->Show();
 }
 
 void OpenClearBrowsingDataDialogWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowClearBrowsingDataDialog(browser);
+  ShowClearBrowsingDataDialog(browser);
   browser->window()->Show();
 }
 
 void OpenImportSettingsDialogWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowImportDialog(browser);
+  ShowImportDialog(browser);
   browser->window()->Show();
 }
 
 void OpenInstantConfirmDialogWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  chrome::ShowInstantConfirmDialog(browser);
+  ShowInstantConfirmDialog(browser);
   browser->window()->Show();
 }
 
-}  // namespace browser
+void OpenBookmarkManagerWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  ShowBookmarkManager(browser);
+  browser->window()->Show();
+}
+
+void OpenExtensionsWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  ShowExtensions(browser);
+  browser->window()->Show();
+}
+
+}  // namespace chrome

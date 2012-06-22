@@ -131,10 +131,6 @@ StatusBubble* PanelBrowserWindow::GetStatusBubble() {
   return NULL;
 }
 
-void PanelBrowserWindow::ToolbarSizeChanged(bool is_animating) {
-  NOTIMPLEMENTED();
-}
-
 void PanelBrowserWindow::UpdateTitleBar() {
   native_panel_->UpdatePanelTitleBar();
 }

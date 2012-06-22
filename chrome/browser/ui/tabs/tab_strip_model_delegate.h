@@ -116,9 +116,6 @@ class TabStripModelDelegate {
   // Returns true if any of the tabs can be closed.
   virtual bool CanCloseTab() const = 0;
 
-  // Returns true if the tab strip can use large icons.
-  virtual bool LargeIconsPermitted() const = 0;
-
  protected:
   virtual ~TabStripModelDelegate() {}
 };

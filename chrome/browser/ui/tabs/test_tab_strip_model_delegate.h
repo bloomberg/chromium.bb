@@ -43,7 +43,6 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
   virtual bool CanCloseTab() const OVERRIDE;
-  virtual bool LargeIconsPermitted() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);

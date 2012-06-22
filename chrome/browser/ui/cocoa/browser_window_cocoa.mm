@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
@@ -84,7 +85,7 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
 
-  initial_show_state_ = browser_->GetSavedWindowShowState();
+  initial_show_state_ = chrome::GetSavedWindowShowState(browser_);
 }
 
 BrowserWindowCocoa::~BrowserWindowCocoa() {
@@ -210,14 +211,6 @@ BrowserWindowTesting* BrowserWindowCocoa::GetBrowserWindowTesting() {
 
 StatusBubble* BrowserWindowCocoa::GetStatusBubble() {
   return [controller_ statusBubble];
-}
-
-void BrowserWindowCocoa::ToolbarSizeChanged(bool is_animating) {
-  // According to beng, this is an ugly method that comes from the days when the
-  // download shelf was a ChromeView attached to the WebContents, and as its
-  // size changed via animation it notified through TCD/etc to the browser view
-  // to relayout for each tick of the animation. We don't need anything of the
-  // sort on Mac.
 }
 
 void BrowserWindowCocoa::UpdateTitleBar() {
