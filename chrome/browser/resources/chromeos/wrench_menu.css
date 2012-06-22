@@ -5,7 +5,9 @@
 
 .fullscreen {
   -webkit-margin-start: 4px;
-  background-image: url('../../../app/theme/default_100_percent/fullscreen_menu_button.png');
+  background-image: -webkit-image-set(
+    url('../../../app/theme/default_100_percent/fullscreen_menu_button.png') 1x,
+    url('../../../app/theme/default_200_percent/fullscreen_menu_button.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
   border: solid 1px rgba(0, 0, 0, 0.3);
