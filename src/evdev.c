@@ -593,7 +593,8 @@ evdev_notify_keyboard_focus(struct evdev_seat *seat)
 		}
 	}
 
-	notify_keyboard_focus(&seat->base.seat, &keys);
+	notify_keyboard_focus_in(&seat->base.seat, &keys,
+				 STATE_UPDATE_AUTOMATIC);
 
 	wl_array_release(&keys);
 }
@@ -761,7 +762,7 @@ evdev_remove_devices(struct weston_seat *seat_base)
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
 		device_removed(device);
 
-	notify_keyboard_focus(&seat->base.seat, NULL);
+	notify_keyboard_focus_out(&seat->base.seat);
 }
 
 void

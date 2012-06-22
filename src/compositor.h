@@ -458,6 +458,11 @@ struct weston_surface {
 	void *private;
 };
 
+enum weston_key_state_update {
+	STATE_UPDATE_AUTOMATIC,
+	STATE_UPDATE_NONE,
+};
+
 void
 weston_surface_update_transform(struct weston_surface *surface);
 
@@ -510,7 +515,10 @@ notify_pointer_focus(struct wl_seat *seat, struct weston_output *output,
 		     wl_fixed_t x, wl_fixed_t y);
 
 void
-notify_keyboard_focus(struct wl_seat *seat, struct wl_array *keys);
+notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
+			 enum weston_key_state_update update_state);
+void
+notify_keyboard_focus_out(struct wl_seat *seat);
 
 void
 notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,

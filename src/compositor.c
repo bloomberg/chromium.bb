@@ -1767,16 +1767,12 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 }
 
 static int
-update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
+modifier_state_changed(struct weston_seat *seat)
 {
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
 	uint32_t mods_lookup;
 	enum weston_led leds = 0;
 	int ret = 0;
-
-	/* First update the XKB state object with the keypress. */
-	xkb_state_update_key(seat->xkb_state.state, key + 8,
-			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
 
 	/* Serialize and update our internal state, checking to see if it's
 	 * different to the previous state. */
@@ -1825,6 +1821,24 @@ update_modifier_state(struct weston_seat *seat, uint32_t key, uint32_t state)
 	seat->xkb_state.leds = leds;
 
 	return ret;
+}
+
+static int
+update_modifier_state(struct weston_seat *seat, uint32_t key,
+		      enum wl_keyboard_key_state state)
+{
+	enum xkb_key_direction direction;
+
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+		direction = XKB_KEY_DOWN;
+	else
+		direction = XKB_KEY_UP;
+
+	/* Offset the keycode by 8, as the evdev XKB rules reflect X's
+	 * broken keycode system, which starts at 8. */
+	xkb_state_update_key(seat->xkb_state.state, key + 8, direction);
+
+	return modifier_state_changed(seat);
 }
 
 WL_EXPORT void
@@ -1913,59 +1927,68 @@ destroy_device_saved_kbd_focus(struct wl_listener *listener, void *data)
 }
 
 WL_EXPORT void
-notify_keyboard_focus(struct wl_seat *seat, struct wl_array *keys)
+notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
+			 enum weston_key_state_update update_state)
 {
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
 	struct wl_surface *surface;
 	uint32_t *k;
 
-	if (keys) {
-		wl_array_copy(&seat->keyboard->keys, keys);
-		ws->modifier_state = 0;
-		wl_array_for_each(k, &seat->keyboard->keys) {
-			weston_compositor_idle_inhibit(compositor);
-			update_modifier_state(ws, *k, 1);
-		}
-
-		surface = ws->saved_kbd_focus;
-
-		if (surface) {
-			wl_list_remove(&ws->saved_kbd_focus_listener.link);
-			wl_keyboard_set_focus(ws->seat.keyboard, surface);
-
-			if (seat->keyboard->focus_resource) {
-				wl_keyboard_send_modifiers(seat->keyboard->focus_resource,
-							   wl_display_next_serial(compositor->wl_display),
-							   ws->xkb_state.mods_depressed,
-							   ws->xkb_state.mods_latched,
-							   ws->xkb_state.mods_locked,
-							   ws->xkb_state.group);
-			}
-			ws->saved_kbd_focus = NULL;
-		}
-	} else {
-		wl_array_for_each(k, &seat->keyboard->keys)
-			weston_compositor_idle_release(compositor);
-
-		ws->modifier_state = 0;
-
-		surface = ws->seat.keyboard->focus;
-
-		if (surface) {
-			ws->saved_kbd_focus = surface;
-			ws->saved_kbd_focus_listener.notify =
-				destroy_device_saved_kbd_focus;
-			wl_signal_add(&surface->resource.destroy_signal,
-				      &ws->saved_kbd_focus_listener);
-		}
-
-		wl_keyboard_set_focus(ws->seat.keyboard, NULL);
-		/* FIXME: We really need keyboard grab cancel here to
-		 * let the grab shut down properly.  As it is we leak
-		 * the grab data. */
-		wl_keyboard_end_grab(ws->seat.keyboard);
+	wl_array_copy(&seat->keyboard->keys, keys);
+	wl_array_for_each(k, &seat->keyboard->keys) {
+		weston_compositor_idle_inhibit(compositor);
+		if (update_state == STATE_UPDATE_AUTOMATIC)
+			update_modifier_state(ws, *k,
+					      WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
+
+	surface = ws->saved_kbd_focus;
+
+	if (surface) {
+		wl_list_remove(&ws->saved_kbd_focus_listener.link);
+		wl_keyboard_set_focus(ws->seat.keyboard, surface);
+
+		if (seat->keyboard->focus_resource) {
+			wl_keyboard_send_modifiers(seat->keyboard->focus_resource,
+						   wl_display_next_serial(compositor->wl_display),
+						   ws->xkb_state.mods_depressed,
+						   ws->xkb_state.mods_latched,
+						   ws->xkb_state.mods_locked,
+						   ws->xkb_state.group);
+		}
+		ws->saved_kbd_focus = NULL;
+	}
+}
+
+WL_EXPORT void
+notify_keyboard_focus_out(struct wl_seat *seat)
+{
+	struct weston_seat *ws = (struct weston_seat *) seat;
+	struct weston_compositor *compositor = ws->compositor;
+	struct wl_surface *surface;
+	uint32_t *k;
+
+	wl_array_for_each(k, &seat->keyboard->keys)
+		weston_compositor_idle_release(compositor);
+
+	ws->modifier_state = 0;
+
+	surface = ws->seat.keyboard->focus;
+
+	if (surface) {
+		ws->saved_kbd_focus = surface;
+		ws->saved_kbd_focus_listener.notify =
+			destroy_device_saved_kbd_focus;
+		wl_signal_add(&surface->resource.destroy_signal,
+			      &ws->saved_kbd_focus_listener);
+	}
+
+	wl_keyboard_set_focus(ws->seat.keyboard, NULL);
+	/* FIXME: We really need keyboard grab cancel here to
+	 * let the grab shut down properly.  As it is we leak
+	 * the grab data. */
+	wl_keyboard_end_grab(ws->seat.keyboard);
 }
 
 static void

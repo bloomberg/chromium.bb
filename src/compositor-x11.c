@@ -679,7 +679,12 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			}
 
 			output = x11_compositor_find_output(c, focus_in->event);
-			notify_keyboard_focus(&c->base.seat->seat, &c->keys);
+			/* Unfortunately the state only comes with the enter
+			 * event, rather than with the focus event.  I'm not
+			 * sure of the exact semantics around it and whether
+			 * we can ensure that we get both? */
+			notify_keyboard_focus_in(&c->base.seat->seat, &c->keys,
+						 STATE_UPDATE_AUTOMATIC);
 
 			free(prev);
 			prev = NULL;
@@ -763,7 +768,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED ||
 			    focus_in->mode == XCB_NOTIFY_MODE_UNGRAB)
 				break;
-			notify_keyboard_focus(&c->base.seat->seat, NULL);
+			notify_keyboard_focus_out(&c->base.seat->seat);
 			break;
 
 		default:

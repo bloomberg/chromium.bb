@@ -640,7 +640,9 @@ input_handle_keyboard_enter(void *data,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_keyboard_focus(&c->base.seat->seat, keys);
+	/* XXX: Need to wait for modifier event and send with state then. */
+	notify_keyboard_focus_in(&c->base.seat->seat, keys,
+				 STATE_UPDATE_AUTOMATIC);
 }
 
 static void
@@ -652,7 +654,7 @@ input_handle_keyboard_leave(void *data,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_keyboard_focus(&c->base.seat->seat, NULL);
+	notify_keyboard_focus_out(&c->base.seat->seat);
 }
 
 static void
