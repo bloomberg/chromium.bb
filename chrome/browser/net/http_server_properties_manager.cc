@@ -5,6 +5,8 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -28,6 +30,13 @@ const int64 kUpdateCacheDelayMs = 1000;
 // http_server_properties_impl_ cache. Scheduling another update during this
 // period will reset the timer.
 const int64 kUpdatePrefsDelayMs = 5000;
+
+// "version" 0 indicates, http_server_properties doesn't have "version"
+// property.
+const int kMissingVersion = 0;
+
+// The version number of persisted http_server_properties.
+const int kVersionNumber = 1;
 
 typedef std::vector<std::string> StringVector;
 
@@ -241,9 +250,34 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   bool detected_corrupted_prefs = false;
   const base::DictionaryValue& http_server_properties_dict =
       *pref_service_->GetDictionary(prefs::kHttpServerProperties);
-  for (base::DictionaryValue::key_iterator it =
-       http_server_properties_dict.begin_keys();
-       it != http_server_properties_dict.end_keys(); ++it) {
+
+  // Initialize version to kMissingVersion because there might not be a
+  // "version" key in the properties.
+  int version = kMissingVersion;
+  http_server_properties_dict.GetIntegerWithoutPathExpansion(
+      "version", &version);
+
+  const base::DictionaryValue* servers_dict;
+  if (version == kMissingVersion) {
+    // If http_server_properties_dict has no "version" key and no "servers" key,
+    // then the properties for a given server are in
+    // http_server_properties_dict[server].
+    servers_dict = &http_server_properties_dict;
+  } else {
+    // The "new" format has "version" and "servers" keys. The properties for a
+    // given server is in http_server_properties_dict["servers"][server].
+    base::DictionaryValue* servers_dict_temp = NULL;
+    if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
+        "servers", &servers_dict_temp)) {
+      DVLOG(1) << "Malformed http_server_properties for servers";
+      return;
+    }
+    servers_dict = servers_dict_temp;
+  }
+
+  for (base::DictionaryValue::key_iterator it = servers_dict->begin_keys();
+       it != servers_dict->end_keys();
+       ++it) {
     // Get server's host/pair.
     const std::string& server_str = *it;
     net::HostPortPair server = net::HostPortPair::FromString(server_str);
@@ -254,7 +288,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     }
 
     base::DictionaryValue* server_pref_dict = NULL;
-    if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
+    if (!servers_dict->GetDictionaryWithoutPathExpansion(
         server_str, &server_pref_dict)) {
       DVLOG(1) << "Malformed http_server_properties server: " << server_str;
       detected_corrupted_prefs = true;
@@ -270,45 +304,36 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
 
     // Get SpdySettings.
     DCHECK(!ContainsKey(*spdy_settings_map, server));
-    base::ListValue* spdy_settings_list = NULL;
-    if (server_pref_dict->GetListWithoutPathExpansion(
-        "settings", &spdy_settings_list)) {
-      net::SettingsMap settings_map;
-
-      for (base::ListValue::const_iterator list_it =
-           spdy_settings_list->begin();
-           list_it != spdy_settings_list->end(); ++list_it) {
-        if ((*list_it)->GetType() != Value::TYPE_DICTIONARY) {
-          DVLOG(1) << "Malformed SpdySettingsList for server: " << server_str;
-          NOTREACHED();
-          continue;
+    if (version == kVersionNumber) {
+      base::DictionaryValue* spdy_settings_dict = NULL;
+      if (server_pref_dict->GetDictionaryWithoutPathExpansion(
+          "settings", &spdy_settings_dict)) {
+        net::SettingsMap settings_map;
+        for (base::DictionaryValue::key_iterator dict_it =
+             spdy_settings_dict->begin_keys();
+             dict_it != spdy_settings_dict->end_keys(); ++dict_it) {
+          const std::string& id_str = *dict_it;
+          int id = 0;
+          if (!base::StringToInt(id_str, &id)) {
+            DVLOG(1) << "Malformed id in SpdySettings for server: " <<
+                server_str;
+            NOTREACHED();
+            continue;
+          }
+          int value = 0;
+          if (!spdy_settings_dict->GetIntegerWithoutPathExpansion(id_str,
+                                                                  &value)) {
+            DVLOG(1) << "Malformed value in SpdySettings for server: " <<
+                server_str;
+            NOTREACHED();
+            continue;
+          }
+          net::SettingsFlagsAndValue flags_and_value(
+              net::SETTINGS_FLAG_PERSISTED, value);
+          settings_map[static_cast<net::SpdySettingsIds>(id)] = flags_and_value;
         }
-
-        const base::DictionaryValue* spdy_setting_dict =
-            static_cast<const base::DictionaryValue*>(*list_it);
-
-        int id = 0;
-        if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("id", &id)) {
-          DVLOG(1) << "Malformed id in SpdySettings for server: " << server_str;
-          NOTREACHED();
-          continue;
-        }
-
-        int value = 0;
-        if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("value",
-                                                               &value)) {
-          DVLOG(1) << "Malformed value in SpdySettings for server: " <<
-              server_str;
-          NOTREACHED();
-          continue;
-        }
-
-        net::SettingsFlagsAndValue flags_and_value(
-            net::SETTINGS_FLAG_PERSISTED, value);
-        settings_map[static_cast<net::SpdySettingsIds>(id)] = flags_and_value;
+        (*spdy_settings_map)[server] = settings_map;
       }
-
-      (*spdy_settings_map)[server] = settings_map;
     }
 
     int pipeline_capability = net::PIPELINE_UNKNOWN;
@@ -559,6 +584,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
 
   // Persist the prefs::kHttpServerProperties.
   base::DictionaryValue http_server_properties_dict;
+  base::DictionaryValue* servers_dict = new base::DictionaryValue;
   for (ServerPrefMap::const_iterator map_it =
        server_pref_map.begin();
        map_it != server_pref_map.end(); ++map_it) {
@@ -572,18 +598,16 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
 
     // Save SPDY settings.
     if (server_pref.settings_map) {
-      base::ListValue* spdy_settings_list = new ListValue();
+      base::DictionaryValue* spdy_settings_dict = new base::DictionaryValue;
       for (net::SettingsMap::const_iterator it =
            server_pref.settings_map->begin();
            it != server_pref.settings_map->end(); ++it) {
         net::SpdySettingsIds id = it->first;
         uint32 value = it->second.second;
-        base::DictionaryValue* spdy_setting_dict = new base::DictionaryValue;
-        spdy_setting_dict->SetInteger("id", id);
-        spdy_setting_dict->SetInteger("value", value);
-        spdy_settings_list->Append(spdy_setting_dict);
+        std::string key = base::StringPrintf("%u", id);
+        spdy_settings_dict->SetInteger(key, value);
       }
-      server_pref_dict->Set("settings", spdy_settings_list);
+      server_pref_dict->SetWithoutPathExpansion("settings", spdy_settings_dict);
     }
 
     // Save alternate_protocol.
@@ -606,10 +630,11 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
                                    server_pref.pipeline_capability);
     }
 
-    http_server_properties_dict.SetWithoutPathExpansion(server.ToString(),
-                                                        server_pref_dict);
+    servers_dict->SetWithoutPathExpansion(server.ToString(), server_pref_dict);
   }
 
+  http_server_properties_dict.SetWithoutPathExpansion("servers", servers_dict);
+  http_server_properties_dict.SetInteger("version", kVersionNumber);
   setting_prefs_ = true;
   pref_service_->Set(prefs::kHttpServerProperties,
                      http_server_properties_dict);
