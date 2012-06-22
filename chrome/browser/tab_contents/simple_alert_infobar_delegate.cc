@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,6 @@ SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
 SimpleAlertInfoBarDelegate::~SimpleAlertInfoBarDelegate() {
 }
 
-bool SimpleAlertInfoBarDelegate::ShouldExpire(
-      const content::LoadCommittedDetails& details) const {
-  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
-}
-
 gfx::Image* SimpleAlertInfoBarDelegate::GetIcon() const {
   return icon_;
 }
@@ -35,4 +30,9 @@ string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
 
 int SimpleAlertInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
+}
+
+bool SimpleAlertInfoBarDelegate::ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const {
+  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpireInternal(details);
 }

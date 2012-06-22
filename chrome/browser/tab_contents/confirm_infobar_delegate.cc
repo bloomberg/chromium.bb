@@ -55,11 +55,10 @@ bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
       (confirm_delegate->GetMessageText() == GetMessageText());
 }
 
-bool ConfirmInfoBarDelegate::ShouldExpire(
+bool ConfirmInfoBarDelegate::ShouldExpireInternal(
     const content::LoadCommittedDetails& details) const {
-  if (details.did_replace_entry)
-    return false;
-  return InfoBarDelegate::ShouldExpire(details);
+  return !details.did_replace_entry &&
+      InfoBarDelegate::ShouldExpireInternal(details);
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {

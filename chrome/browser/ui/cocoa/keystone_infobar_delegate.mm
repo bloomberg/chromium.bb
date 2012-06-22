@@ -49,13 +49,13 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   void SetCanExpire() { can_expire_ = true; }
 
   // ConfirmInfoBarDelegate
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
 
   // The prefs to use.
   PrefService* prefs_;  // weak
@@ -87,11 +87,6 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
 KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 }
 
-bool KeystonePromotionInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return details.is_navigation_to_different_page() && can_expire_;
-}
-
 gfx::Image* KeystonePromotionInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_PRODUCT_LOGO_32);
@@ -116,6 +111,11 @@ bool KeystonePromotionInfoBarDelegate::Accept() {
 bool KeystonePromotionInfoBarDelegate::Cancel() {
   prefs_->SetBoolean(prefs::kShowUpdatePromotionInfoBar, false);
   return true;
+}
+
+bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return can_expire_;
 }
 
 }  // namespace

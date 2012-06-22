@@ -65,8 +65,6 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -74,6 +72,8 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
 
   // The omnibox hint that shows us.
   OmniboxSearchHint* omnibox_hint_;
@@ -107,11 +107,6 @@ HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
 HintInfoBar::~HintInfoBar() {
   if (!action_taken_)
     UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Ignored", 1);
-}
-
-bool HintInfoBar::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return details.is_navigation_to_different_page() && should_expire_;
 }
 
 void HintInfoBar::InfoBarDismissed() {
@@ -150,6 +145,11 @@ bool HintInfoBar::Accept() {
   omnibox_hint_->DisableHint();
   omnibox_hint_->ShowEnteringQuery();
   return true;
+}
+
+bool HintInfoBar::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return should_expire_;
 }
 
 

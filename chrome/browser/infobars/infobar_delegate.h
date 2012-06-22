@@ -75,10 +75,11 @@ class InfoBarDelegate {
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
   // Returns true if the InfoBar should be closed automatically after the page
-  // is navigated. The default behavior is to return true if the
-  // navigation is to a new page (not including reloads).
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const;
+  // is navigated. By default this returns true if the navigation is to a new
+  // page (not including reloads).  Subclasses wishing to change this behavior
+  // can override either this function or ShouldExpireInternal(), depending on
+  // what level of control they need.
+  virtual bool ShouldExpire(const content::LoadCommittedDetails& details) const;
 
   // Called when the user clicks on the close button to dismiss the infobar.
   virtual void InfoBarDismissed();
@@ -116,8 +117,14 @@ class InfoBarDelegate {
   // be expired from |contents_|.
   void StoreActiveEntryUniqueID(InfoBarTabHelper* infobar_helper);
 
+  // Direct accessors for subclasses that need to do something special.
+  int contents_unique_id() const { return contents_unique_id_; }
+  void set_contents_unique_id(int contents_unique_id) {
+    contents_unique_id_ = contents_unique_id;
+  }
+
   // Returns true if the navigation is to a new URL or a reload occured.
-  bool ShouldExpireInternal(
+  virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const;
 
   // Removes ourself from |owner_| if we haven't already been removed.

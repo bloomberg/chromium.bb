@@ -58,14 +58,14 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
 
   // The prefs to use.
   PrefService* prefs_;
@@ -109,11 +109,6 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
 }
 
-bool DefaultBrowserInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return details.is_navigation_to_different_page() && should_expire_;
-}
-
 gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
      IDR_PRODUCT_LOGO_32);
@@ -150,6 +145,11 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   // User clicked "Don't ask me again", remember that.
   prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
   return true;
+}
+
+bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return should_expire_;
 }
 
 void CheckDefaultBrowserCallback() {

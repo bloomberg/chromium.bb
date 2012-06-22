@@ -143,8 +143,6 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
@@ -158,9 +156,6 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_process_id_;
   int render_view_id_;
   int bridge_id_;
-  // The unique id of the committed NavigationEntry of the WebContents that we
-  // were opened for. Used to help expire on navigations.
-  int committed_contents_unique_id_;
 
   GURL requesting_frame_url_;
   std::string display_languages_;
@@ -185,18 +180,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       display_languages_(display_languages) {
   const NavigationEntry* committed_entry =
       infobar_helper->web_contents()->GetController().GetLastCommittedEntry();
-  committed_contents_unique_id_ = committed_entry ?
-      committed_entry->GetUniqueID() : 0;
-}
-
-bool GeolocationConfirmInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  if (details.did_replace_entry || !details.is_navigation_to_different_page())
-    return false;
-  return committed_contents_unique_id_ != details.entry->GetUniqueID() ||
-      content::PageTransitionStripQualifier(
-          details.entry->GetTransitionType()) ==
-              content::PAGE_TRANSITION_RELOAD;
+  set_contents_unique_id(committed_entry ? committed_entry->GetUniqueID() : 0);
 }
 
 gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {

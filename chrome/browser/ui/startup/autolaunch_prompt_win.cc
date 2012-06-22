@@ -47,13 +47,13 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
 
   // The prefs to use.
   PrefService* prefs_;
@@ -104,11 +104,6 @@ AutolaunchInfoBarDelegate::~AutolaunchInfoBarDelegate() {
   }
 }
 
-bool AutolaunchInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return details.is_navigation_to_different_page() && should_expire_;
-}
-
 gfx::Image* AutolaunchInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_PRODUCT_LOGO_32);
@@ -145,6 +140,11 @@ bool AutolaunchInfoBarDelegate::Cancel() {
       base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
                  profile_->GetPath().BaseName().value()));
   return true;
+}
+
+bool AutolaunchInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return should_expire_;
 }
 
 void CheckAutoLaunchCallback(Profile* profile) {

@@ -62,7 +62,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   explicit ConfirmInfoBarDelegate(InfoBarTabHelper* infobar_helper);
   virtual ~ConfirmInfoBarDelegate();
 
-  virtual bool ShouldExpire(
+  virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
 
  private:
