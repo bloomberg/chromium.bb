@@ -53,7 +53,7 @@ namespace {
 // Factor of magnification scale. For example, when this value is 1.189, scale
 // value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
 // Note: this value is 2.0 ^ (1 / 4).
-const float kMagnificationFactor = 1.18920712;
+const float kMagnificationFactor = 1.18920712f;
 
 bool DebugShortcutsEnabled() {
 #if defined(NDEBUG)
