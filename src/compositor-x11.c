@@ -149,6 +149,7 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 #else
 	const xcb_query_extension_reply_t *ext;
 	xcb_generic_error_t *error;
+	xcb_void_cookie_t select;
 	xcb_xkb_per_client_flags_cookie_t pcf;
 	xcb_xkb_per_client_flags_reply_t *pcf_reply;
 
@@ -161,6 +162,20 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 		return;
 	}
 	c->xkb_event_base = ext->first_event;
+
+	select = xcb_xkb_select_events(c->conn,
+				       XCB_XKB_ID_USE_CORE_KBD,
+				       XCB_XKB_EVENT_TYPE_STATE_NOTIFY,
+				       0,
+				       XCB_XKB_EVENT_TYPE_STATE_NOTIFY,
+				       0,
+				       0,
+				       NULL);
+	error = xcb_request_check(c->conn, select);
+	if (error) {
+		weston_log("error: failed to select for XKB state events\n");
+		return;
+	}
 
 	pcf = xcb_xkb_per_client_flags(c->conn,
 				       XCB_XKB_ID_USE_CORE_KBD,
@@ -595,6 +610,51 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 	return NULL;
 }
 
+#ifdef HAVE_XCB_XKB
+static uint32_t
+get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
+{
+	struct weston_xkb_info *info = &c->base.seat->xkb_info;
+	uint32_t ret = 0;
+
+	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->shift_mod);
+	if ((in & LockMask) && info->caps_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->caps_mod);
+	if ((in & ControlMask) && info->ctrl_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->ctrl_mod);
+	if ((in & Mod1Mask) && info->alt_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->alt_mod);
+	if ((in & Mod2Mask) && info->mod2_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->mod2_mod);
+	if ((in & Mod3Mask) && info->mod3_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->mod3_mod);
+	if ((in & Mod4Mask) && info->super_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->super_mod);
+	if ((in & Mod5Mask) && info->mod5_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->mod5_mod);
+
+	return ret;
+}
+
+static void
+update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
+{
+	struct weston_compositor *ec = &c->base;
+	struct wl_seat *seat = &ec->seat->seat;
+
+	xkb_state_update_mask(c->base.seat->xkb_state.state,
+			      get_xkb_mod_mask(c, state->baseMods),
+			      get_xkb_mod_mask(c, state->latchedMods),
+			      get_xkb_mod_mask(c, state->lockedMods),
+			      0,
+			      0,
+			      state->group);
+
+	notify_modifiers(seat, wl_display_next_serial(c->base.wl_display));
+}
+#endif
+
 static void
 x11_compositor_deliver_button_event(struct x11_compositor *c,
 				    xcb_generic_event_t *event, int state)
@@ -755,7 +815,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				   weston_compositor_get_time(),
 				   key_press->detail - 8,
 				   WL_KEYBOARD_KEY_STATE_PRESSED,
-				   STATE_UPDATE_AUTOMATIC);
+				   c->has_xkb ? STATE_UPDATE_NONE :
+						STATE_UPDATE_AUTOMATIC);
 			break;
 		case XCB_KEY_RELEASE:
 			/* If we don't have XKB, we need to use the lame
@@ -769,7 +830,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				   weston_compositor_get_time(),
 				   key_release->detail - 8,
 				   WL_KEYBOARD_KEY_STATE_RELEASED,
-				   STATE_UPDATE_AUTOMATIC);
+				   STATE_UPDATE_NONE);
 			break;
 		case XCB_BUTTON_PRESS:
 			x11_compositor_deliver_button_event(c, event, 1);
@@ -839,6 +900,16 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		default:
 			break;
 		}
+
+#ifdef HAVE_XCB_XKB
+		if (c->has_xkb &&
+		    (event->response_type & ~0x80) == c->xkb_event_base) {
+			xcb_xkb_state_notify_event_t *state =
+				(xcb_xkb_state_notify_event_t *) event;
+			if (state->xkbType == XCB_XKB_STATE_NOTIFY)
+				update_xkb_state(c, state);
+		}
+#endif
 
 		count++;
 		if (prev != event)
