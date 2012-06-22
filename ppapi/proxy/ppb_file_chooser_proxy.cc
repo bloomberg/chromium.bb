@@ -115,7 +115,7 @@ int32_t FileChooser::ShowWithoutUserGesture(
     PP_Var suggested_file_name,
     const PP_ArrayOutput& output,
     const PP_CompletionCallback& callback) {
-  int32_t result = Show(false, save_as, PP_MakeUndefined(), callback);
+  int32_t result = Show(false, save_as, suggested_file_name, callback);
   if (result == PP_OK_COMPLETIONPENDING)
     output_.set_pp_array_output(output);
   return result;
