@@ -20,9 +20,9 @@
 class MessageLoop;
 class Profile;
 
-namespace sync_api {
+namespace csync {
 struct UserShare;
-}  // namespace sync_api
+}  // namespace csync
 
 namespace browser_sync {
 
@@ -32,7 +32,7 @@ class UIModelWorker;
 // A class that keep track of the workers, change processors, and
 // routing info for the enabled sync types, and also routes change
 // events to the right processors.
-class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
+class SyncBackendRegistrar : public csync::SyncManager::ChangeDelegate {
  public:
   // |initial_types| contains the initial set of types to sync
   // (initially put in the passive group).  |name| is used for
@@ -81,7 +81,7 @@ class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
   void ActivateDataType(syncable::ModelType type,
                         csync::ModelSafeGroup group,
                         ChangeProcessor* change_processor,
-                        sync_api::UserShare* user_share);
+                        csync::UserShare* user_share);
 
   // Deactivates the given type if necessary.  Must be called from the
   // UI thread and not |type|'s native thread.  Yes, this is
@@ -96,8 +96,8 @@ class SyncBackendRegistrar : public sync_api::SyncManager::ChangeDelegate {
   // any thread.
   virtual void OnChangesApplied(
       syncable::ModelType model_type,
-      const sync_api::BaseTransaction* trans,
-      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+      const csync::BaseTransaction* trans,
+      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
   void GetWorkers(std::vector<csync::ModelSafeWorker*>* out);

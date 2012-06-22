@@ -27,7 +27,7 @@ using std::vector;
 using syncable::kEncryptedString;
 using syncable::SPECIFICS;
 
-namespace sync_api {
+namespace csync {
 
 static const char kDefaultNameForNewNodes[] = " ";
 
@@ -509,4 +509,4 @@ void WriteNode::MarkForSyncing() {
   syncable::MarkForSyncing(entry_);
 }
 
-} // namespace sync_api
+} // namespace csync

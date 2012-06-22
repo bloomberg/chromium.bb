@@ -9,7 +9,7 @@
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry.h"
 
-namespace sync_api {
+namespace csync {
 
 //////////////////////////////////////////////////////////////////////////
 // ReadNode member definitions
@@ -95,4 +95,4 @@ BaseNode::InitByLookupResult ReadNode::InitByTagLookup(
   return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
-}  // namespace sync_api
+}  // namespace csync

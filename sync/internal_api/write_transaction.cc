@@ -6,7 +6,7 @@
 
 #include "sync/syncable/write_transaction.h"
 
-namespace sync_api {
+namespace csync {
 
 //////////////////////////////////////////////////////////////////////////
 // WriteTransaction member definitions
@@ -26,4 +26,4 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-} // namespace sync_api
+} // namespace csync

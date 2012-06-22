@@ -108,7 +108,7 @@ class SyncData {
   // Whether this SyncData holds valid data.
   bool is_valid_;
 
-  // Equal to sync_api::kInvalidId iff this is local.
+  // Equal to csync::kInvalidId iff this is local.
   int64 id_;
 
   // The actual shared sync entity being held.

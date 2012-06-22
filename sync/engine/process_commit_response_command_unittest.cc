@@ -32,7 +32,6 @@ using syncable::IS_UNSYNCED;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::NON_UNIQUE_NAME;
-using syncable::ReadTransaction;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
@@ -226,7 +225,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   ExpectGroupsToChange(command, GROUP_UI, GROUP_DB);
   command.ExecuteImpl(session());
 
-  ReadTransaction trans(FROM_HERE, directory());
+  syncable::ReadTransaction trans(FROM_HERE, directory());
   Id new_fid;
   ASSERT_TRUE(directory()->GetFirstChildId(
           &trans, id_factory_.root(), &new_fid));
@@ -286,7 +285,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
 
   // Verify that the item is reachable.
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     Id child_id;
     ASSERT_TRUE(directory()->GetFirstChildId(
             &trans, id_factory_.root(), &child_id));
@@ -323,7 +322,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   ExpectGroupToChange(command, GROUP_UI);
   command.ExecuteImpl(session());
 
-  ReadTransaction trans(FROM_HERE, directory());
+  syncable::ReadTransaction trans(FROM_HERE, directory());
   // Lookup the parent folder by finding a child of the root.  We can't use
   // folder_id here, because it changed during the commit.
   Id new_fid;

@@ -30,12 +30,12 @@ class EnableDisableSingleClientTest : public EnableDisableTest {
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };
 
-bool DoesTopLevelNodeExist(sync_api::UserShare* user_share,
+bool DoesTopLevelNodeExist(csync::UserShare* user_share,
                            syncable::ModelType type) {
-    sync_api::ReadTransaction trans(FROM_HERE, user_share);
-    sync_api::ReadNode node(&trans);
+    csync::ReadTransaction trans(FROM_HERE, user_share);
+    csync::ReadNode node(&trans);
     return node.InitByTagLookup(syncable::ModelTypeToRootTag(type)) ==
-        sync_api::BaseNode::INIT_OK;
+        csync::BaseNode::INIT_OK;
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
 
   const syncable::ModelTypeSet registered_types =
       GetClient(0)->service()->GetRegisteredDataTypes();
-  sync_api::UserShare* user_share = GetClient(0)->service()->GetUserShare();
+  csync::UserShare* user_share = GetClient(0)->service()->GetUserShare();
   for (syncable::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   const syncable::ModelTypeSet registered_types =
       GetClient(0)->service()->GetRegisteredDataTypes();
 
-  sync_api::UserShare* user_share = GetClient(0)->service()->GetUserShare();
+  csync::UserShare* user_share = GetClient(0)->service()->GetUserShare();
 
   // Make sure all top-level nodes exist first.
   for (syncable::ModelTypeSet::Iterator it = registered_types.First();
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
       continue;
     }
 
-    sync_api::UserShare* user_share =
+    csync::UserShare* user_share =
         GetClient(0)->service()->GetUserShare();
 
     ASSERT_FALSE(DoesTopLevelNodeExist(user_share, it.Get()))

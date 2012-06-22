@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/engine/net/server_connection_manager.h"
 
-namespace sync_api {
+namespace csync {
 
 class HttpPostProviderFactory;
 class HttpPostProviderInterface;
@@ -73,6 +73,6 @@ class SyncAPIServerConnectionManager
   DISALLOW_COPY_AND_ASSIGN(SyncAPIServerConnectionManager);
 };
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_SYNCAPI_SERVER_CONNECTION_MANAGER_H_

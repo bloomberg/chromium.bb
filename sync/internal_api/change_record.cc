@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/read_node.h"
 #include "sync/protocol/proto_value_conversions.h"
 
-namespace sync_api {
+namespace csync {
 
 ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
@@ -65,5 +65,5 @@ const sync_pb::PasswordSpecificsData&
   return unencrypted_;
 }
 
-}  // namespace sync_api
+}  // namespace csync
 

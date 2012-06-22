@@ -210,7 +210,7 @@ browser_sync::GenericChangeProcessor*
         ProfileSyncService* profile_sync_service,
         browser_sync::DataTypeErrorHandler* error_handler,
         const base::WeakPtr<SyncableService>& local_service) {
-  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
+  csync::UserShare* user_share = profile_sync_service->GetUserShare();
   return new GenericChangeProcessor(error_handler,
                                     local_service,
                                     user_share);
@@ -271,7 +271,7 @@ ProfileSyncComponentsFactory::SyncComponents
         DataTypeErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
       profile_sync_service->profile()->GetBookmarkModel();
-  sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
+  csync::UserShare* user_share = profile_sync_service->GetUserShare();
   // TODO(akalin): We may want to propagate this switch up eventually.
 #if defined(OS_ANDROID)
   const bool kExpectMobileBookmarksFolder = true;

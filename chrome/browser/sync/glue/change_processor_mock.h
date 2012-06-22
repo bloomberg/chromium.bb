@@ -19,8 +19,8 @@ class ChangeProcessorMock
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
   MOCK_METHOD2(ApplyChangesFromSyncModel,
-               void(const sync_api::BaseTransaction*,
-                    const sync_api::ImmutableChangeRecordList&));
+               void(const csync::BaseTransaction*,
+                    const csync::ImmutableChangeRecordList&));
   MOCK_METHOD0(CommitChangesFromSyncModel, void());
   MOCK_METHOD1(StartImpl, void(Profile*));
   MOCK_METHOD0(StopImpl, void());

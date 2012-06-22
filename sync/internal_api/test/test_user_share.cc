@@ -19,7 +19,7 @@ TestUserShare::~TestUserShare() {
 }
 
 void TestUserShare::SetUp() {
-  user_share_.reset(new sync_api::UserShare());
+  user_share_.reset(new csync::UserShare());
   dir_maker_->SetUp();
 
   // The pointer is owned by dir_maker_, we should not be storing it in a
@@ -35,7 +35,7 @@ void TestUserShare::TearDown() {
   dir_maker_->TearDown();
 }
 
-sync_api::UserShare* TestUserShare::user_share() {
+csync::UserShare* TestUserShare::user_share() {
   return user_share_.get();
 }
 

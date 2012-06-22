@@ -11,7 +11,7 @@
 
 using csync::Cryptographer;
 
-namespace sync_api {
+namespace csync {
 
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
@@ -33,9 +33,9 @@ static const char* kForbiddenServerNames[] = { "", ".", ".." };
 
 // When taking a name from the syncapi, append a space if it matches the
 // pattern of a server-illegal name followed by zero or more spaces.
-void SyncAPINameToServerName(const std::string& sync_api_name,
+void SyncAPINameToServerName(const std::string& csync_name,
                              std::string* out) {
-  *out = sync_api_name;
+  *out = csync_name;
   if (IsNameServerIllegalAfterTrimming(*out))
     out->append(" ");
 }
@@ -84,4 +84,4 @@ bool AreSpecificsEqual(const csync::Cryptographer* cryptographer,
   return false;
 }
 
-} // namespace sync_api
+} // namespace csync

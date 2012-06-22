@@ -28,7 +28,7 @@
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
 
-namespace sync_api {
+namespace csync {
 
 // Helper function to look up the int64 metahandle of an object given the ID
 // string.
@@ -352,4 +352,4 @@ void BaseNode::SetUnencryptedSpecifics(
   unencrypted_data_.CopyFrom(specifics);
 }
 
-}  // namespace sync_api
+}  // namespace csync

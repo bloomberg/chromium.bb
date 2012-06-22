@@ -18,7 +18,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace sync_api {
+namespace csync {
 
 // Sync API's WriteTransaction is a read/write BaseTransaction.  It wraps
 // a syncable::WriteTransaction.
@@ -52,6 +52,6 @@ class WriteTransaction : public BaseTransaction {
   DISALLOW_COPY_AND_ASSIGN(WriteTransaction);
 };
 
-} // namespace sync_api
+} // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_WRITE_TRANSACTION_H_

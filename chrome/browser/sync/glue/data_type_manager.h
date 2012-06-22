@@ -94,10 +94,10 @@ class DataTypeManager {
   // progress.  Configuration will be complete only when the
   // desired_types supplied in the last call to Configure is achieved.
   virtual void Configure(TypeSet desired_types,
-                         sync_api::ConfigureReason reason) = 0;
+                         csync::ConfigureReason reason) = 0;
 
   virtual void ConfigureWithoutNigori(TypeSet desired_types,
-                                      sync_api::ConfigureReason reason) = 0;
+                                      csync::ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the

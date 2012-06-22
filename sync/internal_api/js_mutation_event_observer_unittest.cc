@@ -46,22 +46,22 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   // We don't test with passwords as that requires additional setup.
 
   // Build a list of example ChangeRecords.
-  sync_api::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
+  csync::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     changes[i].id = i;
     switch (i % 3) {
       case 0:
         changes[i].action =
-            sync_api::ChangeRecord::ACTION_ADD;
+            csync::ChangeRecord::ACTION_ADD;
         break;
       case 1:
         changes[i].action =
-            sync_api::ChangeRecord::ACTION_UPDATE;
+            csync::ChangeRecord::ACTION_UPDATE;
         break;
       default:
         changes[i].action =
-            sync_api::ChangeRecord::ACTION_DELETE;
+            csync::ChangeRecord::ACTION_DELETE;
         break;
     }
   }
@@ -91,11 +91,11 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   // Fire OnChangesApplied() for each data type.
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    sync_api::ChangeRecordList
+    csync::ChangeRecordList
         local_changes(changes + i, changes + arraysize(changes));
     js_mutation_event_observer_.OnChangesApplied(
         syncable::ModelTypeFromInt(i),
-        0, sync_api::ImmutableChangeRecordList(&local_changes));
+        0, csync::ImmutableChangeRecordList(&local_changes));
   }
 
   PumpLoop();

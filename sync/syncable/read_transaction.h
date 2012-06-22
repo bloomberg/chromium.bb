@@ -8,7 +8,7 @@
 
 #include "sync/syncable/base_transaction.h"
 
-namespace sync_api {
+namespace csync {
 class ReadTransaction;
 }
 
@@ -23,7 +23,7 @@ class ReadTransaction : public BaseTransaction {
   virtual ~ReadTransaction();
 
  protected:  // Don't allow creation on heap, except by sync API wrapper.
-  friend class sync_api::ReadTransaction;
+  friend class csync::ReadTransaction;
   void* operator new(size_t size) { return (::operator new)(size); }
 
   DISALLOW_COPY_AND_ASSIGN(ReadTransaction);

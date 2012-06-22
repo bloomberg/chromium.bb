@@ -33,7 +33,7 @@ class BackendDataTypeConfigurer {
   // SyncBackendHost calls ConfigureDataTypes on itself to configure
   // Nigori.
   virtual void ConfigureDataTypes(
-      sync_api::ConfigureReason reason,
+      csync::ConfigureReason reason,
       syncable::ModelTypeSet types_to_add,
       syncable::ModelTypeSet types_to_remove,
       NigoriState nigori_state,

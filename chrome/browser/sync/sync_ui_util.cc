@@ -324,7 +324,7 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
 
   if (service->HasSyncSetupCompleted() &&
       service->IsPassphraseRequired()) {
-    if (service->passphrase_required_reason() == sync_api::REASON_ENCRYPTION) {
+    if (service->passphrase_required_reason() == csync::REASON_ENCRYPTION) {
       // First machine migrating to passwords.  Show as a promotion.
       if (status_label && link_label) {
         status_label->assign(
@@ -519,7 +519,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // with the last snapshot emitted by the syncer.  Keep in mind, though, that
     // not all events that update these values will ping the UI thread, so you
     // might not see all intermediate values.
-    sync_api::SyncStatus full_status(service->QueryDetailedSyncStatus());
+    csync::SyncStatus full_status(service->QueryDetailedSyncStatus());
 
     // This is a cache of the last snapshot of type SYNC_CYCLE_ENDED where
     // !snapshot.has_more_to_sync().  In other words, it's the last in this

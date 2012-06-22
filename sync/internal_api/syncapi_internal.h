@@ -6,7 +6,7 @@
 #define SYNC_INTERNAL_API_SYNCAPI_INTERNAL_H_
 
 // The functions defined are shared among some of the classes that implement
-// the internal sync_api.  They are not to be used by clients of the API.
+// the internal csync.  They are not to be used by clients of the API.
 
 #include <string>
 
@@ -19,12 +19,12 @@ class EntitySpecifics;
 class PasswordSpecificsData;
 }
 
-namespace sync_api {
+namespace csync {
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     csync::Cryptographer* crypto);
 
-void SyncAPINameToServerName(const std::string& sync_api_name,
+void SyncAPINameToServerName(const std::string& csync_name,
                              std::string* out);
 
 bool IsNameServerIllegalAfterTrimming(const std::string& name);

@@ -24,21 +24,21 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncManager events to a JsEventHandler.
-class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
+class JsSyncManagerObserver : public csync::SyncManager::Observer {
  public:
   JsSyncManagerObserver();
   virtual ~JsSyncManagerObserver();
 
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
-  // sync_api::SyncManager::Observer implementation.
+  // csync::SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnConnectionStatusChange(
-      sync_api::ConnectionStatus status) OVERRIDE;
+      csync::ConnectionStatus status) OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason,
+      csync::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(

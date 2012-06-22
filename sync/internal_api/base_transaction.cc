@@ -9,7 +9,7 @@
 
 using csync::Cryptographer;
 
-namespace sync_api {
+namespace csync {
 
 //////////////////////////////////////////////////////////////////////////
 // BaseTransaction member definitions
@@ -25,8 +25,8 @@ csync::Cryptographer* BaseTransaction::GetCryptographer() const {
 }
 
 syncable::ModelTypeSet GetEncryptedTypes(
-    const sync_api::BaseTransaction* trans) {
+    const csync::BaseTransaction* trans) {
   return trans->GetCryptographer()->GetEncryptedTypes();
 }
 
-} // namespace sync_api
+} // namespace csync

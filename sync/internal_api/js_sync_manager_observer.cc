@@ -42,12 +42,12 @@ void JsSyncManagerObserver::OnSyncCycleCompleted(
 }
 
 void JsSyncManagerObserver::OnConnectionStatusChange(
-    sync_api::ConnectionStatus status) {
+    csync::ConnectionStatus status) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("status", sync_api::ConnectionStatusToString(status));
+  details.SetString("status", csync::ConnectionStatusToString(status));
   HandleJsEvent(FROM_HERE,
                 "onConnectionStatusChange", JsEventDetails(&details));
 }
@@ -62,14 +62,14 @@ void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
 }
 
 void JsSyncManagerObserver::OnPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason,
+    csync::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("reason",
-                     sync_api::PassphraseRequiredReasonToString(reason));
+                     csync::PassphraseRequiredReasonToString(reason));
   HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
 }
 

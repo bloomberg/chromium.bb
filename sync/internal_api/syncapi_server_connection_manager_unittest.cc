@@ -21,7 +21,7 @@ using csync::HttpResponse;
 using csync::ServerConnectionManager;
 using csync::ScopedServerStatusWatcher;
 
-namespace sync_api {
+namespace csync {
 namespace {
 
 class BlockingHttpPost : public HttpPostProviderInterface {
@@ -112,4 +112,4 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   abort_thread.Stop();
 }
 
-}  // namespace sync_api
+}  // namespace csync

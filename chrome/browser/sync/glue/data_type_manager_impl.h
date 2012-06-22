@@ -32,12 +32,12 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // DataTypeManager interface.
   virtual void Configure(TypeSet desired_types,
-                         sync_api::ConfigureReason reason) OVERRIDE;
+                         csync::ConfigureReason reason) OVERRIDE;
 
   // Needed only for backend migration.
   virtual void ConfigureWithoutNigori(
       TypeSet desired_types,
-      sync_api::ConfigureReason reason) OVERRIDE;
+      csync::ConfigureReason reason) OVERRIDE;
 
   virtual void Stop() OVERRIDE;
   virtual State state() const OVERRIDE;
@@ -63,7 +63,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Otherwise, returns false.
   bool ProcessReconfigure();
 
-  void Restart(sync_api::ConfigureReason reason,
+  void Restart(csync::ConfigureReason reason,
                BackendDataTypeConfigurer::NigoriState nigori_state);
   void DownloadReady(syncable::ModelTypeSet failed_configuration_types);
 
@@ -80,7 +80,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void ConfigureImpl(
       TypeSet desired_types,
-      sync_api::ConfigureReason reason,
+      csync::ConfigureReason reason,
       BackendDataTypeConfigurer::NigoriState nigori_state);
 
   BackendDataTypeConfigurer* configurer_;
@@ -97,7 +97,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // The reason for the last reconfigure attempt. Not this will be set to a
   // valid value only when |needs_reconfigure_| is set.
-  sync_api::ConfigureReason last_configure_reason_;
+  csync::ConfigureReason last_configure_reason_;
   // The value of |nigori_state| on the last reconfigure attempt.
   // Like |last_configure_reason_|, set to a valid value only when
   // |needs_reconfigure_| is set.

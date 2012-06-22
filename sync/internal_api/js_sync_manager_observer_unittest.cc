@@ -110,11 +110,11 @@ TEST_F(JsSyncManagerObserverTest, OnActionableError) {
 
 
 TEST_F(JsSyncManagerObserverTest, OnConnectionStatusChange) {
-  const sync_api::ConnectionStatus kStatus =
-      sync_api::CONNECTION_AUTH_ERROR;
+  const csync::ConnectionStatus kStatus =
+      csync::CONNECTION_AUTH_ERROR;
   DictionaryValue expected_details;
   expected_details.SetString("status",
-                             sync_api::ConnectionStatusToString(kStatus));
+                             csync::ConnectionStatusToString(kStatus));
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onConnectionStatusChange",
@@ -133,14 +133,14 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
 
   reason_passphrase_not_required_details.SetString(
       "reason",
-      sync_api::PassphraseRequiredReasonToString(
-          sync_api::REASON_PASSPHRASE_NOT_REQUIRED));
+      csync::PassphraseRequiredReasonToString(
+          csync::REASON_PASSPHRASE_NOT_REQUIRED));
   reason_encryption_details.SetString(
       "reason",
-      sync_api::PassphraseRequiredReasonToString(sync_api::REASON_ENCRYPTION));
+      csync::PassphraseRequiredReasonToString(csync::REASON_ENCRYPTION));
   reason_decryption_details.SetString(
       "reason",
-      sync_api::PassphraseRequiredReasonToString(sync_api::REASON_DECRYPTION));
+      csync::PassphraseRequiredReasonToString(csync::REASON_DECRYPTION));
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
@@ -154,11 +154,11 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
                            HasDetailsAsDictionary(reason_decryption_details)));
 
   js_sync_manager_observer_.OnPassphraseRequired(
-      sync_api::REASON_PASSPHRASE_NOT_REQUIRED,
+      csync::REASON_PASSPHRASE_NOT_REQUIRED,
       sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_ENCRYPTION,
+  js_sync_manager_observer_.OnPassphraseRequired(csync::REASON_ENCRYPTION,
                                                  sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+  js_sync_manager_observer_.OnPassphraseRequired(csync::REASON_DECRYPTION,
                                                  sync_pb::EncryptedData());
   PumpLoop();
 }

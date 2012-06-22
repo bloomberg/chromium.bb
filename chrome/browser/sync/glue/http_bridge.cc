@@ -64,13 +64,13 @@ HttpBridgeFactory::HttpBridgeFactory(
 HttpBridgeFactory::~HttpBridgeFactory() {
 }
 
-sync_api::HttpPostProviderInterface* HttpBridgeFactory::Create() {
+csync::HttpPostProviderInterface* HttpBridgeFactory::Create() {
   HttpBridge* http = new HttpBridge(request_context_getter_);
   http->AddRef();
   return http;
 }
 
-void HttpBridgeFactory::Destroy(sync_api::HttpPostProviderInterface* http) {
+void HttpBridgeFactory::Destroy(csync::HttpPostProviderInterface* http) {
   static_cast<HttpBridge*>(http)->Release();
 }
 

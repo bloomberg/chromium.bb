@@ -11,7 +11,7 @@
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace sync_api {
+namespace csync {
 class BaseNode;
 }
 
@@ -66,7 +66,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
  public:
   virtual ~PerDataTypeAssociatorInterface() {}
   // Returns sync id for the given chrome model id.
-  // Returns sync_api::kInvalidId if the sync node is not found for the given
+  // Returns csync::kInvalidId if the sync node is not found for the given
   // chrome id.
   virtual int64 GetSyncIdFromChromeId(const IDType& id) = 0;
 
@@ -79,7 +79,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(
       const IDType& node_id,
-      sync_api::BaseNode* sync_node) = 0;
+      csync::BaseNode* sync_node) = 0;
 
   // Associates the given chrome node with the given sync id.
   virtual void Associate(const Node* node, int64 sync_id) = 0;

@@ -1201,7 +1201,7 @@ name=http://crbug.com/91465
 *!operator new
 *!browser_sync::internal::WeakHandleCore<browser_sync::JsBackend>::*
 *!browser_sync::WeakHandle<browser_sync::JsBackend>::*
-*!sync_api::SyncManager::SyncInternal::Init
+*!csync::SyncManager::SyncInternal::Init
 
 LEAK
 name=http://crbug.com/91491

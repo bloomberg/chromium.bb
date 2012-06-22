@@ -9,7 +9,7 @@
 #include "sync/syncable/entry.h"
 #include "sync/syncable/metahandle_set.h"
 
-namespace sync_api {
+namespace csync {
 class WriteNode;
 }
 
@@ -89,7 +89,7 @@ class MutableEntry : public Entry {
  private:
   friend class Directory;
   friend class WriteTransaction;
-  friend class sync_api::WriteNode;
+  friend class csync::WriteNode;
 
   // Don't allow creation on heap, except by sync API wrappers.
   void* operator new(size_t size) { return (::operator new)(size); }

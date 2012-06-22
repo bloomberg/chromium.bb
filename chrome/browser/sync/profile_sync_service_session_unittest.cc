@@ -55,7 +55,7 @@ using browser_sync::SessionDataTypeController;
 using browser_sync::SessionModelAssociator;
 using browser_sync::SyncBackendHost;
 using content::BrowserThread;
-using sync_api::ChangeRecord;
+using csync::ChangeRecord;
 using testing::_;
 using testing::Return;
 using csync::TestIdFactory;
@@ -307,12 +307,12 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   ASSERT_TRUE(has_nodes);
   std::string machine_tag = model_associator_->GetCurrentMachineTag();
   int64 sync_id = model_associator_->GetSyncIdFromSessionTag(machine_tag);
-  ASSERT_NE(sync_api::kInvalidId, sync_id);
+  ASSERT_NE(csync::kInvalidId, sync_id);
 
   // Check that we can get the correct session specifics back from the node.
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  sync_api::ReadNode node(&trans);
-  ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+  csync::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadNode node(&trans);
+  ASSERT_EQ(csync::BaseNode::INIT_OK,
             node.InitByClientTagLookup(syncable::SESSIONS, machine_tag));
   const sync_pb::SessionSpecifics& specifics(node.GetSessionSpecifics());
   ASSERT_EQ(machine_tag, specifics.session_tag());
@@ -344,7 +344,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_WriteFilledSessionToNode) {
   ASSERT_TRUE(has_nodes);
   std::string machine_tag = model_associator_->GetCurrentMachineTag();
   int64 sync_id = model_associator_->GetSyncIdFromSessionTag(machine_tag);
-  ASSERT_NE(sync_api::kInvalidId, sync_id);
+  ASSERT_NE(csync::kInvalidId, sync_id);
 
   // Check that this machine's data is not included in the foreign windows.
   std::vector<const SyncedSession*> foreign_sessions;
@@ -648,7 +648,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionUpdate) {
       model_associator_->GetCurrentMachineTag());
   ASSERT_FALSE(notified_of_update_);
   {
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -667,7 +667,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionAdd) {
       model_associator_->GetCurrentMachineTag());
   ASSERT_FALSE(notified_of_update_);
   {
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -688,7 +688,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
   deleted_specifics.mutable_session()->set_session_tag("tag");
   ASSERT_FALSE(notified_of_update_);
   {
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
@@ -978,7 +978,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
 
   std::string machine_tag = model_associator_->GetCurrentMachineTag();
   int64 sync_id = model_associator_->GetSyncIdFromSessionTag(machine_tag);
-  ASSERT_NE(sync_api::kInvalidId, sync_id);
+  ASSERT_NE(csync::kInvalidId, sync_id);
 
   // Check that this machine's data is not included in the foreign windows.
   std::vector<const SyncedSession*> foreign_sessions;
@@ -1020,13 +1020,13 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
   ASSERT_FALSE(error.IsSet());
   {
     // Create a sync node with the local tag but neither header nor tab field.
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    sync_api::ReadNode root(&trans);
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
-    sync_api::WriteNode extra_header(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode extra_header(&trans);
+    csync::WriteNode::InitUniqueByCreationResult result =
         extra_header.InitUniqueByCreation(syncable::SESSIONS, root, "new_tag");
-    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(local_tag);
     extra_header.SetSessionSpecifics(specifics);
@@ -1051,14 +1051,14 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
   ASSERT_FALSE(error.IsSet());
   {
     // Create another sync node with a header field and the local tag.
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    sync_api::ReadNode root(&trans);
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
-    sync_api::WriteNode extra_header(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode extra_header(&trans);
+    csync::WriteNode::InitUniqueByCreationResult result =
         extra_header.InitUniqueByCreation(syncable::SESSIONS,
                                           root, local_tag + "_");
-    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(local_tag);
     specifics.mutable_header();
@@ -1084,14 +1084,14 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
     // Create another sync node with neither header nor tab field and a foreign
     // tag.
     std::string foreign_tag = "foreign_tag";
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    sync_api::ReadNode root(&trans);
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
-    sync_api::WriteNode extra_header(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode extra_header(&trans);
+    csync::WriteNode::InitUniqueByCreationResult result =
         extra_header.InitUniqueByCreation(syncable::SESSIONS,
                                           root, foreign_tag);
-    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(foreign_tag);
     extra_header.SetSessionSpecifics(specifics);
@@ -1117,10 +1117,10 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
     // Delete the first sync tab node.
     std::string tab_tag = SessionModelAssociator::TabIdToTag(local_tag, 0);
 
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    sync_api::ReadNode root(&trans);
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
-    sync_api::WriteNode tab_node(&trans);
+    csync::WriteNode tab_node(&trans);
     ASSERT_TRUE(tab_node.InitByClientTagLookup(syncable::SESSIONS, tab_tag));
     tab_node.Remove();
   }
@@ -1188,9 +1188,9 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedLocalHeader) {
   ASSERT_FALSE(error.IsSet());
   {
     // Load the header node and clear it.
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    sync_api::WriteNode header(&trans);
-    ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::WriteNode header(&trans);
+    ASSERT_EQ(csync::BaseNode::INIT_OK,
               header.InitByClientTagLookup(syncable::SESSIONS, local_tag));
     sync_pb::SessionSpecifics specifics;
     header.SetSessionSpecifics(specifics);

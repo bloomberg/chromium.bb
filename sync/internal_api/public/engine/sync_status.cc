@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/engine/sync_status.h"
 
-namespace sync_api {
+namespace csync {
 
 SyncStatus::SyncStatus()
     : notifications_enabled(false),
@@ -36,4 +36,4 @@ SyncStatus::SyncStatus()
 SyncStatus::~SyncStatus() {
 }
 
-}  // namespace sync_api
+}  // namespace csync

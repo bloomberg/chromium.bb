@@ -12,9 +12,9 @@
 
 namespace browser_sync {
 
-class TestHttpBridge : public sync_api::HttpPostProviderInterface {
+class TestHttpBridge : public csync::HttpPostProviderInterface {
  public:
-  // Begin sync_api::HttpPostProviderInterface implementation:
+  // Begin csync::HttpPostProviderInterface implementation:
   virtual void SetUserAgent(const char* user_agent) OVERRIDE {}
 
   virtual void SetExtraRequestHeaders(const char * headers) OVERRIDE {}
@@ -36,17 +36,17 @@ class TestHttpBridge : public sync_api::HttpPostProviderInterface {
       const std::string&) const OVERRIDE;
 
   virtual void Abort() OVERRIDE;
-  // End sync_api::HttpPostProviderInterface implementation.
+  // End csync::HttpPostProviderInterface implementation.
 };
 
-class TestHttpBridgeFactory : public sync_api::HttpPostProviderFactory {
+class TestHttpBridgeFactory : public csync::HttpPostProviderFactory {
  public:
   TestHttpBridgeFactory();
   virtual ~TestHttpBridgeFactory();
 
-  // sync_api::HttpPostProviderFactory:
-  virtual sync_api::HttpPostProviderInterface* Create() OVERRIDE;
-  virtual void Destroy(sync_api::HttpPostProviderInterface* http) OVERRIDE;
+  // csync::HttpPostProviderFactory:
+  virtual csync::HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(csync::HttpPostProviderInterface* http) OVERRIDE;
 };
 
 }  // namespace browser_sync

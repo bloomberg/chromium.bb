@@ -22,7 +22,7 @@ using csync::sessions::ErrorCounters;
 using csync::sessions::SyncSessionSnapshot;
 using csync::sessions::SyncSourceInfo;
 using csync::sessions::SyncerStatus;
-using sync_api::UserShare;
+using csync::UserShare;
 using syncable::Directory;
 
 namespace browser_sync {
@@ -58,7 +58,7 @@ void SyncBackendHostForProfileSyncTest::
 
 namespace {
 
-sync_api::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
+csync::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
   return new browser_sync::TestHttpBridgeFactory();
 }
 
@@ -73,8 +73,8 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   test_options.credentials.sync_token = "token";
   test_options.restored_key_for_bootstrapping = "";
   test_options.testing_mode =
-      use_real_database_ ? sync_api::SyncManager::TEST_ON_DISK
-                         : sync_api::SyncManager::TEST_IN_MEMORY;
+      use_real_database_ ? csync::SyncManager::TEST_ON_DISK
+                         : csync::SyncManager::TEST_IN_MEMORY;
   SyncBackendHost::InitCore(test_options);
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_init_) {
@@ -189,7 +189,7 @@ void TestProfileSyncService::OnBackendInitialized(
 
   ProfileSyncService::OnBackendInitialized(backend, success);
   if (success && send_passphrase_required)
-    OnPassphraseRequired(sync_api::REASON_DECRYPTION, sync_pb::EncryptedData());
+    OnPassphraseRequired(csync::REASON_DECRYPTION, sync_pb::EncryptedData());
 
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_backend_initialization_) {

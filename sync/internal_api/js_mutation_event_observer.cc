@@ -46,7 +46,7 @@ const size_t kChangeLimit = 100;
 void JsMutationEventObserver::OnChangesApplied(
     syncable::ModelType model_type,
     int64 write_transaction_id,
-    const sync_api::ImmutableChangeRecordList& changes) {
+    const csync::ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
@@ -58,7 +58,7 @@ void JsMutationEventObserver::OnChangesApplied(
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
     ListValue* changes_list = new ListValue();
-    for (sync_api::ChangeRecordList::const_iterator it =
+    for (csync::ChangeRecordList::const_iterator it =
              changes.Get().begin(); it != changes.Get().end(); ++it) {
       changes_list->Append(it->ToValue());
     }

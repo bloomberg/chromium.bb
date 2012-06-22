@@ -144,16 +144,16 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
  public:
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
-    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    sync_api::ReadNode typed_url_root(&trans);
-    ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    csync::ReadNode typed_url_root(&trans);
+    ASSERT_EQ(csync::BaseNode::INIT_OK,
               typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
 
-    sync_api::WriteNode node(&trans);
+    csync::WriteNode node(&trans);
     std::string tag = url.url().spec();
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::TYPED_URLS, typed_url_root, tag);
-    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
   }
 
@@ -233,16 +233,16 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void GetTypedUrlsFromSyncDB(history::URLRows* urls) {
     urls->clear();
-    sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
-    sync_api::ReadNode typed_url_root(&trans);
+    csync::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    csync::ReadNode typed_url_root(&trans);
     if (typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag) !=
-            sync_api::BaseNode::INIT_OK)
+            csync::BaseNode::INIT_OK)
       return;
 
     int64 child_id = typed_url_root.GetFirstChildId();
-    while (child_id != sync_api::kInvalidId) {
-      sync_api::ReadNode child_node(&trans);
-      if (child_node.InitByIdLookup(child_id) != sync_api::BaseNode::INIT_OK)
+    while (child_id != csync::kInvalidId) {
+      csync::ReadNode child_node(&trans);
+      if (child_node.InitByIdLookup(child_id) != csync::BaseNode::INIT_OK)
         return;
 
       const sync_pb::TypedUrlSpecifics& typed_url(

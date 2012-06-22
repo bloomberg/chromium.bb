@@ -28,7 +28,7 @@ class JsEventHandler;
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
 class JsMutationEventObserver
-    : public sync_api::SyncManager::ChangeObserver,
+    : public csync::SyncManager::ChangeObserver,
       public syncable::TransactionObserver,
       public base::NonThreadSafe {
  public:
@@ -42,11 +42,11 @@ class JsMutationEventObserver
 
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
-  // sync_api::SyncManager::ChangeObserver implementation.
+  // csync::SyncManager::ChangeObserver implementation.
   virtual void OnChangesApplied(
       syncable::ModelType model_type,
       int64 write_transaction_id,
-      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
   // syncable::TransactionObserver implementation.

@@ -41,7 +41,7 @@ class AllStatus : public SyncEngineEventListener {
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 
-  sync_api::SyncStatus status() const;
+  csync::SyncStatus status() const;
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
@@ -60,10 +60,10 @@ class AllStatus : public SyncEngineEventListener {
  protected:
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
-  sync_api::SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
-  sync_api::SyncStatus CreateBlankStatus() const;
+  csync::SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
+  csync::SyncStatus CreateBlankStatus() const;
 
-  sync_api::SyncStatus status_;
+  csync::SyncStatus status_;
 
   mutable base::Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);

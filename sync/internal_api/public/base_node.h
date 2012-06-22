@@ -42,7 +42,7 @@ class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
 
-namespace sync_api {
+namespace csync {
 
 class BaseTransaction;
 
@@ -250,6 +250,6 @@ class BaseNode {
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_NODE_H_

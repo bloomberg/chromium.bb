@@ -25,7 +25,7 @@ namespace browser_sync {
 class DataTypeErrorHandler;
 
 // This class is responsible for taking changes from the password backend and
-// applying them to the sync_api 'syncable' model, and vice versa. All
+// applying them to the csync 'syncable' model, and vice versa. All
 // operations and use of this class are from the DB thread on Windows and Linux,
 // or the password thread on Mac.
 class PasswordChangeProcessor : public ChangeProcessor,
@@ -37,18 +37,18 @@ class PasswordChangeProcessor : public ChangeProcessor,
   virtual ~PasswordChangeProcessor();
 
   // content::NotificationObserver implementation.
-  // Passwords -> sync_api model change application.
+  // Passwords -> csync model change application.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // sync_api model -> WebDataService change application.
+  // csync model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+      const csync::BaseTransaction* trans,
+      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // Commit changes buffered during ApplyChanges. We must commit them to the
-  // password store only after the sync_api transaction is released, else there
+  // password store only after the csync transaction is released, else there
   // is risk of deadlock due to the password store posting tasks to the UI
   // thread (http://crbug.com/70658).
   virtual void CommitChangesFromSyncModel() OVERRIDE;

@@ -47,12 +47,12 @@ void TestDirectorySetterUpper::TearDown() {
 void TestDirectorySetterUpper::RunInvariantCheck() {
   {
     // Check invariants for in-memory items.
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     directory()->CheckTreeInvariants(&trans, false);
   }
   {
     // Check invariants for all items.
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     directory()->CheckTreeInvariants(&trans, true);
   }
 }

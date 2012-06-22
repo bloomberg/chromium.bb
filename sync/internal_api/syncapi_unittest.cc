@@ -100,7 +100,7 @@ using testing::Invoke;
 using testing::SaveArg;
 using testing::StrictMock;
 
-namespace sync_api {
+namespace csync {
 
 namespace {
 
@@ -133,9 +133,9 @@ int64 MakeNode(UserShare* share,
   ReadNode root_node(&trans);
   root_node.InitByRootLookup();
   WriteNode node(&trans);
-  sync_api::WriteNode::InitUniqueByCreationResult result =
+  csync::WriteNode::InitUniqueByCreationResult result =
       node.InitUniqueByCreation(model_type, root_node, client_tag);
-  EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+  EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
   node.SetIsFolder(false);
   return node.GetId();
 }
@@ -150,9 +150,9 @@ int64 MakeNodeWithParent(UserShare* share,
   ReadNode parent_node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
-  sync_api::WriteNode::InitUniqueByCreationResult result =
+  csync::WriteNode::InitUniqueByCreationResult result =
       node.InitUniqueByCreation(model_type, parent_node, client_tag);
-  EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+  EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
   node.SetIsFolder(false);
   return node.GetId();
 }
@@ -381,9 +381,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
     folder_id = folder_node.GetId();
 
     WriteNode wnode(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         wnode.InitUniqueByCreation(syncable::BOOKMARKS, root_node, "testtag");
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     wnode.SetIsFolder(false);
     wnode.SetTitle(UTF8ToWide(test_title));
 
@@ -423,9 +423,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
     WriteNode wnode(&trans);
     // This will undelete the tag.
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         wnode.InitUniqueByCreation(syncable::BOOKMARKS, folder_node, "testtag");
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     EXPECT_EQ(wnode.GetIsFolder(), false);
     EXPECT_EQ(wnode.GetParentId(), folder_node.GetId());
     EXPECT_EQ(wnode.GetId(), node_id);
@@ -457,10 +457,10 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     root_node.InitByRootLookup();
 
     WriteNode password_node(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         password_node.InitUniqueByCreation(syncable::PASSWORDS,
                                            root_node, "foo");
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     sync_pb::PasswordSpecificsData data;
     data.set_password_value("secret");
     password_node.SetPasswordSpecifics(data);
@@ -493,16 +493,16 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     root_node.InitByRootLookup();
 
     WriteNode bookmark_node(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         bookmark_node.InitUniqueByCreation(syncable::BOOKMARKS,
                                            root_node, "foo");
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     bookmark_node.SetTitle(UTF8ToWide("foo"));
 
     WriteNode pref_node(&trans);
     result =
         pref_node.InitUniqueByCreation(syncable::PREFERENCES, root_node, "bar");
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     pref_node.SetTitle(UTF8ToWide("bar"));
   }
   {
@@ -640,9 +640,9 @@ TEST_F(SyncApiTest, EmptyTags) {
   root_node.InitByRootLookup();
   WriteNode node(&trans);
   std::string empty_tag;
-  sync_api::WriteNode::InitUniqueByCreationResult result =
+  csync::WriteNode::InitUniqueByCreationResult result =
       node.InitUniqueByCreation(syncable::TYPED_URLS, root_node, empty_tag);
-  EXPECT_NE(sync_api::WriteNode::INIT_SUCCESS, result);
+  EXPECT_NE(csync::WriteNode::INIT_SUCCESS, result);
   EXPECT_EQ(BaseNode::INIT_FAILED_PRECONDITION,
             node.InitByTagLookup(empty_tag));
 }
@@ -695,7 +695,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(const WeakHandle<JsBackend>&, bool));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
   MOCK_METHOD2(OnPassphraseRequired,
-               void(sync_api::PassphraseRequiredReason,
+               void(csync::PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD0(OnPassphraseAccepted, void());  // NOLINT
   MOCK_METHOD1(OnBootstrapTokenUpdated, void(const std::string&));  // NOLINT
@@ -788,7 +788,7 @@ class SyncManagerTest : public testing::Test,
                        &extensions_activity_monitor_, this, "bogus",
                        credentials,
                        sync_notifier_mock_, "",
-                       sync_api::SyncManager::TEST_IN_MEMORY,
+                       csync::SyncManager::TEST_IN_MEMORY,
                        &encryptor_,
                        &handler_,
                        NULL);
@@ -1578,10 +1578,10 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
     root_node.InitByRootLookup();
 
     WriteNode password_node(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         password_node.InitUniqueByCreation(syncable::PASSWORDS,
                                            root_node, "foo");
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     sync_pb::PasswordSpecificsData data;
     data.set_password_value("secret");
     password_node.SetPasswordSpecifics(data);
@@ -1812,9 +1812,9 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
     root_node.InitByRootLookup();
 
     WriteNode password_node(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode::InitUniqueByCreationResult result =
         password_node.InitUniqueByCreation(syncable::PASSWORDS, root_node, tag);
-    EXPECT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
     node_id = password_node.GetId();
   }
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));

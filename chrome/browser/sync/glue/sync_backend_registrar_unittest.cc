@@ -148,7 +148,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
 
 void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
   registrar->OnChangesApplied(type, NULL,
-                              sync_api::ImmutableChangeRecordList());
+                              csync::ImmutableChangeRecordList());
   registrar->OnChangesComplete(type);
 }
 

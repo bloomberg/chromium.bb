@@ -25,7 +25,7 @@ using syncable::ModelTypeToString;
 MigrationObserver::~MigrationObserver() {}
 
 BackendMigrator::BackendMigrator(const std::string& name,
-                                 sync_api::UserShare* user_share,
+                                 csync::UserShare* user_share,
                                  ProfileSyncService* service,
                                  DataTypeManager* manager,
                                  const base::Closure &migration_done_callback)
@@ -112,10 +112,10 @@ void BackendMigrator::RestartMigration() {
   // Add nigori for config or not based upon if the server told us to migrate
   // nigori or not.
   if (configure_with_nigori) {
-    manager_->Configure(difference, sync_api::CONFIGURE_REASON_MIGRATION);
+    manager_->Configure(difference, csync::CONFIGURE_REASON_MIGRATION);
   } else {
     manager_->ConfigureWithoutNigori(difference,
-                                     sync_api::CONFIGURE_REASON_MIGRATION);
+                                     csync::CONFIGURE_REASON_MIGRATION);
   }
 }
 
@@ -135,8 +135,8 @@ void BackendMigrator::OnConfigureDone(
 
 namespace {
 
-syncable::ModelTypeSet GetUnsyncedDataTypes(sync_api::UserShare* user_share) {
-  sync_api::ReadTransaction trans(FROM_HERE, user_share);
+syncable::ModelTypeSet GetUnsyncedDataTypes(csync::UserShare* user_share) {
+  csync::ReadTransaction trans(FROM_HERE, user_share);
   syncable::ModelTypeSet unsynced_data_types;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -208,7 +208,7 @@ void BackendMigrator::OnConfigureDoneImpl(
     const ModelTypeSet full_set = service_->GetPreferredDataTypes();
     SDVLOG(1) << "BackendMigrator re-enabling types: "
               << syncable::ModelTypeSetToString(full_set);
-    manager_->Configure(full_set, sync_api::CONFIGURE_REASON_MIGRATION);
+    manager_->Configure(full_set, csync::CONFIGURE_REASON_MIGRATION);
   } else if (state_ == REENABLING_TYPES) {
     // We're done!
     ChangeState(IDLE);

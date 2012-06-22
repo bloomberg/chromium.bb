@@ -31,7 +31,6 @@ using sessions::SyncSession;
 using std::string;
 using syncable::Id;
 using syncable::MutableEntry;
-using syncable::ReadTransaction;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
@@ -525,10 +524,10 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   // Decryptable password updates should be applied.
   Cryptographer* cryptographer;
   {
-      // Storing the cryptographer separately is bad, but for this test we
-      // know it's safe.
-      ReadTransaction trans(FROM_HERE, directory());
-      cryptographer = directory()->GetCryptographer(&trans);
+    // Storing the cryptographer separately is bad, but for this test we
+    // know it's safe.
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    cryptographer = directory()->GetCryptographer(&trans);
   }
 
   csync::KeyParams params = {"localhost", "dummy", "foobar"};
@@ -617,7 +616,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     sync_pb::PasswordSpecificsData data;
     data.set_origin("http://example.com/1");
     {
-      ReadTransaction trans(FROM_HERE, directory());
+      syncable::ReadTransaction trans(FROM_HERE, directory());
       Cryptographer* cryptographer = directory()->GetCryptographer(&trans);
 
       KeyParams params = {"localhost", "dummy", "foobar"};
@@ -675,7 +674,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
   }
@@ -723,7 +722,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
   }
@@ -778,7 +777,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
 
@@ -824,7 +823,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
   {
     // Ensure we have unsynced nodes that aren't properly encrypted.
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -852,7 +851,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
@@ -893,7 +892,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
 
     // All our changes should still be encrypted.
     EXPECT_TRUE(syncable::ModelTypeSet::All().Equals(
@@ -914,7 +913,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   encrypted_types.Put(syncable::PASSWORDS);
   encrypted_types.Put(syncable::NIGORI);
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
     EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
 
@@ -962,7 +961,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
 
   {
     // Ensure we have unsynced nodes that aren't properly encrypted.
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
     Syncer::UnsyncedMetaHandles handles;
     SyncerUtil::GetUnsyncedEntries(&trans, &handles);
@@ -989,7 +988,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
   {
-    ReadTransaction trans(FROM_HERE, directory());
+    syncable::ReadTransaction trans(FROM_HERE, directory());
 
     // Since we have pending keys, we would have failed to encrypt, but the
     // cryptographer should be updated.

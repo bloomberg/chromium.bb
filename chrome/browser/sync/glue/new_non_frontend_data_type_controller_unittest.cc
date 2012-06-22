@@ -156,7 +156,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(service_, GetUserShare()).WillRepeatedly(
-        Return((sync_api::UserShare*)NULL));
+        Return((csync::UserShare*)NULL));
     db_thread_.Start();
     profile_sync_factory_.reset(
         new StrictMock<ProfileSyncComponentsFactoryMock>());

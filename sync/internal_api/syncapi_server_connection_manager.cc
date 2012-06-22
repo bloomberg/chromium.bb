@@ -11,7 +11,7 @@
 
 using csync::HttpResponse;
 
-namespace sync_api {
+namespace csync {
 
 SyncAPIBridgedConnection::SyncAPIBridgedConnection(
     csync::ServerConnectionManager* scm,
@@ -104,4 +104,4 @@ SyncAPIServerConnectionManager::MakeConnection() {
   return new SyncAPIBridgedConnection(this, post_provider_factory_.get());
 }
 
-}  // namespace sync_api
+}  // namespace csync

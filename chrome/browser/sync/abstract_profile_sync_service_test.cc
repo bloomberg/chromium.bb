@@ -18,7 +18,7 @@
 
 using csync::TestIdFactory;
 using content::BrowserThread;
-using sync_api::UserShare;
+using csync::UserShare;
 using syncable::BASE_VERSION;
 using syncable::CREATE;
 using syncable::IS_DEL;
@@ -70,26 +70,26 @@ bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
 }
 
 /* static */
-sync_api::ImmutableChangeRecordList
+csync::ImmutableChangeRecordList
     ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
-        int64 node_id, sync_api::ChangeRecord::Action action) {
-  sync_api::ChangeRecord record;
+        int64 node_id, csync::ChangeRecord::Action action) {
+  csync::ChangeRecord record;
   record.action = action;
   record.id = node_id;
-  sync_api::ChangeRecordList records(1, record);
-  return sync_api::ImmutableChangeRecordList(&records);
+  csync::ChangeRecordList records(1, record);
+  return csync::ImmutableChangeRecordList(&records);
 }
 
 /* static */
-sync_api::ImmutableChangeRecordList
+csync::ImmutableChangeRecordList
     ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
         int64 node_id, const sync_pb::EntitySpecifics& specifics) {
-  sync_api::ChangeRecord record;
-  record.action = sync_api::ChangeRecord::ACTION_DELETE;
+  csync::ChangeRecord record;
+  record.action = csync::ChangeRecord::ACTION_DELETE;
   record.id = node_id;
   record.specifics = specifics;
-  sync_api::ChangeRecordList records(1, record);
-  return sync_api::ImmutableChangeRecordList(&records);
+  csync::ChangeRecordList records(1, record);
+  return csync::ImmutableChangeRecordList(&records);
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()

@@ -97,15 +97,15 @@ static const int kSyncRefreshDelayMsec = 500;
 static const int kSyncSchedulerDelayMsec = 250;
 
 GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
-    sync_api::ConfigureReason reason) {
+    csync::ConfigureReason reason) {
   switch (reason) {
-    case sync_api::CONFIGURE_REASON_RECONFIGURATION:
+    case csync::CONFIGURE_REASON_RECONFIGURATION:
       return GetUpdatesCallerInfo::RECONFIGURATION;
-    case sync_api::CONFIGURE_REASON_MIGRATION:
+    case csync::CONFIGURE_REASON_MIGRATION:
       return GetUpdatesCallerInfo::MIGRATION;
-    case sync_api::CONFIGURE_REASON_NEW_CLIENT:
+    case csync::CONFIGURE_REASON_NEW_CLIENT:
       return GetUpdatesCallerInfo::NEW_CLIENT;
-    case sync_api::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
+    case csync::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
       return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
     default:
       NOTREACHED();
@@ -120,7 +120,7 @@ static const int kNigoriOverwriteLimit = 10;
 
 } // namespace
 
-namespace sync_api {
+namespace csync {
 
 const int SyncManager::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -1032,7 +1032,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
     Cryptographer* cryptographer = trans.GetCryptographer();
     WriteNode node(&trans);
 
-    if (node.InitByTagLookup(kNigoriTag) == sync_api::BaseNode::INIT_OK) {
+    if (node.InitByTagLookup(kNigoriTag) == csync::BaseNode::INIT_OK) {
       sync_pb::NigoriSpecifics nigori(node.GetNigoriSpecifics());
       Cryptographer::UpdateResult result = cryptographer->Update(nigori);
       if (result == Cryptographer::NEEDS_PASSPHRASE) {
@@ -1040,7 +1040,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
         if (cryptographer->has_pending_keys())
           pending_keys = cryptographer->GetPendingKeys();
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                          OnPassphraseRequired(csync::REASON_DECRYPTION,
                                                pending_keys));
       }
 
@@ -1211,7 +1211,7 @@ void SyncManager::SyncInternal::SetEncryptionPassphrase(
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
+  if (node.InitByTagLookup(kNigoriTag) != csync::BaseNode::INIT_OK) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return;
@@ -1325,7 +1325,7 @@ void SyncManager::SyncInternal::SetDecryptionPassphrase(
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
+  if (node.InitByTagLookup(kNigoriTag) != csync::BaseNode::INIT_OK) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return;
@@ -1478,11 +1478,11 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
                  << "was ready.";
     } else if (cryptographer->has_pending_keys()) {
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                        OnPassphraseRequired(csync::REASON_DECRYPTION,
                                              cryptographer->GetPendingKeys()));
     } else {
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnPassphraseRequired(sync_api::REASON_ENCRYPTION,
+                        OnPassphraseRequired(csync::REASON_ENCRYPTION,
                                              sync_pb::EncryptedData()));
     }
     return;
@@ -1514,7 +1514,7 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
 bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
   ReadTransaction trans(FROM_HERE, &share_);
   ReadNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
+  if (node.InitByTagLookup(kNigoriTag) != csync::BaseNode::INIT_OK) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return false;
@@ -1528,7 +1528,7 @@ void SyncManager::SyncInternal::RefreshEncryption() {
 
   WriteTransaction trans(FROM_HERE, GetUserShare());
   WriteNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
+  if (node.InitByTagLookup(kNigoriTag) != csync::BaseNode::INIT_OK) {
     NOTREACHED() << "Unable to set encrypted datatypes because Nigori node not "
                  << "found.";
     return;
@@ -1545,7 +1545,7 @@ void SyncManager::SyncInternal::RefreshEncryption() {
     if (cryptographer->has_pending_keys())
       pending_keys = cryptographer->GetPendingKeys();
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                      OnPassphraseRequired(csync::REASON_DECRYPTION,
                                            pending_keys));
     return;
   }
@@ -1576,7 +1576,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
 
     ReadNode type_root(trans);
     std::string tag = syncable::ModelTypeToRootTag(iter.Get());
-    if (type_root.InitByTagLookup(tag) != sync_api::BaseNode::INIT_OK)
+    if (type_root.InitByTagLookup(tag) != csync::BaseNode::INIT_OK)
       continue; // Don't try to reencrypt if the type's data is unavailable.
 
     // Iterate through all children of this datatype.
@@ -1590,7 +1590,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
         continue;
 
       WriteNode child(trans);
-      if (child.InitByIdLookup(child_id) != sync_api::BaseNode::INIT_OK) {
+      if (child.InitByIdLookup(child_id) != csync::BaseNode::INIT_OK) {
         NOTREACHED();
         continue;
       }
@@ -1612,11 +1612,11 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
   std::string passwords_tag =
       syncable::ModelTypeToRootTag(syncable::PASSWORDS);
   if (passwords_root.InitByTagLookup(passwords_tag) ==
-          sync_api::BaseNode::INIT_OK) {
+          csync::BaseNode::INIT_OK) {
     int64 child_id = passwords_root.GetFirstChildId();
     while (child_id != kInvalidId) {
       WriteNode child(trans);
-      if (child.InitByIdLookup(child_id) != sync_api::BaseNode::INIT_OK) {
+      if (child.InitByIdLookup(child_id) != csync::BaseNode::INIT_OK) {
         NOTREACHED();
         return;
       }
@@ -1990,14 +1990,14 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         DVLOG(1) << "OnPassPhraseRequired Sent";
         sync_pb::EncryptedData pending_keys = cryptographer->GetPendingKeys();
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                          OnPassphraseRequired(csync::REASON_DECRYPTION,
                                                pending_keys));
       } else if (!cryptographer->is_ready() &&
                  event.snapshot.initial_sync_ended().Has(syncable::NIGORI)) {
         DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                  << "ready";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(sync_api::REASON_ENCRYPTION,
+                          OnPassphraseRequired(csync::REASON_ENCRYPTION,
                                                sync_pb::EncryptedData()));
       }
 
@@ -2017,7 +2017,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       WriteTransaction trans(FROM_HERE, GetUserShare());
       WriteNode nigori_node(&trans);
       if (nigori_node.InitByTagLookup(kNigoriTag) ==
-              sync_api::BaseNode::INIT_OK) {
+              csync::BaseNode::INIT_OK) {
         Cryptographer* cryptographer = trans.GetCryptographer();
         UpdateNigoriEncryptionState(cryptographer, &nigori_node);
       }
@@ -2185,7 +2185,7 @@ JsArgList GetNodeInfoById(const JsArgList& args,
         continue;
       }
       ReadNode node(&trans);
-      if (node.InitByIdLookup(id) != sync_api::BaseNode::INIT_OK) {
+      if (node.InitByIdLookup(id) != csync::BaseNode::INIT_OK) {
         continue;
       }
       node_summaries->Append((node.*info_getter)());
@@ -2396,7 +2396,7 @@ bool SyncManager::ReceivedExperiment(csync::Experiments* experiments)
     const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
+  if (node.InitByTagLookup(kNigoriTag) != csync::BaseNode::INIT_OK) {
     DVLOG(1) << "Couldn't find Nigori node.";
     return false;
   }
@@ -2409,7 +2409,7 @@ bool SyncManager::ReceivedExperiment(csync::Experiments* experiments)
 }
 
 bool SyncManager::HasUnsyncedItems() const {
-  sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
+  csync::ReadTransaction trans(FROM_HERE, GetUserShare());
   return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
 }
 
@@ -2467,7 +2467,7 @@ const char* PassphraseRequiredReasonToString(
 
 // Helper function to determine if initial sync had ended for types.
 bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
-                              sync_api::UserShare* share) {
+                              csync::UserShare* share) {
   for (syncable::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
     if (!share->directory->initial_sync_ended_for_type(i.Get()))
@@ -2478,7 +2478,7 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
 
 syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
     syncable::ModelTypeSet types,
-    sync_api::UserShare* share) {
+    csync::UserShare* share) {
   syncable::ModelTypeSet result;
   for (syncable::ModelTypeSet::Iterator i = types.First();
        i.Good(); i.Inc()) {
@@ -2492,4 +2492,4 @@ syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
   return result;
 }
 
-}  // namespace sync_api
+}  // namespace csync

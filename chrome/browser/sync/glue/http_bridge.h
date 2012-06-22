@@ -38,7 +38,7 @@ namespace browser_sync {
 // It is RefCountedThreadSafe because it can PostTask to the io loop, and thus
 // needs to stick around across context switches, etc.
 class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
-                   public sync_api::HttpPostProviderInterface,
+                   public csync::HttpPostProviderInterface,
                    public net::URLFetcherDelegate {
  public:
   // A request context used for HTTP requests bridged from the sync backend.
@@ -104,7 +104,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
   explicit HttpBridge(RequestContextGetter* context);
 
-  // sync_api::HttpPostProvider implementation.
+  // csync::HttpPostProvider implementation.
   virtual void SetUserAgent(const char* user_agent) OVERRIDE;
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
   virtual void SetURL(const char* url, int port) OVERRIDE;
@@ -210,15 +210,15 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
-class HttpBridgeFactory : public sync_api::HttpPostProviderFactory {
+class HttpBridgeFactory : public csync::HttpPostProviderFactory {
  public:
   explicit HttpBridgeFactory(
       net::URLRequestContextGetter* baseline_context_getter);
   virtual ~HttpBridgeFactory();
 
-  // sync_api::HttpPostProviderFactory:
-  virtual sync_api::HttpPostProviderInterface* Create() OVERRIDE;
-  virtual void Destroy(sync_api::HttpPostProviderInterface* http) OVERRIDE;
+  // csync::HttpPostProviderFactory:
+  virtual csync::HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(csync::HttpPostProviderInterface* http) OVERRIDE;
 
  private:
   // This request context is built on top of the baseline context and shares

@@ -286,7 +286,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         break;
       }
       if (service()->passphrase_required_reason() ==
-              sync_api::REASON_DECRYPTION) {
+              csync::REASON_DECRYPTION) {
         // A passphrase is required for decryption and we don't have it. Do not
         // wait any more.
         SignalStateCompleteWithNextState(SET_PASSPHRASE_FAILED);
@@ -1014,7 +1014,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", num_updates_downloaded : "
        << snap.syncer_status().num_updates_downloaded_total
        << ", passphrase_required_reason: "
-       << sync_api::PassphraseRequiredReasonToString(
+       << csync::PassphraseRequiredReasonToString(
            service()->passphrase_required_reason())
        << ", notifications_enabled: "
        << status.notifications_enabled

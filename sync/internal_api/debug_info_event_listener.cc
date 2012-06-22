@@ -5,7 +5,7 @@
 #include "sync/internal_api/debug_info_event_listener.h"
 
 using csync::sessions::SyncSessionSnapshot;
-namespace sync_api {
+namespace csync {
 
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
@@ -50,12 +50,12 @@ void DebugInfoEventListener::OnInitializationComplete(
 }
 
 void DebugInfoEventListener::OnConnectionStatusChange(
-    sync_api::ConnectionStatus status) {
+    csync::ConnectionStatus status) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::CONNECTION_STATUS_CHANGE);
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason,
+    csync::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_REQUIRED);
 }
@@ -124,7 +124,7 @@ void DebugInfoEventListener::OnIncomingNotification(
 
 void DebugInfoEventListener::GetAndClearDebugInfo(
     sync_pb::DebugInfo* debug_info) {
-  DCHECK(events_.size() <= sync_api::kMaxEntries);
+  DCHECK(events_.size() <= csync::kMaxEntries);
   while (!events_.empty()) {
     sync_pb::DebugEventInfo* event_info = debug_info->add_events();
     const sync_pb::DebugEventInfo& debug_event_info = events_.front();
@@ -149,7 +149,7 @@ void DebugInfoEventListener::CreateAndAddEvent(
 
 void DebugInfoEventListener::AddEventToQueue(
   const sync_pb::DebugEventInfo& event_info) {
-  if (events_.size() >= sync_api::kMaxEntries) {
+  if (events_.size() >= csync::kMaxEntries) {
     DVLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
              << "because of full queue";
 
@@ -158,4 +158,4 @@ void DebugInfoEventListener::AddEventToQueue(
   }
   events_.push(event_info);
 }
-}  // namespace sync_api
+}  // namespace csync

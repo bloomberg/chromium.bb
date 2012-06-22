@@ -40,14 +40,14 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Create a change processor and connect it to the syncer.
   GenericChangeProcessor(DataTypeErrorHandler* error_handler,
                          const base::WeakPtr<SyncableService>& local_service,
-                         sync_api::UserShare* user_share);
+                         csync::UserShare* user_share);
   virtual ~GenericChangeProcessor();
 
   // ChangeProcessor interface.
   // Build and store a list of all changes into |syncer_changes_|.
   virtual void ApplyChangesFromSyncModel(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+      const csync::BaseTransaction* trans,
+      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
   // Passes |syncer_changes_|, built in ApplyChangesFromSyncModel, onto
   // |local_service_| by way of its ProcessSyncChanges method.
   virtual void CommitChangesFromSyncModel() OVERRIDE;
@@ -73,7 +73,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Called from UI thread (as part of deactivating datatype), but does
   // nothing and is guaranteed to still be alive, so it's okay.
   virtual void StopImpl() OVERRIDE;                            // Does nothing.
-  virtual sync_api::UserShare* share_handle() const OVERRIDE;
+  virtual csync::UserShare* share_handle() const OVERRIDE;
 
  private:
   // The SyncableService this change processor will forward changes on to.
@@ -90,7 +90,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // listening to changes (the local_service_ will be interacting with us
   // when it starts up). As such we can't wait until Start(_) has been called,
   // and have to keep a local pointer to the user_share.
-  sync_api::UserShare* const share_handle_;
+  csync::UserShare* const share_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);
 };

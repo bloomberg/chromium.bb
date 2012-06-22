@@ -40,11 +40,11 @@ namespace content {
 class NavigationEntry;
 }  // namespace content
 
-namespace sync_api {
+namespace csync {
 class BaseTransaction;
 class ReadNode;
 class WriteTransaction;
-}  // namespace sync_api
+}  // namespace csync
 
 namespace sync_pb {
 class SessionHeader;
@@ -86,12 +86,12 @@ class SessionModelAssociator
   virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
   // Returns sync id for the given chrome model id.
-  // Returns sync_api::kInvalidId if the sync node is not found for the given
+  // Returns csync::kInvalidId if the sync node is not found for the given
   // chrome id.
   virtual int64 GetSyncIdFromChromeId(const size_t& id) OVERRIDE;
 
   // Returns sync id for the given session tag.
-  // Returns sync_api::kInvalidId if the sync node is not found for the given
+  // Returns csync::kInvalidId if the sync node is not found for the given
   // tag
   virtual int64 GetSyncIdFromSessionTag(const std::string& tag);
 
@@ -101,7 +101,7 @@ class SessionModelAssociator
 
   // Not used.
   virtual bool InitSyncNodeFromChromeId(const size_t& id,
-                                        sync_api::BaseNode* sync_node) OVERRIDE;
+                                        csync::BaseNode* sync_node) OVERRIDE;
 
   // Not used.
   virtual void Associate(const SyncedTabDelegate* tab, int64 sync_id) OVERRIDE;
@@ -146,7 +146,7 @@ class SessionModelAssociator
   // Returns false if no sync node was found for the given chrome node id or
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(const std::string& id,
-                                        sync_api::BaseNode* sync_node);
+                                        csync::BaseNode* sync_node);
 
   // Clear local sync data buffers. Does not delete sync nodes to avoid
   // tombstones. TODO(zea): way to eventually delete orphaned nodes.
@@ -312,7 +312,7 @@ class SessionModelAssociator
     // Returns the sync_id for the next free tab node. If none are available,
     // creates a new tab node.
     // Note: We make use of the following "id's"
-    // - a sync_id: an int64 used in |sync_api::InitByIdLookup|
+    // - a sync_id: an int64 used in |csync::InitByIdLookup|
     // - a tab_id: created by session service, unique to this client
     // - a tab_node_id: the id for a particular sync tab node. This is used
     //   to generate the sync tab node tag through:
@@ -387,7 +387,7 @@ class SessionModelAssociator
   }
 
   // Initializes the tag corresponding to this machine.
-  void InitializeCurrentMachineTag(sync_api::WriteTransaction* trans);
+  void InitializeCurrentMachineTag(csync::WriteTransaction* trans);
 
   // Initializes the user visible name for this session
   void InitializeCurrentSessionName();
@@ -400,8 +400,8 @@ class SessionModelAssociator
   // Pulls the current sync model from the sync database and returns true upon
   // update of the client model. Will associate any foreign sessions as well as
   // keep track of any local tab nodes, adding them to our free tab node pool.
-  bool UpdateAssociationsFromSyncModel(const sync_api::ReadNode& root,
-                                       sync_api::WriteTransaction* trans,
+  bool UpdateAssociationsFromSyncModel(const csync::ReadNode& root,
+                                       csync::WriteTransaction* trans,
                                        SyncError* error);
 
   // Fills a tab sync node with data from a WebContents object. Updates

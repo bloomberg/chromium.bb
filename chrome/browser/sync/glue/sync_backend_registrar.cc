@@ -171,7 +171,7 @@ void SyncBackendRegistrar::ActivateDataType(
     syncable::ModelType type,
     csync::ModelSafeGroup group,
     ChangeProcessor* change_processor,
-    sync_api::UserShare* user_share) {
+    csync::UserShare* user_share) {
   CHECK(IsOnThreadForGroup(group));
   base::AutoLock lock(lock_);
   // Ensure that the given data type is in the PASSIVE group.
@@ -210,8 +210,8 @@ bool SyncBackendRegistrar::IsTypeActivatedForTest(
 
 void SyncBackendRegistrar::OnChangesApplied(
     syncable::ModelType model_type,
-    const sync_api::BaseTransaction* trans,
-    const sync_api::ImmutableChangeRecordList& changes) {
+    const csync::BaseTransaction* trans,
+    const csync::ImmutableChangeRecordList& changes) {
   ChangeProcessor* processor = GetProcessor(model_type);
   if (!processor)
     return;

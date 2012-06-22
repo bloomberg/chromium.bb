@@ -6,7 +6,7 @@
 
 #include "sync/syncable/directory.h"
 
-namespace sync_api {
+namespace csync {
 
 UserShare::UserShare() {}
 

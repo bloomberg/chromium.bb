@@ -6,7 +6,7 @@
 
 #include "sync/syncable/read_transaction.h"
 
-namespace sync_api {
+namespace csync {
 
 //////////////////////////////////////////////////////////////////////////
 // ReadTransaction member definitions
@@ -35,4 +35,4 @@ syncable::BaseTransaction* ReadTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-} // namespace sync_api
+} // namespace csync

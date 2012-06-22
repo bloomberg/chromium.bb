@@ -28,7 +28,7 @@ struct PasswordForm;
 }
 }
 
-namespace sync_api {
+namespace csync {
 class WriteNode;
 class WriteTransaction;
 }
@@ -59,7 +59,7 @@ class PasswordModelAssociator
   virtual SyncError AssociateModels() OVERRIDE;
 
   // Delete all password nodes.
-  bool DeleteAllNodes(sync_api::WriteTransaction* trans);
+  bool DeleteAllNodes(csync::WriteTransaction* trans);
 
   // Clears all associations.
   virtual SyncError DisassociateModels() OVERRIDE;
@@ -79,9 +79,9 @@ class PasswordModelAssociator
 
   // Not implemented.
   virtual bool InitSyncNodeFromChromeId(const std::string& node_id,
-                                        sync_api::BaseNode* sync_node) OVERRIDE;
+                                        csync::BaseNode* sync_node) OVERRIDE;
 
-  // Returns the sync id for the given password name, or sync_api::kInvalidId
+  // Returns the sync id for the given password name, or csync::kInvalidId
   // if the password name is not associated to any sync id.
   virtual int64 GetSyncIdFromChromeId(const std::string& node_id) OVERRIDE;
 
@@ -114,7 +114,7 @@ class PasswordModelAssociator
                              const webkit::forms::PasswordForm& password_form,
                              webkit::forms::PasswordForm* new_password);
   static void WriteToSyncNode(const webkit::forms::PasswordForm& password_form,
-                              sync_api::WriteNode* node);
+                              csync::WriteNode* node);
 
   // Called at various points in model association to determine if the
   // user requested an abort.

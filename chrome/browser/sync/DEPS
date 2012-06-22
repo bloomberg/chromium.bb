@@ -8,7 +8,7 @@ include_rules = [
   "+sync/util/cryptographer.h",
   #  Used by tests.
   "+sync/syncable",
-  # Used by autofill tests, which should use sync_api instead.
+  # Used by autofill tests, which should use csync instead.
   "+sync/test/engine/test_id_factory.h",
 
 ]

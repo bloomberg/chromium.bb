@@ -60,7 +60,7 @@ class SyncBackendMigratorTest : public testing::Test {
   // Marks all types in |unsynced_types| as unsynced  and all other
   // types as synced.
   void SetUnsyncedTypes(syncable::ModelTypeSet unsynced_types) {
-    sync_api::WriteTransaction trans(FROM_HERE,
+    csync::WriteTransaction trans(FROM_HERE,
                                      test_user_share_.user_share());
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -132,7 +132,7 @@ TEST_F(SyncBackendMigratorTest, Sanity) {
 
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION))
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION))
       .Times(2);
 
   migrator()->MigrateTypes(to_migrate);
@@ -161,7 +161,7 @@ TEST_F(SyncBackendMigratorTest, MigrateNigori) {
       .WillOnce(Return(DataTypeManager::CONFIGURED));
 
   EXPECT_CALL(*manager(), ConfigureWithoutNigori(_,
-      sync_api::CONFIGURE_REASON_MIGRATION));
+      csync::CONFIGURE_REASON_MIGRATION));
 
   migrator()->MigrateTypes(to_migrate);
   EXPECT_EQ(BackendMigrator::DISABLING_TYPES, migrator()->state());
@@ -191,7 +191,7 @@ TEST_F(SyncBackendMigratorTest, WaitToStart) {
   Mock::VerifyAndClearExpectations(manager());
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION));
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION));
   SetUnsyncedTypes(syncable::ModelTypeSet());
   SendConfigureDone(DataTypeManager::OK, syncable::ModelTypeSet());
 
@@ -210,7 +210,7 @@ TEST_F(SyncBackendMigratorTest, RestartMigration) {
 
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION))
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION))
               .Times(2);
   migrator()->MigrateTypes(to_migrate1);
 
@@ -221,7 +221,7 @@ TEST_F(SyncBackendMigratorTest, RestartMigration) {
       Difference(preferred_types(), to_migrate1);
 
   Mock::VerifyAndClearExpectations(manager());
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION))
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION))
       .Times(2);
   SetUnsyncedTypes(to_migrate1);
   SendConfigureDone(DataTypeManager::OK, difference1);
@@ -244,13 +244,13 @@ TEST_F(SyncBackendMigratorTest, InterruptedWhileDisablingTypes) {
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*manager(), Configure(HasModelTypes(difference),
-      sync_api::CONFIGURE_REASON_MIGRATION));
+      csync::CONFIGURE_REASON_MIGRATION));
   migrator()->MigrateTypes(to_migrate);
   EXPECT_EQ(BackendMigrator::DISABLING_TYPES, migrator()->state());
 
   Mock::VerifyAndClearExpectations(manager());
   EXPECT_CALL(*manager(), Configure(HasModelTypes(difference),
-      sync_api::CONFIGURE_REASON_MIGRATION));
+      csync::CONFIGURE_REASON_MIGRATION));
   SetUnsyncedTypes(syncable::ModelTypeSet());
   SendConfigureDone(DataTypeManager::OK, preferred_types());
 
@@ -268,7 +268,7 @@ TEST_F(SyncBackendMigratorTest, WaitingForPurge) {
 
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION))
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION))
       .Times(2);
 
   migrator()->MigrateTypes(to_migrate);
@@ -294,7 +294,7 @@ TEST_F(SyncBackendMigratorTest, MigratedTypeDisabledByUserDuringMigration) {
 
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION))
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION))
       .Times(2);
   migrator()->MigrateTypes(to_migrate);
 
@@ -313,7 +313,7 @@ TEST_F(SyncBackendMigratorTest, ConfigureFailure) {
 
   EXPECT_CALL(*manager(), state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*manager(), Configure(_, sync_api::CONFIGURE_REASON_MIGRATION))
+  EXPECT_CALL(*manager(), Configure(_, csync::CONFIGURE_REASON_MIGRATION))
               .Times(1);
   migrator()->MigrateTypes(to_migrate);
   SetUnsyncedTypes(syncable::ModelTypeSet());

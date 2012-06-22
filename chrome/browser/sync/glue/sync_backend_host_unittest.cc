@@ -37,12 +37,12 @@ class MockSyncFrontend : public SyncFrontend {
                void(const csync::WeakHandle<csync::JsBackend>&, bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD1(OnConnectionStatusChange,
-               void(sync_api::ConnectionStatus status));
+               void(csync::ConnectionStatus status));
   MOCK_METHOD0(OnStopSyncingPermanently, void());
   MOCK_METHOD0(OnClearServerDataSucceeded, void());
   MOCK_METHOD0(OnClearServerDataFailed, void());
   MOCK_METHOD2(OnPassphraseRequired,
-               void(sync_api::PassphraseRequiredReason,
+               void(csync::PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD2(OnEncryptedTypesChanged,
@@ -101,7 +101,7 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
                           invalidator_storage.AsWeakPtr());
 
   MockSyncFrontend mock_frontend;
-  sync_api::SyncCredentials credentials;
+  csync::SyncCredentials credentials;
   credentials.email = "user@example.com";
   credentials.sync_token = "sync_token";
   csync::TestUnrecoverableErrorHandler handler;

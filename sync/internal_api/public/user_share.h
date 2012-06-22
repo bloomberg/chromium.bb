@@ -14,7 +14,7 @@ namespace syncable {
 class Directory;
 }
 
-namespace sync_api {
+namespace csync {
 
 // A UserShare encapsulates the syncable pieces that represent an authenticated
 // user and their data (share).

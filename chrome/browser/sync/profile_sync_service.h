@@ -53,7 +53,7 @@ class SessionModelAssociator;
 namespace sessions { class SyncSessionSnapshot; }
 }
 
-namespace sync_api {
+namespace csync {
 class BaseTransaction;
 struct SyncCredentials;
 struct UserShare;
@@ -259,10 +259,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnConnectionStatusChange(
-      sync_api::ConnectionStatus status) OVERRIDE;
+      csync::ConnectionStatus status) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason,
+      csync::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
@@ -333,7 +333,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // we have an encrypted data type enabled.
   virtual bool IsPassphraseRequiredForDecryption() const;
 
-  sync_api::PassphraseRequiredReason passphrase_required_reason() const {
+  csync::PassphraseRequiredReason passphrase_required_reason() const {
     return passphrase_required_reason_;
   }
 
@@ -388,7 +388,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // tests.  Figure out how to pass the handle to the ModelAssociators
   // directly, figure out how to expose this to tests, and remove this
   // function.
-  virtual sync_api::UserShare* GetUserShare() const;
+  virtual csync::UserShare* GetUserShare() const;
 
   // TODO(akalin): These two functions are used only by
   // ProfileSyncServiceHarness.  Figure out a different way to expose
@@ -453,7 +453,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // for sensitive data types. Caller must be holding a
   // syncapi::BaseTransaction to ensure thread safety.
   virtual bool IsCryptographerReady(
-      const sync_api::BaseTransaction* trans) const;
+      const csync::BaseTransaction* trans) const;
 
   // Returns true if a secondary passphrase is being used. It is not legal
   // to call this method before the backend is initialized.
@@ -547,7 +547,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void ShutdownImpl(bool sync_disabled);
 
   // Return SyncCredentials from the TokenService.
-  sync_api::SyncCredentials GetCredentials();
+  csync::SyncCredentials GetCredentials();
 
   // Test need to override this to create backends that allow setting up
   // initial conditions, such as populating sync nodes.
@@ -584,7 +584,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
   // because a new passphrase is required?
-  sync_api::PassphraseRequiredReason passphrase_required_reason_;
+  csync::PassphraseRequiredReason passphrase_required_reason_;
 
  private:
   enum UnrecoverableErrorReason {

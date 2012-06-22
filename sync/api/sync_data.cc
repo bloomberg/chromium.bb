@@ -42,7 +42,7 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
 
 SyncData::SyncData()
     : is_valid_(false),
-      id_(sync_api::kInvalidId) {}
+      id_(csync::kInvalidId) {}
 
 SyncData::SyncData(int64 id, sync_pb::SyncEntity* entity)
     : is_valid_(true),
@@ -69,13 +69,13 @@ SyncData SyncData::CreateLocalData(
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(sync_api::kInvalidId, &entity);
+  return SyncData(csync::kInvalidId, &entity);
 }
 
 // Static.
 SyncData SyncData::CreateRemoteData(
     int64 id, const sync_pb::EntitySpecifics& specifics) {
-  DCHECK_NE(id, sync_api::kInvalidId);
+  DCHECK_NE(id, csync::kInvalidId);
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->CopyFrom(specifics);
   return SyncData(id, &entity);
@@ -110,7 +110,7 @@ int64 SyncData::GetRemoteId() const {
 }
 
 bool SyncData::IsLocal() const {
-  return id_ == sync_api::kInvalidId;
+  return id_ == csync::kInvalidId;
 }
 
 std::string SyncData::ToString() const {

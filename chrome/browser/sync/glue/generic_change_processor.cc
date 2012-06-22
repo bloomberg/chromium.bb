@@ -27,7 +27,7 @@ namespace browser_sync {
 GenericChangeProcessor::GenericChangeProcessor(
     DataTypeErrorHandler* error_handler,
     const base::WeakPtr<SyncableService>& local_service,
-    sync_api::UserShare* user_share)
+    csync::UserShare* user_share)
     : ChangeProcessor(error_handler),
       local_service_(local_service),
       share_handle_(user_share) {
@@ -39,24 +39,24 @@ GenericChangeProcessor::~GenericChangeProcessor() {
 }
 
 void GenericChangeProcessor::ApplyChangesFromSyncModel(
-    const sync_api::BaseTransaction* trans,
-    const sync_api::ImmutableChangeRecordList& changes) {
+    const csync::BaseTransaction* trans,
+    const csync::ImmutableChangeRecordList& changes) {
   DCHECK(CalledOnValidThread());
   DCHECK(running());
   DCHECK(syncer_changes_.empty());
-  for (sync_api::ChangeRecordList::const_iterator it =
+  for (csync::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
-    if (it->action == sync_api::ChangeRecord::ACTION_DELETE) {
+    if (it->action == csync::ChangeRecord::ACTION_DELETE) {
       syncer_changes_.push_back(
           SyncChange(SyncChange::ACTION_DELETE,
                      SyncData::CreateRemoteData(it->id, it->specifics)));
     } else {
       SyncChange::SyncChangeType action =
-          (it->action == sync_api::ChangeRecord::ACTION_ADD) ?
+          (it->action == csync::ChangeRecord::ACTION_ADD) ?
           SyncChange::ACTION_ADD : SyncChange::ACTION_UPDATE;
       // Need to load specifics from node.
-      sync_api::ReadNode read_node(trans);
-      if (read_node.InitByIdLookup(it->id) != sync_api::BaseNode::INIT_OK) {
+      csync::ReadNode read_node(trans);
+      if (read_node.InitByIdLookup(it->id) != csync::BaseNode::INIT_OK) {
         error_handler()->OnSingleDatatypeUnrecoverableError(
             FROM_HERE,
             "Failed to look up data for received change with id " +
@@ -98,10 +98,10 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
     SyncDataList* current_sync_data) {
   DCHECK(CalledOnValidThread());
   std::string type_name = syncable::ModelTypeToString(type);
-  sync_api::ReadTransaction trans(FROM_HERE, share_handle());
-  sync_api::ReadNode root(&trans);
+  csync::ReadTransaction trans(FROM_HERE, share_handle());
+  csync::ReadNode root(&trans);
   if (root.InitByTagLookup(syncable::ModelTypeToRootTag(type)) !=
-          sync_api::BaseNode::INIT_OK) {
+          csync::BaseNode::INIT_OK) {
     SyncError error(FROM_HERE,
                     "Server did not create the top-level " + type_name +
                     " node. We might be running against an out-of-date server.",
@@ -113,10 +113,10 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
   DCHECK_NE(type, syncable::BOOKMARKS);
 
   int64 sync_child_id = root.GetFirstChildId();
-  while (sync_child_id != sync_api::kInvalidId) {
-    sync_api::ReadNode sync_child_node(&trans);
+  while (sync_child_id != csync::kInvalidId) {
+    csync::ReadNode sync_child_node(&trans);
     if (sync_child_node.InitByIdLookup(sync_child_id) !=
-            sync_api::BaseNode::INIT_OK) {
+            csync::BaseNode::INIT_OK) {
       SyncError error(FROM_HERE,
                       "Failed to fetch child node for type " + type_name + ".",
                        type);
@@ -136,13 +136,13 @@ namespace {
 // modifying any code around an OnSingleDatatypeUnrecoverableError call, else
 // the compiler attempts to merge it with other calls, losing useful information
 // in breakpad uploads.
-SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
+SyncError LogLookupFailure(csync::BaseNode::InitByLookupResult lookup_result,
                            const tracked_objects::Location& from_here,
                            const std::string& error_prefix,
                            syncable::ModelType type,
                            DataTypeErrorHandler* error_handler) {
   switch (lookup_result) {
-    case sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD: {
+    case csync::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD: {
       SyncError error;
       error.Reset(from_here,
                   error_prefix +
@@ -153,7 +153,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
       LOG(ERROR) << "Delete: Bad entry.";
       return error;
     }
-    case sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL: {
+    case csync::BaseNode::INIT_FAILED_ENTRY_IS_DEL: {
       SyncError error;
       error.Reset(from_here, error_prefix + "entry is already deleted.", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
@@ -161,7 +161,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
       LOG(ERROR) << "Delete: Deleted entry.";
       return error;
     }
-    case sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY: {
+    case csync::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY: {
       SyncError error;
       error.Reset(from_here, error_prefix + "unable to decrypt", type);
       error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
@@ -169,7 +169,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
       LOG(ERROR) << "Delete: Undecryptable entry.";
       return error;
     }
-    case sync_api::BaseNode::INIT_FAILED_PRECONDITION: {
+    case csync::BaseNode::INIT_FAILED_PRECONDITION: {
       SyncError error;
       error.Reset(from_here,
                   error_prefix + "a precondition was not met for calling init.",
@@ -194,7 +194,7 @@ SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
 SyncError AttemptDelete(const SyncChange& change,
                         syncable::ModelType type,
                         const std::string& type_str,
-                        sync_api::WriteNode* node,
+                        csync::WriteNode* node,
                         DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
@@ -210,18 +210,18 @@ SyncError AttemptDelete(const SyncChange& change,
       return error;
     }
 
-    sync_api::BaseNode::InitByLookupResult result =
+    csync::BaseNode::InitByLookupResult result =
         node->InitByClientTagLookup(change.sync_data().GetDataType(), tag);
-    if (result != sync_api::BaseNode::INIT_OK) {
+    if (result != csync::BaseNode::INIT_OK) {
       return LogLookupFailure(
           result, FROM_HERE,
           "Failed to delete " + type_str + " node. Local data, ",
           type, error_handler);
     }
   } else {
-    sync_api::BaseNode::InitByLookupResult result =
+    csync::BaseNode::InitByLookupResult result =
         node->InitByIdLookup(change.sync_data().GetRemoteId());
-    if (result != sync_api::BaseNode::INIT_OK) {
+    if (result != csync::BaseNode::INIT_OK) {
       return LogLookupFailure(
           result, FROM_HERE,
           "Failed to delete " + type_str + " node. Non-local data, ",
@@ -242,7 +242,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& list_of_changes) {
   DCHECK(CalledOnValidThread());
-  sync_api::WriteTransaction trans(from_here, share_handle());
+  csync::WriteTransaction trans(from_here, share_handle());
 
   for (SyncChangeList::const_iterator iter = list_of_changes.begin();
        iter != list_of_changes.end();
@@ -251,7 +251,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
     DCHECK_NE(change.sync_data().GetDataType(), syncable::UNSPECIFIED);
     syncable::ModelType type = change.sync_data().GetDataType();
     std::string type_str = syncable::ModelTypeToString(type);
-    sync_api::WriteNode sync_node(&trans);
+    csync::WriteNode sync_node(&trans);
     if (change.change_type() == SyncChange::ACTION_DELETE) {
       SyncError error = AttemptDelete(change, type, type_str, &sync_node,
                                       error_handler());
@@ -262,10 +262,10 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
     } else if (change.change_type() == SyncChange::ACTION_ADD) {
       // TODO(sync): Handle other types of creation (custom parents, folders,
       // etc.).
-      sync_api::ReadNode root_node(&trans);
+      csync::ReadNode root_node(&trans);
       if (root_node.InitByTagLookup(
               syncable::ModelTypeToRootTag(change.sync_data().GetDataType())) !=
-                  sync_api::BaseNode::INIT_OK) {
+                  csync::BaseNode::INIT_OK) {
         SyncError error(FROM_HERE,
                         "Failed to look up root node for type " + type_str,
                         type);
@@ -275,14 +275,14 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
         LOG(ERROR) << "Create: no root node.";
         return error;
       }
-      sync_api::WriteNode::InitUniqueByCreationResult result =
+      csync::WriteNode::InitUniqueByCreationResult result =
           sync_node.InitUniqueByCreation(change.sync_data().GetDataType(),
                                           root_node,
                                           change.sync_data().GetTag());
-      if (result != sync_api::WriteNode::INIT_SUCCESS) {
+      if (result != csync::WriteNode::INIT_SUCCESS) {
         std::string error_prefix = "Failed to create " + type_str + " node: ";
         switch (result) {
-          case sync_api::WriteNode::INIT_FAILED_EMPTY_TAG: {
+          case csync::WriteNode::INIT_FAILED_EMPTY_TAG: {
             SyncError error;
             error.Reset(FROM_HERE, error_prefix + "empty tag", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
@@ -290,7 +290,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
             LOG(ERROR) << "Create: Empty tag.";
             return error;
           }
-          case sync_api::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS: {
+          case csync::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS: {
             SyncError error;
             error.Reset(FROM_HERE, error_prefix + "entry already exists", type);
             error_handler()->OnSingleDatatypeUnrecoverableError(
@@ -298,7 +298,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
             LOG(ERROR) << "Create: Entry exists.";
             return error;
           }
-          case sync_api::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY: {
+          case csync::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY: {
             SyncError error;
             error.Reset(FROM_HERE, error_prefix + "failed to create entry",
                         type);
@@ -307,7 +307,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
             LOG(ERROR) << "Create: Could not create entry.";
             return error;
           }
-          case sync_api::WriteNode::INIT_FAILED_SET_PREDECESSOR: {
+          case csync::WriteNode::INIT_FAILED_SET_PREDECESSOR: {
             SyncError error;
             error.Reset(FROM_HERE, error_prefix + "failed to set predecessor",
                         type);
@@ -330,11 +330,11 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
     } else if (change.change_type() == SyncChange::ACTION_UPDATE) {
       // TODO(zea): consider having this logic for all possible changes?
-      sync_api::BaseNode::InitByLookupResult result =
+      csync::BaseNode::InitByLookupResult result =
           sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
                                           change.sync_data().GetTag());
-      if (result != sync_api::BaseNode::INIT_OK) {
-        if (result == sync_api::BaseNode::INIT_FAILED_PRECONDITION) {
+      if (result != csync::BaseNode::INIT_OK) {
+        if (result == csync::BaseNode::INIT_FAILED_PRECONDITION) {
           SyncError error;
           error.Reset(FROM_HERE,
                       "Failed to load entry w/empty tag for " + type_str + ".",
@@ -343,7 +343,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
               FROM_HERE, error.message());
           LOG(ERROR) << "Update: Empty tag.";
           return error;
-        } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD) {
+        } else if (result == csync::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD) {
           SyncError error;
           error.Reset(FROM_HERE,
                       "Failed to load bad entry for " + type_str + ".",
@@ -352,7 +352,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
               FROM_HERE, error.message());
           LOG(ERROR) << "Update: bad entry.";
           return error;
-        } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL) {
+        } else if (result == csync::BaseNode::INIT_FAILED_ENTRY_IS_DEL) {
           SyncError error;
           error.Reset(FROM_HERE,
                       "Failed to load deleted entry for " + type_str + ".",
@@ -441,10 +441,10 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
   std::string err_str = "Server did not create the top-level " + type_name +
       " node. We might be running against an out-of-date server.";
   *has_nodes = false;
-  sync_api::ReadTransaction trans(FROM_HERE, share_handle());
-  sync_api::ReadNode type_root_node(&trans);
+  csync::ReadTransaction trans(FROM_HERE, share_handle());
+  csync::ReadNode type_root_node(&trans);
   if (type_root_node.InitByTagLookup(syncable::ModelTypeToRootTag(type)) !=
-          sync_api::BaseNode::INIT_OK) {
+          csync::BaseNode::INIT_OK) {
     LOG(ERROR) << err_str;
     return false;
   }
@@ -459,7 +459,7 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(type, syncable::UNSPECIFIED);
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(FROM_HERE, share_handle());
+  csync::ReadTransaction trans(FROM_HERE, share_handle());
   const syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
   return !encrypted_types.Has(type) ||
          trans.GetCryptographer()->is_ready();
@@ -473,7 +473,7 @@ void GenericChangeProcessor::StopImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-sync_api::UserShare* GenericChangeProcessor::share_handle() const {
+csync::UserShare* GenericChangeProcessor::share_handle() const {
   DCHECK(CalledOnValidThread());
   return share_handle_;
 }

@@ -67,14 +67,14 @@
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
+using browser_sync::SyncBackendHost;
 using csync::JsBackend;
 using csync::JsController;
 using csync::JsEventDetails;
 using csync::JsEventHandler;
-using browser_sync::SyncBackendHost;
 using csync::SyncProtocolError;
 using csync::WeakHandle;
-using sync_api::SyncCredentials;
+using csync::SyncCredentials;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -115,7 +115,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        SigninManager* signin_manager,
                                        StartBehavior start_behavior)
     : last_auth_error_(AuthError::None()),
-      passphrase_required_reason_(sync_api::REASON_PASSPHRASE_NOT_REQUIRED),
+      passphrase_required_reason_(csync::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
       profile_(profile),
       // |profile| may be NULL in unit tests.
@@ -499,7 +499,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   encryption_pending_ = false;
   encrypt_everything_ = false;
   encrypted_types_ = csync::Cryptographer::SensitiveTypes();
-  passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+  passphrase_required_reason_ = csync::REASON_PASSPHRASE_NOT_REQUIRED;
   last_auth_error_ = GoogleServiceAuthError::None();
 
   if (sync_global_error_.get()) {
@@ -790,16 +790,16 @@ void ProfileSyncService::UpdateAuthErrorState(
 namespace {
 
 GoogleServiceAuthError ConnectionStatusToAuthError(
-    sync_api::ConnectionStatus status) {
+    csync::ConnectionStatus status) {
   switch (status) {
-    case sync_api::CONNECTION_OK:
+    case csync::CONNECTION_OK:
       return GoogleServiceAuthError::None();
       break;
-    case sync_api::CONNECTION_AUTH_ERROR:
+    case csync::CONNECTION_AUTH_ERROR:
       return GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
       break;
-    case sync_api::CONNECTION_SERVER_ERROR:
+    case csync::CONNECTION_SERVER_ERROR:
       return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
       break;
     default:
@@ -811,7 +811,7 @@ GoogleServiceAuthError ConnectionStatusToAuthError(
 }  // namespace
 
 void ProfileSyncService::OnConnectionStatusChange(
-    sync_api::ConnectionStatus status) {
+    csync::ConnectionStatus status) {
   UpdateAuthErrorState(ConnectionStatusToAuthError(status));
 }
 
@@ -823,7 +823,7 @@ void ProfileSyncService::OnStopSyncingPermanently() {
 }
 
 void ProfileSyncService::OnPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason,
+    csync::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK(backend_.get());
   DCHECK(backend_->IsNigoriEnabled());
@@ -836,7 +836,7 @@ void ProfileSyncService::OnPassphraseRequired(
   }
 
   DVLOG(1) << "Passphrase required with reason: "
-           << sync_api::PassphraseRequiredReasonToString(reason);
+           << csync::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
   // Notify observers that the passphrase status may have changed.
@@ -854,7 +854,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // passphrase. We do this here rather than down in ResolvePassphraseRequired()
   // because that can be called by OnPassphraseRequired() if no encrypted data
   // types are enabled, and we don't want to clobber the true passphrase error.
-  passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+  passphrase_required_reason_ = csync::REASON_PASSPHRASE_NOT_REQUIRED;
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
@@ -863,7 +863,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
     data_type_manager_->Configure(types,
-                                  sync_api::CONFIGURE_REASON_RECONFIGURATION);
+                                  csync::CONFIGURE_REASON_RECONFIGURATION);
   }
 
   NotifyObservers();
@@ -991,7 +991,7 @@ bool ProfileSyncService::HasUnrecoverableError() const {
 
 bool ProfileSyncService::IsPassphraseRequired() const {
   return passphrase_required_reason_ !=
-      sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+      csync::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
 // TODO(zea): Rename this IsPassphraseNeededFromUI and ensure it's used
@@ -1145,7 +1145,7 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
 }
 
 bool ProfileSyncService::IsCryptographerReady(
-    const sync_api::BaseTransaction* trans) const {
+    const csync::BaseTransaction* trans) const {
   return backend_.get() && backend_->IsCryptographerReady(trans);
 }
 
@@ -1190,22 +1190,22 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     NotifyObservers();
     return;
   }
-  sync_api::ConfigureReason reason = sync_api::CONFIGURE_REASON_UNKNOWN;
+  csync::ConfigureReason reason = csync::CONFIGURE_REASON_UNKNOWN;
   if (!HasSyncSetupCompleted()) {
-    reason = sync_api::CONFIGURE_REASON_NEW_CLIENT;
+    reason = csync::CONFIGURE_REASON_NEW_CLIENT;
   } else if (restart == false ||
-             sync_api::InitialSyncEndedForTypes(types, GetUserShare())) {
-    reason = sync_api::CONFIGURE_REASON_RECONFIGURATION;
+             csync::InitialSyncEndedForTypes(types, GetUserShare())) {
+    reason = csync::CONFIGURE_REASON_RECONFIGURATION;
   } else {
     DCHECK(restart);
-    reason = sync_api::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+    reason = csync::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
   }
-  DCHECK(reason != sync_api::CONFIGURE_REASON_UNKNOWN);
+  DCHECK(reason != csync::CONFIGURE_REASON_UNKNOWN);
 
   data_type_manager_->Configure(types, reason);
 }
 
-sync_api::UserShare* ProfileSyncService::GetUserShare() const {
+csync::UserShare* ProfileSyncService::GetUserShare() const {
   if (backend_.get() && backend_initialized_) {
     return backend_->GetUserShare();
   }
@@ -1273,7 +1273,7 @@ void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {
   cached_passphrase_.clear();
 
   // If we need a passphrase to decrypt data, try the cached passphrase.
-  if (passphrase_required_reason() == sync_api::REASON_DECRYPTION) {
+  if (passphrase_required_reason() == csync::REASON_DECRYPTION) {
     if (SetDecryptionPassphrase(passphrase)) {
       DVLOG(1) << "Cached passphrase successfully decrypted pending keys";
       return;
@@ -1301,13 +1301,13 @@ void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
 
   DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
            << " passphrase for encryption.";
-  if (passphrase_required_reason_ == sync_api::REASON_ENCRYPTION) {
+  if (passphrase_required_reason_ == csync::REASON_ENCRYPTION) {
     // REASON_ENCRYPTION implies that the cryptographer does not have pending
     // keys. Hence, as long as we're not trying to do an invalid passphrase
     // change (e.g. explicit -> explicit or explicit -> implicit), we know this
     // will succeed. If for some reason a new encryption key arrives via
     // sync later, the SBH will trigger another OnPassphraseRequired().
-    passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+    passphrase_required_reason_ = csync::REASON_PASSPHRASE_NOT_REQUIRED;
     NotifyObservers();
   }
   backend_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);

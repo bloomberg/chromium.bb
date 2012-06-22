@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_api {
+namespace csync {
 namespace {
 
 using base::ExpectDictDictionaryValue;
@@ -134,4 +134,4 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
 }
 
 }  // namespace
-}  // namespace sync_api
+}  // namespace csync

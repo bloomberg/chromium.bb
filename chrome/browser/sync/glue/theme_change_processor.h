@@ -21,7 +21,7 @@ namespace browser_sync {
 class DataTypeErrorHandler;
 
 // This class is responsible for taking changes from the
-// ThemeService and applying them to the sync_api 'syncable'
+// ThemeService and applying them to the csync 'syncable'
 // model, and vice versa. All operations and use of this class are
 // from the UI thread.
 class ThemeChangeProcessor : public ChangeProcessor,
@@ -31,16 +31,16 @@ class ThemeChangeProcessor : public ChangeProcessor,
   virtual ~ThemeChangeProcessor();
 
   // content::NotificationObserver implementation.
-  // ThemeService -> sync_api model change application.
+  // ThemeService -> csync model change application.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // ChangeProcessor implementation.
-  // sync_api model -> ThemeService change application.
+  // csync model -> ThemeService change application.
   virtual void ApplyChangesFromSyncModel(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::ImmutableChangeRecordList& changes) OVERRIDE;
+      const csync::BaseTransaction* trans,
+      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
 
  protected:
   // ChangeProcessor implementation.

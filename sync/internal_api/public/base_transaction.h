@@ -15,7 +15,7 @@ class BaseTransaction;
 class Directory;
 }
 
-namespace sync_api {
+namespace csync {
 
 // Sync API's BaseTransaction, ReadTransaction, and WriteTransaction allow for
 // batching of several read and/or write operations.  The read and write
@@ -47,8 +47,8 @@ class BaseTransaction {
 };
 
 syncable::ModelTypeSet GetEncryptedTypes(
-    const sync_api::BaseTransaction* trans);
+    const csync::BaseTransaction* trans);
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_

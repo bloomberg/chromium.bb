@@ -17,13 +17,13 @@
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/session_state.h"
 
-namespace sync_api {
+namespace csync {
 
 const unsigned int kMaxEntries = 6;
 
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
-class DebugInfoEventListener : public sync_api::SyncManager::Observer,
+class DebugInfoEventListener : public csync::SyncManager::Observer,
                                public csync::sessions::DebugInfoGetter {
  public:
   DebugInfoEventListener();
@@ -36,9 +36,9 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
     const csync::WeakHandle<csync::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnConnectionStatusChange(
-      sync_api::ConnectionStatus connection_status) OVERRIDE;
+      csync::ConnectionStatus connection_status) OVERRIDE;
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason,
+      csync::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(
@@ -86,5 +86,5 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DebugInfoEventListener);
 };
 
-}  // namespace sync_api
+}  // namespace csync
 #endif  // SYNC_INTERNAL_API_DEBUG_INFO_EVENT_LISTENER_H_

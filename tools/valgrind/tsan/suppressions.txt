@@ -766,8 +766,8 @@
    bug_107903_b
    ThreadSanitizer:Race
    ...
-   fun:sync_api::SyncManager::SyncInternal::ShutdownOnSyncThread
-   fun:sync_api::SyncManager::ShutdownOnSyncThread
+   fun:csync::SyncManager::SyncInternal::ShutdownOnSyncThread
+   fun:csync::SyncManager::ShutdownOnSyncThread
    fun:browser_sync::SyncBackendHost::Core::DoShutdown
    fun:base::internal::RunnableAdapter::Run
 }
@@ -775,8 +775,8 @@
    bug_107903_c
    ThreadSanitizer:Race
    fun:syncable::DirectoryChangeDelegate::~DirectoryChangeDelegate
-   fun:sync_api::SyncManager::SyncInternal::~SyncInternal
-   fun:sync_api::SyncManager::~SyncManager
+   fun:csync::SyncManager::SyncInternal::~SyncInternal
+   fun:csync::SyncManager::~SyncManager
    fun:scoped_ptr::reset
    fun:browser_sync::SyncBackendHost::Core::DoShutdown
    fun:base::internal::RunnableAdapter::Run

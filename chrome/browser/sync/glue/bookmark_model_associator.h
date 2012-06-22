@@ -21,7 +21,7 @@
 class BookmarkModel;
 class BookmarkNode;
 
-namespace sync_api {
+namespace csync {
 class BaseNode;
 struct UserShare;
 }
@@ -41,7 +41,7 @@ class BookmarkModelAssociator
   // Should be set to true only by mobile clients.
   BookmarkModelAssociator(
       BookmarkModel* bookmark_model,
-      sync_api::UserShare* user_share,
+      csync::UserShare* user_share,
       DataTypeErrorHandler* unrecoverable_error_handler,
       bool expect_mobile_bookmarks_folder);
   virtual ~BookmarkModelAssociator();
@@ -67,7 +67,7 @@ class BookmarkModelAssociator
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
 
   // Returns sync id for the given bookmark node id.
-  // Returns sync_api::kInvalidId if the sync node is not found for the given
+  // Returns csync::kInvalidId if the sync node is not found for the given
   // bookmark node id.
   virtual int64 GetSyncIdFromChromeId(const int64& node_id) OVERRIDE;
 
@@ -80,7 +80,7 @@ class BookmarkModelAssociator
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(
       const int64& node_id,
-      sync_api::BaseNode* sync_node) OVERRIDE;
+      csync::BaseNode* sync_node) OVERRIDE;
 
   // Associates the given bookmark node with the given sync id.
   virtual void Associate(const BookmarkNode* node, int64 sync_id) OVERRIDE;
@@ -131,10 +131,10 @@ class BookmarkModelAssociator
 
   // Compare the properties of a pair of nodes from either domain.
   bool NodesMatch(const BookmarkNode* bookmark,
-                  const sync_api::BaseNode* sync_node) const;
+                  const csync::BaseNode* sync_node) const;
 
   BookmarkModel* bookmark_model_;
-  sync_api::UserShare* user_share_;
+  csync::UserShare* user_share_;
   DataTypeErrorHandler* unrecoverable_error_handler_;
   const bool expect_mobile_bookmarks_folder_;
   BookmarkIdToSyncIdMap id_map_;

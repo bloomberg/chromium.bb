@@ -57,7 +57,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD3(DisableBrokenDatatype, void(syncable::ModelType,
                const tracked_objects::Location&,
                std::string message));
-  MOCK_CONST_METHOD0(GetUserShare, sync_api::UserShare*());
+  MOCK_CONST_METHOD0(GetUserShare, csync::UserShare*());
   MOCK_METHOD3(ActivateDataType,
                void(syncable::ModelType, csync::ModelSafeGroup,
                     browser_sync::ChangeProcessor*));

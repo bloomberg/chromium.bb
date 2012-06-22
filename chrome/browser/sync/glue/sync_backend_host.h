@@ -73,7 +73,7 @@ class SyncFrontend {
 
   // The status of the connection to the sync server has changed.
   virtual void OnConnectionStatusChange(
-      sync_api::ConnectionStatus status) = 0;
+      csync::ConnectionStatus status) = 0;
 
   // We are no longer permitted to communicate with the server. Sync should
   // be disabled and state cleaned up at once.
@@ -86,7 +86,7 @@ class SyncFrontend {
   // cryptographer's pending keys to be passed on to the frontend in order to
   // be cached.
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason,
+      csync::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) = 0;
 
   // Called when the passphrase provided by the user is
@@ -140,7 +140,7 @@ class SyncFrontend {
 // that the SyncFrontend is only accessed on the UI loop.
 class SyncBackendHost : public BackendDataTypeConfigurer {
  public:
-  typedef sync_api::SyncStatus Status;
+  typedef csync::SyncStatus Status;
 
   // Create a SyncBackendHost with a reference to the |frontend| that
   // it serves and communicates to via the SyncFrontend interface (on
@@ -168,14 +168,14 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
                   const csync::WeakHandle<csync::JsEventHandler>& event_handler,
                   const GURL& service_url,
                   syncable::ModelTypeSet initial_types,
-                  const sync_api::SyncCredentials& credentials,
+                  const csync::SyncCredentials& credentials,
                   bool delete_sync_data_folder,
                   csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
                   csync::ReportUnrecoverableErrorFunction
                       report_unrecoverable_error_function);
 
   // Called from |frontend_loop| to update SyncCredentials.
-  void UpdateCredentials(const sync_api::SyncCredentials& credentials);
+  void UpdateCredentials(const csync::SyncCredentials& credentials);
 
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
@@ -221,7 +221,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // set of all types that failed configuration (i.e., if its argument
   // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
-      sync_api::ConfigureReason reason,
+      csync::ConfigureReason reason,
       syncable::ModelTypeSet types_to_add,
       syncable::ModelTypeSet types_to_remove,
       NigoriState nigori_state,
@@ -248,7 +248,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
-  sync_api::UserShare* GetUserShare() const;
+  csync::UserShare* GetUserShare() const;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
@@ -269,7 +269,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
   // using a token previously received.
-  bool IsCryptographerReady(const sync_api::BaseTransaction* trans) const;
+  bool IsCryptographerReady(const csync::BaseTransaction* trans) const;
 
   void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out) const;
 
@@ -280,7 +280,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // TODO(akalin): Figure out a better way for tests to hook into
   // SyncBackendHost.
 
-  typedef base::Callback<sync_api::HttpPostProviderFactory*(void)>
+  typedef base::Callback<csync::HttpPostProviderFactory*(void)>
       MakeHttpBridgeFactoryFn;
 
   struct DoInitializeOptions {
@@ -293,12 +293,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         const csync::WeakHandle<csync::JsEventHandler>& event_handler,
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
-        const sync_api::SyncCredentials& credentials,
+        const csync::SyncCredentials& credentials,
         ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
         csync::SyncNotifierFactory* sync_notifier_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
-        sync_api::SyncManager::TestingMode testing_mode,
+        csync::SyncManager::TestingMode testing_mode,
         csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
         csync::ReportUnrecoverableErrorFunction
             report_unrecoverable_error_function);
@@ -313,15 +313,16 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     GURL service_url;
     // Overridden by tests.
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
-    sync_api::SyncCredentials credentials;
+    csync::SyncCredentials credentials;
     ChromeSyncNotificationBridge* const chrome_sync_notification_bridge;
     csync::SyncNotifierFactory* const sync_notifier_factory;
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
-    sync_api::SyncManager::TestingMode testing_mode;
+    csync::SyncManager::TestingMode testing_mode;
     csync::UnrecoverableErrorHandler* unrecoverable_error_handler;
-    csync::ReportUnrecoverableErrorFunction report_unrecoverable_error_function;
+    csync::ReportUnrecoverableErrorFunction
+        report_unrecoverable_error_function;
   };
 
   // Allows tests to perform alternate core initialization work.
@@ -381,7 +382,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
     // Additional details about which types were added.
     syncable::ModelTypeSet added_types;
-    sync_api::ConfigureReason reason;
+    csync::ConfigureReason reason;
     bool retry_in_progress;
   };
 
@@ -426,7 +427,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // cached by the frontend. If there are no pending keys, or if the passphrase
   // required reason is REASON_ENCRYPTION, an empty EncryptedData object is
   // passed.
-  void NotifyPassphraseRequired(sync_api::PassphraseRequiredReason reason,
+  void NotifyPassphraseRequired(csync::PassphraseRequiredReason reason,
                                 sync_pb::EncryptedData pending_keys);
 
   // Invoked when the passphrase provided by the user has been accepted.
@@ -449,7 +450,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.
   void HandleConnectionStatusChangeOnFrontendLoop(
-      sync_api::ConnectionStatus status);
+      csync::ConnectionStatus status);
 
   // Called when configuration of the Nigori node has completed as
   // part of the initialization process.

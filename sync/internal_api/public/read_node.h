@@ -13,7 +13,7 @@
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace sync_api {
+namespace csync {
 
 // ReadNode wraps a syncable::Entry to provide the functionality of a
 // read-only BaseNode.
@@ -61,6 +61,6 @@ class ReadNode : public BaseNode {
   DISALLOW_COPY_AND_ASSIGN(ReadNode);
 };
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_READ_NODE_H_

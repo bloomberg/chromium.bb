@@ -26,23 +26,23 @@ namespace csync {
 class TestIdFactory;
 }  // namespace csync
 
-namespace sync_api {
+namespace csync {
 struct UserShare;
-}  //  namespace sync_api
+}  //  namespace csync
 
 class ProfileSyncServiceTestHelper {
  public:
   static const std::string GetTagForType(syncable::ModelType model_type);
 
   static bool CreateRoot(syncable::ModelType model_type,
-                         sync_api::UserShare* service,
+                         csync::UserShare* service,
                          csync::TestIdFactory* ids);
 
-  static sync_api::ImmutableChangeRecordList MakeSingletonChangeRecordList(
-      int64 node_id, sync_api::ChangeRecord::Action action);
+  static csync::ImmutableChangeRecordList MakeSingletonChangeRecordList(
+      int64 node_id, csync::ChangeRecord::Action action);
 
   // Deletions must provide an EntitySpecifics for the deleted data.
-  static sync_api::ImmutableChangeRecordList
+  static csync::ImmutableChangeRecordList
       MakeSingletonDeletionChangeRecordList(
           int64 node_id,
           const sync_pb::EntitySpecifics& specifics);

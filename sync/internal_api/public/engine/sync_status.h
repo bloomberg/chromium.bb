@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace sync_api {
+namespace csync {
 
 // Status encapsulates detailed state about the internals of the SyncManager.
 //
@@ -91,6 +91,6 @@ struct SyncStatus {
   std::string unique_id;
 };
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_STATUS_SUMMARY_H_

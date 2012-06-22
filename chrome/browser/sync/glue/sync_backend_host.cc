@@ -62,7 +62,7 @@ namespace browser_sync {
 
 using content::BrowserThread;
 using csync::sessions::SyncSessionSnapshot;
-using sync_api::SyncCredentials;
+using csync::SyncCredentials;
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -73,7 +73,7 @@ using sync_api::SyncCredentials;
 
 class SyncBackendHost::Core
     : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
-      public sync_api::SyncManager::Observer {
+      public csync::SyncManager::Observer {
  public:
   Core(const std::string& name,
        const FilePath& sync_data_folder_path,
@@ -88,9 +88,9 @@ class SyncBackendHost::Core
       const csync::WeakHandle<csync::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnConnectionStatusChange(
-      sync_api::ConnectionStatus status) OVERRIDE;
+      csync::ConnectionStatus status) OVERRIDE;
   virtual void OnPassphraseRequired(
-      sync_api::PassphraseRequiredReason reason,
+      csync::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(
@@ -117,7 +117,7 @@ class SyncBackendHost::Core
 
   // Called to perform credential update on behalf of
   // SyncBackendHost::UpdateCredentials
-  void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);
+  void DoUpdateCredentials(const csync::SyncCredentials& credentials);
 
   // Called when the user disables or enables a sync type.
   void DoUpdateEnabledTypes(const syncable::ModelTypeSet& enabled_types);
@@ -162,7 +162,7 @@ class SyncBackendHost::Core
   virtual void DoRequestConfig(
       const csync::ModelSafeRoutingInfo& routing_info,
       syncable::ModelTypeSet types_to_config,
-      sync_api::ConfigureReason reason);
+      csync::ConfigureReason reason);
 
   // Start the configuration mode.  |callback| is called on the sync
   // thread.
@@ -172,7 +172,7 @@ class SyncBackendHost::Core
   // This method will add a reference to the context to persist it
   // on the IO thread. Must be removed from IO thread.
 
-  sync_api::SyncManager* sync_manager() { return sync_manager_.get(); }
+  csync::SyncManager* sync_manager() { return sync_manager_.get(); }
 
   // Delete the sync data folder to cleanup backend data.  Happens the first
   // time sync is enabled for a user (to prevent accidentally reusing old
@@ -226,7 +226,7 @@ class SyncBackendHost::Core
   ChromeEncryptor encryptor_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
-  scoped_ptr<sync_api::SyncManager> sync_manager_;
+  scoped_ptr<csync::SyncManager> sync_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -323,7 +323,7 @@ SyncBackendHost::~SyncBackendHost() {
 
 namespace {
 
-sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
+csync::HttpPostProviderFactory* MakeHttpBridgeFactory(
     const scoped_refptr<net::URLRequestContextGetter>& getter) {
   return new HttpBridgeFactory(getter);
 }
@@ -377,7 +377,7 @@ void SyncBackendHost::Initialize(
       &sync_notifier_factory_,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
-      sync_api::SyncManager::NON_TEST,
+      csync::SyncManager::NON_TEST,
       unrecoverable_error_handler,
       report_unrecoverable_error_function));
 }
@@ -553,7 +553,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::ConfigureDataTypes(
-    sync_api::ConfigureReason reason,
+    csync::ConfigureReason reason,
     syncable::ModelTypeSet types_to_add,
     syncable::ModelTypeSet types_to_remove,
     NigoriState nigori_state,
@@ -624,7 +624,7 @@ void SyncBackendHost::DeactivateDataType(syncable::ModelType type) {
   registrar_->DeactivateDataType(type);
 }
 
-sync_api::UserShare* SyncBackendHost::GetUserShare() const {
+csync::UserShare* SyncBackendHost::GetUserShare() const {
   DCHECK(initialized());
   return core_->sync_manager()->GetUserShare();
 }
@@ -657,7 +657,7 @@ bool SyncBackendHost::IsUsingExplicitPassphrase() {
 }
 
 bool SyncBackendHost::IsCryptographerReady(
-    const sync_api::BaseTransaction* trans) const {
+    const csync::BaseTransaction* trans) const {
   return initialized() && trans->GetCryptographer()->is_ready();
 }
 
@@ -779,7 +779,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     // to true. However this is a very corner case. So it is not explicitly
     // handled.
     pending_config_mode_state_->added_types =
-        sync_api::GetTypesWithEmptyProgressMarkerToken(enabled_types,
+        csync::GetTypesWithEmptyProgressMarkerToken(enabled_types,
                                                        GetUserShare());
   }
 
@@ -838,14 +838,15 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     const csync::WeakHandle<csync::JsEventHandler>& event_handler,
     const GURL& service_url,
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
-    const sync_api::SyncCredentials& credentials,
+    const csync::SyncCredentials& credentials,
     ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
     csync::SyncNotifierFactory* sync_notifier_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
-    sync_api::SyncManager::TestingMode testing_mode,
+    csync::SyncManager::TestingMode testing_mode,
     csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
-    csync::ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
+    csync::ReportUnrecoverableErrorFunction
+        report_unrecoverable_error_function)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -885,7 +886,7 @@ SyncBackendHost::Core::~Core() {
 
 SyncBackendHost::PendingConfigureDataTypesState::
 PendingConfigureDataTypesState()
-    : reason(sync_api::CONFIGURE_REASON_UNKNOWN),
+    : reason(csync::CONFIGURE_REASON_UNKNOWN),
       retry_in_progress(false) {}
 
 SyncBackendHost::PendingConfigureDataTypesState::
@@ -920,7 +921,7 @@ void SyncBackendHost::Core::OnInitializationComplete(
 }
 
 void SyncBackendHost::Core::OnConnectionStatusChange(
-    sync_api::ConnectionStatus status) {
+    csync::ConnectionStatus status) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -930,7 +931,7 @@ void SyncBackendHost::Core::OnConnectionStatusChange(
 }
 
 void SyncBackendHost::Core::OnPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason,
+    csync::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   if (!sync_loop_)
     return;
@@ -1063,7 +1064,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   registrar_ = options.registrar;
   DCHECK(registrar_);
 
-  sync_manager_.reset(new sync_api::SyncManager(name_));
+  sync_manager_.reset(new csync::SyncManager(name_));
   sync_manager_->AddObserver(this);
   success = sync_manager_->Init(
       sync_data_folder_path_,
@@ -1179,7 +1180,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 void SyncBackendHost::Core::DoRequestConfig(
     const csync::ModelSafeRoutingInfo& routing_info,
     syncable::ModelTypeSet types_to_config,
-    sync_api::ConfigureReason reason) {
+    csync::ConfigureReason reason) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->RequestConfig(routing_info, types_to_config, reason);
 }
@@ -1269,7 +1270,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     case NOT_INITIALIZED:
       initialization_state_ = DOWNLOADING_NIGORI;
       ConfigureDataTypes(
-          sync_api::CONFIGURE_REASON_NEW_CLIENT,
+          csync::CONFIGURE_REASON_NEW_CLIENT,
           syncable::ModelTypeSet(),
           syncable::ModelTypeSet(),
           WITH_NIGORI,
@@ -1330,7 +1331,7 @@ bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(
 }
 
 void SyncBackendHost::NotifyPassphraseRequired(
-    sync_api::PassphraseRequiredReason reason,
+    csync::PassphraseRequiredReason reason,
     sync_pb::EncryptedData pending_keys) {
   if (!frontend_)
     return;
@@ -1389,7 +1390,7 @@ void SyncBackendHost::HandleStopSyncingPermanentlyOnFrontendLoop() {
 }
 
 void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(
-    sync_api::ConnectionStatus status) {
+    csync::ConnectionStatus status) {
   if (!frontend_)
     return;
 

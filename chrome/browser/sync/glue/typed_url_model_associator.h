@@ -28,7 +28,7 @@ class HistoryBackend;
 class URLRow;
 };
 
-namespace sync_api {
+namespace csync {
 class WriteNode;
 class WriteTransaction;
 };
@@ -74,7 +74,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
   // Delete all typed url nodes.
-  bool DeleteAllNodes(sync_api::WriteTransaction* trans);
+  bool DeleteAllNodes(csync::WriteTransaction* trans);
 
   void WriteToHistoryBackend(const history::URLRows* new_urls,
                              const TypedUrlUpdateVector* updated_urls,
@@ -127,7 +127,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
                                std::vector<history::VisitInfo>* new_visits);
   static void WriteToSyncNode(const history::URLRow& url,
                               const history::VisitVector& visits,
-                              sync_api::WriteNode* node);
+                              csync::WriteNode* node);
 
   // Diffs the set of visits between the history DB and the sync DB, using the
   // sync DB as the canonical copy. Result is the set of |new_visits| and

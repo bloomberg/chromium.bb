@@ -566,7 +566,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
     return;
   Directory::UnsyncedMetaHandles handles;
   {
-    ReadTransaction trans(FROM_HERE, dir);
+    syncable::ReadTransaction trans(FROM_HERE, dir);
     dir->GetUnsyncedMetaHandles(&trans, &handles);
   }
   if (handles.empty())

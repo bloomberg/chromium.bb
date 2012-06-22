@@ -42,21 +42,21 @@ ThemeModelAssociator::ThemeModelAssociator(
 ThemeModelAssociator::~ThemeModelAssociator() {}
 
 SyncError ThemeModelAssociator::AssociateModels() {
-  sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  sync_api::ReadNode root(&trans);
-  if (root.InitByTagLookup(kThemesTag) != sync_api::BaseNode::INIT_OK) {
+  csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadNode root(&trans);
+  if (root.InitByTagLookup(kThemesTag) != csync::BaseNode::INIT_OK) {
     return error_handler_->CreateAndUploadError(FROM_HERE,
                                                 kNoThemesFolderError,
                                                 model_type());
   }
 
   Profile* profile = sync_service_->profile();
-  sync_api::WriteNode node(&trans);
+  csync::WriteNode node(&trans);
   // TODO(akalin): When we have timestamps, we may want to do
   // something more intelligent than preferring the sync data over our
   // local data.
   if (node.InitByClientTagLookup(syncable::THEMES, kCurrentThemeClientTag) ==
-      sync_api::BaseNode::INIT_OK) {
+      csync::BaseNode::INIT_OK) {
     // Update the current theme from the sync data.
     // TODO(akalin): If the sync data does not have
     // use_system_theme_by_default and we do, update that flag on the
@@ -67,11 +67,11 @@ SyncError ThemeModelAssociator::AssociateModels() {
       node.SetThemeSpecifics(theme_specifics);
   } else {
     // Set the sync data from the current theme.
-    sync_api::WriteNode node(&trans);
-    sync_api::WriteNode::InitUniqueByCreationResult result =
+    csync::WriteNode node(&trans);
+    csync::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::THEMES, root,
                                   kCurrentThemeClientTag);
-    if (result != sync_api::WriteNode::INIT_SUCCESS) {
+    if (result != csync::WriteNode::INIT_SUCCESS) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
           "Could not create current theme node.",
@@ -94,9 +94,9 @@ SyncError ThemeModelAssociator::DisassociateModels() {
 bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  sync_api::ReadNode root(&trans);
-  if (root.InitByTagLookup(kThemesTag) != sync_api::BaseNode::INIT_OK) {
+  csync::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadNode root(&trans);
+  if (root.InitByTagLookup(kThemesTag) != csync::BaseNode::INIT_OK) {
     LOG(ERROR) << kNoThemesFolderError;
     return false;
   }
@@ -108,9 +108,9 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 bool ThemeModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   const syncable::ModelTypeSet encrypted_types =
-      sync_api::GetEncryptedTypes(&trans);
+      csync::GetEncryptedTypes(&trans);
   return !encrypted_types.Has(syncable::THEMES) ||
          sync_service_->IsCryptographerReady(&trans);
 }

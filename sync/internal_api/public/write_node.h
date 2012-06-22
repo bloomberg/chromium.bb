@@ -38,7 +38,7 @@ class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
 
-namespace sync_api {
+namespace csync {
 
 class WriteTransaction;
 
@@ -199,6 +199,6 @@ class WriteNode : public BaseNode {
   DISALLOW_COPY_AND_ASSIGN(WriteNode);
 };
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_WRITE_NODE_H_

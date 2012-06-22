@@ -32,7 +32,7 @@ PasswordModelAssociator::PasswordModelAssociator(
     DataTypeErrorHandler* error_handler)
     : sync_service_(sync_service),
       password_store_(password_store),
-      password_node_id_(sync_api::kInvalidId),
+      password_node_id_(csync::kInvalidId),
       abort_association_pending_(false),
       expected_loop_(MessageLoop::current()),
       error_handler_(error_handler) {
@@ -72,10 +72,10 @@ SyncError PasswordModelAssociator::AssociateModels() {
   PasswordVector new_passwords;
   PasswordVector updated_passwords;
   {
-    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    sync_api::ReadNode password_root(&trans);
+    csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    csync::ReadNode password_root(&trans);
     if (password_root.InitByTagLookup(kPasswordTag) !=
-            sync_api::BaseNode::INIT_OK) {
+            csync::BaseNode::INIT_OK) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
           "Server did not create the top-level password node. We "
@@ -91,9 +91,9 @@ SyncError PasswordModelAssociator::AssociateModels() {
       }
       std::string tag = MakeTag(**ix);
 
-      sync_api::ReadNode node(&trans);
+      csync::ReadNode node(&trans);
       if (node.InitByClientTagLookup(syncable::PASSWORDS, tag) ==
-              sync_api::BaseNode::INIT_OK) {
+              csync::BaseNode::INIT_OK) {
         const sync_pb::PasswordSpecificsData& password =
             node.GetPasswordSpecifics();
         DCHECK_EQ(tag, MakeTag(password));
@@ -101,9 +101,9 @@ SyncError PasswordModelAssociator::AssociateModels() {
         webkit::forms::PasswordForm new_password;
 
         if (MergePasswords(password, **ix, &new_password)) {
-          sync_api::WriteNode write_node(&trans);
+          csync::WriteNode write_node(&trans);
           if (write_node.InitByClientTagLookup(syncable::PASSWORDS, tag) !=
-                  sync_api::BaseNode::INIT_OK) {
+                  csync::BaseNode::INIT_OK) {
             STLDeleteElements(&passwords);
             return error_handler_->CreateAndUploadError(
                 FROM_HERE,
@@ -116,10 +116,10 @@ SyncError PasswordModelAssociator::AssociateModels() {
 
         Associate(&tag, node.GetId());
       } else {
-        sync_api::WriteNode node(&trans);
-        sync_api::WriteNode::InitUniqueByCreationResult result =
+        csync::WriteNode node(&trans);
+        csync::WriteNode::InitUniqueByCreationResult result =
             node.InitUniqueByCreation(syncable::PASSWORDS, password_root, tag);
-        if (result != sync_api::WriteNode::INIT_SUCCESS) {
+        if (result != csync::WriteNode::INIT_SUCCESS) {
           STLDeleteElements(&passwords);
           return error_handler_->CreateAndUploadError(
               FROM_HERE,
@@ -138,10 +138,10 @@ SyncError PasswordModelAssociator::AssociateModels() {
     STLDeleteElements(&passwords);
 
     int64 sync_child_id = password_root.GetFirstChildId();
-    while (sync_child_id != sync_api::kInvalidId) {
-      sync_api::ReadNode sync_child_node(&trans);
+    while (sync_child_id != csync::kInvalidId) {
+      csync::ReadNode sync_child_node(&trans);
       if (sync_child_node.InitByIdLookup(sync_child_id) !=
-              sync_api::BaseNode::INIT_OK) {
+              csync::BaseNode::INIT_OK) {
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
             "Failed to fetch child node.",
@@ -179,13 +179,13 @@ SyncError PasswordModelAssociator::AssociateModels() {
 }
 
 bool PasswordModelAssociator::DeleteAllNodes(
-    sync_api::WriteTransaction* trans) {
+    csync::WriteTransaction* trans) {
   DCHECK(expected_loop_ == MessageLoop::current());
   for (PasswordToSyncIdMap::iterator node_id = id_map_.begin();
        node_id != id_map_.end(); ++node_id) {
-    sync_api::WriteNode sync_node(trans);
+    csync::WriteNode sync_node(trans);
     if (sync_node.InitByIdLookup(node_id->second) !=
-            sync_api::BaseNode::INIT_OK) {
+            csync::BaseNode::INIT_OK) {
       LOG(ERROR) << "Typed url node lookup failed.";
       return false;
     }
@@ -212,11 +212,11 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
-  sync_api::ReadNode password_node(&trans);
+  csync::ReadNode password_node(&trans);
   if (password_node.InitByIdLookup(password_sync_id) !=
-          sync_api::BaseNode::INIT_OK) {
+          csync::BaseNode::INIT_OK) {
     LOG(ERROR) << "Server did not create the top-level password node. We "
                << "might be running against an out-of-date server.";
     return false;
@@ -236,7 +236,7 @@ void PasswordModelAssociator::AbortAssociation() {
 
 bool PasswordModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   // We always encrypt passwords, so no need to check if encryption is enabled.
   return sync_service_->IsCryptographerReady(&trans);
 }
@@ -248,7 +248,7 @@ const std::string* PasswordModelAssociator::GetChromeNodeFromSyncId(
 
 bool PasswordModelAssociator::InitSyncNodeFromChromeId(
     const std::string& node_id,
-    sync_api::BaseNode* sync_node) {
+    csync::BaseNode* sync_node) {
   return false;
 }
 
@@ -260,13 +260,13 @@ bool PasswordModelAssociator::IsAbortPending() {
 int64 PasswordModelAssociator::GetSyncIdFromChromeId(
     const std::string& password) {
   PasswordToSyncIdMap::const_iterator iter = id_map_.find(password);
-  return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
+  return iter == id_map_.end() ? csync::kInvalidId : iter->second;
 }
 
 void PasswordModelAssociator::Associate(
     const std::string* password, int64 sync_id) {
   DCHECK(expected_loop_ == MessageLoop::current());
-  DCHECK_NE(sync_api::kInvalidId, sync_id);
+  DCHECK_NE(csync::kInvalidId, sync_id);
   DCHECK(id_map_.find(*password) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[*password] = sync_id;
@@ -284,9 +284,9 @@ void PasswordModelAssociator::Disassociate(int64 sync_id) {
 
 bool PasswordModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  sync_api::ReadNode sync_node(&trans);
-  if (sync_node.InitByTagLookup(tag.c_str()) != sync_api::BaseNode::INIT_OK)
+  csync::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  csync::ReadNode sync_node(&trans);
+  if (sync_node.InitByTagLookup(tag.c_str()) != csync::BaseNode::INIT_OK)
     return false;
   *sync_id = sync_node.GetId();
   return true;
@@ -390,7 +390,7 @@ bool PasswordModelAssociator::MergePasswords(
 // static
 void PasswordModelAssociator::WriteToSyncNode(
          const webkit::forms::PasswordForm& password_form,
-         sync_api::WriteNode* node) {
+         csync::WriteNode* node) {
   sync_pb::PasswordSpecificsData password;
   password.set_scheme(password_form.scheme);
   password.set_signon_realm(password_form.signon_realm);

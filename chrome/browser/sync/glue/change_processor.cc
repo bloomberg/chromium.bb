@@ -17,7 +17,7 @@ ChangeProcessor::~ChangeProcessor() {
 }
 
 void ChangeProcessor::Start(Profile* profile,
-                            sync_api::UserShare* share_handle) {
+                            csync::UserShare* share_handle) {
   DCHECK(error_handler_ && !share_handle_);
   share_handle_ = share_handle;
   StartImpl(profile);
@@ -43,7 +43,7 @@ DataTypeErrorHandler* ChangeProcessor::error_handler() const {
   return error_handler_;
 }
 
-sync_api::UserShare* ChangeProcessor::share_handle() const {
+csync::UserShare* ChangeProcessor::share_handle() const {
   return share_handle_;
 }
 

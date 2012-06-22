@@ -45,7 +45,7 @@ namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
 
-namespace sync_api {
+namespace csync {
 
 class BaseTransaction;
 class HttpPostProviderFactory;
@@ -436,7 +436,7 @@ class SyncManager {
   // schedules a config task to fetch updates for |types|.
   void RequestConfig(const csync::ModelSafeRoutingInfo& routing_info,
                      const syncable::ModelTypeSet& types,
-                     sync_api::ConfigureReason reason);
+                     csync::ConfigureReason reason);
 
   void RequestCleanupDisabledTypes(
       const csync::ModelSafeRoutingInfo& routing_info);
@@ -553,13 +553,13 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
 
 syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
     syncable::ModelTypeSet types,
-    sync_api::UserShare* share);
+    csync::UserShare* share);
 
 const char* ConnectionStatusToString(ConnectionStatus status);
 
 // Returns the string representation of a PassphraseRequiredReason value.
 const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 
-}  // namespace sync_api
+}  // namespace csync
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_

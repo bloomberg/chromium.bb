@@ -35,7 +35,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
-      last_configure_reason_(sync_api::CONFIGURE_REASON_UNKNOWN),
+      last_configure_reason_(csync::CONFIGURE_REASON_UNKNOWN),
       last_nigori_state_(BackendDataTypeConfigurer::WITHOUT_NIGORI),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       model_association_manager_(controllers,
@@ -46,20 +46,20 @@ DataTypeManagerImpl::DataTypeManagerImpl(
 DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(TypeSet desired_types,
-                                    sync_api::ConfigureReason reason) {
+                                    csync::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason,
                 BackendDataTypeConfigurer::WITH_NIGORI);
 }
 
 void DataTypeManagerImpl::ConfigureWithoutNigori(TypeSet desired_types,
-    sync_api::ConfigureReason reason) {
+    csync::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason,
                 BackendDataTypeConfigurer::WITHOUT_NIGORI);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(
     TypeSet desired_types,
-    sync_api::ConfigureReason reason,
+    csync::ConfigureReason reason,
     BackendDataTypeConfigurer::NigoriState nigori_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
@@ -70,7 +70,7 @@ void DataTypeManagerImpl::ConfigureImpl(
 
   if (state_ == CONFIGURED &&
       last_requested_types_.Equals(desired_types) &&
-      reason == sync_api::CONFIGURE_REASON_RECONFIGURATION) {
+      reason == csync::CONFIGURE_REASON_RECONFIGURATION) {
     // If we're already configured and the types haven't changed, we can exit
     // out early.
     NotifyStart();
@@ -94,7 +94,7 @@ void DataTypeManagerImpl::ConfigureImpl(
 }
 
 void DataTypeManagerImpl::Restart(
-    sync_api::ConfigureReason reason,
+    csync::ConfigureReason reason,
     BackendDataTypeConfigurer::NigoriState nigori_state) {
   DVLOG(1) << "Restarting...";
   model_association_manager_.Initialize(last_requested_types_);
@@ -160,7 +160,7 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
                  last_nigori_state_));
 
   needs_reconfigure_ = false;
-  last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
+  last_configure_reason_ = csync::CONFIGURE_REASON_UNKNOWN;
   last_nigori_state_ = BackendDataTypeConfigurer::WITHOUT_NIGORI;
   return true;
 }
@@ -248,7 +248,7 @@ void DataTypeManagerImpl::OnTypesLoaded() {
     return;
   }
 
-  Restart(sync_api::CONFIGURE_REASON_RECONFIGURATION,
+  Restart(csync::CONFIGURE_REASON_RECONFIGURATION,
           last_nigori_state_);
 }
 
