@@ -2002,6 +2002,12 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
 
 void RenderViewImpl::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
+  // TODO(fsamuel): In the future, we might want the embedder to be able to
+  // decide whether the guest can show a context menu or not. See
+  // http://www.crbug.com/134207
+  if (GetGuestToEmbedderChannel())
+    return;
+
   content::ContextMenuParams params(data);
 
   // frame is NULL if invoked by BlockedPlugin.
