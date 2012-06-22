@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
-#define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -67,4 +67,4 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuMac);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
-#define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
+#define CHROME_BROWSER_UI_GTK_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -52,4 +52,4 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   uint32_t triggering_event_time_;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_

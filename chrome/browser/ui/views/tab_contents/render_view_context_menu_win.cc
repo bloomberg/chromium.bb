@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/render_view_context_menu_win.h"
+#include "chrome/browser/ui/views/tab_contents/render_view_context_menu_win.h"
 
 #include "base/win/metro.h"
 #include "chrome/app/chrome_command_ids.h"
