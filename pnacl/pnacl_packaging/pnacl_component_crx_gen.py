@@ -7,6 +7,7 @@
    This script packages the PNaCl translator files as a Chrome Extension.
 """
 
+import glob
 import optparse
 import os
 import platform
@@ -333,13 +334,20 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
   for tool in ('llc', 'ld'):
     shutil.move(J(target_dir, '%s.nexe' % tool), J(target_dir, tool))
 
-  # Copy native newlib deps, and glibc deps.
+  # Copy native libraries.
   copytree_existing(PnaclDirs.LibDir(arch), target_dir)
   # Also copy files from the list of overrides.
   if arch in lib_overrides:
     for override in lib_overrides[arch]:
       print 'Copying override %s to %s' % (override, target_dir)
       shutil.copy2(override, target_dir)
+
+  # Filter out native libraries related to glibc.
+  patterns = ['*nonshared.a', '*.so', '*.so.*']
+  for pat in patterns:
+    for f in glob.glob(J(target_dir, pat)):
+      print 'Filtering out glibc file: %s' % f
+      os.remove(f)
 
   # Skip the CRX generation if we are only building the unpacked version
   # for commandline testing.
