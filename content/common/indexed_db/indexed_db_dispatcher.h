@@ -178,13 +178,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                 WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreDelete(
-      const content::IndexedDBKey& key,
-      WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
-      const WebKit::WebIDBTransaction& transaction,
-      WebKit::WebExceptionCode* ec);
-
-  void RequestIDBObjectStoreDeleteRange(
       const content::IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,

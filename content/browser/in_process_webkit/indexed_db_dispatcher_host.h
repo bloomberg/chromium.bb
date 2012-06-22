@@ -213,15 +213,9 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnDelete(int idb_object_store_id,
                   int32 thread_id,
                   int32 response_id,
-                  const content::IndexedDBKey& key,
+                  const content::IndexedDBKeyRange& key_range,
                   int32 transaction_id,
                   WebKit::WebExceptionCode* ec);
-    void OnDeleteRange(int idb_object_store_id,
-                       int32 thread_id,
-                       int32 response_id,
-                       const content::IndexedDBKeyRange& key_range,
-                       int32 transaction_id,
-                       WebKit::WebExceptionCode* ec);
     void OnClear(int idb_object_store_id,
                  int32 thread_id,
                  int32 response_id,

@@ -491,17 +491,8 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStorePut,
                             IndexedDBHostMsg_ObjectStorePut_Params,
                             WebKit::WebExceptionCode /* ec */)
 
-// WebIDBObjectStore::delete(key) message.
+// WebIDBObjectStore::delete() message.
 IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreDelete,
-                            int32, /* idb_object_store_id */
-                            int32, /* thread_id */
-                            int32, /* response_id */
-                            content::IndexedDBKey, /* key */
-                            int32, /* transaction_id */
-                            WebKit::WebExceptionCode /* ec */)
-
-// WebIDBObjectStore::delete(keyRange) message.
-IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreDeleteRange,
                             int32, /* idb_object_store_id */
                             int32, /* thread_id */
                             int32, /* response_id */
