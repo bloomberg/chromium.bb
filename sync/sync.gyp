@@ -235,6 +235,8 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       'sources': [
+        'notifier/invalidation_util.cc',
+        'notifier/invalidation_util.h',
         'notifier/notifications_disabled_reason.h',
         'notifier/notifications_disabled_reason.cc',
         'notifier/sync_notifier.h',
@@ -251,8 +253,6 @@
             'notifier/chrome_system_resources.h',
             'notifier/invalidation_notifier.h',
             'notifier/invalidation_notifier.cc',
-            'notifier/invalidation_util.cc',
-            'notifier/invalidation_util.h',
             'notifier/invalidation_state_tracker.h',
             'notifier/non_blocking_invalidation_notifier.h',
             'notifier/non_blocking_invalidation_notifier.cc',
