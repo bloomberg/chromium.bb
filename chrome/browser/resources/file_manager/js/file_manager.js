@@ -2814,6 +2814,11 @@ FileManager.prototype = {
       else
         self.syncButton.removeAttribute('checked');
 
+      if (self.hostedButton.hasAttribute('checked') !=
+          gdata.hostedFilesDisabled && self.isOnGData()) {
+        self.directoryModel_.rescan();
+      }
+
       if (!gdata.hostedFilesDisabled)
         self.hostedButton.setAttribute('checked', '');
       else
