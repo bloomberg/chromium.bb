@@ -4,18 +4,14 @@
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 
-#include "base/command_line.h"
-#include "base/message_loop.h"
+#include <map>
+
+#include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/public/browser/browser_thread.h"
-#include "crypto/encryptor.h"
 #include "crypto/sha2.h"
-
-using content::BrowserThread;
 
 namespace {
 
