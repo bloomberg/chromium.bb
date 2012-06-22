@@ -338,7 +338,7 @@ HistoryService* PrerenderLocalPredictor::GetHistoryIfExists() const {
   Profile* profile = prerender_manager_->profile();
   if (!profile)
     return NULL;
-  return HistoryServiceFactory::GetForProfileIfExists(profile);
+  return HistoryServiceFactory::GetForProfileWithoutCreating(profile);
 }
 
 void PrerenderLocalPredictor::Init() {

@@ -94,9 +94,8 @@ void FaviconTabHelper::SaveFavicon() {
 
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile_->GetOriginalProfile(),
-                                           Profile::IMPLICIT_ACCESS);
+  HistoryService* history = HistoryServiceFactory::GetForProfileIfExists(
+      profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
   if (!history)
     return;
   history->AddPageNoVisitForBookmark(entry->GetURL());

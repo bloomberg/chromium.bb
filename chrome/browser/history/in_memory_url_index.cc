@@ -246,7 +246,7 @@ void InMemoryURLIndex::OnCacheLoadDone(
     content::BrowserThread::PostBlockingPoolTask(
         FROM_HERE, base::Bind(DeleteCacheFile, path));
     HistoryService* service =
-        HistoryServiceFactory::GetForProfileIfExists(profile_);
+        HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
     if (service && service->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {

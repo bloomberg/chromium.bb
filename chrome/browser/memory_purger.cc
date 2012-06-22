@@ -111,7 +111,7 @@ void MemoryPurger::PurgeBrowser() {
     // Spinning up the history service is expensive, so we avoid doing it if it
     // hasn't been done already.
     HistoryService* history_service =
-        HistoryServiceFactory::GetForProfileIfExists(profiles[i]);
+        HistoryServiceFactory::GetForProfileWithoutCreating(profiles[i]);
     if (history_service)
       history_service->UnloadBackend();
 

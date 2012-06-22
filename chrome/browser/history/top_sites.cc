@@ -174,7 +174,7 @@ void TopSites::Init(const FilePath& db_name) {
 
   // History may have already finished loading by the time we're created.
   HistoryService* history =
-      HistoryServiceFactory::GetForProfileIfExists(profile_);
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
   if (history && history->backend_loaded()) {
     if (history->needs_top_sites_migration())
       MigrateFromHistory();
@@ -483,8 +483,8 @@ CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
   if (!profile_)
     return 0;
 
-  HistoryService* hs =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* hs = HistoryServiceFactory::GetForProfileIfExists(
+      profile_, Profile::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
   if (hs) {
     return hs->QueryMostVisitedURLs(
@@ -851,8 +851,8 @@ void TopSites::OnHistoryMigrationWrittenToDisk(TopSitesBackend::Handle handle) {
   if (!profile_)
     return;
 
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  HistoryService* history = HistoryServiceFactory::GetForProfileIfExists(
+      profile_, Profile::EXPLICIT_ACCESS);
   if (history)
     history->OnTopSitesReady();
 }
