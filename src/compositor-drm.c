@@ -1767,6 +1767,7 @@ drm_compositor_create(struct wl_display *display,
 	struct udev_device *device, *drm_device;
 	const char *path, *device_seat;
 	struct wl_event_loop *loop;
+	struct weston_seat *weston_seat, *next;
 	uint32_t key;
 
 	weston_log("initializing drm backend\n");
@@ -1777,21 +1778,22 @@ drm_compositor_create(struct wl_display *display,
 	memset(ec, 0, sizeof *ec);
 
 	if (weston_compositor_init(&ec->base, display, argc, argv,
-				   config_file) < 0)
-		return NULL;
+				   config_file) < 0) {
+		weston_log("weston_compositor_init failed\n");
+		goto err_base;
+	}
 
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
 		weston_log("failed to initialize udev context\n");
-		return NULL;
+		goto err_compositor;
 	}
 
 	ec->base.wl_display = display;
 	ec->tty = tty_create(&ec->base, vt_func, tty);
 	if (!ec->tty) {
 		weston_log("failed to initialize tty\n");
-		free(ec);
-		return NULL;
+		goto err_udev;
 	}
 
 	e = udev_enumerate_new(ec->udev);
@@ -1816,12 +1818,12 @@ drm_compositor_create(struct wl_display *display,
 
 	if (drm_device == NULL) {
 		weston_log("no drm device found\n");
-		return NULL;
+		goto err_udev_enum;
 	}
 
 	if (init_egl(ec, drm_device) < 0) {
 		weston_log("failed to initialize egl\n");
-		return NULL;
+		goto err_udev_dev;
 	}
 
 	ec->base.destroy = drm_destroy;
@@ -1831,7 +1833,7 @@ drm_compositor_create(struct wl_display *display,
 	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
 	if (weston_compositor_init_gl(&ec->base) < 0)
-		return NULL;
+		goto err_egl;
 
 	for (key = KEY_F1; key < KEY_F9; key++)
 		weston_compositor_add_key_binding(&ec->base, key,
@@ -1843,11 +1845,9 @@ drm_compositor_create(struct wl_display *display,
 
 	if (create_outputs(ec, connector, drm_device) < 0) {
 		weston_log("failed to create output for %s\n", path);
-		return NULL;
+		goto err_sprite;
 	}
 
-	udev_device_unref(drm_device);
-	udev_enumerate_unref(e);
 	path = NULL;
 
 	evdev_input_create(&ec->base, ec->udev, seat);
@@ -1860,7 +1860,7 @@ drm_compositor_create(struct wl_display *display,
 	ec->udev_monitor = udev_monitor_new_from_netlink(ec->udev, "udev");
 	if (ec->udev_monitor == NULL) {
 		weston_log("failed to intialize udev monitor\n");
-		return NULL;
+		goto err_drm_source;
 	}
 	udev_monitor_filter_add_match_subsystem_devtype(ec->udev_monitor,
 							"drm", NULL);
@@ -1871,10 +1871,41 @@ drm_compositor_create(struct wl_display *display,
 
 	if (udev_monitor_enable_receiving(ec->udev_monitor) < 0) {
 		weston_log("failed to enable udev-monitor receiving\n");
-		return NULL;
+		goto err_udev_monitor;
 	}
 
+	udev_device_unref(drm_device);
+	udev_enumerate_unref(e);
+
 	return &ec->base;
+
+err_udev_monitor:
+	wl_event_source_remove(ec->udev_drm_source);
+	udev_monitor_unref(ec->udev_monitor);
+err_drm_source:
+	wl_event_source_remove(ec->drm_source);
+	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
+		evdev_input_destroy(weston_seat);
+err_sprite:
+	destroy_sprites(ec);
+err_egl:
+	eglMakeCurrent(ec->base.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+	eglTerminate(ec->base.egl_display);
+	eglReleaseThread();
+	gbm_device_destroy(ec->gbm);
+err_udev_dev:
+	udev_device_unref(drm_device);
+err_udev_enum:
+	udev_enumerate_unref(e);
+	tty_destroy(ec->tty);
+err_udev:
+	udev_unref(ec->udev);
+err_compositor:
+	weston_compositor_shutdown(&ec->base);
+err_base:
+	free(ec);
+	return NULL;
 }
 
 WL_EXPORT struct weston_compositor *
