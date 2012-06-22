@@ -1742,13 +1742,11 @@ class Dtrace(ApiBase):
           'inline string SCRIPT = "%s";\n'
           'inline int FILE_ID = %d;\n'
           '\n'
-          '%s\n'
           '%s') % (
               os.getpid(),
               self._script,
               self._dummy_file_id,
-              self.D_CODE,
-              self.D_CODE_EXECVE)
+              self.D_CODE)
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs dtrace on an executable.

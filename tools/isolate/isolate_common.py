@@ -140,9 +140,30 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
       return match.group(1) + '<(EXECUTABLE_SUFFIX)'
     if LOG_FILE.match(f):
       return None
+
+    if sys.platform == 'darwin':
+      # On OSX, the name of the output is dependent on gyp define, it can be
+      # 'Google Chrome.app' or 'Chromium.app', same for 'XXX
+      # Framework.framework'. Furthermore, they are versioned with a gyp
+      # variable.  To lower the complexity of the .isolate file, remove all the
+      # individual entries that show up under any of the 4 entries and replace
+      # them with the directory itself. Overall, this results in a bit more
+      # files than strictly necessary.
+      OSX_BUNDLES = (
+        '<(PRODUCT_DIR)/Chromium Framework.framework/',
+        '<(PRODUCT_DIR)/Chromium.app/',
+        '<(PRODUCT_DIR)/Google Chrome Framework.framework/',
+        '<(PRODUCT_DIR)/Google Chrome.app/',
+      )
+      for prefix in OSX_BUNDLES:
+        if f.startswith(prefix):
+          # Note this result in duplicate values, so the a set() must be used to
+          # remove duplicates.
+          return prefix
+
     return f
 
-  return classify_files(filter(None, (fix(f.path) for f in files)))
+  return classify_files(set(filter(None, (fix(f.path) for f in files))))
 
 
 def generate_isolate(files, root_dir, variables, relative_cwd):
