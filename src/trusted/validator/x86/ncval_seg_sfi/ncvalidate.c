@@ -1010,7 +1010,8 @@ int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
 
       NCDecoderStatePairConstruct(&pair,
                                   &old_vstate->dstate,
-                                  &new_vstate->dstate);
+                                  &new_vstate->dstate,
+                                  NULL);  /* copy_func */
       pair.action_fn = ValidateInstReplacement;
       if (NCDecoderStatePairDecode(&pair)) {
         result = 1;

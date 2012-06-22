@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-/* Implement the ApplyDfaValidator API for the x86-64 architecture. */
+/* Implement the Validator API for the x86-64 architecture. */
 #include <assert.h>
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
@@ -25,7 +25,7 @@ static void ProcessError(const uint8_t *ptr, void *userdata) {
   UNREFERENCED_PARAMETER(userdata);
 }
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyDfaValidator, x86, 64) (
+static NaClValidationStatus ApplyDfaValidator_x86_64(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
@@ -46,4 +46,44 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyDfaValidator, x86, 64) (
     return NaClValidationSucceeded;
   }
   return NaClValidationFailed;
+}
+
+static NaClValidationStatus ValidatorCopyNotImplemented(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeatures *cpu_features,
+    NaClCopyInstructionFunc copy_func) {
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(data_old);
+  UNREFERENCED_PARAMETER(data_new);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(cpu_features);
+  UNREFERENCED_PARAMETER(copy_func);
+  return NaClValidationFailedNotImplemented;
+}
+
+static NaClValidationStatus ValidatorCodeReplacementNotImplemented(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeatures *cpu_features) {
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(data_old);
+  UNREFERENCED_PARAMETER(data_new);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(cpu_features);
+  return NaClValidationFailedNotImplemented;
+}
+
+static const struct NaClValidatorInterface validator = {
+  ApplyDfaValidator_x86_64,
+  ValidatorCopyNotImplemented,
+  ValidatorCodeReplacementNotImplemented,
+};
+
+const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64() {
+  return &validator;
 }

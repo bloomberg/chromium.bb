@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
 
+#include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 EXTERN_C_BEGIN

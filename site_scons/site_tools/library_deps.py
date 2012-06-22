@@ -28,6 +28,7 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'platform',
         'platform_qual_lib',
         'gio',
+        'validators',
         ],
     }
 
@@ -45,6 +46,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncdis_util_x86_32': [
             'ncval_reg_sfi_verbose_x86_32',
             'ncdis_seg_sfi_verbose_x86_32',
+            'validators',
             ],
         'ncdis_seg_sfi_verbose_x86_32': [
             'ncdis_seg_sfi_x86_32',
@@ -87,7 +89,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             # or decoder, add the following:
             #'nc_opcode_modeling_verbose_x86_32',
             ],
-        'sel': [
+        'validators': [
             'ncvalidate_x86_32',
             'dfa_validate_caller_x86_32',
             'dfa_validate_x86_32',
@@ -104,6 +106,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncdis_util_x86_64': [
             'ncval_reg_sfi_verbose_x86_64',
             'ncdis_seg_sfi_verbose_x86_64',
+            'validators',
             ],
         'ncdis_seg_sfi_verbose_x86_64': [
             'ncdis_seg_sfi_x86_64',
@@ -143,7 +146,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'ncdis_seg_sfi_x86_64',
             'ncval_base_x86_64',
             ],
-        'sel': [
+        'validators': [
             'ncvalidate_x86_64',
             'dfa_validate_caller_x86_64',
             'dfa_validate_x86_64',
@@ -153,7 +156,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncvalidate_arm_v2': [
             'arm_validator_core',
             ],
-        'sel': [
+        'validators': [
             'ncvalidate_arm_v2',
             ],
         },

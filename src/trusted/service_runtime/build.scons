@@ -747,7 +747,9 @@ if env.Bit('target_x86'):
       env.File(arch_testdata_dir + '/hello_world.nexe'),
       stdout_golden = env.File('testdata/hello_world.stdout'),
       stderr_golden = env.File('testdata/dfa_validator_hello.stderr'),
-      filter_regex = '"^(Hello, World!)$|DANGER"',
+      filter_regex = '"^(Hello, World!)$' + '|' +
+        '^[[][^]]*[]] (DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!)$"',
+      filter_group_only = 'true',
       osenv='NACL_DANGEROUS_USE_DFA_VALIDATOR=1',
       )
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],

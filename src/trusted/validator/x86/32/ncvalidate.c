@@ -23,7 +23,7 @@
 # endif
 #endif
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
+static NaClValidationStatus ApplyValidator_x86_32(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
@@ -90,12 +90,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
       ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
-    (uintptr_t guest_addr,
-     uint8_t *data_old,
-     uint8_t *data_new,
-     size_t size,
-     const NaClCPUFeaturesX86 *cpu_features) {
+static NaClValidationStatus ApplyValidatorCodeReplacement_x86_32(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeaturesX86 *cpu_features) {
   /* Check that the given parameter values are supported. */
   if (!NaClArchSupported(cpu_features))
     return NaClValidationFailedCpuNotSupported;
@@ -103,4 +103,65 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
   return NCValidateSegmentPair(data_old, data_new, guest_addr,
                                size, cpu_features)
       ? NaClValidationSucceeded : NaClValidationFailed;
+}
+
+/* Copy a single instruction, avoiding the possibility of other threads
+ * executing a partially changed instruction.
+ */
+static Bool CopyInstruction(NCDecoderStatePair* tthis,
+                            NCDecoderInst *dinst_old,
+                            NCDecoderInst *dinst_new) {
+  NCRemainingMemory* mem_old = &dinst_old->dstate->memory;
+  NCRemainingMemory* mem_new = &dinst_new->dstate->memory;
+
+  return tthis->copy_func(mem_old->mpc, mem_new->mpc, mem_old->read_length);
+}
+
+/* Copies code from src to dest in a thread safe way, returns 1 on success,
+ * returns 0 on error. This will likely assert on error to avoid partially
+ * copied code or undefined state.
+ */
+static int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
+                      size_t sz, NaClCopyInstructionFunc copy_func) {
+  NCDecoderState dst_dstate;
+  NCDecoderInst  dst_inst;
+  NCDecoderState src_dstate;
+  NCDecoderInst  src_inst;
+  NCDecoderStatePair pair;
+  int result = 0;
+
+  NCDecoderStateConstruct(&dst_dstate, dst, vbase, sz, &dst_inst, 1);
+  NCDecoderStateConstruct(&src_dstate, src, vbase, sz, &src_inst, 1);
+  NCDecoderStatePairConstruct(&pair, &dst_dstate, &src_dstate, copy_func);
+  pair.action_fn = CopyInstruction;
+  if (NCDecoderStatePairDecode(&pair)) result = 1;
+  NCDecoderStatePairDestruct(&pair);
+  NCDecoderStateDestruct(&src_dstate);
+  NCDecoderStateDestruct(&dst_dstate);
+
+  return result;
+}
+
+static NaClValidationStatus ApplyValidatorCopy_x86_32(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeaturesX86 *cpu_features,
+    NaClCopyInstructionFunc copy_func) {
+  if (!NaClArchSupported(cpu_features))
+    return NaClValidationFailedCpuNotSupported;
+
+  return ((0 == NCCopyCode(data_old, data_new, guest_addr, size, copy_func))
+            ? NaClValidationFailed : NaClValidationSucceeded);
+}
+
+static const struct NaClValidatorInterface validator = {
+  ApplyValidator_x86_32,
+  ApplyValidatorCopy_x86_32,
+  ApplyValidatorCodeReplacement_x86_32,
+};
+
+const struct NaClValidatorInterface *NaClValidatorCreate_x86_32() {
+  return &validator;
 }

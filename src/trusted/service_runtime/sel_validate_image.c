@@ -5,8 +5,10 @@
  */
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator_x86/nccopycode.h"
 
 const size_t kMinimumCachedCodeSize = 40000;
 
@@ -27,30 +29,11 @@ static int NaClValidateStatus(NaClValidationStatus status) {
   }
 }
 
-typedef NaClValidationStatus (*ValidateFunc) (
-    uintptr_t, uint8_t*, size_t, int, int,
-    const NaClCPUFeatures*, struct NaClValidationCache*);
-
-static ValidateFunc NaClSelectValidator(struct NaClApp *nap) {
-  ValidateFunc ret = NACL_SUBARCH_NAME(ApplyValidator,
-                                       NACL_TARGET_ARCH, NACL_TARGET_SUBARCH);
-  /* Avoid linking two validators into Chromium to keep download size small. */
-#if defined(__arm__) || !defined(NACL_STANDALONE)
-  UNREFERENCED_PARAMETER(nap);
-#else
-  if (nap->enable_dfa_validator) {
-    ret = NACL_SUBARCH_NAME(ApplyDfaValidator,
-                            NACL_TARGET_ARCH, NACL_TARGET_SUBARCH);
-  }
-#endif
-  return ret;
-}
-
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   NaClValidationStatus status = NaClValidationSucceeded;
   struct NaClValidationCache *cache = nap->validation_cache;
-  ValidateFunc validate_func = NaClSelectValidator(nap);
+  const struct NaClValidatorInterface *validator = nap->validator;
 
   if (size < kMinimumCachedCodeSize) {
     /*
@@ -85,20 +68,20 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     /* In stub out mode, we do two passes.  The second pass acts as a
        sanity check that bad instructions were indeed overwritten with
        allowable HLTs. */
-    status = validate_func(guest_addr, data, size,
-                           TRUE, /* stub out */
-                           FALSE, /* text is not read-only */
-                           &nap->cpu_features,
-                           cache);
+    status = validator->Validate(guest_addr, data, size,
+                                 TRUE, /* stub out */
+                                 FALSE, /* text is not read-only */
+                                 &nap->cpu_features,
+                                 cache);
   }
   if (status == NaClValidationSucceeded) {
     /* Fixed feature CPU mode implies read-only. */
     int readonly_text = nap->fixed_feature_cpu_mode;
-    status = validate_func(guest_addr, data, size,
-                           FALSE, /* do not stub out */
-                           readonly_text,
-                           &nap->cpu_features,
-                           cache);
+    status = validator->Validate(guest_addr, data, size,
+                                 FALSE, /* do not stub out */
+                                 readonly_text,
+                                 &nap->cpu_features,
+                                 cache);
   }
   return NaClValidateStatus(status);
 }
@@ -114,27 +97,29 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
     return LOAD_BAD_FILE;
   }
 
-  return NaClValidateStatus(
-      NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
-                        NACL_TARGET_ARCH,
-                        NACL_TARGET_SUBARCH)
-      (guest_addr, data_old, data_new, size, &nap->cpu_features));
+  return NaClValidateStatus(nap->validator->ValidateCodeReplacement(
+      guest_addr, data_old, data_new, size, &nap->cpu_features));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
+  /* TODO(pasko): define NaClCopyCode in system-dependent files,
+   * avoid ARM conditional compilation using preprocessor macros.
+   */
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  NaClCopyInstructionFunc copy_func = NULL;
+#else
+  NaClCopyInstructionFunc copy_func = NaClCopyInstructionX86;
+#endif
   /* Fixed-feature mode disables any code copying for now. Currently
    * the only use of NaClCodeCopy() seems to be for dynamic code
    * modification, which should fail in NaClValidateCodeReplacement()
    * before reaching this.
    */
   if (nap->fixed_feature_cpu_mode) return LOAD_BAD_FILE;
-  return NaClValidateStatus(
-      NACL_SUBARCH_NAME(ApplyValidatorCopy,
-                        NACL_TARGET_ARCH,
-                        NACL_TARGET_SUBARCH)
-      (guest_addr, data_old, data_new, size, &nap->cpu_features));
+  return NaClValidateStatus(nap->validator->CopyCode(
+      guest_addr, data_old, data_new, size, &nap->cpu_features, copy_func));
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {

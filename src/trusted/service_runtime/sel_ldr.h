@@ -53,6 +53,7 @@
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
 #include "native_client/src/trusted/validator/cpufeatures.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 
 EXTERN_C_BEGIN
 
@@ -365,7 +366,7 @@ struct NaClApp {
   enum NaClDebugExceptionHandlerState debug_exception_handler_state;
   NaClAttachDebugExceptionHandlerFunc attach_debug_exception_handler_func;
 #endif
-  int                       enable_dfa_validator;
+  const struct NaClValidatorInterface *validator;
 };
 
 

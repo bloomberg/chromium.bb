@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
@@ -127,13 +128,12 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
   }
 
   NaClValidationStatus Validate() {
-    return NACL_SUBARCH_NAME(ApplyValidator,
-                             NACL_TARGET_ARCH,
-                             NACL_TARGET_SUBARCH)(
-                                 0, code_buffer, 32,
-                                 /* stubout_mode= */ FALSE,
-                                 /* readonly_test= */ FALSE, &cpu_features,
-                                 &cache);
+    const struct NaClValidatorInterface *validator = NaClCreateValidator();
+    return validator->Validate(0, code_buffer, 32,
+                               FALSE,  /* stubout_mode */
+                               FALSE,  /* readonly_test */
+                               &cpu_features,
+                               &cache);
   }
 };
 
@@ -147,14 +147,13 @@ TEST_F(ValidationCachingInterfaceTests, Sanity) {
 }
 
 TEST_F(ValidationCachingInterfaceTests, NoCache) {
-  NaClValidationStatus status =
-      NACL_SUBARCH_NAME(ApplyValidator,
-                        NACL_TARGET_ARCH,
-                        NACL_TARGET_SUBARCH)(
-                            0, code_buffer, CODE_SIZE,
-                            /* stubout_mode= */ FALSE,
-                            /* readonly_test= */ FALSE, &cpu_features,
-                            NULL);
+  const struct NaClValidatorInterface *validator = NaClCreateValidator();
+  NaClValidationStatus status = validator->Validate(
+      0, code_buffer, CODE_SIZE,
+      FALSE, /* stubout_mode */
+      FALSE, /* readonly_test */
+      &cpu_features,
+      NULL);
   EXPECT_EQ(NaClValidationSucceeded, status);
 }
 

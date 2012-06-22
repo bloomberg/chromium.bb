@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_CPUID_ARM_H
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_CPUID_ARM_H
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 
 typedef struct {
   /* Add a dummy field because a zero-sized structure causes skew between C and

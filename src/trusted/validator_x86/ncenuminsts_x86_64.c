@@ -161,10 +161,13 @@ Bool NaClSegmentValidates(uint8_t* mbase,
                           NaClPcAddress vbase) {
   NaClCPUFeaturesX86 cpu_features;
   NaClValidationStatus status;
+  /* TODO(pasko): Validator initialization can be slow, make it run only once.
+   */
+  const struct NaClValidatorInterface *validator = NaClCreateValidator();
 
   /* check if NaCl thinks the given code segment is valid. */
   NaClSetAllCPUFeatures(&cpu_features);
-  status = NaCl_ApplyValidator_x86_64(
+  status = validator->Validate(
       vbase, mbase, size,
       /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE, &cpu_features,
       NULL);

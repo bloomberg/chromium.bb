@@ -12,8 +12,8 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_arm/cpuid_arm.h"
-#include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/trusted/validator_arm/model.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 using nacl_arm_val::SfiValidator;
@@ -48,6 +48,36 @@ class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
   }
 };
 
+static NaClValidationStatus ValidatorCopyNotImplemented(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeatures *cpu_features,
+    NaClCopyInstructionFunc copy_func) {
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(data_old);
+  UNREFERENCED_PARAMETER(data_new);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(cpu_features);
+  UNREFERENCED_PARAMETER(copy_func);
+  return NaClValidationFailedNotImplemented;
+}
+
+static NaClValidationStatus ValidatorCodeReplacementNotImplemented(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeatures *cpu_features) {
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(data_old);
+  UNREFERENCED_PARAMETER(data_new);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(cpu_features);
+  return NaClValidationFailedNotImplemented;
+}
+
 EXTERN_C_BEGIN
 
 int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
@@ -68,13 +98,13 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
   return 0;
 }
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
+static NaClValidationStatus ApplyValidatorArm(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
     int stubout_mode,
     int readonly_text,
-    const NaClCPUFeaturesArm *cpu_features,
+    const NaClCPUFeatures *cpu_features,
     struct NaClValidationCache *cache) {
   UNREFERENCED_PARAMETER(cpu_features);
   /* The ARM validator is currently unsafe w.r.t. caching. */
@@ -89,32 +119,14 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
            ? NaClValidationSucceeded : NaClValidationFailed);
 }
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
-    (uintptr_t guest_addr,
-     uint8_t *data_old,
-     uint8_t *data_new,
-     size_t size,
-     const NaClCPUFeaturesArm *cpu_features) {
-  UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(data_old);
-  UNREFERENCED_PARAMETER(data_new);
-  UNREFERENCED_PARAMETER(size);
-  UNREFERENCED_PARAMETER(cpu_features);
-  return NaClValidationFailedNotImplemented;
-}
+static struct NaClValidatorInterface validator = {
+  ApplyValidatorArm,
+  ValidatorCopyNotImplemented,
+  ValidatorCodeReplacementNotImplemented,
+};
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy, arm, 32)
-    (uintptr_t guest_addr,
-     uint8_t *data_old,
-     uint8_t *data_new,
-     size_t size,
-     const NaClCPUFeaturesArm *cpu_features) {
-  UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(data_old);
-  UNREFERENCED_PARAMETER(data_new);
-  UNREFERENCED_PARAMETER(size);
-  UNREFERENCED_PARAMETER(cpu_features);
-  return NaClValidationFailedNotImplemented;
+const struct NaClValidatorInterface *NaClValidatorCreateArm() {
+  return &validator;
 }
 
 EXTERN_C_END

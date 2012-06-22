@@ -29,15 +29,13 @@ static Bool FixUpSection(uintptr_t load_address,
                          size_t code_size) {
   NaClValidationStatus status;
   NaClCPUFeatures cpu_features;
+  const struct NaClValidatorInterface *validator = NaClCreateValidator();
   /* Pretend that the CPU supports every feature so that we will only stub out
    * instructions that NaCl will never allow under any condition.
    */
   NaClSetAllCPUFeatures(&cpu_features);
 
-  status = NACL_SUBARCH_NAME(ApplyValidator,
-                             NACL_TARGET_ARCH,
-                             NACL_TARGET_SUBARCH)
-      (load_address, code, code_size,
+  status = validator->Validate(load_address, code, code_size,
        /* stubout_mode= */ TRUE, /* readonly_text= */ FALSE,
        &cpu_features, NULL);
   if (status == NaClValidationSucceeded) {

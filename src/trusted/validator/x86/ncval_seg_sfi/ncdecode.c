@@ -685,10 +685,12 @@ static Bool NullNCDecoderStatePairAction(struct NCDecoderStatePair* tthis,
 
 void NCDecoderStatePairConstruct(NCDecoderStatePair* tthis,
                                  NCDecoderState* old_dstate,
-                                 NCDecoderState* new_dstate) {
+                                 NCDecoderState* new_dstate,
+                                 NaClCopyInstructionFunc copy_func) {
   tthis->old_dstate = old_dstate;
   tthis->new_dstate = new_dstate;
   tthis->action_fn = NullNCDecoderStatePairAction;
+  tthis->copy_func = copy_func;
 }
 
 void NCDecoderStatePairDestruct(NCDecoderStatePair* tthis) {

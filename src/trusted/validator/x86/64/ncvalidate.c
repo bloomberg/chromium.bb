@@ -9,6 +9,10 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator/x86/nc_segment.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 
 /* Be sure the correct compile flags are defined for this. */
@@ -33,7 +37,7 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
       : NaClValidationSucceeded;     /* or at least to this point! */
 }
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
+static NaClValidationStatus ApplyValidator_x86_64(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
@@ -98,12 +102,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
   return status;
 }
 
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 64)
-    (uintptr_t guest_addr,
-     uint8_t *data_old,
-     uint8_t *data_new,
-     size_t size,
-     const NaClCPUFeaturesX86 *cpu_features) {
+static NaClValidationStatus ApplyValidatorCodeReplacement_x86_64(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status;
   struct NaClValidatorState *vstate;
 
@@ -125,4 +129,98 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 64)
 
   NaClValidatorStateDestroy(vstate);
   return status;
+}
+
+/* Copies code from src to dest in a thread safe way, returns 1 on success,
+ * returns 0 on error. This will likely assert on error to avoid partially
+ * copied code or undefined state.
+ */
+static int CopyCodeIter(uint8_t *dst, uint8_t *src,
+                        NaClPcAddress vbase, size_t size,
+                        NaClCopyInstructionFunc copy_func) {
+  NaClSegment segment_old, segment_new;
+  NaClInstIter *iter_old, *iter_new;
+  NaClInstState *istate_old, *istate_new;
+  int still_good = 1;
+
+  NaClSegmentInitialize(dst, vbase, size, &segment_old);
+  NaClSegmentInitialize(src, vbase, size, &segment_new);
+
+  iter_old = NaClInstIterCreate(kNaClValDecoderTables, &segment_old);
+  if (NULL == iter_old) return 0;
+  iter_new = NaClInstIterCreate(kNaClValDecoderTables, &segment_new);
+  if (NULL == iter_new) {
+    NaClInstIterDestroy(iter_old);
+    return 0;
+  }
+  while (1) {
+    /* March over every instruction, which means NaCl pseudo-instructions are
+     * treated as multiple instructions.  Checks in NaClValidateCodeReplacement
+     * guarantee that only valid replacements will happen, and no pseudo-
+     * instructions should be touched.
+     */
+    if (!(NaClInstIterHasNext(iter_old) && NaClInstIterHasNext(iter_new))) {
+      if (NaClInstIterHasNext(iter_old) || NaClInstIterHasNext(iter_new)) {
+        NaClLog(LOG_ERROR,
+                "Segment replacement: copy failed: iterators "
+                "length mismatch\n");
+        still_good = 0;
+      }
+      break;
+    }
+    istate_old = NaClInstIterGetState(iter_old);
+    istate_new = NaClInstIterGetState(iter_new);
+    if (istate_old->bytes.length != istate_new->bytes.length ||
+        iter_old->memory.read_length != iter_new->memory.read_length ||
+        istate_new->inst_addr != istate_old->inst_addr) {
+      /* Sanity check: this should never happen based on checks in
+       * NaClValidateInstReplacement.
+       */
+      NaClLog(LOG_ERROR,
+              "Segment replacement: copied instructions misaligned\n");
+      still_good = 0;
+      break;
+    }
+    /* Replacing all modified instructions at once could yield a speedup here
+     * as every time we modify instructions we must serialize all processors
+     * twice.  Re-evaluate if code modification performance is an issue.
+     */
+    if (!copy_func(iter_old->memory.mpc, iter_new->memory.mpc,
+                   iter_old->memory.read_length)) {
+      NaClLog(LOG_ERROR,
+              "Segment replacement: copy failed: unable to copy instruction\n");
+      still_good = 0;
+      break;
+    }
+    NaClInstIterAdvance(iter_old);
+    NaClInstIterAdvance(iter_new);
+  }
+
+  NaClInstIterDestroy(iter_old);
+  NaClInstIterDestroy(iter_new);
+  return still_good;
+}
+
+static NaClValidationStatus ApplyValidatorCopy_x86_64(
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    const NaClCPUFeaturesX86 *cpu_features,
+    NaClCopyInstructionFunc copy_func) {
+  if (!NaClArchSupported(cpu_features))
+    return NaClValidationFailedCpuNotSupported;
+
+  return (0 == CopyCodeIter(data_old, data_new, guest_addr, size, copy_func))
+      ? NaClValidationFailed : NaClValidationSucceeded;
+}
+
+static const struct NaClValidatorInterface validator = {
+  ApplyValidator_x86_64,
+  ApplyValidatorCopy_x86_64,
+  ApplyValidatorCodeReplacement_x86_64,
+};
+
+const struct NaClValidatorInterface *NaClValidatorCreate_x86_64() {
+  return &validator;
 }

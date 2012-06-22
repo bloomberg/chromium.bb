@@ -14,6 +14,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_H_
 
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/error_reporter.h"
 #include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 #include "native_client/src/trusted/validator/x86/x86_insts.h"
@@ -385,6 +386,11 @@ typedef struct NCDecoderStatePair {
 
   /* The (virtual method) action to apply to each instruction. */
   NCDecoderStatePairAction action_fn;
+
+  /* Utility function that copies a single instruction in memory, can be used in
+   * actions.
+   */
+  NaClCopyInstructionFunc copy_func;
 } NCDecoderStatePair;
 
 /*
@@ -398,9 +404,11 @@ typedef struct NCDecoderStatePair {
  * Note: Constructors of subclasses of NCDecoderStatePair should
  * call this constructor first, to initialize the decoder pair fields.
  */
-extern void NCDecoderStatePairConstruct(NCDecoderStatePair* tthis,
-                                        NCDecoderState* old_dstate,
-                                        NCDecoderState* new_dstate);
+extern void NCDecoderStatePairConstruct(
+    NCDecoderStatePair* tthis,
+    NCDecoderState* old_dstate,
+    NCDecoderState* new_dstate,
+    NaClCopyInstructionFunc copy_func);
 
 /*
  * Decode the memory segments in each instruction state, applying

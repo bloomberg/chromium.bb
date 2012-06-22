@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -14,4 +14,4 @@ env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 env.ComponentProgram(
     'ncval_stubout',
     'ncstubout.c',
-    EXTRA_LIBS=[env.NaClTargetArchSuffix('ncvalidate_verbose')])
+    EXTRA_LIBS=['validators', env.NaClTargetArchSuffix('ncvalidate_verbose')])
