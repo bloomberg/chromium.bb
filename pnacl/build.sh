@@ -768,14 +768,16 @@ translator-archive-universal-pexes() {
   local pexe_ld="${prefix}/binutils-gold-sb/gold/ld-new"
   local pexe_llc="${prefix}/llvm-sb/Release+Asserts/bin/llc"
 
-  file ${pexe_ld}
-  ls -l ${pexe_ld}
+  ${PNACL_STRIP} --strip-all ${pexe_ld} -o ${pexe_ld}.strip-all
+  ${PNACL_STRIP} --strip-all ${pexe_llc} -o ${pexe_llc}.strip-all
 
-  file ${pexe_llc}
-  ls -l ${pexe_llc}
+  local all="${pexe_ld} ${pexe_ld}.strip-all ${pexe_llc} ${pexe_llc}.strip-all"
+
+  file ${all}
+  ls -l ${all}
 
   # strip all path components
-  tar cjf ${tarball}  --transform 's!^.*/!!' ${pexe_ld} ${pexe_llc}
+  tar cjf ${tarball}  --transform 's!^.*/!!' ${all}
 }
 
 #+ translator-clean-all  - Clean all translator install/build directories
