@@ -92,6 +92,7 @@ struct wayland_input {
 	struct wl_keyboard *keyboard;
 	struct wl_touch *touch;
 	struct wl_list link;
+	uint32_t key_serial;
 };
 
 
@@ -533,6 +534,8 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 	struct wayland_output *output;
 	struct wayland_compositor *c = input->compositor;
 
+	/* XXX: If we get a modifier event immediately before the focus,
+	 *      we should try to keep the same serial. */
 	output = wl_surface_get_user_data(surface);
 	notify_pointer_focus(&c->base.seat->seat, &output->base, x, y);
 	wl_pointer_set_cursor(input->pointer, serial, NULL, 0, 0);
@@ -640,7 +643,8 @@ input_handle_keyboard_enter(void *data,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	/* XXX: Need to wait for modifier event and send with state then. */
+	/* XXX: If we get a modifier event immediately before the focus,
+	 *      we should try to keep the same serial. */
 	notify_keyboard_focus_in(&c->base.seat->seat, keys,
 				 STATE_UPDATE_AUTOMATIC);
 }
@@ -664,19 +668,35 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
+	input->key_serial = serial;
 	notify_key(&c->base.seat->seat, time, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
-		   STATE_UPDATE_AUTOMATIC);
+		   STATE_UPDATE_NONE);
 }
 
 static void
 input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
-		       uint32_t serial, uint32_t mods_depressed,
+		       uint32_t serial_in, uint32_t mods_depressed,
 		       uint32_t mods_latched, uint32_t mods_locked,
 		       uint32_t group)
 {
-	/* XXX notify_modifiers(); */
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+	uint32_t serial_out;
+
+	/* If we get a key event followed by a modifier event with the
+	 * same serial number, then we try to preserve those semantics by
+	 * reusing the same serial number on the way out too. */
+	if (serial_in == input->key_serial)
+		serial_out = wl_display_get_serial(c->base.wl_display);
+	else
+		serial_out = wl_display_next_serial(c->base.wl_display);
+
+	xkb_state_update_mask(c->base.seat->xkb_state.state,
+			      mods_depressed, mods_latched,
+			      mods_locked, 0, 0, group);
+	notify_modifiers(&c->base.seat->seat, serial_out);
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
