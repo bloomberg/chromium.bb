@@ -1718,8 +1718,8 @@ bool TemplateURLService::UpdateNoNotify(
   ProcessTemplateURLChange(existing_turl, SyncChange::ACTION_UPDATE);
 
   if (default_search_provider_ == existing_turl) {
-      bool success = SetDefaultSearchProviderNoNotify(existing_turl);
-      DCHECK(success);
+    bool success = SetDefaultSearchProviderNoNotify(existing_turl);
+    DCHECK(success);
   }
   return true;
 }
@@ -1994,10 +1994,15 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
     DCHECK(!url->IsExtensionKeyword());
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kDSPChangeHistogramName, dsp_change_origin_,
-                            DSP_CHANGE_MAX);
-
-  default_search_provider_ = url;
+  // Only bother reassigning |url| if it has changed. Notice that we don't just
+  // early exit if they are equal, because |url| may have had its fields
+  // changed, and needs to be persisted below (for example, when this is called
+  // from UpdateNoNotify).
+  if (default_search_provider_ != url) {
+    UMA_HISTOGRAM_ENUMERATION(kDSPChangeHistogramName, dsp_change_origin_,
+                              DSP_CHANGE_MAX);
+    default_search_provider_ = url;
+  }
 
   if (url) {
     // Don't mark the url as edited, otherwise we won't be able to rev the
