@@ -25,7 +25,7 @@ chrome.experimental.app.onLaunched.addListener(function() {
          }));
    },
 
-   function testMaximize() {
+   /*function testMaximize() {
      chrome.appWindow.create('test.html', {width: 200, height: 200},
          callbackPass(function(win) {
            win.onresize = callbackPass(function(e) {
@@ -37,7 +37,7 @@ chrome.experimental.app.onLaunched.addListener(function() {
            });
            win.chrome.appWindow.maximize();
          }));
-   },
+   },*/
 
    /*function testRestore() {
      chrome.appWindow.create('test.html', {width: 200, height: 200},
