@@ -1116,6 +1116,9 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
     case ui::ET_MOUSEWHEEL:
       return GetRootView()->OnMouseWheel(
           reinterpret_cast<const MouseWheelEvent&>(event));
+    case ui::ET_SCROLL:
+      return GetRootView()->OnScrollEvent(
+          reinterpret_cast<const ScrollEvent&>(event));
     default:
       return false;
   }

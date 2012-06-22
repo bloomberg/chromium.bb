@@ -846,6 +846,10 @@ bool View::OnMouseWheel(const MouseWheelEvent& event) {
   return false;
 }
 
+bool View::OnScrollEvent(const ScrollEvent& event) {
+  return false;
+}
+
 ui::TextInputClient* View::GetTextInputClient() {
   return NULL;
 }

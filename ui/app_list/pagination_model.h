@@ -86,13 +86,13 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
     return page >= 0 && page < total_pages_;
   }
 
- private:
-  void NotifySelectedPageChanged(int old_selected, int new_selected);
-  void NotifyTransitionChanged();
-
   bool has_transition() const {
     return transition_.target_page != -1 || transition_.progress != 0;
   }
+
+ private:
+  void NotifySelectedPageChanged(int old_selected, int new_selected);
+  void NotifyTransitionChanged();
 
   void clear_transition() {
     SetTransition(Transition(-1, 0));

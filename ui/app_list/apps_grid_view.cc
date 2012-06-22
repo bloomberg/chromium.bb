@@ -27,6 +27,7 @@ const int kPreferredTileHeight = 98;
 const int kMaxExtraColPaddingForInvalidTransition = 80;
 
 const int kMinMouseWheelToSwitchPage = 20;
+const int kMinScrollToSwitchPage = 20;
 const int kMinHorizVelocityToSwitchPage = 1100;
 
 }  // namespace
@@ -261,7 +262,20 @@ bool AppsGridView::OnKeyReleased(const views::KeyEvent& event) {
 
 bool AppsGridView::OnMouseWheel(const views::MouseWheelEvent& event) {
   if (abs(event.offset()) > kMinMouseWheelToSwitchPage) {
-    pagination_model_->SelectPageRelative(event.offset() > 0 ? -1 : 1, true);
+    if (!pagination_model_->has_transition())
+      pagination_model_->SelectPageRelative(event.offset() > 0 ? -1 : 1, true);
+    return true;
+  }
+
+  return false;
+}
+
+bool AppsGridView::OnScrollEvent(const views::ScrollEvent & event) {
+  if (abs(event.x_offset()) > kMinScrollToSwitchPage) {
+    if (!pagination_model_->has_transition()) {
+      pagination_model_->SelectPageRelative(event.x_offset() > 0 ? 1 : -1,
+                                            true);
+    }
     return true;
   }
 

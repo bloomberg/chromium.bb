@@ -381,6 +381,15 @@ bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
   return consumed;
 }
 
+bool RootView::OnScrollEvent(const ScrollEvent& event) {
+  ScrollEvent e(event, this);
+  bool consumed = false;
+  for (View* v = GetEventHandlerForPoint(e.location());
+       v && v != this && !consumed; v = v->parent())
+    consumed = v->OnScrollEvent(e);
+  return consumed;
+}
+
 ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   // TODO: this looks all wrong. On a TOUCH_PRESSED we should figure out the
   // view and target that view with all touches with the same id until the

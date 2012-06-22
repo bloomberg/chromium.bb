@@ -55,6 +55,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
+  virtual bool OnScrollEvent(const views::ScrollEvent & event) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:

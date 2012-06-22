@@ -88,7 +88,7 @@ void SearchBoxView::Layout() {
 
 bool SearchBoxView::OnMouseWheel(const views::MouseWheelEvent& event) {
   if (contents_view_)
-    contents_view_->OnMouseWheel(event);
+    return contents_view_->OnMouseWheel(event);
 
   return false;
 }

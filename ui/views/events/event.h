@@ -391,10 +391,19 @@ class VIEWS_EXPORT DropTargetEvent : public LocatedEvent {
 class VIEWS_EXPORT ScrollEvent : public MouseEvent {
  public:
   explicit ScrollEvent(const NativeEvent& native_event);
+
   float x_offset() const { return x_offset_; }
   float y_offset() const { return y_offset_; }
 
  private:
+  friend class internal::RootView;
+
+  ScrollEvent(const ScrollEvent& model, View* root)
+      : MouseEvent(model, root),
+        x_offset_(model.x_offset()),
+        y_offset_(model.y_offset()) {
+  }
+
   float x_offset_;
   float y_offset_;
 

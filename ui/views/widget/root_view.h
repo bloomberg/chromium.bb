@@ -105,6 +105,7 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
+  virtual bool OnScrollEvent(const ScrollEvent& event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;

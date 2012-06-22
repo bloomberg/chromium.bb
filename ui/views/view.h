@@ -617,6 +617,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // will be given a chance.
   virtual bool OnMouseWheel(const MouseWheelEvent& event);
 
+  // Invoked when user scrolls (e.g. using two-finger scroll on touch pad).
+  // Returns true if the event has been processed and false otherwise. The event
+  // is sent to the view where the event happens first. If it has not been
+  // processed, the parent will be given a chance.
+  virtual bool OnScrollEvent(const ScrollEvent& event);
+
   // See field for description.
   void set_notify_enter_exit_on_child(bool notify) {
     notify_enter_exit_on_child_ = notify;
