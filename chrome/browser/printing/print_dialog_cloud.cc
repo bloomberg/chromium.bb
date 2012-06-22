@@ -39,6 +39,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ui/base/win/foreground_helper.h"
 #endif
@@ -682,9 +687,25 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
           delete_on_close,
           close_after_signin,
           callback);
-  browser::ShowWebDialog(modal_parent,
-                         Profile::FromBrowserContext(browser_context),
-                         dialog_delegate);
+#if defined(OS_WIN)
+  gfx::NativeWindow window =
+#endif
+      browser::ShowWebDialog(modal_parent,
+                             Profile::FromBrowserContext(browser_context),
+                             dialog_delegate);
+#if defined(OS_WIN)
+  if (!path_to_file.empty() && window) {
+    HWND dialog_handle;
+#if defined(USE_AURA)
+    dialog_handle = window->GetRootWindow()->GetAcceleratedWidget();
+#else
+    dialog_handle = window;
+#endif
+    if (::GetForegroundWindow() != dialog_handle) {
+      ui::ForegroundHelper::SetForeground(dialog_handle);
+    }
+  }
+#endif
 }
 
 void CreateDialogSigninImpl(content::BrowserContext* browser_context,
