@@ -57,6 +57,8 @@ const struct ModifierRemapping {
     { XK_Caps_Lock, XK_Caps_Lock, XK_Caps_Lock, XK_Caps_Lock }},
 };
 
+const ModifierRemapping* kModifierRemappingCtrl = &kModifierRemappings[1];
+
 // A structure for converting |native_modifier| to a pair of |flag| and
 // |pref_name|.
 const struct ModifierFlagToPrefName {
@@ -324,67 +326,26 @@ KeyCode KeyRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
 #endif
 
 void KeyRewriter::Rewrite(aura::KeyEvent* event) {
-  RewriteCommandToControl(event);
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
   RewriteBackspaceAndArrowKeys(event);
   // TODO(yusukes): Implement crosbug.com/27167 (allow sending function keys).
 }
 
-bool KeyRewriter::RewriteCommandToControl(aura::KeyEvent* event) {
-  bool rewritten = false;
+bool KeyRewriter::IsAppleKeyboard() const {
   if (last_device_id_ == kBadDeviceId)
-    return rewritten;
+    return false;
 
   // Check which device generated |event|.
   std::map<int, DeviceType>::const_iterator iter =
       device_id_to_type_.find(last_device_id_);
   if (iter == device_id_to_type_.end()) {
     LOG(ERROR) << "Device ID " << last_device_id_ << " is unknown.";
-    return rewritten;
+    return false;
   }
 
   const DeviceType type = iter->second;
-  if (type != kDeviceAppleKeyboard)
-    return rewritten;
-
-#if defined(OS_CHROMEOS)
-  XEvent* xev = event->native_event();
-  XKeyEvent* xkey = &(xev->xkey);
-
-  // Mod4 is the Windows key on a PC keyboard or Command key on an Apple
-  // keyboard.
-  if (xkey->state & Mod4Mask) {
-    xkey->state &= ~Mod4Mask;
-    xkey->state |= ControlMask;
-    event->set_flags(event->flags() | ui::EF_CONTROL_DOWN);
-    rewritten = true;
-  }
-
-  const KeySym keysym = XLookupKeysym(xkey, 0);
-  switch (keysym) {
-    case XK_Super_L:
-      // left Command -> left Control
-      OverwriteEvent(event, control_l_xkeycode_, xkey->state,
-                     ui::VKEY_CONTROL, event->flags());
-      rewritten = true;
-      break;
-    case XK_Super_R:
-      // right Command -> right Control
-      OverwriteEvent(event, control_r_xkeycode_, xkey->state,
-                     ui::VKEY_CONTROL, event->flags());
-      rewritten = true;
-      break;
-    default:
-      break;
-  }
-
-  DCHECK_NE(ui::VKEY_LWIN, ui::KeyboardCodeFromXKeyEvent(xev));
-  DCHECK_NE(ui::VKEY_RWIN, ui::KeyboardCodeFromXKeyEvent(xev));
-#else
-  // TODO(yusukes): Support Ash on other platforms if needed.
-#endif
-  return rewritten;
+  return type == kDeviceAppleKeyboard;
 }
 
 bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
@@ -394,6 +355,9 @@ bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
     return false;
 
 #if defined(OS_CHROMEOS)
+  DCHECK_EQ(chromeos::input_method::kControlKey,
+            kModifierRemappingCtrl->remap_to);
+
   XEvent* xev = event->native_event();
   XKeyEvent* xkey = &(xev->xkey);
   KeySym keysym = XLookupKeysym(xkey, 0);
@@ -407,6 +371,7 @@ bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
   const char* pref_name = NULL;
   switch (keysym) {
     case XK_Super_L:
+    case XK_Super_R:
       pref_name = prefs::kLanguageXkbRemapSearchKeyTo;
       break;
     case XK_Control_L:
@@ -425,6 +390,9 @@ bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
   if (pref_name) {
     const ModifierRemapping* remapped_key =
         GetRemappedKey(pref_name, *pref_service);
+    // Rewrite Command-L/R key presses on an Apple keyboard to Control-L/R.
+    if (IsAppleKeyboard() && (keysym == XK_Super_L || keysym == XK_Super_R))
+      remapped_key = kModifierRemappingCtrl;
     if (remapped_key) {
       remapped_keycode = remapped_key->keycode;
       const size_t level = (event->IsShiftDown() ? (1 << 1) : 0) +
@@ -439,6 +407,11 @@ bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
     if (xkey->state & kModifierFlagToPrefName[i].native_modifier) {
       const ModifierRemapping* remapped_key =
           GetRemappedKey(kModifierFlagToPrefName[i].pref_name, *pref_service);
+      // Rewrite Command-L/R key presses on an Apple keyboard to Control-L/R.
+      if (IsAppleKeyboard() &&
+          (kModifierFlagToPrefName[i].native_modifier == Mod4Mask)) {
+        remapped_key = kModifierRemappingCtrl;
+      }
       if (remapped_key) {
         remapped_flags |= remapped_key->flag;
         remapped_native_modifiers |= remapped_key->native_modifier;

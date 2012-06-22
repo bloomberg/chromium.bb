@@ -297,7 +297,7 @@ TEST_F(KeyRewriterTest, TestRewriteCommandToControl) {
                                       keycode_super_r_,
                                       Mod1Mask));
 
-  // An Apple keyboard reuse the ID, zero.
+  // An Apple keyboard reusing the ID, zero.
   rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
   rewriter.set_last_device_id_for_testing(0);
 
@@ -358,6 +358,69 @@ TEST_F(KeyRewriterTest, TestRewriteCommandToControl) {
                                       Mod1Mask));
 
   // XK_Super_R (right Windows key), Alt modifier.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_control_r_,
+                                      Mod1Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_RWIN,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_super_r_,
+                                      Mod1Mask));
+}
+
+// For crbug.com/133896.
+TEST_F(KeyRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
+  // Remap Control to Alt.
+  TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
+  IntegerPrefMember control;
+  control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
+  control.SetValue(chromeos::input_method::kAltKey);
+
+  KeyRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+  rewriter.DeviceAddedForTesting(0, "PC Keyboard");
+  rewriter.set_last_device_id_for_testing(0);
+
+  // XK_Control_L (left Control key) should be remapped to Alt.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_alt_l_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_CONTROL,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_control_l_,
+                                      0U));
+
+  // An Apple keyboard reusing the ID, zero.
+  rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
+  rewriter.set_last_device_id_for_testing(0);
+
+  // XK_Super_L (left Command key) with  Alt modifier. The remapped Command key
+  // should never be re-remapped to Alt.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_control_l_,
+                                      Mod1Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_LWIN,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_super_l_,
+                                      Mod1Mask));
+
+  // XK_Super_R (right Command key) with  Alt modifier. The remapped Command key
+  // should never be re-remapped to Alt.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
                                       ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,

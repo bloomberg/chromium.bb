@@ -96,11 +96,6 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // Rewrites the |event| by applying all RewriteXXX functions as needed.
   void Rewrite(aura::KeyEvent* event);
 
-  // Rewrites Comment-L/R key presses on an Apple keyboard to Control-L/R. Only
-  // OS_CHROMEOS implementation is available at this point. Returns true when
-  // |event| is rewritten.
-  bool RewriteCommandToControl(aura::KeyEvent* event);
-
   // Rewrites a modifier key press/release following the current user
   // preferences.
   bool RewriteModifiers(aura::KeyEvent* event);
@@ -127,6 +122,9 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // Checks the type of the |device_name|, and inserts a new entry to
   // |device_id_to_type_|.
   DeviceType DeviceAddedInternal(int device_id, const std::string& device_name);
+
+  // Returns true if |last_device_id_| is Apple's.
+  bool IsAppleKeyboard() const;
 
   std::map<int, DeviceType> device_id_to_type_;
   int last_device_id_;
