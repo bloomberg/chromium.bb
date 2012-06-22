@@ -59,6 +59,12 @@ namespace captive_portal {
 class CaptivePortalTabHelper;
 }
 
+namespace chrome {
+namespace search {
+class SearchTabHelper;
+}
+}
+
 namespace extensions {
 class WebNavigationTabObserver;
 }
@@ -201,6 +207,10 @@ class TabContents : public content::WebContentsObserver {
     return search_engine_tab_helper_.get();
   }
 
+  chrome::search::SearchTabHelper* search_tab_helper() {
+    return search_tab_helper_.get();
+  }
+
   SnapshotTabHelper* snapshot_tab_helper() {
     return snapshot_tab_helper_.get();
   }
@@ -278,6 +288,7 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<RestoreTabHelper> restore_tab_helper_;
   scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
+  scoped_ptr<chrome::search::SearchTabHelper> search_tab_helper_;
   scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;

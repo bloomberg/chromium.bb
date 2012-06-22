@@ -1600,6 +1600,7 @@
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
         'browser/ui/browser_unittest.cc',
+        'browser/ui/search/search_delegate_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
@@ -2372,6 +2373,7 @@
             'browser/sync/sync_global_error_unittest.cc',
             'browser/sync/sync_setup_wizard_unittest.cc',
             'browser/ui/browser_unittest.cc',
+            'browser/ui/search/search_delegate_unittest.cc',
             'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
             'browser/ui/toolbar/toolbar_model_unittest.cc',
             'browser/ui/toolbar/wrench_menu_model_unittest.cc',

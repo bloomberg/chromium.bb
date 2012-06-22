@@ -69,6 +69,13 @@ class TabNavigation;
 class TabStripModel;
 struct WebApplicationInfo;
 
+namespace chrome {
+namespace search {
+class SearchDelegate;
+class SearchModel;
+}
+}
+
 namespace content {
 class NavigationController;
 class SessionStorageNamespace;
@@ -263,6 +270,7 @@ class Browser : public TabStripModelDelegate,
   // is done.
   BrowserWindow* window() const { return window_; }
   ToolbarModel* toolbar_model() { return toolbar_model_.get(); }
+  chrome::search::SearchModel* search_model() { return search_model_.get(); }
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
   bool block_command_execution() const { return block_command_execution_; }
@@ -1092,6 +1100,9 @@ class Browser : public TabStripModelDelegate,
   // well.
   void UpdateToolbar(bool should_restore_state);
 
+  // Updates the browser's search model with the tab's search model.
+  void UpdateSearchState(TabContents* contents);
+
   // Does one or both of the following for each bit in |changed_flags|:
   // . If the update should be processed immediately, it is.
   // . If the update should processed asynchronously (to avoid lots of ui
@@ -1282,6 +1293,13 @@ class Browser : public TabStripModelDelegate,
   // The model for the toolbar view.
   scoped_ptr<ToolbarModel> toolbar_model_;
 
+  // The model for the "active" search state.  There are per-tab search models
+  // as well.  When a tab is active its model is kept in sync with this one.
+  // When a new tab is activated its model state is propagated to this active
+  // model.  This way, observers only have to attach to this single model for
+  // updates, and don't have to worry about active tab changes directly.
+  scoped_ptr<chrome::search::SearchModel> search_model_;
+
   // UI update coalescing and handling ////////////////////////////////////////
 
   typedef std::map<const content::WebContents*, int> UpdateMap;
@@ -1372,6 +1390,10 @@ class Browser : public TabStripModelDelegate,
 
   // Helper which implements the ToolbarModelDelegate interface.
   scoped_ptr<BrowserToolbarModelDelegate> toolbar_model_delegate_;
+
+  // A delegate that handles the details of updating the "active"
+  // |search_model_| state with the tab's state.
+  scoped_ptr<chrome::search::SearchDelegate> search_delegate_;
 
   // Helper which implements the TabRestoreServiceDelegate interface.
   scoped_ptr<BrowserTabRestoreServiceDelegate> tab_restore_service_delegate_;

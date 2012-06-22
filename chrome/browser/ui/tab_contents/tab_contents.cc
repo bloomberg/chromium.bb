@@ -40,6 +40,8 @@
 #include "chrome/browser/ui/pdf/pdf_tab_observer.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -113,6 +115,10 @@ TabContents::TabContents(WebContents* contents)
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
   restore_tab_helper_.reset(new RestoreTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
+  bool is_search_enabled =
+      chrome::search::IsInstantExtendedAPIEnabled(profile());
+  search_tab_helper_.reset(
+      new chrome::search::SearchTabHelper(this, is_search_enabled));
   snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));

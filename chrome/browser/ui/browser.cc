@@ -120,6 +120,9 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_delegate.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -367,6 +370,9 @@ Browser::Browser(Type type, Profile* profile)
   tab_strip_model_->AddObserver(this);
 
   toolbar_model_.reset(new ToolbarModel(toolbar_model_delegate_.get()));
+  search_model_.reset(new chrome::search::SearchModel(NULL));
+  search_delegate_.reset(
+      new chrome::search::SearchDelegate(search_model_.get()));
 
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  content::NotificationService::AllSources());
@@ -2621,6 +2627,8 @@ void Browser::TabDetachedAt(TabContents* contents, int index) {
 
 void Browser::TabDeactivated(TabContents* contents) {
   fullscreen_controller_->OnTabDeactivated(contents);
+  search_delegate_->OnTabDeactivated(contents);
+
   if (instant())
     instant()->Hide();
 
@@ -2664,6 +2672,9 @@ void Browser::ActiveTabChanged(TabContents* old_contents,
 
   // Propagate the profile to the location bar.
   UpdateToolbar(true);
+
+  // Propagate tab state to toolbar, tab-strip, etc.
+  UpdateSearchState(new_contents);
 
   // Update reload/stop state.
   UpdateReloadStopState(new_contents->web_contents()->IsLoading(), true);
@@ -4196,6 +4207,11 @@ void Browser::UpdateToolbar(bool should_restore_state) {
   window_->UpdateToolbar(GetActiveTabContents(), should_restore_state);
 }
 
+void Browser::UpdateSearchState(TabContents* contents) {
+  if (chrome::search::IsInstantExtendedAPIEnabled(profile_))
+    search_delegate_->OnTabActivated(contents);
+}
+
 void Browser::ScheduleUIUpdate(const WebContents* source,
                                unsigned changed_flags) {
   if (!source)
@@ -4557,6 +4573,9 @@ void Browser::TabDetachedAtImpl(TabContents* contents, int index,
     // ProcessPendingTabs is delayed.
     ClearUnloadState(contents->web_contents(), false);
   }
+
+  // Stop observing search model changes for this tab.
+  search_delegate_->OnTabDetached(contents);
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
                     content::Source<WebContents>(contents->web_contents()));
