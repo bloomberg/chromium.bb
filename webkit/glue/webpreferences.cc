@@ -116,7 +116,8 @@ WebPreferences::WebPreferences()
       max_untiled_layer_height(512),
       fixed_position_creates_stacking_context(false),
       sync_xhr_in_documents_enabled(true),
-      number_of_cpu_cores(1) {
+      number_of_cpu_cores(1),
+      cookie_enabled(true) {
   standard_font_family_map[kCommonScript] =
       ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] =
@@ -237,6 +238,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
   settings->setCaretBrowsingEnabled(caret_browsing_enabled);
   settings->setHyperlinkAuditingEnabled(hyperlink_auditing_enabled);
+  settings->setCookieEnabled(cookie_enabled);
 
   // This setting affects the behavior of links in an editable region:
   // clicking the link should select it rather than navigate to it.

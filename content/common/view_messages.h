@@ -220,6 +220,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(fixed_position_creates_stacking_context)
   IPC_STRUCT_TRAITS_MEMBER(sync_xhr_in_documents_enabled)
   IPC_STRUCT_TRAITS_MEMBER(number_of_cpu_cores)
+  IPC_STRUCT_TRAITS_MEMBER(cookie_enabled)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)

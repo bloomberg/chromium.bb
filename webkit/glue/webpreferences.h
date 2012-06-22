@@ -136,6 +136,13 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool sync_xhr_in_documents_enabled;
   int number_of_cpu_cores;
 
+  // This flags corresponds to a Page's Settings' setCookieEnabled state. It
+  // only controls whether or not the "document.cookie" field is properly
+  // connected to the backing store, for instance if you wanted to be able to
+  // define custom getters and setters from within a unique security content
+  // without raising a DOM security exception.
+  bool cookie_enabled;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.
