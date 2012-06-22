@@ -2176,6 +2176,12 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	case XKB_KEY_Control_R:
 	case XKB_KEY_Alt_L:
 	case XKB_KEY_Alt_R:
+	case XKB_KEY_Meta_L:
+	case XKB_KEY_Meta_R:
+	case XKB_KEY_Super_L:
+	case XKB_KEY_Super_R:
+	case XKB_KEY_Hyper_L:
+	case XKB_KEY_Hyper_R:
 		break;
 
 	case XKB_KEY_Insert:
