@@ -293,22 +293,27 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     DISABLED_AcceptProtocolHandlerHandlesProtocol
 #define MAYBE_DeniedProtocolIsntHandledUntilAccepted \
     DISABLED_DeniedProtocolIsntHandledUntilAccepted
+#define MAYBE_TestStartsAsDefault DISABLED_TestStartsAsDefault
 #define MAYBE_TestRemoveHandlerRemovesDefault \
     DISABLED_TestRemoveHandlerRemovesDefault
 #define MAYBE_TestClearDefaultGetsPropagatedToIO \
     DISABLED_TestClearDefaultGetsPropagatedToIO
 #define MAYBE_TestIsHandledProtocolWorksOnIOThread \
     DISABLED_TestIsHandledProtocolWorksOnIOThread
+#define MAYBE_TestInstallDefaultHandler \
+    DISABLED_TestInstallDefaultHandler
 #else
 #define MAYBE_AcceptProtocolHandlerHandlesProtocol \
     AcceptProtocolHandlerHandlesProtocol
 #define MAYBE_DeniedProtocolIsntHandledUntilAccepted \
     DeniedProtocolIsntHandledUntilAccepted
+#define MAYBE_TestStartsAsDefault TestStartsAsDefault
 #define MAYBE_TestRemoveHandlerRemovesDefault TestRemoveHandlerRemovesDefault
 #define MAYBE_TestClearDefaultGetsPropagatedToIO \
     TestClearDefaultGetsPropagatedToIO
 #define MAYBE_TestIsHandledProtocolWorksOnIOThread \
     TestIsHandledProtocolWorksOnIOThread
+#define MAYBE_TestInstallDefaultHandler TestInstallDefaultHandler
 #endif  // defined(OS_CHROMEOS)
 
 TEST_F(ProtocolHandlerRegistryTest,
@@ -401,7 +406,7 @@ TEST_F(ProtocolHandlerRegistryTest, RemovingHandlerMeansItCanBeAddedAgain) {
   ASSERT_TRUE(registry()->CanSchemeBeOverridden("test"));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestStartsAsDefault) {
+TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestStartsAsDefault) {
   registry()->OnAcceptRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(registry()->IsDefault(test_protocol_handler()));
 }
@@ -836,7 +841,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
       ph3.IsSameOrigin(ph2));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestInstallDefaultHandler) {
+TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestInstallDefaultHandler) {
   ReloadProtocolHandlerRegistryAndInstallDefaultHandler();
   std::vector<std::string> protocols;
   registry()->GetRegisteredProtocols(&protocols);
