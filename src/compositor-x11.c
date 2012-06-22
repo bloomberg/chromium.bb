@@ -610,7 +610,6 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 	return NULL;
 }
 
-#ifdef HAVE_XCB_XKB
 static uint32_t
 get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
 {
@@ -637,6 +636,7 @@ get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
 	return ret;
 }
 
+#ifdef HAVE_XCB_XKB
 static void
 update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
 {
@@ -655,6 +655,34 @@ update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
 }
 #endif
 
+/**
+ * This is monumentally unpleasant.  If we don't have XCB-XKB bindings,
+ * the best we can do (given that XCB also lacks XI2 support), is to take
+ * the state from the core key events.  Unfortunately that only gives us
+ * the effective (i.e. union of depressed/latched/locked) state, and we
+ * need the granularity.
+ *
+ * So we still update the state with every key event we see, but also use
+ * the state field from X11 events as a mask so we don't get any stuck
+ * modifiers.
+ */
+static void
+update_xkb_state_from_core(struct x11_compositor *c, uint16_t x11_mask)
+{
+	uint32_t mask = get_xkb_mod_mask(c, x11_mask);
+	struct wl_keyboard *keyboard = &c->base.seat->keyboard;
+
+	xkb_state_update_mask(c->base.seat->xkb_state.state,
+			      keyboard->modifiers.mods_depressed & mask,
+			      keyboard->modifiers.mods_latched & mask,
+			      keyboard->modifiers.mods_locked & mask,
+			      0,
+			      0,
+			      (x11_mask >> 13) & 3);
+	notify_modifiers(&c->base.seat->seat,
+			 wl_display_next_serial(c->base.wl_display));
+}
+
 static void
 x11_compositor_deliver_button_event(struct x11_compositor *c,
 				    xcb_generic_event_t *event, int state)
@@ -662,6 +690,9 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 	xcb_button_press_event_t *button_event =
 		(xcb_button_press_event_t *) event;
 	uint32_t button;
+
+	if (!c->has_xkb)
+		update_xkb_state_from_core(c, button_event->state);
 
 	switch (button_event->detail) {
 	default:
@@ -767,6 +798,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				/* Deliver the held key release now
 				 * and fall through and handle the new
 				 * event below. */
+				update_xkb_state_from_core(c, key_release->state);
 				notify_key(&c->base.seat->seat,
 					   weston_compositor_get_time(),
 					   key_release->detail - 8,
@@ -811,6 +843,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		switch (event->response_type & ~0x80) {
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
+			if (!c->has_xkb)
+				update_xkb_state_from_core(c, key_press->state);
 			notify_key(&c->base.seat->seat,
 				   weston_compositor_get_time(),
 				   key_press->detail - 8,
@@ -840,6 +874,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		case XCB_MOTION_NOTIFY:
 			motion_notify = (xcb_motion_notify_event_t *) event;
+			if (!c->has_xkb)
+				update_xkb_state_from_core(c, motion_notify->state);
 			output = x11_compositor_find_output(c, motion_notify->event);
 			x = wl_fixed_from_int(output->base.x + motion_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + motion_notify->event_y);
@@ -857,10 +893,11 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			enter_notify = (xcb_enter_notify_event_t *) event;
 			if (enter_notify->state >= Button1Mask)
 				break;
+			if (!c->has_xkb)
+				update_xkb_state_from_core(c, enter_notify->state);
 			output = x11_compositor_find_output(c, enter_notify->event);
 			x = wl_fixed_from_int(output->base.x + enter_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + enter_notify->event_y);
-			/* XXX notify_modifiers() */
 
 			notify_pointer_focus(&c->base.seat->seat,
 					     &output->base, x, y);
@@ -870,6 +907,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			enter_notify = (xcb_enter_notify_event_t *) event;
 			if (enter_notify->state >= Button1Mask)
 				break;
+			if (!c->has_xkb)
+				update_xkb_state_from_core(c, enter_notify->state);
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(&c->base.seat->seat, NULL, 0, 0);
 			break;
@@ -919,6 +958,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	switch (prev ? prev->response_type & ~0x80 : 0x80) {
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
+		update_xkb_state_from_core(c, key_release->state);
 		notify_key(&c->base.seat->seat,
 			   weston_compositor_get_time(),
 			   key_release->detail - 8,
