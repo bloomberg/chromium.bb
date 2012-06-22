@@ -25,7 +25,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"

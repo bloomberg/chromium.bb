@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WebIntentPickerTest : public testing::Test {

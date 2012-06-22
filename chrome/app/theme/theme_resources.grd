@@ -24,18 +24,9 @@
         <include name="IDR_ABOUT_BACKGROUND_COLOR" file="chromium/about_background_color.png" type="BINDATA" />
         <include name="IDR_ABOUT_BACKGROUND_RTL" file="chromium/about_background_rtl.png" type="BINDATA" />
       </if>
-      <include name="IDR_ACCESSED_COOKIES" file="default_100_percent/accessed_cookies.png" type="BINDATA" />
-      <include name="IDR_APP_DEFAULT_ICON" file="default_100_percent/app_default_icon.png" type="BINDATA" />
-      <include name="IDR_APP_DROPARROW" file="default_100_percent/app_droparrow.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE" file="default_100_percent/balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="default_100_percent/balloon_close_hover.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_BAR_CHEVRONS" file="default_100_percent/chevron.png" type="BINDATA" />
-      <if expr="not is_macosx">
-        <include name="IDR_BOOKMARK_BAR_FOLDER" file="default_100_percent/bookmark_bar_folder.png" type="BINDATA" />
-      </if>
-      <if expr="is_macosx">
-        <include name="IDR_BOOKMARK_BAR_FOLDER" file="default_100_percent/bookmark_bar_folder_mac.png" type="BINDATA" />
-      </if>
       <include name="IDR_CLOSE_BUTTON_MASK" file="default_100_percent/close_button_mask.png" type="BINDATA" />
       <if expr="is_win">
         <include name="IDR_CONFLICT_BADGE" file="default_100_percent/conflict_badge.png" type="BINDATA" />
@@ -49,15 +40,9 @@
       <include name="IDR_CONSTRAINED_TOP_CENTER_V" file="default_100_percent/constrained_top_center_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="default_100_percent/constrained_top_left_corner_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="default_100_percent/constrained_top_right_corner_v.png" type="BINDATA" />
-      <include name="IDR_COOKIE_ICON" file="default_100_percent/cookie.png" type="BINDATA" />
-      <include name="IDR_COOKIE_STORAGE_ICON" file="default_100_percent/cookie_storage.png" type="BINDATA" />
-      <include name="IDR_CWS_STAR_EMPTY" file="default_100_percent/cws_star_empty.png" type="BINDATA" />
-      <include name="IDR_CWS_STAR_FULL" file="default_100_percent/cws_star_full.png" type="BINDATA" />
-      <include name="IDR_CWS_STAR_HALF" file="default_100_percent/cws_star_half.png" type="BINDATA" />
       <include name="IDR_DOCK_HIGH" file="default_100_percent/dock_tab_high.png" type="BINDATA" />
       <include name="IDR_DOCK_MAX" file="default_100_percent/dock_tab_max.png" type="BINDATA" />
       <include name="IDR_DOCK_WIDE" file="default_100_percent/dock_tab_wide.png" type="BINDATA" />
-      <include name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="default_100_percent/download_animation_begin.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM" file="default_100_percent/download_button_center_bottom.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_H" file="default_100_percent/download_button_center_bottom_hover.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_P" file="default_100_percent/download_button_center_bottom_pressed.png" type="BINDATA" />
@@ -97,18 +82,6 @@
       <include name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_H" file="default_100_percent/download_button_right_top_hover.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_NO_DD" file="default_100_percent/download_button_right_top_no_dd.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_P" file="default_100_percent/download_button_right_top_pressed.png" type="BINDATA" />
-      <include name="IDR_DOWNLOAD_PROGRESS_BACKGROUND_16" file="default_100_percent/download_progress_background16.png" type="BINDATA" />
-      <include name="IDR_DOWNLOAD_PROGRESS_BACKGROUND_32" file="default_100_percent/download_progress_background32.png" type="BINDATA" />
-      <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_16" file="default_100_percent/download_progress_foreground16.png" type="BINDATA" />
-      <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="default_100_percent/download_progress_foreground32.png" type="BINDATA" />
-      <include name="IDR_EXTENSION_COMMAND_CLOSE" file="default_100_percent/extension_command_close.png" type="BINDATA" />
-      <include name="IDR_EXTENSION_DEFAULT_ICON" file="default_100_percent/extension_default_icon.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_FAVICON" file="default_100_percent/plugin.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_RATING_STAR_HALF_LEFT" file="default_100_percent/extensions_rating_star_half_left.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_RATING_STAR_HALF_RIGHT" file="default_100_percent/extensions_rating_star_half_right.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_RATING_STAR_OFF" file="default_100_percent/extensions_rating_star_off.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_RATING_STAR_ON" file="default_100_percent/extensions_rating_star_on.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_SECTION" file="default_100_percent/extensions_section.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_SECTION_SMALL" file="default_100_percent/extensions_section_small.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT" file="default_100_percent/find_next.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_H" file="default_100_percent/find_next_hover.png" type="BINDATA" />
@@ -124,33 +97,17 @@
       <include name="IDR_FIND_DLG_LEFT_BACKGROUND" file="default_100_percent/find_dlg_left_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="default_100_percent/find_dlg_middle_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="default_100_percent/find_dlg_right_bg.png" type="BINDATA" />
-      <include name="IDR_FROZEN_TAB_ICON" file="default_100_percent/frozen_tab.png" type="BINDATA" />
-      <include name="IDR_FULLSCREEN_MENU_BUTTON" file="default_100_percent/fullscreen_menu_button.png" type="BINDATA" />
-      <include name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="default_100_percent/geolocation_allowed_locationbar_icon.png" type="BINDATA" />
-      <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="default_100_percent/geolocation_denied_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON" file="default_100_percent/register_protocol_handler_locationbar_icon.png" type="BINDATA" />
-      <include name="IDR_HOMEPAGE_CHANGE_ALERT" file="default_100_percent/protector_home_alert.png" type="BINDATA" />
-      <include name="IDR_HOMEPAGE_CHANGE_BADGE" file="default_100_percent/protector_home_badge.png" type="BINDATA" />
-      <include name="IDR_HOMEPAGE_CHANGE_MENU" file="default_100_percent/protector_home_menu.png" type="BINDATA" />
       <if expr="is_win">
         <include name="IDR_INCOGNITO_SWITCH_ON" file="default_100_percent/incognito_switch_on.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_SWITCH_OFF" file="default_100_percent/incognito_switch_off.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="default_100_percent/incompatibility_dot_active.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="default_100_percent/incompatibility_dot_inactive.png" type="BINDATA" />
       </if>
-      <include name="IDR_INFO" file="default_100_percent/info_small.png" type="BINDATA" />
       <include name="IDR_INFO_BUBBLE_CLOSE" file="default_100_percent/bubble_close.png" type="BINDATA" />
-      <include name="IDR_INPUT_ALERT" file="default_100_percent/input_alert.png" type="BINDATA" />
-      <include name="IDR_INPUT_GOOD" file="default_100_percent/input_good.png" type="BINDATA" />
       <include name="IDR_KILLED_TAB" file="default_100_percent/killtab.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="default_100_percent/omnibox_popup_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="default_100_percent/omnibox_popup_edge.png" type="BINDATA" />
-      <if expr="not is_macosx">
-        <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="default_100_percent/keyword_hint_tab.png" type="BINDATA" />
-      </if>
-      <if expr="is_macosx">
-        <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="default_100_percent/keyword_hint_tab_mac.png" type="BINDATA" />
-      </if>
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="default_100_percent/maximize_button_mask.png" type="BINDATA" />
       <include name="IDR_MEDIA_STREAM_CAPTURE_LED" file="default_100_percent/media_stream_capture_led.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="default_100_percent/minimize_button_mask.png" type="BINDATA" />
@@ -178,20 +135,6 @@
       <include name="IDR_OMNIBOX_TTS" file="default_100_percent/omnibox_tts.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_TTS_DARK" file="default_100_percent/omnibox_tts_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_TTS_SELECTED" file="default_100_percent/omnibox_tts_selected.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_BAD" file="default_100_percent/pageinfo_bad.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_GOOD" file="default_100_percent/pageinfo_good.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_INFO" file="default_100_percent/pageinfo_info.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_WARNING_MAJOR" file="default_100_percent/pageinfo_warning_major.png" type="BINDATA" />
-      <include name="IDR_PAGEINFO_WARNING_MINOR" file="default_100_percent/pageinfo_warning_minor.png" type="BINDATA" />
-      <include name="IDR_PANEL_CLOSE" file="default_100_percent/panel_close.png" type="BINDATA" />
-      <include name="IDR_PANEL_CLOSE_H" file="default_100_percent/panel_close_hover.png" type="BINDATA" />
-      <include name="IDR_PANEL_CLOSE_C" file="default_100_percent/panel_close_click.png" type="BINDATA" />
-      <include name="IDR_PANEL_MINIMIZE" file="default_100_percent/panel_minimize.png" type="BINDATA" />
-      <include name="IDR_PANEL_MINIMIZE_H" file="default_100_percent/panel_minimize_hover.png" type="BINDATA" />
-      <include name="IDR_PANEL_MINIMIZE_C" file="default_100_percent/panel_minimize_click.png" type="BINDATA" />
-      <include name="IDR_PANEL_RESTORE" file="default_100_percent/panel_restore.png" type="BINDATA" />
-      <include name="IDR_PANEL_RESTORE_H" file="default_100_percent/panel_restore_hover.png" type="BINDATA" />
-      <include name="IDR_PANEL_RESTORE_C" file="default_100_percent/panel_restore_click.png" type="BINDATA" />
       <include name="IDR_PRERENDER" file="default_100_percent/prerender_succeed_icon.png" type="BINDATA" />
       <include name="IDR_PRERENDER_FAIL_ICON" file="default_100_percent/prerender_fail_icon.png" type="BINDATA"/>
       <include name="IDR_PRERENDER_SUCCEED_ICON" file="default_100_percent/prerender_succeed_icon.png" type="BINDATA"/>
@@ -221,30 +164,7 @@
       <include name="IDR_PROFILE_EDIT_PRESSED" file="default_100_percent/profile_edit_pressed.png" type="BINDATA" />
       <include name="IDR_PROFILE_SELECTED" file="default_100_percent/profile_selected.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="default_100_percent/restore_button_mask.png" type="BINDATA" />
-      <include name="IDR_SAD_TAB" file="default_100_percent/sadtab.png" type="BINDATA" />
-      <include name="IDR_SAFEBROWSING_WARNING" file="default_100_percent/safebrowsing_warning.png" type="BINDATA" />
-      <include name="IDR_SEARCH_ENGINE_CHANGE_ALERT" file="default_100_percent/protector_search_alert.png" type="BINDATA" />
-      <include name="IDR_SEARCH_ENGINE_CHANGE_BADGE" file="default_100_percent/protector_search_badge.png" type="BINDATA" />
-      <include name="IDR_SEARCH_ENGINE_CHANGE_MENU" file="default_100_percent/protector_search_menu.png" type="BINDATA" />
       <include name="IDR_SIDETABS_NEW_TAB" file="default_100_percent/sidetabs_new_tab.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_EMPTY" file="default_100_percent/speech_input_mic_empty.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_NOISE" file="default_100_percent/speech_input_mic_noise.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_FULL" file="default_100_percent/speech_input_mic_full.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_MASK" file="default_100_percent/speech_input_mic_mask.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_SPINNER" file="default_100_percent/speech_input_spinner.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_TRAY_BALLOON_ICON" file="default_100_percent/speech_input_tray_balloon_icon.png" type="BINDATA" />
-      <if expr="is_win">
-        <include name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="default_100_percent/speech_input_tray_windows_mic_empty.png" type="BINDATA" />
-        <include name="IDR_SPEECH_INPUT_TRAY_MIC_FULL" file="default_100_percent/speech_input_tray_windows_mic_full.png" type="BINDATA" />
-      </if>
-      <if expr="is_linux or pp_ifdef('chromeos')">
-        <include name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="default_100_percent/speech_input_tray_linux_mic_empty.png" type="BINDATA" />
-        <include name="IDR_SPEECH_INPUT_TRAY_MIC_FULL" file="default_100_percent/speech_input_tray_linux_mic_full.png" type="BINDATA" />
-      </if>
-      <if expr="is_macosx">
-        <include name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="default_100_percent/speech_input_tray_macosx_mic_empty.png" type="BINDATA" />
-        <include name="IDR_SPEECH_INPUT_TRAY_MIC_FULL" file="default_100_percent/speech_input_tray_macosx_mic_full.png" type="BINDATA" />
-      </if>
       <if expr="pp_ifdef('_google_chrome') and is_macosx">
         <include name="IDR_STATUS_TRAY_ICON" file="google_chrome/product_logo_22_mono.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="google_chrome/product_logo_22_mono_invert.png" type="BINDATA" />
@@ -262,8 +182,6 @@
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="chromium/product_logo_22.png" type="BINDATA" />
       </if>
       <if expr="is_macosx">
-        <include name="IDR_SWIPE_BACK" file="default_100_percent/back_large.png" type="BINDATA" />
-        <include name="IDR_SWIPE_FORWARD" file="default_100_percent/forward_large.png" type="BINDATA" />
         <include name="IDR_TABPOSE_CLOSE" file="default_100_percent/tabpose_close.png" type="BINDATA" />
       </if>
       <include name="IDR_THEME_BUTTON_BACKGROUND" file="default_100_percent/notused.png" type="BINDATA" />
@@ -282,28 +200,8 @@
       <include name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="default_100_percent/notused.png" type="BINDATA" />
       <include name="IDR_THROBBER_LIGHT" file="default_100_percent/throbber_light.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING_LIGHT" file="default_100_percent/throbber_waiting_light.png" type="BINDATA" />
-      <include name="IDR_UPDATE_AVAILABLE" file="default_100_percent/update_available.png" type="BINDATA" />
-      <include name="IDR_UPDATE_BADGE" file="default_100_percent/update_badge.png" type="BINDATA" />
-      <include name="IDR_UPDATE_BADGE2" file="default_100_percent/update_badge2.png" type="BINDATA" />
-      <include name="IDR_UPDATE_BADGE3" file="default_100_percent/update_badge3.png" type="BINDATA" />
-      <include name="IDR_UPDATE_BADGE4" file="default_100_percent/update_badge4.png" type="BINDATA" />
-      <include name="IDR_UPDATE_FAIL" file="default_100_percent/update_fail.png" type="BINDATA" />
-      <include name="IDR_UPDATE_MENU" file="default_100_percent/update_menu.png" type="BINDATA" />
-      <include name="IDR_UPDATE_MENU2" file="default_100_percent/update_menu2.png" type="BINDATA" />
-      <include name="IDR_UPDATE_MENU3" file="default_100_percent/update_menu3.png" type="BINDATA" />
-      <include name="IDR_UPDATE_MENU4" file="default_100_percent/update_menu4.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="default_100_percent/update_uptodate.png" type="BINDATA" />
-      <include name="IDR_WARNING" file="default_100_percent/alert_small.png" type="BINDATA" />
       <include name="IDR_MANAGED" file="default_100_percent/managed_small.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_MANDATORY_GRAY" file="default_100_percent/controlled_setting_mandatory_gray.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_MANDATORY" file="default_100_percent/controlled_setting_mandatory.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_MANDATORY_LARGE" file="default_100_percent/controlled_setting_mandatory_large.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_EXTENSION_GRAY" file="default_100_percent/controlled_setting_extension_gray.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_EXTENSION" file="default_100_percent/controlled_setting_extension.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_EXTENSION_LARGE" file="default_100_percent/controlled_setting_extension_large.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_RECOMMENDED_GRAY" file="default_100_percent/controlled_setting_recommended_gray.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_RECOMMENDED" file="default_100_percent/controlled_setting_recommended.png" type="BINDATA" />
-      <include name="IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE" file="default_100_percent/controlled_setting_recommended_large.png" type="BINDATA" />
       <if expr="not is_macosx">
         <include name="IDR_MANAGED_MODE_AVATAR" file="default_100_percent/managed_mode_avatar.png" type="BINDATA" />
       </if>

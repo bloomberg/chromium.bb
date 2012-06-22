@@ -39,7 +39,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "skia/ext/image_operations.h"

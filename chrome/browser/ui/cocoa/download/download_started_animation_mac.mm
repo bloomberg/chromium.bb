@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/resource/resource_bundle.h"

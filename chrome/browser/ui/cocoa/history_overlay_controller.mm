@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 
 #include "base/logging.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 

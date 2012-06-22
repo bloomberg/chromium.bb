@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/cookies/cookie_monster.h"

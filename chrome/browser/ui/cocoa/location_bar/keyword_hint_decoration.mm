@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,10 +57,8 @@ KeywordHintDecoration::~KeywordHintDecoration() {
 
 NSImage* KeywordHintDecoration::GetHintImage() {
   if (!hint_image_) {
-    SkBitmap* skiaBitmap = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB);
-    if (skiaBitmap)
-      hint_image_.reset([gfx::SkBitmapToNSImage(*skiaBitmap) retain]);
+    hint_image_.reset([ResourceBundle::GetSharedInstance().
+        GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB) retain]);
   }
   return hint_image_;
 }
