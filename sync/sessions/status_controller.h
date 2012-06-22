@@ -39,6 +39,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time.h"
+#include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/session_state.h"
 
@@ -49,10 +50,6 @@ class StatusController {
  public:
   explicit StatusController(const ModelSafeRoutingInfo& routes);
   ~StatusController();
-
-  // Returns true if some portion of the session state has changed (is dirty)
-  // since it was created or was last reset.
-  bool TestAndClearIsDirty();
 
   // Progress counters.  All const methods may return NULL if the
   // progress structure doesn't exist, but all non-const methods
@@ -72,29 +69,21 @@ class StatusController {
 
   // ClientToServer messages.
   const syncable::ModelTypeSet updates_request_types() const {
-    return shared_.updates_request_types;
+    return model_neutral_.updates_request_types;
   }
   void set_updates_request_types(syncable::ModelTypeSet value) {
-    shared_.updates_request_types = value;
+    model_neutral_.updates_request_types = value;
   }
   const ClientToServerResponse& updates_response() const {
-    return shared_.updates_response;
+    return model_neutral_.updates_response;
   }
   ClientToServerResponse* mutable_updates_response() {
-    return &shared_.updates_response;
-  }
-
-  // Errors and SyncerStatus.
-  const ErrorCounters& error() const {
-    return shared_.error.value();
-  }
-  const SyncerStatus& syncer_status() const {
-    return shared_.syncer_status.value();
+    return &model_neutral_.updates_response;
   }
 
   // Changelog related state.
   int64 num_server_changes_remaining() const {
-    return shared_.num_server_changes_remaining.value();
+    return model_neutral_.num_server_changes_remaining;
   }
 
   const OrderedCommitSet::Projection& commit_id_projection(
@@ -106,7 +95,7 @@ class StatusController {
 
   // Control parameters for sync cycles.
   bool conflicts_resolved() const {
-    return shared_.control_params.conflicts_resolved;
+    return model_neutral_.conflicts_resolved;
   }
 
   // If a GetUpdates for any data type resulted in downloading an update that
@@ -132,7 +121,7 @@ class StatusController {
   // Returns true if the last download_updates_command received a valid
   // server response.
   bool download_updates_succeeded() const {
-    return shared_.error.value().last_download_updates_result
+    return model_neutral_.last_download_updates_result
         == SYNCER_OK;
   }
 
@@ -157,9 +146,12 @@ class StatusController {
     return ActiveGroupRestrictionIncludesModel(syncable::BOOKMARKS);
   }
 
+  const ModelNeutralState& model_neutral_state() const {
+    return model_neutral_;
+  }
+
   // A toolbelt full of methods for updating counters and flags.
   void set_num_server_changes_remaining(int64 changes_remaining);
-  void set_invalid_store(bool invalid_store);
   void set_num_successful_bookmark_commits(int value);
   void increment_num_successful_commits();
   void increment_num_successful_bookmark_commits();
@@ -204,15 +196,11 @@ class StatusController {
   PerModelSafeGroupState* GetOrCreateModelSafeGroupState(
       bool restrict, ModelSafeGroup group);
 
-  AllModelTypeState shared_;
+  ModelNeutralState model_neutral_;
   std::map<ModelSafeGroup, PerModelSafeGroupState*> per_model_group_;
 
   STLValueDeleter<std::map<ModelSafeGroup, PerModelSafeGroupState*> >
       per_model_group_deleter_;
-
-  // Set to true if any DirtyOnWrite pieces of state we maintain are changed.
-  // Reset to false by TestAndClearIsDirty.
-  bool is_dirty_;
 
   // Used to fail read/write operations on state that don't obey the current
   // active ModelSafeWorker contract.

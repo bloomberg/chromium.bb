@@ -18,35 +18,6 @@ class StatusControllerTest : public testing::Test {
   ModelSafeRoutingInfo routes_;
 };
 
-TEST_F(StatusControllerTest, GetsDirty) {
-  StatusController status(routes_);
-  status.set_num_server_changes_remaining(30);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.set_invalid_store(true);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.set_invalid_store(false);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.increment_num_successful_commits();
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.increment_num_successful_commits();
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.mutable_conflict_progress()->
-        AddSimpleConflictingItemById(syncable::Id());
-  }
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-}
-
-TEST_F(StatusControllerTest, StaysClean) {
-  StatusController status(routes_);
-  status.update_conflicts_resolved(true);
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-}
-
 // This test is useful, as simple as it sounds, due to the copy-paste prone
 // nature of status_controller.cc (we have had bugs in the past where a set_foo
 // method was actually setting |bar_| instead!).
@@ -55,23 +26,20 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
 
-  EXPECT_FALSE(status.syncer_status().invalid_store);
-  status.set_invalid_store(true);
-  EXPECT_TRUE(status.syncer_status().invalid_store);
-
   EXPECT_FALSE(status.conflicts_resolved());
   status.update_conflicts_resolved(true);
   EXPECT_TRUE(status.conflicts_resolved());
 
   status.set_last_download_updates_result(SYNCER_OK);
-  EXPECT_EQ(SYNCER_OK, status.error().last_download_updates_result);
+  EXPECT_EQ(SYNCER_OK,
+            status.model_neutral_state().last_download_updates_result);
 
   status.set_commit_result(SYNC_AUTH_ERROR);
-  EXPECT_EQ(SYNC_AUTH_ERROR, status.error().commit_result);
+  EXPECT_EQ(SYNC_AUTH_ERROR, status.model_neutral_state().commit_result);
 
   for (int i = 0; i < 14; i++)
     status.increment_num_successful_commits();
-  EXPECT_EQ(14, status.syncer_status().num_successful_commits);
+  EXPECT_EQ(14, status.model_neutral_state().num_successful_commits);
 }
 
 TEST_F(StatusControllerTest, HasConflictingUpdates) {
@@ -153,9 +121,7 @@ TEST_F(StatusControllerTest, Unrestricted) {
   const UpdateProgress* progress =
       status.GetUnrestrictedUpdateProgress(GROUP_UI);
   EXPECT_FALSE(progress);
-  status.error();
-  status.syncer_status();
-  status.num_server_changes_remaining();
+  status.model_neutral_state();
   status.download_updates_succeeded();
   status.ServerSaysNothingMoreToDownload();
   status.group_restriction();

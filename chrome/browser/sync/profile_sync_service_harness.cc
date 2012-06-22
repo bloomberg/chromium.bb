@@ -795,8 +795,8 @@ bool ProfileSyncServiceHarness::IsFullySynced() {
   // If we didn't try to commit anything in the previous cycle, there's a
   // good chance that we're now fully up to date.
   bool is_fully_synced =
-      snap.syncer_status().num_successful_commits == 0
-      && snap.errors().commit_result == csync::SYNCER_OK
+      snap.model_neutral_state().num_successful_commits == 0
+      && snap.model_neutral_state().commit_result == csync::SYNCER_OK
       && IsDataSyncedImpl(snap);
 
   DVLOG(1) << GetClientInfoString(
@@ -1001,8 +1001,8 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", has_unsynced_items: "
        << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
        << ", did_commit: "
-       << (snap.syncer_status().num_successful_commits == 0
-           && snap.errors().commit_result == csync::SYNCER_OK)
+       << (snap.model_neutral_state().num_successful_commits == 0 &&
+           snap.model_neutral_state().commit_result == csync::SYNCER_OK)
        << ", encryption conflicts: "
        << snap.num_encryption_conflicts()
        << ", hierarchy conflicts: "
@@ -1012,7 +1012,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", server conflicts: "
        << snap.num_server_conflicts()
        << ", num_updates_downloaded : "
-       << snap.syncer_status().num_updates_downloaded_total
+       << snap.model_neutral_state().num_updates_downloaded_total
        << ", passphrase_required_reason: "
        << csync::PassphraseRequiredReasonToString(
            service()->passphrase_required_reason())

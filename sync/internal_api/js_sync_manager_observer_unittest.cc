@@ -65,9 +65,7 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
   syncable::ModelTypePayloadMap download_progress_markers;
-  sessions::SyncSessionSnapshot snapshot(sessions::SyncerStatus(),
-                                         sessions::ErrorCounters(),
-                                         100,
+  sessions::SyncSessionSnapshot snapshot(sessions::ModelNeutralState(),
                                          false,
                                          syncable::ModelTypeSet(),
                                          download_progress_markers,

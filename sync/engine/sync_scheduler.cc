@@ -1114,11 +1114,12 @@ void SyncScheduler::OnActionableError(
 void SyncScheduler::OnSyncProtocolError(
     const sessions::SyncSessionSnapshot& snapshot) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (ShouldRequestEarlyExit(snapshot.errors().sync_protocol_error)) {
+  if (ShouldRequestEarlyExit(
+          snapshot.model_neutral_state().sync_protocol_error)) {
     SDVLOG(2) << "Sync Scheduler requesting early exit.";
     syncer_->RequestEarlyExit();  // Thread-safe.
   }
-  if (IsActionableError(snapshot.errors().sync_protocol_error))
+  if (IsActionableError(snapshot.model_neutral_state().sync_protocol_error))
     OnActionableError(snapshot);
 }
 

@@ -2028,7 +2028,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     // TODO(chron): Consider changing this back to track has_more_to_sync
     // only notify peers if a successful commit has occurred.
     bool is_notifiable_commit =
-        (event.snapshot.syncer_status().num_successful_commits > 0);
+        (event.snapshot.model_neutral_state().num_successful_commits > 0);
     if (is_notifiable_commit) {
       if (sync_notifier_.get()) {
         const ModelTypeSet changed_types =
@@ -2054,9 +2054,10 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   }
 
   if (event.what_happened == SyncEngineEvent::ACTIONABLE_ERROR) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnActionableError(
-                          event.snapshot.errors().sync_protocol_error));
+    FOR_EACH_OBSERVER(
+        SyncManager::Observer, observers_,
+        OnActionableError(
+            event.snapshot.model_neutral_state().sync_protocol_error));
     return;
   }
 

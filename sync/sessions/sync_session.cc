@@ -153,9 +153,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   }
 
   return SyncSessionSnapshot(
-      status_controller_->syncer_status(),
-      status_controller_->error(),
-      status_controller_->num_server_changes_remaining(),
+      status_controller_->model_neutral_state(),
       is_share_useable,
       initial_sync_ended,
       download_progress_markers,
@@ -232,27 +230,26 @@ bool IsError(SyncerError error) {
 }
 
 // Returns false iff one of the command results had an error.
-bool HadErrors(const ErrorCounters& error) {
+bool HadErrors(const ModelNeutralState& state) {
   const bool download_updates_error =
-      IsError(error.last_download_updates_result);
-  const bool commit_error = IsError(error.commit_result);
+      IsError(state.last_download_updates_result);
+  const bool commit_error = IsError(state.commit_result);
   return download_updates_error || commit_error;
 }
 }  // namespace
 
 bool SyncSession::Succeeded() const {
-  const ErrorCounters& error = status_controller_->error();
-  return finished_ && !HadErrors(error);
+  return finished_ && !HadErrors(status_controller_->model_neutral_state());
 }
 
 bool SyncSession::SuccessfullyReachedServer() const {
-  const ErrorCounters& error = status_controller_->error();
-  bool reached_server = error.last_download_updates_result == SYNCER_OK;
+  const ModelNeutralState& state = status_controller_->model_neutral_state();
+  bool reached_server = state.last_download_updates_result == SYNCER_OK;
   // It's possible that we reached the server on one attempt, then had an error
   // on the next (or didn't perform some of the server-communicating commands).
   // We want to verify that, for all commands attempted, we successfully spoke
   // with the server. Therefore, we verify no errors and at least one SYNCER_OK.
-  return reached_server && !HadErrors(error);
+  return reached_server && !HadErrors(state);
 }
 
 void SyncSession::SetFinished() {

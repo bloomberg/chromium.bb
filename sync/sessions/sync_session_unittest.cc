@@ -261,7 +261,6 @@ TEST_F(SyncSessionTest, ResetTransientState) {
             session_->source().updates_source);
   EXPECT_FALSE(status()->conflicts_resolved());
   EXPECT_FALSE(session_->HasMoreToSync());
-  EXPECT_FALSE(status()->TestAndClearIsDirty());
 }
 
 TEST_F(SyncSessionTest, Coalesce) {

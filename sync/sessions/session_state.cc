@@ -16,9 +16,9 @@ using std::vector;
 namespace csync {
 namespace sessions {
 
-ConflictProgress::ConflictProgress(bool* dirty_flag)
+ConflictProgress::ConflictProgress()
   : num_server_conflicting_items(0), num_hierarchy_conflicting_items(0),
-    num_encryption_conflicting_items(0), dirty_(dirty_flag) {
+    num_encryption_conflicting_items(0) {
 }
 
 ConflictProgress::~ConflictProgress() {
@@ -39,17 +39,12 @@ ConflictProgress::SimpleConflictingItemsEnd() const {
 
 void ConflictProgress::AddSimpleConflictingItemById(
     const syncable::Id& the_id) {
-  std::pair<std::set<syncable::Id>::iterator, bool> ret =
-      simple_conflicting_item_ids_.insert(the_id);
-  if (ret.second)
-    *dirty_ = true;
+  simple_conflicting_item_ids_.insert(the_id);
 }
 
 void ConflictProgress::EraseSimpleConflictingItemById(
     const syncable::Id& the_id) {
-  int items_erased = simple_conflicting_item_ids_.erase(the_id);
-  if (items_erased != 0)
-    *dirty_ = true;
+  simple_conflicting_item_ids_.erase(the_id);
 }
 
 void ConflictProgress::AddEncryptionConflictingItemById(
@@ -58,8 +53,8 @@ void ConflictProgress::AddEncryptionConflictingItemById(
       unresolvable_conflicting_item_ids_.insert(the_id);
   if (ret.second) {
     num_encryption_conflicting_items++;
-    *dirty_ = true;
   }
+  unresolvable_conflicting_item_ids_.insert(the_id);
 }
 
 void ConflictProgress::AddHierarchyConflictingItemById(
@@ -68,7 +63,6 @@ void ConflictProgress::AddHierarchyConflictingItemById(
       unresolvable_conflicting_item_ids_.insert(the_id);
   if (ret.second) {
     num_hierarchy_conflicting_items++;
-    *dirty_ = true;
   }
 }
 
@@ -78,7 +72,6 @@ void ConflictProgress::AddServerConflictingItemById(
       unresolvable_conflicting_item_ids_.insert(the_id);
   if (ret.second) {
     num_server_conflicting_items++;
-    *dirty_ = true;
   }
 }
 
@@ -139,16 +132,7 @@ bool UpdateProgress::HasConflictingUpdates() const {
   return false;
 }
 
-AllModelTypeState::AllModelTypeState(bool* dirty_flag)
-    : syncer_status(dirty_flag),
-      error(dirty_flag),
-      num_server_changes_remaining(dirty_flag, 0) {
-}
-
-AllModelTypeState::~AllModelTypeState() {}
-
-PerModelSafeGroupState::PerModelSafeGroupState(bool* dirty_flag)
-    : conflict_progress(dirty_flag) {
+PerModelSafeGroupState::PerModelSafeGroupState() {
 }
 
 PerModelSafeGroupState::~PerModelSafeGroupState() {

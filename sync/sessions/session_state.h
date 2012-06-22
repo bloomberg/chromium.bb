@@ -16,22 +16,17 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncproto.h"
-#include "sync/internal_api/public/sessions/error_counters.h"
-#include "sync/internal_api/public/sessions/syncer_status.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace csync {
 namespace sessions {
 
-class UpdateProgress;
-
 // Tracks progress of conflicts and their resolutions.
 class ConflictProgress {
  public:
-  explicit ConflictProgress(bool* dirty_flag);
+  explicit ConflictProgress();
   ~ConflictProgress();
 
   bool HasSimpleConflictItem(const syncable::Id &id) const;
@@ -74,11 +69,6 @@ class ConflictProgress {
   size_t num_server_conflicting_items;
   size_t num_hierarchy_conflicting_items;
   size_t num_encryption_conflicting_items;
-
-  // Whether a conflicting item was added or removed since
-  // the last call to reset_progress_changed(), if any. In practice this
-  // points to StatusController::is_dirty_.
-  bool* dirty_;
 };
 
 typedef std::pair<VerifyResult, sync_pb::SyncEntity> VerifiedUpdate;
@@ -129,66 +119,9 @@ class UpdateProgress {
   std::vector<AppliedUpdate> applied_updates_;
 };
 
-struct SyncCycleControlParameters {
-  SyncCycleControlParameters() : conflicts_resolved(false),
-                                 items_committed(false),
-                                 debug_info_sent(false) {}
-  // Set to true by ResolveConflictsCommand if any forward progress was made.
-  bool conflicts_resolved;
-
-  // Set to true by PostCommitMessageCommand if any commits were successful.
-  bool items_committed;
-
-  // True indicates debug info has been sent once this session.
-  bool debug_info_sent;
-};
-
-// DirtyOnWrite wraps a value such that any write operation will update a
-// specified dirty bit, which can be used to determine if a notification should
-// be sent due to state change.
-template <typename T>
-class DirtyOnWrite {
- public:
-  explicit DirtyOnWrite(bool* dirty) : dirty_(dirty) {}
-  DirtyOnWrite(bool* dirty, const T& t) : t_(t), dirty_(dirty) {}
-  T* mutate() {
-    *dirty_ = true;
-    return &t_;
-  }
-  const T& value() const { return t_; }
- private:
-  T t_;
-  bool* dirty_;
-};
-
-// The next 3 structures declare how all the state involved in running a sync
-// cycle is divided between global scope (applies to all model types),
-// ModelSafeGroup scope (applies to all data types in a group), and single
-// model type scope.  Within this breakdown, each struct declares which bits
-// of state are dirty-on-write and should incur dirty bit updates if changed.
-
-// Grouping of all state that applies to all model types.  Note that some
-// components of the global grouping can internally implement finer grained
-// scope control (such as OrderedCommitSet), but the top level entity is still
-// a singleton with respect to model types.
-struct AllModelTypeState {
-  explicit AllModelTypeState(bool* dirty_flag);
-  ~AllModelTypeState();
-
-  // We GetUpdates for some combination of types at once.
-  // requested_update_types stores the set of types which were requested.
-  syncable::ModelTypeSet updates_request_types;
-  ClientToServerResponse updates_response;
-  // Used to build the shared commit message.
-  DirtyOnWrite<SyncerStatus> syncer_status;
-  DirtyOnWrite<ErrorCounters> error;
-  SyncCycleControlParameters control_params;
-  DirtyOnWrite<int64> num_server_changes_remaining;
-};
-
 // Grouping of all state that applies to a single ModelSafeGroup.
 struct PerModelSafeGroupState {
-  explicit PerModelSafeGroupState(bool* dirty_flag);
+  explicit PerModelSafeGroupState();
   ~PerModelSafeGroupState();
 
   UpdateProgress update_progress;

@@ -719,7 +719,7 @@ void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
   SDVLOG(1) << "Got snapshot " << snapshot.ToString();
 
   const syncable::ModelTypeSet to_migrate =
-      snapshot.syncer_status().types_needing_local_migration;
+      snapshot.model_neutral_state().types_needing_local_migration;
   if (!to_migrate.Empty())
     frontend_->OnMigrationNeededForTypes(to_migrate);
 

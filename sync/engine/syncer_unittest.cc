@@ -795,7 +795,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   {
     const StatusController& status_controller = session_->status_controller();
     // Expect success.
-    EXPECT_EQ(status_controller.error().commit_result, SYNCER_OK);
+    EXPECT_EQ(status_controller.model_neutral_state().commit_result, SYNCER_OK);
     // None should be unsynced anymore.
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     VERIFY_ENTRY(1, false, false, false, 0, 21, 21, ids_, &rtrans);
@@ -953,18 +953,18 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
   }
   // First cycle resolves conflicts, second cycle commits changes.
   SyncShareNudge();
-  EXPECT_EQ(2, status().syncer_status().num_server_overwrites);
-  EXPECT_EQ(1, status().syncer_status().num_local_overwrites);
+  EXPECT_EQ(2, status().model_neutral_state().num_server_overwrites);
+  EXPECT_EQ(1, status().model_neutral_state().num_local_overwrites);
   // We successfully commited item(s).
-  EXPECT_EQ(status().error().commit_result, SYNCER_OK);
+  EXPECT_EQ(status().model_neutral_state().commit_result, SYNCER_OK);
   SyncShareNudge();
 
   // Everything should be resolved now. The local changes should have
   // overwritten the server changes for 2 and 4, while the server changes
   // overwrote the local for entry 3.
-  EXPECT_EQ(0, status().syncer_status().num_server_overwrites);
-  EXPECT_EQ(0, status().syncer_status().num_local_overwrites);
-  EXPECT_EQ(status().error().commit_result, SYNCER_OK);
+  EXPECT_EQ(0, status().model_neutral_state().num_server_overwrites);
+  EXPECT_EQ(0, status().model_neutral_state().num_local_overwrites);
+  EXPECT_EQ(status().model_neutral_state().commit_result, SYNCER_OK);
   syncable::ReadTransaction rtrans(FROM_HERE, directory());
   VERIFY_ENTRY(1, false, false, false, 0, 41, 41, ids_, &rtrans);
   VERIFY_ENTRY(2, false, false, false, 1, 31, 31, ids_, &rtrans);
@@ -2731,7 +2731,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
   EXPECT_FALSE(session_->Succeeded());
   EXPECT_EQ(SYNC_SERVER_ERROR,
-            session_->status_controller().error().commit_result);
+            session_->status_controller().model_neutral_state().commit_result);
   EXPECT_EQ(items_to_commit - kDefaultMaxCommitBatchSize,
             directory()->unsynced_entity_count());
 }

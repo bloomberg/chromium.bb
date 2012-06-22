@@ -87,8 +87,8 @@ SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
   // This is to be run on one model only: the bookmark model.
   if (session->status_controller().HasBookmarkCommitActivity()) {
     // If the commit failed, return the data to the ExtensionsActivityMonitor.
-    if (session->status_controller().syncer_status()
-          .num_successful_bookmark_commits == 0) {
+    if (session->status_controller().
+        model_neutral_state().num_successful_bookmark_commits == 0) {
       monitor->PutRecords(session->extensions_activity());
     }
     // Clear our cached data in either case.

@@ -10,9 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "sync/internal_api/public/sessions/error_counters.h"
+#include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/internal_api/public/sessions/sync_source_info.h"
-#include "sync/internal_api/public/sessions/syncer_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 
@@ -32,9 +31,7 @@ class SyncSessionSnapshot {
  public:
   SyncSessionSnapshot();
   SyncSessionSnapshot(
-      const SyncerStatus& syncer_status,
-      const ErrorCounters& errors,
-      int64 num_server_changes_remaining,
+      const ModelNeutralState& model_neutral_state,
       bool is_share_usable,
       syncable::ModelTypeSet initial_sync_ended,
       const syncable::ModelTypePayloadMap& download_progress_markers,
@@ -56,8 +53,9 @@ class SyncSessionSnapshot {
 
   std::string ToString() const;
 
-  SyncerStatus syncer_status() const;
-  ErrorCounters errors() const;
+  ModelNeutralState model_neutral_state() const {
+    return model_neutral_state_;
+  }
   int64 num_server_changes_remaining() const;
   bool is_share_usable() const;
   syncable::ModelTypeSet initial_sync_ended() const;
@@ -75,8 +73,7 @@ class SyncSessionSnapshot {
   bool retry_scheduled() const;
 
  private:
-  SyncerStatus syncer_status_;
-  ErrorCounters errors_;
+  ModelNeutralState model_neutral_state_;
   int64 num_server_changes_remaining_;
   bool is_share_usable_;
   syncable::ModelTypeSet initial_sync_ended_;

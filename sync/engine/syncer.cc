@@ -149,6 +149,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case STORE_TIMESTAMPS: {
         StoreTimestampsCommand store_timestamps;
         store_timestamps.Execute(session);
+        session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
         // We download all of the updates before attempting to apply them.
         if (!session->status_controller().download_updates_succeeded()) {
           // We may have downloaded some updates, but if the latest download
@@ -168,6 +169,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case APPLY_UPDATES: {
         ApplyUpdatesCommand apply_updates;
         apply_updates.Execute(session);
+        session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
         if (last_step == APPLY_UPDATES) {
           // We're in configuration mode, but we still need to run the
           // SYNCER_END step.

@@ -134,6 +134,7 @@ SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
     if (processing_result != SYNCER_OK) {
       return processing_result;
     }
+    session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
   }
 
   return SYNCER_OK;

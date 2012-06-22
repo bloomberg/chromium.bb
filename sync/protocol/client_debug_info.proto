@@ -13,8 +13,8 @@ package sync_pb;
 
 import "get_updates_caller_info.proto";
 
-// The additional info here is from SyncerStatus. They get sent when the event
-// SYNC_CYCLE_COMPLETED  is sent.
+// The additional info here is from the StatusController. They get sent when
+// the event SYNC_CYCLE_COMPLETED  is sent.
 message SyncCycleCompletedEventInfo {
   // optional bool syncer_stuck = 1; // Was always false, now obsolete.
 

@@ -39,7 +39,6 @@ class SyncerCommand {
   // ExecuteImpl is where derived classes actually do work.
   virtual SyncerError ExecuteImpl(sessions::SyncSession* session) = 0;
  private:
-  void SendNotifications(sessions::SyncSession* session);
   DISALLOW_COPY_AND_ASSIGN(SyncerCommand);
 };
 

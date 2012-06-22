@@ -615,10 +615,11 @@ void ConstructAboutInformation(ProfileSyncService* service,
         snapshot.source().updates_source));
     sync_ui_util::AddStringSyncDetails(
         cycles, "Download Step Result",
-        GetSyncerErrorString(snapshot.errors().last_download_updates_result));
+        GetSyncerErrorString(
+            snapshot.model_neutral_state().last_download_updates_result));
     sync_ui_util::AddStringSyncDetails(
         cycles, "Commit Step Result",
-        GetSyncerErrorString(snapshot.errors().commit_result));
+        GetSyncerErrorString(snapshot.model_neutral_state().commit_result));
 
     // Strictly increasing counters.
     ListValue* counters = AddSyncDetailsSection(details, "Running Totals");
@@ -695,10 +696,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
         details, "Transient Counters (last cycle of last completed session)");
     sync_ui_util::AddIntSyncDetail(
         transient_session, "Updates Downloaded",
-        snapshot.syncer_status().num_updates_downloaded_total);
+        snapshot.model_neutral_state().num_updates_downloaded_total);
     sync_ui_util::AddIntSyncDetail(
         transient_session, "Committed Count",
-        snapshot.syncer_status().num_successful_commits);
+        snapshot.model_neutral_state().num_successful_commits);
 
     // This counter is stale.  The warnings related to the snapshot still
     // apply, see the comments near call to GetLastSessionSnapshot() above.

@@ -18,10 +18,9 @@
 #include "sync/syncable/directory.h"
 
 using csync::ModelSafeRoutingInfo;
-using csync::sessions::ErrorCounters;
+using csync::sessions::ModelNeutralState;
 using csync::sessions::SyncSessionSnapshot;
 using csync::sessions::SyncSourceInfo;
-using csync::sessions::SyncerStatus;
 using csync::UserShare;
 using syncable::Directory;
 
@@ -50,10 +49,11 @@ void SyncBackendHostForProfileSyncTest::
   if (!fail_initial_download_)
     sync_ended = syncable::ModelTypeSet::All();
   syncable::ModelTypePayloadMap download_progress_markers;
-  HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
-      SyncerStatus(), ErrorCounters(), 0, false,
-      sync_ended, download_progress_markers, false, false, 0, 0, 0, 0,
-      SyncSourceInfo(), false, 0, base::Time::Now(), false));
+  HandleSyncCycleCompletedOnFrontendLoop(
+      SyncSessionSnapshot(
+          ModelNeutralState(), false, sync_ended, download_progress_markers,
+          false, false, 0, 0, 0, 0, SyncSourceInfo(), false, 0,
+          base::Time::Now(), false));
 }
 
 namespace {
@@ -93,10 +93,11 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     if (!fail_initial_download_)
       sync_ended.Put(syncable::NIGORI);
     syncable::ModelTypePayloadMap download_progress_markers;
-    HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
-        SyncerStatus(), ErrorCounters(), 0, false,
-        sync_ended, download_progress_markers, false, false, 0, 0, 0, 0,
-        SyncSourceInfo(), false, 0, base::Time::Now(), false));
+    HandleSyncCycleCompletedOnFrontendLoop(
+        SyncSessionSnapshot(
+            ModelNeutralState(), false, sync_ended, download_progress_markers,
+            false, false, 0, 0, 0, 0, SyncSourceInfo(), false, 0,
+            base::Time::Now(), false));
   }
 }
 

@@ -17,21 +17,13 @@ using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
 
 StatusController::StatusController(const ModelSafeRoutingInfo& routes)
-    : shared_(&is_dirty_),
-      per_model_group_deleter_(&per_model_group_),
-      is_dirty_(false),
+    : per_model_group_deleter_(&per_model_group_),
       group_restriction_in_effect_(false),
       group_restriction_(GROUP_PASSIVE),
       routing_info_(routes) {
 }
 
 StatusController::~StatusController() {}
-
-bool StatusController::TestAndClearIsDirty() {
-  bool is_dirty = is_dirty_;
-  is_dirty_ = false;
-  return is_dirty;
-}
 
 const UpdateProgress* StatusController::update_progress() const {
   const PerModelSafeGroupState* state =
@@ -95,42 +87,34 @@ PerModelSafeGroupState* StatusController::GetOrCreateModelSafeGroupState(
   std::map<ModelSafeGroup, PerModelSafeGroupState*>::iterator it =
       per_model_group_.find(group);
   if (it == per_model_group_.end()) {
-    PerModelSafeGroupState* state = new PerModelSafeGroupState(&is_dirty_);
+    PerModelSafeGroupState* state = new PerModelSafeGroupState();
     it = per_model_group_.insert(std::make_pair(group, state)).first;
   }
   return it->second;
 }
 
 void StatusController::increment_num_updates_downloaded_by(int value) {
-  shared_.syncer_status.mutate()->num_updates_downloaded_total += value;
+  model_neutral_.num_updates_downloaded_total += value;
 }
 
 void StatusController::set_types_needing_local_migration(
     syncable::ModelTypeSet types) {
-  shared_.syncer_status.mutate()->types_needing_local_migration = types;
+  model_neutral_.types_needing_local_migration = types;
 }
 
 void StatusController::increment_num_tombstone_updates_downloaded_by(
     int value) {
-  shared_.syncer_status.mutate()->num_tombstone_updates_downloaded_total +=
-      value;
+  model_neutral_.num_tombstone_updates_downloaded_total += value;
 }
 
 void StatusController::increment_num_reflected_updates_downloaded_by(
     int value) {
-  shared_.syncer_status.mutate()->num_reflected_updates_downloaded_total +=
-      value;
+  model_neutral_.num_reflected_updates_downloaded_total += value;
 }
 
 void StatusController::set_num_server_changes_remaining(
     int64 changes_remaining) {
-  if (shared_.num_server_changes_remaining.value() != changes_remaining)
-    *(shared_.num_server_changes_remaining.mutate()) = changes_remaining;
-}
-
-void StatusController::set_invalid_store(bool invalid_store) {
-  if (shared_.syncer_status.value().invalid_store != invalid_store)
-    shared_.syncer_status.mutate()->invalid_store = invalid_store;
+  model_neutral_.num_server_changes_remaining = changes_remaining;
 }
 
 void StatusController::UpdateStartTime() {
@@ -138,51 +122,49 @@ void StatusController::UpdateStartTime() {
 }
 
 void StatusController::set_num_successful_bookmark_commits(int value) {
-  if (shared_.syncer_status.value().num_successful_bookmark_commits != value)
-    shared_.syncer_status.mutate()->num_successful_bookmark_commits = value;
+  model_neutral_.num_successful_bookmark_commits = value;
 }
 
 void StatusController::increment_num_successful_bookmark_commits() {
-  set_num_successful_bookmark_commits(
-      shared_.syncer_status.value().num_successful_bookmark_commits + 1);
+  model_neutral_.num_successful_bookmark_commits++;
 }
 
 void StatusController::increment_num_successful_commits() {
-  shared_.syncer_status.mutate()->num_successful_commits++;
+  model_neutral_.num_successful_commits++;
 }
 
 void StatusController::increment_num_local_overwrites() {
-  shared_.syncer_status.mutate()->num_local_overwrites++;
+  model_neutral_.num_local_overwrites++;
 }
 
 void StatusController::increment_num_server_overwrites() {
-  shared_.syncer_status.mutate()->num_server_overwrites++;
+  model_neutral_.num_server_overwrites++;
 }
 
 void StatusController::set_sync_protocol_error(
     const SyncProtocolError& error) {
-  shared_.error.mutate()->sync_protocol_error = error;
+  model_neutral_.sync_protocol_error = error;
 }
 
 void StatusController::set_last_download_updates_result(
     const SyncerError result) {
-  shared_.error.mutate()->last_download_updates_result = result;
+  model_neutral_.last_download_updates_result = result;
 }
 
 void StatusController::set_commit_result(const SyncerError result) {
-  shared_.error.mutate()->commit_result = result;
+  model_neutral_.commit_result = result;
 }
 
 void StatusController::update_conflicts_resolved(bool resolved) {
-  shared_.control_params.conflicts_resolved |= resolved;
+  model_neutral_.conflicts_resolved |= resolved;
 }
 void StatusController::reset_conflicts_resolved() {
-  shared_.control_params.conflicts_resolved = false;
+  model_neutral_.conflicts_resolved = false;
 }
 
 // Returns the number of updates received from the sync server.
 int64 StatusController::CountUpdates() const {
-  const ClientToServerResponse& updates = shared_.updates_response;
+  const ClientToServerResponse& updates = model_neutral_.updates_response;
   if (updates.has_get_updates()) {
     return updates.get_updates().entries().size();
   } else {
@@ -279,11 +261,11 @@ bool StatusController::ServerSaysNothingMoreToDownload() const {
 }
 
 void StatusController::set_debug_info_sent() {
-  shared_.control_params.debug_info_sent = true;
+  model_neutral_.debug_info_sent = true;
 }
 
 bool StatusController::debug_info_sent() const {
-  return shared_.control_params.debug_info_sent;
+  return model_neutral_.debug_info_sent;
 }
 
 }  // namespace sessions

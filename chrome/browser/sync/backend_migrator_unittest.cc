@@ -25,8 +25,6 @@ using ::testing::Return;
 
 namespace browser_sync {
 
-using csync::sessions::ErrorCounters;
-using csync::sessions::SyncerStatus;
 using csync::sessions::SyncSessionSnapshot;
 
 class SyncBackendMigratorTest : public testing::Test {

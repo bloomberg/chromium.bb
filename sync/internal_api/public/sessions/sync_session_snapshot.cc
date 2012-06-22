@@ -25,9 +25,7 @@ SyncSessionSnapshot::SyncSessionSnapshot()
 }
 
 SyncSessionSnapshot::SyncSessionSnapshot(
-    const SyncerStatus& syncer_status,
-    const ErrorCounters& errors,
-    int64 num_server_changes_remaining,
+    const ModelNeutralState& model_neutral_state,
     bool is_share_usable,
     syncable::ModelTypeSet initial_sync_ended,
     const syncable::ModelTypePayloadMap& download_progress_markers,
@@ -42,9 +40,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     size_t num_entries,
     base::Time sync_start_time,
     bool retry_scheduled)
-    : syncer_status_(syncer_status),
-      errors_(errors),
-      num_server_changes_remaining_(num_server_changes_remaining),
+    : model_neutral_state_(model_neutral_state),
       is_share_usable_(is_share_usable),
       initial_sync_ended_(initial_sync_ended),
       download_progress_markers_(download_progress_markers),
@@ -65,10 +61,23 @@ SyncSessionSnapshot::~SyncSessionSnapshot() {}
 
 DictionaryValue* SyncSessionSnapshot::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
-  value->Set("syncerStatus", syncer_status_.ToValue());
-  // We don't care too much if we lose precision here.
-  value->SetInteger("numServerChangesRemaining",
-                    static_cast<int>(num_server_changes_remaining_));
+  value->SetInteger("numSuccessfulCommits",
+                    model_neutral_state_.num_successful_commits);
+  value->SetInteger("numSuccessfulBookmarkCommits",
+                model_neutral_state_.num_successful_bookmark_commits);
+  value->SetInteger("numUpdatesDownloadedTotal",
+                model_neutral_state_.num_updates_downloaded_total);
+  value->SetInteger("numTombstoneUpdatesDownloadedTotal",
+                model_neutral_state_.num_tombstone_updates_downloaded_total);
+  value->SetInteger("numReflectedUpdatesDownloadedTotal",
+                model_neutral_state_.num_reflected_updates_downloaded_total);
+  value->SetInteger("numLocalOverwrites",
+                    model_neutral_state_.num_local_overwrites);
+  value->SetInteger("numServerOverwrites",
+                    model_neutral_state_.num_server_overwrites);
+  value->SetInteger(
+      "numServerChangesRemaining",
+      static_cast<int>(model_neutral_state_.num_server_changes_remaining));
   value->SetBoolean("isShareUsable", is_share_usable_);
   value->Set("initialSyncEnded",
              syncable::ModelTypeSetToValue(initial_sync_ended_));
@@ -100,16 +109,8 @@ std::string SyncSessionSnapshot::ToString() const {
   return json;
 }
 
-SyncerStatus SyncSessionSnapshot::syncer_status() const {
-  return syncer_status_;
-}
-
-ErrorCounters SyncSessionSnapshot::errors() const {
-  return errors_;
-}
-
 int64 SyncSessionSnapshot::num_server_changes_remaining() const {
-  return num_server_changes_remaining_;
+  return model_neutral_state().num_server_changes_remaining;
 }
 
 bool SyncSessionSnapshot::is_share_usable() const {
