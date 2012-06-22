@@ -67,6 +67,8 @@ const char kCurrentScreenshotUrl[] = "chrome://screenshots/current";
 
 const char kCategoryTagParameter[] = "categoryTag=";
 const char kDescriptionParameter[] = "description=";
+const char kSessionIDParameter[] = "session_id=";
+const char kTabIndexParameter[] = "tab_index=";
 
 #if defined(OS_CHROMEOS)
 const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
@@ -166,9 +168,10 @@ void ShowWebFeedbackView(Browser* browser,
                                              snapshot_bounds);
   FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
-  std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) +
-      "#" + base::IntToString(browser->active_index()) + "?" +
-      kDescriptionParameter +
+  std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) + "?" +
+      kSessionIDParameter + base::IntToString(browser->session_id().id()) +
+      "&" + kTabIndexParameter + base::IntToString(browser->active_index()) +
+      "&" + kDescriptionParameter +
       net::EscapeUrlEncodedData(description_template, false) + "&" +
       kCategoryTagParameter + net::EscapeUrlEncodedData(category_tag, false);
 
@@ -334,38 +337,50 @@ bool FeedbackHandler::Init() {
   ParseStandardURL(page_url.c_str(), page_url.length(), &parts);
 
   size_t params_start = page_url.find("?");
-  std::string index_str = page_url.substr(parts.ref.begin,
-                                          params_start - parts.ref.begin);
   std::string query = page_url.substr(params_start + 1);
 
-  int index = 0;
-  if (!base::StringToInt(index_str, &index))
-    return false;
+  int session_id = -1;
+  int index = -1;
 
-#if defined(OS_CHROMEOS)
   std::vector<std::string> params;
   if (Tokenize(query, std::string("&"), &params)) {
     for (std::vector<std::string>::iterator it = params.begin();
          it != params.end(); ++it) {
+      std::string query_str = *it;
+      if (StartsWithASCII(query_str, std::string(kSessionIDParameter), true)) {
+        ReplaceFirstSubstringAfterOffset(
+            &query_str, 0, kSessionIDParameter, "");
+        if (!base::StringToInt(query_str, &session_id))
+          return false;
+        continue;
+      }
+      if (StartsWithASCII(*it, std::string(kTabIndexParameter), true)) {
+        ReplaceFirstSubstringAfterOffset(
+            &query_str, 0, kTabIndexParameter, "");
+        if (!base::StringToInt(query_str, &index))
+          return false;
+        continue;
+      }
+#if defined(OS_CHROMEOS)
       if (StartsWithASCII(*it, std::string(kTimestampParameter), true)) {
         timestamp_ = *it;
         ReplaceFirstSubstringAfterOffset(&timestamp_,
                                          0,
                                          kTimestampParameter,
                                          "");
-        break;
+        continue;
       }
+#endif
     }
   }
-#endif
 
-  Browser* browser =
-      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  // Sanity checks.
-  if (((index == 0) && (index_str != "0")) || !browser ||
-      index >= browser->tab_count()) {
+  if (session_id == -1 || index == -1)
     return false;
-  }
+
+  Browser* browser = browser::FindBrowserWithID(session_id);
+  // Sanity checks.
+  if (!browser || index >= browser->tab_count())
+    return false;
 
   WebContents* target_tab = browser->GetWebContentsAt(index);
   if (target_tab) {

@@ -185,11 +185,11 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestFeedbackPage) {
   // The bugreport page receives its contents as GET arguments. Here we provide
   // a custom, Hebrew typed, description message.
   RunBidiCheckerOnPage(
-      "chrome://feedback#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94");
+      "chrome://feedback?session_id=1&tab_index=0&description=%D7%91%D7%93%D7%99%D7%A7%D7%94");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestFeedbackPage) {
-  RunBidiCheckerOnPage("chrome://feedback#0?description=test");
+  RunBidiCheckerOnPage("chrome://feedback?session_id=1&tab_index=0&description=test");
 }
 
 //==============================
