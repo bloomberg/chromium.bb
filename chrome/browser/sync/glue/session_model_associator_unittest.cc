@@ -251,6 +251,7 @@ class SyncedWindowDelegateMock : public SyncedWindowDelegate {
   MOCK_CONST_METHOD1(IsTabPinned, bool(const SyncedTabDelegate* tab));
   MOCK_CONST_METHOD1(GetTabAt, SyncedTabDelegate*(int index));
   MOCK_CONST_METHOD1(GetTabIdAt, SessionID::id_type(int index));
+  MOCK_CONST_METHOD0(IsSessionRestoreInProgress, bool());
 };
 
 class SyncedTabDelegateMock : public SyncedTabDelegate {

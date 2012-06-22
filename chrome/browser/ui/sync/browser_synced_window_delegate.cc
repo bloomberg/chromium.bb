@@ -91,3 +91,7 @@ bool BrowserSyncedWindowDelegate::IsTypeTabbed() const {
 bool BrowserSyncedWindowDelegate::IsTypePopup() const {
   return browser_->is_type_popup();
 }
+
+bool BrowserSyncedWindowDelegate::IsSessionRestoreInProgress() const {
+  return false;
+}

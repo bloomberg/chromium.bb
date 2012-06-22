@@ -807,6 +807,11 @@ enum NotificationType {
   // session data.
   NOTIFICATION_FOREIGN_SESSION_DISABLED,
 
+  // All tab metadata has been loaded from disk asynchronously.
+  // Sent on the UI thread.
+  // The source is the Profile. There are no details.
+  NOTIFICATION_SESSION_RESTORE_COMPLETE,
+
   // Cookies -----------------------------------------------------------------
 
   // Sent when a cookie changes. The source is a Profile object, the details

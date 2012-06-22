@@ -10,12 +10,15 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace browser_sync {
 
 class SessionModelAssociator;
 
-class SessionDataTypeController : public FrontendDataTypeController {
+class SessionDataTypeController : public FrontendDataTypeController,
+                                  public content::NotificationObserver {
  public:
   SessionDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -27,12 +30,21 @@ class SessionDataTypeController : public FrontendDataTypeController {
   // FrontendDataTypeController implementation.
   virtual syncable::ModelType type() const OVERRIDE;
 
+  // NotificationObserver interface.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   virtual ~SessionDataTypeController();
 
   // FrontendDataTypeController implementations.
+  virtual bool StartModels() OVERRIDE;
+  virtual void CleanUpState() OVERRIDE;
   // Datatype specific creation of sync components.
   virtual void CreateSyncComponents() OVERRIDE;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionDataTypeController);
 };
