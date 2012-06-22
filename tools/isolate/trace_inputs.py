@@ -2663,16 +2663,18 @@ def load_trace(logfile, root_dir, api, blacklist):
   return results
 
 
-def CMDclean(parser, args):
+def CMDclean(args):
   """Cleans up traces."""
+  parser = OptionParserTraceInputs(command='clean')
   options, args = parser.parse_args(args)
   api = get_api()
   api.clean_trace(options.log)
   return 0
 
 
-def CMDtrace(parser, args):
+def CMDtrace(args):
   """Traces an executable."""
+  parser = OptionParserTraceInputs(command='trace')
   parser.allow_interspersed_args = False
   parser.add_option(
       '-q', '--quiet', action='store_true',
@@ -2686,16 +2688,12 @@ def CMDtrace(parser, args):
     args[0] = os.path.abspath(args[0])
 
   api = get_api()
-  try:
-    return trace(options.log, args, os.getcwd(), api, options.quiet)[0]
-  except TracingFailure, e:
-    print >> sys.stderr, 'Failed to trace executable'
-    print >> sys.stderr, e
-    return 1
+  return trace(options.log, args, os.getcwd(), api, options.quiet)[0]
 
 
-def CMDread(parser, args):
+def CMDread(args):
   """Reads the logs and prints the result."""
+  parser = OptionParserTraceInputs(command='read')
   parser.add_option(
       '-V', '--variable',
       nargs=2,
@@ -2723,109 +2721,137 @@ def CMDread(parser, args):
 
   variables = dict(options.variables)
   api = get_api()
-  try:
-    def blacklist(f):
-      return any(re.match(b, f) for b in options.blacklist)
-    results = load_trace(options.log, options.root_dir, api, blacklist)
-    simplified = extract_directories(options.root_dir, results.files)
-    simplified = [f.replace_variables(variables) for f in simplified]
+  def blacklist(f):
+    return any(re.match(b, f) for b in options.blacklist)
+  results = load_trace(options.log, options.root_dir, api, blacklist)
+  simplified = extract_directories(options.root_dir, results.files)
+  simplified = [f.replace_variables(variables) for f in simplified]
 
-    if options.json:
-      write_json(sys.stdout, results.flatten(), False)
-    else:
-      print('Total: %d' % len(results.files))
-      print('Non existent: %d' % len(results.non_existent))
-      for f in results.non_existent:
-        print('  %s' % f.path)
-      print(
-          'Interesting: %d reduced to %d' % (
-              len(results.existent), len(simplified)))
-      for f in simplified:
-        print('  %s' % f.path)
-    return 0
-  except TracingFailure, e:
-    print >> sys.stderr, 'Failed to read trace'
-    print >> sys.stderr, e
-    return 1
-
-
-def CMDhelp(parser, args):
-  """Prints list of commands or help for a specific command"""
-  _, args = parser.parse_args(args)
-  if len(args) == 1:
-    # The command was "%prog help command", replaces ourself with
-    # "%prog command --help" so help is correctly printed out.
-    return main(args + ['--help'])
-  parser.print_help()
+  if options.json:
+    write_json(sys.stdout, results.flatten(), False)
+  else:
+    print('Total: %d' % len(results.files))
+    print('Non existent: %d' % len(results.non_existent))
+    for f in results.non_existent:
+      print('  %s' % f.path)
+    print(
+        'Interesting: %d reduced to %d' % (
+            len(results.existent), len(simplified)))
+    for f in simplified:
+      print('  %s' % f.path)
   return 0
 
 
-def get_command_handler(name):
-  """Returns the command handler or CMDhelp if it doesn't exist."""
-  return getattr(sys.modules[__name__], 'CMD%s' % name, CMDhelp)
+class OptionParserWithNiceDescription(optparse.OptionParser):
+  """Generates the description with the command's docstring."""
+  def __init__(self, *args, **kwargs):
+    """Sets 'description' and 'usage' if not already specified."""
+    command = kwargs.pop('command', 'help')
+    kwargs.setdefault(
+        'description',
+        re.sub('[\r\n ]{2,}', ' ', get_command_handler(command).__doc__))
+    kwargs.setdefault('usage', '%%prog %s [options]' % command)
+    optparse.OptionParser.__init__(self, *args, **kwargs)
 
 
-def gen_parser(command):
-  """Returns the default OptionParser instance for the corresponding command
-  handler.
-  """
-  more = getattr(command, 'usage_more', '')
-  command_display = command_name = command.__name__[3:]
-  if command_name == 'help':
-    command_display = '<command>'
-    description = None
-  else:
-    # OptParser.description prefer nicely non-formatted strings.
-    description = re.sub('[\r\n ]{2,}', ' ', command.__doc__)
+class OptionParserWithLogging(OptionParserWithNiceDescription):
+  """Adds automatic --verbose handling."""
+  def __init__(self, *args, **kwargs):
+    OptionParserWithNiceDescription.__init__(self, *args, **kwargs)
+    self.add_option(
+        '-v', '--verbose',
+        action='count',
+        default=0,
+        help='Use multiple times to increase verbosity')
 
-  parser = optparse.OptionParser(
-      usage='usage: %%prog %s [options] %s' % (command_display, more),
-      description=description)
-
-  # Default options.
-  parser.add_option(
-      '-v', '--verbose', action='count', default=0,
-      help='Use multiple times to increase verbosity')
-  if command_name != 'help':
-    parser.add_option(
-        '-l', '--log', help='Log file to generate or read, required')
-
-  old_parser_args = parser.parse_args
-  def parse_args_with_logging(args=None):
-    """Processes the default options.
-
-    Enforces and sets options.log to an absolute path.
-    Configures logging.
-    """
-    options, args = old_parser_args(args)
+  def parse_args(self, *args, **kwargs):
+    options, args = OptionParserWithNiceDescription.parse_args(
+        self, *args, **kwargs)
     level = [
       logging.ERROR, logging.INFO, logging.DEBUG,
     ][min(2, options.verbose)]
     logging.basicConfig(
           level=level,
           format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
-    if command_name != 'help':
-      if not options.log:
-        parser.error('Must supply a log file with -l')
-      options.log = os.path.abspath(options.log)
     return options, args
-  parser.parse_args = parse_args_with_logging
-  return parser
+
+
+class OptionParserTraceInputs(OptionParserWithLogging):
+  """Adds automatic --log handling."""
+  def __init__(self, *args, **kwargs):
+    OptionParserWithLogging.__init__(self, *args, **kwargs)
+    self.add_option(
+        '-l', '--log', help='Log file to generate or read, required')
+
+  def parse_args(self, *args, **kwargs):
+    """Makes sure the paths make sense.
+
+    On Windows, / and \ are often mixed together in a path.
+    """
+    options, args = OptionParserWithLogging.parse_args(self, *args, **kwargs)
+
+    if not options.log:
+      self.error('Must supply a log file with -l')
+    options.log = os.path.abspath(options.log)
+
+    # Still returns args to stay consistent even if guaranteed to be empty.
+    return options, args
+
+
+def extract_documentation():
+  """Returns a dict {command: description} for each of documented command."""
+  commands = (
+      fn[3:]
+      for fn in dir(sys.modules[__name__])
+      if fn.startswith('CMD') and get_command_handler(fn[3:]).__doc__)
+  return dict((fn, get_command_handler(fn).__doc__) for fn in commands)
+
+
+def CMDhelp(args):
+  """Prints list of commands or help for a specific command."""
+  doc = extract_documentation()
+  # Calculates the optimal offset.
+  offset = max(len(cmd) for cmd in doc)
+  format_str = '  %-' + str(offset + 2) + 's %s'
+  # Generate a one-liner documentation of each commands.
+  commands_description = '\n'.join(
+       format_str % (cmd, doc[cmd].split('\n')[0]) for cmd in sorted(doc))
+
+  parser = OptionParserWithLogging(
+      usage='%prog <command> [options]',
+      description='Commands are:\n%s\n' % commands_description)
+  parser.format_description = lambda _: parser.description
+
+  # Strip out any -h or --help argument.
+  _, args = parser.parse_args([i for i in args if not i in ('-h', '--help')])
+  if len(args) == 1:
+    if not get_command_handler(args[0]):
+      parser.error('Unknown command %s' % args[0])
+    # The command was "%prog help command", replaces ourself with
+    # "%prog command --help" so help is correctly printed out.
+    return main(args + ['--help'])
+  elif args:
+    parser.error('Unknown argument "%s"' % ' '.join(args))
+  parser.print_help()
+  return 0
+
+
+def get_command_handler(name):
+  """Returns the command handler or CMDhelp if it doesn't exist."""
+  return getattr(sys.modules[__name__], 'CMD%s' % name, None)
 
 
 def main(argv):
-  # Generates the command help late so all commands are listed.
-  CMDhelp.usage_more = (
-      '\n\nCommands are:\n' +
-      '\n'.join(
-        '  %-10s %s' % (
-          fn[3:], get_command_handler(fn[3:]).__doc__.split('\n')[0].strip())
-      for fn in dir(sys.modules[__name__])
-      if fn.startswith('CMD')))
-
-  command = get_command_handler(argv[0] if argv else None)
-  parser = gen_parser(command)
-  return command(parser, argv[1:])
+  command = get_command_handler(argv[0] if argv else 'help')
+  if not command:
+    return CMDhelp(argv)
+  try:
+    return command(argv[1:])
+  except TracingFailure, e:
+    sys.stderr.write('\nError: ')
+    sys.stderr.write(str(e))
+    sys.stderr.write('\n')
+    return 1
 
 
 if __name__ == '__main__':
