@@ -26,6 +26,14 @@ class TraceInputs(unittest.TestCase):
       ('"foo", "bar"', ['foo', 'bar']),
       ('"foo"..., "bar"', ['foo', 'bar']),
       ('"foo", "bar"...', ['foo', 'bar']),
+      (
+        '"/browser_tests", "--type=use,comma"',
+        ['/browser_tests', '--type=use,comma']
+      ),
+      (
+        '"/browser_tests", "--ignored=\\" --type=renderer \\""',
+        ['/browser_tests', '--ignored=" --type=renderer "']
+      ),
     )
     for actual, expected in test_cases:
       self.assertEquals(expected, trace_inputs.process_quoted_arguments(actual))

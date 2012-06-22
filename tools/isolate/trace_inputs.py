@@ -298,13 +298,14 @@ def process_quoted_arguments(text):
   # All the possible states of the DFA.
   ( NEED_QUOTE,         # Begining of a new arguments.
     INSIDE_STRING,      # Inside an argument.
+    ESCAPED,            # Found a '\' inside a quote. Treat the next char as-is.
     NEED_COMMA_OR_DOT,  # Right after the closing quote of an argument. Could be
                         # a serie of 3 dots or a comma.
     NEED_SPACE,         # Right after a comma
     NEED_DOT_2,         # Found a dot, need a second one.
     NEED_DOT_3,         # Found second dot, need a third one.
     NEED_COMMA,         # Found third dot, need a comma.
-    ) = range(7)
+    ) = range(8)
 
   state = NEED_QUOTE
   current_argument = ''
@@ -318,6 +319,9 @@ def process_quoted_arguments(text):
         out.append(current_argument)
         current_argument = ''
         state = NEED_COMMA_OR_DOT
+      elif state == ESCAPED:
+        current_argument += char
+        state = INSIDE_STRING
       else:
         raise ValueError(
             'Can\'t process char at column %d for: %r' % (index, text),
@@ -326,6 +330,11 @@ def process_quoted_arguments(text):
     elif char == ',':
       if state in (NEED_COMMA_OR_DOT, NEED_COMMA):
         state = NEED_SPACE
+      elif state == INSIDE_STRING:
+        current_argument += char
+      elif state == ESCAPED:
+        current_argument += char
+        state = INSIDE_STRING
       else:
         raise ValueError(
             'Can\'t process char at column %d for: %r' % (index, text),
@@ -334,8 +343,16 @@ def process_quoted_arguments(text):
     elif char == ' ':
       if state == NEED_SPACE:
         state = NEED_QUOTE
-      if state == INSIDE_STRING:
+      elif state == INSIDE_STRING:
         current_argument += char
+      elif state == ESCAPED:
+        current_argument += char
+        state = INSIDE_STRING
+      else:
+        raise ValueError(
+            'Can\'t process char at column %d for: %r' % (index, text),
+            index,
+            text)
     elif char == '.':
       if state == NEED_COMMA_OR_DOT:
         # The string is incomplete, this mean the strace -s flag should be
@@ -347,6 +364,20 @@ def process_quoted_arguments(text):
         state = NEED_COMMA
       elif state == INSIDE_STRING:
         current_argument += char
+      elif state == ESCAPED:
+        current_argument += char
+        state = INSIDE_STRING
+      else:
+        raise ValueError(
+            'Can\'t process char at column %d for: %r' % (index, text),
+            index,
+            text)
+    elif char == '\\':
+      if state == ESCAPED:
+        current_argument += char
+        state = INSIDE_STRING
+      elif state == INSIDE_STRING:
+        state = ESCAPED
       else:
         raise ValueError(
             'Can\'t process char at column %d for: %r' % (index, text),
