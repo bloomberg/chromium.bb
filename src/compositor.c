@@ -1858,8 +1858,12 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 	mods = update_modifier_state(ws, key, state);
 	end = seat->keyboard->keys.data + seat->keyboard->keys.size;
 	for (k = seat->keyboard->keys.data; k < end; k++) {
-		if (*k == key)
+		if (*k == key) {
+			/* Ignore server-generated repeats. */
+			if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
+				return;
 			*k = *--end;
+		}
 	}
 	seat->keyboard->keys.size = (void *) end - seat->keyboard->keys.data;
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
