@@ -507,9 +507,6 @@
       '-translate.TranslateTest.testAlwaysTranslateLanguageButton',
       '-translate.TranslateTest.testChangeTargetLanguageAlwaysTranslate',
       '-translate.TranslateTest.testToggleTranslateOption',
-      # crbug.com/133774
-      '-youtube.YoutubeTest.testPlayerBytes',
-      'youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'win': [
