@@ -28,7 +28,7 @@ deps = {
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@361c8fbbc15e74730908e28660cb742eba046a83',
     'third_party':
-        Var('git_url') + '/native_client/src/third_party.git@3b443384dac8fcd9113cf265e4d6bd8cab63a400',
+        Var('git_url') + '/native_client/src/third_party.git@c0ba190713fffd6f233a2fae863c45a414774387',
     'third_party/asan':
         Var('git_url') + '/chromium/deps/asan.git@245a68a0347562da54e3e5881010f55a994c783f',
     'third_party/gles2_book':
@@ -69,7 +69,7 @@ deps_os = {
     'unix':
     {
         'third_party/ragel':
-            Var('git_url') + '/native_client/deps/third_party/ragel.git@1c3e25ce661de9f488c816ad02666b73b867b3e8',
+            Var('git_url') + '/native_client/deps/third_party/ragel.git@da42bb33f1b67c2d70b38ec1d2edf5263271b635',
     },
     'win':
     {
