@@ -724,7 +724,8 @@ WL_EXPORT void
 wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 		     wl_fixed_t sx, wl_fixed_t sy)
 {
-	struct wl_resource *resource;
+	struct wl_keyboard *kbd = pointer->seat->keyboard;
+	struct wl_resource *resource, *kr;
 	uint32_t serial;
 
 	resource = pointer->focus_resource;
@@ -741,6 +742,18 @@ wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
 	    (pointer->focus != surface ||
 	     pointer->focus_resource != resource)) {
 		serial = wl_display_next_serial(resource->client->display);
+		if (kbd) {
+			kr = find_resource_for_surface(&kbd->resource_list,
+						       surface);
+			if (kr) {
+				wl_keyboard_send_modifiers(resource,
+							   serial,
+							   kbd->modifiers.mods_depressed,
+							   kbd->modifiers.mods_latched,
+							   kbd->modifiers.mods_locked,
+							   kbd->modifiers.group);
+			}
+		}
 		wl_pointer_send_enter(resource, serial, &surface->resource,
 				      sx, sy);
 		wl_signal_add(&resource->destroy_signal,
@@ -774,6 +787,11 @@ wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface)
 	    (keyboard->focus != surface ||
 	     keyboard->focus_resource != resource)) {
 		serial = wl_display_next_serial(resource->client->display);
+		wl_keyboard_send_modifiers(resource, serial,
+					   keyboard->modifiers.mods_depressed,
+					   keyboard->modifiers.mods_latched,
+					   keyboard->modifiers.mods_locked,
+					   keyboard->modifiers.group);
 		wl_keyboard_send_enter(resource, serial, &surface->resource,
 				       &keyboard->keys);
 		wl_signal_add(&resource->destroy_signal,

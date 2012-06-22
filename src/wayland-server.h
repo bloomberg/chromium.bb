@@ -280,6 +280,13 @@ struct wl_keyboard {
 	uint32_t grab_time;
 
 	struct wl_array keys;
+
+	struct {
+		uint32_t mods_depressed;
+		uint32_t mods_latched;
+		uint32_t mods_locked;
+		uint32_t group;
+	} modifiers;
 };
 
 struct wl_touch {
