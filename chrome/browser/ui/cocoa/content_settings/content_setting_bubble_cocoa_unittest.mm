@@ -54,15 +54,9 @@ ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
 ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 }
 
-// Fails under ASan, http://crbug.com/134060.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_Init DISABLED_Init
-#else
-#define MAYBE_Init Init
-#endif
-
 // Check that the bubble doesn't crash or leak for any settings type
-TEST_F(ContentSettingBubbleControllerTest, MAYBE_Init) {
+// http://crbug.com/134060.
+TEST_F(ContentSettingBubbleControllerTest, DISABLED_Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
         i == CONTENT_SETTINGS_TYPE_INTENTS ||
