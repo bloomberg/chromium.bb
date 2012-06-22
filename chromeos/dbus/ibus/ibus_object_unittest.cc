@@ -6,6 +6,7 @@
 #include "chromeos/dbus/ibus/ibus_object.h"
 
 #include <string>
+#include <vector>
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "dbus/message.h"
@@ -146,7 +147,7 @@ TEST(IBusObjectTest, PopAppendStringAsIBusText) {
   ibus_object_writer.AppendStringAsIBusText(kSampleString);
   ibus_object_writer.CloseAll();
 
-  // Read string from IBusText;
+  // Read string from IBusText.
   dbus::MessageReader reader(message.get());
   IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
   std::string result_str;
@@ -208,6 +209,46 @@ TEST(IBusObjectTest, AttachmentTest) {
   ASSERT_TRUE(dict_reader.PopVariant(&variant_reader));
   ASSERT_TRUE(variant_reader.PopString(&value));
   EXPECT_EQ(kSampleText, value);
+}
+
+TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
+  const char kSampleTypeName[] = "Empty IBusObject Name";
+  const char kSampleKey[] = "Key";
+  const IBusProperty::IBusPropertyType kSampleType =
+      IBusProperty::IBUS_PROPERTY_TYPE_MENU;
+  const char kSampleLabel[] = "Label";
+  const char kSampleTooltip[] = "Tooltip";
+  const bool kSampleVisible = true;
+  const bool kSampleChecked = false;
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Create IBusProperty.
+  ibus::IBusProperty property;
+  property.set_key(kSampleKey);
+  property.set_type(kSampleType);
+  property.set_label(kSampleLabel);
+  property.set_tooltip(kSampleTooltip);
+  property.set_visible(kSampleVisible);
+  property.set_checked(kSampleChecked);
+
+  // Write a IBusProperty.
+  dbus::MessageWriter writer(response.get());
+  IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
+  ibus_object_writer.AppendIBusProperty(property);
+  ibus_object_writer.CloseAll();
+
+  // Read string from IBusText.
+  dbus::MessageReader reader(response.get());
+  IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
+  ibus::IBusProperty result_property;
+  ASSERT_TRUE(ibus_object_reader.Init());
+  ASSERT_TRUE(ibus_object_reader.PopIBusProperty(&result_property));
+  EXPECT_EQ(kSampleKey, result_property.key());
+  EXPECT_EQ(kSampleType, result_property.type());
+  EXPECT_EQ(kSampleLabel, result_property.label());
+  EXPECT_EQ(kSampleTooltip, result_property.tooltip());
+  EXPECT_EQ(kSampleVisible, result_property.visible());
+  EXPECT_EQ(kSampleChecked, result_property.checked());
 }
 
 }  // namespace ibus
