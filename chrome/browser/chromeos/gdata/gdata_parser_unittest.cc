@@ -349,6 +349,27 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
     IF_EXPECT_EQ(1U, first_app->secondary_extensions()->size()) {
       EXPECT_EQ("ext_3", *first_app->secondary_extensions()->at(0));
     }
+    IF_EXPECT_EQ(1U, first_app->app_icons()->size()) {
+      EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()->at(0)->category());
+      EXPECT_EQ(16, first_app->app_icons()->at(0)->icon_side_length());
+      const Link* icon_link =
+          first_app->app_icons()->at(0)->GetIconLinkForType(
+              "application/vnd.google-apps.drive-sdk.11111111");
+      IF_EXPECT_TRUE(icon_link) {
+        EXPECT_EQ("application/vnd.google-apps.drive-sdk.11111111",
+                  icon_link->mime_type());
+        EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
+                  icon_link->href().spec());
+      }
+      EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
+                first_app->GetAppIconByCategoryAndType(
+                    AppIcon::DOCUMENT,
+                    "application/vnd.google-apps.drive-sdk.11111111").spec());
+      EXPECT_TRUE(first_app->GetAppIconByCategoryAndType(
+                    AppIcon::DOCUMENT,
+                    "nonexistent/mime_type").is_empty());
+      EXPECT_FALSE(first_app->app_icons()->at(0)->GetIconLinkForType("foo"));
+    }
   }
 
   IF_EXPECT_TRUE(second_app) {
