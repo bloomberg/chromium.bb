@@ -200,9 +200,13 @@ class GitWrapper(SCMWrapper):
                   'git', 'config', '-f', '$toplevel/.git/config',
                   'submodule.$name.ignore', 'all']
     cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
+    cmd2 = ['git', 'config', 'diff.ignoreSubmodules', 'all']
     try:
       gclient_utils.CheckCallAndFilter(
         cmd, cwd=self.checkout_path, print_stdout=False,
+        filter_fn=lambda x: None)
+      gclient_utils.CheckCallAndFilter(
+        cmd2, cwd=self.checkout_path, print_stdout=False,
         filter_fn=lambda x: None)
     except subprocess2.CalledProcessError:
       # Not a fatal error, or even very interesting in a non-git-submodule
