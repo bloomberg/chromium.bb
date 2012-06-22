@@ -153,30 +153,39 @@ void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
 }
 
 void PluginVarTracker::DidDeleteInstance(PP_Instance instance) {
+  // Calling the destructors on plugin objects may in turn release other
+  // objects which will mutate the map out from under us. So do a two-step
+  // process of identifying the ones to delete, and then delete them.
+  //
   // See the comment above user_data_to_plugin_ in the header file. We assume
   // there aren't that many objects so a brute-force search is reasonable.
-  UserDataToPluginImplementedVarMap::iterator i =
-      user_data_to_plugin_.begin();
-  while (i != user_data_to_plugin_.end()) {
-    if (i->second.instance == instance) {
-      if (!i->second.plugin_object_id) {
-        // This object is for the freed instance and the plugin is not holding
-        // any references to it. Deallocate immediately.
-        UserDataToPluginImplementedVarMap::iterator to_remove = i;
-        ++i;
-        to_remove->second.ppp_class->Deallocate(to_remove->first);
-        user_data_to_plugin_.erase(to_remove);
-      } else {
-        // The plugin is holding refs to this object. We don't want to call
-        // Deallocate since the plugin may be depending on those refs to keep
-        // its data alive. To avoid crashes in this case, just clear out the
-        // instance to mark it and continue. When the plugin refs go to 0,
-        // we'll notice there is no instance and call Deallocate.
-        i->second.instance = 0;
-        ++i;
-      }
+  std::vector<void*> user_data_to_delete;
+  for (UserDataToPluginImplementedVarMap::const_iterator i =
+           user_data_to_plugin_.begin();
+       i != user_data_to_plugin_.end();
+       ++i) {
+    if (i->second.instance == instance)
+      user_data_to_delete.push_back(i->first);
+  }
+
+  for (size_t i = 0; i < user_data_to_delete.size(); i++) {
+    UserDataToPluginImplementedVarMap::iterator found =
+        user_data_to_plugin_.find(user_data_to_delete[i]);
+    if (found == user_data_to_plugin_.end())
+      continue;  // Object removed from list while we were iterating.
+
+    if (!found->second.plugin_object_id) {
+      // This object is for the freed instance and the plugin is not holding
+      // any references to it. Deallocate immediately.
+      found->second.ppp_class->Deallocate(found->first);
+      user_data_to_plugin_.erase(found);
     } else {
-      ++i;
+      // The plugin is holding refs to this object. We don't want to call
+      // Deallocate since the plugin may be depending on those refs to keep
+      // its data alive. To avoid crashes in this case, just clear out the
+      // instance to mark it and continue. When the plugin refs go to 0,
+      // we'll notice there is no instance and call Deallocate.
+      found->second.instance = 0;
     }
   }
 }
