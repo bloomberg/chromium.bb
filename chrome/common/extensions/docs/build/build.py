@@ -48,22 +48,26 @@ from directory import Sample
 from directory import ApiManifest
 from directory import SamplesManifest
 
-def RenderPages(names, dump_render_tree):
-  """
-  Calls DumpRenderTree .../generator.html?<names> and writes the
-  results to .../docs/<name>.html
-  """
-  if not names:
-    raise Exception("RenderPage called with empty names param")
+def RenderPages(family, dump_render_tree, single_page_name):
+  output_dir = os.path.join(_base_dir, family)
+  names = set(os.path.splitext(name)[0] for name in os.listdir(output_dir)
+              if not name.startswith(".") and name.endswith(".html"))
+
+  # Allow the user to render a single page if they want
+  if single_page_name:
+    if single_page_name in names:
+      names = [single_page_name]
+    else:
+      return []
 
   generator_url = "file:" + urllib.pathname2url(_generator_html)
-  generator_url += "?" + ",".join(names)
+  generator_url += "?" + family + "|" + ",".join(names)
 
   # Start with a fresh copy of page shell for each file.
   # Save the current contents so that we can look for changes later.
   originals = {}
   for name in names:
-    input_file = _base_dir + "/" + name + ".html"
+    input_file = os.path.join(output_dir, name + ".html")
 
     if (os.path.isfile(input_file)):
       originals[name] = open(input_file, 'rb').read()
@@ -110,7 +114,7 @@ def RenderPages(names, dump_render_tree):
     result = result.replace(' style=""', '')
 
     # Remove page_shell
-    input_file = _base_dir + "/" + name + ".html"
+    input_file = os.path.join(output_dir, name + ".html")
     os.remove(input_file)
 
     # Write output
@@ -165,12 +169,6 @@ def FindDumpRenderTree():
                   "To specify a path to DumpRenderTree use "
                   "--dump-render-tree-path")
 
-def GetStaticFileNames():
-  static_files = os.listdir(_static_dir)
-  return set(os.path.splitext(file_name)[0]
-             for file_name in static_files
-             if file_name.endswith(".html") and not file_name.startswith("."))
-
 def main():
   # Prevent windows from using cygwin python.
   if (sys.platform == "cygwin"):
@@ -198,23 +196,6 @@ def main():
   api_manifest = ApiManifest(_extension_api_json_schemas,
                              _extension_api_idl_schemas)
 
-  # Read static file names
-  static_names = GetStaticFileNames()
-
-  # Read module names
-  module_names = api_manifest.getModuleNames()
-
-  # All pages to generate
-  page_names = static_names | module_names
-
-  # Allow the user to render a single page if they want
-  if options.page_name:
-    if options.page_name in page_names:
-      page_names = [options.page_name]
-    else:
-      raise Exception("--page-name argument must be one of %s." %
-                      ', '.join(sorted(page_names)))
-
   # Write temporary JSON files based on the IDL inputs
   api_manifest.generateJSONFromIDL()
 
@@ -224,13 +205,14 @@ def main():
 
   # Write zipped versions of the samples listed in the manifest to the
   # filesystem, unless the user has disabled it
+  modified_files = []
   if options.zips:
-    modified_zips = samples_manifest.writeZippedSamples()
-  else:
-    modified_zips = []
+    modified_files.extend(samples_manifest.writeZippedSamples())
 
-  modified_files = RenderPages(page_names, dump_render_tree)
-  modified_files.extend(modified_zips)
+  doc_families = ["extensions", "apps"]
+  for family in doc_families:
+    modified_files.extend(
+        RenderPages(family, dump_render_tree, options.page_name))
 
   if len(modified_files) == 0:
     print "Output files match existing files. No changes made."

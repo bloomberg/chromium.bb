@@ -2,20 +2,22 @@
   <head>
     <script>
 var childFrame;
+var family;
 var pages;
 var currentPage;
 var result = {};
 
 function init() {
-  if (!window.layoutTestController) {
-    alert("window.layoutTestController not defined.");
-    return;
+  if (window.layoutTestController) {
+    layoutTestController.dumpAsText();
+    layoutTestController.waitUntilDone();
+  } else {
+    console.error("No layout test controller");
   }
-  
-  layoutTestController.dumpAsText();
-  layoutTestController.waitUntilDone();
 
-  pages = window.location.search.substring(1).split(",");
+  var queryString = window.location.search.substring(1).split("|");
+  family = queryString[0];
+  pages = queryString[1].split(",");
   if (!pages.length) {
     alert("please specify which pages to generate via " +
           "?<page> ... ie. generator.html?tabs,bookmarks,cookies,...");
@@ -30,7 +32,7 @@ function init() {
 
 function next() {
   currentPage = pages.shift();
-  childFrame.src = "../" + currentPage + ".html?regenerate";
+  childFrame.src = "../" + family + "/" + currentPage + ".html?regenerate";
 }
 
 var count = 0;
@@ -45,7 +47,8 @@ function done() {
         "#BEGIN" + JSON.stringify(result) + "#END");
     preNode.appendChild(textNode);
     document.getElementsByTagName("body")[0].appendChild(preNode);
-    layoutTestController.notifyDone();
+    if (window.layoutTestController)
+      layoutTestController.notifyDone();
   }
 }
     </script>
