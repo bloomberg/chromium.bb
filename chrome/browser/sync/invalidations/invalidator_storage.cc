@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -160,6 +161,11 @@ void InvalidatorStorage::MigrateMaxInvalidationVersionsPref() {
     SerializeToList(max_versions, &max_versions_list);
     pref_service_->Set(prefs::kInvalidatorMaxInvalidationVersions,
                        max_versions_list);
+    UMA_HISTOGRAM_BOOLEAN("InvalidatorStorage.MigrateInvalidationVersionsPref",
+                          true);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("InvalidatorStorage.MigrateInvalidationVersionsPref",
+                          false);
   }
   pref_service_->ClearPref(prefs::kSyncMaxInvalidationVersions);
 }
