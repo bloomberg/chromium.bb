@@ -18,7 +18,7 @@ namespace ui {
 class TextInputClient;
 
 // A mock ui::InputMethod implementation for minimum input support.
-class UI_EXPORT MockInputMethod : public InputMethod {
+class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  public:
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();

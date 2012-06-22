@@ -45,7 +45,7 @@ class TextInputClient;
 //   that change the state of the input method.
 // In Aura environment, aura::RootWindowHost creates an instance of
 // ui::InputMethod and owns it.
-class UI_EXPORT InputMethod {
+class InputMethod {
  public:
   virtual ~InputMethod() {}
 

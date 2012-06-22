@@ -10,6 +10,7 @@
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        'content_app',
         'content_browser',
         'content_common',
         '../skia/skia.gyp:skia',
@@ -41,6 +42,7 @@
         'public/test/test_browser_thread.h',
         'public/test/test_content_client_initializer.h',
         'public/test/test_file_error_injector.h',
+        'public/test/test_launcher.h',
         'public/test/test_navigation_observer.h',
         'public/test/test_notification_tracker.h',
         'public/test/test_renderer_host.h',
@@ -116,6 +118,7 @@
         'test/test_renderer_host.cc',
         'test/test_render_view_host_factory.cc',
         'test/test_render_view_host_factory.h',
+        'test/test_launcher.cc',
         'test/test_web_contents_view.cc',
         'test/test_web_contents_view.h',
         'test/unittest_test_suite.cc',
@@ -180,7 +183,6 @@
       'type': '<(gtest_target_type)',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
-        'content_browser',
         'content_common',
         'content_gpu',
         'content_plugin',
@@ -218,7 +220,6 @@
         '..',
       ],
       'sources': [
-        'app/startup_helper_win.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
@@ -502,7 +503,6 @@
       'type': 'executable',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
-        'content_browser',
         'content_gpu',
         'content_plugin',
         'content_renderer',
@@ -522,12 +522,10 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
-        'app/startup_helper_win.cc',
         'public/test/test_launcher.h',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_test_launcher.cc',
-        'test/test_launcher.cc',
       ],
       'conditions': [
         ['OS=="win"', {

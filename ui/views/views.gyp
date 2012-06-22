@@ -694,7 +694,6 @@
         '../..',
       ],
       'sources': [
-        '../../content/app/startup_helper_win.cc',
         'examples/content_client/examples_browser_main_parts.cc',
         'examples/content_client/examples_browser_main_parts.h',
         'examples/content_client/examples_content_browser_client.cc',

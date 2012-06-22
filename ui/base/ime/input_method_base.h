@@ -22,7 +22,7 @@ class TextInputClient;
 
 // A helper class providing functionalities shared among ui::InputMethod
 // implementations.
-class UI_EXPORT InputMethodBase : public InputMethod {
+class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
  public:
   InputMethodBase();
   virtual ~InputMethodBase();

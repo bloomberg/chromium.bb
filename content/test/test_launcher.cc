@@ -56,11 +56,12 @@ const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
 
 namespace {
 
+#if defined(IN_PROC_BROWSER_TEST_F)
 // An empty test (it starts up and shuts down the browser as part of its
 // setup and teardown) used to prefetch all of the browser code into memory.
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, Empty) {
-
-}  // namespace
+}
+#endif
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
 // default_val.  If it is set, unsets it then converts it to Int32 before

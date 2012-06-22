@@ -205,50 +205,6 @@ class SuggestionsSourceStub : public SuggestionsSource {
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSourceStub);
 };
 
-// SuggestionsHandler stub.
-SuggestionsHandler::SuggestionsHandler()
-    : got_first_suggestions_request_(false) {
-}
-
-SuggestionsHandler::~SuggestionsHandler() {
-}
-
-void SuggestionsHandler::RegisterMessages() {
-}
-
-void SuggestionsHandler::HandleGetSuggestions(const ListValue* args) {
-}
-
-void SuggestionsHandler::OnSuggestionsReady() {
-}
-
-void SuggestionsHandler::SendPagesValue() {
-}
-
-void SuggestionsHandler::HandleBlacklistURL(const ListValue* args) {
-}
-
-void SuggestionsHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
-}
-
-void SuggestionsHandler::HandleClearBlacklist(const ListValue* args) {
-}
-
-void SuggestionsHandler::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-}
-
-void SuggestionsHandler::BlacklistURL(const GURL& url) {
-}
-
-std::string SuggestionsHandler::GetDictionaryKeyForURL(const std::string& url) {
-  return url;
-}
-
-void SuggestionsHandler::RegisterUserPrefs(PrefService* prefs) {
-}
-
 class SuggestionsCombinerTest : public testing::Test {
  public:
   SuggestionsCombinerTest() {

@@ -175,6 +175,15 @@
         'content_utility.gypi',
         'content_worker.gypi',
        ],
+       'msvs_settings': {
+         'VCLinkerTool': {
+           'conditions': [
+             ['incremental_chrome_dll==1', {
+               'UseLibraryDependencyInputs': "true",
+             }],
+           ],
+         },
+       },
       },
       {'target_name': 'content_app',
        'type': 'none',
