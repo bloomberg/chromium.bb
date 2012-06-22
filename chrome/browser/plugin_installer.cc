@@ -22,6 +22,7 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
@@ -44,7 +45,10 @@ void BeginDownload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
+  scoped_ptr<net::URLRequest> request(new net::URLRequest(
+      url,
+      NULL,
+      resource_context->GetRequestContext()));
   net::Error error = rdh->BeginDownload(
       request.Pass(),
       false,  // is_content_initiated

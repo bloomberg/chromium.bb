@@ -54,8 +54,9 @@ static std::string BuildReport(
   return out;
 }
 
-net::URLRequest* ChromeFraudulentCertificateReporter::CreateURLRequest() {
-  net::URLRequest* request = new net::URLRequest(upload_url_, this);
+net::URLRequest* ChromeFraudulentCertificateReporter::CreateURLRequest(
+      net::URLRequestContext* context) {
+  net::URLRequest* request = new net::URLRequest(upload_url_, this, context);
   request->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
   return request;
@@ -74,8 +75,7 @@ void ChromeFraudulentCertificateReporter::SendReport(
 
   std::string report = BuildReport(hostname, ssl_info);
 
-  net::URLRequest* url_request = CreateURLRequest();
-  url_request->set_context(request_context_);
+  net::URLRequest* url_request = CreateURLRequest(request_context_);
   url_request->set_method("POST");
   url_request->AppendBytesToUpload(report.data(), report.size());
 

@@ -308,8 +308,9 @@ void FileSystemOperation::Write(
 
   set_write_callback(callback);
   scoped_ptr<net::URLRequest> blob_request(
-      new net::URLRequest(blob_url, file_writer_delegate_.get()));
-  blob_request->set_context(url_request_context);
+      new net::URLRequest(blob_url,
+                          file_writer_delegate_.get(),
+                          url_request_context));
 
   file_writer_delegate_->Start(blob_request.Pass());
 }

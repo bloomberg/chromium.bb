@@ -143,8 +143,8 @@ void UrlFetcher::Core::OnReadCompleted(net::URLRequest* request,
 void UrlFetcher::Core::DoStart() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  request_.reset(new net::URLRequest(url_, this));
-  request_->set_context(request_context_getter_->GetURLRequestContext());
+  request_.reset(new net::URLRequest(
+      url_, this, request_context_getter_->GetURLRequestContext()));
 
   switch (method_) {
     case GET:

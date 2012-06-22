@@ -42,6 +42,7 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -494,7 +495,10 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   save_info.suggested_name = iodata_->filename;
   save_info.prompt_for_save_location = iodata_->save_as;
 
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(iodata_->url, NULL));
+  scoped_ptr<net::URLRequest> request(new net::URLRequest(
+      iodata_->url,
+      NULL,
+      iodata_->resource_context->GetRequestContext()));
   request->set_method(iodata_->method);
   if (iodata_->extra_headers != NULL) {
     for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {

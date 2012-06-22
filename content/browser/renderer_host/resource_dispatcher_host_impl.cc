@@ -517,9 +517,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   base::debug::Alias(url_buf);
   CHECK(ContainsKey(active_resource_contexts_, context));
 
-  const net::URLRequestContext* request_context = context->GetRequestContext();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
-  request->set_context(request_context);
   int extra_load_flags = net::LOAD_IS_DOWNLOAD;
   if (prefer_cache) {
     // If there is upload data attached, only retrieve from cache because there
@@ -544,6 +542,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
 
   request_id_--;
 
+  const net::URLRequestContext* request_context = context->GetRequestContext();
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
@@ -956,7 +955,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (deferred_loader.get()) {
     request = deferred_loader->request();
   } else {
-    new_request.reset(new net::URLRequest(request_data.url, NULL));
+    new_request.reset(new net::URLRequest(
+        request_data.url,
+        NULL,
+        filter_->GetURLRequestContext(request_data.resource_type)));
     request = new_request.get();
 
     request->set_method(request_data.method);
@@ -974,8 +976,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   request->set_load_flags(load_flags);
 
-  request->set_context(
-      filter_->GetURLRequestContext(request_data.resource_type));
   request->set_priority(DetermineRequestPriority(request_data.resource_type));
 
   // Set upload data.
@@ -1270,7 +1270,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
     return;
   }
 
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
+  scoped_ptr<net::URLRequest> request(
+      new net::URLRequest(url, NULL, request_context));
   request->set_method("GET");
   request->set_referrer(MaybeStripReferrer(referrer.url).spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(request.get(),
@@ -1278,7 +1279,6 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
   request->set_load_flags(net::LOAD_PREFERRING_CACHE);
-  request->set_context(context->GetRequestContext());
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceRequestInfoImpl* extra_info =

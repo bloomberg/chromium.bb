@@ -213,7 +213,8 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   std::set<WebRequestRule::GlobalRuleId> matches;
 
   GURL http_url("http://www.example.com");
-  TestURLRequest http_request(http_url, NULL);
+  TestURLRequestContext context;
+  TestURLRequest http_request(http_url, NULL, &context);
   matches = registry->GetMatches(&http_request, ON_BEFORE_REQUEST);
   EXPECT_EQ(2u, matches.size());
   EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId1)) !=
@@ -222,7 +223,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
       matches.end());
 
   GURL foobar_url("http://www.foobar.com");
-  TestURLRequest foobar_request(foobar_url, NULL);
+  TestURLRequest foobar_request(foobar_url, NULL, &context);
   matches = registry->GetMatches(&foobar_request, ON_BEFORE_REQUEST);
   EXPECT_EQ(1u, matches.size());
   EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId2)) !=
@@ -334,7 +335,8 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   EXPECT_EQ("", error);
 
   GURL url("http://www.google.com");
-  TestURLRequest request(url, NULL);
+  TestURLRequestContext context;
+  TestURLRequest request(url, NULL, &context);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(&request, ON_BEFORE_REQUEST,
           WebRequestRule::OptionalRequestData());
@@ -381,7 +383,8 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   EXPECT_EQ("", error);
 
   GURL url("http://www.google.com/index.html");
-  TestURLRequest request(url, NULL);
+  TestURLRequestContext context;
+  TestURLRequest request(url, NULL, &context);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(&request, ON_BEFORE_REQUEST,
           WebRequestRule::OptionalRequestData());

@@ -103,9 +103,10 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
  protected:
   net::URLRequest* MakeURLRequest(
       net::URLRequestContextGetter* context_getter) {
-    net::URLRequest* request = new net::URLRequest(GURL("https://example"),
-                                                   NULL);
-    request->set_context(context_getter->GetURLRequestContext());
+    net::URLRequest* request = new net::URLRequest(
+        GURL("https://example"),
+        NULL,
+        context_getter->GetURLRequestContext());
     return request;
   }
 

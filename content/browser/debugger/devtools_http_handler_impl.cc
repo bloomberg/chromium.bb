@@ -238,16 +238,19 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
       return;
     }
     std::string base_url = delegate_->GetFrontendResourcesBaseURL();
-    request = new net::URLRequest(GURL(base_url + filename), this);
+    request = new net::URLRequest(GURL(base_url + filename),
+                                  this,
+                                  request_context);
   } else if (info.path.find("/thumb/") == 0) {
-    request = new net::URLRequest(GURL("chrome:/" + info.path), this);
+    request = new net::URLRequest(GURL("chrome:/" + info.path),
+                                  this,
+                                  request_context);
   } else {
     server_->Send404(connection_id);
     return;
   }
 
   Bind(request, connection_id);
-  request->set_context(request_context);
   request->Start();
 }
 

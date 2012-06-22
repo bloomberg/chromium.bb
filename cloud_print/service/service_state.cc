@@ -171,12 +171,11 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   post_body += "&source=" + net::EscapeUrlEncodedData("CP-Service", true);
   post_body += "&service=" + net::EscapeUrlEncodedData(service, true);
 
-  net::URLRequest request(url, &fetcher_delegate);
+  net::URLRequest request(url, &fetcher_delegate, context.get());
 
   request.AppendBytesToUpload(post_body.c_str(), post_body.size());
   request.SetExtraRequestHeaderByName(
       "Content-Type", "application/x-www-form-urlencoded", true);
-  request.set_context(context.get());
   request.set_method("POST");
   request.Start();
 

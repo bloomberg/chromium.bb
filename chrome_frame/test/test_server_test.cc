@@ -62,9 +62,10 @@ class ScopedInternet {
 
 class TestURLRequest : public net::URLRequest {
  public:
-  TestURLRequest(const GURL& url, Delegate* delegate)
-      : net::URLRequest(url, delegate) {
-    set_context(new TestURLRequestContext());
+  TestURLRequest(const GURL& url,
+                 Delegate* delegate,
+                 TestURLRequestContext* context)
+      : net::URLRequest(url, delegate, context) {
   }
 };
 
@@ -79,7 +80,8 @@ class UrlTaskChain {
 
     MessageLoopForIO loop;
 
-    TestURLRequest r(GURL(url_), &delegate_);
+    TestURLRequestContext context;
+    TestURLRequest r(GURL(url_), &delegate_, &context);
     r.Start();
     EXPECT_TRUE(r.is_pending());
 

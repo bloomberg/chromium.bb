@@ -98,14 +98,15 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(
       retry_503_attempts_(0),
       buffer_(new net::IOBuffer(kBufferSize)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          request_(new net::URLRequest(url, this))) {
+          request_(new net::URLRequest(url,
+                                       this,
+                                       job->service_->request_context()))) {
 }
 
 AppCacheUpdateJob::URLFetcher::~URLFetcher() {
 }
 
 void AppCacheUpdateJob::URLFetcher::Start() {
-  request_->set_context(job_->service_->request_context());
   request_->set_first_party_for_cookies(job_->manifest_url_);
   request_->set_load_flags(request_->load_flags() |
                            net::LOAD_DISABLE_INTERCEPT);
@@ -287,7 +288,9 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
     return false;
   }
   ++retry_503_attempts_;
-  request_.reset(new net::URLRequest(url_, this));
+  request_.reset(new net::URLRequest(url_,
+                                     this,
+                                     job_->service_->request_context()));
   Start();
   return true;
 }

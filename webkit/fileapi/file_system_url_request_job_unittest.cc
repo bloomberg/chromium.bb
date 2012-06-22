@@ -110,7 +110,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // Make delegate_ exit the MessageLoop when the request is done.
     delegate_->set_quit_on_complete(true);
     delegate_->set_quit_on_redirect(true);
-    request_.reset(new net::URLRequest(url, delegate_.get()));
+    request_.reset(
+        new net::URLRequest(url, delegate_.get(), &empty_context_));
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
     ASSERT_TRUE(!job_);
@@ -208,6 +209,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemURLRequestJobTest> weak_factory_;
+
+  net::URLRequestContext empty_context_;
 
   // NOTE: order matters, request must die before delegate
   scoped_ptr<TestDelegate> delegate_;

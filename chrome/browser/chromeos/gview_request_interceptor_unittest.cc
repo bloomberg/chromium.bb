@@ -162,7 +162,6 @@ class GViewRequestInterceptorTest : public testing::Test {
                                                      &resource_context_,
                                                      -1,
                                                      -1);
-    request->set_context(resource_context_.GetRequestContext());
   }
 
  protected:
@@ -182,7 +181,8 @@ class GViewRequestInterceptorTest : public testing::Test {
 };
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
-  net::URLRequest request(GURL(kHtmlUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kHtmlUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
@@ -191,7 +191,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
-  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPdfUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.set_load_flags(net::LOAD_IS_DOWNLOAD);
   request.Start();
@@ -205,7 +206,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
   plugin_prefs_->EnablePlugin(true, pdf_path_, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
-  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPdfUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
@@ -218,7 +220,8 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   plugin_prefs_->EnablePlugin(false, pdf_path_, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
-  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPdfUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
@@ -233,7 +236,8 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
   ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(false));
 
-  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPdfUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
@@ -243,7 +247,8 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
 #endif
 
 TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
-  net::URLRequest request(GURL(kPptUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPptUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
@@ -254,7 +259,8 @@ TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPost) {
   ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(false));
 
-  net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPdfUrl), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.set_method("POST");
   request.Start();
@@ -266,7 +272,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPost) {
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptBlob) {
   ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(false));
 
-  net::URLRequest request(GURL(kPdfBlob), &test_delegate_);
+  net::URLRequest request(
+      GURL(kPdfBlob), &test_delegate_, resource_context_.GetRequestContext());
   SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();

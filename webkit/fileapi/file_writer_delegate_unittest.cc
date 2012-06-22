@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/platform_test.h"
@@ -116,7 +117,9 @@ class FileWriterDelegateTest : public PlatformTest {
     result_.reset(new Result());
     file_writer_delegate_.reset(
         CreateWriterDelegate("test", offset, allowed_growth, result_.get()));
-    request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
+    request_.reset(new net::URLRequest(blob_url,
+                                       file_writer_delegate_.get(),
+                                       &empty_context_));
   }
 
   static net::URLRequest::ProtocolFactory Factory;
@@ -124,6 +127,7 @@ class FileWriterDelegateTest : public PlatformTest {
   // This should be alive until the very end of this instance.
   MessageLoop loop_;
 
+  net::URLRequestContext empty_context_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<Result> result_;
@@ -342,7 +346,9 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimitConcurrent) {
   result2.reset(new Result());
   file_writer_delegate2.reset(CreateWriterDelegate(
       "test2", 0, quota::QuotaManager::kNoLimit, result2.get()));
-  request2.reset(new net::URLRequest(kBlobURL2, file_writer_delegate2.get()));
+  request2.reset(new net::URLRequest(kBlobURL2,
+                                     file_writer_delegate2.get(),
+                                     &empty_context_));
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());

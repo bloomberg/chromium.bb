@@ -88,10 +88,11 @@ Request::Request(int request_id,
                  net::URLRequestContext* url_request_context)
     : delegate_(delegate),
       request_id_(request_id),
-      url_request_(new net::URLRequest(GURL(base_url + info.filename), this)),
+      url_request_(new net::URLRequest(GURL(base_url + info.filename),
+                                       this,
+                                       url_request_context)),
       info_(info),
       response_code_(0) {
-  url_request_->set_context(url_request_context);
   url_request_->set_load_flags(net::LOAD_BYPASS_CACHE |
                                net::LOAD_DISABLE_CACHE |
                                net::LOAD_DO_NOT_SAVE_COOKIES |

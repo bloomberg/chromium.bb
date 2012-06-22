@@ -167,8 +167,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   GURL redirect_url("about:redirected");
   GURL not_chosen_redirect_url("about:not_chosen");
 
-  net::URLRequest request(GURL("about:blank"), &delegate_);
-  request.set_context(context_.get());
+  net::URLRequest request(GURL("about:blank"), &delegate_, context_.get());
   {
     // onBeforeRequest will be dispatched twice initially. The second response -
     // the redirect - should win, since it has a later |install_time|. The
@@ -222,8 +221,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   }
 
   // Now test the same thing but the extensions answer in reverse order.
-  net::URLRequest request2(GURL("about:blank"), &delegate_);
-  request2.set_context(context_.get());
+  net::URLRequest request2(GURL("about:blank"), &delegate_, context_.get());
   {
     ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -296,8 +294,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
     ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("about:blank");
-  net::URLRequest request(request_url, &delegate_);
-  request.set_context(context_.get());
+  net::URLRequest request(request_url, &delegate_, context_.get());
 
   // onBeforeRequest will be dispatched twice. The second response -
   // the redirect - would win, since it has a later |install_time|, but
@@ -364,8 +361,7 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
     filter, 0, ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("about:blank");
-  net::URLRequest request(request_url, &delegate_);
-  request.set_context(context_.get());
+  net::URLRequest request(request_url, &delegate_, context_.get());
 
   ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -495,8 +491,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
       ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("http://doesnotexist/does_not_exist.html");
-  net::URLRequest request(request_url, &delegate_);
-  request.set_context(context_.get());
+  net::URLRequest request(request_url, &delegate_, context_.get());
 
   // Initialize headers available before extensions are notified of the
   // onBeforeSendHeaders event.

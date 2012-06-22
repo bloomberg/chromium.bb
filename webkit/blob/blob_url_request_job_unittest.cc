@@ -22,6 +22,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/blob_data.h"
@@ -242,7 +243,8 @@ class BlobURLRequestJobTest : public testing::Test {
                    BlobData* blob_data) {
     // This test has async steps.
     request_.reset(new net::URLRequest(GURL("blob:blah"),
-                                       url_request_delegate_.get()));
+                                       url_request_delegate_.get(),
+                                       &empty_context_));
     request_->set_method(method);
     blob_url_request_job_ = new BlobURLRequestJob(
         request_.get(),
@@ -397,6 +399,7 @@ class BlobURLRequestJobTest : public testing::Test {
 
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<std::pair<base::Closure, bool> > task_stack_;
+  net::URLRequestContext empty_context_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<MockURLRequestDelegate> url_request_delegate_;
   int expected_status_code_;

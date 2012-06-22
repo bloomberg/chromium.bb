@@ -88,7 +88,7 @@ class TestIOThreadState {
  public:
   TestIOThreadState(const GURL& url, int render_process_id, int render_view_id,
                     MockInterceptCallbackReceiver* callback_receiver)
-      : request_(url, NULL),
+      : request_(url, NULL, resource_context_.GetRequestContext()),
         throttle_(NULL) {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
       if (render_process_id != MSG_ROUTING_NONE &&

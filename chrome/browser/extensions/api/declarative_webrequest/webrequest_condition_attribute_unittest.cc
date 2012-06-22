@@ -67,12 +67,14 @@ TEST(WebRequestConditionAttributeTest, TestResourceType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute.get());
 
-  TestURLRequest url_request_ok(GURL("http://www.example.com"), NULL);
+  TestURLRequestContext context;
+  TestURLRequest url_request_ok(GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
       ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_TRUE(attribute->IsFulfilled(&url_request_ok, ON_BEFORE_REQUEST));
 
-  TestURLRequest url_request_fail(GURL("http://www.example.com"), NULL);
+  TestURLRequest url_request_fail(
+      GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
       ResourceType::SUB_FRAME, NULL, -1, -1);
   EXPECT_FALSE(attribute->IsFulfilled(&url_request_fail, ON_BEFORE_REQUEST));

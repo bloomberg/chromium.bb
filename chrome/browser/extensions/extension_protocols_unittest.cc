@@ -72,7 +72,6 @@ class ExtensionProtocolTest : public testing::Test {
                                                      &resource_context_,
                                                      -1,
                                                      -1);
-    request->set_context(resource_context_.GetRequestContext());
     request->Start();
     MessageLoop::current()->Run();
   }
@@ -122,7 +121,8 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
       // is blocked, we should see ADDRESS_UNREACHABLE. Otherwise, the request
       // should just fail because the file doesn't exist.
       net::URLRequest request(extension->GetResourceURL("404.html"),
-                              &test_delegate_);
+                              &test_delegate_,
+                              resource_context_.GetRequestContext());
       StartRequest(&request, ResourceType::MAIN_FRAME);
       EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
 
@@ -138,7 +138,8 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
     // Now do a subframe request.
     {
       net::URLRequest request(extension->GetResourceURL("404.html"),
-                              &test_delegate_);
+                              &test_delegate_,
+                              resource_context_.GetRequestContext());
       StartRequest(&request, ResourceType::SUB_FRAME);
       EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
 

@@ -12,6 +12,10 @@
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/url_request.h"
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace chrome_browser_net {
 
 class ChromeFraudulentCertificateReporter
@@ -25,7 +29,7 @@ class ChromeFraudulentCertificateReporter
 
   // Allows users of this class to override this and set their own URLRequest
   // type. Used by SendReport.
-  virtual net::URLRequest* CreateURLRequest();
+  virtual net::URLRequest* CreateURLRequest(net::URLRequestContext* context);
 
   // net::FraudulentCertificateReporter
   virtual void SendReport(const std::string& hostname,

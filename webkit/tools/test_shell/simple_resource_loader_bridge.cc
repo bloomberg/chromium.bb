@@ -417,7 +417,7 @@ class RequestProxy
               params->upload.get());
     }
 
-    request_.reset(new net::URLRequest(params->url, this));
+    request_.reset(new net::URLRequest(params->url, this, g_request_context));
     request_->set_method(params->method);
     request_->set_first_party_for_cookies(params->first_party_for_cookies);
     request_->set_referrer(params->referrer.spec());
@@ -428,7 +428,6 @@ class RequestProxy
     request_->SetExtraRequestHeaders(headers);
     request_->set_load_flags(params->load_flags);
     request_->set_upload(params->upload.get());
-    request_->set_context(g_request_context);
     SimpleAppCacheSystem::SetExtraRequestInfo(
         request_.get(), params->appcache_host_id, params->request_type);
 

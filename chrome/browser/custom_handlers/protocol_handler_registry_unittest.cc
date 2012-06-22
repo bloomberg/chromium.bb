@@ -20,6 +20,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
 
@@ -675,7 +676,8 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
 }
 
 static void MakeRequest(const GURL& url, ProtocolHandlerRegistry* registry) {
-  net::URLRequest request(url, NULL);
+  net::URLRequestContext context;
+  net::URLRequest request(url, NULL, &context);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           MessageLoop::QuitClosure());
   scoped_refptr<net::URLRequestJob> job(registry->MaybeCreateJob(&request));

@@ -85,7 +85,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   void TestRequestHelper(const GURL& url, bool run_to_completion) {
     delegate_.reset(new TestDelegate());
     delegate_->set_quit_on_redirect(true);
-    request_.reset(new net::URLRequest(url, delegate_.get()));
+    request_.reset(new net::URLRequest(url,
+                                       delegate_.get(),
+                                       &empty_context_));
     job_ = new FileSystemDirURLRequestJob(request_.get(),
                                           file_system_context_.get());
 
@@ -211,8 +213,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
 
   ScopedTempDir temp_dir_;
-  scoped_ptr<net::URLRequest> request_;
+  net::URLRequestContext empty_context_;
   scoped_ptr<TestDelegate> delegate_;
+  scoped_ptr<net::URLRequest> request_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemDirURLRequestJobTest> weak_factory_;
