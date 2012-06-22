@@ -16,7 +16,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/libvpx/libvpx.gyp:libvpx',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui_test_support',
@@ -176,6 +175,11 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
         }],
+        ['OS!="android"', {
+          'dependencies': [
+            '../third_party/libvpx/libvpx.gyp:libvpx',
+          ],
+        }],
       ],
     },
     {
@@ -202,7 +206,6 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libvpx/libvpx.gyp:libvpx',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
@@ -491,11 +494,15 @@
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],
+        }, { # OS != "android"
+          'dependencies': [
+            '../third_party/libvpx/libvpx.gyp:libvpx',
+          ],
         }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
-          ]
+          ],
         }],
       ],
     },
