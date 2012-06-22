@@ -371,7 +371,7 @@ bool MagnificationControllerImpl::PreHandleKeyEvent(aura::Window* target,
 
 bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
                                                       aura::MouseEvent* event) {
-  if (IsMagnified())
+  if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED)
     OnMouseMove(event->root_location());
   return false;
 }
