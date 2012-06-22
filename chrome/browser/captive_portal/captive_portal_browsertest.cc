@@ -1292,8 +1292,14 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RequestFailsFastTimout) {
   FastTimeoutNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
 }
 
+// This test is flaky on linux: http://crbug.com/133734
+#if defined(OS_LINUX)
+#define MAYBE_Disabled DISABLED_Disabled
+#else
+#define MAYBE_Disabled Disabled
+#endif
 // Checks the case that captive portal detection is disabled.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Disabled) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_Disabled) {
   EnableCaptivePortalDetection(browser()->profile(), false);
   SlowLoadNoCaptivePortal(browser(), RESULT_INTERNET_CONNECTED);
 }
