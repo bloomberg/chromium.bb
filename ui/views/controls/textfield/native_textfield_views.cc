@@ -149,13 +149,26 @@ void NativeTextfieldViews::OnMouseReleased(const MouseEvent& event) {
 
 ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
     const GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
-    OnBeforeUserAction();
-    textfield_->RequestFocus();
-    if (MoveCursorTo(event.location(), false))
-      SchedulePaint();
-    OnAfterUserAction();
-    return ui::GESTURE_STATUS_CONSUMED;
+
+  switch (event.type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      OnBeforeUserAction();
+      textfield_->RequestFocus();
+      if (MoveCursorTo(event.location(), false))
+        SchedulePaint();
+      OnAfterUserAction();
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_GESTURE_DOUBLE_TAP:
+      SelectAll();
+      return ui::GESTURE_STATUS_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      OnBeforeUserAction();
+      if (MoveCursorTo(event.location(), true))
+        SchedulePaint();
+      OnAfterUserAction();
+      return ui::GESTURE_STATUS_CONSUMED;
+    default:
+      break;
   }
   return TouchSelectionClientView::OnGestureEvent(event);
 }
