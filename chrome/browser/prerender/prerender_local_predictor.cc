@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 
+#include "base/metrics/histogram.h"
 #include "base/timer.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -30,11 +31,11 @@ namespace {
 // Task to lookup the URL for a given URLID.
 class GetURLForURLIDTask : public HistoryDBTask {
  public:
-  GetURLForURLIDTask(PrerenderLocalPredictor* local_predictor,
-                     URLID url_id)
-      : local_predictor_(local_predictor),
-        url_id_(url_id),
-        success_(false) {
+  GetURLForURLIDTask(URLID url_id, base::Callback<void(const GURL&)> callback)
+      : url_id_(url_id),
+        success_(false),
+        callback_(callback),
+        start_time_(base::Time::Now()) {
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
@@ -47,16 +48,23 @@ class GetURLForURLIDTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {
-    if (success_)
-      local_predictor_->OnLookupURL(url_id_, url_);
+    if (success_) {
+      callback_.Run(url_);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Prerender.LocalPredictorURLLookupTime",
+                                 base::Time::Now() - start_time_,
+                                 base::TimeDelta::FromMilliseconds(10),
+                                 base::TimeDelta::FromSeconds(10),
+                                 50);
+    }
   }
 
  private:
   virtual ~GetURLForURLIDTask() {}
 
-  PrerenderLocalPredictor* local_predictor_;
   URLID url_id_;
   bool success_;
+  base::Callback<void(const GURL&)> callback_;
+  base::Time start_time_;
   GURL url_;
   DISALLOW_COPY_AND_ASSIGN(GetURLForURLIDTask);
 };
@@ -127,9 +135,25 @@ bool StrCaseStr(std::string haystack, std::string needle) {
   return (haystack.find(needle)!=std::string::npos);
 }
 
+bool IsRootPageURL(const GURL& url) {
+  return (url.path() == "/" || url.path() == "") && (!url.has_query()) &&
+    (!url.has_ref());
+}
+
 }  // namespace
 
 struct PrerenderLocalPredictor::PrerenderData {
+  PrerenderData(URLID url_id, const GURL& url, double priority,
+                base::Time start_time)
+      : url_id(url_id),
+        url(url),
+        priority(priority),
+        start_time(start_time) {
+  }
+
+  URLID url_id;
+  GURL url;
+  double priority;
   // For expiration purposes, this is a synthetic start time consisting either
   // of the actual start time, or of the last time the page was re-requested
   // for prerendering - 10 seconds (unless the original request came after
@@ -139,9 +163,9 @@ struct PrerenderLocalPredictor::PrerenderData {
   base::Time start_time;
   // The actual time this page was last requested for prerendering.
   base::Time actual_start_time;
-  URLID url_id;
-  double priority;
-  GURL url;
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PrerenderData);
 };
 
 PrerenderLocalPredictor::PrerenderLocalPredictor(
@@ -235,18 +259,33 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
     RecordEvent(EVENT_ADD_VISIT_IDENTIFIED_PRERENDER_CANDIDATE);
     double priority = static_cast<double>(best_next_url_count) /
         static_cast<double>(num_occurrences_of_current_visit);
-    base::Time current_time = GetCurrentTime();
-    if (!current_prerender_.get() ||
-        current_prerender_->priority < priority ||
-        current_prerender_->start_time < current_time - max_age) {
+    if (ShouldReplaceCurrentPrerender(priority)) {
+      RecordEvent(EVENT_START_URL_LOOKUP);
+      HistoryService* history = GetHistoryIfExists();
+      if (history) {
+        history->ScheduleDBTask(
+            new GetURLForURLIDTask(
+                best_next_url,
+                base::Bind(&PrerenderLocalPredictor::OnLookupURL,
+                           base::Unretained(this),
+                           best_next_url,
+                           priority)),
+            &history_db_consumer_);
+      }
+    }
+  }
+}
+
+void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
+                                          double priority,
+                                          const GURL& url) {
+  RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT);
+
+  base::Time current_time = GetCurrentTime();
+  if (ShouldReplaceCurrentPrerender(priority)) {
+    if (IsRootPageURL(url)) {
       RecordEvent(EVENT_ADD_VISIT_PRERENDERING);
-      if (!current_prerender_.get() ||
-          current_prerender_->url_id != best_next_url) {
-        current_prerender_.reset(new PrerenderData());
-        current_prerender_->url_id = best_next_url;
-        current_prerender_->priority = priority;
-        current_prerender_->start_time = current_time;
-      } else {
+      if (current_prerender_.get() && current_prerender_->url_id == url_id) {
         RecordEvent(EVENT_ADD_VISIT_PRERENDERING_EXTENDED);
         if (priority > current_prerender_->priority)
           current_prerender_->priority = priority;
@@ -261,28 +300,17 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
             current_time - base::TimeDelta::FromSeconds(10);
         if (simulated_new_start_time > current_prerender_->start_time)
           current_prerender_->start_time = simulated_new_start_time;
+      } else {
+        current_prerender_.reset(
+            new PrerenderData(url_id, url, priority, current_time));
       }
       current_prerender_->actual_start_time = current_time;
-      if (current_prerender_->url.is_empty()) {
-        HistoryService* history = GetHistoryIfExists();
-        if (history) {
-          history->ScheduleDBTask(
-              new GetURLForURLIDTask(this, current_prerender_->url_id),
-              &history_db_consumer_);
-        }
-      }
+    } else {
+      RecordEvent(EVENT_ADD_VISIT_NOT_ROOTPAGE);
     }
   }
-}
 
-void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
-                                          const GURL& url) {
-  if (current_prerender_.get() && current_prerender_->url_id == url_id) {
-    current_prerender_->url = url;
-    RecordEvent(EVENT_GOT_PRERENDER_URL);
-  }
-  RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT);
-  if ((url.path() == "/" || url.path() == "") && (!url.has_query()))
+  if (IsRootPageURL(url))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ROOT_PAGE);
   if (url.SchemeIs("http"))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_IS_HTTP);
@@ -378,6 +406,15 @@ bool PrerenderLocalPredictor::DoesPrerenderMatchPLTRecord(
   } else {
     return false;
   }
+}
+
+bool PrerenderLocalPredictor::ShouldReplaceCurrentPrerender(
+    double priority) const {
+  base::TimeDelta max_age =
+      base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs);
+  return (!current_prerender_.get()) ||
+    current_prerender_->priority < priority ||
+    current_prerender_->start_time < GetCurrentTime() - max_age;
 }
 
 }  // namespace prerender

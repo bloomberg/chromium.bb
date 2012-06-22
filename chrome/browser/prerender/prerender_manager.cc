@@ -201,7 +201,8 @@ PrerenderManager::PrerenderManager(Profile* profile,
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       weak_factory_(this),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
-      histograms_(new PrerenderHistograms()) {
+      histograms_(new PrerenderHistograms()),
+      local_predictor_(new PrerenderLocalPredictor(this)) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.

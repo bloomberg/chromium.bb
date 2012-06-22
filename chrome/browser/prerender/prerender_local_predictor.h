@@ -46,6 +46,8 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
     EVENT_PRERENDER_URL_LOOKUP_RESULT_HAS_QUERY_STRING = 17,
     EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGOUT = 18,
     EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGIN = 19,
+    EVENT_START_URL_LOOKUP = 20,
+    EVENT_ADD_VISIT_NOT_ROOTPAGE = 21,
     EVENT_MAX_VALUE
   };
 
@@ -58,7 +60,7 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
   // history::VisitDatabaseObserver implementation
   virtual void OnAddVisit(const history::BriefVisitInfo& info) OVERRIDE;
 
-  void OnLookupURL(history::URLID url_id, const GURL& url);
+  void OnLookupURL(history::URLID url_id, double priority, const GURL& url);
 
   void OnGetInitialVisitHistory(
       scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history);
@@ -74,6 +76,11 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
                                    const GURL& url,
                                    base::TimeDelta plt) const;
   void RecordEvent(Event event) const;
+
+  // Returns whether a new prerender of the specified priority should replace
+  // the current prerender (based on whether it exists, whether it has expired,
+  // and based on what its priority is).
+  bool ShouldReplaceCurrentPrerender(double priority) const;
 
   PrerenderManager* prerender_manager_;
   base::OneShotTimer<PrerenderLocalPredictor> timer_;
