@@ -1123,8 +1123,8 @@ class NinjaWriter:
             args, self.build_to_base)
       else:
         rspfile_content = gyp.msvs_emulation.EncodeRspFileList(args)
-      command = ('cmd /s /c "python gyp-win-tool action-wrapper $arch ' +
-                  rspfile + run_in + '"')
+      command = ('%s gyp-win-tool action-wrapper $arch ' % sys.executable +
+                 rspfile + run_in)
     else:
       env = self.ComputeExportEnvString(env)
       command = gyp.common.EncodePOSIXShellList(args)
@@ -1340,15 +1340,16 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'idl',
       description='IDL $in',
-      command=('python gyp-win-tool midl-wrapper $arch $outdir '
+      command=('%s gyp-win-tool midl-wrapper $arch $outdir '
                '$tlb $h $dlldata $iid $proxy $in '
-               '$idlflags'))
+               '$idlflags' % sys.executable))
     master_ninja.rule(
       'rc',
       description='RC $in',
       # Note: $in must be last otherwise rc.exe complains.
-      command=('python gyp-win-tool rc-wrapper '
-               '$arch $rc $defines $includes $rcflags /fo$out $in'))
+      command=('%s gyp-win-tool rc-wrapper '
+               '$arch $rc $defines $includes $rcflags /fo$out $in' %
+               sys.executable))
 
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(
@@ -1374,14 +1375,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
         'alink',
         description='LIB $out',
-        command=('python gyp-win-tool link-wrapper $arch '
-                 '$ar /nologo /ignore:4221 /OUT:$out @$out.rsp'),
+        command=('%s gyp-win-tool link-wrapper $arch '
+                 '$ar /nologo /ignore:4221 /OUT:$out @$out.rsp' %
+                 sys.executable),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libflags')
     dlldesc = 'LINK(DLL) $dll'
-    dllcmd = ('python gyp-win-tool link-wrapper $arch '
+    dllcmd = ('%s gyp-win-tool link-wrapper $arch '
               '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
-              '/PDB:$dll.pdb @$dll.rsp')
+              '/PDB:$dll.pdb @$dll.rsp' % sys.executable)
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp',
                       rspfile_content='$libs $in_newline $ldflags',
@@ -1395,8 +1397,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
         'link',
         description='LINK $out',
-        command=('python gyp-win-tool link-wrapper $arch '
-                 '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp'),
+        command=('%s gyp-win-tool link-wrapper $arch '
+                 '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp' %
+                 sys.executable),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libs $ldflags')
   else:
@@ -1453,11 +1456,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'stamp',
       description='STAMP $out',
-      command='python gyp-win-tool stamp $out')
+      command='%s gyp-win-tool stamp $out' % sys.executable)
     master_ninja.rule(
       'copy',
       description='COPY $in $out',
-      command='python gyp-win-tool recursive-mirror $in $out')
+      command='%s gyp-win-tool recursive-mirror $in $out' % sys.executable)
   else:
     master_ninja.rule(
       'stamp',
