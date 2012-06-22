@@ -107,7 +107,7 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
   }
 
   service_->browser_event_router()->BrowserActionExecuted(
-      extension->id(), browser);
+      *browser_action, browser);
   return ACTION_NONE;
 }
 

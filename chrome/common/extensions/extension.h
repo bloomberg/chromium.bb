@@ -593,9 +593,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionAction* script_badge() const { return script_badge_.get(); }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
-  ExtensionAction::Type declared_action_type() const {
-    return declared_action_type_;
-  }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
   }
@@ -979,12 +976,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
-
-  // Indicates the type of action (browser or page) that the extension declared
-  // in its manifest. This doesn't imply any value for page_action or
-  // browser_action, since page actions may be turned into browser actions and
-  // browser actions may be generated without any action declared.
-  ExtensionAction::Type declared_action_type_;
 
   // The extension's script badge.  Never NULL.
   scoped_ptr<ExtensionAction> script_badge_;

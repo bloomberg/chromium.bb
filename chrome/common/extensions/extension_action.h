@@ -33,17 +33,19 @@ class ExtensionAction {
 
   // The types of extension actions.
   enum Type {
-    TYPE_NONE,
     TYPE_BROWSER,
     TYPE_PAGE,
     TYPE_SCRIPT_BADGE,
   };
 
-  explicit ExtensionAction(const std::string& extension_id);
+  ExtensionAction(const std::string& extension_id, Type action_type);
   ~ExtensionAction();
 
   // extension id
   const std::string& extension_id() const { return extension_id_; }
+
+  // What kind of action is this?
+  Type action_type() const { return action_type_; }
 
   // action id -- only used with legacy page actions API
   std::string id() const { return id_; }
@@ -175,6 +177,8 @@ class ExtensionAction {
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).
   const std::string extension_id_;
+
+  const Type action_type_;
 
   // Each of these data items can have both a global state (stored with the key
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).

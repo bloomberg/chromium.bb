@@ -629,30 +629,30 @@ void ExtensionBrowserEventRouter::DispatchOldPageActionEvent(
 }
 
 void ExtensionBrowserEventRouter::BrowserActionExecuted(
-    const std::string& extension_id, Browser* browser) {
+    const ExtensionAction& browser_action,
+    Browser* browser) {
   Profile* profile = browser->profile();
   TabContents* tab_contents = NULL;
   int tab_id = 0;
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
-  ExtensionActionExecuted(profile, extension_id, tab_contents);
+  ExtensionActionExecuted(profile, browser_action, tab_contents);
 }
 
 void ExtensionBrowserEventRouter::PageActionExecuted(
     Profile* profile,
-    const std::string& extension_id,
-    const std::string& page_action_id,
+    const ExtensionAction& page_action,
     int tab_id,
     const std::string& url,
     int button) {
-  DispatchOldPageActionEvent(profile, extension_id, page_action_id, tab_id, url,
-                             button);
+  DispatchOldPageActionEvent(profile, page_action.extension_id(),
+                             page_action.id(), tab_id, url, button);
   TabContents* tab_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
                                     NULL, NULL, &tab_contents, NULL)) {
     return;
   }
-  ExtensionActionExecuted(profile, extension_id, tab_contents);
+  ExtensionActionExecuted(profile, page_action, tab_contents);
 }
 
 void ExtensionBrowserEventRouter::CommandExecuted(
@@ -672,17 +672,10 @@ void ExtensionBrowserEventRouter::CommandExecuted(
 
 void ExtensionBrowserEventRouter::ExtensionActionExecuted(
     Profile* profile,
-    const std::string& extension_id,
+    const ExtensionAction& extension_action,
     TabContents* tab_contents) {
-  const extensions::Extension* extension =
-      profile->GetExtensionService()->GetExtensionById(extension_id, false);
-  if (!extension)
-    return;
-
   const char* event_name = NULL;
-  switch (extension->declared_action_type()) {
-    case ExtensionAction::TYPE_NONE:
-      break;
+  switch (extension_action.action_type()) {
     case ExtensionAction::TYPE_BROWSER:
       event_name = "browserAction.onClicked";
       break;
@@ -696,7 +689,7 @@ void ExtensionBrowserEventRouter::ExtensionActionExecuted(
 
   if (event_name) {
     DispatchEventWithTab(profile,
-                         extension_id,
+                         extension_action.extension_id(),
                          event_name,
                          tab_contents->web_contents(),
                          true);

@@ -90,14 +90,14 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Page Action execute event.
   void PageActionExecuted(Profile* profile,
-                          const std::string& extension_id,
-                          const std::string& page_action_id,
+                          const ExtensionAction& page_action,
                           int tab_id,
                           const std::string& url,
                           int button);
 
   // Browser Action execute event.
-  void BrowserActionExecuted(const std::string& extension_id, Browser* browser);
+  void BrowserActionExecuted(const ExtensionAction& browser_action,
+                             Browser* browser);
 
   // A keyboard shortcut resulted in an extension command.
   void CommandExecuted(Profile* profile,
@@ -215,7 +215,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Called when either a browser or page action is executed. Figures out which
   // event to send based on what the extension wants.
   void ExtensionActionExecuted(Profile* profile,
-                               const std::string& extension_id,
+                               const ExtensionAction& extension_action,
                                TabContents* tab_contents);
 
   std::map<int, TabEntry> tab_entries_;

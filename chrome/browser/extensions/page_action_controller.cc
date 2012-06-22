@@ -61,8 +61,7 @@ LocationBarController::Action PageActionController::OnClicked(
 
       GetExtensionService()->browser_event_router()->PageActionExecuted(
           tab_contents_->profile(),
-          extension->id(),
-          page_action->id(),
+          *page_action,
           tab_id,
           tab_contents_->web_contents()->GetURL().spec(),
           mouse_button);

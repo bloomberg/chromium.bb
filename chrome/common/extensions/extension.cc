@@ -809,7 +809,7 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
     const DictionaryValue* extension_action,
     ExtensionAction::Type action_type,
     string16* error) {
-  scoped_ptr<ExtensionAction> result(new ExtensionAction(id()));
+  scoped_ptr<ExtensionAction> result(new ExtensionAction(id(), action_type));
 
   // Page actions are hidden by default, and browser actions ignore
   // visibility.
@@ -2282,14 +2282,11 @@ bool Extension::LoadPageAction(string16* error) {
         page_action_value, ExtensionAction::TYPE_PAGE, error);
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
-    declared_action_type_ = ExtensionAction::TYPE_PAGE;
 
     // The action box changes the meaning of the page action area, so we need
     // to convert page actions into browser actions.
-    if (switch_utils::AreScriptBadgesEnabled()) {
+    if (switch_utils::AreScriptBadgesEnabled())
       browser_action_ = page_action_.Pass();
-      // declared_action_type_ stays the same; that's the point.
-    }
   }
 
   return true;
@@ -2308,7 +2305,6 @@ bool Extension::LoadBrowserAction(string16* error) {
       browser_action_value, ExtensionAction::TYPE_BROWSER, error);
   if (!browser_action_.get())
     return false;  // Failed to parse browser action definition.
-  declared_action_type_ = ExtensionAction::TYPE_BROWSER;
   return true;
 }
 
@@ -2333,10 +2329,9 @@ bool Extension::LoadScriptBadge(string16* error) {
         script_badge_value, ExtensionAction::TYPE_SCRIPT_BADGE, error);
     if (!script_badge_.get())
       return false;  // Failed to parse script badge definition.
-
-    declared_action_type_ = ExtensionAction::TYPE_SCRIPT_BADGE;
   } else {
-    script_badge_.reset(new ExtensionAction(id()));
+    script_badge_.reset(
+        new ExtensionAction(id(), ExtensionAction::TYPE_SCRIPT_BADGE));
 
     // Make sure there is always a title.
     script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
@@ -2872,7 +2867,6 @@ Extension::Extension(const FilePath& path,
       incognito_split_mode_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
-      declared_action_type_(ExtensionAction::TYPE_NONE),
       background_page_is_persistent_(true),
       allow_background_js_access_(true),
       manifest_(manifest.release()),

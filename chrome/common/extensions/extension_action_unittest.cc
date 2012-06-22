@@ -33,7 +33,7 @@ static SkBitmap LoadIcon(const std::string& filename) {
 }
 
 TEST(ExtensionActionTest, TabSpecificState) {
-  ExtensionAction action("");
+  ExtensionAction action("", ExtensionAction::TYPE_PAGE);
 
   // title
   ASSERT_EQ("", action.GetTitle(1));

@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
         ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), extension->id(), "", tab_id, "", 0);
+        browser()->profile(), *action, tab_id, "", 0);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionAddPopup) {
     ResultCatcher catcher;
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), extension->id(), "action", tab_id, "", 1);
+        browser()->profile(), *page_action, tab_id, "", 1);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
         ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
-        browser()->profile(), extension->id(), "action", tab_id, "", 1);
+        browser()->profile(), *extension->page_action(), tab_id, "", 1);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 }

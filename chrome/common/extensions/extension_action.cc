@@ -52,8 +52,10 @@ const int kCenterAlignThreshold = 20;
 
 const int ExtensionAction::kDefaultTabId = -1;
 
-ExtensionAction::ExtensionAction(const std::string& extension_id)
-    : extension_id_(extension_id) {
+ExtensionAction::ExtensionAction(const std::string& extension_id,
+                                 Type action_type)
+    : extension_id_(extension_id),
+      action_type_(action_type) {
 }
 
 ExtensionAction::~ExtensionAction() {
