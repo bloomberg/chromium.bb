@@ -227,19 +227,19 @@ adc I a, 0x14
 adc I E, 0x80 /2, lock
 adc Ib Ev, 0x83 /2, lock
 adc G E, 0x10, lock
-adc E G, 0x12, lock
+adc E G, 0x12
 ######## ADD ###################################################################
 add I a, 0x04
 add I E, 0x80 /0, lock
 add Ib Ev, 0x83 /0, lock
 add G E, 0x00, lock
-add E G, 0x02, lock
+add E G, 0x02
 ######## AND ###################################################################
 and I a, 0x24
 and I E, 0x80 /4, lock
 and Ib Ev, 0x83 /4, lock
 and G E, 0x20, lock
-and E G, 0x22, lock
+and E G, 0x22
 ######## ANDN ##################################################################
 andn Ey By Gy, 0xc4 RXB.02 W.src1.0.00 0xf2, CPUFeature_BMI1
 ######## BEXTR #################################################################
@@ -570,7 +570,7 @@ or I a, 0x0c
 or I E, 0x80 /1, lock
 or Ib Ev, 0x83 /1, lock
 or G E, 0x08, lock
-or E G, 0x0a, lock
+or E G, 0x0a
 ######## OUT ###################################################################
 out ab =Ib, 0xe6, nacl-forbidden
 out az =Ib, 0xe7, nacl-forbidden
@@ -673,7 +673,7 @@ sbb I a, 0x1c
 sbb I E, 0x80 /3, lock
 sbb Ib Ev, 0x83 /3, lock
 sbb G E, 0x18, lock
-sbb E G, 0x1a, lock
+sbb E G, 0x1a
 ######## SCAS/SCASB/SCASW/SCASD/SCASQ ##########################################
 scas Y a, 0xae, condrep nacl-amd64-forbidden
 ######## SETcc #################################################################
@@ -718,7 +718,7 @@ sub I a, 0x2c
 sub I E, 0x80 /5, lock
 sub Ib Ev, 0x83 /5, lock
 sub G E, 0x28, lock
-sub E G, 0x2a, lock
+sub E G, 0x2a
 ######## T1MSKC ################################################################
 t1mskc Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /7, CPUFeature_TBM
 ######## TEST ##################################################################
@@ -744,5 +744,5 @@ xor I a, 0x34
 xor I E, 0x80 /6, lock
 xor Ib Ev, 0x83 /6, lock
 xor G E, 0x30, lock
-xor E G, 0x32, lock
+xor E G, 0x32
 ################################################################################

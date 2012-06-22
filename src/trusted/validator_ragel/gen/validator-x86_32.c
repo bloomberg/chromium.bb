@@ -3396,20 +3396,13 @@ st98:
 case 98:
 	switch( (*p) ) {
 		case 1u: goto st30;
-		case 3u: goto st30;
 		case 9u: goto st30;
-		case 11u: goto st30;
 		case 15u: goto st99;
 		case 17u: goto st30;
-		case 19u: goto st30;
 		case 25u: goto st30;
-		case 27u: goto st30;
 		case 33u: goto st30;
-		case 35u: goto st30;
 		case 41u: goto st30;
-		case 43u: goto st30;
 		case 49u: goto st30;
-		case 51u: goto st30;
 		case 129u: goto st100;
 		case 131u: goto st101;
 		case 135u: goto st30;
@@ -7034,20 +7027,20 @@ case 217:
 	}
 	if ( (*p) < 32u ) {
 		if ( (*p) < 8u ) {
-			if ( (*p) <= 3u )
+			if ( (*p) <= 1u )
 				goto st30;
-		} else if ( (*p) > 11u ) {
-			if ( (*p) > 19u ) {
-				if ( 24u <= (*p) && (*p) <= 27u )
+		} else if ( (*p) > 9u ) {
+			if ( (*p) > 17u ) {
+				if ( 24u <= (*p) && (*p) <= 25u )
 					goto st30;
 			} else if ( (*p) >= 16u )
 				goto st30;
 		} else
 			goto st30;
-	} else if ( (*p) > 35u ) {
+	} else if ( (*p) > 33u ) {
 		if ( (*p) < 134u ) {
-			if ( (*p) > 43u ) {
-				if ( 48u <= (*p) && (*p) <= 51u )
+			if ( (*p) > 41u ) {
+				if ( 48u <= (*p) && (*p) <= 49u )
 					goto st30;
 			} else if ( (*p) >= 40u )
 				goto st30;
