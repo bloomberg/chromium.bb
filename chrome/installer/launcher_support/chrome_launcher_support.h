@@ -20,6 +20,7 @@ enum InstallationLevel {
 // state to identify a Chrome installation location.
 // In non-official builds, to ease development, this will first look for a
 // chrome.exe in the same directory as the current executable.
+// The file path returned (if any) is guaranteed to exist.
 FilePath GetAnyChromePath();
 
 // Returns the path to an installed chrome.exe at the specified level, if it can
