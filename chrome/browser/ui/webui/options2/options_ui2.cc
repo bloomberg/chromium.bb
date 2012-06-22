@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/change_picture_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/core_chromeos_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/cros_language_options_handler2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/display_options_handler.h"
 #include "chrome/browser/ui/webui/options2/chromeos/internet_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/keyboard_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/language_chewing_handler2.h"
@@ -253,6 +254,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options2::AccountsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::BluetoothOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options2::DisplayOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::LanguageChewingHandler());

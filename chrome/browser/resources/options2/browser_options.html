@@ -258,6 +258,16 @@
     </div>
   </section>
 <if expr="pp_ifdef('chromeos')">
+  <!-- By default, the display section is hidden.  It is only visible if
+       more than one display is found. -->
+  <section id="display-options-section" hidden>
+    <h3 i18n-content="displayOptionsTitle"></h3>
+    <div class="settings-row">
+      <button id="display-options-button"
+          i18n-content="displayOptionsButton">
+      </button>
+    </div>
+  </section>
   <!-- By default, the bluetooth section is hidden.  It is only visible if a
        bluetooth adapter is discovered -->
   <section id="bluetooth-devices" hidden>

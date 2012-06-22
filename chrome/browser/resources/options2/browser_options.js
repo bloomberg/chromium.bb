@@ -491,6 +491,15 @@ cr.define('options', function() {
         };
       }
 
+      // Display management section (CrOS only).
+      if (cr.isChromeOS) {
+        $('display-options-button').onclick = function(event) {
+          OptionsPage.navigateToPage('display');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_Display']);
+        }
+      }
+
       // Background mode section.
       if ($('backgroundModeCheckbox')) {
         cr.defineProperty($('backgroundModeCheckbox'),
@@ -1295,6 +1304,14 @@ cr.define('options', function() {
     },
 
     /**
+     * Show/hide the display options button on the System settings page.
+     * @private
+     */
+    showDisplayOptions_: function(show) {
+      $('display-options-section').hidden = !show;
+    },
+
+    /**
      * Activate the bluetooth settings section on the System settings page.
      * @private
      */
@@ -1417,6 +1434,7 @@ cr.define('options', function() {
     'setupProxySettingsSection',
     'setVirtualKeyboardCheckboxState',
     'showBluetoothSettings',
+    'showDisplayOptions',
     'showMouseControls',
     'showTouchpadControls',
     'updateAccountPicture',

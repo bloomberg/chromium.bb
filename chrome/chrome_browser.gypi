@@ -3933,6 +3933,8 @@
         'browser/ui/webui/options2/chromeos/core_chromeos_options_handler2.h',
         'browser/ui/webui/options2/chromeos/cros_language_options_handler2.cc',
         'browser/ui/webui/options2/chromeos/cros_language_options_handler2.h',
+        'browser/ui/webui/options2/chromeos/display_options_handler.cc',
+        'browser/ui/webui/options2/chromeos/display_options_handler.h',
         'browser/ui/webui/options2/chromeos/internet_options_handler2.cc',
         'browser/ui/webui/options2/chromeos/internet_options_handler2.h',
         'browser/ui/webui/options2/chromeos/keyboard_handler2.cc',

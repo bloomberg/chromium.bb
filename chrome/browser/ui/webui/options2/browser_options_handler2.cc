@@ -176,6 +176,10 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "disableGData", IDS_OPTIONS_DISABLE_GDATA },
 #endif
     { "disableWebServices", IDS_OPTIONS_DISABLE_WEB_SERVICES },
+#if defined(OS_CHROMEOS)
+    { "displayOptionsButton", IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_TAB_TITLE },
+    { "displayOptionsTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DISPLAY },
+#endif
     { "downloadLocationAskForSaveLocation",
       IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION },
     { "downloadLocationBrowseTitle",

@@ -127,6 +127,9 @@ function load() {
                                 [$('account-picture')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
                                 BrowserOptions.getInstance());
+    OptionsPage.registerOverlay(DisplayOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('display-options-button')]);
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);
