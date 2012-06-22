@@ -1,5 +1,6 @@
 include_rules = [
   "-chrome",
+  "+content/public/plugin",
   "+ppapi/c",
   "+ppapi/proxy",
 ]

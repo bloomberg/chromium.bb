@@ -240,7 +240,8 @@ class ContentClientInitializer {
         content_client->browser_ = &g_empty_content_browser_client.Get();
     }
 
-    if (process_type == switches::kPluginProcess) {
+    if (process_type == switches::kPluginProcess ||
+        process_type == switches::kPpapiPluginProcess) {
       if (delegate)
         content_client->plugin_ = delegate->CreateContentPluginClient();
       if (!content_client->plugin_)
