@@ -9,6 +9,7 @@ import gyp.msvs_emulation
 import gyp.MSVSVersion
 import gyp.system_test
 import gyp.xcode_emulation
+import hashlib
 import os.path
 import re
 import subprocess
@@ -510,7 +511,8 @@ class NinjaWriter:
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
-      name = '%s_%s' % (self.qualified_target, action['action_name'])
+      name = '%s_%s' % (action['action_name'],
+                        hashlib.md5(self.qualified_target).hexdigest())
       description = self.GenerateDescription('ACTION',
                                              action.get('message', None),
                                              name)
@@ -543,7 +545,8 @@ class NinjaWriter:
     all_outputs = []
     for rule in rules:
       # First write out a rule for the rule action.
-      name = '%s_%s' % (self.qualified_target, rule['rule_name'])
+      name = '%s_%s' % (rule['rule_name'],
+                        hashlib.md5(self.qualified_target).hexdigest())
       # Skip a rule with no action and no inputs.
       if 'action' not in rule and not rule.get('rule_sources', []):
         continue
