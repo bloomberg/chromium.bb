@@ -161,7 +161,7 @@ const gfx::ImageSkia GenerateFadedImage(gfx::ImageSkia source,
     float empty_bitmap_scale;
     SkBitmap empty_bitmap = empty_image.GetBitmapForScale(bitmap_scale,
         &empty_bitmap_scale);
-    if (empty_bitmap_scale != bitmap_scale) {
+    if (empty_bitmap.isNull() || empty_bitmap_scale != bitmap_scale) {
       empty_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                              bitmap.width(),
                              bitmap.height());

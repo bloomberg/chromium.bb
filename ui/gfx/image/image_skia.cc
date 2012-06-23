@@ -231,6 +231,8 @@ void ImageSkia::Init(const SkBitmap& bitmap, float scale_factor) {
 int ImageSkia::GetBitmapIndexForScale(float x_scale_factor,
                                       float y_scale_factor,
                                       float* bitmap_scale_factor) const {
+  // Initialize |bitmap_scale_factor|.
+  *bitmap_scale_factor = 0.0f;
 
   if (empty())
     return -1;

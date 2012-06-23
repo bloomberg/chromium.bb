@@ -5612,13 +5612,6 @@
    fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager18GetLastUsedProfileERK8FilePath
 }
-{
-   bug_133930
-   Memcheck:Uninitialized
-   fun:_ZN8chromeos12_GLOBAL__N_118GenerateFadedImageEN3gfx9ImageSkiaES2_d
-   fun:_ZN8chromeos15NetworkMenuIcon23GenerateConnectingImageERKN3gfx9ImageSkiaE
-}
-
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
