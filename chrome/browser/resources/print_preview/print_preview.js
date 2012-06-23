@@ -478,6 +478,9 @@ cr.define('print_preview', function() {
       this.userInfo_.setCloudPrintInterface(this.cloudPrintInterface_);
       this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
       this.destinationStore_.startLoadRecentCloudDestinations();
+      if (this.destinationSearch_.getIsVisible()) {
+        this.destinationStore_.startLoadAllCloudDestinations();
+      }
     },
 
     /**
