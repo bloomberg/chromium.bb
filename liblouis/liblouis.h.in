@@ -133,7 +133,7 @@ int EXPORT_CALL lou_compileString (const char *tableList, const char
   char * EXPORT_CALL lou_getDataPath ();
   /* Get the path set in the previous function. */
 
-  char EXPORT_CALL * lou_getTablePaths ();
+//  char EXPORT_CALL * lou_getTablePaths ();
   /* Get a list of paths actually used in seraching for tables*/
 
   void EXPORT_CALL lou_free ();

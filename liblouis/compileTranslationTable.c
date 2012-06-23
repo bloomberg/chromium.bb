@@ -35,7 +35,7 @@ Library
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include "louis.h"
 #include "config.h"
@@ -5112,6 +5112,7 @@ lou_compileString (const char *tableList, const char *inString)
  * This procedure provides a target for cals that serve as breakpoints 
  * for gdb.
  */
+/*
 char *EXPORT_CALL
 lou_getTablePaths ()
 {
@@ -5145,6 +5146,7 @@ lou_getTablePaths ()
 #endif
   return paths;
 }
+*/
 
 void
 debugHook ()
