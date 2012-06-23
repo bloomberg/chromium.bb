@@ -91,9 +91,11 @@ void LazyBackgroundTaskQueue::StartLazyBackgroundPage(
   const Extension* extension =
       ExtensionSystem::Get(profile)->extension_service()->
           extensions()->GetByID(extension_id);
-  DCHECK(extension->has_lazy_background_page());
-  pm->IncrementLazyKeepaliveCount(extension);
-  pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+  if (extension) {
+    DCHECK(extension->has_lazy_background_page());
+    pm->IncrementLazyKeepaliveCount(extension);
+    pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+  }
 
   pending_page_loads_.erase(PendingTasksKey(profile, extension_id));
 }
