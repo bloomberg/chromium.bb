@@ -28,6 +28,8 @@ bool MouseCursorEventFilter::PreHandleKeyEvent(aura::Window* target,
 
 bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                  aura::MouseEvent* event) {
+  if (event->type() != ui::ET_MOUSE_MOVED)
+    return false;
   aura::RootWindow* current_root = target->GetRootWindow();
   gfx::Point location_in_root(event->location());
   aura::Window::ConvertPointToWindow(target, current_root, &location_in_root);
