@@ -30,8 +30,12 @@ bool DomStorageHost::OpenStorageArea(int connection_id, int namespace_id,
     return false;  // Indicates the renderer gave us very bad data.
   NamespaceAndArea references;
   references.namespace_ = context_->GetStorageNamespace(namespace_id);
-  if (!references.namespace_)
-    return true;  // TODO(michaeln): investigate returning false here
+  if (!references.namespace_) {
+    // TODO(michaeln): Fix crbug/134003 and return false here.
+    // Until then return true to avoid crashing the renderer for
+    // sending a bad message.
+    return true;
+  }
   references.area_ = references.namespace_->OpenStorageArea(origin);
   DCHECK(references.area_);
   connections_[connection_id] = references;
@@ -50,10 +54,14 @@ void DomStorageHost::CloseStorageArea(int connection_id) {
 bool DomStorageHost::ExtractAreaValues(
     int connection_id, ValuesMap* map) {
   map->clear();
-  AreaMap::iterator found = connections_.find(connection_id);
-  if (found == connections_.end())
-    return false;  // Indicates the renderer gave us very bad data.
-  found->second.area_->ExtractValues(map);
+  DomStorageArea* area = GetOpenArea(connection_id);
+  if (!area) {
+    // TODO(michaeln): Fix crbug/134003 and return false here.
+    // Until then return true to avoid crashing the renderer
+    // for sending a bad message.
+    return true;
+  }
+  area->ExtractValues(map);
   return true;
 }
 
@@ -84,8 +92,12 @@ bool DomStorageHost::SetAreaItem(
     const string16& value, const GURL& page_url,
     NullableString16* old_value) {
   DomStorageArea* area = GetOpenArea(connection_id);
-  if (!area)
-    return false;
+  if (!area) {
+    // TODO(michaeln): Fix crbug/134003 and return false here.
+    // Until then return true to allow the renderer to operate
+    // to a limited degree out of its cache.
+    return true;
+  }
   if (!area->SetItem(key, value, old_value))
     return false;
   if (old_value->is_null() || old_value->string() != value)
