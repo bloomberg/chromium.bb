@@ -19,7 +19,11 @@
 namespace ash {
 namespace internal {
 namespace {
+// True if the extended desktop mode is enabled.
 bool extended_desktop_enabled = false;
+
+// True if the virtual screen coordinates is enabled.
+bool virtual_screen_coordinates_enabled = false;
 }
 
 MonitorController::MonitorController()
@@ -228,6 +232,18 @@ bool MonitorController::IsExtendedDesktopEnabled(){
 // static
 void MonitorController::SetExtendedDesktopEnabled(bool enabled) {
   extended_desktop_enabled = enabled;
+}
+
+// static
+bool MonitorController::IsVirtualScreenCoordinatesEnabled() {
+  return virtual_screen_coordinates_enabled ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshVirtualScreenCoordinates);
+}
+
+// static
+void MonitorController::SetVirtualScreenCoordinatesEnabled(bool enabled) {
+  virtual_screen_coordinates_enabled = enabled;
 }
 
 aura::RootWindow* MonitorController::AddRootWindowForDisplay(

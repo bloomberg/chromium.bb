@@ -4,6 +4,7 @@
 
 #include "ash/wm/stacking_controller.h"
 
+#include "ash/monitor/monitor_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
@@ -17,8 +18,21 @@ namespace ash {
 namespace internal {
 namespace {
 
-aura::Window* GetContainerById(int id) {
-  return Shell::GetContainer(Shell::GetActiveRootWindow(), id);
+// Find a root window that matches the |bounds|. If the virtual screen
+// coordinates is enabled and the bounds is specified, the root window
+// that matches the window's bound will be used. Otherwise, it'll
+// return the active root window.
+aura::RootWindow* FindContainerRoot(const gfx::Rect& bounds) {
+  if (!MonitorController::IsVirtualScreenCoordinatesEnabled() ||
+      (bounds.origin().x() == 0 && bounds.origin().y() == 0
+       && bounds.IsEmpty())) {
+    return Shell::GetActiveRootWindow();
+  }
+  return Shell::GetRootWindowMatching(bounds);
+}
+
+aura::Window* GetContainerById(const gfx::Rect& bounds, int id) {
+  return Shell::GetContainer(FindContainerRoot(bounds), id);
 }
 
 aura::Window* GetContainerForWindow(aura::Window* window) {
@@ -52,25 +66,26 @@ StackingController::~StackingController() {
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, aura::StackingClient implementation:
 
-aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
+aura::Window* StackingController::GetDefaultParent(aura::Window* window,
+                                                   const gfx::Rect& bounds) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
       if (IsSystemModal(window))
-        return GetSystemModalContainer(window);
+        return GetSystemModalContainer(window, bounds);
       else if (IsWindowModal(window))
         return GetContainerForWindow(window->transient_parent());
-      return GetAlwaysOnTopController()->GetContainer(window);
+      return GetAlwaysOnTopController(bounds)->GetContainer(window);
     case aura::client::WINDOW_TYPE_PANEL:
-      return GetContainerById(internal::kShellWindowId_PanelContainer);
+      return GetContainerById(bounds, internal::kShellWindowId_PanelContainer);
     case aura::client::WINDOW_TYPE_MENU:
-      return GetContainerById(internal::kShellWindowId_MenuContainer);
+      return GetContainerById(bounds, internal::kShellWindowId_MenuContainer);
     case aura::client::WINDOW_TYPE_TOOLTIP:
       return GetContainerById(
-          internal::kShellWindowId_DragImageAndTooltipContainer);
+          bounds, internal::kShellWindowId_DragImageAndTooltipContainer);
     case aura::client::WINDOW_TYPE_CONTROL:
       return GetContainerById(
-          internal::kShellWindowId_UnparentedControlContainer);
+          bounds, internal::kShellWindowId_UnparentedControlContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();
@@ -83,16 +98,19 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
 // StackingController, private:
 
 aura::Window* StackingController::GetSystemModalContainer(
-    aura::Window* window) const {
-  if (!IsSystemModal(window))
-    return NULL;
+    aura::Window* window,
+    const gfx::Rect& bounds) const {
+  DCHECK(IsSystemModal(window));
 
   // If screen lock is not active, all modal windows are placed into the
   // normal modal container.
+  // TODO(oshima): support multiple root windows.
   aura::Window* lock_container =
-      GetContainerById(internal::kShellWindowId_LockScreenContainer);
-  if (!lock_container->children().size())
-    return GetContainerById(internal::kShellWindowId_SystemModalContainer);
+      GetContainerById(bounds, internal::kShellWindowId_LockScreenContainer);
+  if (!lock_container->children().size()) {
+    return GetContainerById(bounds,
+                            internal::kShellWindowId_SystemModalContainer);
+  }
 
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
@@ -102,18 +120,18 @@ aura::Window* StackingController::GetSystemModalContainer(
   aura::Window* container = NULL;
   if (window_container_id < lock_container_id) {
     container = GetContainerById(
-        internal::kShellWindowId_SystemModalContainer);
+        bounds, internal::kShellWindowId_SystemModalContainer);
   } else {
     container = GetContainerById(
-        internal::kShellWindowId_LockSystemModalContainer);
+        bounds, internal::kShellWindowId_LockSystemModalContainer);
   }
 
   return container;
 }
 
 internal::AlwaysOnTopController*
-StackingController::GetAlwaysOnTopController() {
-  aura::RootWindow* root_window = Shell::GetActiveRootWindow();
+StackingController::GetAlwaysOnTopController(const gfx::Rect& bounds) {
+  aura::RootWindow* root_window = FindContainerRoot(bounds);
   internal::AlwaysOnTopController* controller =
       root_window->GetProperty(internal::kAlwaysOnTopControllerKey);
   if (!controller) {

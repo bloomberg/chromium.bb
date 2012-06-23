@@ -40,7 +40,7 @@ Window* GetParentForWindow(Window* window, Window* suggested_parent) {
   if (suggested_parent)
     return suggested_parent;
   if (client::GetStackingClient())
-    return client::GetStackingClient()->GetDefaultParent(window);
+    return client::GetStackingClient()->GetDefaultParent(window, gfx::Rect());
   return NULL;
 }
 

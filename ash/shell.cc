@@ -312,8 +312,41 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
 
 // static
 aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
-  // TODO(oshima): Support multiple root windows.
+  if (!internal::MonitorController::IsVirtualScreenCoordinatesEnabled())
+    return GetPrimaryRootWindow();
+  RootWindowList root_windows = GetAllRootWindows();
+  for (RootWindowList::const_iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    aura::RootWindow* root_window = *iter;
+    if (root_window->bounds().Contains(point))
+      return root_window;
+  }
+  // Fallback to the primary window if there is no root window containing
+  // the |point|.
   return GetPrimaryRootWindow();
+}
+
+// static
+aura::RootWindow* Shell::GetRootWindowMatching(const gfx::Rect& rect) {
+  if (!internal::MonitorController::IsVirtualScreenCoordinatesEnabled())
+    return GetPrimaryRootWindow();
+  if (rect.IsEmpty())
+    return GetRootWindowAt(rect.origin());
+  RootWindowList root_windows = GetAllRootWindows();
+  int max = 0;
+  aura::RootWindow* matching = NULL;
+  for (RootWindowList::const_iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    aura::RootWindow* root_window = *iter;
+    gfx::Rect intersect = root_window->bounds().Intersect(rect);
+    int area = intersect.width() * intersect.height();
+    if (area > max) {
+      max = area;
+      matching = root_window;
+    }
+  }
+  // Fallback to the primary window if there is no matching root window.
+  return matching ? matching : GetPrimaryRootWindow();
 }
 
 // static

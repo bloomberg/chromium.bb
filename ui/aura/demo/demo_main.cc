@@ -94,7 +94,8 @@ class DemoStackingClient : public aura::client::StackingClient {
   }
 
   // Overridden from aura::client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* window) OVERRIDE {
+  virtual aura::Window* GetDefaultParent(aura::Window* window,
+                                         const gfx::Rect& bounds) OVERRIDE {
     return root_window_;
   }
 

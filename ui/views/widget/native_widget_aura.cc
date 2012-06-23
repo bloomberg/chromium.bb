@@ -12,6 +12,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
@@ -213,6 +214,12 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
     SetAlwaysOnTop(params.keep_on_top);
+    // If the parent is not specified, find the default parent for
+    // the |window_| using the desired |params.bounds|.
+    if (!parent) {
+      parent = aura::client::GetStackingClient()->GetDefaultParent(
+          window_, params.bounds);
+    }
     window_->SetParent(parent);
   }
 

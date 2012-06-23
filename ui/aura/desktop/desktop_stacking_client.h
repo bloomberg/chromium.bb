@@ -28,7 +28,8 @@ class AURA_EXPORT DesktopStackingClient : public client::StackingClient {
   virtual ~DesktopStackingClient();
 
   // Overridden from client::StackingClient:
-  virtual Window* GetDefaultParent(Window* window) OVERRIDE;
+  virtual Window* GetDefaultParent(Window* window,
+                                   const gfx::Rect& bounds) OVERRIDE;
 
  private:
   // Windows with NULL parents are parented to this.

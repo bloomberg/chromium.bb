@@ -182,7 +182,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     gfx::NativeView parent;
     Widget* parent_widget;
     // Specifies the initial bounds of the Widget. Default is empty, which means
-    // the NativeWidget may specify a default size.
+    // the NativeWidget may specify a default size. If the parent is specified,
+    // |bounds| is in the parent's coordinate system. If the parent is not
+    // specified, it's in screen's global coordinate system.
     gfx::Rect bounds;
     // When set, this value is used as the Widget's NativeWidget implementation.
     // The Widget will not construct a default one. Default is NULL.

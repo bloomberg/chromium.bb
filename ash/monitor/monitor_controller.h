@@ -86,6 +86,11 @@ class ASH_EXPORT MonitorController : public aura::DisplayObserver {
   // Change the extended desktop mode. Used for testing.
   static void SetExtendedDesktopEnabled(bool enabled);
 
+  // Is virtual screen coordinates enabled?
+  static bool IsVirtualScreenCoordinatesEnabled();
+  // Turns on/off the virtual screen coordinates.
+  static void SetVirtualScreenCoordinatesEnabled(bool enabled);
+
  private:
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.

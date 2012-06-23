@@ -26,6 +26,9 @@ const char kAshNotifyDisabled[] = "ash-notify-disabled";
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 
+// Enables virtual screen coordinate system.
+const char kAshVirtualScreenCoordinates[] = "ash-virtual-screen-coordinates";
+
 // If present animations are disabled.
 const char kAshWindowAnimationsDisabled[] = "ash-window-animations-disabled";
 
