@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/time.h"
+#include "base/timer.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -67,7 +68,8 @@ class ClientSession : public protocol::HostEventStub,
   ClientSession(EventHandler* event_handler,
                 scoped_ptr<protocol::ConnectionToClient> connection,
                 protocol::HostEventStub* host_event_stub,
-                Capturer* capturer);
+                Capturer* capturer,
+                const base::TimeDelta& max_duration);
   virtual ~ClientSession();
 
   // protocol::ClipboardStub interface.
@@ -166,6 +168,14 @@ class ClientSession : public protocol::HostEventStub,
   // TODO(lambroslambrou): Move floor-control logic, and clamping to screen
   // area, out of this class (crbug.com/96508).
   Capturer* capturer_;
+
+  // The maximum duration of this session.
+  // There is no maximum if this value is <= 0.
+  base::TimeDelta max_duration_;
+
+  // A timer that triggers a disconnect when the maximum session duration
+  // is reached.
+  base::OneShotTimer<ClientSession> max_duration_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

@@ -19,7 +19,8 @@ ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_ptr<protocol::ConnectionToClient> connection,
     protocol::HostEventStub* host_event_stub,
-    Capturer* capturer)
+    Capturer* capturer,
+    const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
@@ -29,7 +30,8 @@ ClientSession::ClientSession(
       remote_input_filter_(&input_tracker_),
       mouse_input_filter_(&remote_input_filter_),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
-      capturer_(capturer) {
+      capturer_(capturer),
+      max_duration_(max_duration) {
   connection_->SetEventHandler(this);
 
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
@@ -98,6 +100,12 @@ void ClientSession::OnConnectionAuthenticated(
   is_authenticated_ = true;
   auth_input_filter_.set_input_stub(&disable_input_filter_);
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
+  if (max_duration_ > base::TimeDelta()) {
+    // TODO(simonmorris): Let Disconnect() tell the client that the
+    // disconnection was caused by the session exceeding its maximum duration.
+    max_duration_timer_.Start(FROM_HERE, max_duration_,
+                              this, &ClientSession::Disconnect);
+  }
   event_handler_->OnSessionAuthenticated(this);
 }
 
@@ -145,6 +153,7 @@ void ClientSession::Disconnect() {
   DCHECK(CalledOnValidThread());
   DCHECK(connection_.get());
 
+  max_duration_timer_.Stop();
   // This triggers OnConnectionClosed(), and the session may be destroyed
   // as the result, so this call must be the last in this method.
   connection_->Disconnect();

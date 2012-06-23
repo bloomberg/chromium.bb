@@ -176,7 +176,7 @@ class ChromotingHostTest : public testing::Test {
     protocol::ConnectionToClient* connection_ptr = connection.get();
     ClientSession* client = new ClientSession(
         host_.get(), connection.Pass(), desktop_environment_->event_executor(),
-        desktop_environment_->capturer());
+        desktop_environment_->capturer(), base::TimeDelta());
     connection_ptr->set_host_stub(client);
 
     context_.network_message_loop()->PostTask(

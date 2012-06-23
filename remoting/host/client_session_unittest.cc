@@ -43,7 +43,7 @@ class ClientSessionTest : public testing::Test {
         new protocol::ConnectionToClient(session));
     client_session_.reset(new ClientSession(
         &session_event_handler_, connection.Pass(),
-        &host_event_stub_, &capturer_));
+        &host_event_stub_, &capturer_, base::TimeDelta()));
   }
 
   virtual void TearDown() OVERRIDE {

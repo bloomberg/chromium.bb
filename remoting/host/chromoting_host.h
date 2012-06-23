@@ -104,6 +104,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void SetAuthenticatorFactory(
       scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory);
 
+  // Sets the maximum duration of any session. By default, a session has no
+  // maximum duration.
+  void SetMaximumSessionDuration(const base::TimeDelta& max_session_duration);
+
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
   virtual void OnSessionAuthenticated(ClientSession* client) OVERRIDE;
@@ -222,6 +226,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // TODO(sergeyu): The following members do not belong to
   // ChromotingHost and should be moved elsewhere.
   UiStrings ui_strings_;
+
+  // The maximum duration of any session.
+  base::TimeDelta max_session_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

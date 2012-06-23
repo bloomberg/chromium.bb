@@ -156,6 +156,11 @@ void ChromotingHost::SetAuthenticatorFactory(
   session_manager_->set_authenticator_factory(authenticator_factory.Pass());
 }
 
+void ChromotingHost::SetMaximumSessionDuration(
+    const base::TimeDelta& max_session_duration) {
+  max_session_duration_ = max_session_duration;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ClientSession::EventHandler implementation.
 void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
@@ -315,7 +320,7 @@ void ChromotingHost::OnIncomingSession(
       new protocol::ConnectionToClient(session));
   ClientSession* client = new ClientSession(
       this, connection.Pass(), desktop_environment_->event_executor(),
-      desktop_environment_->capturer());
+      desktop_environment_->capturer(), max_session_duration_);
   clients_.push_back(client);
 }
 

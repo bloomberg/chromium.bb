@@ -390,6 +390,11 @@ class HostProcess
         CreateHostSessionManager(network_settings,
                                  context_->url_request_context_getter()));
 
+    // TODO(simonmorris): Get the maximum session duration from a policy.
+#if defined(OS_LINUX)
+    host_->SetMaximumSessionDuration(base::TimeDelta::FromHours(20));
+#endif
+
     heartbeat_sender_.reset(new HeartbeatSender(
         this, host_id_, signal_strategy_.get(), &key_pair_));
 
