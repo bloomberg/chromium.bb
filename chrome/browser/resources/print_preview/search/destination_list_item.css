@@ -24,13 +24,8 @@
   -webkit-transition: opacity 150ms;
   display: inline-block;
   height: 24px;
-  opacity: 0.7;
   vertical-align: middle;
   width: 24px;
-}
-
-.destination-list-item:hover .destination-list-item-icon {
-  opacity: 1;
 }
 
 .destination-list-item-name {

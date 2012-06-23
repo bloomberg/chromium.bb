@@ -149,12 +149,14 @@ cr.define('print_preview', function() {
    * @private
    */
   Destination.IconUrl_ = {
-    CLOUD: 'images/printer_24.png',
-    CLOUD_SHARED: 'images/printer_shared_24.png',
-    LOCAL: 'images/printer_24.png',
-    MOBILE: 'images/mobile_printer_24.png',
-    MOBILE_SHARED: 'images/mobile_printer_shared_24.png',
-    GOOGLE_PROMOTED: 'images/service_printer_24.png'
+    CLOUD: 'images/printer.png',
+    CLOUD_SHARED: 'images/printer_shared.png',
+    LOCAL: 'images/printer.png',
+    MOBILE: 'images/mobile.png',
+    MOBILE_SHARED: 'images/mobile_shared.png',
+    THIRD_PARTY: 'images/third_party.png',
+    PDF: 'images/pdf.png',
+    DOCS: 'images/google_doc.png'
   };
 
   Destination.prototype = {
@@ -196,16 +198,6 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
       return this.type_ == Destination.Type.LOCAL;
-    },
-
-    /** @return {boolean} Whether the destination is promoted by Google. */
-    get isGooglePromoted() {
-      for (var key in Destination.GooglePromotedId) {
-        if (Destination.GooglePromotedId[key] == this.id_) {
-          return true;
-        }
-      }
-      return false;
     },
 
     /**
@@ -272,8 +264,12 @@ cr.define('print_preview', function() {
 
     /** @return {string} Relative URL of the destination's icon. */
     get iconUrl() {
-      if (this.isGooglePromoted) {
-        return Destination.IconUrl_.GOOGLE_PROMOTED;
+      if (this.id_ == Destination.GooglePromotedId.DOCS) {
+        return Destination.IconUrl_.DOCS;
+      } else if (this.id_ == Destination.GooglePromotedId.FEDEX) {
+        return Destination.IconUrl_.THIRD_PARTY;
+      } else if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
+        return Destination.IconUrl_.PDF;
       } else if (this.isLocal) {
         return Destination.IconUrl_.LOCAL;
       } else if (this.type_ == Destination.Type.MOBILE && this.isOwned_) {

@@ -112,16 +112,20 @@
       <if expr="pp_ifdef('enable_printing')">
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER_24"
-                 file="resources\print_preview\images\printer_24.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED_24"
-                 file="resources\print_preview\images\printer_shared_24.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_SERVICE_PRINTER_24"
-                 file="resources\print_preview\images\service_printer_24.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_PRINTER_24"
-                 file="resources\print_preview\images\mobile_printer_24.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_PRINTER_SHARED_24"
-                 file="resources\print_preview\images\mobile_printer_shared_24.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER"
+                 file="resources\print_preview\images\printer.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED"
+                 file="resources\print_preview\images\printer_shared.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC"
+                 file="resources\print_preview\images\google_doc.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_PDF"
+                 file="resources\print_preview\images\pdf.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY"
+                 file="resources\print_preview\images\third_party.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE"
+                 file="resources\print_preview\images\mobile.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED"
+                 file="resources\print_preview\images\mobile_shared.png" type="BINDATA" />
       </if>
       <include name="IDR_PROFILER_HTML" file="resources\profiler\profiler.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PROFILER_JS" file="resources\profiler\profiler.js" flattenhtml="true" type="BINDATA" />
