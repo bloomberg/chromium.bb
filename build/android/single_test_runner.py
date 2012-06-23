@@ -215,6 +215,7 @@ class SingleTestRunner(BaseTestRunner):
   def StripAndCopyFiles(self):
     """Strips and copies the required data files for the test suite."""
     self.test_package.StripAndCopyExecutable()
+    self.test_package.PushDataAndPakFiles()
     self.test_package.tool.CopyFiles()
     test_data = self.GetDataFilesForTestSuite()
     if test_data and not self.fast_and_loose:

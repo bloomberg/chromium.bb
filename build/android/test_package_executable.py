@@ -152,12 +152,6 @@ class TestPackageExecutable(TestPackage):
     test_binary = '/data/local/tmp/' + self.test_suite_basename
     self.adb.PushIfNeeded(target_name, test_binary)
 
-    if self.test_suite_basename == 'ui_unittests':
-      self.adb.PushIfNeeded(self.test_suite_dirname + '/chrome.pak',
-                            '/data/local/tmp/paks/chrome.pak')
-      self.adb.PushIfNeeded(self.test_suite_dirname + '/locales/en-US.pak',
-                            '/data/local/tmp/paks/en-US.pak')
-
   def _GetTestSuiteBaseName(self):
     """Returns the  base name of the test suite."""
     return os.path.basename(self.test_suite)

@@ -38,7 +38,8 @@ class TestPackage(object):
     self.test_suite_full = test_suite
     self.test_suite = os.path.splitext(test_suite)[0]
     self.test_suite_basename = self._GetTestSuiteBaseName()
-    self.test_suite_dirname = os.path.dirname(self.test_suite)
+    self.test_suite_dirname = os.path.dirname(
+        self.test_suite.split(self.test_suite_basename)[0]);
     self.rebaseline = rebaseline
     self.performance_test = performance_test
     self.cleanup_test_files = cleanup_test_files
@@ -121,6 +122,13 @@ class TestPackage(object):
       if not any([test_name.startswith(x) for x in disabled_prefixes]):
         ret += [current + test_name]
     return ret
+
+  def PushDataAndPakFiles(self):
+    if self.test_suite_basename == 'ui_unittests':
+      self.adb.PushIfNeeded(self.test_suite_dirname + '/chrome.pak',
+                            '/data/local/tmp/paks/chrome.pak')
+      self.adb.PushIfNeeded(self.test_suite_dirname + '/locales/en-US.pak',
+                            '/data/local/tmp/paks/en-US.pak')
 
   def _WatchTestOutput(self, p):
     """Watches the test output.
