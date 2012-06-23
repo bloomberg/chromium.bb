@@ -123,8 +123,7 @@ namespace app_list {
 
 PageSwitcher::PageSwitcher(PaginationModel* model)
     : model_(model),
-      buttons_(NULL) {
-  buttons_ = new views::View;
+      buttons_(new views::View) {
   buttons_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
   AddChildView(buttons_);

@@ -5,7 +5,6 @@
 #include "ui/app_list/search_box_model.h"
 
 #include "ui/app_list/search_box_model_observer.h"
-#include "ui/views/controls/textfield/textfield.h"
 
 namespace app_list {
 
@@ -17,9 +16,7 @@ SearchBoxModel::~SearchBoxModel() {
 
 void SearchBoxModel::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver,
-                    observers_,
-                    IconChanged());
+  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, IconChanged());
 }
 
 void SearchBoxModel::SetHintText(const string16& hint_text) {
@@ -27,9 +24,7 @@ void SearchBoxModel::SetHintText(const string16& hint_text) {
     return;
 
   hint_text_ = hint_text;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver,
-                    observers_,
-                    HintTextChanged());
+  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, HintTextChanged());
 }
 
 void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
@@ -47,9 +42,7 @@ void SearchBoxModel::SetText(const string16& text) {
     return;
 
   text_ = text;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver,
-                    observers_,
-                    TextChanged());
+  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, TextChanged());
 }
 
 void SearchBoxModel::AddObserver(SearchBoxModelObserver* observer) {

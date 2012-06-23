@@ -16,14 +16,15 @@ AppListItemModel::~AppListItemModel() {
 
 void AppListItemModel::SetIcon(const SkBitmap& icon) {
   icon_ = icon;
-  FOR_EACH_OBSERVER(AppListItemModelObserver, observers_,
-                    ItemIconChanged());
+  FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemIconChanged());
 }
 
 void AppListItemModel::SetTitle(const std::string& title) {
+  if (title_ == title)
+    return;
+
   title_ = title;
-  FOR_EACH_OBSERVER(AppListItemModelObserver, observers_,
-                    ItemTitleChanged());
+  FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemTitleChanged());
 }
 
 void AppListItemModel::SetHighlighted(bool highlighted) {
@@ -31,7 +32,8 @@ void AppListItemModel::SetHighlighted(bool highlighted) {
     return;
 
   highlighted_ = highlighted;
-  FOR_EACH_OBSERVER(AppListItemModelObserver, observers_,
+  FOR_EACH_OBSERVER(AppListItemModelObserver,
+                    observers_,
                     ItemHighlightedChanged());
 }
 

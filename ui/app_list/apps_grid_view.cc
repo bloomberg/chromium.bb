@@ -35,7 +35,7 @@ const int kMinHorizVelocityToSwitchPage = 1100;
 namespace app_list {
 
 AppsGridView::AppsGridView(views::ButtonListener* listener,
-                                   PaginationModel* pagination_model)
+                           PaginationModel* pagination_model)
     : model_(NULL),
       listener_(listener),
       pagination_model_(pagination_model),

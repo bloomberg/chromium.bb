@@ -93,8 +93,7 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
     : views::CustomButton(listener),
       result_(NULL),
       list_view_(list_view),
-      icon_(NULL) {
-  icon_ = new IconView;
+      icon_(new IconView) {
   AddChildView(icon_);
 }
 

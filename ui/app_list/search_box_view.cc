@@ -29,17 +29,15 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate)
     : delegate_(delegate),
       model_(NULL),
-      icon_view_(NULL),
-      search_box_(NULL),
+      icon_view_(new views::ImageView),
+      search_box_(new views::Textfield),
       contents_view_(NULL) {
-  icon_view_ = new views::ImageView;
   AddChildView(icon_view_);
 
-  search_box_ = new views::Textfield;
   search_box_->RemoveBorder();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   search_box_->SetFont(gfx::Font(
-      rb.GetFont(ResourceBundle::BaseFont).GetFontName(),
+      rb.GetFont(ui::ResourceBundle::BaseFont).GetFontName(),
       kFontSize));
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->SetController(this);
