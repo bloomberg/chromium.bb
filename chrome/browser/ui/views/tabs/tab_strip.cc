@@ -948,12 +948,6 @@ bool TabStrip::IsTabPinned(const BaseTab* tab) const {
       controller_->IsTabPinned(model_index);
 }
 
-bool TabStrip::IsTabCloseable(const BaseTab* tab) const {
-  int model_index = GetModelIndexOfBaseTab(tab);
-  return !IsValidModelIndex(model_index) ||
-      controller_->IsTabCloseable(model_index);
-}
-
 void TabStrip::MaybeStartDrag(
     BaseTab* tab,
     const views::LocatedEvent& event,

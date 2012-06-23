@@ -549,7 +549,7 @@ class TabStripModel : public content::NotificationObserver {
   //
   // Returns true if the TabContentses were closed immediately, false if we
   // are waiting for the result of an onunload handler.
-  bool InternalCloseTabs(const std::vector<int>& in_indices,
+  bool InternalCloseTabs(const std::vector<int>& indices,
                          uint32 close_types);
 
   // Invoked from InternalCloseTabs and when an extension is removed for an app

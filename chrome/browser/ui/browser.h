@@ -694,10 +694,8 @@ class Browser : public TabStripModelDelegate,
   virtual void CloseFrameAfterDragSession() OVERRIDE;
   virtual void CreateHistoricalTab(TabContents* contents) OVERRIDE;
   virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE;
-  virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE;
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
-  virtual bool CanCloseTab() const OVERRIDE;
   virtual bool CanRestoreTab() OVERRIDE;
   virtual void RestoreTab() OVERRIDE;
 
@@ -1188,15 +1186,6 @@ class Browser : public TabStripModelDelegate,
   // the browser.
   bool SupportsWindowFeatureImpl(WindowFeature feature,
                                  bool check_fullscreen) const;
-
-  // Determines if closing of browser can really be permitted after normal
-  // sequence of downloads and unload handlers have given the go-ahead to close.
-  // It is called from ShouldCloseWindow.  It checks with
-  // TabCloseableStateWatcher to confirm if browser can really be closed.
-  // Appropriate action is taken by watcher as it sees fit.
-  // If watcher denies closing of browser, CancelWindowClose is called to
-  // cancel closing of window.
-  bool IsClosingPermitted();
 
   // Commits the current instant, returning true on success. This is intended
   // for use from OpenCurrentURL.

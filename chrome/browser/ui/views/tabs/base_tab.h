@@ -75,9 +75,6 @@ class BaseTab : public ui::AnimationDelegate,
     theme_provider_ = provider;
   }
 
-  // Returns true if the tab is closeable.
-  bool IsCloseable() const;
-
   // Returns true if this tab is the active tab.
   bool IsActive() const;
 

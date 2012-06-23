@@ -33,9 +33,6 @@ class FakeTabController : public TabController {
     return false;
   }
   virtual bool IsTabPinned(const BaseTab* tab) const OVERRIDE { return false; }
-  virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE {
-    return true;
-  }
   virtual void MaybeStartDrag(
       BaseTab* tab,
       const views::LocatedEvent& event,

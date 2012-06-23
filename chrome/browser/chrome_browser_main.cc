@@ -1247,11 +1247,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
             switches::kProfilingOutputFile));
   }
 
-  // This forces the TabCloseableStateWatcher to be created and, on chromeos,
-  // register for the notifications it needs to track the closeable state of
-  // tabs.
-  browser_process_->tab_closeable_state_watcher();
-
   local_state_ = InitializeLocalState(parsed_command_line(), is_first_run_);
 
   // These members must be initialized before returning from this function.

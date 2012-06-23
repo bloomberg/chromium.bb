@@ -708,7 +708,7 @@ bool Tab::ShouldShowIcon() const {
 
 bool Tab::ShouldShowCloseBox() const {
   // The active tab never clips close button.
-  return !data().mini && IsCloseable() && (IsActive() || IconCapacity() >= 3);
+  return !data().mini && (IsActive() || IconCapacity() >= 3);
 }
 
 double Tab::GetThrobValue() {

@@ -84,11 +84,9 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
  public:
   explicit TabStripDummyDelegate(TabContents* dummy)
       : dummy_contents_(dummy),
-        can_close_(true),
         run_unload_(false) {}
   virtual ~TabStripDummyDelegate() {}
 
-  void set_can_close(bool value) { can_close_ = value; }
   void set_run_unload_listener(bool value) { run_unload_ = value; }
 
   // Overridden from TabStripModelDelegate:
@@ -106,19 +104,11 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
   virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE {
     return run_unload_;
   }
-  virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE {
-    if (!can_close_)
-      indices->clear();
-    return can_close_;
-  }
 
  private:
   // A dummy TabContents we give to callers that expect us to actually
   // build a Destinations tab for them.
   TabContents* dummy_contents_;
-
-  // Whether tabs can be closed.
-  bool can_close_;
 
   // Whether to report that we need to run an unload listener before closing.
   bool run_unload_;
@@ -526,14 +516,6 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   // Test CloseTabContentsAt
   {
-    // Let's test nothing happens when the delegate veto the close.
-    delegate.set_can_close(false);
-    EXPECT_FALSE(tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE));
-    EXPECT_EQ(3, tabstrip.count());
-    EXPECT_EQ(0, observer.GetStateCount());
-
-    // Now let's close for real.
-    delegate.set_can_close(true);
     EXPECT_TRUE(tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE));
     EXPECT_EQ(2, tabstrip.count());
 
@@ -973,10 +955,6 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
       PrepareTabstripForSelectionTest(&tabstrip, 1, 0, "0"));
   EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
                   0, TabStripModel::CommandCloseTab));
-  delegate.set_can_close(false);
-  EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
-                   0, TabStripModel::CommandCloseTab));
-  delegate.set_can_close(true);
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTab);
   ASSERT_TRUE(tabstrip.empty());
 

@@ -43,9 +43,6 @@ class TabStripController {
   // Returns true if the selected index is pinned.
   virtual bool IsTabPinned(int index) const = 0;
 
-  // Returns true if the selected index is closeable.
-  virtual bool IsTabCloseable(int index) const = 0;
-
   // Returns true if the selected index is the new tab page.
   virtual bool IsNewTabPage(int index) const = 0;
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class BaseTab;
 class Browser;
@@ -53,7 +52,6 @@ class BrowserTabStripController : public TabStripController,
   virtual int GetActiveIndex() const OVERRIDE;
   virtual bool IsTabSelected(int model_index) const OVERRIDE;
   virtual bool IsTabPinned(int model_index) const OVERRIDE;
-  virtual bool IsTabCloseable(int model_index) const OVERRIDE;
   virtual bool IsNewTabPage(int model_index) const OVERRIDE;
   virtual void SelectTab(int model_index) OVERRIDE;
   virtual void ExtendSelectionTo(int model_index) OVERRIDE;
@@ -152,8 +150,6 @@ class BrowserTabStripController : public TabStripController,
 
   // If non-NULL it means we're showing a menu for the tab.
   scoped_ptr<TabContextMenuContents> context_menu_contents_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   // Helper for performing tab selection as a result of dragging over a tab.
   HoverTabSelector hover_tab_selector_;

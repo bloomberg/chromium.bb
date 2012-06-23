@@ -56,7 +56,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
@@ -554,13 +553,6 @@ DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
   return download_request_limiter_;
 }
 
-TabCloseableStateWatcher* BrowserProcessImpl::tab_closeable_state_watcher() {
-  DCHECK(CalledOnValidThread());
-  if (!tab_closeable_state_watcher_.get())
-    CreateTabCloseableStateWatcher();
-  return tab_closeable_state_watcher_.get();
-}
-
 BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
   DCHECK(CalledOnValidThread());
   if (!background_mode_manager_.get())
@@ -814,11 +806,6 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
   notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
   created_notification_ui_manager_ = true;
 #endif
-}
-
-void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
-  DCHECK(tab_closeable_state_watcher_.get() == NULL);
-  tab_closeable_state_watcher_.reset(TabCloseableStateWatcher::Create());
 }
 
 void BrowserProcessImpl::CreateBackgroundModeManager() {

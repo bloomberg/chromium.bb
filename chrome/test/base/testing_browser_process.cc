@@ -98,10 +98,6 @@ ThumbnailGenerator* TestingBrowserProcess::GetThumbnailGenerator() {
   return NULL;
 }
 
-TabCloseableStateWatcher* TestingBrowserProcess::tab_closeable_state_watcher() {
-  return NULL;
-}
-
 BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {
   return NULL;
 }

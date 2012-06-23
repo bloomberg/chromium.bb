@@ -60,7 +60,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
   virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
-  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() OVERRIDE;
   virtual BackgroundModeManager* background_mode_manager() OVERRIDE;
   virtual StatusTray* status_tray() OVERRIDE;
   virtual SafeBrowsingService* safe_browsing_service() OVERRIDE;

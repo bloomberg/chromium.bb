@@ -290,10 +290,6 @@ void BaseTab::set_animation_container(ui::AnimationContainer* container) {
   hover_controller_.SetAnimationContainer(container);
 }
 
-bool BaseTab::IsCloseable() const {
-  return controller() ? controller()->IsTabCloseable(this) : true;
-}
-
 bool BaseTab::IsActive() const {
   return controller() ? controller()->IsActiveTab(this) : true;
 }

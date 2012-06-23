@@ -28,7 +28,6 @@ class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class RemoteDebuggingServer;
-class TabCloseableStateWatcher;
 
 namespace policy {
 class BrowserPolicyConnector;
@@ -98,7 +97,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual void SetApplicationLocale(const std::string& locale) OVERRIDE;
   virtual DownloadStatusUpdater* download_status_updater() OVERRIDE;
   virtual DownloadRequestLimiter* download_request_limiter() OVERRIDE;
-  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() OVERRIDE;
   virtual BackgroundModeManager* background_mode_manager() OVERRIDE;
   virtual StatusTray* status_tray() OVERRIDE;
   virtual SafeBrowsingService* safe_browsing_service() OVERRIDE;
@@ -133,7 +131,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
   void CreateStatusTrayManager();
-  void CreateTabCloseableStateWatcher();
   void CreatePrintPreviewTabController();
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingService();
@@ -193,8 +190,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
-
-  scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;
 
   scoped_ptr<StatusTray> status_tray_;
 

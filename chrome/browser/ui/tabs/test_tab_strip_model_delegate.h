@@ -39,10 +39,8 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE;
   virtual bool CanRestoreTab() OVERRIDE;
   virtual void RestoreTab() OVERRIDE;
-  virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE;
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
-  virtual bool CanCloseTab() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);

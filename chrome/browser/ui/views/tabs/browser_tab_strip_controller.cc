@@ -167,10 +167,6 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
       hover_tab_selector_(model) {
   model_->AddObserver(this);
 
-  notification_registrar_.Add(this,
-      chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
-      content::NotificationService::AllSources());
-
   local_pref_registrar_.Init(g_browser_process->local_state());
   local_pref_registrar_.Add(prefs::kTabStripLayoutType, this);
 }
@@ -242,11 +238,6 @@ bool BrowserTabStripController::IsTabSelected(int model_index) const {
 
 bool BrowserTabStripController::IsTabPinned(int model_index) const {
   return model_->ContainsIndex(model_index) && model_->IsTabPinned(model_index);
-}
-
-bool BrowserTabStripController::IsTabCloseable(int model_index) const {
-  return !model_->ContainsIndex(model_index) ||
-      model_->delegate()->CanCloseTab();
 }
 
 bool BrowserTabStripController::IsNewTabPage(int model_index) const {
@@ -448,16 +439,6 @@ void BrowserTabStripController::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED:
-      // Note that this notification may be fired during a model mutation and
-      // possibly before the tabstrip has processed the change.
-      // Here, we just re-layout each existing tab to reflect the change in its
-      // closeable state, and then schedule paint for entire tabstrip.
-      for (int i = 0; i < tabstrip_->tab_count(); ++i)
-        static_cast<BaseTab*>(tabstrip_->tab_at(i))->Layout();
-      tabstrip_->SchedulePaint();
-      break;
-
     case chrome::NOTIFICATION_PREF_CHANGED:
       if (*content::Details<std::string>(details).ptr() ==
           prefs::kTabStripLayoutType) {

@@ -51,10 +51,6 @@ bool FakeBaseTabStripController::IsTabPinned(int index) const {
   return false;
 }
 
-bool FakeBaseTabStripController::IsTabCloseable(int index) const {
-  return false;
-}
-
 bool FakeBaseTabStripController::IsNewTabPage(int index) const {
   return false;
 }

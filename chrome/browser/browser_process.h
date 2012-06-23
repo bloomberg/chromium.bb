@@ -33,7 +33,6 @@ class Profile;
 class ProfileManager;
 class SafeBrowsingService;
 class StatusTray;
-class TabCloseableStateWatcher;
 class ThumbnailGenerator;
 class VariationsService;
 class WatchDogThread;
@@ -157,9 +156,6 @@ class BrowserProcess {
 
   virtual DownloadStatusUpdater* download_status_updater() = 0;
   virtual DownloadRequestLimiter* download_request_limiter() = 0;
-
-  // Returns the object that watches for changes in the closeable state of tab.
-  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() = 0;
 
   // Returns the object that manages background applications.
   virtual BackgroundModeManager* background_mode_manager() = 0;

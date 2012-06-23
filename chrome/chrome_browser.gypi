@@ -2237,8 +2237,6 @@
         'browser/sync/sync_ui_util_mac.h',
         'browser/sync/sync_ui_util_mac.mm',
         'browser/sync/user_selectable_sync_type.h',
-        'browser/tab_closeable_state_watcher.cc',
-        'browser/tab_closeable_state_watcher.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
         'browser/tab_contents/confirm_infobar_delegate.cc',

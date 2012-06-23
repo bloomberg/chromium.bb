@@ -61,13 +61,6 @@ bool ShouldForgetOpenersForTransition(content::PageTransition transition) {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabStripModelDelegate, public:
-
-bool TabStripModelDelegate::CanCloseTab() const {
-  return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // TabStripModel, public:
 
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
@@ -779,10 +772,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
     case CommandNewTab:
-      return true;
-
     case CommandCloseTab:
-      return delegate_->CanCloseTab();
+      return true;
 
     case CommandReload: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
@@ -888,7 +879,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       std::vector<TabContents*> tabs;
       for (size_t i = 0; i < indices.size(); ++i)
         tabs.push_back(GetTabContentsAt(indices[i]));
-      for (size_t i = 0; i < tabs.size() && delegate_->CanCloseTab(); ++i) {
+      for (size_t i = 0; i < tabs.size(); ++i) {
         int index = GetIndexOfTabContents(tabs[i]);
         if (index != -1) {
           CloseTabContentsAt(index,
@@ -1134,15 +1125,10 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(TabContents* contents) const {
          contents->web_contents()->GetController().GetEntryCount() == 1;
 }
 
-bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,
+bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
                                       uint32 close_types) {
-  if (in_indices.empty())
-    return true;
-
-  std::vector<int> indices(in_indices);
-  bool retval = delegate_->CanCloseContents(&indices);
   if (indices.empty())
-    return retval;
+    return true;
 
   // Map the indices to TabContents, that way if deleting a tab deletes
   // other tabs we're ok. Crashes seem to indicate during tab deletion other
@@ -1180,6 +1166,7 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,
   }
 
   // We now return to our regularly scheduled shutdown procedure.
+  bool retval = true;
   for (size_t i = 0; i < tabs.size(); ++i) {
     TabContents* detached_contents = tabs[i];
     int index = GetIndexOfTabContents(detached_contents);

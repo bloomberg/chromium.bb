@@ -73,17 +73,9 @@ bool TestTabStripModelDelegate::CanRestoreTab() {
 void TestTabStripModelDelegate::RestoreTab() {
 }
 
-bool TestTabStripModelDelegate::CanCloseContents(std::vector<int>* indices) {
-  return true;
-}
-
 bool TestTabStripModelDelegate::CanBookmarkAllTabs() const {
   return true;
 }
 
 void TestTabStripModelDelegate::BookmarkAllTabs() {
-}
-
-bool TestTabStripModelDelegate::CanCloseTab() const {
-  return true;
 }

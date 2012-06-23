@@ -1030,12 +1030,6 @@ enum NotificationType {
   // Send when a context menu is closed.
   NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
 
-  // Sent when the tab's closeable state has changed due to increase/decrease
-  // in number of tabs in browser or increase/decrease in number of browsers.
-  // Details<bool> contain the closeable flag while source is AllSources.
-  // This is only sent from ChromeOS's TabCloseableStateWatcher.
-  NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
-
   // Sent each time the InstantController is updated.
   NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
 

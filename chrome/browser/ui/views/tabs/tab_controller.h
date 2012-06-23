@@ -52,9 +52,6 @@ class TabController {
   // Returns true if the specified Tab is pinned.
   virtual bool IsTabPinned(const BaseTab* tab) const = 0;
 
-  // Returns true if the specified Tab is closeable.
-  virtual bool IsTabCloseable(const BaseTab* tab) const = 0;
-
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       BaseTab* tab,
