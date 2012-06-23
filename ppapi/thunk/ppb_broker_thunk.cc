@@ -4,6 +4,7 @@
 
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_broker_api.h"
@@ -31,7 +32,7 @@ int32_t Connect(PP_Resource resource,
   EnterResource<PPB_Broker_API> enter(resource, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Connect(callback));
+  return enter.SetResult(enter.object()->Connect(enter.callback()));
 }
 
 int32_t GetHandle(PP_Resource resource, int32_t* handle) {

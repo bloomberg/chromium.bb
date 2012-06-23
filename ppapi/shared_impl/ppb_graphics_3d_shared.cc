@@ -55,19 +55,14 @@ int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
   return PP_OK;
 }
 
-int32_t PPB_Graphics3D_Shared::SwapBuffers(PP_CompletionCallback callback) {
-  if (!callback.func) {
-    // Blocking SwapBuffers isn't supported (since we have to be on the main
-    // thread).
-    return PP_ERROR_BADARGUMENT;
-  }
-
+int32_t PPB_Graphics3D_Shared::SwapBuffers(
+    scoped_refptr<TrackedCallback> callback) {
   if (HasPendingSwap()) {
     // Already a pending SwapBuffers that hasn't returned yet.
     return PP_ERROR_INPROGRESS;
   }
 
-  swap_callback_ = new TrackedCallback(this, callback);
+  swap_callback_ = callback;
   return DoSwapBuffers();
 }
 

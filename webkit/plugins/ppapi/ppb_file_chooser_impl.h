@@ -16,8 +16,6 @@
 #include "ppapi/thunk/ppb_file_chooser_api.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
-struct PP_CompletionCallback;
-
 namespace ppapi {
 class TrackedCallback;
 }
@@ -63,28 +61,30 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
   // Check that |callback| is valid (only non-blocking operation is supported)
   // and that no callback is already pending. Returns |PP_OK| if okay, else
   // |PP_ERROR_...| to be returned to the plugin.
-  int32_t ValidateCallback(const PP_CompletionCallback& callback);
+  int32_t ValidateCallback(scoped_refptr< ::ppapi::TrackedCallback> callback);
 
   // Sets up |callback| as the pending callback. This should only be called once
   // it is certain that |PP_OK_COMPLETIONPENDING| will be returned.
-  void RegisterCallback(const PP_CompletionCallback& callback);
+  void RegisterCallback(scoped_refptr< ::ppapi::TrackedCallback> callback);
 
   void RunCallback(int32_t result);
 
   // PPB_FileChooser_API implementation.
-  virtual int32_t Show(const PP_ArrayOutput& output,
-                       const PP_CompletionCallback& callback) OVERRIDE;
+  virtual int32_t Show(
+      const PP_ArrayOutput& output,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t ShowWithoutUserGesture(
       PP_Bool save_as,
       PP_Var suggested_file_name,
       const PP_ArrayOutput& output,
-      const PP_CompletionCallback& callback);
-  virtual int32_t Show0_5(const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> callback);
+  virtual int32_t Show0_5(
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Resource GetNextChosenFile() OVERRIDE;
   virtual int32_t ShowWithoutUserGesture0_5(
       PP_Bool save_as,
       PP_Var suggested_file_name,
-      const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
 
   // Splits a comma-separated MIME type/extension list |accept_types|, trims the
   // resultant split types, makes them lowercase, and returns them.

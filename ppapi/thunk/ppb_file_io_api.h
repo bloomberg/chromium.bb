@@ -1,14 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef PPAPI_THUNK_PPB_FILE_IO_API_H_
 #define PPAPI_THUNK_PPB_FILE_IO_API_H_
 
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
+
+class TrackedCallback;
+
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_FileIO_API {
@@ -17,32 +21,32 @@ class PPAPI_THUNK_EXPORT PPB_FileIO_API {
 
   virtual int32_t Open(PP_Resource file_ref,
                        int32_t open_flags,
-                       PP_CompletionCallback callback) = 0;
+                       scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Query(PP_FileInfo* info,
-                        PP_CompletionCallback callback) = 0;
+                        scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Touch(PP_Time last_access_time,
                         PP_Time last_modified_time,
-                        PP_CompletionCallback callback) = 0;
+                        scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Read(int64_t offset,
                        char* buffer,
                        int32_t bytes_to_read,
-                       PP_CompletionCallback callback) = 0;
+                       scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Write(int64_t offset,
                         const char* buffer,
                         int32_t bytes_to_write,
-                        PP_CompletionCallback callback) = 0;
+                        scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t SetLength(int64_t length,
-                            PP_CompletionCallback callback) = 0;
-  virtual int32_t Flush(PP_CompletionCallback callback) = 0;
+                            scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Close() = 0;
 
   // Trusted API.
   virtual int32_t GetOSFileDescriptor() = 0;
   virtual int32_t WillWrite(int64_t offset,
                             int32_t bytes_to_write,
-                            PP_CompletionCallback callback) = 0;
+                            scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t WillSetLength(int64_t length,
-                                PP_CompletionCallback callback) = 0;
+                                scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

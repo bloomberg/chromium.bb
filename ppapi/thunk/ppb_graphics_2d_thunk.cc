@@ -5,6 +5,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -70,12 +71,11 @@ void ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
   enter.object()->ReplaceContents(image_data);
 }
 
-int32_t Flush(PP_Resource graphics_2d,
-              PP_CompletionCallback callback) {
+int32_t Flush(PP_Resource graphics_2d, PP_CompletionCallback callback) {
   EnterGraphics2D enter(graphics_2d, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Flush(callback));
+  return enter.SetResult(enter.object()->Flush(enter.callback()));
 }
 
 const PPB_Graphics2D g_ppb_graphics_2d_thunk = {

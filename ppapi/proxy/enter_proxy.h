@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,20 @@ class EnterHostFromHostResource
     : public thunk::EnterResourceNoLock<ResourceT> {
  public:
   explicit EnterHostFromHostResource(const HostResource& host_resource)
-      : thunk::EnterResourceNoLock<ResourceT>(
-            host_resource.host_resource(), false) {
+      : thunk::EnterResourceNoLock<ResourceT>(host_resource.host_resource(),
+                                              false) {
+    // Validate that we're in the host rather than the plugin. Otherwise this
+    // object will do the wrong thing. In the host, the instance should have
+    // a corresponding host disptacher (assuming the resource is valid).
+    DCHECK(this->failed() ||
+           HostDispatcher::GetForInstance(host_resource.instance()));
+  }
+
+  EnterHostFromHostResource(const HostResource& host_resource,
+                            const pp::CompletionCallback& callback)
+      : thunk::EnterResourceNoLock<ResourceT>(host_resource.host_resource(),
+                                              callback.pp_completion_callback(),
+                                              false) {
     // Validate that we're in the host rather than the plugin. Otherwise this
     // object will do the wrong thing. In the host, the instance should have
     // a corresponding host disptacher (assuming the resource is valid).
@@ -92,9 +104,8 @@ class EnterHostFromHostResourceForceCallback
   EnterHostFromHostResourceForceCallback(
       const HostResource& host_resource,
       const pp::CompletionCallback& callback)
-      : EnterHostFromHostResource<ResourceT>(host_resource),
-        needs_running_(true),
-        callback_(callback) {
+      : EnterHostFromHostResource<ResourceT>(host_resource, callback),
+        needs_running_(true) {
   }
 
   // For callbacks that take no parameters except the "int32_t result". Most
@@ -104,9 +115,9 @@ class EnterHostFromHostResourceForceCallback
       const HostResource& host_resource,
       CallbackFactory& factory,
       Method method)
-      : EnterHostFromHostResource<ResourceT>(host_resource),
-        needs_running_(true),
-        callback_(factory.NewOptionalCallback(method)) {
+      : EnterHostFromHostResource<ResourceT>(host_resource,
+            factory.NewOptionalCallback(method)),
+        needs_running_(true) {
     if (this->failed())
       RunCallback(PP_ERROR_BADRESOURCE);
   }
@@ -118,9 +129,9 @@ class EnterHostFromHostResourceForceCallback
       CallbackFactory& factory,
       Method method,
       const A& a)
-      : EnterHostFromHostResource<ResourceT>(host_resource),
-        needs_running_(true),
-        callback_(factory.NewOptionalCallback(method, a)) {
+      : EnterHostFromHostResource<ResourceT>(host_resource,
+            factory.NewOptionalCallback(method, a)),
+        needs_running_(true) {
     if (this->failed())
       RunCallback(PP_ERROR_BADRESOURCE);
   }
@@ -133,9 +144,9 @@ class EnterHostFromHostResourceForceCallback
       Method method,
       const A& a,
       const B& b)
-      : EnterHostFromHostResource<ResourceT>(host_resource),
-        needs_running_(true),
-        callback_(factory.NewOptionalCallback(method, a, b)) {
+      : EnterHostFromHostResource<ResourceT>(host_resource,
+            factory.NewOptionalCallback(method, a, b)),
+        needs_running_(true) {
     if (this->failed())
       RunCallback(PP_ERROR_BADRESOURCE);
   }
@@ -150,24 +161,24 @@ class EnterHostFromHostResourceForceCallback
 
   void SetResult(int32_t result) {
     DCHECK(needs_running_) << "Don't call SetResult when there already is one.";
-    needs_running_ = false;
     if (result != PP_OK_COMPLETIONPENDING)
-      callback_.Run(result);
-  }
-
-  PP_CompletionCallback callback() {
-    return callback_.pp_completion_callback();
+      RunCallback(result);
+    needs_running_ = false;
+    // Either we already ran the callback, or it will be run asynchronously. We
+    // clear the callback so it isn't accidentally run again (and because
+    // EnterBase checks that the callback has been cleared).
+    this->ClearCallback();
   }
 
  private:
   void RunCallback(int32_t result) {
     DCHECK(needs_running_);
     needs_running_ = false;
-    callback_.Run(result);
+    this->callback()->Run(result);
+    this->ClearCallback();
   }
 
   bool needs_running_;
-  pp::CompletionCallback callback_;
 };
 
 }  // namespace proxy

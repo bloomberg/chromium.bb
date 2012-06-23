@@ -22,9 +22,6 @@
 namespace ppapi {
 namespace proxy {
 
-typedef thunk::EnterResource<thunk::PPB_TCPServerSocket_Private_API>
-    EnterTCPServerSocket;
-
 namespace {
 
 class TCPServerSocket : public PPB_TCPServerSocket_Shared {
@@ -164,7 +161,8 @@ void PPB_TCPServerSocket_Private_Proxy::OnMsgListenACK(
     PP_Resource socket_resource,
     uint32 socket_id,
     int32_t status) {
-  EnterTCPServerSocket enter(socket_resource, true);
+ thunk::EnterResourceNoLock<thunk::PPB_TCPServerSocket_Private_API>
+     enter(socket_resource, true);
   if (enter.succeeded()) {
     PPB_TCPServerSocket_Shared* server_socket =
         static_cast<PPB_TCPServerSocket_Shared*>(enter.object());

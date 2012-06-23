@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_device_ref_api.h"
 #include "ppapi/thunk/ppb_audio_input_api.h"
@@ -49,7 +50,8 @@ int32_t EnumerateDevices(PP_Resource audio_input,
   if (enter.failed())
     return enter.retval();
 
-  return enter.SetResult(enter.object()->EnumerateDevices(devices, callback));
+  return enter.SetResult(enter.object()->EnumerateDevices(devices,
+                                                          enter.callback()));
 }
 
 int32_t Open(PP_Resource audio_input,
@@ -73,7 +75,7 @@ int32_t Open(PP_Resource audio_input,
   }
 
   return enter.SetResult(enter.object()->Open(
-      device_id, config, audio_input_callback, user_data, callback));
+      device_id, config, audio_input_callback, user_data, enter.callback()));
 }
 
 PP_Resource GetCurrentConfig(PP_Resource audio_input) {

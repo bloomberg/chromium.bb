@@ -43,7 +43,7 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
   void Scroll(const PP_Rect* clip_rect,
               const PP_Point* amount);
   void ReplaceContents(PP_Resource image_data);
-  int32_t Flush(PP_CompletionCallback callback);
+  int32_t Flush(scoped_refptr<TrackedCallback> callback);
 
   // Notification that the host has sent an ACK for a pending Flush.
   void FlushACK(int32_t result_code);
@@ -126,15 +126,10 @@ void Graphics2D::ReplaceContents(PP_Resource image_data) {
       kApiID, host_resource(), image_object->host_resource()));
 }
 
-int32_t Graphics2D::Flush(PP_CompletionCallback callback) {
-  // For now, disallow blocking calls. We'll need to add support for other
-  // threads to this later.
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+int32_t Graphics2D::Flush(scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(current_flush_callback_))
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
-  current_flush_callback_ = new TrackedCallback(this, callback);
+  current_flush_callback_ = callback;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(kApiID,
                                                              host_resource()));

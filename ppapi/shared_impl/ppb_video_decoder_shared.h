@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,10 +40,10 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
   virtual void Destroy() OVERRIDE;
 
  protected:
-  bool SetFlushCallback(PP_CompletionCallback callback);
-  bool SetResetCallback(PP_CompletionCallback callback);
-  bool SetBitstreamBufferCallback(
-      int32 bitstream_buffer_id, PP_CompletionCallback callback);
+  bool SetFlushCallback(scoped_refptr<TrackedCallback> callback);
+  bool SetResetCallback(scoped_refptr<TrackedCallback> callback);
+  bool SetBitstreamBufferCallback(int32 bitstream_buffer_id,
+                                  scoped_refptr<TrackedCallback> callback);
 
   void RunFlushCallback(int32 result);
   void RunResetCallback(int32 result);

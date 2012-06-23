@@ -7,6 +7,7 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/ppb_network_monitor_private_api.h"
 
 namespace ppapi {
@@ -39,7 +40,13 @@ class PPB_NetworkMonitor_Private_Proxy::NetworkMonitor
     return this;
   }
 
-  void OnNetworkListReceived(const scoped_refptr<NetworkListStorage>& list) {
+  // This is invoked when a network list is received for this monitor (either
+  // initially or on a change). It acquires the ProxyLock inside because
+  // ObserverListThreadSafe does not support Bind/Closure, otherwise we would
+  // wrap the call with a lock using RunWhileLocked.
+  void OnNetworkListReceivedLocks(
+      const scoped_refptr<NetworkListStorage>& list) {
+    ProxyAutoLock lock;
     PP_Resource list_resource =
         PPB_NetworkList_Private_Shared::Create(
             OBJECT_IS_PROXY, pp_instance(), list);
@@ -70,6 +77,8 @@ PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
     PP_Instance instance,
     PPB_NetworkMonitor_Callback callback,
     void* user_data) {
+  // TODO(dmichael): Check that this thread has a valid message loop associated
+  //                 with it.
   if (!callback)
     return 0;
 
@@ -98,9 +107,9 @@ PP_Resource PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
     // here.
     proxy->current_list_ = NULL;
   } else if (proxy->current_list_.get()) {
-    MessageLoop::current()->PostTask(FROM_HERE, RunWhileLocked(base::Bind(
-        &NetworkMonitor::OnNetworkListReceived,
-        result->AsWeakPtr(), proxy->current_list_)));
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &NetworkMonitor::OnNetworkListReceivedLocks,
+        result->AsWeakPtr(), proxy->current_list_));
   }
 
   return result->GetReference();
@@ -122,7 +131,7 @@ void PPB_NetworkMonitor_Private_Proxy::OnPluginMsgNetworkList(
     const ppapi::NetworkList& list) {
   scoped_refptr<NetworkListStorage> list_storage(new NetworkListStorage(list));
   current_list_ = list_storage;
-  monitors_->Notify(&NetworkMonitor::OnNetworkListReceived, list_storage);
+  monitors_->Notify(&NetworkMonitor::OnNetworkListReceivedLocks, list_storage);
 }
 
 void PPB_NetworkMonitor_Private_Proxy::OnNetworkMonitorDeleted(

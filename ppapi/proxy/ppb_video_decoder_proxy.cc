@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,12 +35,12 @@ class VideoDecoder : public PPB_VideoDecoder_Shared {
 
   // PPB_VideoDecoder_API implementation.
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-                         PP_CompletionCallback callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void AssignPictureBuffers(
       uint32_t no_of_buffers, const PP_PictureBuffer_Dev* buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
-  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Reset(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Reset(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
  private:
@@ -65,7 +65,7 @@ VideoDecoder::~VideoDecoder() {
 
 int32_t VideoDecoder::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-    PP_CompletionCallback callback) {
+    scoped_refptr<TrackedCallback> callback) {
   EnterResourceNoLock<PPB_Buffer_API>
       enter_buffer(bitstream_buffer->data, true);
   if (enter_buffer.failed())
@@ -102,7 +102,7 @@ void VideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
       API_ID_PPB_VIDEO_DECODER_DEV, host_resource(), picture_buffer_id));
 }
 
-int32_t VideoDecoder::Flush(PP_CompletionCallback callback) {
+int32_t VideoDecoder::Flush(scoped_refptr<TrackedCallback> callback) {
   if (!SetFlushCallback(callback))
     return PP_ERROR_INPROGRESS;
 
@@ -112,7 +112,7 @@ int32_t VideoDecoder::Flush(PP_CompletionCallback callback) {
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t VideoDecoder::Reset(PP_CompletionCallback callback) {
+int32_t VideoDecoder::Reset(scoped_refptr<TrackedCallback> callback) {
   if (!SetResetCallback(callback))
     return PP_ERROR_INPROGRESS;
 

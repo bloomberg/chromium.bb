@@ -29,11 +29,11 @@ class PPAPI_SHARED_EXPORT PPB_VideoCapture_Shared
   // PPB_VideoCapture_API implementation.
   virtual int32_t EnumerateDevices(
       PP_Resource* devices,
-      const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,
-                       const PP_CompletionCallback& callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t StartCapture() OVERRIDE;
   virtual int32_t ReuseBuffer(uint32_t buffer) OVERRIDE;
   virtual int32_t StopCapture() OVERRIDE;
@@ -58,12 +58,12 @@ class PPAPI_SHARED_EXPORT PPB_VideoCapture_Shared
   // work.
   virtual int32_t InternalEnumerateDevices(
       PP_Resource* devices,
-      const PP_CompletionCallback& callback) = 0;
+      scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t InternalOpen(
       const std::string& device_id,
       const PP_VideoCaptureDeviceInfo_Dev& requested_info,
       uint32_t buffer_count,
-      const PP_CompletionCallback& callback) = 0;
+      scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t InternalStartCapture() = 0;
   virtual int32_t InternalReuseBuffer(uint32_t buffer) = 0;
   virtual int32_t InternalStopCapture() = 0;

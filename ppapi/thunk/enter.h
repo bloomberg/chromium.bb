@@ -5,13 +5,18 @@
 #ifndef PPAPI_THUNK_ENTER_H_
 #define PPAPI_THUNK_ENTER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -38,6 +43,9 @@ namespace thunk {
 
 namespace subtle {
 
+// Assert that we are holding the proxy lock.
+PPAPI_THUNK_EXPORT void AssertLockHeld();
+
 // This helps us define our RAII Enter classes easily. To make an RAII class
 // which locks the proxy lock on construction and unlocks on destruction,
 // inherit from |LockOnEntry<true>|. For cases where you don't want to lock,
@@ -48,7 +56,17 @@ struct LockOnEntry;
 
 template <>
 struct LockOnEntry<false> {
-// TODO(dmichael) assert the lock is held.
+#if (!NDEBUG)
+  LockOnEntry() {
+    // You must already hold the lock to use Enter*NoLock.
+    AssertLockHeld();
+  }
+  ~LockOnEntry() {
+    // You must not release the lock before leaving the scope of the
+    // Enter*NoLock.
+    AssertLockHeld();
+  }
+#endif
 };
 
 template <>
@@ -65,10 +83,15 @@ struct LockOnEntry<true> {
 class PPAPI_THUNK_EXPORT EnterBase {
  public:
   EnterBase();
-  explicit EnterBase(const PP_CompletionCallback& callback);
+  explicit EnterBase(PP_Resource resource);
+  EnterBase(PP_Resource resource, const PP_CompletionCallback& callback);
   virtual ~EnterBase();
 
-  // Sets the result.
+  // Sets the result for calls that use a completion callback. It handles making
+  // sure that "Required" callbacks are scheduled to run asynchronously and
+  // "Blocking" callbacks cause the caller to block. (Interface implementations,
+  // therefore, should not do any special casing based on the type of the
+  // callback.)
   //
   // Returns the "retval()". This is to support the typical usage of
   //   return enter.SetResult(...);
@@ -78,18 +101,27 @@ class PPAPI_THUNK_EXPORT EnterBase {
   // Use this value as the return value for the function.
   int32_t retval() const { return retval_; }
 
+  // All failure conditions cause retval_ to be set to an appropriate error
+  // code.
+  bool succeeded() const { return retval_ == PP_OK; }
+  bool failed() const { return !succeeded(); }
+
+  const scoped_refptr<TrackedCallback>& callback() { return callback_; }
+
  protected:
   // Helper function to return a Resource from a PP_Resource. Having this
   // code be in the non-templatized base keeps us from having to instantiate
   // it in every template.
-  Resource* GetResource(PP_Resource resource) const;
+  static Resource* GetResource(PP_Resource resource);
+
+  void ClearCallback();
 
   // Does error handling associated with entering a resource. The resource_base
   // is the result of looking up the given pp_resource. The object is the
-  // result of converting the base to the desired object (converted back to a
-  // Resource* so this function doesn't have to be templatized). The reason for
-  // passing both resource_base and object is that we can differentiate "bad
-  // resource ID" from "valid resource ID not of the currect type."
+  // result of converting the base to the desired object (converted to a void*
+  // so this function doesn't have to be templatized). The reason for passing
+  // both resource_base and object is that we can differentiate "bad resource
+  // ID" from "valid resource ID not of the correct type."
   //
   // This will set retval_ = PP_ERROR_BADRESOURCE if the object is invalid, and
   // if report_error is set, log a message to the programmer.
@@ -103,11 +135,23 @@ class PPAPI_THUNK_EXPORT EnterBase {
                                 void* object,
                                 bool report_error);
 
+  // For Enter objects that need a resource, we'll store a pointer to the
+  // Resource object so that we don't need to look it up more than once. For
+  // Enter objects with no resource, this will be NULL.
+  Resource* resource_;
+
  private:
-  // Holds the callback. The function will only be non-NULL when the
-  // callback is requried. Optional callbacks don't require any special
-  // handling from us at this layer.
-  PP_CompletionCallback callback_;
+  bool CallbackIsValid() const;
+
+  // Checks whether the callback is valid (i.e., if it is either non-blocking,
+  // or blocking and we're on a background thread). If the callback is invalid,
+  // this will set retval_ = PP_ERROR_BLOCKS_MAIN_THREAD, and if report_error is
+  // set, it will log a message to the programmer.
+  void SetStateForCallbackError(bool report_error);
+
+  // Holds the callback. For Enter objects that aren't given a callback, this
+  // will be NULL.
+  scoped_refptr<TrackedCallback> callback_;
 
   int32_t retval_;
 };
@@ -121,34 +165,30 @@ class EnterResource : public subtle::EnterBase,
                       public subtle::LockOnEntry<lock_on_entry> {
  public:
   EnterResource(PP_Resource resource, bool report_error)
-      : EnterBase() {
+      : EnterBase(resource) {
     Init(resource, report_error);
   }
-  EnterResource(PP_Resource resource,
-                const PP_CompletionCallback& callback,
+  EnterResource(PP_Resource resource, const PP_CompletionCallback& callback,
                 bool report_error)
-      : EnterBase(callback) {
+      : EnterBase(resource, callback) {
     Init(resource, report_error);
   }
   ~EnterResource() {}
-
-  bool succeeded() const { return !!object_; }
-  bool failed() const { return !object_; }
 
   ResourceT* object() { return object_; }
   Resource* resource() { return resource_; }
 
  private:
   void Init(PP_Resource resource, bool report_error) {
-    resource_ = GetResource(resource);
     if (resource_)
       object_ = resource_->GetAs<ResourceT>();
     else
       object_ = NULL;
+    // Validate the resource (note, if both are wrong, we will return
+    // PP_ERROR_BADRESOURCE; last in wins).
     SetStateForResourceError(resource, resource_, object_, report_error);
   }
 
-  Resource* resource_;
   ResourceT* object_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterResource);
@@ -162,6 +202,10 @@ class EnterResourceNoLock : public EnterResource<ResourceT, false> {
  public:
   EnterResourceNoLock(PP_Resource resource, bool report_error)
       : EnterResource<ResourceT, false>(resource, report_error) {
+  }
+  EnterResourceNoLock(PP_Resource resource, PP_CompletionCallback callback,
+                      bool report_error)
+      : EnterResource<ResourceT, false>(resource, callback, report_error) {
   }
 };
 
@@ -190,12 +234,9 @@ class PPAPI_THUNK_EXPORT EnterInstanceNoLock
       public subtle::LockOnEntry<false> {
  public:
   EnterInstanceNoLock(PP_Instance instance);
-  //EnterInstanceNoLock(PP_Instance instance,
-  //                    const PP_CompletionCallback& callback);
+  EnterInstanceNoLock(PP_Instance instance,
+                      const PP_CompletionCallback& callback);
   ~EnterInstanceNoLock();
-
-  bool succeeded() const { return !!functions_; }
-  bool failed() const { return !functions_; }
 
   PPB_Instance_API* functions() { return functions_; }
 
@@ -212,9 +253,6 @@ class PPAPI_THUNK_EXPORT EnterResourceCreation
   EnterResourceCreation(PP_Instance instance);
   ~EnterResourceCreation();
 
-  bool succeeded() const { return !!functions_; }
-  bool failed() const { return !functions_; }
-
   ResourceCreationAPI* functions() { return functions_; }
 
  private:
@@ -227,9 +265,6 @@ class PPAPI_THUNK_EXPORT EnterResourceCreationNoLock
  public:
   EnterResourceCreationNoLock(PP_Instance instance);
   ~EnterResourceCreationNoLock();
-
-  bool succeeded() const { return !!functions_; }
-  bool failed() const { return !functions_; }
 
   ResourceCreationAPI* functions() { return functions_; }
 

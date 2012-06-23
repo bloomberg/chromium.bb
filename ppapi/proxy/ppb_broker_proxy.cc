@@ -33,7 +33,8 @@ class Broker : public PPB_Broker_API, public Resource {
   virtual PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_Broker_API implementation.
-  virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;
+  virtual int32_t Connect(
+      scoped_refptr<TrackedCallback> connect_callback) OVERRIDE;
   virtual int32_t GetHandle(int32_t* handle) OVERRIDE;
 
   // Called by the proxy when the host side has completed the request.
@@ -67,18 +68,13 @@ PPB_Broker_API* Broker::AsPPB_Broker_API() {
   return this;
 }
 
-int32_t Broker::Connect(PP_CompletionCallback connect_callback) {
-  if (!connect_callback.func) {
-    // Synchronous calls are not supported.
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-  }
-
+int32_t Broker::Connect(scoped_refptr<TrackedCallback> connect_callback) {
   if (TrackedCallback::IsPending(current_connect_callback_))
     return PP_ERROR_INPROGRESS;
   else if (called_connect_)
     return PP_ERROR_FAILED;
 
-  current_connect_callback_ = new TrackedCallback(this, connect_callback);
+  current_connect_callback_ = connect_callback;
   called_connect_ = true;
 
   bool success = PluginDispatcher::GetForResource(this)->Send(

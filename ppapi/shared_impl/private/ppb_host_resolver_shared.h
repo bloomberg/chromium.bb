@@ -50,7 +50,7 @@ class PPAPI_SHARED_EXPORT PPB_HostResolver_Shared
   virtual int32_t Resolve(const char* host,
                           uint16_t port,
                           const PP_HostResolver_Private_Hint* hint,
-                          PP_CompletionCallback callback) OVERRIDE;
+                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetCanonicalName() OVERRIDE;
   virtual uint32_t GetSize() OVERRIDE;
   virtual bool GetNetAddress(uint32_t index,

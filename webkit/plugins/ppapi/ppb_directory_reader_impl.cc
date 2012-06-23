@@ -23,6 +23,7 @@
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::PpapiGlobals;
+using ::ppapi::TrackedCallback;
 using ::ppapi::thunk::EnterResourceNoLock;
 using ::ppapi::thunk::PPB_DirectoryReader_API;
 using ::ppapi::thunk::PPB_FileRef_API;
@@ -80,9 +81,7 @@ PPB_DirectoryReader_API* PPB_DirectoryReader_Impl::AsPPB_DirectoryReader_API() {
 
 int32_t PPB_DirectoryReader_Impl::GetNextEntry(
     PP_DirectoryEntry_Dev* entry,
-    PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+    scoped_refptr<TrackedCallback> callback) {
   if (directory_ref_->GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_ERROR_FAILED;
 

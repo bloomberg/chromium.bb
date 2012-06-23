@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,8 @@ class PPB_LayerCompositor_Impl
   virtual void SetRect(PP_Resource layer, const PP_Rect* rect) OVERRIDE;
   virtual void SetDisplay(PP_Resource layer, PP_Bool is_displayed) OVERRIDE;
   virtual void MarkAsDirty(PP_Resource layer) OVERRIDE;
-  virtual int32_t SwapBuffers(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t SwapBuffers(
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_LayerCompositor_Impl);

@@ -46,18 +46,18 @@ class FileChooser : public Resource,
 
   // PPB_FileChooser_API implementation.
   virtual int32_t Show(const PP_ArrayOutput& output,
-                       const PP_CompletionCallback& callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t ShowWithoutUserGesture(
       PP_Bool save_as,
       PP_Var suggested_file_name,
       const PP_ArrayOutput& output,
-      const PP_CompletionCallback& callback);
-  virtual int32_t Show0_5(const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback);
+  virtual int32_t Show0_5(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Resource GetNextChosenFile() OVERRIDE;
   virtual int32_t ShowWithoutUserGesture0_5(
       PP_Bool save_as,
       PP_Var suggested_file_name,
-      const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
   // Handles the choose complete notification from the host.
   void ChooseComplete(
@@ -68,7 +68,7 @@ class FileChooser : public Resource,
   int32_t Show(bool require_user_gesture,
                PP_Bool save_as,
                PP_Var suggested_file_name,
-               const PP_CompletionCallback& callback);
+               scoped_refptr<TrackedCallback> callback);
 
   // When using v0.6 of the API, contains the array output info.
   ArrayWriter output_;
@@ -103,7 +103,7 @@ PPB_FileChooser_API* FileChooser::AsPPB_FileChooser_API() {
 }
 
 int32_t FileChooser::Show(const PP_ArrayOutput& output,
-                          const PP_CompletionCallback& callback) {
+                          scoped_refptr<TrackedCallback> callback) {
   int32_t result = Show(true, PP_FALSE, PP_MakeUndefined(), callback);
   if (result == PP_OK_COMPLETIONPENDING)
     output_.set_pp_array_output(output);
@@ -114,35 +114,32 @@ int32_t FileChooser::ShowWithoutUserGesture(
     PP_Bool save_as,
     PP_Var suggested_file_name,
     const PP_ArrayOutput& output,
-    const PP_CompletionCallback& callback) {
+    scoped_refptr<TrackedCallback> callback) {
   int32_t result = Show(false, save_as, suggested_file_name, callback);
   if (result == PP_OK_COMPLETIONPENDING)
     output_.set_pp_array_output(output);
   return result;
 }
 
-int32_t FileChooser::Show0_5(const PP_CompletionCallback& callback) {
+int32_t FileChooser::Show0_5(scoped_refptr<TrackedCallback> callback) {
   return Show(true, PP_FALSE, PP_MakeUndefined(), callback);
 }
 
 int32_t FileChooser::ShowWithoutUserGesture0_5(
     PP_Bool save_as,
     PP_Var suggested_file_name,
-    const PP_CompletionCallback& callback) {
+    scoped_refptr<TrackedCallback> callback) {
   return Show(false, save_as, suggested_file_name, callback);
 }
 
 int32_t FileChooser::Show(bool require_user_gesture,
                           PP_Bool save_as,
                           PP_Var suggested_file_name,
-                          const PP_CompletionCallback& callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+                          scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(current_show_callback_))
     return PP_ERROR_INPROGRESS;  // Can't show more than once.
 
-  current_show_callback_ = new TrackedCallback(this, callback);
+  current_show_callback_ = callback;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   dispatcher->Send(
       new PpapiHostMsg_PPBFileChooser_Show(

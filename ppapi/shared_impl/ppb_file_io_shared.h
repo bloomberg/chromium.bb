@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,23 +32,23 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   // PPB_FileIO_API implementation.
   virtual int32_t Open(PP_Resource file_ref,
                        int32_t open_flags,
-                       PP_CompletionCallback callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Query(PP_FileInfo* info,
-                        PP_CompletionCallback callback) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Touch(PP_Time last_access_time,
                         PP_Time last_modified_time,
-                        PP_CompletionCallback callback) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Read(int64_t offset,
                        char* buffer,
                        int32_t bytes_to_read,
-                       PP_CompletionCallback callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Write(int64_t offset,
                         const char* buffer,
                         int32_t bytes_to_write,
-                        PP_CompletionCallback callback) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t SetLength(int64_t length,
-                            PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
   // Callback handler for different types of operations.
   void ExecuteGeneralCallback(int32_t pp_error);
@@ -95,23 +95,24 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   virtual int32_t OpenValidated(PP_Resource file_ref_resource,
                                 thunk::PPB_FileRef_API* file_ref_api,
                                 int32_t open_flags,
-                                PP_CompletionCallback callback) = 0;
+                                scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t QueryValidated(PP_FileInfo* info,
-                                 PP_CompletionCallback callback) = 0;
+                                 scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t TouchValidated(PP_Time last_access_time,
                                  PP_Time last_modified_time,
-                                 PP_CompletionCallback callback) = 0;
+                                 scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t ReadValidated(int64_t offset,
                                 char* buffer,
                                 int32_t bytes_to_read,
-                                PP_CompletionCallback callback) = 0;
+                                scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t WriteValidated(int64_t offset,
                                  const char* buffer,
                                  int32_t bytes_to_write,
-                                 PP_CompletionCallback callback) = 0;
-  virtual int32_t SetLengthValidated(int64_t length,
-                                     PP_CompletionCallback callback) = 0;
-  virtual int32_t FlushValidated(PP_CompletionCallback callback) = 0;
+                                 scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t SetLengthValidated(
+      int64_t length,
+      scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t FlushValidated(scoped_refptr<TrackedCallback> callback) = 0;
 
   // Called for every "Validated" function.
   //
@@ -121,9 +122,7 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   //
   // Returns |PP_OK| to indicate that everything is valid or |PP_ERROR_...| if
   // the call should be aborted and that code returned to the plugin.
-  int32_t CommonCallValidation(bool should_be_open,
-                               OperationType new_op,
-                               PP_CompletionCallback callback);
+  int32_t CommonCallValidation(bool should_be_open, OperationType new_op);
 
   // Sets up a pending callback. This should only be called once it is certain
   // that |PP_OK_COMPLETIONPENDING| will be returned.
@@ -131,7 +130,7 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   // |read_buffer| is only used by read operations, |info| is used only by
   // query operations.
   void RegisterCallback(OperationType op,
-                        PP_CompletionCallback callback,
+                        scoped_refptr<TrackedCallback> callback,
                         char* read_buffer,
                         PP_FileInfo* info);
 

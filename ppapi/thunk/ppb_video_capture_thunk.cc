@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_device_ref_api.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"
@@ -36,7 +37,8 @@ int32_t EnumerateDevices(PP_Resource video_capture,
   if (enter.failed())
     return enter.retval();
 
-  return enter.SetResult(enter.object()->EnumerateDevices(devices, callback));
+  return enter.SetResult(enter.object()->EnumerateDevices(devices,
+                                                          enter.callback()));
 }
 
 int32_t Open(PP_Resource video_capture,
@@ -59,7 +61,7 @@ int32_t Open(PP_Resource video_capture,
   }
 
   return enter.SetResult(enter.object()->Open(
-      device_id, *requested_info, buffer_count, callback));
+      device_id, *requested_info, buffer_count, enter.callback()));
 }
 
 int32_t StartCapture(PP_Resource video_capture) {

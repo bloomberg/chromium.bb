@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"  // For testing purposes only.
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/threading/thread_local.h"  // For testing purposes only.
 
 namespace ppapi {
@@ -39,6 +40,12 @@ void PpapiGlobals::SetPpapiGlobalsOnThreadForTest(PpapiGlobals* ptr) {
   // If we allowed it, it would always over-ride the "test" versions.
   DCHECK(!ppapi_globals_);
   tls_ppapi_globals_for_test.Pointer()->Set(ptr);
+}
+
+base::MessageLoopProxy* PpapiGlobals::GetMainThreadMessageLoop() {
+  CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::MessageLoopProxy>, proxy,
+      (base::MessageLoopProxy::current()));
+  return proxy.get();
 }
 
 bool PpapiGlobals::IsHostGlobals() const {

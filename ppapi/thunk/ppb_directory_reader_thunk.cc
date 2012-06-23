@@ -5,6 +5,7 @@
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_directory_reader_api.h"
@@ -38,7 +39,7 @@ int32_t GetNextEntry(PP_Resource directory_reader,
       directory_reader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetNextEntry(entry, callback));
+  return enter.SetResult(enter.object()->GetNextEntry(entry, enter.callback()));
 }
 
 const PPB_DirectoryReader_Dev g_ppb_directory_reader_thunk = {

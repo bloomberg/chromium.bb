@@ -54,12 +54,12 @@ class PPB_VideoCapture_Impl
   // PPB_VideoCapture_Shared implementation.
   virtual int32_t InternalEnumerateDevices(
       PP_Resource* devices,
-      const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t InternalOpen(
       const std::string& device_id,
       const PP_VideoCaptureDeviceInfo_Dev& requested_info,
       uint32_t buffer_count,
-      const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t InternalStartCapture() OVERRIDE;
   virtual int32_t InternalReuseBuffer(uint32_t buffer) OVERRIDE;
   virtual int32_t InternalStopCapture() OVERRIDE;

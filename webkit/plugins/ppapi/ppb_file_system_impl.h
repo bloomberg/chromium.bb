@@ -33,8 +33,9 @@ class PPB_FileSystem_Impl : public ::ppapi::Resource,
   void set_opened(bool opened) { opened_ = opened; }
 
   // PPB_FileSystem_API implementation.
-  virtual int32_t Open(int64_t expected_size,
-                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Open(
+      int64_t expected_size,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_FileSystemType GetType() OVERRIDE;
 
  private:

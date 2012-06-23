@@ -35,9 +35,9 @@ class PPAPI_SHARED_EXPORT PPB_TCPServerSocket_Shared
   // PPB_TCPServerSocket_Private_API implementation.
   virtual int32_t Listen(const PP_NetAddress_Private* addr,
                          int32_t backlog,
-                         PP_CompletionCallback callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Accept(PP_Resource* tcp_socket,
-                         PP_CompletionCallback callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void StopListening() OVERRIDE;
 
   void OnListenCompleted(uint32 socket_id, int32_t status);

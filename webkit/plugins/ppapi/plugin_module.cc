@@ -154,12 +154,6 @@ PluginModuleSet* GetLivePluginSet() {
   return &live_plugin_libs;
 }
 
-base::MessageLoopProxy* GetMainThreadMessageLoop() {
-  CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::MessageLoopProxy>, proxy,
-                         (base::MessageLoopProxy::current()));
-  return proxy.get();
-}
-
 // PPB_Core --------------------------------------------------------------------
 
 void AddRefResource(PP_Resource resource) {
@@ -182,7 +176,7 @@ void CallOnMainThread(int delay_in_msec,
                       PP_CompletionCallback callback,
                       int32_t result) {
   if (callback.func) {
-    GetMainThreadMessageLoop()->PostDelayedTask(
+    PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
         FROM_HERE,
         base::Bind(callback.func, callback.user_data, result),
         base::TimeDelta::FromMilliseconds(delay_in_msec));
@@ -190,7 +184,8 @@ void CallOnMainThread(int delay_in_msec,
 }
 
 PP_Bool IsMainThread() {
-  return BoolToPPBool(GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  return BoolToPPBool(PpapiGlobals::Get()->
+      GetMainThreadMessageLoop()->BelongsToCurrentThread());
 }
 
 const PPB_Core core_interface = {
@@ -427,7 +422,8 @@ PluginModule::PluginModule(const std::string& name,
 
   memset(&entry_points_, 0, sizeof(entry_points_));
   pp_module_ = HostGlobals::Get()->AddModule(this);
-  GetMainThreadMessageLoop();  // Initialize the main thread message loop.
+  // Initialize the main thread message loop.
+  PpapiGlobals::Get()->GetMainThreadMessageLoop();
   GetLivePluginSet()->insert(this);
 }
 

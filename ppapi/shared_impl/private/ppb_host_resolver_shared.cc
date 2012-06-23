@@ -53,15 +53,13 @@ int32_t PPB_HostResolver_Shared::Resolve(
     const char* host,
     uint16_t port,
     const PP_HostResolver_Private_Hint* hint,
-    PP_CompletionCallback callback) {
+    scoped_refptr<TrackedCallback> callback) {
   if (!host)
     return PP_ERROR_BADARGUMENT;
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (ResolveInProgress())
     return PP_ERROR_INPROGRESS;
 
-  resolve_callback_ = new TrackedCallback(this, callback);
+  resolve_callback_ = callback;
 
   HostPortPair host_port;
   host_port.host = host;

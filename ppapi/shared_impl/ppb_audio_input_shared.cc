@@ -55,9 +55,7 @@ thunk::PPB_AudioInput_API* PPB_AudioInput_Shared::AsPPB_AudioInput_API() {
 
 int32_t PPB_AudioInput_Shared::EnumerateDevices(
     PP_Resource* devices,
-    const PP_CompletionCallback& callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+    scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(enumerate_devices_callback_))
     return PP_ERROR_INPROGRESS;
 
@@ -69,7 +67,7 @@ int32_t PPB_AudioInput_Shared::Open(
     PP_Resource config,
     PPB_AudioInput_Callback audio_input_callback,
     void* user_data,
-    const PP_CompletionCallback& callback) {
+    scoped_refptr<TrackedCallback> callback) {
   if (!audio_input_callback)
     return PP_ERROR_BADARGUMENT;
 
@@ -166,8 +164,11 @@ void PPB_AudioInput_Shared::OnOpenComplete(
 }
 
 // static
-PP_CompletionCallback PPB_AudioInput_Shared::MakeIgnoredCompletionCallback() {
-  return PP_MakeCompletionCallback(&IgnoredCompletionCallback, NULL);
+scoped_refptr<TrackedCallback>
+PPB_AudioInput_Shared::MakeIgnoredCompletionCallback(
+    Resource* resource) {
+  return new TrackedCallback(resource,
+      PP_MakeCompletionCallback(&IgnoredCompletionCallback, NULL));
 }
 
 void PPB_AudioInput_Shared::SetStartCaptureState() {
@@ -254,7 +255,7 @@ int32_t PPB_AudioInput_Shared::CommonOpen(
     PP_Resource config,
     PPB_AudioInput_Callback audio_input_callback,
     void* user_data,
-    PP_CompletionCallback callback) {
+    scoped_refptr<TrackedCallback> callback) {
   if (open_state_ != BEFORE_OPEN)
     return PP_ERROR_FAILED;
 
@@ -262,9 +263,6 @@ int32_t PPB_AudioInput_Shared::CommonOpen(
                                                                       true);
   if (enter_config.failed())
     return PP_ERROR_BADARGUMENT;
-
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (TrackedCallback::IsPending(open_callback_))
     return PP_ERROR_INPROGRESS;

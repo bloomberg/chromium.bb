@@ -107,6 +107,7 @@ using ppapi::PPB_View_Shared;
 using ppapi::PPP_Instance_Combined;
 using ppapi::ScopedPPResource;
 using ppapi::StringVar;
+using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Graphics2D_API;
@@ -350,7 +351,6 @@ PluginInstance::PluginInstance(
       text_input_caret_set_(false),
       selection_caret_(0),
       selection_anchor_(0),
-      lock_mouse_callback_(PP_BlockUntilComplete()),
       pending_user_gesture_(0.0),
       flash_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -378,8 +378,8 @@ PluginInstance::~PluginInstance() {
        i != plugin_object_copy.end(); ++i)
     delete *i;
 
-  if (lock_mouse_callback_.func)
-    PP_RunAndClearCompletionCallback(&lock_mouse_callback_, PP_ERROR_ABORTED);
+  if (lock_mouse_callback_)
+    TrackedCallback::ClearAndAbort(&lock_mouse_callback_);
 
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
@@ -1595,12 +1595,12 @@ bool PluginInstance::IsProcessingUserGesture() {
 }
 
 void PluginInstance::OnLockMouseACK(bool succeeded) {
-  if (!lock_mouse_callback_.func) {
+  if (TrackedCallback::IsPending(lock_mouse_callback_)) {
     NOTREACHED();
     return;
   }
-  PP_RunAndClearCompletionCallback(&lock_mouse_callback_,
-                                   succeeded ? PP_OK : PP_ERROR_FAILED);
+  TrackedCallback::ClearAndRun(&lock_mouse_callback_,
+                               succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void PluginInstance::OnMouseLockLost() {
@@ -1954,12 +1954,8 @@ PP_Bool PluginInstance::SetCursor(PP_Instance instance,
 }
 
 int32_t PluginInstance::LockMouse(PP_Instance instance,
-                                  PP_CompletionCallback callback) {
-  if (!callback.func) {
-    // Don't support synchronous call.
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-  }
-  if (lock_mouse_callback_.func)  // A lock is pending.
+                                  scoped_refptr<TrackedCallback> callback) {
+  if (TrackedCallback::IsPending(lock_mouse_callback_))
     return PP_ERROR_INPROGRESS;
 
   if (delegate()->IsMouseLocked(this))

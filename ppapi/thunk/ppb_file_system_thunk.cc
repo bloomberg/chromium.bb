@@ -5,6 +5,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_system.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
@@ -35,7 +36,7 @@ int32_t Open(PP_Resource file_system,
   EnterFileSystem enter(file_system, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Open(expected_size, callback));
+  return enter.SetResult(enter.object()->Open(expected_size, enter.callback()));
 }
 
 PP_FileSystemType GetType(PP_Resource file_system) {

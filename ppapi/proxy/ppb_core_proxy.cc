@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
@@ -26,12 +24,6 @@ namespace ppapi {
 namespace proxy {
 
 namespace {
-
-base::MessageLoopProxy* GetMainThreadMessageLoop() {
-  CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::MessageLoopProxy>, proxy,
-      (base::MessageLoopProxy::current()));
-  return proxy.get();
-}
 
 void AddRefResource(PP_Resource resource) {
   ppapi::ProxyAutoLock lock;
@@ -61,14 +53,18 @@ void CallbackWrapper(PP_CompletionCallback callback, int32_t result) {
 void CallOnMainThread(int delay_in_ms,
                       PP_CompletionCallback callback,
                       int32_t result) {
-  GetMainThreadMessageLoop()->PostDelayedTask(
+  DCHECK(callback.func);
+  if (!callback.func)
+    return;
+  PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(&CallbackWrapper, callback, result)),
       base::TimeDelta::FromMilliseconds(delay_in_ms));
 }
 
 PP_Bool IsMainThread() {
-  return PP_FromBool(GetMainThreadMessageLoop()->BelongsToCurrentThread());
+  return PP_FromBool(PpapiGlobals::Get()->
+      GetMainThreadMessageLoop()->BelongsToCurrentThread());
 }
 
 const PPB_Core core_interface = {

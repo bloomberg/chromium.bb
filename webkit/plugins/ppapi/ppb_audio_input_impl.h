@@ -39,7 +39,7 @@ class PPB_AudioInput_Impl : public ::ppapi::PPB_AudioInput_Shared,
   virtual int32_t OpenTrusted(
       const std::string& device_id,
       PP_Resource config,
-      const PP_CompletionCallback& create_callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
   virtual const DeviceRefDataVector& GetDeviceRefData() const OVERRIDE;
@@ -54,11 +54,12 @@ class PPB_AudioInput_Impl : public ::ppapi::PPB_AudioInput_Shared,
   // PPB_AudioInput_Shared implementation.
   virtual int32_t InternalEnumerateDevices(
       PP_Resource* devices,
-      PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t InternalOpen(const std::string& device_id,
-                               PP_AudioSampleRate sample_rate,
-                               uint32_t sample_frame_count,
-                               PP_CompletionCallback callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t InternalOpen(
+      const std::string& device_id,
+      PP_AudioSampleRate sample_rate,
+      uint32_t sample_frame_count,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool InternalStartCapture() OVERRIDE;
   virtual PP_Bool InternalStopCapture() OVERRIDE;
   virtual void InternalClose() OVERRIDE;

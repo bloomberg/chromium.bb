@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
@@ -35,7 +36,8 @@ int32_t Decode(PP_Resource video_decoder,
   EnterVideoDecoder enter(video_decoder, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Decode(bitstream_buffer, callback));
+  return enter.SetResult(enter.object()->Decode(bitstream_buffer,
+                                                enter.callback()));
 }
 
 void AssignPictureBuffers(PP_Resource video_decoder,
@@ -56,7 +58,7 @@ int32_t Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
   EnterVideoDecoder enter(video_decoder, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Flush(callback));
+  return enter.SetResult(enter.object()->Flush(enter.callback()));
 }
 
 int32_t Reset(PP_Resource video_decoder,
@@ -64,7 +66,7 @@ int32_t Reset(PP_Resource video_decoder,
   EnterVideoDecoder enter(video_decoder, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Reset(callback));
+  return enter.SetResult(enter.object()->Reset(enter.callback()));
 }
 
 void Destroy(PP_Resource video_decoder) {

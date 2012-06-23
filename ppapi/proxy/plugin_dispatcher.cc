@@ -45,17 +45,13 @@ DispatcherSet* g_live_dispatchers = NULL;
 }  // namespace
 
 InstanceData::InstanceData()
-    : flash_fullscreen(PP_FALSE),
-      mouse_lock_callback(PP_BlockUntilComplete()) {
+    : flash_fullscreen(PP_FALSE) {
 }
 
 InstanceData::~InstanceData() {
   // Run any pending mouse lock callback to prevent leaks.
-  if (mouse_lock_callback.func) {
-    CallWhileUnlocked(PP_RunAndClearCompletionCallback,
-                      &mouse_lock_callback,
-                      static_cast<int32_t>(PP_ERROR_ABORTED));
-  }
+  if (mouse_lock_callback)
+    mouse_lock_callback->Abort();
 }
 
 PluginDispatcher::PluginDispatcher(PP_GetInterface_Func get_interface,

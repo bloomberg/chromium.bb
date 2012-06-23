@@ -314,11 +314,8 @@ void PPB_Graphics2D_Impl::ReplaceContents(PP_Resource image_data) {
   queued_operations_.push_back(operation);
 }
 
-int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
+int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
   TRACE_EVENT0("pepper", "PPB_Graphics2D_Impl::Flush");
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;
@@ -374,11 +371,9 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
   if (nothing_visible) {
     // There's nothing visible to invalidate so just schedule the callback to
     // execute in the next round of the message loop.
-    ScheduleOffscreenCallback(FlushCallbackData(
-        scoped_refptr<TrackedCallback>(new TrackedCallback(this, callback))));
+    ScheduleOffscreenCallback(FlushCallbackData(callback));
   } else {
-    unpainted_flush_callback_.Set(
-        scoped_refptr<TrackedCallback>(new TrackedCallback(this, callback)));
+    unpainted_flush_callback_.Set(callback);
   }
   return PP_OK_COMPLETIONPENDING;
 }

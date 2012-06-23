@@ -37,9 +37,7 @@ thunk::PPB_VideoCapture_API* PPB_VideoCapture_Shared::AsPPB_VideoCapture_API() {
 
 int32_t PPB_VideoCapture_Shared::EnumerateDevices(
     PP_Resource* devices,
-    const PP_CompletionCallback& callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+    scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(enumerate_devices_callback_))
     return PP_ERROR_INPROGRESS;
 
@@ -50,7 +48,7 @@ int32_t PPB_VideoCapture_Shared::Open(
     const std::string& device_id,
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count,
-    const PP_CompletionCallback& callback) {
+    scoped_refptr<TrackedCallback> callback) {
   if (open_state_ != BEFORE_OPEN)
     return PP_ERROR_FAILED;
 

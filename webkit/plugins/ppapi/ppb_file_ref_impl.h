@@ -39,14 +39,18 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
 
   // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
   virtual PP_Resource GetParent() OVERRIDE;
-  virtual int32_t MakeDirectory(PP_Bool make_ancestors,
-                                PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Touch(PP_Time last_access_time,
-                        PP_Time last_modified_time,
-                        PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Delete(PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Rename(PP_Resource new_file_ref,
-                         PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t MakeDirectory(
+      PP_Bool make_ancestors,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Touch(
+      PP_Time last_access_time,
+      PP_Time last_modified_time,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Delete(
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Rename(
+      PP_Resource new_file_ref,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetAbsolutePath();
 
   PPB_FileSystem_Impl* file_system() const { return file_system_.get(); }

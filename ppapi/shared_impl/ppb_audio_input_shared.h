@@ -41,12 +41,12 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
   // Implementation of PPB_AudioInput_API non-trusted methods.
   virtual int32_t EnumerateDevices(
       PP_Resource* devices,
-      const PP_CompletionCallback& callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Open(const std::string& device_id,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,
                        void* user_data,
-                       const PP_CompletionCallback& callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
   virtual PP_Bool StartCapture() OVERRIDE;
   virtual PP_Bool StopCapture() OVERRIDE;
@@ -59,7 +59,8 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
                       size_t shared_memory_size,
                       base::SyncSocket::Handle socket_handle);
 
-  static PP_CompletionCallback MakeIgnoredCompletionCallback();
+  static scoped_refptr<TrackedCallback> MakeIgnoredCompletionCallback(
+      Resource* resource);
 
  protected:
   enum OpenState {
@@ -70,12 +71,13 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
 
   // Subclasses should implement these methods to do impl- and proxy-specific
   // work.
-  virtual int32_t InternalEnumerateDevices(PP_Resource* devices,
-                                           PP_CompletionCallback callback) = 0;
+  virtual int32_t InternalEnumerateDevices(
+      PP_Resource* devices,
+      scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t InternalOpen(const std::string& device_id,
                                PP_AudioSampleRate sample_rate,
                                uint32_t sample_frame_count,
-                               PP_CompletionCallback callback) = 0;
+                               scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool InternalStartCapture() = 0;
   virtual PP_Bool InternalStopCapture() = 0;
   virtual void InternalClose() = 0;
@@ -117,7 +119,7 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
                      PP_Resource config,
                      PPB_AudioInput_Callback audio_input_callback,
                      void* user_data,
-                     PP_CompletionCallback callback);
+                     scoped_refptr<TrackedCallback> callback);
 
   OpenState open_state_;
 

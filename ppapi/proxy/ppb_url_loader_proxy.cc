@@ -91,19 +91,21 @@ class URLLoader : public Resource, public PPB_URLLoader_API {
 
   // PPB_URLLoader_API implementation.
   virtual int32_t Open(PP_Resource request_id,
-                       PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t FollowRedirect(PP_CompletionCallback callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t FollowRedirect(
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetUploadProgress(int64_t* bytes_sent,
                                     int64_t* total_bytes_to_be_sent) OVERRIDE;
   virtual PP_Bool GetDownloadProgress(
       int64_t* bytes_received,
       int64_t* total_bytes_to_be_received) OVERRIDE;
   virtual PP_Resource GetResponseInfo() OVERRIDE;
-  virtual int32_t ReadResponseBody(void* buffer,
-                                   int32_t bytes_to_read,
-                                   PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t ReadResponseBody(
+      void* buffer,
+      int32_t bytes_to_read,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t FinishStreamingToFile(
-      PP_CompletionCallback callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void GrantUniversalAccess() OVERRIDE;
   virtual void SetStatusCallback(
@@ -178,7 +180,7 @@ PPB_URLLoader_API* URLLoader::AsPPB_URLLoader_API() {
 }
 
 int32_t URLLoader::Open(PP_Resource request_id,
-                        PP_CompletionCallback callback) {
+                        scoped_refptr<TrackedCallback> callback) {
   EnterResourceNoLock<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
   if (enter.failed()) {
     Log(PP_LOGLEVEL_ERROR, "PPB_URLLoader.Open: The URL you're requesting is "
@@ -191,22 +193,18 @@ int32_t URLLoader::Open(PP_Resource request_id,
   if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-  current_callback_ = new TrackedCallback(this, callback);
+  current_callback_ = callback;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_Open(
       API_ID_PPB_URL_LOADER, host_resource(), enter.object()->GetData()));
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
+int32_t URLLoader::FollowRedirect(scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-  current_callback_ = new TrackedCallback(this, callback);
+  current_callback_ = callback;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_FollowRedirect(
       API_ID_PPB_URL_LOADER, host_resource()));
@@ -257,16 +255,11 @@ PP_Resource URLLoader::GetResponseInfo() {
 
 int32_t URLLoader::ReadResponseBody(void* buffer,
                                     int32_t bytes_to_read,
-                                    PP_CompletionCallback callback) {
+                                    scoped_refptr<TrackedCallback> callback) {
   if (!buffer || bytes_to_read <= 0)
     return PP_ERROR_BADARGUMENT;  // Must specify an output buffer.
   if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one request pending.
-
-  // Currently we don't support sync calls to read. We'll need to revisit
-  // how this works when we allow blocking calls (from background threads).
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
 
   if (static_cast<size_t>(bytes_to_read) <= buffer_.size()) {
     // Special case: we've buffered enough data to be able to synchronously
@@ -275,7 +268,7 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
     return bytes_to_read;
   }
 
-  current_callback_ = new TrackedCallback(this, callback);
+  current_callback_ = callback;
   current_read_buffer_ = buffer;
   current_read_buffer_size_ = bytes_to_read;
 
@@ -284,13 +277,12 @@ int32_t URLLoader::ReadResponseBody(void* buffer,
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t URLLoader::FinishStreamingToFile(PP_CompletionCallback callback) {
+int32_t URLLoader::FinishStreamingToFile(
+    scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-  current_callback_ = new TrackedCallback(this, callback);
+  current_callback_ = callback;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_FinishStreamingToFile(
       API_ID_PPB_URL_LOADER, host_resource()));

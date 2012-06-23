@@ -85,7 +85,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             PP_Resource image,
                             const PP_Point* hot_spot) OVERRIDE;
   virtual int32_t LockMouse(PP_Instance instance,
-                            PP_CompletionCallback callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
   virtual PP_Bool GetDefaultPrintSettings(
       PP_Instance instance,

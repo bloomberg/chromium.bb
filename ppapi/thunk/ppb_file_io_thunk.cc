@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_file_io_api.h"
@@ -35,7 +36,8 @@ int32_t Open(PP_Resource file_io,
   EnterFileIO enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Open(file_ref, open_flags, callback));
+  return enter.SetResult(enter.object()->Open(file_ref, open_flags,
+                         enter.callback()));
 }
 
 int32_t Query(PP_Resource file_io,
@@ -44,7 +46,7 @@ int32_t Query(PP_Resource file_io,
   EnterFileIO enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Query(info, callback));
+  return enter.SetResult(enter.object()->Query(info, enter.callback()));
 }
 
 int32_t Touch(PP_Resource file_io,
@@ -55,7 +57,7 @@ int32_t Touch(PP_Resource file_io,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->Touch(
-      last_access_time, last_modified_time, callback));
+      last_access_time, last_modified_time, enter.callback()));
 }
 
 int32_t Read(PP_Resource file_io,
@@ -67,7 +69,7 @@ int32_t Read(PP_Resource file_io,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->Read(offset, buffer, bytes_to_read,
-                                              callback));
+                                              enter.callback()));
 }
 
 int32_t Write(PP_Resource file_io,
@@ -79,7 +81,7 @@ int32_t Write(PP_Resource file_io,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->Write(offset, buffer, bytes_to_write,
-                                               callback));
+                                               enter.callback()));
 }
 
 int32_t SetLength(PP_Resource file_io,
@@ -88,7 +90,7 @@ int32_t SetLength(PP_Resource file_io,
   EnterFileIO enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SetLength(length, callback));
+  return enter.SetResult(enter.object()->SetLength(length, enter.callback()));
 }
 
 int32_t Flush(PP_Resource file_io,
@@ -96,7 +98,7 @@ int32_t Flush(PP_Resource file_io,
   EnterFileIO enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Flush(callback));
+  return enter.SetResult(enter.object()->Flush(enter.callback()));
 }
 
 void Close(PP_Resource file_io) {

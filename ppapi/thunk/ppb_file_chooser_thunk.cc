@@ -6,6 +6,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -38,7 +39,7 @@ int32_t Show0_5(PP_Resource chooser, PP_CompletionCallback callback) {
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Show0_5(callback));
+  return enter.SetResult(enter.object()->Show0_5(enter.callback()));
 }
 
 PP_Resource GetNextChosenFile0_5(PP_Resource chooser) {
@@ -54,7 +55,7 @@ int32_t Show(PP_Resource chooser,
   EnterResource<PPB_FileChooser_API> enter(chooser, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Show(output, callback));
+  return enter.SetResult(enter.object()->Show(output, enter.callback()));
 }
 
 int32_t ShowWithoutUserGesture0_5(PP_Resource chooser,
@@ -65,7 +66,7 @@ int32_t ShowWithoutUserGesture0_5(PP_Resource chooser,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->ShowWithoutUserGesture0_5(
-      save_as, suggested_file_name, callback));
+      save_as, suggested_file_name, enter.callback()));
 }
 
 int32_t ShowWithoutUserGesture0_6(PP_Resource chooser,
@@ -77,7 +78,7 @@ int32_t ShowWithoutUserGesture0_6(PP_Resource chooser,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->ShowWithoutUserGesture(
-      save_as, suggested_file_name, output, callback));
+      save_as, suggested_file_name, output, enter.callback()));
 }
 
 const PPB_FileChooser_Dev_0_5 g_ppb_file_chooser_0_5_thunk = {

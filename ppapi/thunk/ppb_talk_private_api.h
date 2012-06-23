@@ -5,16 +5,20 @@
 #ifndef PPAPI_THUNK_PPB_TALK_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_TALK_PRIVATE_API_H_
 
+#include "base/memory/ref_counted.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
+
+class TrackedCallback;
+
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_Talk_Private_API {
  public:
   virtual ~PPB_Talk_Private_API() {}
 
-  virtual int32_t GetPermission(const PP_CompletionCallback& callback) = 0;
+  virtual int32_t GetPermission(scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

@@ -21,6 +21,7 @@
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::PPB_FileSystem_API;
+using ppapi::TrackedCallback;
 
 namespace webkit {
 namespace ppapi {
@@ -52,10 +53,7 @@ PPB_FileSystem_API* PPB_FileSystem_Impl::AsPPB_FileSystem_API() {
 }
 
 int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
-                                  PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+                                  scoped_refptr<TrackedCallback> callback) {
   // Should not allow multiple opens.
   if (called_open_)
     return PP_ERROR_INPROGRESS;
@@ -81,10 +79,10 @@ int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
     return PP_ERROR_FAILED;
 
   if (!plugin_instance->delegate()->OpenFileSystem(
-          plugin_instance->container()->element().document().url(),
-          file_system_type, expected_size,
-          new FileCallbacks(this, callback, NULL,
-                            scoped_refptr<PPB_FileSystem_Impl>(this), NULL)))
+      plugin_instance->container()->element().document().url(),
+      file_system_type, expected_size,
+      new FileCallbacks(this, callback, NULL,
+                        scoped_refptr<PPB_FileSystem_Impl>(this), NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }

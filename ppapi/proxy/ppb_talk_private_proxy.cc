@@ -29,7 +29,7 @@ class Talk : public Resource, public thunk::PPB_Talk_Private_API {
   thunk::PPB_Talk_Private_API* AsPPB_Talk_Private_API() { return this; }
 
   // PPB_Talk_API implementation.
-  int32_t GetPermission(const PP_CompletionCallback& callback) {
+  int32_t GetPermission(scoped_refptr<TrackedCallback> callback) {
     if (TrackedCallback::IsPending(callback_))
       return PP_ERROR_INPROGRESS;
     PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
@@ -37,7 +37,7 @@ class Talk : public Resource, public thunk::PPB_Talk_Private_API {
     if (!dispatcher)
       return PP_ERROR_FAILED;
 
-    callback_ = new TrackedCallback(this, callback);
+    callback_ = callback;
 
     if (PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
         new PpapiHostMsg_PPBTalk_GetPermission(

@@ -36,7 +36,7 @@ class AudioInput : public PPB_AudioInput_Shared {
   virtual int32_t OpenTrusted(
       const std::string& device_id,
       PP_Resource config,
-      const PP_CompletionCallback& create_callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
   virtual const std::vector<DeviceRefData>& GetDeviceRefData() const OVERRIDE;
@@ -45,11 +45,12 @@ class AudioInput : public PPB_AudioInput_Shared {
   // PPB_AudioInput_Shared implementation.
   virtual int32_t InternalEnumerateDevices(
       PP_Resource* devices,
-      PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t InternalOpen(const std::string& device_id,
-                               PP_AudioSampleRate sample_rate,
-                               uint32_t sample_frame_count,
-                               PP_CompletionCallback callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t InternalOpen(
+      const std::string& device_id,
+      PP_AudioSampleRate sample_rate,
+      uint32_t sample_frame_count,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool InternalStartCapture() OVERRIDE;
   virtual PP_Bool InternalStopCapture() OVERRIDE;
   virtual void InternalClose() OVERRIDE;
@@ -69,9 +70,10 @@ AudioInput::~AudioInput() {
   Close();
 }
 
-int32_t AudioInput::OpenTrusted(const std::string& device_id,
-                                PP_Resource config,
-                                const PP_CompletionCallback& create_callback) {
+int32_t AudioInput::OpenTrusted(
+    const std::string& device_id,
+    PP_Resource config,
+    scoped_refptr<TrackedCallback> create_callback) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
 
@@ -89,10 +91,11 @@ const std::vector<DeviceRefData>& AudioInput::GetDeviceRefData() const {
   return result;
 }
 
-int32_t AudioInput::InternalEnumerateDevices(PP_Resource* devices,
-                                             PP_CompletionCallback callback) {
+int32_t AudioInput::InternalEnumerateDevices(
+    PP_Resource* devices,
+    scoped_refptr<TrackedCallback> callback) {
   devices_ = devices;
-  enumerate_devices_callback_ = new TrackedCallback(this, callback);
+  enumerate_devices_callback_ = callback;
   GetDispatcher()->Send(new PpapiHostMsg_PPBAudioInput_EnumerateDevices(
       API_ID_PPB_AUDIO_INPUT_DEV, host_resource()));
   return PP_OK_COMPLETIONPENDING;
@@ -101,8 +104,8 @@ int32_t AudioInput::InternalEnumerateDevices(PP_Resource* devices,
 int32_t AudioInput::InternalOpen(const std::string& device_id,
                                  PP_AudioSampleRate sample_rate,
                                  uint32_t sample_frame_count,
-                                 PP_CompletionCallback callback) {
-  open_callback_ = new TrackedCallback(this, callback);
+                                 scoped_refptr<TrackedCallback> callback) {
+  open_callback_ = callback;
   GetDispatcher()->Send(new PpapiHostMsg_PPBAudioInput_Open(
       API_ID_PPB_AUDIO_INPUT_DEV, host_resource(), device_id, sample_rate,
       sample_frame_count));
@@ -154,7 +157,7 @@ PP_Resource PPB_AudioInput_Proxy::CreateProxyResource0_1(
 
   AudioInput* audio_input = new AudioInput(result);
   int32_t open_result = audio_input->Open("", config, audio_input_callback,
-      user_data, AudioInput::MakeIgnoredCompletionCallback());
+      user_data, AudioInput::MakeIgnoredCompletionCallback(audio_input));
   if (open_result != PP_OK && open_result != PP_OK_COMPLETIONPENDING) {
     delete audio_input;
     return 0;

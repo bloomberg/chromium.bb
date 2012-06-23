@@ -50,17 +50,15 @@ TCPSocketPrivateImpl::AsPPB_TCPSocket_Private_API() {
 
 int32_t TCPSocketPrivateImpl::Connect(const char* host,
                                       uint16_t port,
-                                      PP_CompletionCallback callback) {
+                                      scoped_refptr<TrackedCallback> callback) {
   if (!host)
     return PP_ERROR_BADARGUMENT;
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (connection_state_ != BEFORE_CONNECT)
     return PP_ERROR_FAILED;
   if (TrackedCallback::IsPending(connect_callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one pending request.
 
-  connect_callback_ = new TrackedCallback(this, callback);
+  connect_callback_ = callback;
   // Send the request, the browser will call us back via ConnectACK.
   SendConnect(host, port);
   return PP_OK_COMPLETIONPENDING;
@@ -68,17 +66,15 @@ int32_t TCPSocketPrivateImpl::Connect(const char* host,
 
 int32_t TCPSocketPrivateImpl::ConnectWithNetAddress(
     const PP_NetAddress_Private* addr,
-    PP_CompletionCallback callback) {
+    scoped_refptr<TrackedCallback> callback) {
   if (!addr)
     return PP_ERROR_BADARGUMENT;
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
   if (connection_state_ != BEFORE_CONNECT)
     return PP_ERROR_FAILED;
   if (TrackedCallback::IsPending(connect_callback_))
     return PP_ERROR_INPROGRESS;  // Can only have one pending request.
 
-  connect_callback_ = new TrackedCallback(this, callback);
+  connect_callback_ = callback;
   // Send the request, the browser will call us back via ConnectACK.
   SendConnectWithNetAddress(*addr);
   return PP_OK_COMPLETIONPENDING;
@@ -102,13 +98,12 @@ PP_Bool TCPSocketPrivateImpl::GetRemoteAddress(
   return PP_TRUE;
 }
 
-int32_t TCPSocketPrivateImpl::SSLHandshake(const char* server_name,
-                                           uint16_t server_port,
-                                           PP_CompletionCallback callback) {
+int32_t TCPSocketPrivateImpl::SSLHandshake(
+    const char* server_name,
+    uint16_t server_port,
+    scoped_refptr<TrackedCallback> callback) {
   if (!server_name)
     return PP_ERROR_BADARGUMENT;
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (connection_state_ != CONNECTED)
     return PP_ERROR_FAILED;
@@ -117,7 +112,7 @@ int32_t TCPSocketPrivateImpl::SSLHandshake(const char* server_name,
       TrackedCallback::IsPending(write_callback_))
     return PP_ERROR_INPROGRESS;
 
-  ssl_handshake_callback_ = new TrackedCallback(this, callback);
+  ssl_handshake_callback_ = callback;
 
   // Send the request, the browser will call us back via SSLHandshakeACK.
   SendSSLHandshake(server_name, server_port, trusted_certificates_,
@@ -164,22 +159,18 @@ PP_Bool TCPSocketPrivateImpl::AddChainBuildingCertificate(
 
 int32_t TCPSocketPrivateImpl::Read(char* buffer,
                                    int32_t bytes_to_read,
-                                   PP_CompletionCallback callback) {
+                                   scoped_refptr<TrackedCallback> callback) {
   if (!buffer || bytes_to_read <= 0)
     return PP_ERROR_BADARGUMENT;
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (!IsConnected())
     return PP_ERROR_FAILED;
   if (TrackedCallback::IsPending(read_callback_) ||
       TrackedCallback::IsPending(ssl_handshake_callback_))
     return PP_ERROR_INPROGRESS;
-  // TODO(dmichael): use some other strategy for determining if an
-  // operation is in progress
   read_buffer_ = buffer;
   bytes_to_read_ = std::min(bytes_to_read, kMaxReadSize);
-  read_callback_ = new TrackedCallback(this, callback);
+  read_callback_ = callback;
 
   // Send the request, the browser will call us back via ReadACK.
   SendRead(bytes_to_read_);
@@ -188,11 +179,9 @@ int32_t TCPSocketPrivateImpl::Read(char* buffer,
 
 int32_t TCPSocketPrivateImpl::Write(const char* buffer,
                                     int32_t bytes_to_write,
-                                    PP_CompletionCallback callback) {
+                                    scoped_refptr<TrackedCallback> callback) {
   if (!buffer || bytes_to_write <= 0)
     return PP_ERROR_BADARGUMENT;
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (!IsConnected())
     return PP_ERROR_FAILED;
@@ -203,7 +192,7 @@ int32_t TCPSocketPrivateImpl::Write(const char* buffer,
   if (bytes_to_write > kMaxWriteSize)
     bytes_to_write = kMaxWriteSize;
 
-  write_callback_ = new TrackedCallback(this, callback);
+  write_callback_ = callback;
 
   // Send the request, the browser will call us back via WriteACK.
   SendWrite(std::string(buffer, bytes_to_write));

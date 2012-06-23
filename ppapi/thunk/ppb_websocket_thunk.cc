@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_websocket_api.h"
@@ -37,7 +38,7 @@ int32_t Connect(PP_Resource resource,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->Connect(
-      url, protocols, protocol_count, callback));
+      url, protocols, protocol_count, enter.callback()));
 }
 
 int32_t Close(PP_Resource resource,
@@ -47,7 +48,7 @@ int32_t Close(PP_Resource resource,
   EnterWebSocket enter(resource, callback, false);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Close(code, reason, callback));
+  return enter.SetResult(enter.object()->Close(code, reason, enter.callback()));
 }
 
 int32_t ReceiveMessage(PP_Resource resource,
@@ -56,7 +57,8 @@ int32_t ReceiveMessage(PP_Resource resource,
   EnterWebSocket enter(resource, callback, false);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->ReceiveMessage(message, callback));
+  return enter.SetResult(enter.object()->ReceiveMessage(message,
+                                                        enter.callback()));
 }
 
 int32_t SendMessage(PP_Resource resource, PP_Var message) {

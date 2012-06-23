@@ -107,7 +107,7 @@ PPB_WebSocket_API* PPB_WebSocket_Impl::AsPPB_WebSocket_API() {
 int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
                                     const PP_Var protocols[],
                                     uint32_t protocol_count,
-                                    PP_CompletionCallback callback) {
+                                    scoped_refptr<TrackedCallback> callback) {
   // Check mandatory interfaces.
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   DCHECK(plugin_instance);
@@ -181,10 +181,6 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   }
   WebString web_protocols = WebString::fromUTF8(protocol_string);
 
-  // Validate |callback| (Doesn't support blocking callback)
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
   // Create WebKit::WebSocket object and connect.
   WebDocument document = plugin_instance->container()->element().document();
   websocket_.reset(WebSocket::create(document, this));
@@ -199,14 +195,14 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
   state_ = PP_WEBSOCKETREADYSTATE_CONNECTING;
 
   // Install callback.
-  connect_callback_ = new TrackedCallback(this, callback);
+  connect_callback_ = callback;
 
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_WebSocket_Impl::Close(uint16_t code,
                                   PP_Var reason,
-                                  PP_CompletionCallback callback) {
+                                  scoped_refptr<TrackedCallback> callback) {
   // Check mandarory interfaces.
   if (!websocket_.get())
     return PP_ERROR_FAILED;
@@ -248,12 +244,8 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED)
     return PP_OK;
 
-  // Validate |callback| (Doesn't support blocking callback)
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
   // Install |callback|.
-  close_callback_ = new TrackedCallback(this, callback);
+  close_callback_ = callback;
 
   // Abort ongoing connect.
   if (state_ == PP_WEBSOCKETREADYSTATE_CONNECTING) {
@@ -283,8 +275,9 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
-                                           PP_CompletionCallback callback) {
+int32_t PPB_WebSocket_Impl::ReceiveMessage(
+    PP_Var* message,
+    scoped_refptr<TrackedCallback> callback) {
   // Check state.
   if (state_ == PP_WEBSOCKETREADYSTATE_INVALID ||
       state_ == PP_WEBSOCKETREADYSTATE_CONNECTING)
@@ -305,14 +298,10 @@ int32_t PPB_WebSocket_Impl::ReceiveMessage(PP_Var* message,
   if (error_was_received_)
     return PP_ERROR_FAILED;
 
-  // Validate |callback| (Doesn't support blocking callback)
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
   // Or retain |message| as buffer to store and install |callback|.
   wait_for_receive_ = true;
   receive_callback_var_ = message;
-  receive_callback_ = new TrackedCallback(this, callback);
+  receive_callback_ = callback;
 
   return PP_OK_COMPLETIONPENDING;
 }

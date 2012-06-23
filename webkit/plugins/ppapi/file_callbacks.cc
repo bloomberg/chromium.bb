@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,11 +25,11 @@ namespace ppapi {
 
 FileCallbacks::FileCallbacks(
     Resource* resource,
-    PP_CompletionCallback callback,
+    scoped_refptr<TrackedCallback> callback,
     PP_FileInfo* info,
     scoped_refptr<PPB_FileSystem_Impl> file_system,
     scoped_refptr<PPB_DirectoryReader_Impl> directory_reader)
-    : callback_(new TrackedCallback(resource, callback)),
+    : callback_(callback),
       info_(info),
       file_system_(file_system),
       directory_reader_(directory_reader) {

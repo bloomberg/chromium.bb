@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_mouse_lock.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -17,7 +18,8 @@ int32_t LockMouse(PP_Instance instance, PP_CompletionCallback callback) {
   EnterInstance enter(instance, callback);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.functions()->LockMouse(instance, callback));
+  return enter.SetResult(enter.functions()->LockMouse(instance,
+                                                      enter.callback()));
 }
 
 void UnlockMouse(PP_Instance instance) {

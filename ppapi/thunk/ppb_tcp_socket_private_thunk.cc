@@ -5,6 +5,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_tcp_socket_private_api.h"
@@ -36,7 +37,7 @@ int32_t Connect(PP_Resource tcp_socket,
   EnterTCP enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Connect(host, port, callback));
+  return enter.SetResult(enter.object()->Connect(host, port, enter.callback()));
 }
 
 int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
@@ -45,7 +46,8 @@ int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
   EnterTCP enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->ConnectWithNetAddress(addr, callback));
+  return enter.SetResult(
+      enter.object()->ConnectWithNetAddress(addr, enter.callback()));
 }
 
 PP_Bool GetLocalAddress(PP_Resource tcp_socket,
@@ -72,7 +74,7 @@ int32_t SSLHandshake(PP_Resource tcp_socket,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->SSLHandshake(server_name, server_port,
-                                                      callback));
+                                                      enter.callback()));
 }
 
 PP_Resource GetServerCertificate(PP_Resource tcp_socket) {
@@ -98,7 +100,8 @@ int32_t Read(PP_Resource tcp_socket,
   EnterTCP enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Read(buffer, bytes_to_read, callback));
+  return enter.SetResult(enter.object()->Read(buffer, bytes_to_read,
+                                              enter.callback()));
 }
 
 int32_t Write(PP_Resource tcp_socket,
@@ -109,7 +112,7 @@ int32_t Write(PP_Resource tcp_socket,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->Write(buffer, bytes_to_write,
-                                               callback));
+                                               enter.callback()));
 }
 
 void Disconnect(PP_Resource tcp_socket) {

@@ -130,14 +130,11 @@ PPB_Flash_Menu_API* PPB_Flash_Menu_Impl::AsPPB_Flash_Menu_API() {
 
 int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
                                   int32_t* selected_id_out,
-                                  PP_CompletionCallback callback) {
+                                  scoped_refptr<TrackedCallback> callback) {
   // |location| is not (currently) optional.
   // TODO(viettrungluu): Make it optional and default to the current mouse pos?
   if (!location)
     return PP_ERROR_BADARGUMENT;
-
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
 
   if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
@@ -150,16 +147,13 @@ int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
       plugin_instance, this, gfx::Point(location->x, location->y));
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
-    callback_ = new TrackedCallback(this, callback);
+    callback_ = callback;
     selected_id_out_ = selected_id_out;
   } else {
     // This should never be completed synchronously successfully.
     DCHECK_NE(rv, PP_OK);
   }
   return rv;
-
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
 }
 
 void PPB_Flash_Menu_Impl::CompleteShow(int32_t result,

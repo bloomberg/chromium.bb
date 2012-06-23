@@ -37,6 +37,7 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -371,8 +372,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                             PP_MouseCursor_Type type,
                             PP_Resource image,
                             const PP_Point* hot_spot) OVERRIDE;
-  virtual int32_t LockMouse(PP_Instance instance,
-                            PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t LockMouse(
+      PP_Instance instance,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
   virtual PP_Bool GetDefaultPrintSettings(
       PP_Instance instance,
@@ -646,7 +648,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   size_t selection_caret_;
   size_t selection_anchor_;
 
-  PP_CompletionCallback lock_mouse_callback_;
+  scoped_refptr< ::ppapi::TrackedCallback> lock_mouse_callback_;
 
   // Track pending user gestures so out-of-process plugins can respond to
   // a user gesture after it has been processed.

@@ -49,7 +49,8 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   virtual void Scroll(const PP_Rect* clip_rect,
                       const PP_Point* amount) OVERRIDE;
   virtual void ReplaceContents(PP_Resource image_data) OVERRIDE;
-  virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Flush(
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);
 

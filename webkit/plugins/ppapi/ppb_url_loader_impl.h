@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,20 +39,23 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   virtual void InstanceWasDeleted() OVERRIDE;
 
   // PPB_URLLoader_API implementation.
-  virtual int32_t Open(PP_Resource request_id,
-                       PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t FollowRedirect(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Open(
+      PP_Resource request_id,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t FollowRedirect(
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetUploadProgress(int64_t* bytes_sent,
                                     int64_t* total_bytes_to_be_sent) OVERRIDE;
   virtual PP_Bool GetDownloadProgress(
       int64_t* bytes_received,
       int64_t* total_bytes_to_be_received) OVERRIDE;
   virtual PP_Resource GetResponseInfo() OVERRIDE;
-  virtual int32_t ReadResponseBody(void* buffer,
-                                   int32_t bytes_to_read,
-                                   PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t ReadResponseBody(
+      void* buffer,
+      int32_t bytes_to_read,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t FinishStreamingToFile(
-      PP_CompletionCallback callback) OVERRIDE;
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void GrantUniversalAccess() OVERRIDE;
   virtual void SetStatusCallback(
@@ -89,11 +92,11 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   // Check that |callback| is valid (only non-blocking operation is supported)
   // and that no callback is already pending. Returns |PP_OK| if okay, else
   // |PP_ERROR_...| to be returned to the plugin.
-  int32_t ValidateCallback(PP_CompletionCallback callback);
+  int32_t ValidateCallback(scoped_refptr< ::ppapi::TrackedCallback> callback);
 
   // Sets up |callback| as the pending callback. This should only be called once
   // it is certain that |PP_OK_COMPLETIONPENDING| will be returned.
-  void RegisterCallback(PP_CompletionCallback callback);
+  void RegisterCallback(scoped_refptr< ::ppapi::TrackedCallback> callback);
 
   void RunCallback(int32_t result);
 

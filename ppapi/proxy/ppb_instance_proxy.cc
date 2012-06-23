@@ -437,16 +437,13 @@ PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,
 }
 
 int32_t PPB_Instance_Proxy::LockMouse(PP_Instance instance,
-                                      PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
-
+                                      scoped_refptr<TrackedCallback> callback) {
   // Save the mouse callback on the instance data.
   InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
       GetInstanceData(instance);
   if (!data)
     return PP_ERROR_BADARGUMENT;
-  if (data->mouse_lock_callback.func)
+  if (TrackedCallback::IsPending(data->mouse_lock_callback))
     return PP_ERROR_INPROGRESS;  // Already have a pending callback.
   data->mouse_lock_callback = callback;
 
@@ -654,7 +651,7 @@ void PPB_Instance_Proxy::OnHostMsgLockMouse(PP_Instance instance) {
     return;
   }
   int32_t result = enter.functions()->LockMouse(instance,
-                                                cb.pp_completion_callback());
+                                                enter.callback());
   if (result != PP_OK_COMPLETIONPENDING)
     cb.Run(result);
 }
@@ -720,8 +717,9 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanAccessDocument(PP_Instance active,
     *result = enter.functions()->DocumentCanAccessDocument(active, target);
 }
 
-void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(PP_Instance instance,
-                                                 SerializedVarReturnValue result) {
+void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(
+    PP_Instance instance,
+    SerializedVarReturnValue result) {
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
@@ -794,11 +792,11 @@ void PPB_Instance_Proxy::OnPluginMsgMouseLockComplete(PP_Instance instance,
       GetInstanceData(instance);
   if (!data)
     return;  // Instance was probably deleted.
-  if (!data->mouse_lock_callback.func) {
+  if (TrackedCallback::IsPending(data->mouse_lock_callback)) {
     NOTREACHED();
     return;
   }
-  PP_RunAndClearCompletionCallback(&data->mouse_lock_callback, result);
+  TrackedCallback::ClearAndRun(&(data->mouse_lock_callback), result);
 }
 
 void PPB_Instance_Proxy::MouseLockCompleteInHost(int32_t result,

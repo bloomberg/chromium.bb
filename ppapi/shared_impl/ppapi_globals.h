@@ -17,6 +17,7 @@
 
 namespace base {
 class Lock;
+class MessageLoopProxy;
 }
 
 namespace ppapi {
@@ -100,6 +101,11 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // Returns the PP_Module associated with the given PP_Instance, or 0 on
   // failure.
   virtual PP_Module GetModuleForInstance(PP_Instance instance) = 0;
+
+  // Returns the base::MessageLoopProxy for the main thread. Note that this must
+  // be called on the main thread the first time so that it can initialize
+  // its static data.
+  base::MessageLoopProxy* GetMainThreadMessageLoop();
 
   // Returns the command line for the process.
   virtual std::string GetCmdLine() = 0;

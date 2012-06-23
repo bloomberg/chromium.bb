@@ -30,7 +30,7 @@
 //
 //   callback = factory.NewOptionalCallback(&OnCallbackComplete, output);
 //   DoSomethingAsynchronously(output->pp_array_output(),
-//                             callback.PP_CompletionCallback());
+//                             callback.pp_completion_callback());
 //   ...
 namespace ppapi {
 namespace proxy {

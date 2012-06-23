@@ -165,11 +165,7 @@ void PPB_FileChooser_Impl::StoreChosenFiles(
 }
 
 int32_t PPB_FileChooser_Impl::ValidateCallback(
-    const PP_CompletionCallback& callback) {
-  // We only support non-blocking calls.
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+    scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
@@ -177,15 +173,14 @@ int32_t PPB_FileChooser_Impl::ValidateCallback(
 }
 
 void PPB_FileChooser_Impl::RegisterCallback(
-    const PP_CompletionCallback& callback) {
-  DCHECK(callback.func);
+    scoped_refptr<TrackedCallback> callback) {
   DCHECK(!TrackedCallback::IsPending(callback_));
 
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (!plugin_module)
     return;
 
-  callback_ = new TrackedCallback(this, callback);
+  callback_ = callback;
 }
 
 void PPB_FileChooser_Impl::RunCallback(int32_t result) {
@@ -193,7 +188,7 @@ void PPB_FileChooser_Impl::RunCallback(int32_t result) {
 }
 
 int32_t PPB_FileChooser_Impl::Show(const PP_ArrayOutput& output,
-                                   const PP_CompletionCallback& callback) {
+                                   scoped_refptr<TrackedCallback> callback) {
   int32_t result = Show0_5(callback);
   if (result == PP_OK_COMPLETIONPENDING)
     output_.set_pp_array_output(output);
@@ -204,7 +199,7 @@ int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
     PP_Bool save_as,
     PP_Var suggested_file_name,
     const PP_ArrayOutput& output,
-    const PP_CompletionCallback& callback) {
+    scoped_refptr<TrackedCallback> callback) {
   int32_t result = ShowWithoutUserGesture0_5(save_as, suggested_file_name,
                                              callback);
   if (result == PP_OK_COMPLETIONPENDING)
@@ -212,7 +207,7 @@ int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
   return result;
 }
 
-int32_t PPB_FileChooser_Impl::Show0_5(const PP_CompletionCallback& callback) {
+int32_t PPB_FileChooser_Impl::Show0_5(scoped_refptr<TrackedCallback> callback) {
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return PP_ERROR_FAILED;
@@ -224,7 +219,7 @@ int32_t PPB_FileChooser_Impl::Show0_5(const PP_CompletionCallback& callback) {
 int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture0_5(
     PP_Bool save_as,
     PP_Var suggested_file_name,
-    const PP_CompletionCallback& callback) {
+    scoped_refptr<TrackedCallback> callback) {
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;

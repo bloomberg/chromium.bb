@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_directory_reader_api.h"
 
-struct PP_CompletionCallback;
 struct PP_DirectoryEntry_Dev;
 
 namespace webkit {
@@ -34,8 +33,9 @@ class PPB_DirectoryReader_Impl
       OVERRIDE;
 
   // PPB_DirectoryReader_API implementation.
-  virtual int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,
-                               PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t GetNextEntry(
+      PP_DirectoryEntry_Dev* entry,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
 
   void AddNewEntries(const std::vector<base::FileUtilProxy::Entry>& entries,
                      bool has_more);

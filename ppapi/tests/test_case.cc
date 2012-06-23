@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "ppapi/tests/pp_thread.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -107,8 +108,10 @@ bool TestCase::MatchesFilter(const std::string& test_name,
   return filter.empty() || (test_name == filter);
 }
 
-std::string TestCase::CheckResourcesAndVars() {
-  std::string errors;
+std::string TestCase::CheckResourcesAndVars(std::string errors) {
+  if (!errors.empty())
+    return errors;
+
   if (testing_interface_) {
     // TODO(dmichael): Fix tests that leak resources and enable the following:
     /*
@@ -143,4 +146,27 @@ std::string TestCase::CheckResourcesAndVars() {
   return errors;
 }
 
+// static
+void TestCase::QuitMainMessageLoop(PP_Instance instance) {
+  PP_Instance* heap_instance = new PP_Instance(instance);
+  pp::CompletionCallback callback(&DoQuitMainMessageLoop, heap_instance);
+  pp::Module::Get()->core()->CallOnMainThread(0, callback);
+}
 
+// static
+void TestCase::DoQuitMainMessageLoop(void* pp_instance, int32_t result) {
+  PP_Instance* instance = static_cast<PP_Instance*>(pp_instance);
+  GetTestingInterface()->QuitMessageLoop(*instance);
+  delete instance;
+}
+
+void TestCase::RunOnThreadInternal(void (*thread_func)(void*),
+                                   void* thread_param,
+                                   const PPB_Testing_Dev* testing_interface) {
+    PP_ThreadType thread;
+    PP_CreateThread(&thread, thread_func, thread_param);
+    // Run a message loop so pepper calls can be dispatched. The background
+    // thread will set result_ and make us Quit when it's done.
+    testing_interface->RunMessageLoop(instance_->pp_instance());
+    PP_JoinThread(thread);
+}

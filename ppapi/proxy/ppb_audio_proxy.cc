@@ -47,8 +47,9 @@ class Audio : public Resource, public PPB_Audio_Shared {
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
   virtual PP_Bool StartPlayback() OVERRIDE;
   virtual PP_Bool StopPlayback() OVERRIDE;
-  virtual int32_t OpenTrusted(PP_Resource config_id,
-                              PP_CompletionCallback create_callback) OVERRIDE;
+  virtual int32_t OpenTrusted(
+      PP_Resource config_id,
+      scoped_refptr<TrackedCallback> create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
 
@@ -105,7 +106,7 @@ PP_Bool Audio::StopPlayback() {
 }
 
 int32_t Audio::OpenTrusted(PP_Resource config_id,
-                           PP_CompletionCallback create_callback) {
+                           scoped_refptr<TrackedCallback> create_callback) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
 

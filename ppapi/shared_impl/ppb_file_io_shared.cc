@@ -58,12 +58,12 @@ thunk::PPB_FileIO_API* PPB_FileIO_Shared::AsPPB_FileIO_API() {
 
 int32_t PPB_FileIO_Shared::Open(PP_Resource file_ref,
                                 int32_t open_flags,
-                                PP_CompletionCallback callback) {
+                                scoped_refptr<TrackedCallback> callback) {
   EnterResourceNoLock<PPB_FileRef_API> enter(file_ref, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
 
-  int32_t rv = CommonCallValidation(false, OPERATION_EXCLUSIVE, callback);
+  int32_t rv = CommonCallValidation(false, OPERATION_EXCLUSIVE);
   if (rv != PP_OK)
     return rv;
 
@@ -78,8 +78,8 @@ int32_t PPB_FileIO_Shared::Open(PP_Resource file_ref,
 }
 
 int32_t PPB_FileIO_Shared::Query(PP_FileInfo* info,
-                                 PP_CompletionCallback callback) {
-  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE, callback);
+                                 scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE);
   if (rv != PP_OK)
     return rv;
   if (!info)
@@ -89,8 +89,8 @@ int32_t PPB_FileIO_Shared::Query(PP_FileInfo* info,
 
 int32_t PPB_FileIO_Shared::Touch(PP_Time last_access_time,
                                  PP_Time last_modified_time,
-                                 PP_CompletionCallback callback) {
-  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE, callback);
+                                 scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE);
   if (rv != PP_OK)
     return rv;
   return TouchValidated(last_access_time, last_modified_time, callback);
@@ -99,8 +99,8 @@ int32_t PPB_FileIO_Shared::Touch(PP_Time last_access_time,
 int32_t PPB_FileIO_Shared::Read(int64_t offset,
                                 char* buffer,
                                 int32_t bytes_to_read,
-                                PP_CompletionCallback callback) {
-  int32_t rv = CommonCallValidation(true, OPERATION_READ, callback);
+                                scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_READ);
   if (rv != PP_OK)
     return rv;
   return ReadValidated(offset, buffer, bytes_to_read, callback);
@@ -109,23 +109,23 @@ int32_t PPB_FileIO_Shared::Read(int64_t offset,
 int32_t PPB_FileIO_Shared::Write(int64_t offset,
                                  const char* buffer,
                                  int32_t bytes_to_write,
-                                 PP_CompletionCallback callback) {
-  int32_t rv = CommonCallValidation(true, OPERATION_WRITE, callback);
+                                 scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_WRITE);
   if (rv != PP_OK)
     return rv;
   return WriteValidated(offset, buffer, bytes_to_write, callback);
 }
 
 int32_t PPB_FileIO_Shared::SetLength(int64_t length,
-                                     PP_CompletionCallback callback) {
-  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE, callback);
+                                     scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE);
   if (rv != PP_OK)
     return rv;
   return SetLengthValidated(length, callback);
 }
 
-int32_t PPB_FileIO_Shared::Flush(PP_CompletionCallback callback) {
-  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE, callback);
+int32_t PPB_FileIO_Shared::Flush(scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_EXCLUSIVE);
   if (rv != PP_OK)
     return rv;
   return FlushValidated(callback);
@@ -169,14 +169,9 @@ void PPB_FileIO_Shared::ExecuteReadCallback(int32_t pp_error,
   RunAndRemoveFirstPendingCallback(pp_error);
 }
 
-int32_t PPB_FileIO_Shared::CommonCallValidation(
-    bool should_be_open,
-    OperationType new_op,
-    PP_CompletionCallback callback) {
+int32_t PPB_FileIO_Shared::CommonCallValidation(bool should_be_open,
+                                                OperationType new_op) {
   // Only asynchronous operation is supported.
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
   if (should_be_open) {
     if (!file_open_)
       return PP_ERROR_FAILED;
@@ -193,16 +188,16 @@ int32_t PPB_FileIO_Shared::CommonCallValidation(
   return PP_OK;
 }
 
-void PPB_FileIO_Shared::RegisterCallback(OperationType op,
-                                         PP_CompletionCallback callback,
-                                         char* read_buffer,
-                                         PP_FileInfo* info) {
-  DCHECK(callback.func);
+void PPB_FileIO_Shared::RegisterCallback(
+    OperationType op,
+    scoped_refptr<TrackedCallback> callback,
+    char* read_buffer,
+    PP_FileInfo* info) {
   DCHECK(pending_op_ == OPERATION_NONE ||
          (pending_op_ != OPERATION_EXCLUSIVE && pending_op_ == op));
 
   CallbackEntry entry;
-  entry.callback = new TrackedCallback(this, callback);
+  entry.callback = callback;
   entry.read_buffer = read_buffer;
   entry.info = info;
   callbacks_.push_back(entry);

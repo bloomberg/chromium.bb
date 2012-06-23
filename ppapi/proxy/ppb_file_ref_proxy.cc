@@ -38,14 +38,15 @@ class FileRef : public PPB_FileRef_Shared {
 
   // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
   virtual PP_Resource GetParent() OVERRIDE;
-  virtual int32_t MakeDirectory(PP_Bool make_ancestors,
-                                PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t MakeDirectory(
+      PP_Bool make_ancestors,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Touch(PP_Time last_access_time,
                         PP_Time last_modified_time,
-                        PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Delete(PP_CompletionCallback callback) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Delete(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Rename(PP_Resource new_file_ref,
-                         PP_CompletionCallback callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetAbsolutePath() OVERRIDE;
 
   // Executes the pending callback with the given ID. See pending_callbacks_.
@@ -56,9 +57,8 @@ class FileRef : public PPB_FileRef_Shared {
     return PluginDispatcher::GetForResource(this);
   }
 
-  // Adds a callback to the list and returns its ID. Returns 0 if the callback
-  // is invalid.
-  int SendCallback(PP_CompletionCallback callback);
+  // Adds a callback to the list and returns its ID.
+  int SendCallback(scoped_refptr<TrackedCallback> callback);
 
   // This class can have any number of out-standing requests with completion
   // callbacks, in contrast to most resources which have one possible pending
@@ -66,9 +66,10 @@ class FileRef : public PPB_FileRef_Shared {
   //
   // To keep track of them, assign integer IDs to the callbacks, which is how
   // the callback will be identified when it's passed to the host and then
-  // back here.
-  int next_callback_id_;
-  typedef std::map<int, scoped_refptr<TrackedCallback> > PendingCallbackMap;
+  // back here. Use unsigned so that overflow is well-defined.
+  unsigned int next_callback_id_;
+  typedef std::map<unsigned int,
+                   scoped_refptr<TrackedCallback> > PendingCallbackMap;
   PendingCallbackMap pending_callbacks_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileRef);
@@ -76,7 +77,7 @@ class FileRef : public PPB_FileRef_Shared {
 
 FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
     : PPB_FileRef_Shared(OBJECT_IS_PROXY, info),
-      next_callback_id_(1) {
+      next_callback_id_(0u) {
 }
 
 FileRef::~FileRef() {
@@ -97,45 +98,30 @@ PP_Resource FileRef::GetParent() {
 }
 
 int32_t FileRef::MakeDirectory(PP_Bool make_ancestors,
-                               PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
+                               scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_MakeDirectory(
-      API_ID_PPB_FILE_REF, host_resource(), make_ancestors, callback_id));
+      API_ID_PPB_FILE_REF, host_resource(), make_ancestors,
+      SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FileRef::Touch(PP_Time last_access_time,
                        PP_Time last_modified_time,
-                       PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
+                       scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Touch(
-      API_ID_PPB_FILE_REF, host_resource(),
-      last_access_time, last_modified_time, callback_id));
+      API_ID_PPB_FILE_REF, host_resource(), last_access_time,
+      last_modified_time, SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FileRef::Delete(PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
+int32_t FileRef::Delete(scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Delete(
-      API_ID_PPB_FILE_REF, host_resource(), callback_id));
+      API_ID_PPB_FILE_REF, host_resource(), SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FileRef::Rename(PP_Resource new_file_ref,
-                        PP_CompletionCallback callback) {
-  int callback_id = SendCallback(callback);
-  if (!callback_id)
-    return PP_ERROR_BADARGUMENT;
-
+                        scoped_refptr<TrackedCallback> callback) {
   Resource* new_file_ref_object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(new_file_ref);
   if (!new_file_ref_object ||
@@ -144,7 +130,7 @@ int32_t FileRef::Rename(PP_Resource new_file_ref,
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Rename(
       API_ID_PPB_FILE_REF, host_resource(),
-      new_file_ref_object->host_resource(), callback_id));
+      new_file_ref_object->host_resource(), SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -170,15 +156,12 @@ void FileRef::ExecuteCallback(int callback_id, int32_t result) {
   callback->Run(result);
 }
 
-int FileRef::SendCallback(PP_CompletionCallback callback) {
-  if (!callback.func)
-    return 0;
-
+int FileRef::SendCallback(scoped_refptr<TrackedCallback> callback) {
   // In extreme cases the IDs may wrap around, so avoid duplicates.
-  while (pending_callbacks_.find(next_callback_id_) != pending_callbacks_.end())
-    next_callback_id_++;
+  while (pending_callbacks_.count(next_callback_id_))
+    ++next_callback_id_;
 
-  pending_callbacks_[next_callback_id_] = new TrackedCallback(this, callback);
+  pending_callbacks_[next_callback_id_] = callback;
   return next_callback_id_++;
 }
 

@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
@@ -70,7 +71,7 @@ int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
   EnterGraphics3D enter(graphics_3d, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SwapBuffers(callback));
+  return enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
 }
 
 const PPB_Graphics3D g_ppb_graphics_3d_thunk = {

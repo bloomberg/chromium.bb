@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,10 @@ class PPB_Flash_Menu_Impl : public ::ppapi::Resource,
   virtual ::ppapi::thunk::PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() OVERRIDE;
 
   // PPB_Flash_Menu implementation.
-  virtual int32_t Show(const PP_Point* location,
-                       int32_t* selected_id_out,
-                       PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Show(
+      const PP_Point* location,
+      int32_t* selected_id_out,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
 
   // Called to complete |Show()|.
   WEBKIT_PLUGINS_EXPORT void CompleteShow(int32_t result, unsigned action);

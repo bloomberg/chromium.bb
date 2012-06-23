@@ -46,24 +46,25 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   // PPB_TCPSocket_Private_API implementation.
   virtual int32_t Connect(const char* host,
                           uint16_t port,
-                          PP_CompletionCallback callback) OVERRIDE;
+                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t ConnectWithNetAddress(
       const PP_NetAddress_Private* addr,
-      PP_CompletionCallback callback) OVERRIDE;
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetLocalAddress(PP_NetAddress_Private* local_addr) OVERRIDE;
   virtual PP_Bool GetRemoteAddress(PP_NetAddress_Private* remote_addr) OVERRIDE;
-  virtual int32_t SSLHandshake(const char* server_name,
-                              uint16_t server_port,
-                              PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t SSLHandshake(
+      const char* server_name,
+      uint16_t server_port,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Resource GetServerCertificate() OVERRIDE;
   virtual PP_Bool AddChainBuildingCertificate(PP_Resource certificate,
                                               PP_Bool trusted) OVERRIDE;
   virtual int32_t Read(char* buffer,
                       int32_t bytes_to_read,
-                      PP_CompletionCallback callback) OVERRIDE;
+                      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Write(const char* buffer,
                         int32_t bytes_to_write,
-                        PP_CompletionCallback callback) OVERRIDE;
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
 
   // Notifications on operations completion.

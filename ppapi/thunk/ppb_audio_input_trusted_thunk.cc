@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_audio_input_trusted_dev.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_audio_input_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -29,7 +30,8 @@ int32_t Open(PP_Resource audio_id,
   EnterAudioInput enter(audio_id, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->OpenTrusted("", config_id, callback));
+  return enter.SetResult(enter.object()->OpenTrusted("", config_id,
+                                                     enter.callback()));
 }
 
 int32_t GetSyncSocket(PP_Resource audio_id, int* sync_socket) {

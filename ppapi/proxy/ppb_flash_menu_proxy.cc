@@ -30,7 +30,7 @@ class FlashMenu : public PPB_Flash_Menu_API, public Resource {
   // PPB_Flash_Menu_API implementation.
   virtual int32_t Show(const PP_Point* location,
                        int32_t* selected_id,
-                       PP_CompletionCallback callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
   void ShowACK(int32_t selected_id, int32_t result);
 
@@ -55,12 +55,12 @@ PPB_Flash_Menu_API* FlashMenu::AsPPB_Flash_Menu_API() {
 
 int32_t FlashMenu::Show(const struct PP_Point* location,
                         int32_t* selected_id,
-                        struct PP_CompletionCallback callback) {
+                        scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(callback_))
     return PP_ERROR_INPROGRESS;
 
   selected_id_ptr_ = selected_id;
-  callback_ = new TrackedCallback(this, callback);
+  callback_ = callback;
 
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFlashMenu_Show(

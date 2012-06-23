@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
@@ -19,6 +20,7 @@
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
 
@@ -41,8 +43,8 @@ struct InstanceData {
 
   PP_Bool flash_fullscreen;  // Used for PPB_FlashFullscreen.
 
-  // When non-0, indicates the callback to execute when mouse lock is lost.
-  PP_CompletionCallback mouse_lock_callback;
+  // When non-NULL, indicates the callback to execute when mouse lock is lost.
+  scoped_refptr<TrackedCallback> mouse_lock_callback;
 };
 
 class PPAPI_PROXY_EXPORT PluginDispatcher

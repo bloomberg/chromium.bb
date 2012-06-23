@@ -47,6 +47,8 @@ class PPB_NetworkMonitor_Private_Proxy : public InterfaceProxy {
   void OnNetworkMonitorDeleted(NetworkMonitor* monitor,
                                PP_Instance instance);
 
+  // We use ObserverListThreadSafe because we want to send notifications to the
+  // same thread that created the NetworkMonitor.
   scoped_refptr<ObserverListThreadSafe<NetworkMonitor> > monitors_;
 
   int monitors_count_;

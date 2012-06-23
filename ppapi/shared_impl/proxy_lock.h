@@ -126,6 +126,7 @@ ReturnType CallWhileUnlocked(ReturnType (*function)(P1, P2, P3, P4, P5),
   ProxyAutoUnlock unlock;
   return function(p1, p2, p3, p4, p5);
 }
+void PPAPI_SHARED_EXPORT CallWhileUnlocked(const base::Closure& closure);
 
 // CallWhileLocked locks the ProxyLock and runs the given closure immediately.
 // The lock is released when CallWhileLocked returns. This function assumes the

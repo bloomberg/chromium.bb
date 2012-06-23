@@ -5,10 +5,14 @@
 #ifndef PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_
 
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
+
+class TrackedCallback;
+
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_TCPSocket_Private_API {
@@ -17,23 +21,24 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_Private_API {
 
   virtual int32_t Connect(const char* host,
                           uint16_t port,
-                          PP_CompletionCallback callback) = 0;
-  virtual int32_t ConnectWithNetAddress(const PP_NetAddress_Private* addr,
-                                        PP_CompletionCallback callback) = 0;
+                          scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t ConnectWithNetAddress(
+      const PP_NetAddress_Private* addr,
+      scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool GetLocalAddress(PP_NetAddress_Private* local_addr) = 0;
   virtual PP_Bool GetRemoteAddress(PP_NetAddress_Private* remote_addr) = 0;
   virtual int32_t SSLHandshake(const char* server_name,
                                uint16_t server_port,
-                               PP_CompletionCallback callback) = 0;
+                               scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Resource GetServerCertificate() = 0;
   virtual PP_Bool AddChainBuildingCertificate(PP_Resource certificate,
                                               PP_Bool trusted) = 0;
   virtual int32_t Read(char* buffer,
                        int32_t bytes_to_read,
-                       PP_CompletionCallback callback) = 0;
+                       scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Write(const char* buffer,
                         int32_t bytes_to_write,
-                        PP_CompletionCallback callback) = 0;
+                        scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Disconnect() = 0;
 };
 

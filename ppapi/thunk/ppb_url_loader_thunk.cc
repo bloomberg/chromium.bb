@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
@@ -34,7 +35,7 @@ int32_t Open(PP_Resource loader,
   EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Open(request_id, callback));
+  return enter.SetResult(enter.object()->Open(request_id, enter.callback()));
 }
 
 int32_t FollowRedirect(PP_Resource loader,
@@ -42,7 +43,7 @@ int32_t FollowRedirect(PP_Resource loader,
   EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->FollowRedirect(callback));
+  return enter.SetResult(enter.object()->FollowRedirect(enter.callback()));
 }
 
 PP_Bool GetUploadProgress(PP_Resource loader,
@@ -86,7 +87,7 @@ int32_t ReadResponseBody(PP_Resource loader,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->ReadResponseBody(buffer, bytes_to_read,
-                                                         callback));
+                                                          enter.callback()));
 }
 
 int32_t FinishStreamingToFile(PP_Resource loader,
@@ -94,7 +95,8 @@ int32_t FinishStreamingToFile(PP_Resource loader,
   EnterURLLoader enter(loader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->FinishStreamingToFile(callback));
+  return enter.SetResult(
+      enter.object()->FinishStreamingToFile(enter.callback()));
 }
 
 void Close(PP_Resource loader) {

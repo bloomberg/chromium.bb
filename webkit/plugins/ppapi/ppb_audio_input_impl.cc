@@ -42,7 +42,7 @@ PP_Resource PPB_AudioInput_Impl::Create0_1(
       audio_input(new PPB_AudioInput_Impl(instance));
   int32_t result = audio_input->Open(
       "", config, audio_input_callback, user_data,
-      MakeIgnoredCompletionCallback());
+      MakeIgnoredCompletionCallback(audio_input.get()));
   if (result != PP_OK && result != PP_OK_COMPLETIONPENDING)
     return 0;
   return audio_input->GetReference();
@@ -51,7 +51,7 @@ PP_Resource PPB_AudioInput_Impl::Create0_1(
 int32_t PPB_AudioInput_Impl::OpenTrusted(
     const std::string& device_id,
     PP_Resource config,
-    const PP_CompletionCallback& create_callback) {
+    scoped_refptr<TrackedCallback> create_callback) {
   return CommonOpen(device_id, config, NULL, NULL, create_callback);
 }
 
@@ -104,13 +104,13 @@ void PPB_AudioInput_Impl::StreamCreationFailed() {
 
 int32_t PPB_AudioInput_Impl::InternalEnumerateDevices(
     PP_Resource* devices,
-    PP_CompletionCallback callback) {
+    scoped_refptr<TrackedCallback> callback) {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
   devices_ = devices;
-  enumerate_devices_callback_ = new TrackedCallback(this, callback);
+  enumerate_devices_callback_ = callback;
   plugin_delegate->EnumerateDevices(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
       base::Bind(&PPB_AudioInput_Impl::EnumerateDevicesCallbackFunc,
@@ -118,10 +118,11 @@ int32_t PPB_AudioInput_Impl::InternalEnumerateDevices(
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_AudioInput_Impl::InternalOpen(const std::string& device_id,
-                                          PP_AudioSampleRate sample_rate,
-                                          uint32_t sample_frame_count,
-                                          PP_CompletionCallback callback) {
+int32_t PPB_AudioInput_Impl::InternalOpen(
+    const std::string& device_id,
+    PP_AudioSampleRate sample_rate,
+    uint32_t sample_frame_count,
+    scoped_refptr<TrackedCallback> callback) {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
@@ -131,7 +132,7 @@ int32_t PPB_AudioInput_Impl::InternalOpen(const std::string& device_id,
   audio_input_ = plugin_delegate->CreateAudioInput(
       device_id, sample_rate, sample_frame_count, this);
   if (audio_input_) {
-    open_callback_ = new TrackedCallback(this, callback);
+    open_callback_ = callback;
     return PP_OK_COMPLETIONPENDING;
   } else {
     return PP_ERROR_FAILED;

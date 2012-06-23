@@ -50,7 +50,7 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
     uint32_t sample_frame_count) {
   // Version 1.1: Query the back-end hardware for sample rate and buffer size,
   // and recommend a best fit based on request.
-  thunk::EnterInstance enter(instance);
+  thunk::EnterInstanceNoLock enter(instance);
   if (enter.failed())
     return 0;
 
@@ -92,7 +92,7 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
 // static
 PP_AudioSampleRate PPB_AudioConfig_Shared::RecommendSampleRate(
     PP_Instance instance) {
-  thunk::EnterInstance enter(instance);
+  thunk::EnterInstanceNoLock enter(instance);
   if (enter.failed())
     return PP_AUDIOSAMPLERATE_NONE;
   PP_AudioSampleRate hardware_sample_rate = static_cast<PP_AudioSampleRate>(

@@ -41,16 +41,16 @@ class PPAPI_SHARED_EXPORT UDPSocketPrivateImpl
 
   // PPB_UDPSocket_Private_API implementation.
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
-                       PP_CompletionCallback callback) OVERRIDE;
+                       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) OVERRIDE;
   virtual int32_t RecvFrom(char* buffer,
                            int32_t num_bytes,
-                           PP_CompletionCallback callback) OVERRIDE;
+                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetRecvFromAddress(PP_NetAddress_Private* addr) OVERRIDE;
   virtual int32_t SendTo(const char* buffer,
                          int32_t num_bytes,
                          const PP_NetAddress_Private* addr,
-                         PP_CompletionCallback callback) OVERRIDE;
+                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   // Notifications from the proxy.

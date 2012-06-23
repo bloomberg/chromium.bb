@@ -5,6 +5,7 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
@@ -34,7 +35,8 @@ int32_t Show(PP_Resource resource,
   EnterResource<PPB_Flash_Menu_API> enter(resource, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Show(location, selected_id, callback));
+  return enter.SetResult(enter.object()->Show(location, selected_id,
+                                              enter.callback()));
 }
 
 const PPB_Flash_Menu g_ppb_flash_menu_thunk = {

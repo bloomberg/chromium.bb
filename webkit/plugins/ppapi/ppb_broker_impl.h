@@ -32,7 +32,8 @@ class WEBKIT_PLUGINS_EXPORT PPB_Broker_Impl
   virtual ::ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_BrokerTrusted implementation.
-  virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;
+  virtual int32_t Connect(
+      scoped_refptr< ::ppapi::TrackedCallback> connect_callback) OVERRIDE;
   virtual int32_t GetHandle(int32_t* handle) OVERRIDE;
 
   void BrokerConnected(int32_t handle, int32_t result);

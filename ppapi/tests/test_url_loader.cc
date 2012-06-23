@@ -33,8 +33,9 @@ namespace {
 int32_t WriteEntireBuffer(PP_Instance instance,
                           pp::FileIO* file_io,
                           int32_t offset,
-                          const std::string& data) {
-  TestCompletionCallback callback(instance);
+                          const std::string& data,
+                          CallbackType callback_type) {
+  TestCompletionCallback callback(instance, callback_type);
   int32_t write_offset = offset;
   const char* buf = data.c_str();
   int32_t size = data.size();
@@ -95,29 +96,29 @@ bool TestURLLoader::Init() {
 }
 
 void TestURLLoader::RunTests(const std::string& filter) {
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicGET, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicPOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicFilePOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicFileRangePOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(FailsBogusContentLength, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedSameOriginRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedSameOriginRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedCrossOriginRequest, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedCrossOriginRequest, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedJavascriptURLRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedJavascriptURLRestriction, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntrustedHttpRequests, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(TrustedHttpRequests, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(FollowURLRedirect, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(PrefetchBufferThreshold, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, BasicGET, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, BasicPOST, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, BasicFilePOST, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, BasicFileRangePOST, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, CompoundBodyPOST, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, EmptyDataPOST, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, BinaryDataPOST, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, CustomRequestHeader, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, FailsBogusContentLength, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, StreamToFile, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedSameOriginRestriction, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedSameOriginRestriction, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedCrossOriginRequest, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedCrossOriginRequest, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedJavascriptURLRestriction, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedJavascriptURLRestriction, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedHttpRequests, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedHttpRequests, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, FollowURLRedirect, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, AuditURLRedirect, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, AbortCalls, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntendedLoad, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, PrefetchBufferThreshold, filter);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
@@ -222,7 +223,8 @@ int32_t TestURLLoader::PrepareFileForPost(
     return callback.result();
   }
 
-  int32_t rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, data);
+  int32_t rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, data,
+                                 callback_type());
   if (rv != PP_OK) {
     message->assign("FileIO::Write failed.");
     return rv;
@@ -787,8 +789,13 @@ std::string TestURLLoader::TestUntendedLoad() {
           total_bytes_to_be_received);
     if (bytes_received == total_bytes_to_be_received)
       break;
-    pp::Module::Get()->core()->CallOnMainThread(10, callback);
-    callback.WaitForResult();
+    // TODO(dmichael): This should probably compare pp::MessageLoop::GetCurrent
+    //                 with GetForMainThread. We only need to yield on the main
+    //                 thread.
+    if (callback_type() != PP_BLOCKING) {
+      pp::Module::Get()->core()->CallOnMainThread(10, callback);
+      callback.WaitForResult();
+    }
   }
 
   // The loader should now have the data and have finished successfully.

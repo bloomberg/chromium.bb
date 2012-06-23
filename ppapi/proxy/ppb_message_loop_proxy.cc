@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_message_loop_api.h"
@@ -140,10 +141,9 @@ int32_t MessageLoopResource::Run() {
   // PP_ERROR_BLOCKS_MAIN_THREAD.  Maybe have a special constructor for that
   // one?
 
-  // TODO(brettw) figure out how to release the lock. Can't run the message
-  // loop while holding the lock.
   nested_invocations_++;
-  loop_->Run();
+  CallWhileUnlocked(base::Bind(&MessageLoop::Run,
+                               base::Unretained(loop_.get())));
   nested_invocations_--;
 
   if (should_destroy_ && nested_invocations_ == 0) {

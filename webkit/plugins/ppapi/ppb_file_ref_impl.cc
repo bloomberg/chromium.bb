@@ -25,6 +25,7 @@ using ppapi::HostResource;
 using ppapi::PPB_FileRef_CreateInfo;
 using ppapi::PPTimeToTime;
 using ppapi::StringVar;
+using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
 using ppapi::thunk::PPB_FileSystem_API;
@@ -165,10 +166,9 @@ PP_Resource PPB_FileRef_Impl::GetParent() {
   return parent_ref->GetReference();
 }
 
-int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
-                                        PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+int32_t PPB_FileRef_Impl::MakeDirectory(
+    PP_Bool make_ancestors,
+    scoped_refptr<TrackedCallback> callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
@@ -184,9 +184,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
 
 int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
                                 PP_Time last_modified_time,
-                                PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+                                scoped_refptr<TrackedCallback> callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
@@ -202,9 +200,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+int32_t PPB_FileRef_Impl::Delete(scoped_refptr<TrackedCallback> callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
 
@@ -219,9 +215,7 @@ int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
 }
 
 int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
-                                 PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
+                                 scoped_refptr<TrackedCallback> callback) {
   EnterResourceNoLock<PPB_FileRef_API> enter(new_pp_file_ref, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;

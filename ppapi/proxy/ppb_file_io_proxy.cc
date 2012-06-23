@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,32 +41,40 @@ class FileIO : public PPB_FileIO_Shared {
   virtual int32_t GetOSFileDescriptor() OVERRIDE;
   virtual int32_t WillWrite(int64_t offset,
                             int32_t bytes_to_write,
-                            PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t WillSetLength(int64_t length,
-                                PP_CompletionCallback callback) OVERRIDE;
+                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t WillSetLength(
+      int64_t length,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
  private:
   // FileIOImpl overrides.
-  virtual int32_t OpenValidated(PP_Resource file_ref_resource,
-                                PPB_FileRef_API* file_ref_api,
-                                int32_t open_flags,
-                                PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t QueryValidated(PP_FileInfo* info,
-                                 PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t TouchValidated(PP_Time last_access_time,
-                                 PP_Time last_modified_time,
-                                 PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t ReadValidated(int64_t offset,
-                                char* buffer,
-                                int32_t bytes_to_read,
-                                PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t WriteValidated(int64_t offset,
-                                 const char* buffer,
-                                 int32_t bytes_to_write,
-                                 PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t SetLengthValidated(int64_t length,
-                                     PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t FlushValidated(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t OpenValidated(
+      PP_Resource file_ref_resource,
+      PPB_FileRef_API* file_ref_api,
+      int32_t open_flags,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t QueryValidated(
+      PP_FileInfo* info,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t TouchValidated(
+      PP_Time last_access_time,
+      PP_Time last_modified_time,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReadValidated(
+      int64_t offset,
+      char* buffer,
+      int32_t bytes_to_read,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t WriteValidated(
+      int64_t offset,
+      const char* buffer,
+      int32_t bytes_to_write,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t SetLengthValidated(
+      int64_t length,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t FlushValidated(
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
   PluginDispatcher* GetDispatcher() const {
     return PluginDispatcher::GetForResource(this);
@@ -98,7 +106,7 @@ int32_t FileIO::GetOSFileDescriptor() {
 
 int32_t FileIO::WillWrite(int64_t offset,
                           int32_t bytes_to_write,
-                          PP_CompletionCallback callback) {
+                          scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_WillWrite(
       kApiID, host_resource(), offset, bytes_to_write));
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, NULL);
@@ -106,7 +114,7 @@ int32_t FileIO::WillWrite(int64_t offset,
 }
 
 int32_t FileIO::WillSetLength(int64_t length,
-                              PP_CompletionCallback callback) {
+                              scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_WillSetLength(
       kApiID, host_resource(), length));
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, NULL);
@@ -116,7 +124,7 @@ int32_t FileIO::WillSetLength(int64_t length,
 int32_t FileIO::OpenValidated(PP_Resource file_ref_resource,
                               PPB_FileRef_API* file_ref_api,
                               int32_t open_flags,
-                              PP_CompletionCallback callback) {
+                              scoped_refptr<TrackedCallback> callback) {
   Resource* file_ref_object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_ref_resource);
 
@@ -127,7 +135,7 @@ int32_t FileIO::OpenValidated(PP_Resource file_ref_resource,
 }
 
 int32_t FileIO::QueryValidated(PP_FileInfo* info,
-                               PP_CompletionCallback callback) {
+                               scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_Query(
       kApiID, host_resource()));
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, info);
@@ -136,7 +144,7 @@ int32_t FileIO::QueryValidated(PP_FileInfo* info,
 
 int32_t FileIO::TouchValidated(PP_Time last_access_time,
                                PP_Time last_modified_time,
-                               PP_CompletionCallback callback) {
+                               scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_Touch(
       kApiID, host_resource(), last_access_time, last_modified_time));
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, NULL);
@@ -146,7 +154,7 @@ int32_t FileIO::TouchValidated(PP_Time last_access_time,
 int32_t FileIO::ReadValidated(int64_t offset,
                               char* buffer,
                               int32_t bytes_to_read,
-                              PP_CompletionCallback callback) {
+                              scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_Read(
       kApiID, host_resource(), offset, bytes_to_read));
   RegisterCallback(OPERATION_READ, callback, buffer, NULL);
@@ -156,7 +164,7 @@ int32_t FileIO::ReadValidated(int64_t offset,
 int32_t FileIO::WriteValidated(int64_t offset,
                                const char* buffer,
                                int32_t bytes_to_write,
-                               PP_CompletionCallback callback) {
+                               scoped_refptr<TrackedCallback> callback) {
   // TODO(brettw) it would be nice to use a shared memory buffer for large
   // writes rather than having to copy to a string (which will involve a number
   // of extra copies to serialize over IPC).
@@ -167,14 +175,14 @@ int32_t FileIO::WriteValidated(int64_t offset,
 }
 
 int32_t FileIO::SetLengthValidated(int64_t length,
-                                   PP_CompletionCallback callback) {
+                                   scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_SetLength(
       kApiID, host_resource(), length));
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, NULL);
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t FileIO::FlushValidated(PP_CompletionCallback callback) {
+int32_t FileIO::FlushValidated(scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_Flush(
       kApiID, host_resource()));
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, NULL);

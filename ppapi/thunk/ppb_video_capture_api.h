@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 
 namespace ppapi {
 
 struct DeviceRefData;
+class TrackedCallback;
 
 namespace thunk {
 
@@ -21,11 +23,11 @@ class PPB_VideoCapture_API {
   virtual ~PPB_VideoCapture_API() {}
 
   virtual int32_t EnumerateDevices(PP_Resource* devices,
-                                   const PP_CompletionCallback& callback) = 0;
+                                   scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,
-                       const PP_CompletionCallback& callback) = 0;
+                       scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t StartCapture() = 0;
   virtual int32_t ReuseBuffer(uint32_t buffer) = 0;
   virtual int32_t StopCapture() = 0;

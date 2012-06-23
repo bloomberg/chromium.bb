@@ -48,28 +48,27 @@ void PPB_VideoDecoder_Shared::Destroy() {
   PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(graphics_context_);
 }
 
-bool PPB_VideoDecoder_Shared::SetFlushCallback(PP_CompletionCallback callback) {
-  CHECK(callback.func);
+bool PPB_VideoDecoder_Shared::SetFlushCallback(
+    scoped_refptr<TrackedCallback> callback) {
   if (flush_callback_.get())
     return false;
-  flush_callback_ = new TrackedCallback(this, callback);
+  flush_callback_ = callback;
   return true;
 }
 
-bool PPB_VideoDecoder_Shared::SetResetCallback(PP_CompletionCallback callback) {
-  CHECK(callback.func);
+bool PPB_VideoDecoder_Shared::SetResetCallback(
+    scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(reset_callback_))
     return false;
-  reset_callback_ = new TrackedCallback(this, callback);
+  reset_callback_ = callback;
   return true;
 }
 
 bool PPB_VideoDecoder_Shared::SetBitstreamBufferCallback(
     int32 bitstream_buffer_id,
-    PP_CompletionCallback callback) {
+    scoped_refptr<TrackedCallback> callback) {
   return bitstream_buffer_callbacks_.insert(
-      std::make_pair(bitstream_buffer_id,
-                     new TrackedCallback(this, callback))).second;
+      std::make_pair(bitstream_buffer_id, callback)).second;
 }
 
 void PPB_VideoDecoder_Shared::RunFlushCallback(int32 result) {

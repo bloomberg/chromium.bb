@@ -24,6 +24,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
+using ppapi::TrackedCallback;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Graphics3D_API;
@@ -126,10 +127,7 @@ bool PPB_VideoDecoder_Impl::Init(
 
 int32_t PPB_VideoDecoder_Impl::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-    PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+    scoped_refptr<TrackedCallback> callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
@@ -178,10 +176,7 @@ void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
   platform_video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
-int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+int32_t PPB_VideoDecoder_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
@@ -193,10 +188,7 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BLOCKS_MAIN_THREAD;
-
+int32_t PPB_VideoDecoder_Impl::Reset(scoped_refptr<TrackedCallback> callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 

@@ -5,10 +5,14 @@
 #ifndef PPAPI_THUNK_WEBSOCKET_API_H_
 #define PPAPI_THUNK_WEBSOCKET_API_H_
 
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_websocket.h"
 
 namespace ppapi {
+
+class TrackedCallback;
+
 namespace thunk {
 
 // Some arguments and attributes are based on The WebSocket Protocol and The
@@ -25,19 +29,19 @@ class PPB_WebSocket_API {
   virtual int32_t Connect(PP_Var url,
                           const PP_Var protocols[],
                           uint32_t protocol_count,
-                          PP_CompletionCallback callback) = 0;
+                          scoped_refptr<TrackedCallback> callback) = 0;
 
   // Closes the established connection with specified |code| and |reason|.
   // Returns an int32_t error code from pp_errors.h.
   virtual int32_t Close(uint16_t code,
                         PP_Var reason,
-                        PP_CompletionCallback callback) = 0;
+                        scoped_refptr<TrackedCallback> callback) = 0;
 
   // Receives a message from the WebSocket server. Caller must keep specified
   // |message| object as valid until completion callback is invoked. Returns an
   // int32_t error code from pp_errors.h.
   virtual int32_t ReceiveMessage(PP_Var* message,
-                                 PP_CompletionCallback callback) = 0;
+                                 scoped_refptr<TrackedCallback> callback) = 0;
 
   // Sends a message to the WebSocket server. Returns an int32_t error code
   // from pp_errors.h.

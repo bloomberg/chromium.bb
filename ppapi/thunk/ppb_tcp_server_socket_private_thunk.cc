@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -35,7 +36,8 @@ int32_t Listen(PP_Resource tcp_server_socket,
   EnterTCPServer enter(tcp_server_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Listen(addr, backlog, callback));
+  return enter.SetResult(enter.object()->Listen(addr, backlog,
+                                                enter.callback()));
 }
 
 int32_t Accept(PP_Resource tcp_server_socket,
@@ -44,7 +46,7 @@ int32_t Accept(PP_Resource tcp_server_socket,
   EnterTCPServer enter(tcp_server_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Accept(tcp_socket, callback));
+  return enter.SetResult(enter.object()->Accept(tcp_socket, enter.callback()));
 }
 
 void StopListening(PP_Resource tcp_server_socket) {

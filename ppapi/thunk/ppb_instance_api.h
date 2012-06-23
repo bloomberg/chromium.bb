@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/pp_print_settings_dev.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
@@ -27,6 +29,7 @@
 
 namespace ppapi {
 
+class TrackedCallback;
 struct ViewData;
 
 namespace thunk {
@@ -109,7 +112,7 @@ class PPB_Instance_API {
 
   // MouseLock.
   virtual int32_t LockMouse(PP_Instance instance,
-                            PP_CompletionCallback callback) = 0;
+                            scoped_refptr<TrackedCallback> callback) = 0;
   virtual void UnlockMouse(PP_Instance instance) = 0;
 
   // Printing.

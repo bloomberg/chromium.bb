@@ -39,15 +39,18 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   virtual ::ppapi::thunk::PPB_WebSocket_API* AsPPB_WebSocket_API() OVERRIDE;
 
   // PPB_WebSocket_API implementation.
-  virtual int32_t Connect(PP_Var url,
-                          const PP_Var protocols[],
-                          uint32_t protocol_count,
-                          PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Close(uint16_t code,
-                        PP_Var reason,
-                        PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t ReceiveMessage(PP_Var* message,
-                                 PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Connect(
+      PP_Var url,
+      const PP_Var protocols[],
+      uint32_t protocol_count,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Close(
+      uint16_t code,
+      PP_Var reason,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReceiveMessage(
+      PP_Var* message,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t SendMessage(PP_Var message) OVERRIDE;
   virtual uint64_t GetBufferedAmount() OVERRIDE;
   virtual uint16_t GetCloseCode() OVERRIDE;

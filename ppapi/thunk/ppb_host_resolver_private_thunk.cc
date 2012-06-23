@@ -4,6 +4,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_host_resolver_private_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -36,7 +37,8 @@ int32_t Resolve(PP_Resource host_resolver,
   EnterHostResolver enter(host_resolver, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Resolve(host, port, hint, callback));
+  return enter.SetResult(enter.object()->Resolve(host, port, hint,
+                                                 enter.callback()));
 }
 
 PP_Var GetCanonicalName(PP_Resource host_resolver) {
