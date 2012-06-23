@@ -271,7 +271,7 @@ cr.define('cr.ui', function() {
         var sortDirection = sortStatus.direction == 'desc' ? 'asc' : 'desc';
         this.list_.dataModel.sort(sortStatus.field, sortDirection);
       } else {
-        this.list_.dataModel.sort(cm.getId(i), 'asc');
+        this.list_.dataModel.sort(cm.getId(i), cm.getDefaultOrder(i));
       }
       if (this.selectionModel.selectedIndex == -1)
         this.list_.scrollTop = 0;

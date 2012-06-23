@@ -1223,6 +1223,7 @@ FileManager.prototype = {
     columns[1].renderFunction = this.renderSize_.bind(this);
     columns[2].renderFunction = this.renderType_.bind(this);
     columns[3].renderFunction = this.renderDate_.bind(this);
+    columns[3].defaultOrder = 'desc';
 
     if (this.showCheckboxes_) {
       columns[0].headerRenderFunction =

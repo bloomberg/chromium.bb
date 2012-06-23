@@ -172,6 +172,15 @@ cr.define('cr.ui.table', function() {
     },
 
     /**
+     * Returns default sorting order for the column at the given index.
+     * @param {number} index The index of the column.
+     * @return {string} 'asc' or 'desc'.
+     */
+    getDefaultOrder: function(index) {
+      return this.columns_[index].defaultOrder;
+    },
+
+    /**
      * Returns index of the column with given id.
      * @param {string} id The id to find.
      * @return {number} The index of column with given id or -1 if not found.
