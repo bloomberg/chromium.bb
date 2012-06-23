@@ -23,6 +23,9 @@
             'build_glibc': 0,
             'build_newlib': 1,
           },
+          'include_dirs': [
+            '../third_party/skia/include/config',
+          ],
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',

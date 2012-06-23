@@ -244,7 +244,6 @@
             'sources!': [
               'shared_impl/ppb_audio_input_shared.cc',
               'shared_impl/ppb_graphics_3d_shared.cc',
-              'shared_impl/ppb_image_data_shared.cc',
               'shared_impl/ppb_opengles2_shared.cc',
               'shared_impl/ppb_url_util_shared.cc',
               'shared_impl/ppb_video_decoder_shared.cc',
