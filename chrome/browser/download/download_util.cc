@@ -206,13 +206,17 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
                            int start_angle,
                            int percent_done,
                            PaintDownloadProgressSize size) {
-  // Load up our common images
+  // Load up our common images.
   if (!g_background_16) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
     g_background_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_16);
     g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
     g_background_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_32);
+    DCHECK_EQ(g_foreground_16->width(), g_background_16->width());
+    DCHECK_EQ(g_foreground_16->height(), g_background_16->height());
+    DCHECK_EQ(g_foreground_32->width(), g_background_32->width());
+    DCHECK_EQ(g_foreground_32->height(), g_background_32->height());
   }
 
   gfx::ImageSkia* background =
@@ -223,27 +227,21 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
   const int kProgressIconSize = (size == BIG) ? kBigProgressIconSize :
                                                 kSmallProgressIconSize;
 
-  // We start by storing the bounds of the background and foreground images
-  // so that it is easy to mirror the bounds if the UI layout is RTL.
-  gfx::Rect background_bounds(origin_x, origin_y,
-                              background->width(), background->height());
-  gfx::Rect foreground_bounds(origin_x, origin_y,
-                              foreground->width(), foreground->height());
+  // We start by storing the bounds of the images so that it is easy to mirror
+  // the bounds if the UI layout is RTL.
+  gfx::Rect bounds(origin_x, origin_y,
+                   background->width(), background->height());
 
 #if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
-  int mirrored_x = containing_view->GetMirroredXForRect(background_bounds);
-  background_bounds.set_x(mirrored_x);
-  mirrored_x = containing_view->GetMirroredXForRect(foreground_bounds);
-  foreground_bounds.set_x(mirrored_x);
+  int mirrored_x = containing_view->GetMirroredXForRect(bounds);
+  bounds.set_x(mirrored_x);
 #endif
 
   // Draw the background progress image.
-  SkPaint background_paint;
   canvas->DrawImageInt(*background,
-                       background_bounds.x(),
-                       background_bounds.y(),
-                       background_paint);
+                       bounds.x(),
+                       bounds.y());
 
   // Layer the foreground progress image in an arc proportional to the download
   // progress. The arc grows clockwise, starting in the midnight position, as
@@ -263,39 +261,28 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
   // a clipping region if it would round to 360 (really 0) degrees, since that
   // would eliminate the foreground completely and be quite confusing (it would
   // look like 0% complete when it should be almost 100%).
-  SkPaint foreground_paint;
+  canvas->Save();
   if (sweep_angle < static_cast<float>(kMaxDegrees - 1)) {
     SkRect oval;
-    oval.set(SkIntToScalar(foreground_bounds.x()),
-             SkIntToScalar(foreground_bounds.y()),
-             SkIntToScalar(foreground_bounds.x() + kProgressIconSize),
-             SkIntToScalar(foreground_bounds.y() + kProgressIconSize));
+    oval.set(SkIntToScalar(bounds.x()),
+             SkIntToScalar(bounds.y()),
+             SkIntToScalar(bounds.x() + kProgressIconSize),
+             SkIntToScalar(bounds.y() + kProgressIconSize));
     SkPath path;
     path.arcTo(oval,
                SkFloatToScalar(start_pos),
                SkFloatToScalar(sweep_angle), false);
-    path.lineTo(SkIntToScalar(foreground_bounds.x() + kProgressIconSize / 2),
-                SkIntToScalar(foreground_bounds.y() + kProgressIconSize / 2));
+    path.lineTo(SkIntToScalar(bounds.x() + kProgressIconSize / 2),
+                SkIntToScalar(bounds.y() + kProgressIconSize / 2));
 
-    SkShader* shader =
-        SkShader::CreateBitmapShader(*foreground,
-                                     SkShader::kClamp_TileMode,
-                                     SkShader::kClamp_TileMode);
-    SkMatrix shader_scale;
-    shader_scale.setTranslate(SkIntToScalar(foreground_bounds.x()),
-                              SkIntToScalar(foreground_bounds.y()));
-    shader->setLocalMatrix(shader_scale);
-    foreground_paint.setShader(shader);
-    foreground_paint.setAntiAlias(true);
-    shader->unref();
-    canvas->DrawPath(path, foreground_paint);
-    return;
+    // gfx::Canvas::ClipPath does not provide for anti-aliasing.
+    canvas->sk_canvas()->clipPath(path, SkRegion::kIntersect_Op, true);
   }
 
   canvas->DrawImageInt(*foreground,
-                       foreground_bounds.x(),
-                       foreground_bounds.y(),
-                       foreground_paint);
+                       bounds.x(),
+                       bounds.y());
+  canvas->Restore();
 }
 
 void PaintDownloadComplete(gfx::Canvas* canvas,
