@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/md5.h"
 #include "base/string16.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -243,8 +244,8 @@ class ShellUtil {
                                      const string16& chrome_exe);
 
   // Returns the AppUserModelId for |dist|. This identifier is unconditionally
-  // suffixed with the user id for user-level installs (in contrast to other
-  // registration entries which are suffix as described in
+  // suffixed with a unique id for this user on user-level installs (in contrast
+  // to other registration entries which are suffixed as described in
   // GetCurrentInstallationSuffix() above).
   static string16 GetBrowserModelId(BrowserDistribution* dist,
                                     const string16& chrome_exe);
@@ -404,6 +405,17 @@ class ShellUtil {
                                    const string16& icon_path,
                                    int icon_index,
                                    uint32 options);
+
+  // Returns the base32 encoding (using the [A-Z2-7] alphabet) of |digest|.
+  // The returned string will be exactly 26 characters in length.
+  static string16 MD5DigestToBase32(const base::MD5Digest& digest);
+
+  // Returns the base32 encoding (using the [A-Z2-7] alphabet) of |bytes|.
+  // |size| is the length of |bytes|.
+  // Note: This method does not suffix the output with '=' signs as technically
+  // required by the base32 standard for inputs that aren't a multiple of 5
+  // bits.
+  static string16 ByteArrayToBase32(const unsigned char bytes[], int size);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);

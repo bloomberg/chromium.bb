@@ -28,6 +28,7 @@
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -83,6 +84,79 @@ bool IsChromeMetroSupported() {
       VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR;
 
   return VerifyVersionInfo(&min_version_info, type_mask, condition_mask) != 0;
+}
+
+// Sets |suffix| to the base 32 encoding of the md5 hash of this user's username
+// preceded by a dot.
+// This is guaranteed to be unique on the machine and 27 characters long
+// (including the '.').
+// This suffix is then meant to be added to all registration that may conflict
+// with another user-level Chrome install.
+// Note that prior to Chrome 21, the suffix registered used to be the user's
+// username (see GetOldUserSpecificRegistrySuffix() below). We still honor old
+// installs registered that way, but it was wrong because some of the characters
+// allowed in a username are not allowed in a ProgId.
+// Returns true unless the OS call to retrieve the username fails.
+bool GetNewUserSpecificRegistrySuffix(string16* suffix) {
+  wchar_t user_name[256];
+  DWORD size = arraysize(user_name);
+  if (::GetUserName(user_name, &size) == 0 || size < 1) {
+    NOTREACHED();
+    return false;
+  }
+  base::MD5Digest md5_digest;
+  base::MD5Sum(user_name, size, &md5_digest);
+  const string16 base32_md5(ShellUtil::MD5DigestToBase32(md5_digest));
+  // The value returned by the base32 algorithm above must never change and must
+  // always be 26 characters long (i.e. if someone ever moves this to base and
+  // implements the full base32 algorithm (i.e. with appended '=' signs in the
+  // output), they must provide a flag to allow this method to still request
+  // the output with no appended '=' signs).
+  DCHECK_EQ(base32_md5.length(), 26U);
+  suffix->reserve(27);
+  suffix->assign(1, L'.');
+  suffix->append(base32_md5);
+  return true;
+}
+
+// Sets |suffix| to this user's username preceded by a dot. This suffix is then
+// meant to be added to all registration that may conflict with another
+// user-level Chrome install.
+// Returns true unless the OS call to retrieve the username fails.
+bool GetOldUserSpecificRegistrySuffix(string16* suffix) {
+  wchar_t user_name[256];
+  DWORD size = arraysize(user_name);
+  if (::GetUserName(user_name, &size) == 0 || size < 1) {
+    NOTREACHED();
+    return false;
+  }
+  suffix->reserve(size);
+  suffix->assign(1, L'.');
+  suffix->append(user_name, size - 1);
+  return true;
+}
+
+// Returns the current (or installed) browser's ProgId (e.g.
+// "ChromeHTML|suffix|").
+// |suffix| can be the empty string.
+string16 GetBrowserProgId(const string16& suffix) {
+  string16 chrome_html(ShellUtil::kChromeHTMLProgId);
+  chrome_html.append(suffix);
+
+  // ProgIds cannot be longer than 39 characters.
+  // Ref: http://msdn.microsoft.com/en-us/library/aa911706.aspx.
+  // Make all new registrations comply with this requirement (existing
+  // registrations must be preserved).
+  // Note: since |new_style_suffix| will always be the same for this user, only
+  // initialize it once, re-use the derived value in subsequent calls.
+  static string16 new_style_suffix;
+  if ((!new_style_suffix.empty() ||
+       GetNewUserSpecificRegistrySuffix(&new_style_suffix)) &&
+      suffix.compare(new_style_suffix) == 0 && chrome_html.length() > 39) {
+    NOTREACHED();
+    chrome_html.erase(39);
+  }
+  return chrome_html;
 }
 
 // This class represents a single registry entry. The objective is to
@@ -181,8 +255,7 @@ class RegistryEntry {
     // File association ProgId
     string16 chrome_html_prog_id(ShellUtil::kRegClasses);
     chrome_html_prog_id.push_back(FilePath::kSeparators[0]);
-    chrome_html_prog_id.append(ShellUtil::kChromeHTMLProgId);
-    chrome_html_prog_id.append(suffix);
+    chrome_html_prog_id.append(GetBrowserProgId(suffix));
     entries->push_front(new RegistryEntry(
         chrome_html_prog_id, ShellUtil::kChromeHTMLProgIdDesc));
     entries->push_front(new RegistryEntry(
@@ -234,7 +307,7 @@ class RegistryEntry {
                                            std::list<RegistryEntry*>* entries) {
     entries->push_front(new RegistryEntry(
         GetCapabilitiesKey(dist, suffix).append(L"\\URLAssociations"),
-        protocol, string16(ShellUtil::kChromeHTMLProgId).append(suffix)));
+        protocol, GetBrowserProgId(suffix)));
     return true;
   }
 
@@ -295,8 +368,7 @@ class RegistryEntry {
     entries->push_front(new RegistryEntry(capabilities + L"\\Startmenu",
         L"StartMenuInternet", reg_app_name));
 
-    string16 html_prog_id(ShellUtil::kChromeHTMLProgId);
-    html_prog_id.append(suffix);
+    string16 html_prog_id(GetBrowserProgId(suffix));
     for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
       entries->push_front(new RegistryEntry(
           capabilities + L"\\FileAssociations",
@@ -365,8 +437,7 @@ class RegistryEntry {
                              const string16& suffix,
                              std::list<RegistryEntry*>* entries) {
     // File extension associations.
-    string16 html_prog_id(ShellUtil::kChromeHTMLProgId);
-    html_prog_id.append(suffix);
+    string16 html_prog_id(GetBrowserProgId(suffix));
     for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
       string16 ext_key(ShellUtil::kRegClasses);
       ext_key.push_back(FilePath::kSeparators[0]);
@@ -677,8 +748,7 @@ void RemoveBadWindows8RegistrationIfNeeded(
     // <root hkey>\Software\Classes\ChromiumHTML[.user]\shell\open\command
     key = ShellUtil::kRegClasses;
     key.push_back(FilePath::kSeparators[0]);
-    key.append(ShellUtil::kChromeHTMLProgId);
-    key.append(installation_suffix);
+    key.append(GetBrowserProgId(installation_suffix));
     key.append(ShellUtil::kRegShellOpen);
     InstallUtil::DeleteRegistryValue(root_key, key,
                                      ShellUtil::kRegDelegateExecute);
@@ -747,28 +817,13 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
   return false;
 }
 
-// Sets |suffix| to this user's username preceded by a dot. This suffix is then
-// meant to be added to all registration that may conflict with another
-// user-level Chrome install.
-// Returns true unless the OS call to retrieve the username fails.
-bool GetUserSpecificRegistrySuffix(string16* suffix) {
-  wchar_t user_name[256];
-  DWORD size = arraysize(user_name);
-  if (::GetUserName(user_name, &size) == 0 || size < 1) {
-    PLOG(DFATAL) << "GetUserName failed";
-    return false;
-  }
-  suffix->reserve(size);
-  suffix->assign(1, L'.');
-  suffix->append(user_name, size - 1);
-  return true;
-}
-
-// Sets |suffix| to the current user's username, preceded by a dot, on
-// user-level installs.
+// Sets |suffix| to a 27 characters string that is specific to this user on
+// this machine, on user-level installs, preferably.
 // To support old-style user-level installs however, |suffix| is cleared if
 // the user currently owns the non-suffixed HKLM registrations.
-// |suffix| is also cleared on system-level installs.
+// |suffix| can also be set to the user's username if the current install
+// is suffixed as per the old-style registrations.
+// |suffix| is cleared on system-level installs.
 // |suffix| should then be appended to all Chrome properties that may conflict
 // with other Chrome user-level installs.
 // Returns true unless one of the underlying calls fails.
@@ -782,9 +837,22 @@ bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
     // registered with no suffix.
     suffix->clear();
     return true;
-  } else {
-    return GetUserSpecificRegistrySuffix(suffix);
   }
+
+  string16 old_suffix;
+  // Get the |old_suffix| for the check below.
+  if (!GetOldUserSpecificRegistrySuffix(&old_suffix)) {
+    NOTREACHED();
+    return false;
+  }
+  if (QuickIsChromeRegistered(dist, chrome_exe, old_suffix,
+                              CONFIRM_SHELL_REGISTRATION)) {
+    // Username suffix for installs that are suffixed as per the old-style.
+    suffix->assign(old_suffix);
+    return true;
+  }
+
+  return GetNewUserSpecificRegistrySuffix(suffix);
 }
 
 // Returns the root registry key (HKLM or HKCU) into which shell integration
@@ -1060,11 +1128,28 @@ void ShellUtil::GetRegisteredBrowsers(
 
 string16 ShellUtil::GetCurrentInstallationSuffix(BrowserDistribution* dist,
                                                  const string16& chrome_exe) {
+  // This method is somewhat the opposite of GetInstallationSpecificSuffix().
+  // In this case we are not trying to determine the current suffix for the
+  // upcoming installation (i.e. not trying to stick to a currently bad
+  // registration style if one is present).
+  // Here we want to determine which suffix we should use at run-time.
+  // In order of preference, we prefer (for user-level installs):
+  //   1) Base 32 encoding of the md5 hash of the username (new-style).
+  //   2) Username (old-style).
+  //   3) Unsuffixed (even worse).
   string16 tested_suffix;
   if (!InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ||
-      !GetUserSpecificRegistrySuffix(&tested_suffix) ||
-      !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
-                               CONFIRM_PROGID_REGISTRATION)) {
+      ((!GetNewUserSpecificRegistrySuffix(&tested_suffix) ||
+        !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
+                                 CONFIRM_PROGID_REGISTRATION)) &&
+       (!GetOldUserSpecificRegistrySuffix(&tested_suffix) ||
+        !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
+                                 CONFIRM_PROGID_REGISTRATION)))) {
+    // The current installation's suffix should only be empty on system-level
+    // installs and unsuffixed (old-style) user-level installs.
+    DCHECK(!InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ||
+           QuickIsChromeRegistered(dist, chrome_exe, string16(),
+                                   CONFIRM_PROGID_REGISTRATION));
     return string16();
   }
   return tested_suffix;
@@ -1082,7 +1167,7 @@ string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
   string16 app_id(dist->GetBaseAppId());
   string16 suffix;
   if (InstallUtil::IsPerUserInstall(chrome_exe.c_str()) &&
-      !GetUserSpecificRegistrySuffix(&suffix)) {
+      !GetNewUserSpecificRegistrySuffix(&suffix)) {
     NOTREACHED();
   }
   // There is only one component (i.e. the suffixed appid) in this case, but it
@@ -1520,4 +1605,56 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
       icon_index,
       app_id.c_str(),
       ConvertShellUtilShortcutOptionsToFileUtil(options));
+}
+
+string16 ShellUtil::MD5DigestToBase32(const base::MD5Digest& digest) {
+  COMPILE_ASSERT(sizeof(base::MD5Digest) == 16, size_of_MD5_not_as_expected_);
+  string16 encoding(ByteArrayToBase32(digest.a, 16));
+  // This must always remain 26 characters as callers which write to solid
+  // state depend on this.
+  DCHECK_EQ(encoding.length(), 26U);
+  return encoding;
+}
+
+string16 ShellUtil::ByteArrayToBase32(const unsigned char bytes[], int size) {
+  static char const kEncoding[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+  // Eliminate special cases first.
+  if (size == 0) {
+    return string16();
+  } else if (size == 1) {
+    string16 ret;
+    ret.push_back(kEncoding[(bytes[0] & 0xf8) >> 3]);
+    ret.push_back(kEncoding[(bytes[0] & 0x07) << 2]);
+    return ret;
+  }
+
+  // Overestimate the number of bits in the string by 4 so that dividing by 5
+  // is the equivalent of rounding up the actual number of bits divided by 5.
+  const int kEncodedLength = (size * 8 + 4) / 5;
+
+  string16 ret;
+  ret.reserve(kEncodedLength);
+
+  // A bit stream which will be read from the left and appended to from the
+  // right as it's emptied.
+  uint16 bit_stream = (bytes[0] << 8) + bytes[1];
+  int next_byte_index = 2;
+  int free_bits = 0;
+  while (free_bits < 16) {
+    // Extract the 5 leftmost bits in the stream
+    ret.push_back(kEncoding[(bit_stream & 0xf800) >> 11]);
+    bit_stream <<= 5;
+    free_bits += 5;
+
+    // If there is enough room in the bit stream, inject another byte (if there
+    // are any left...).
+    if (free_bits >= 8 && next_byte_index < size) {
+      free_bits -= 8;
+      bit_stream += bytes[next_byte_index++] << free_bits;
+    }
+  }
+
+  DCHECK_EQ(ret.length(), static_cast<size_t>(kEncodedLength));
+  return ret;
 }
