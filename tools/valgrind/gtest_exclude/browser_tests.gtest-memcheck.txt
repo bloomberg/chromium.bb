@@ -1,2 +1,4 @@
 # NaCl tests fail with Data Execution Prevention error http://crbug.com/104517
+PPAPINaClGLibcTest.*
+PPAPINaClNewlibTest.*
 PPAPINaClTest*
