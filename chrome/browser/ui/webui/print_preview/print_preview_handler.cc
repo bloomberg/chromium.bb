@@ -663,6 +663,7 @@ void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
+  SendCloudPrintEnabled();
 }
 
 void PrintPreviewHandler::HandleReportDestinationEvent(const ListValue* args) {
@@ -732,7 +733,6 @@ void PrintPreviewHandler::SendPrinterCapabilities(
 }
 
 void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
-  SendCloudPrintEnabled();
   web_ui()->CallJavascriptFunction("setPrinters", printers);
 }
 
