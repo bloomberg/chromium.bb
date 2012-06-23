@@ -332,6 +332,14 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
   window_->Show();
 }
 
+views::View* ShellWindowViews::GetInitiallyFocusedView() {
+  return web_view_;
+}
+
+void ShellWindowViews::OnFocus() {
+  web_view_->RequestFocus();
+}
+
 void ShellWindowViews::ViewHierarchyChanged(
     bool is_add, views::View *parent, views::View *child) {
   if (is_add && child == this) {

@@ -60,6 +60,7 @@ class ShellWindowViews : public ShellWindow,
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
  protected:
   // views::View implementation.
@@ -68,6 +69,7 @@ class ShellWindowViews : public ShellWindow,
       bool is_add, views::View *parent, views::View *child) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
   // ShellWindow implementation.
   virtual void UpdateWindowTitle() OVERRIDE;
