@@ -204,6 +204,10 @@ Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() {
   Ranges<TimeDelta> time_ranges;
   if (clock_->Duration() == TimeDelta() || total_bytes_ == 0)
     return time_ranges;
+  for (size_t i = 0; i < buffered_time_ranges_.size(); ++i) {
+    time_ranges.Add(buffered_time_ranges_.start(i),
+                    buffered_time_ranges_.end(i));
+  }
   for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i) {
     TimeDelta start = TimeForByteOffset_Locked(buffered_byte_ranges_.start(i));
     TimeDelta end = TimeForByteOffset_Locked(buffered_byte_ranges_.end(i));
@@ -454,6 +458,14 @@ void Pipeline::AddBufferedByteRange(int64 start, int64 end) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
   buffered_byte_ranges_.Add(start, end);
+  did_loading_progress_ = true;
+}
+
+void Pipeline::AddBufferedTimeRange(base::TimeDelta start,
+                                    base::TimeDelta end) {
+  DCHECK(IsRunning());
+  base::AutoLock auto_lock(lock_);
+  buffered_time_ranges_.Add(start, end);
   did_loading_progress_ = true;
 }
 

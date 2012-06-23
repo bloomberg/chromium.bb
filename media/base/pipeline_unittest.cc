@@ -480,11 +480,15 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
   EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
+  pipeline_->AddBufferedTimeRange(base::TimeDelta(), kDuration / 8);
+  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
+  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
 
   base::TimeDelta kSeekTime = kDuration / 2;
   ExpectSeek(kSeekTime);
   DoSeek(kSeekTime);
 
+  EXPECT_TRUE(pipeline_->DidLoadingProgress());
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
   pipeline_->AddBufferedByteRange(kTotalBytes / 2,
                                   kTotalBytes / 2 + kTotalBytes / 8);
@@ -496,6 +500,15 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   EXPECT_EQ(kDuration / 2, pipeline_->GetBufferedTimeRanges().start(1));
   EXPECT_EQ(kDuration / 2 + kDuration / 8,
             pipeline_->GetBufferedTimeRanges().end(1));
+
+  pipeline_->AddBufferedTimeRange(kDuration / 4, 3 * kDuration / 8);
+  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
+  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
+  EXPECT_EQ(kDuration / 4, pipeline_->GetBufferedTimeRanges().start(1));
+  EXPECT_EQ(3* kDuration / 8, pipeline_->GetBufferedTimeRanges().end(1));
+  EXPECT_EQ(kDuration / 2, pipeline_->GetBufferedTimeRanges().start(2));
+  EXPECT_EQ(kDuration / 2 + kDuration / 8,
+            pipeline_->GetBufferedTimeRanges().end(2));
 }
 
 TEST_F(PipelineTest, DisableAudioRenderer) {
