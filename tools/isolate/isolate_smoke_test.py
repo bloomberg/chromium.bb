@@ -22,7 +22,17 @@ VERBOSE = False
 
 
 # Keep the list hard coded.
-EXPECTED_MODES = ('check', 'hashtable', 'read', 'remap', 'run', 'trace')
+EXPECTED_MODES = (
+  'check',
+  'hashtable',
+  'help',
+  'noop',
+  'read',
+  'remap',
+  'run',
+  'trace',
+)
+
 # These are per test case, not per mode.
 RELATIVE_CWD = {
   'fail': '.',
@@ -32,6 +42,7 @@ RELATIVE_CWD = {
   'touch_root': os.path.join('data', 'isolate'),
   'with_flag': '.',
 }
+
 DEPENDENCIES = {
   'fail': ['fail.py'],
   'missing_trailing_slash': [],
@@ -51,6 +62,7 @@ DEPENDENCIES = {
     os.path.join('files1', 'test_file2.txt'),
   ],
 }
+
 
 class CalledProcessError(subprocess.CalledProcessError):
   """Makes 2.6 version act like 2.7"""
@@ -203,10 +215,10 @@ class IsolateModeBase(IsolateBase):
         'Rename the test case to test_%s()' % case)
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      mode,
       '--result', self.result,
       '--outdir', self.outdir,
-      self.filename(),
-      '--mode', mode,
+      '--isolate', self.filename(),
     ]
     cmd.extend(args)
 
@@ -272,7 +284,7 @@ class Isolate(unittest.TestCase):
     modes = [re.match(r'^  (\w+) .+', l) for l in out]
     modes = tuple(m.group(1) for m in modes if m)
     # noop doesn't do anything so no point in testing it.
-    self.assertEquals(sorted(EXPECTED_MODES + ('noop',)), sorted(modes))
+    self.assertEquals(sorted(EXPECTED_MODES), sorted(modes))
 
   def test_modes(self):
     # This is a bit redundant but make sure all combinations are tested.
@@ -283,7 +295,7 @@ class Isolate(unittest.TestCase):
     )
     self.assertEquals(sorted(RELATIVE_CWD), files)
     self.assertEquals(sorted(DEPENDENCIES), files)
-    # --mode=read and --mode=trace are tested together.
+    # modes read and trace are tested together.
     for mode in ('check', 'hashtable', 'read_trace', 'remap', 'run'):
       expected_cases = set('test_%s' % f for f in files)
       fixture_name = 'Isolate_%s' % mode
@@ -468,7 +480,7 @@ class Isolate_run(IsolateModeBase):
     except subprocess.CalledProcessError:
       pass
     self._expect_empty_tree()
-    self._expect_results([], None, None)
+    self._expect_no_result()
 
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [], False)
@@ -515,8 +527,8 @@ class Isolate_read_trace(IsolateModeBase):
     self._expect_no_tree()
     self._expect_no_result()
     expected = (
-      'Usage: isolate.py [options] [.isolate file]\n\n'
-      'isolate.py: error: Input directory %s must have a trailing slash\n' %
+      '\n'
+      'Error: Input directory %s must have a trailing slash\n' %
           os.path.join(ROOT_DIR, 'data', 'isolate', 'files1')
     )
     self.assertEquals(expected, out)
@@ -531,8 +543,8 @@ class Isolate_read_trace(IsolateModeBase):
     self._expect_no_tree()
     self._expect_no_result()
     expected = (
-      'Usage: isolate.py [options] [.isolate file]\n\n'
-      'isolate.py: error: Input file %s doesn\'t exist\n' %
+      '\n'
+      'Error: Input file %s doesn\'t exist\n' %
           os.path.join(ROOT_DIR, 'data', 'isolate', 'A_file_that_do_not_exist')
     )
     self.assertEquals(expected, out)
@@ -543,10 +555,12 @@ class Isolate_read_trace(IsolateModeBase):
       self.fail()
     except subprocess.CalledProcessError, e:
       out = e.output
+      err = e.stderr
     self._expect_no_tree()
-    self._expect_results([], None, None)
-    expected = 'No command to run\n'
-    self.assertEquals(expected, out)
+    self._expect_no_result()
+    expected = '\nError: No command to run\n'
+    self.assertEquals('', out)
+    self.assertEquals(expected, err)
 
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
@@ -602,8 +616,8 @@ class IsolateNoOutdir(IsolateBase):
     """Executes isolate.py."""
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      mode,
       '--result', self.result,
-      '--mode', mode,
     ]
     cmd.extend(args)
 
@@ -647,7 +661,7 @@ class IsolateNoOutdir(IsolateBase):
     return filename
 
   def test_check(self):
-    self._execute('check', [self.filename()], False)
+    self._execute('check', ['--isolate', self.filename()], False)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -658,7 +672,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_hashtable(self):
-    self._execute('hashtable', [self.filename()], False)
+    self._execute('hashtable', ['--isolate', self.filename()], False)
     files = sorted([
       os.path.join(
           'hashtable', calc_sha1(os.path.join(ROOT_DIR, 'isolate.py'))),
@@ -675,7 +689,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_remap(self):
-    self._execute('remap', [self.filename()], False)
+    self._execute('remap', ['--isolate', self.filename()], False)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -686,7 +700,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_run(self):
-    self._execute('run', [self.filename()], False)
+    self._execute('run', ['--isolate', self.filename()], False)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -697,7 +711,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_read_trace(self):
-    self._execute('trace', [self.filename()], False)
+    self._execute('trace', ['--isolate', self.filename()], False)
     # Read the trace before cleaning up. No need to specify self.filename()
     # because add the needed information is in the .state file.
     output = self._execute('read', [], True)

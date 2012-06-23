@@ -20,8 +20,7 @@ class Isolate(unittest.TestCase):
 
   def test_load_isolate_empty(self):
     content = "{}"
-    command, infiles, read_only = isolate.load_isolate(
-        content, self.fail)
+    command, infiles, read_only = isolate.load_isolate(content)
     self.assertEquals([], command)
     self.assertEquals([], infiles)
     self.assertEquals(None, read_only)
