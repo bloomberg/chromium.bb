@@ -7,8 +7,8 @@
 
 #include <set>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/host/url_fetcher.h"
 #include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
 namespace net {
