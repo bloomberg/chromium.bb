@@ -155,6 +155,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
   nap->service_port = NULL;
   nap->service_address = NULL;
+  nap->bootstrap_channel = NULL;
   nap->secure_service = NULL;
   nap->manifest_proxy = NULL;
   nap->kern_service = NULL;
@@ -817,23 +818,31 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
   NaClLog(4, "Leaving NaClCreateServiceSocket\n");
 }
 
-void NaClSendServiceAddressTo(struct NaClApp  *nap,
-                              int             desc) {
-  struct NaClDesc             *channel;
+/*
+ * Import the |inherited_desc| descriptor as an IMC handle, save a
+ * reference to it at nap->bootstrap_channel, then send the
+ * service_address over that channel.
+ */
+void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
+                               NaClHandle      inherited_desc) {
+  struct NaClDescImcDesc      *channel;
   struct NaClImcTypedMsgHdr   hdr;
   ssize_t                     rv;
 
   NaClLog(4,
-          "NaClSendServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
+          "NaClSendServiceAddressTo(0x%08"NACL_PRIxPTR", %"NACL_PRIdPTR")\n",
           (uintptr_t) nap,
-          desc);
+          (uintptr_t) inherited_desc);
 
-  channel = NaClGetDesc(nap, desc);
+  channel = (struct NaClDescImcDesc *) malloc(sizeof *channel);
   if (NULL == channel) {
+    NaClLog(LOG_FATAL, "NaClSendServiceAddressTo: no memory\n");
+  }
+  if (!NaClDescImcDescCtor(channel, inherited_desc)) {
     NaClLog(LOG_FATAL,
-            "NaClSendServiceAddressTo: descriptor %d not in open file table\n",
-            desc);
-    return;
+            ("NaClSendServiceAddressTo: cannot construct IMC descriptor object"
+             " for inherited descriptor %"NACL_PRIdPTR"\n"),
+            (uintptr_t) inherited_desc);
   }
   if (NULL == nap->service_address) {
     NaClLog(LOG_FATAL,
@@ -849,14 +858,21 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   hdr.ndescv = &nap->service_address;
   hdr.ndesc_length = 1;
 
-  rv = NACL_VTBL(NaClDesc, channel)->SendMsg(channel, &hdr, 0);
-
-  NaClDescUnref(channel);
+  rv = (*NACL_VTBL(NaClDesc, channel)->SendMsg)((struct NaClDesc *) channel,
+                                                &hdr, 0);
+  NaClXMutexLock(&nap->mu);
+  if (NULL != nap->bootstrap_channel) {
+    NaClLog(LOG_FATAL,
+            "NaClSendServiceAddressTo: cannot have two bootstrap channels\n");
+  }
+  nap->bootstrap_channel = (struct NaClDesc *) channel;
   channel = NULL;
+  NaClXMutexUnlock(&nap->mu);
 
   NaClLog(1,
-          "NaClSendServiceAddressTo: descriptor %d, error %"NACL_PRIdS"\n",
-          desc,
+          ("NaClSendServiceAddressTo: descriptor %"NACL_PRIdPTR
+           ", error %"NACL_PRIdS"\n"),
+          (uintptr_t) inherited_desc,
           rv);
 }
 

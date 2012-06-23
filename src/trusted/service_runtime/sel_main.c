@@ -127,7 +127,7 @@ static void PrintUsage() {
           " -B additional ELF file to load as a blob library\n"
           " -v increases verbosity\n"
           " -X create a bound socket and export the address via an\n"
-          "    IMC message to a corresponding NaCl app descriptor\n"
+          "    IMC message to a corresponding inherited IMC app descriptor\n"
           "    (use -1 to create the bound socket / address descriptor\n"
           "    pair, but that no export via IMC should occur)\n");
   fprintf(stderr,
@@ -625,7 +625,7 @@ int main(int  argc,
   if (-2 < export_addr_to) {
     NaClCreateServiceSocket(nap);
     if (0 <= export_addr_to) {
-      NaClSendServiceAddressTo(nap, export_addr_to);
+      NaClSetUpBootstrapChannel(nap, (NaClHandle) export_addr_to);
       /*
        * NB: spawns a thread that uses the command channel.  we do
        * this after NaClAppLoadFile so that NaClApp object is more

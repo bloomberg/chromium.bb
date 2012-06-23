@@ -212,6 +212,8 @@ struct NaClApp {
   struct NaClDesc           *service_port;
   struct NaClDesc           *service_address;
 
+  struct NaClDesc           *bootstrap_channel;
+
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 
@@ -592,8 +594,8 @@ uintptr_t NaClAppVmmapFindMapSpace(struct NaClApp *nap,
 
 void NaClCreateServiceSocket(struct NaClApp *nap);
 
-void NaClSendServiceAddressTo(struct NaClApp  *nap,
-                              int             desc);
+void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
+                               NaClHandle      inherited_desc);
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
 
