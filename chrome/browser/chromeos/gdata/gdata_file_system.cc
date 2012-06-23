@@ -1141,7 +1141,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
                  ui_weak_ptr_,
                  callback);
 
-  uploader_->UploadFile(scoped_ptr<UploadFileInfo>(upload_file_info));
+  uploader_->UploadNewFile(scoped_ptr<UploadFileInfo>(upload_file_info));
 }
 
 void GDataFileSystem::OnTransferCompleted(

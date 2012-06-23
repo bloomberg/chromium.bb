@@ -26,6 +26,13 @@ namespace gdata {
 
 class DocumentEntry;
 
+// The mode for uploading.
+enum UploadMode {
+  UPLOAD_NEW_FILE,
+  UPLOAD_EXISTING_FILE,
+  UPLOAD_INVALID,  // Used as an invalid value.
+};
+
 // Structure containing current upload information of file, passed between
 // DocumentsService methods and callbacks.
 struct UploadFileInfo {
@@ -47,10 +54,15 @@ struct UploadFileInfo {
   std::string content_type;  // Content-Type of file.
   int64 content_length;  // Header content-Length.
 
-  // Data cached by caller and used when preparing upload data in chunks for
-  // multiple ResumeUpload requests.
-  // Location URL where file is to be uploaded to, returned from InitiateUpload.
+  UploadMode upload_mode;
+
+  // Location URL used to get |upload_location| with InitiateUpload.
+  GURL initial_upload_location;
+
+  // Location URL where file is to be uploaded to, returned from
+  // InitiateUpload. Used for the subsequent ResumeUpload requests.
   GURL upload_location;
+
   // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
   FilePath gdata_path;
 

@@ -163,10 +163,18 @@ class MockGDataUploader : public GDataUploaderInterface {
  public:
   virtual ~MockGDataUploader() {}
   // This function is not mockable by gmock.
-  virtual int UploadFile(
+  virtual int UploadNewFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
     return -1;
   }
+
+  MOCK_METHOD6(UploadExistingFile,
+               int(const GURL& upload_location,
+               const FilePath& gdata_file_path,
+               const FilePath& local_file_path,
+               int64 file_size,
+               const std::string& content_type,
+               const UploadFileInfo::UploadCompletionCallback& callback));
 
   MOCK_METHOD2(UpdateUpload, void(int upload_id,
                                   content::DownloadItem* download));

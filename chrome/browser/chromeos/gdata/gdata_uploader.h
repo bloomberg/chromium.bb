@@ -15,6 +15,7 @@
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -25,19 +26,30 @@ namespace gdata {
 
 class GDataFileSystem;
 class DocumentsServiceInterface;
-struct UploadFileInfo;
 
 class GDataUploaderInterface {
  public:
   ~GDataUploaderInterface() {}
 
-  // Uploads a file specified by |upload_file_info|. Transfers ownership.
+  // Uploads a new file specified by |upload_file_info|. Transfers ownership.
   // Returns the upload_id.
   //
   // WARNING: This is not mockable by gmock because it takes scoped_ptr<>.
   // See "Announcing scoped_ptr<>::Pass(). The latest in pointer ownership
   // technology!" thread on chromium-dev.
-  virtual int UploadFile(scoped_ptr<UploadFileInfo> upload_file_info) = 0;
+  virtual int UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) = 0;
+
+  // Uploads an existing file (a file that already exists on Drive)
+  // specified by |local_file_path|. The existing file on Drive will be
+  // updated. Returns the upload_id. |callback| is run upon completion or
+  // failure.
+  virtual int UploadExistingFile(
+      const GURL& upload_location,
+      const FilePath& gdata_file_path,
+      const FilePath& local_file_path,
+      int64 file_size,
+      const std::string& content_type,
+      const UploadFileInfo::UploadCompletionCallback& callback) = 0;
 
   // Updates attributes of streaming upload.
   virtual void UpdateUpload(int upload_id,
@@ -62,8 +74,15 @@ class GDataUploader : public GDataUploaderInterface {
   }
 
   // GDataUploaderInterface overrides.
-  virtual int UploadFile(
+  virtual int UploadNewFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE;
+  virtual int UploadExistingFile(
+      const GURL& upload_location,
+      const FilePath& gdata_file_path,
+      const FilePath& local_file_path,
+      int64 file_size,
+      const std::string& content_type,
+      const UploadFileInfo::UploadCompletionCallback& callback) OVERRIDE;
   virtual void UpdateUpload(
       int upload_id, content::DownloadItem* download) OVERRIDE;
   virtual int64 GetUploadedBytes(int upload_id) const OVERRIDE;
@@ -108,6 +127,10 @@ class GDataUploader : public GDataUploaderInterface {
   // Note that this does not delete the UploadFileInfo object itself,
   // because it may still be in use by an asynchronous function.
   void RemoveUpload(int upload_id);
+
+  // Starts uploading a file with |upload_file_info|. Returns a new upload
+  // ID assigned to |upload_file_info|.
+  int StartUploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Pointers to GDataFileSystem and DocumentsServiceInterface objects owned by
   // GDataSystemService. The lifetime of these two objects is guaranteed to

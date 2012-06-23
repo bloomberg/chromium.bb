@@ -407,11 +407,12 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
     return;
 
   scoped_ptr<UploadFileInfo> upload_file_info = CreateUploadFileInfo(download);
-  const int upload_id = gdata_uploader_->UploadFile(upload_file_info.Pass());
+  const int upload_id = gdata_uploader_->UploadNewFile(
+      upload_file_info.Pass());
 
   // TODO(achuith): Fix this.
-  // We won't know the upload ID until the after the GDataUploader::UploadFile()
-  // call.
+  // We won't know the upload ID until the after the
+  // GDataUploader::UploadNewFile() call.
   download->SetExternalData(&kUploadingKey,
       new UploadingExternalData(gdata_uploader_, upload_id));
 }

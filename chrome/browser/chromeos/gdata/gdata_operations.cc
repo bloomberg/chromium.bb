@@ -904,7 +904,7 @@ InitiateUploadOperation::InitiateUploadOperation(
       callback_(callback),
       params_(params),
       initiate_upload_url_(chrome_common_net::AppendOrReplaceQueryParameter(
-          params.resumable_create_media_link,
+          params.upload_location,
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {
 }
@@ -946,7 +946,11 @@ void InitiateUploadOperation::RunCallbackOnPrematureFailure(
 }
 
 URLFetcher::RequestType InitiateUploadOperation::GetRequestType() const {
-  return URLFetcher::POST;
+  if (params_.upload_mode == UPLOAD_NEW_FILE)
+    return URLFetcher::POST;
+
+  DCHECK_EQ(UPLOAD_EXISTING_FILE, params_.upload_mode);
+  return URLFetcher::PUT;
 }
 
 std::vector<std::string>
@@ -957,11 +961,30 @@ InitiateUploadOperation::GetExtraRequestHeaders() const {
 
   headers.push_back(
       kUploadContentLength + base::Int64ToString(params_.content_length));
+
+  if (params_.upload_mode == UPLOAD_EXISTING_FILE)
+    headers.push_back("If-Match: *");
+
   return headers;
 }
 
 bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
                                              std::string* upload_content) {
+  if (params_.upload_mode == UPLOAD_EXISTING_FILE) {
+    // When uploading an existing file, the body is empty as we don't modify
+    // the metadata.
+    //
+    // However, URLFetcher DCHECKs with an empty body with PUT request, hence
+    // sending "\r\n" instead.
+    // TODO(satorux): Remove the workaround: crbug.com/134261.
+    *upload_content = "\r\n";
+    // Even though the body is empty, Content-Type should be set to
+    // "text/plain". Otherwise, the server won't accept.
+    *upload_content_type = "text/plain";
+    return true;
+  }
+
+  DCHECK_EQ(UPLOAD_NEW_FILE, params_.upload_mode);
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -974,7 +997,7 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
   DVLOG(1) << "Upload data: " << *upload_content_type << ", ["
-          << *upload_content << "]";
+           << *upload_content << "]";
   return true;
 }
 
@@ -1022,17 +1045,17 @@ bool ResumeUploadOperation::ProcessURLFetchResults(
       }
     }
     DVLOG(1) << "Got response for [" << params_.virtual_path.value()
-            << "]: code=" << code
-            << ", range_hdr=[" << range_received
-            << "], range_parsed=" << start_range_received
-            << "," << end_range_received;
+             << "]: code=" << code
+             << ", range_hdr=[" << range_received
+             << "], range_parsed=" << start_range_received
+             << "," << end_range_received;
   } else {
     // There might be explanation of unexpected error code in response.
     std::string response_content;
     source->GetResponseAsString(&response_content);
     DVLOG(1) << "Got response for [" << params_.virtual_path.value()
-            << "]: code=" << code
-            << ", content=[\n" << response_content << "\n]";
+             << "]: code=" << code
+             << ", content=[\n" << response_content << "\n]";
 
     // Parse entry XML.
     XmlReader xml_reader;
@@ -1055,10 +1078,14 @@ bool ResumeUploadOperation::ProcessURLFetchResults(
                   entry.Pass());
   }
 
-  if (code == HTTP_CREATED)
+  // For a new file, HTTP_CREATED is returned.
+  // For an existing file, HTTP_SUCCESS is returned.
+  if ((params_.upload_mode == UPLOAD_NEW_FILE && code == HTTP_CREATED) ||
+      (params_.upload_mode == UPLOAD_EXISTING_FILE && code == HTTP_SUCCESS)) {
     last_chunk_completed_ = true;
+  }
 
-  return code == HTTP_CREATED || code == HTTP_RESUME_INCOMPLETE;
+  return last_chunk_completed_ || code == HTTP_RESUME_INCOMPLETE;
 }
 
 void ResumeUploadOperation::NotifyStartToOperationRegistry() {

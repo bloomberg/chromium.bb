@@ -241,7 +241,7 @@ void DocumentsService::InitiateUpload(const InitiateUploadParams& params,
                                       const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (params.resumable_create_media_link.is_empty()) {
+  if (params.upload_location.is_empty()) {
     if (!callback.is_null())
       callback.Run(HTTP_BAD_REQUEST, GURL());
     return;

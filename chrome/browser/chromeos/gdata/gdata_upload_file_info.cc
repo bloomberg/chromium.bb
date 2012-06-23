@@ -13,6 +13,7 @@ UploadFileInfo::UploadFileInfo()
     : upload_id(-1),
       file_size(0),
       content_length(0),
+      upload_mode(UPLOAD_INVALID),
       file_stream(NULL),
       buf_len(0),
       start_range(0),

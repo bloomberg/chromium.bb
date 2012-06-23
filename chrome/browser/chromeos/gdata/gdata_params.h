@@ -18,6 +18,7 @@
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "net/base/io_buffer.h"
 #include "googleurl/src/gurl.h"
 
@@ -40,7 +41,8 @@ struct ResumeUploadResponse {
 
 // Struct for passing params needed for DocumentsService::ResumeUpload() calls.
 struct ResumeUploadParams {
-  ResumeUploadParams(int64 start_range,
+  ResumeUploadParams(UploadMode upload_mode,
+                     int64 start_range,
                      int64 end_range,
                      int64 content_length,
                      const std::string& content_type,
@@ -49,6 +51,7 @@ struct ResumeUploadParams {
                      const FilePath& virtual_path);
   ~ResumeUploadParams();
 
+  UploadMode upload_mode;  // Mode of the upload.
   int64 start_range;  // Start of range of contents currently stored in |buf|.
   int64 end_range;  // End of range of contents currently stored in |buf|.
   int64 content_length;  // File content-Length.
@@ -63,18 +66,28 @@ struct ResumeUploadParams {
 
 // Struct for passing params needed for DocumentsService::InitiateUpload()
 // calls.
+//
+// When uploading a new file (UPLOAD_NEW_FILE):
+// - |title| should be set.
+// - |upload_location| should be the upload_url() of the parent directory.
+//
+// When updating an existing file (UPLOAD_EXISTING_FILE):
+// - |title| should be empty
+// - |upload_location| should be the upload_url() of the existing file.
 struct InitiateUploadParams {
-  InitiateUploadParams(const std::string& title,
+  InitiateUploadParams(UploadMode upload_mode,
+                       const std::string& title,
                        const std::string& content_type,
                        int64 content_length,
-                       const GURL& resumable_create_media_link,
+                       const GURL& upload_location,
                        const FilePath& virtual_path);
   ~InitiateUploadParams();
 
+  UploadMode upload_mode;
   std::string title;
   std::string content_type;
   int64 content_length;
-  GURL resumable_create_media_link;
+  GURL upload_location;
   const FilePath& virtual_path;
 };
 
