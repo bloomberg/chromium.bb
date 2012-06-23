@@ -1,5 +1,5 @@
 
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,24 +42,24 @@ class CanvasPaintT : public T {
 
       // Blit the dirty rect to the current context.
       CGImageRef image = CGBitmapContextCreateImage(context_);
-      CGRect destRect = NSRectToCGRect(rectangle_);
+      CGRect dest_rect = NSRectToCGRect(rectangle_);
 
-      CGContextRef destinationContext =
+      CGContextRef destination_context =
           (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-      CGContextSaveGState(destinationContext);
+      CGContextSaveGState(destination_context);
       CGContextSetBlendMode(
-          destinationContext,
+          destination_context,
           composite_alpha_ ? kCGBlendModeNormal : kCGBlendModeCopy);
 
       if ([[NSGraphicsContext currentContext] isFlipped]) {
         // Mirror context on the target's rect middle scanline.
-        CGContextTranslateCTM(destinationContext, 0.0, NSMidY(rectangle_));
-        CGContextScaleCTM(destinationContext, 1.0, -1.0);
-        CGContextTranslateCTM(destinationContext, 0.0, -NSMidY(rectangle_));
+        CGContextTranslateCTM(destination_context, 0.0, NSMidY(rectangle_));
+        CGContextScaleCTM(destination_context, 1.0, -1.0);
+        CGContextTranslateCTM(destination_context, 0.0, -NSMidY(rectangle_));
       }
 
-      CGContextDrawImage(destinationContext, destRect, image);
-      CGContextRestoreGState(destinationContext);
+      CGContextDrawImage(destination_context, dest_rect, image);
+      CGContextRestoreGState(destination_context);
 
       CFRelease(image);
     }
@@ -83,19 +83,28 @@ class CanvasPaintT : public T {
 
  private:
   void init(bool opaque) {
+    CGContextRef destination_context =
+        (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    CGRect scaled_unit_rect = CGContextConvertRectToDeviceSpace(
+        destination_context, CGRectMake(0, 0, 1, 1));
+    CGFloat x_scale = scaled_unit_rect.size.width;
+    CGFloat y_scale = scaled_unit_rect.size.height;
+
     PlatformCanvas* canvas = GetPlatformCanvas(this);
-    if (!canvas->initialize(NSWidth(rectangle_),
-                            NSHeight(rectangle_),
+    if (!canvas->initialize(NSWidth(rectangle_) * x_scale,
+                            NSHeight(rectangle_) * y_scale,
                             opaque, NULL)) {
-      // Cause a deliberate crash;
+      // Cause a deliberate crash.
       *(volatile char*) 0 = 0;
     }
     canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_)),
-                      -SkDoubleToScalar(NSMinY(rectangle_)));
+    canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_) * x_scale),
+                      -SkDoubleToScalar(NSMinY(rectangle_) * y_scale));
+    // Scale appropriately.
+    canvas->scale(SkFloatToScalar(x_scale), SkFloatToScalar(y_scale));
 
     context_ = GetBitmapContext(GetTopDevice(*canvas));
   }
