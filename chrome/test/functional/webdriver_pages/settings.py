@@ -578,3 +578,74 @@ class BasicSettingsPage(object):
     self._FillStartupURL(url)
     self._driver.find_element_by_id('startup-overlay-cancel').click()
     self._driver.get(self._URL)
+<<<<<<< HEAD
+
+
+class CookiesAndSiteDataSettings(object):
+  """The overlay for managing cookies on the Content Settings page."""
+
+  _URL = 'chrome://settings-frame/cookies'
+
+  @staticmethod
+  def FromNavigation(driver):
+    """Creates an instance of the dialog by navigating directly to it.
+
+    Args:
+      driver: The remote WebDriver instance for managing content type.
+    """
+    driver.get(CookiesAndSiteDataSettings._URL)
+    return CookiesAndSiteDataSettings(driver)
+
+  def __init__(self, driver):
+    self._driver = driver
+    assert self._URL == driver.current_url
+    self._list_elem = driver.find_element_by_id('cookies-list')
+
+  def GetSiteNameList(self):
+    """Returns a list of the site names.
+
+    This is a public function since the test needs to check if the site is
+    deleted.
+    """
+    site_list = [p.text for p in
+                 self._list_elem.find_elements_by_xpath(
+                     './/*[contains(@class, "deletable-item")]'
+                     '//div[@class="cookie-site"]')]
+    return site_list
+
+  def _GetCookieNameList(self):
+    """Returns a list where each item is the list of cookie names of each site.
+
+    Example: site1 | cookie1 cookie2
+             site2 | cookieA
+             site3 | cookieA cookie1 cookieB
+
+    Returns:
+      A cookie names list such as:
+      [ ['cookie1', 'cookie2'], ['cookieA'], ['cookieA', 'cookie1', 'cookieB'] ]
+    """
+    cookie_name_list = []
+    for elem in self._list_elem.find_elements_by_xpath(
+        './/*[@role="listitem"]'):
+      elem.click()
+      cookie_name_list.append([c.text for c in
+            elem.find_elements_by_xpath('.//div[@class="cookie-item"]')])
+    return cookie_name_list
+
+  def DeleteSiteData(self, site):
+    """Delete a site entry with its cookies in cookies content settings.
+
+    Args:
+      site: The site string as it appears in the UI.
+    """
+    delete_button_list = self._list_elem.find_elements_by_class_name(
+        'row-delete-button')
+    site_list = self.GetSiteNameList()
+    for i in range(len(site_list)):
+      if site_list[i] == site:
+        # Highlight the item so the close button shows up, then delete button
+        # shows up, then click on the delete button.
+        ActionChains(self._driver).move_to_element(
+            delete_button_list[i]).click().perform()
+=======
+>>>>>>> origin
