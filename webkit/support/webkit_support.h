@@ -82,6 +82,10 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client);
 
+#if defined(OS_ANDROID)
+void ReleaseMediaResources();
+#endif
+
 // This is used by WebFrameClient::createApplicationCacheHost().
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);

@@ -57,6 +57,9 @@
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+#if defined(OS_ANDROID)
+#include "webkit/media/android/webmediaplayer_manager_android.h"
+#endif
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
@@ -156,6 +159,11 @@ class TestEnvironment {
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
     webkit_platform_support_.reset(
       new TestWebKitPlatformSupport(unit_test_mode));
+
+#if defined(OS_ANDROID)
+    media_player_manager_.reset(
+        new webkit_media::WebMediaPlayerManagerAndroid());
+#endif
   }
 
   ~TestEnvironment() {
@@ -189,6 +197,10 @@ class TestEnvironment {
   FilePath mock_current_directory() const {
     return mock_current_directory_;
   }
+
+  webkit_media::WebMediaPlayerManagerAndroid* media_player_manager() {
+    return media_player_manager_.get();
+  }
 #endif
 
  private:
@@ -200,6 +212,7 @@ class TestEnvironment {
 
 #if defined(OS_ANDROID)
   FilePath mock_current_directory_;
+  scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
 #endif
 };
 
@@ -383,6 +396,12 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     WebMediaPlayerClient* client) {
   return CreateMediaPlayer(frame, client, NULL);
 }
+
+#if defined(OS_ANDROID)
+void ReleaseMediaResources() {
+  test_environment->media_player_manager()->ReleaseMediaResources();
+}
+#endif
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebFrame*, WebKit::WebApplicationCacheHostClient* client) {
