@@ -306,7 +306,7 @@ class VIEWS_EXPORT ColumnSet {
   // ID of this ColumnSet.
   int id() const { return id_; }
 
-  int num_columns() { return static_cast<int>(columns_.size()); }
+  int num_columns() const { return static_cast<int>(columns_.size()); }
 
  private:
   friend class GridLayout;
