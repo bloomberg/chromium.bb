@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"

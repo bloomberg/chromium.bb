@@ -19,6 +19,7 @@
 
 class AutocompleteEditModel;
 struct AutocompleteMatch;
+class OmniboxView;
 class OmniboxResultView;
 class Profile;
 

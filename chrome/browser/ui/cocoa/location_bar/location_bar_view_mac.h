@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,9 +41,9 @@ class ToolbarModel;
 // the portable code.  Wires up an OmniboxViewMac instance to
 // the location bar text field, which handles most of the work.
 
-class LocationBarViewMac : public AutocompleteEditController,
-                           public LocationBar,
+class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
+                           public AutocompleteEditController,
                            public content::NotificationObserver,
                            public CommandUpdater::CommandObserver {
  public:
@@ -133,7 +133,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   // visible.
   NSRect GetBlockedPopupRect() const;
 
-  // AutocompleteEditController implementation.
+  // Overridden from AutocompleteEditController:
   virtual void OnAutocompleteAccept(
       const GURL& url,
       WindowOpenDisposition disposition,

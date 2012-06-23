@@ -8,7 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/image_utils.h"

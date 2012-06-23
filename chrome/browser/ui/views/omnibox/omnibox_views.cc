@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "ui/base/ui_base_switches.h"

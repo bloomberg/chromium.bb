@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_MODEL_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_MODEL_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -20,72 +22,15 @@
 
 class AutocompleteController;
 class AutocompleteEditController;
-class AutocompleteEditModel;
 class AutocompleteResult;
-class InstantController;
 class OmniboxPopupModel;
 class OmniboxView;
 class Profile;
 class SkBitmap;
-class TabContents;
 
 namespace gfx {
 class Rect;
 }
-
-// TODO(pkasting): The names and contents of the classes in
-// this file are temporary.  I am in hack-and-slash mode right now.
-// http://code.google.com/p/chromium/issues/detail?id=6772
-
-// Embedders of an AutocompleteEdit widget must implement this class.
-class AutocompleteEditController {
- public:
-  // When the user presses enter or selects a line with the mouse, this
-  // function will get called synchronously with the url to open and
-  // disposition and transition to use when opening it.
-  //
-  // |alternate_nav_url|, if non-empty, contains the alternate navigation URL
-  // for |url|, which the controller can check for existence.  See comments on
-  // AutocompleteResult::GetAlternateNavURL().
-  virtual void OnAutocompleteAccept(const GURL& url,
-                                    WindowOpenDisposition disposition,
-                                    content::PageTransition transition,
-                                    const GURL& alternate_nav_url) = 0;
-
-  // Called when anything has changed that might affect the layout or contents
-  // of the views around the edit, including the text of the edit and the
-  // status of any keyword- or hint-related state.
-  virtual void OnChanged() = 0;
-
-  // Called when the selection of the OmniboxView changes.
-  virtual void OnSelectionBoundsChanged() = 0;
-
-  // Called whenever the user starts or stops an input session (typing,
-  // interacting with the edit, etc.).  When user input is not in progress,
-  // the edit is guaranteed to be showing the permanent text.
-  virtual void OnInputInProgress(bool in_progress) = 0;
-
-  // Called whenever the autocomplete edit is losing focus.
-  virtual void OnKillFocus() = 0;
-
-  // Called whenever the autocomplete edit gets focused.
-  virtual void OnSetFocus() = 0;
-
-  // Returns the favicon of the current page.
-  virtual SkBitmap GetFavicon() const = 0;
-
-  // Returns the title of the current page.
-  virtual string16 GetTitle() const = 0;
-
-  // Returns the InstantController, or NULL if instant is not enabled.
-  virtual InstantController* GetInstant() = 0;
-
-  // Returns the TabContents of the currently active tab.
-  virtual TabContents* GetTabContents() const = 0;
-
- protected:
-  virtual ~AutocompleteEditController();
-};
 
 class AutocompleteEditModel : public AutocompleteControllerDelegate {
  public:
@@ -570,4 +515,4 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditModel);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_MODEL_H_

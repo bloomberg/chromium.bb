@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"

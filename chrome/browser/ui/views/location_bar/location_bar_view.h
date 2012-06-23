@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
@@ -244,7 +244,7 @@ class LocationBarView : public LocationBar,
 
   views::View* location_entry_view() const { return location_entry_view_; }
 
-  // AutocompleteEditController
+  // Overridden from AutocompleteEditController:
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     content::PageTransition transition,

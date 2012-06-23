@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 
 class OmniboxPopupView;
 class SkBitmap;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/animation/multi_animation.h"
