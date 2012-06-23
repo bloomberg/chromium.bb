@@ -115,6 +115,6 @@ RUN: all
 	python ../httpd.py
 
 LAUNCH_NEXE: CHECK_FOR_CHROME all
-	$(CHROME_PATH) $(NEXE_ARGS) "localhost:5103/$(PROJECT).html?tool=$(TOOLCHAIN)"
+	$(CHROME_PATH) $(NEXE_ARGS) "localhost:5103/index.html"
 
 __PROJECT_POSTLAUNCH__
