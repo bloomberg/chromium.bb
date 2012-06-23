@@ -4990,23 +4990,6 @@
    fun:_ZN8remoting14YuvToRgbTester7RunTestE7SkTSizeIiERK7SkIRect
 }
 {
-   bug_114000
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base12_GLOBAL__N_112CreateThreadEjbPNS_14PlatformThread8DelegateEPm
-   fun:_ZN4base14PlatformThread17CreateNonJoinableEjPNS0_8DelegateE
-   fun:_ZN4base23EnsureProcessTerminatedEi
-   fun:_ZN6Zygote17HandleReapRequestEiRK6PicklePv
-   fun:_ZN6Zygote24HandleRequestFromBrowserEi
-   fun:_ZN6Zygote15ProcessRequestsEv
-   fun:_Z10ZygoteMainRKN7content18MainFunctionParamsEPNS_18ZygoteForkDelegateE
-   fun:_ZN12_GLOBAL__N_19RunZygoteERKN7content18MainFunctionParamsEPNS0_19ContentMainDelegateE
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRKN7content18MainFunctionParamsEPNS2_19ContentMainDelegateE
-   fun:_ZN12_GLOBAL__N_121ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
-   fun:ChromeMain
-}
-{
    bug_115251_1
    Memcheck:Uninitialized
    ...
