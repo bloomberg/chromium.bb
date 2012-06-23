@@ -459,6 +459,7 @@ function handleKeyEvent(e) {
   }
   update(modifiers);
   KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(modifiers);
+  e.preventDefault();
 }
 
 /**
