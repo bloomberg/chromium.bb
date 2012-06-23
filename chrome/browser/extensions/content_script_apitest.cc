@@ -81,14 +81,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptViewSource) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/view_source")) << message_;
 }
 
-#if defined (OS_CHROMEOS)
+// crbug.com/120762
 IN_PROC_BROWSER_TEST_F(
     ExtensionApiTest,
-    FLAKY_ContentScriptStylesInjectedIntoExistingRenderers) {
-#else
-IN_PROC_BROWSER_TEST_F(
-    ExtensionApiTest, ContentScriptStylesInjectedIntoExistingRenderers) {
-#endif
+    DISABLED_ContentScriptStylesInjectedIntoExistingRenderers) {
   ASSERT_TRUE(StartTestServer());
 
   ui_test_utils::WindowedNotificationObserver signal(
