@@ -224,8 +224,15 @@
 }
 
 {
-  bug_84467 (Could be benign. See bug for details)
+  bug_84467a (Could be benign. See bug for details)
   ThreadSanitizer:Race
+  fun:unixTempFileDir
+}
+
+{
+  bug_84467b (Could be benign. See bug for details)
+  ThreadSanitizer:Race
+  fun:getenv
   fun:unixTempFileDir
 }
 
