@@ -322,7 +322,7 @@ class Result(Flattenable):
     for f in infiles:
       self.files.setdefault(f, {})
     # Prune extraneous files that are not a dependency anymore.
-    for f in set(infiles).difference(self.files.keys()):
+    for f in set(self.files).difference(infiles):
       del self.files[f]
     if read_only is not None:
       self.read_only = read_only
