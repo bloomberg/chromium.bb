@@ -4020,6 +4020,8 @@
         'browser/ui/webui/options2/startup_pages_handler2.h',
         'browser/ui/webui/options2/web_intents_settings_handler2.cc',
         'browser/ui/webui/options2/web_intents_settings_handler2.h',
+        'browser/ui/webui/performance_monitor/web_ui_handler.cc',
+        'browser/ui/webui/performance_monitor/web_ui_handler.h',
         'browser/ui/webui/plugins_ui.cc',
         'browser/ui/webui/plugins_ui.h',
         'browser/ui/webui/policy_ui.cc',
