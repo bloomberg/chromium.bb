@@ -7,6 +7,7 @@
       '../testing/test_env.py',
       '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
       '<(PRODUCT_DIR)/resources.pak',
+      'test/data/extensions/api_test/tabs/basics/manifest.json',
     ],
   },
   'conditions': [
@@ -433,7 +434,6 @@
           'test/data/extensions/api_test/proxy/events/manifest.json',
           'test/data/extensions/api_test/proxy/events/parse_error.html',
           'test/data/extensions/api_test/proxy/events/parse_error.js',
-          'test/data/extensions/api_test/tabs/basics/a.html',
           'test/data/extensions/api_test/tabs/basics/b.html',
           'test/data/extensions/api_test/tabs/basics/c.html',
           'test/data/extensions/api_test/tabs/basics/crash.html',
@@ -444,9 +444,6 @@
           'test/data/extensions/api_test/tabs/basics/crud2.js',
           'test/data/extensions/api_test/tabs/basics/d.html',
           'test/data/extensions/api_test/tabs/basics/e.html',
-          'test/data/extensions/api_test/tabs/basics/events.html',
-          'test/data/extensions/api_test/tabs/basics/events.js',
-          'test/data/extensions/api_test/tabs/basics/f.html',
           'test/data/extensions/api_test/tabs/basics/highlight.html',
           'test/data/extensions/api_test/tabs/basics/highlight.js',
           'test/data/extensions/api_test/tabs/basics/move.html',
@@ -457,7 +454,6 @@
           'test/data/extensions/api_test/tabs/basics/pinned.js',
           'test/data/extensions/api_test/tabs/basics/query.html',
           'test/data/extensions/api_test/tabs/basics/query.js',
-          'test/data/extensions/api_test/tabs/basics/tabs_util.js',
           'test/data/extensions/api_test/tabs/basics/update.html',
           'test/data/extensions/api_test/tabs/basics/update.js',
           'test/data/extensions/api_test/tabs/capture_visible_tab/common/black.html',
@@ -1338,7 +1334,6 @@
           'test/data/extensions/api_test/page_action/add_popup/manifest.json',
           'test/data/extensions/api_test/page_action/remove_popup/icon.png',
           'test/data/extensions/api_test/page_action/remove_popup/manifest.json',
-          'test/data/extensions/api_test/tabs/basics/manifest.json',
           'test/data/extensions/api_test/tabs/capture_visible_tab/manifest.json',
           'test/data/extensions/good/Extensions/bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0/manifest.json',
           'test/data/webui/test_api.js',
@@ -1736,6 +1731,13 @@
       },
     }, {
       'variables': {
+        'isolate_dependency_tracked': [
+          'test/data/extensions/api_test/tabs/basics/a.html',
+          'test/data/extensions/api_test/tabs/basics/events.html',
+          'test/data/extensions/api_test/tabs/basics/events.js',
+          'test/data/extensions/api_test/tabs/basics/f.html',
+          'test/data/extensions/api_test/tabs/basics/tabs_util.js',
+        ],
         'isolate_dependency_untracked': [
           'test/data/extensions/api_test/accessibility/',
         ],
