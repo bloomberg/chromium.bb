@@ -1,6 +1,9 @@
 # See http://crbug.com/82391
 URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 
+# Times out. See http://crbug.com/134313
+URLRequestTestHTTP.GetTest_ManyCookies
+
 # Dr. Memory hits an assertion:
 # http://code.google.com/p/drmemory/issues/detail?id=422
 HttpAuthTest.*
