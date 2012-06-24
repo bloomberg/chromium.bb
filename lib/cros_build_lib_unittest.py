@@ -21,7 +21,7 @@ import time
 import unittest
 import __builtin__
 
-
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -721,6 +721,7 @@ class TestContextManagerStack(unittest.TestCase):
         def __enter__(self):
           return self
 
+        # pylint: disable=E0213
         def __exit__(obj_self, exc_type, exc, traceback):
           invoked.append(obj_self.marker)
           if has_exception is not None:
@@ -743,6 +744,71 @@ class TestContextManagerStack(unittest.TestCase):
       stack.Add(_mk_kls(exception_kls=IndexError))
       stack.Add(_mk_kls())
     self.assertEqual(invoked, list(reversed(range(6))))
+
+
+class TestManifestCheckout(cros_test_lib.TempDirMixin, unittest.TestCase):
+
+  # pylint: disable=E1101
+  def testGetManifestsBranch(self):
+    path = self.tempdir
+    manifest = os.path.join(path, '.repo', 'manifests')
+    func = cros_build_lib.ManifestCheckout._GetManifestsBranch
+
+    # pylint: disable=W0613
+    def reconfig(merge='master', origin='origin'):
+      if merge is not None:
+        merge = 'refs/heads/%s' % merge
+      for key in ('merge', 'origin'):
+        val = locals()[key]
+        key = 'branch.default.%s' % key
+        if val is None:
+          cros_build_lib.RunGitCommand(manifest, ['config', '--unset', key],
+                                       error_code_ok=True)
+        else:
+          cros_build_lib.RunGitCommand(manifest, ['config', key, val])
+
+    cmd = ['repo', 'init', '-u', constants.MANIFEST_URL]
+    cros_build_lib.RunCommandCaptureOutput(cmd, cwd=path, input='')
+
+    # First, verify our assumptions about a fresh repo init are correct.
+    self.assertEqual('default', cros_build_lib.GetCurrentBranch(manifest))
+    self.assertEqual('master', func(path))
+
+    # Ensure we can handle a missing origin; this can occur jumping between
+    # branches, and can be worked around.
+    reconfig(origin=None)
+    self.assertEqual('default', cros_build_lib.GetCurrentBranch(manifest))
+    self.assertEqual('master', func(path))
+
+    def assertExcept(message, **kwds):
+      reconfig(**kwds)
+      try:
+        func(path)
+        assert "Testing for %s, an exception wasn't thrown." % (message,)
+      except OSError, e:
+        self.assertEqual(e.errno, errno.ENOENT)
+        self.assertTrue(message in str(e),
+                        msg="Couldn't find string %r in error message %r"
+                        % (message, str(e)))
+
+    # No merge target means the configuration isn't usable, period.
+    assertExcept("git tracking configuration for that branch is broken",
+                 merge=None)
+
+    # Ensure we detect if we're on the wrong branch, even if it has
+    # tracking setup.
+    cros_build_lib.RunGitCommand(
+        manifest, ['checkout', '-t', 'origin/master', '-b', 'test'])
+    assertExcept("It should be checked out to 'default'")
+
+    # Ensure we handle detached HEAD w/ an appropriate exception.
+    cros_build_lib.RunGitCommand(manifest, ['checkout', '--detach', 'test'])
+    assertExcept("It should be checked out to 'default'")
+
+    # Finally, ensure that if the default branch is non-existant, we still throw
+    # a usable exception.
+    cros_build_lib.RunGitCommand(manifest, ['branch', '-d', 'default'])
+    assertExcept("It should be checked out to 'default'")
 
 
 if __name__ == '__main__':

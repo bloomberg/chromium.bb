@@ -939,14 +939,25 @@ class ManifestCheckout(Manifest):
     # check for the merge target; repo writes the ambigious form of the branch
     # target for `repo init -u url -b some-branch` usages (aka, 'master'
     # instead of 'refs/heads/master').
-    result = GetTrackingBranchViaGitConfig(
-        os.path.join(root, '.repo', 'manifests'), 'default',
-        allow_broken_merge_settings=True, for_checkout=False)
-    if result is None:
+    path = os.path.join(root, '.repo', 'manifests')
+    current_branch = GetCurrentBranch(path)
+    if current_branch != 'default':
       raise OSError(errno.ENOENT,
-                    "Manifest repository at %s isn't on a branch, thus"
-                    " unusable" % root)
-    return StripLeadingRefsHeads(result[1], False)
+                    "Manifest repository at %s is checked out to %s.  "
+                    "It should be checked out to 'default'."
+                    % (root, 'detached HEAD' if current_branch is None
+                       else current_branch))
+
+    result = GetTrackingBranchViaGitConfig(
+        path, 'default', allow_broken_merge_settings=True, for_checkout=False)
+
+    if result is not None:
+      return StripLeadingRefsHeads(result[1], False)
+
+    raise OSError(errno.ENOENT,
+                  "Manifest repository at %s is checked out to 'default', but "
+                  "the git tracking configuration for that branch is broken; "
+                  "failing due to that." % (root,))
 
   def GetProjectPath(self, project, absolute=False):
     """Returns the path for a project.
@@ -1095,6 +1106,9 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
     vals = dict((x[0][len(prefix):], x[1]) for x in data)
     if len(vals) != 2:
       if not allow_broken_merge_settings:
+        return None
+      elif 'merge' not in vals:
+        # There isn't anything we can do here.
         return None
       elif 'remote' not in vals:
         # Repo v1.9.4 and up occasionally invalidly leave the remote out.
