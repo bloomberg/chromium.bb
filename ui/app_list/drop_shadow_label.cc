@@ -4,14 +4,8 @@
 
 #include "ui/app_list/drop_shadow_label.h"
 
-#include "base/utf_string_conversions.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/skbitmap_operations.h"
-
-using views::Label;
 
 namespace app_list {
 
@@ -54,8 +48,8 @@ void DropShadowLabel::PaintText(gfx::Canvas* canvas,
 
   if (HasFocus() || paint_as_focused()) {
     gfx::Rect focus_bounds = text_bounds;
-    focus_bounds.Inset(-Label::kFocusBorderPadding,
-                       -Label::kFocusBorderPadding);
+    focus_bounds.Inset(-views::Label::kFocusBorderPadding,
+                       -views::Label::kFocusBorderPadding);
     canvas->DrawFocusRect(focus_bounds);
   }
 }
