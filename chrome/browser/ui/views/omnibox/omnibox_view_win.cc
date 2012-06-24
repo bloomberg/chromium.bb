@@ -24,7 +24,6 @@
 #include "base/win/scoped_select_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -69,9 +69,6 @@
 using content::UserMetricsAction;
 using content::WebContents;
 
-///////////////////////////////////////////////////////////////////////////////
-// AutocompleteEditModel
-
 namespace {
 
 // A helper method for determining a valid DROPEFFECT given the allowed
@@ -95,17 +92,17 @@ int CopyOrLinkDragOperation(int drag_operation) {
 }
 
 // The AutocompleteEditState struct contains enough information about the
-// AutocompleteEditModel and OmniboxViewWin to save/restore a user's
+// OmniboxEditModel and OmniboxViewWin to save/restore a user's
 // typing, caret position, etc. across tab changes.  We explicitly don't
 // preserve things like whether the popup was open as this might be weird.
 struct AutocompleteEditState {
-  AutocompleteEditState(const AutocompleteEditModel::State& model_state,
+  AutocompleteEditState(const OmniboxEditModel::State& model_state,
                         const OmniboxViewWin::State& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
 
-  const AutocompleteEditModel::State model_state;
+  const OmniboxEditModel::State model_state;
   const OmniboxViewWin::State view_state;
 };
 
@@ -434,15 +431,14 @@ const int kTwipsPerInch = 1440;
 
 }  // namespace
 
-OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
+OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
                                LocationBarView* parent_view,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                views::View* location_bar,
                                views::View* popup_parent_view)
-    : model_(new AutocompleteEditModel(this, controller,
-                                       parent_view->profile())),
+    : model_(new OmniboxEditModel(this, controller, parent_view->profile())),
       popup_view_(OmniboxPopupContentsView::Create(
           parent_view->font(), this, model_.get(), location_bar,
           popup_parent_view)),
@@ -549,8 +545,7 @@ views::View* OmniboxViewWin::parent_view() const {
 void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
-  const AutocompleteEditModel::State model_state(
-      model_->GetStateForTabSwitch());
+  const OmniboxEditModel::State model_state(model_->GetStateForTabSwitch());
 
   CHARRANGE selection;
   GetSelection(selection);

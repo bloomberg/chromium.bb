@@ -82,7 +82,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 OmniboxPopupView* OmniboxPopupContentsView::Create(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
-    AutocompleteEditModel* edit_model,
+    OmniboxEditModel* edit_model,
     views::View* location_bar,
     views::View* popup_parent_view) {
   // TODO(sky): add a flag to enable this.
@@ -113,7 +113,7 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
 OmniboxPopupContentsView::OmniboxPopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
-    AutocompleteEditModel* edit_model,
+    OmniboxEditModel* edit_model,
     views::View* location_bar)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),

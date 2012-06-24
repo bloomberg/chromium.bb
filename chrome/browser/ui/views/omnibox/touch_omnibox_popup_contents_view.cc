@@ -57,7 +57,7 @@ int TouchOmniboxResultView::GetTextHeight() const {
 TouchOmniboxPopupContentsView::TouchOmniboxPopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
-    AutocompleteEditModel* edit_model,
+    OmniboxEditModel* edit_model,
     views::View* location_bar)
     : OmniboxPopupContentsView(font, omnibox_view, edit_model, location_bar) {
 }

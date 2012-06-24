@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
@@ -63,7 +63,7 @@ class LocationBarView : public LocationBar,
                         public LocationBarTesting,
                         public views::View,
                         public views::DragController,
-                        public AutocompleteEditController,
+                        public OmniboxEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
                         public content::NotificationObserver {
@@ -244,7 +244,7 @@ class LocationBarView : public LocationBar,
 
   views::View* location_entry_view() const { return location_entry_view_; }
 
-  // Overridden from AutocompleteEditController:
+  // Overridden from OmniboxEditController:
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     content::PageTransition transition,

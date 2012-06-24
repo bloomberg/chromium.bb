@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "ui/base/ui_base_switches.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
 
-OmniboxView* CreateOmniboxView(AutocompleteEditController* controller,
+OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,

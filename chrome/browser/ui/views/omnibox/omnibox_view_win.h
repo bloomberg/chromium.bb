@@ -25,9 +25,9 @@
 #include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditController;
-class AutocompleteEditModel;
 class LocationBarView;
+class OmniboxEditController;
+class OmniboxEditModel;
 class OmniboxPopupView;
 
 namespace views {
@@ -61,7 +61,7 @@ class OmniboxViewWin
 
   DECLARE_WND_CLASS(L"Chrome_OmniboxView");
 
-  OmniboxViewWin(AutocompleteEditController* controller,
+  OmniboxViewWin(OmniboxEditController* controller,
                  ToolbarModel* toolbar_model,
                  LocationBarView* parent_view,
                  CommandUpdater* command_updater,
@@ -77,8 +77,8 @@ class OmniboxViewWin
   views::View* parent_view() const;
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model() OVERRIDE { return model_.get(); }
-  virtual const AutocompleteEditModel* model() const OVERRIDE {
+  virtual OmniboxEditModel* model() OVERRIDE { return model_.get(); }
+  virtual const OmniboxEditModel* model() const OVERRIDE {
     return model_.get();
   }
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
@@ -407,11 +407,11 @@ class OmniboxViewWin
   // Common implementation for performing a drop on the edit view.
   int OnPerformDropImpl(const views::DropTargetEvent& event, bool in_drag);
 
-  scoped_ptr<AutocompleteEditModel> model_;
+  scoped_ptr<OmniboxEditModel> model_;
 
   scoped_ptr<OmniboxPopupView> popup_view_;
 
-  AutocompleteEditController* controller_;
+  OmniboxEditController* controller_;
 
   // The parent view for the edit, used to align the popup and for
   // accessibility.

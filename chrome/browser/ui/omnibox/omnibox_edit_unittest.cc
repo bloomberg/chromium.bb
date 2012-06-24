@@ -4,9 +4,9 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,8 +22,8 @@ class TestingOmniboxView : public OmniboxView {
  public:
   TestingOmniboxView() {}
 
-  virtual AutocompleteEditModel* model() OVERRIDE { return NULL; }
-  virtual const AutocompleteEditModel* model() const OVERRIDE { return NULL; }
+  virtual OmniboxEditModel* model() OVERRIDE { return NULL; }
+  virtual const OmniboxEditModel* model() const OVERRIDE { return NULL; }
   virtual void SaveStateToTab(WebContents* tab) OVERRIDE {}
   virtual void Update(const WebContents* tab_for_state_restoring) OVERRIDE {}
   virtual void OpenMatch(const AutocompleteMatch& match,
@@ -87,9 +87,9 @@ class TestingOmniboxView : public OmniboxView {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
 
-class TestingAutocompleteEditController : public AutocompleteEditController {
+class TestingOmniboxEditController : public OmniboxEditController {
  public:
-  TestingAutocompleteEditController() {}
+  TestingOmniboxEditController() {}
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     content::PageTransition transition,
@@ -107,7 +107,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestingAutocompleteEditController);
+  DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
 
 }  // namespace
@@ -160,7 +160,7 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
     { "www.google.com/search?", 0, false, "foo", "foo", false, "" },
   };
   TestingOmniboxView view;
-  TestingAutocompleteEditController controller;
+  TestingOmniboxEditController controller;
   TestingProfile profile;
   // NOTE: The TemplateURLService must be created before the
   // AutocompleteClassifier so that the SearchProvider gets a non-NULL
@@ -169,7 +169,7 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
       &profile, &TemplateURLServiceFactory::BuildInstanceFor);
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
-  AutocompleteEditModel model(&view, &controller, &profile);
+  OmniboxEditModel model(&view, &controller, &profile);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
     model.UpdatePermanentText(ASCIIToUTF16(input[i].perm_text));

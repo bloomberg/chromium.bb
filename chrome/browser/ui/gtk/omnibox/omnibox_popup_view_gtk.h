@@ -22,8 +22,8 @@
 #include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditModel;
 class GtkThemeService;
+class OmniboxEditModel;
 class OmniboxPopupModel;
 class OmniboxView;
 class SkBitmap;
@@ -41,7 +41,7 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
  public:
   OmniboxPopupViewGtk(const gfx::Font& font,
                       OmniboxView* omnibox_view,
-                      AutocompleteEditModel* edit_model,
+                      OmniboxEditModel* edit_model,
                       GtkWidget* location_bar);
   virtual ~OmniboxPopupViewGtk();
 

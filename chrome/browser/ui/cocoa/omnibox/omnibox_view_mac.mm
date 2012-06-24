@@ -10,11 +10,11 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
@@ -87,7 +87,7 @@ NSColor* SecurityErrorSchemeColor() {
 
 // Store's the model and view state across tab switches.
 struct OmniboxViewMacState {
-  OmniboxViewMacState(const AutocompleteEditModel::State model_state,
+  OmniboxViewMacState(const OmniboxEditModel::State model_state,
                       const bool has_focus,
                       const NSRange& selection)
       : model_state(model_state),
@@ -95,7 +95,7 @@ struct OmniboxViewMacState {
         selection(selection) {
   }
 
-  const AutocompleteEditModel::State model_state;
+  const OmniboxEditModel::State model_state;
   const bool has_focus;
   const NSRange selection;
 };
@@ -163,12 +163,12 @@ NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
   return rb.GetNativeImageNamed(resource_id);
 }
 
-OmniboxViewMac::OmniboxViewMac(AutocompleteEditController* controller,
+OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                AutocompleteTextField* field)
-    : model_(new AutocompleteEditModel(this, controller, profile)),
+    : model_(new OmniboxEditModel(this, controller, profile)),
       popup_view_(new OmniboxPopupViewMac(this, model_.get(), field)),
       controller_(controller),
       toolbar_model_(toolbar_model),
@@ -207,11 +207,11 @@ OmniboxViewMac::~OmniboxViewMac() {
   [field_ setObserver:NULL];
 }
 
-AutocompleteEditModel* OmniboxViewMac::model() {
+OmniboxEditModel* OmniboxViewMac::model() {
   return model_.get();
 }
 
-const AutocompleteEditModel* OmniboxViewMac::model() const {
+const OmniboxEditModel* OmniboxViewMac::model() const {
   return model_.get();
 }
 

@@ -10,7 +10,6 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,7 +26,7 @@ const size_t OmniboxPopupModel::kNoMatch = -1;
 
 OmniboxPopupModel::OmniboxPopupModel(
     OmniboxPopupView* popup_view,
-    AutocompleteEditModel* edit_model)
+    OmniboxEditModel* edit_model)
     : view_(popup_view),
       edit_model_(edit_model),
       hovered_line_(kNoMatch),

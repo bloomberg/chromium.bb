@@ -26,9 +26,9 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditController;
-class AutocompleteEditModel;
 class Browser;
+class OmniboxEditController;
+class OmniboxEditModel;
 class OmniboxPopupView;
 class Profile;
 
@@ -62,7 +62,7 @@ class OmniboxViewGtk : public OmniboxView,
     int cp_max;  // For a selection: Represents the end (insert position).
   };
 
-  OmniboxViewGtk(AutocompleteEditController* controller,
+  OmniboxViewGtk(OmniboxEditController* controller,
                  ToolbarModel* toolbar_model,
                  Browser* browser,
                  CommandUpdater* command_updater,
@@ -78,8 +78,8 @@ class OmniboxViewGtk : public OmniboxView,
   int WidthOfTextAfterCursor();
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model() OVERRIDE;
-  virtual const AutocompleteEditModel* model() const OVERRIDE;
+  virtual OmniboxEditModel* model() OVERRIDE;
+  virtual const OmniboxEditModel* model() const OVERRIDE;
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void Update(
       const content::WebContents* tab_for_state_restoring) OVERRIDE;
@@ -366,9 +366,9 @@ class OmniboxViewGtk : public OmniboxView,
   // be used.
   GtkTextMark* instant_mark_;
 
-  scoped_ptr<AutocompleteEditModel> model_;
+  scoped_ptr<OmniboxEditModel> model_;
   scoped_ptr<OmniboxPopupView> popup_view_;
-  AutocompleteEditController* controller_;
+  OmniboxEditController* controller_;
   ToolbarModel* toolbar_model_;
 
   // The object that handles additional command functionality exposed on the

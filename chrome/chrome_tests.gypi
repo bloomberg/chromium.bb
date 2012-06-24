@@ -995,7 +995,6 @@
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
-        'browser/autocomplete/autocomplete_edit_unittest.cc',
         'browser/autocomplete/autocomplete_result_unittest.cc',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/builtin_provider_unittest.cc',
@@ -1767,6 +1766,7 @@
         'browser/ui/intents/web_intent_picker_unittest.cc',
         'browser/ui/intents/web_intents_model_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
+        'browser/ui/omnibox/omnibox_edit_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/display_settings_provider_win_unittest.cc',
         'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',

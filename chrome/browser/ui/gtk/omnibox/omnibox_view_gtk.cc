@@ -15,8 +15,6 @@
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
@@ -29,6 +27,8 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -88,13 +88,13 @@ struct ViewState {
 };
 
 struct AutocompleteEditState {
-  AutocompleteEditState(const AutocompleteEditModel::State& model_state,
+  AutocompleteEditState(const OmniboxEditModel::State& model_state,
                         const ViewState& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
 
-  const AutocompleteEditModel::State model_state;
+  const OmniboxEditModel::State model_state;
   const ViewState view_state;
 };
 
@@ -152,13 +152,12 @@ void ClipboardSelectionCleared(GtkClipboard* clipboard,
 
 }  // namespace
 
-OmniboxViewGtk::OmniboxViewGtk(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Browser* browser,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    GtkWidget* location_bar)
+OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
+                               ToolbarModel* toolbar_model,
+                               Browser* browser,
+                               CommandUpdater* command_updater,
+                               bool popup_window_mode,
+                               GtkWidget* location_bar)
     : browser_(browser),
       text_view_(NULL),
       tag_table_(NULL),
@@ -170,7 +169,7 @@ OmniboxViewGtk::OmniboxViewGtk(
       instant_anchor_tag_(NULL),
       instant_view_(NULL),
       instant_mark_(NULL),
-      model_(new AutocompleteEditModel(this, controller, browser->profile())),
+      model_(new OmniboxEditModel(this, controller, browser->profile())),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -421,11 +420,11 @@ int OmniboxViewGtk::WidthOfTextAfterCursor() {
   return -1;
 }
 
-AutocompleteEditModel* OmniboxViewGtk::model() {
+OmniboxEditModel* OmniboxViewGtk::model() {
   return model_.get();
 }
 
-const AutocompleteEditModel* OmniboxViewGtk::model() const {
+const OmniboxEditModel* OmniboxViewGtk::model() const {
   return model_.get();
 }
 
@@ -436,7 +435,7 @@ void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
   if (!selected_text_.empty())
     SavePrimarySelection(selected_text_);
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
-  AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
+  OmniboxEditModel::State model_state = model_->GetStateForTabSwitch();
   GetStateAccessor()->SetProperty(
       tab->GetPropertyBag(),
       AutocompleteEditState(model_state, ViewState(GetSelection())));
@@ -1076,8 +1075,8 @@ gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
     result = model_->OnEscapeKeyPressed();
   } else if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
     // Omnibox2 can switch its contents while pressing a control key. To switch
-    // the contents of omnibox2, we notify the AutocompleteEditModel class when
-    // the control-key state is changed.
+    // the contents of omnibox2, we notify the OmniboxEditModel class when the
+    // control-key state is changed.
     model_->OnControlKeyChanged(true);
   } else if (!text_changed_ && event->keyval == GDK_Delete &&
              event->state & GDK_SHIFT_MASK) {
@@ -1108,8 +1107,8 @@ gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
 gboolean OmniboxViewGtk::HandleKeyRelease(GtkWidget* widget,
                                           GdkEventKey* event) {
   // Omnibox2 can switch its contents while pressing a control key. To switch
-  // the contents of omnibox2, we notify the AutocompleteEditModel class when
-  // the control-key state is changed.
+  // the contents of omnibox2, we notify the OmniboxEditModel class when the
+  // control-key state is changed.
   if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
     // Round trip to query the control state after the release.  This allows
     // you to release one control key while still holding another control key.

@@ -17,10 +17,10 @@
 #include "ui/views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditModel;
 struct AutocompleteMatch;
-class OmniboxView;
+class OmniboxEditModel;
 class OmniboxResultView;
+class OmniboxView;
 class Profile;
 
 namespace views {
@@ -36,7 +36,7 @@ class OmniboxPopupContentsView : public views::View,
   // Factory method for creating the AutocompletePopupView.
   static OmniboxPopupView* Create(const gfx::Font& font,
                                   OmniboxView* omnibox_view,
-                                  AutocompleteEditModel* edit_model,
+                                  OmniboxEditModel* edit_model,
                                   views::View* location_bar,
                                   views::View* popup_parent_view);
 
@@ -79,7 +79,7 @@ class OmniboxPopupContentsView : public views::View,
  protected:
   OmniboxPopupContentsView(const gfx::Font& font,
                            OmniboxView* omnibox_view,
-                           AutocompleteEditModel* edit_model,
+                           OmniboxEditModel* edit_model,
                            views::View* location_bar);
   virtual ~OmniboxPopupContentsView();
 

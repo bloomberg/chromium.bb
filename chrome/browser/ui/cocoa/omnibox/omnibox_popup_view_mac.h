@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "ui/gfx/font.h"
 
-class AutocompleteEditModel;
 @class NSImage;
+class OmniboxEditModel;
 class OmniboxPopupModel;
 class OmniboxView;
 
@@ -30,7 +30,7 @@ class OmniboxView;
 class OmniboxPopupViewMac : public OmniboxPopupView {
  public:
   OmniboxPopupViewMac(OmniboxView* omnibox_view,
-                      AutocompleteEditModel* edit_model,
+                      OmniboxEditModel* edit_model,
                       NSTextField* field);
   virtual ~OmniboxPopupViewMac();
 

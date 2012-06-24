@@ -14,12 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/content_settings_types.h"
 
@@ -43,7 +43,7 @@ class ToolbarModel;
 
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
-                           public AutocompleteEditController,
+                           public OmniboxEditController,
                            public content::NotificationObserver,
                            public CommandUpdater::CommandObserver {
  public:
@@ -133,7 +133,7 @@ class LocationBarViewMac : public LocationBar,
   // visible.
   NSRect GetBlockedPopupRect() const;
 
-  // Overridden from AutocompleteEditController:
+  // OmniboxEditController:
   virtual void OnAutocompleteAccept(
       const GURL& url,
       WindowOpenDisposition disposition,
@@ -154,12 +154,12 @@ class LocationBarViewMac : public LocationBar,
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
 
-  // Overridden from NotificationObserver.
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from CommandUpdater::CommandObserver.
+  // CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
  private:

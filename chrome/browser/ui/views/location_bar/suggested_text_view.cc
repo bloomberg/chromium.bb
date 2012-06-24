@@ -4,14 +4,14 @@
 
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 
-SuggestedTextView::SuggestedTextView(AutocompleteEditModel* edit_model)
+SuggestedTextView::SuggestedTextView(OmniboxEditModel* edit_model)
     : edit_model_(edit_model),
       bg_color_(0) {
   SetHorizontalAlignment(views::Label::ALIGN_LEFT);

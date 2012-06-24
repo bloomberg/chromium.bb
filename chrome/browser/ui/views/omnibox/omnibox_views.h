@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEWS_H_
 #pragma once
 
-class AutocompleteEditController;
 class CommandUpdater;
 class LocationBarView;
+class OmniboxEditController;
 class OmniboxView;
 class Profile;
 class ToolbarModel;
@@ -17,7 +17,7 @@ namespace views {
 class View;
 }
 
-OmniboxView* CreateOmniboxView(AutocompleteEditController* controller,
+OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
                                Profile* profile,
                                CommandUpdater* command_updater,

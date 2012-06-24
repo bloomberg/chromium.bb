@@ -12,7 +12,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class AutocompleteEditModel;
+class OmniboxEditModel;
 class TabContents;
 
 namespace content {
@@ -36,9 +36,9 @@ class SearchTabHelper : public content::WebContentsObserver,
     return model_.get();
   }
 
-  // Invoked when the AutocompleteEditModel changes state in some way that might
+  // Invoked when the OmniboxEditModel changes state in some way that might
   // affect the search mode.
-  void AutocompleteEditModelChanged(AutocompleteEditModel* edit_model);
+  void OmniboxEditModelChanged(OmniboxEditModel* edit_model);
 
   // content::WebContentsObserver overrides:
   virtual void NavigateToPendingEntry(

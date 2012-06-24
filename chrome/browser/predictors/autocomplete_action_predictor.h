@@ -67,7 +67,7 @@ class AutocompleteActionPredictor
                                    const AutocompleteResult& result);
 
   // Clears any transitional matches that have been registered. Called when, for
-  // example, the AutocompleteEditModel is reverted.
+  // example, the OmniboxEditModel is reverted.
   void ClearTransitionalMatches();
 
   // Return the recommended action given |user_text|, the text the user has

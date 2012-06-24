@@ -15,7 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 
-class AutocompleteEditController;
+class OmniboxEditController;
 class OmniboxPopupViewMac;
 class Profile;
 class ToolbarModel;
@@ -29,7 +29,7 @@ class Clipboard;
 class OmniboxViewMac : public OmniboxView,
                        public AutocompleteTextFieldObserver {
  public:
-  OmniboxViewMac(AutocompleteEditController* controller,
+  OmniboxViewMac(OmniboxEditController* controller,
                  ToolbarModel* toolbar_model,
                  Profile* profile,
                  CommandUpdater* command_updater,
@@ -37,8 +37,8 @@ class OmniboxViewMac : public OmniboxView,
   virtual ~OmniboxViewMac();
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model() OVERRIDE;
-  virtual const AutocompleteEditModel* model() const OVERRIDE;
+  virtual OmniboxEditModel* model() OVERRIDE;
+  virtual const OmniboxEditModel* model() const OVERRIDE;
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void Update(
       const content::WebContents* tab_for_state_restoring) OVERRIDE;
@@ -180,10 +180,10 @@ class OmniboxViewMac : public OmniboxView,
   // Returns true if the caret is at the end of the content.
   bool IsCaretAtEnd() const;
 
-  scoped_ptr<AutocompleteEditModel> model_;
+  scoped_ptr<OmniboxEditModel> model_;
   scoped_ptr<OmniboxPopupViewMac> popup_view_;
 
-  AutocompleteEditController* controller_;
+  OmniboxEditController* controller_;
   ToolbarModel* toolbar_model_;
 
   // The object that handles additional command functionality exposed on the

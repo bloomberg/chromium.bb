@@ -22,9 +22,9 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #endif
 
-class AutocompleteEditController;
-class AutocompleteEditModel;
 class LocationBarView;
+class OmniboxEditController;
+class OmniboxEditModel;
 class OmniboxPopupView;
 class Profile;
 
@@ -52,7 +52,7 @@ class OmniboxViewViews
   // The internal view class name.
   static const char kViewClassName[];
 
-  OmniboxViewViews(AutocompleteEditController* controller,
+  OmniboxViewViews(OmniboxEditController* controller,
                    ToolbarModel* toolbar_model,
                    Profile* profile,
                    CommandUpdater* command_updater,
@@ -96,8 +96,8 @@ class OmniboxViewViews
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // OmniboxView:
-  virtual AutocompleteEditModel* model() OVERRIDE;
-  virtual const AutocompleteEditModel* model() const OVERRIDE;
+  virtual OmniboxEditModel* model() OVERRIDE;
+  virtual const OmniboxEditModel* model() const OVERRIDE;
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void Update(
       const content::WebContents* tab_for_state_restoring) OVERRIDE;
@@ -192,9 +192,9 @@ class OmniboxViewViews
   // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
 
-  scoped_ptr<AutocompleteEditModel> model_;
+  scoped_ptr<OmniboxEditModel> model_;
   scoped_ptr<OmniboxPopupView> popup_view_;
-  AutocompleteEditController* controller_;
+  OmniboxEditController* controller_;
   ToolbarModel* toolbar_model_;
 
   // The object that handles additional command functionality exposed on the

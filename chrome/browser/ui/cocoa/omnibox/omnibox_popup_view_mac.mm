@@ -8,11 +8,11 @@
 
 #include "base/stl_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/image_utils.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -279,7 +279,7 @@ NSAttributedString* OmniboxPopupViewMac::MatchText(
 @end
 
 OmniboxPopupViewMac::OmniboxPopupViewMac(OmniboxView* omnibox_view,
-                                         AutocompleteEditModel* edit_model,
+                                         OmniboxEditModel* edit_model,
                                          NSTextField* field)
     : omnibox_view_(omnibox_view),
       model_(new OmniboxPopupModel(this, edit_model)),

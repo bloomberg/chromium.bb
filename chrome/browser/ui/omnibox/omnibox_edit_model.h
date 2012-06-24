@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_MODEL_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_MODEL_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -21,8 +21,8 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteController;
-class AutocompleteEditController;
 class AutocompleteResult;
+class OmniboxEditController;
 class OmniboxPopupModel;
 class OmniboxView;
 class Profile;
@@ -32,7 +32,7 @@ namespace gfx {
 class Rect;
 }
 
-class AutocompleteEditModel : public AutocompleteControllerDelegate {
+class OmniboxEditModel : public AutocompleteControllerDelegate {
  public:
   struct State {
     State(bool user_input_in_progress,
@@ -47,10 +47,10 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
     const bool is_keyword_hint;
   };
 
-  AutocompleteEditModel(OmniboxView* view,
-                        AutocompleteEditController* controller,
-                        Profile* profile);
-  virtual ~AutocompleteEditModel();
+  OmniboxEditModel(OmniboxView* view,
+                   OmniboxEditController* controller,
+                   Profile* profile);
+  virtual ~OmniboxEditModel();
 
   AutocompleteController* autocomplete_controller() const {
     return autocomplete_controller_.get();
@@ -64,7 +64,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // making this accessor unnecessary.
   OmniboxPopupModel* popup_model() const { return popup_; }
 
-  AutocompleteEditController* controller() const { return controller_; }
+  OmniboxEditController* controller() const { return controller_; }
 
   Profile* profile() const { return profile_; }
 
@@ -403,7 +403,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   OmniboxPopupModel* popup_;
 
-  AutocompleteEditController* controller_;
+  OmniboxEditController* controller_;
 
   // Whether the edit has focus.
   bool has_focus_;
@@ -512,7 +512,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
   InstantCompleteBehavior instant_complete_behavior_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditModel);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxEditModel);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_MODEL_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_MODEL_H_

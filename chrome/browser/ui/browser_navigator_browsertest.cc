@@ -6,8 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +14,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1212,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Focus the omnibox.
   browser()->FocusLocationBar();
 
-  AutocompleteEditController* controller =
+  OmniboxEditController* controller =
       browser()->window()->GetLocationBar()->GetLocationEntry()->model()->
           controller();
 

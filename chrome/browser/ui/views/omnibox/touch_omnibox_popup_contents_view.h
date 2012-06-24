@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
-class AutocompleteEditModel;
+class OmniboxEditModel;
 class OmniboxView;
 
 namespace gfx {
@@ -44,9 +44,9 @@ class TouchOmniboxPopupContentsView
     : public OmniboxPopupContentsView {
  public:
   TouchOmniboxPopupContentsView(const gfx::Font& font,
-                                     OmniboxView* omnibox_view,
-                                     AutocompleteEditModel* edit_model,
-                                     views::View* location_bar);
+                                OmniboxView* omnibox_view,
+                                OmniboxEditModel* edit_model,
+                                views::View* location_bar);
   virtual ~TouchOmniboxPopupContentsView();
 
   // OmniboxPopupContentsView:

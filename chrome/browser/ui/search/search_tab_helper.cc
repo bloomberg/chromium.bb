@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
@@ -42,8 +42,7 @@ SearchTabHelper::SearchTabHelper(
 SearchTabHelper::~SearchTabHelper() {
 }
 
-void SearchTabHelper::AutocompleteEditModelChanged(
-    AutocompleteEditModel* edit_model) {
+void SearchTabHelper::OmniboxEditModelChanged(OmniboxEditModel* edit_model) {
   if (!is_search_enabled_)
     return;
 

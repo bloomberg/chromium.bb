@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 
 class OmniboxPopupView;
 class SkBitmap;
@@ -22,7 +22,7 @@ class OmniboxPopupModel {
   };
 
   OmniboxPopupModel(OmniboxPopupView* popup_view,
-                    AutocompleteEditModel* edit_model);
+                    OmniboxEditModel* edit_model);
   ~OmniboxPopupModel();
 
   // Returns true if the popup is currently open.
@@ -75,7 +75,7 @@ class OmniboxPopupModel {
   // current selection down (|count| > 0) or up (|count| < 0), clamping to the
   // first or last result if necessary.  If |count| == 0, the selection will be
   // unchanged, but the popup will still redraw and modify the text in the
-  // AutocompleteEditModel.
+  // OmniboxEditModel.
   void Move(int count);
 
   // If the selected line has both a normal match and a keyword match, this can
@@ -107,7 +107,7 @@ class OmniboxPopupModel {
  private:
   OmniboxPopupView* view_;
 
-  AutocompleteEditModel* edit_model_;
+  OmniboxEditModel* edit_model_;
 
   // The line that's currently hovered.  If we're not drawing a hover rect,
   // this will be kNoMatch, even if the cursor is over the popup contents.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_CONTROLLER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
 #pragma once
 
 #include "base/string16.h"
@@ -19,7 +19,7 @@ class TabContents;
 // http://code.google.com/p/chromium/issues/detail?id=6772
 
 // Embedders of an AutocompleteEdit widget must implement this class.
-class AutocompleteEditController {
+class OmniboxEditController {
  public:
   // When the user presses enter or selects a line with the mouse, this
   // function will get called synchronously with the url to open and
@@ -65,7 +65,7 @@ class AutocompleteEditController {
   virtual TabContents* GetTabContents() const = 0;
 
  protected:
-  virtual ~AutocompleteEditController() {}
+  virtual ~OmniboxEditController() {}
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_

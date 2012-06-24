@@ -4,9 +4,9 @@
 
 // This file defines the interface class OmniboxView.  Each toolkit will
 // implement the edit view differently, so that code is inherently platform
-// specific.  However, the AutocompleteEditModel needs to do some communication
-// with the view.  Since the model is shared between platforms, we need to
-// define an interface that all view implementations will share.
+// specific.  However, the OmniboxEditModel needs to do some communication with
+// the view.  Since the model is shared between platforms, we need to define an
+// interface that all view implementations will share.
 
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_
@@ -22,9 +22,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditModel;
 class CommandUpdater;
 class GURL;
+class OmniboxEditModel;
 
 namespace content {
 class WebContents;
@@ -45,8 +45,8 @@ class View;
 class OmniboxView {
  public:
   // Used by the automation system for getting at the model from the view.
-  virtual AutocompleteEditModel* model() = 0;
-  virtual const AutocompleteEditModel* model() const = 0;
+  virtual OmniboxEditModel* model() = 0;
+  virtual const OmniboxEditModel* model() const = 0;
 
   // For use when switching tabs, this saves the current state onto the tab so
   // that it can be restored during a later call to Update().

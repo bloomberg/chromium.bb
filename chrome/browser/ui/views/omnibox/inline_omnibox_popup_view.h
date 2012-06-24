@@ -17,8 +17,8 @@
 #include "ui/views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompleteEditModel;
 struct AutocompleteMatch;
+class OmniboxEditModel;
 class OmniboxResultView;
 class Profile;
 
@@ -34,7 +34,7 @@ class InlineOmniboxPopupView : public views::View,
  public:
   InlineOmniboxPopupView(const gfx::Font& font,
                          OmniboxView* omnibox_view,
-                         AutocompleteEditModel* edit_model,
+                         OmniboxEditModel* edit_model,
                          views::View* location_bar);
 
   // Call immediately after construction.

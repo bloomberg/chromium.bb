@@ -9,10 +9,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -119,13 +119,13 @@ struct ViewState {
 };
 
 struct AutocompleteEditState {
-  AutocompleteEditState(const AutocompleteEditModel::State& model_state,
+  AutocompleteEditState(const OmniboxEditModel::State& model_state,
                         const ViewState& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
 
-  const AutocompleteEditModel::State model_state;
+  const OmniboxEditModel::State model_state;
   const ViewState view_state;
 };
 
@@ -177,14 +177,14 @@ int GetEditFontPixelSize(bool popup_window_mode) {
 const char OmniboxViewViews::kViewClassName[] =
     "browser/ui/views/omnibox/OmniboxViewViews";
 
-OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
+OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    ToolbarModel* toolbar_model,
                                    Profile* profile,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar)
     : popup_window_mode_(popup_window_mode),
-      model_(new AutocompleteEditModel(this, controller, profile)),
+      model_(new OmniboxEditModel(this, controller, profile)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -269,8 +269,8 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
     handled = model_->OnEscapeKeyPressed();
   } else if (event.key_code() == ui::VKEY_CONTROL) {
     // Omnibox2 can switch its contents while pressing a control key. To switch
-    // the contents of omnibox2, we notify the AutocompleteEditModel class when
-    // the control-key state is changed.
+    // the contents of omnibox2, we notify the OmniboxEditModel class when the
+    // control-key state is changed.
     model_->OnControlKeyChanged(true);
   } else if (!handled && event.key_code() == ui::VKEY_DELETE &&
              event.IsShiftDown()) {
@@ -321,8 +321,8 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
 
 bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
   // Omnibox2 can switch its contents while pressing a control key. To switch
-  // the contents of omnibox2, we notify the AutocompleteEditModel class when
-  // the control-key state is changed.
+  // the contents of omnibox2, we notify the OmniboxEditModel class when the
+  // control-key state is changed.
   if (event.key_code() == ui::VKEY_CONTROL) {
     // TODO(oshima): investigate if we need to support keyboard with two
     // controls.
@@ -408,11 +408,11 @@ void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, AutocopmleteEditView implementation:
 
-AutocompleteEditModel* OmniboxViewViews::model() {
+OmniboxEditModel* OmniboxViewViews::model() {
   return model_.get();
 }
 
-const AutocompleteEditModel* OmniboxViewViews::model() const {
+const OmniboxEditModel* OmniboxViewViews::model() const {
   return model_.get();
 }
 
@@ -428,7 +428,7 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   }
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
-  AutocompleteEditModel::State model_state = model_->GetStateForTabSwitch();
+  OmniboxEditModel::State model_state = model_->GetStateForTabSwitch();
   gfx::SelectionModel selection;
   textfield_->GetSelectionModel(&selection);
   GetStateAccessor()->SetProperty(
