@@ -156,15 +156,6 @@ void NetworkStats::Initialize(
   finished_callback_ = finished_callback;
 }
 
-uint32 SendingPacketSize(uint32 load_size) {
-  return kVersionLength + kChecksumLength + kPayloadSizeLength + load_size;
-}
-
-uint32 ReceivingPacketSize(uint32 load_size) {
-  return kVersionLength + kChecksumLength + kPayloadSizeLength + kKeyLength +
-      load_size;
-}
-
 bool NetworkStats::ConnectComplete(int result) {
   if (result < 0) {
     Finish(CONNECT_FAILED, result);
@@ -221,8 +212,8 @@ void NetworkStats::OnResolveComplete(int result) {
 }
 
 void NetworkStats::SendPacket() {
-  uint32 sending_packet_size = SendingPacketSize(load_size_);
-  uint32 receiving_packet_size = ReceivingPacketSize(load_size_);
+  DCHECK_EQ(bytes_to_send_, 0u);
+  uint32 sending_packet_size = SendingPacketSize();
 
   while (packets_to_send_ > packets_sent_) {
     ++g_packet_number_;
@@ -230,23 +221,18 @@ void NetworkStats::SendPacket() {
     bytes_to_send_ = sending_packet_size;
     int rv = SendData();
     if (rv < 0) {
-      if (rv != net::ERR_IO_PENDING) {
+      if (rv != net::ERR_IO_PENDING)
         Finish(WRITE_FAILED, rv);
-        return;
-      }
-    }
-    bytes_to_read_ += receiving_packet_size;
-    ++packets_sent_;
-
-    DCHECK(bytes_to_send_ == 0 || rv == net::ERR_IO_PENDING);
-    if (rv == net::ERR_IO_PENDING)
       return;
+    }
+    DCHECK_EQ(bytes_to_send_, 0u);
   }
 
   // Timeout if we don't get response back from echo servers in 60 secs.
   const int kReadDataTimeoutMs = 60000;
   StartReadDataTimer(kReadDataTimeoutMs);
 
+  bytes_to_read_ = packets_sent_ * ReceivingPacketSize();
   ReadData();
 }
 
@@ -271,20 +257,16 @@ void NetworkStats::OnWriteComplete(int result) {
     return;
   }
 
-  write_buffer_->DidConsume(result);
-  bytes_to_send_ -= result;
-  if (!write_buffer_->BytesRemaining())
-      write_buffer_ = NULL;
-
+  DidSendData(result);
   if (bytes_to_send_) {
     int rv = SendData();
     if (rv < 0) {
-      if (rv != net::ERR_IO_PENDING) {
+      if (rv != net::ERR_IO_PENDING)
         Finish(WRITE_FAILED, rv);
-        return;
-      }
+      return;
     }
-    return;
+    DCHECK_EQ(rv, net::OK);
+    DCHECK_EQ(bytes_to_send_, 0u);
   }
 
   MessageLoop::current()->PostTask(
@@ -332,12 +314,27 @@ int NetworkStats::SendData() {
                                        base::Unretained(this)));
     if (rv < 0)
       return rv;
-    write_buffer_->DidConsume(rv);
-    bytes_to_send_ -= rv;
-    if (!write_buffer_->BytesRemaining())
-      write_buffer_ = NULL;
+    DidSendData(rv);
   } while (bytes_to_send_);
   return net::OK;
+}
+
+uint32 NetworkStats::SendingPacketSize() const {
+  return kVersionLength + kChecksumLength + kPayloadSizeLength + load_size_;
+}
+
+uint32 NetworkStats::ReceivingPacketSize() const {
+  return kVersionLength + kChecksumLength + kPayloadSizeLength + kKeyLength +
+      load_size_;
+}
+
+void NetworkStats::DidSendData(int bytes_sent) {
+  write_buffer_->DidConsume(bytes_sent);
+  if (!write_buffer_->BytesRemaining())
+    write_buffer_ = NULL;
+  bytes_to_send_ -= bytes_sent;
+  if (bytes_to_send_ == 0)
+    ++packets_sent_;
 }
 
 void NetworkStats::StartReadDataTimer(int milliseconds) {
@@ -427,7 +424,7 @@ void NetworkStats::GetEchoRequest(net::IOBufferWithSize* io_buffer) {
 NetworkStats::Status NetworkStats::VerifyPackets() {
   uint32 packet_start = 0;
   size_t message_length = encoded_message_.length();
-  uint32 receiving_packet_size = ReceivingPacketSize(load_size_);
+  uint32 receiving_packet_size = ReceivingPacketSize();
   Status status = SUCCESS;
   for (uint32 i = 0; i < packets_to_send_; i++) {
     if (message_length <= packet_start) {
@@ -510,20 +507,37 @@ NetworkStats::Status NetworkStats::VerifyBytes(const std::string& response) {
   return SUCCESS;
 }
 
-void NetworkStats::RecordAcksReceivedHistograms() {
+void NetworkStats::RecordAcksReceivedHistograms(const char* load_size_string) {
   bool received_atleast_one_packet = packets_received_mask_ > 0;
   std::string histogram_name = base::StringPrintf(
-      "NetConnectivity.Sent%d.GotAnAck", kMaximumSequentialPackets);
+      "NetConnectivity2.Sent%d.GotAnAck.%d.%s",
+      kMaximumSequentialPackets,
+      kPorts[histogram_port_],
+      load_size_string);
   base::Histogram* got_an_ack_histogram = base::BooleanHistogram::FactoryGet(
       histogram_name, base::Histogram::kUmaTargetedHistogramFlag);
   got_an_ack_histogram->AddBoolean(received_atleast_one_packet);
 
-  if (!received_atleast_one_packet)
+  histogram_name = base::StringPrintf(
+      "NetConnectivity2.Sent%d.PacketsSent.%d.%s",
+      kMaximumSequentialPackets,
+      kPorts[histogram_port_],
+      load_size_string);
+  base::Histogram* packets_sent_histogram =
+      base::Histogram::FactoryGet(
+          histogram_name,
+          1, kMaximumSequentialPackets, kMaximumSequentialPackets + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  packets_sent_histogram->Add(packets_sent_);
+
+  if (!received_atleast_one_packet || packets_sent_ != packets_to_send_)
     return;
 
   histogram_name = base::StringPrintf(
-      "NetConnectivity.Sent%d.AckReceivedForNthPacket",
-      kMaximumSequentialPackets);
+      "NetConnectivity2.Sent%d.AckReceivedForNthPacket.%d.%s",
+      kMaximumSequentialPackets,
+      kPorts[histogram_port_],
+      load_size_string);
   base::Histogram* ack_received_for_nth_packet_histogram =
       base::Histogram::FactoryGet(
           histogram_name,
@@ -540,8 +554,11 @@ void NetworkStats::RecordAcksReceivedHistograms() {
     if (packet_number < 2)
       continue;
     histogram_name = base::StringPrintf(
-        "NetConnectivity.Sent%d.AcksReceivedFromFirst%dPackets",
-        kMaximumSequentialPackets, packet_number);
+        "NetConnectivity2.Sent%d.AcksReceivedFromFirst%dPackets.%d.%s",
+        kMaximumSequentialPackets,
+        packet_number,
+        kPorts[histogram_port_],
+        load_size_string);
     base::Histogram* acks_received_count_histogram =
         base::Histogram::FactoryGet(
             histogram_name, 1, packet_number, packet_number + 1,
@@ -550,26 +567,24 @@ void NetworkStats::RecordAcksReceivedHistograms() {
   }
 }
 
-void NetworkStats::RecordStatusAndRTTHistograms(const ProtocolValue& protocol,
-                                                const Status& status,
-                                                int result) {
+void NetworkStats::RecordPacketLossSeriesHistograms(
+    const ProtocolValue& protocol,
+    const Status& status,
+    const char* load_size_string,
+    int result) {
   if (packets_to_send_ < 2 || protocol != PROTOCOL_UDP)
     return;
 
-  // Build <load_size> string.
-  const char* kSmallLoadString = "100B";
-  const char* kLargeLoadString = "1K";
-  const char* load_size_string;
-  if (load_size_ == kSmallTestBytesToSend)
-    load_size_string = kSmallLoadString;
-  else
-    load_size_string = kLargeLoadString;
-
-  // Build "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" histogram
-  // name. Total number of histograms are 5*2 (because we do this test for UDP
-  // only).
+  // Build "NetConnectivity2.Send6.SeriesAcked.<port>.<load_size>" histogram
+  // name. Total number of histograms are 5*2.
   std::string packet_loss_histogram_name = base::StringPrintf(
-      "NetConnectivity.UDP.PacketLoss6.%d.%s",
+      "NetConnectivity2.Send6.SeriesAcked.%d.%s",
+      kPorts[histogram_port_],
+      load_size_string);
+  // Build "NetConnectivity2.Send6.PacketsSent.<port>.<load_size>" histogram
+  // name. Total number of histograms are 5*2.
+  std::string packets_sent_histogram_name = base::StringPrintf(
+      "NetConnectivity2.Send6.PacketsSent.%d.%s",
       kPorts[histogram_port_],
       load_size_string);
 
@@ -586,17 +601,34 @@ void NetworkStats::RecordStatusAndRTTHistograms(const ProtocolValue& protocol,
         base::Histogram::kUmaTargetedHistogramFlag);
     histogram->Add(packets_received_mask_);
     packet_loss_histogram_name.append(".NoProxy");
+
+    base::Histogram* packets_sent_histogram =
+        base::Histogram::FactoryGet(
+            packets_sent_histogram_name,
+            1, kMaximumCorrelationPackets, kMaximumCorrelationPackets + 1,
+            base::Histogram::kUmaTargetedHistogramFlag);
+    packets_sent_histogram->Add(packets_sent_);
+    packets_sent_histogram_name.append(".NoProxy");
   }
 }
 
 void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
                                     const Status& status,
                                     int result) {
+  // Build <load_size> string.
+  const char* kSmallLoadString = "100B";
+  const char* kLargeLoadString = "1K";
+  const char* load_size_string;
+  if (load_size_ == kSmallTestBytesToSend)
+    load_size_string = kSmallLoadString;
+  else
+    load_size_string = kLargeLoadString;
+
   if (packets_to_send_ == kMaximumSequentialPackets) {
-    RecordAcksReceivedHistograms();
+    RecordAcksReceivedHistograms(load_size_string);
     return;
   }
-  RecordStatusAndRTTHistograms(protocol, status, result);
+  RecordPacketLossSeriesHistograms(protocol, status, load_size_string, result);
 }
 
 // UDPStatsClient methods and members.

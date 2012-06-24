@@ -197,6 +197,16 @@ class NetworkStats {
   // Sends data to server until an error occurs.
   int SendData();
 
+  // Determine the size of the packet from |load_size_|. The packet size
+  // includes |load_size_| plus the header size.
+  uint32 SendingPacketSize() const;
+  uint32 ReceivingPacketSize() const;
+
+  // This method decrements the |bytes_to_send_| by the |bytes_sent| and updates
+  // |packets_sent_| if all the bytes are sent. It also informs |write_buffer_|
+  // that data has been consumed.
+  void DidSendData(int bytes_sent);
+
   // We set a timeout for responses from the echo servers.
   void StartReadDataTimer(int milliseconds);
   void OnReadDataTimeout();   // Called when the ReadData Timer fires.
@@ -236,7 +246,7 @@ class NetworkStats {
   // b) Received the "echo response" for the nth packet.
   // c) Count the number of "echo responses" received for each of the initial
   // sequences of packets 1...n.
-  void RecordAcksReceivedHistograms();
+  void RecordAcksReceivedHistograms(const char* load_size_string);
 
   // Collect the following network connectivity stats.
   // a) What percentage of users can get a message end-to-end to a TCP/UDP
@@ -245,9 +255,10 @@ class NetworkStats {
   // b) What is RTT for the echo message.
   // c) Records if there is a probabalistic dependency in packet loss when
   // kMaximumCorrelationPackets packets are sent consecutively.
-  void RecordStatusAndRTTHistograms(const ProtocolValue& protocol,
-                                    const Status& status,
-                                    int result);
+  void RecordPacketLossSeriesHistograms(const ProtocolValue& protocol,
+                                        const Status& status,
+                                        const char* load_size_string,
+                                        int result);
   // The socket handle for this session.
   scoped_ptr<net::Socket> socket_;
 
