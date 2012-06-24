@@ -37,17 +37,23 @@ static BrowserAccessibilityGtk* ToBrowserAccessibilityGtk(
 
 static const gchar* browser_accessibility_get_name(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return NULL;
   return obj->atk_acc_name().c_str();
 }
 
 static const gchar* browser_accessibility_get_description(
     AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return NULL;
   return obj->atk_acc_description().c_str();
 }
 
 static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return NULL;
   if (obj->parent())
     return obj->parent()->ToBrowserAccessibilityGtk()->GetAtkObject();
   else
@@ -56,12 +62,16 @@ static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
 
 static gint browser_accessibility_get_n_children(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return 0;
   return obj->children().size();
 }
 
 static AtkObject* browser_accessibility_ref_child(
     AtkObject* atk_object, gint index) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return NULL;
   AtkObject* result =
       obj->children()[index]->ToBrowserAccessibilityGtk()->GetAtkObject();
   g_object_ref(result);
@@ -70,6 +80,8 @@ static AtkObject* browser_accessibility_ref_child(
 
 static gint browser_accessibility_get_index_in_parent(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return 0;
   return obj->index_in_parent();
 }
 
@@ -80,11 +92,15 @@ static AtkAttributeSet* browser_accessibility_get_attributes(
 
 static AtkRole browser_accessibility_get_role(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return ATK_ROLE_INVALID;
   return obj->atk_role();
 }
 
 static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
+  if (!obj)
+    return NULL;
   AtkStateSet* state_set =
       ATK_OBJECT_CLASS(browser_accessibility_parent_class)->
           ref_state_set(atk_object);
@@ -270,6 +286,7 @@ BrowserAccessibilityAtk* browser_accessibility_new(
 }
 
 void browser_accessibility_detach(BrowserAccessibilityAtk* atk_object) {
+  atk_object->m_object = NULL;
 }
 
 // static
@@ -287,6 +304,7 @@ BrowserAccessibilityGtk::BrowserAccessibilityGtk() {
 
 BrowserAccessibilityGtk::~BrowserAccessibilityGtk() {
   browser_accessibility_detach(BROWSER_ACCESSIBILITY(atk_object_));
+  g_object_unref(atk_object_);
 }
 
 AtkObject* BrowserAccessibilityGtk::GetAtkObject() const {
