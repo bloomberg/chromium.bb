@@ -205,7 +205,6 @@ class PrefsUITest(pyauto.PyUITest):
         ContentTypes.PLUGINS, 'http://maps.google.com:80',
         Behaviors.BLOCK, incognito=True)
 
-<<<<<<< HEAD
   def testSetCookieAndDeleteInContentSettings(self):
     """Verify a cookie can be deleted in the Content Settings UI."""
     # Create a cookie.
@@ -222,7 +221,6 @@ class PrefsUITest(pyauto.PyUITest):
     self.assertTrue(site not in page.GetSiteNameList(),
                     'Site "%s" was not deleted.'  % site)
 
-=======
   def testRemoveMailProtocolHandler(self):
     """Verify the mail protocol handler is added and removed successfully."""
     url = self.GetHttpURLForDataPath('settings', 'protocol_handler.html')
@@ -270,7 +268,6 @@ class PrefsUITest(pyauto.PyUITest):
     self._driver.find_element_by_id('test_mail_protocol').click()
     self.assertEqual(url, self._driver.current_url,
                      msg='Mail protocol still registered.')
->>>>>>> origin
 
 class BasicSettingsUITest(pyauto.PyUITest):
   """Testcases for uber page basic settings UI."""
