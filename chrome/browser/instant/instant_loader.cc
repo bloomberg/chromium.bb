@@ -1159,7 +1159,7 @@ void InstantLoader::LoadInstantURL(const TemplateURL* template_url,
   // correctly.
   // TODO(sky): having to use a replaceable url is a bit of a hack here.
   GURL instant_url(template_url->instant_url_ref().ReplaceSearchTerms(
-      string16(), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+      TemplateURLRef::SearchTermsArgs(string16())));
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));

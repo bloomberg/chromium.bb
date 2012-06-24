@@ -1091,7 +1091,8 @@ const PrepopulatedEngine google = {
   "http://www.google.com/favicon.ico",
   "{google:baseURL}search?q={searchTerms}&{google:RLZ}"
       "{google:acceptedSuggestion}{google:originalQueryForSuggestion}"
-      "{google:searchFieldtrialParameter}sourceid=chrome&ie={inputEncoding}",
+      "{google:assistedQueryStats}{google:searchFieldtrialParameter}"
+      "sourceid=chrome&ie={inputEncoding}",
   "UTF-8",
   "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}"
       "client=chrome&hl={language}&q={searchTerms}",
@@ -3418,8 +3419,8 @@ SearchEngineType GetEngineType(const std::string& url) {
   TemplateURLData data;
   data.SetURL(url);
   TemplateURL turl(NULL, data);
-  GURL as_gurl(turl.url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL as_gurl(turl.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("x"))));
   if (!as_gurl.is_valid())
     return SEARCH_ENGINE_OTHER;
 

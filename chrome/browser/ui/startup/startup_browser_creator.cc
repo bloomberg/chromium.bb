@@ -276,8 +276,8 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
         const TemplateURLRef& search_url = default_provider->url_ref();
         DCHECK(search_url.SupportsReplacement());
         string16 search_term = param.LossyDisplayName().substr(2);
-        urls.push_back(GURL(search_url.ReplaceSearchTerms(search_term,
-            TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
+        urls.push_back(GURL(search_url.ReplaceSearchTerms(
+            TemplateURLRef::SearchTermsArgs(search_term))));
         continue;
       }
     }
@@ -562,4 +562,3 @@ bool HasPendingUncleanExit(Profile* profile) {
   return !profile->DidLastSessionExitCleanly() &&
     !profile_launch_observer.Get().HasBeenLaunched(profile);
 }
-

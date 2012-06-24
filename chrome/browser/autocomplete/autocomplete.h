@@ -562,6 +562,7 @@ class AutocompleteResult {
 
   // Returns the match at the given index.
   const AutocompleteMatch& match_at(size_t index) const;
+  AutocompleteMatch* match_at(size_t index);
 
   // Get the default match for the query (not necessarily the first).  Returns
   // end() if there is no default match.
@@ -732,6 +733,7 @@ class AutocompleteController : public ACProviderListener {
   friend class AutocompleteProviderTest;
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
 
   // Updates |result_| to reflect the current provider state.  Resets timers and
   // fires notifications as necessary.  |is_synchronous_pass| is true only when
@@ -746,6 +748,11 @@ class AutocompleteController : public ACProviderListener {
   // For each group of contiguous matches from the same TemplateURL, show the
   // provider name as a description on the first match in the group.
   void UpdateKeywordDescriptions(AutocompleteResult* result);
+
+  // For each AutocompleteMatch returned by SearchProvider, updates the
+  // destination_url iff the provider's TemplateURL supports assisted query
+  // stats.
+  void UpdateAssistedQueryStats(AutocompleteResult* result);
 
   // Calls AutocompleteControllerDelegate::OnResultChanged() and if done sends
   // AUTOCOMPLETE_CONTROLLER_RESULT_READY.

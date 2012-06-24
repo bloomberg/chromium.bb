@@ -53,12 +53,11 @@ GURL GetURLToOpen(Profile* profile) {
     if (default_provider) {
       const TemplateURLRef& search_url = default_provider->url_ref();
       DCHECK(search_url.SupportsReplacement());
-      return GURL(search_url.ReplaceSearchTerms(search_string,
-                      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+      return GURL(search_url.ReplaceSearchTerms(
+          TemplateURLRef::SearchTermsArgs(search_string)));
     }
   }
   return GURL();
 }
 
 }  // namespace browser
-

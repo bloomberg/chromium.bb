@@ -48,6 +48,28 @@ class TemplateURLRef {
     INSTANT,
   };
 
+  // This struct encapsulates arguments passed to
+  // TemplateURLRef::ReplaceSearchTerms methods.  By default, only search_terms
+  // is required and is passed in the constructor.
+  struct SearchTermsArgs {
+    explicit SearchTermsArgs(const string16& search_terms);
+
+    // The search terms (query).
+    const string16 search_terms;
+    // The original (input) query.
+    string16 original_query;
+    // The optional assisted query stats, aka AQS, used for logging purposes.
+    // This string contains impressions of all autocomplete matches shown
+    // at the query submission time.  For privacy reasons, we require the
+    // search provider to support HTTPS protocol in order to receive the AQS
+    // param.
+    // For more details, see http://goto.google.com/binary-clients-logging .
+    std::string assisted_query_stats;
+
+    // TODO: Remove along with "aq" CGI param.
+    int accepted_suggestion;
+  };
+
   TemplateURLRef(TemplateURL* owner, Type type);
   ~TemplateURLRef();
 
@@ -62,22 +84,18 @@ class TemplateURLRef {
       const SearchTermsData& search_terms_data) const;
 
   // Returns a string that is the result of replacing the search terms in
-  // the url with the specified value.  We use our owner's input encoding.
+  // the url with the specified arguments.  We use our owner's input encoding.
   //
   // If this TemplateURLRef does not support replacement (SupportsReplacement
   // returns false), an empty string is returned.
   std::string ReplaceSearchTerms(
-      const string16& terms,
-      int accepted_suggestion,
-      const string16& original_query_for_suggestion) const;
+      const SearchTermsArgs& search_terms_args) const;
 
   // Just like ReplaceSearchTerms except that it takes SearchTermsData to supply
   // the data for some search terms. Most of the time ReplaceSearchTerms should
   // be called.
   std::string ReplaceSearchTermsUsingTermsData(
-      const string16& terms,
-      int accepted_suggestion,
-      const string16& original_query_for_suggestion,
+      const SearchTermsArgs& search_terms_args,
       const SearchTermsData& search_terms_data) const;
 
   // Returns true if the TemplateURLRef is valid. An invalid TemplateURLRef is
@@ -126,6 +144,7 @@ class TemplateURLRef {
   enum ReplacementType {
     ENCODING,
     GOOGLE_ACCEPTED_SUGGESTION,
+    GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
     GOOGLE_INSTANT_ENABLED,

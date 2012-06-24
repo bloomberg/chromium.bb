@@ -289,8 +289,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnChangeEvent)) {
       TemplateURLServiceFactory::GetForProfile(browser()->profile())->
       GetDefaultSearchProvider();
   EXPECT_TRUE(default_turl);
-  EXPECT_EQ(default_turl->url_ref().ReplaceSearchTerms(ASCIIToUTF16("defghi"),
-                TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()),
+  EXPECT_EQ(default_turl->url_ref().ReplaceSearchTerms(
+                TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("defghi"))),
             loader()->url().spec());
 
   // Check that the value is reflected and onchange is called.

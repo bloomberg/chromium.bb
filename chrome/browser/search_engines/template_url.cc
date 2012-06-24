@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
@@ -42,6 +43,7 @@ const char kInputEncodingParameter[] = "inputEncoding";
 const char kOutputEncodingParameter[] = "outputEncoding";
 
 const char kGoogleAcceptedSuggestionParameter[] = "google:acceptedSuggestion";
+const char kGoogleAssistedQueryStatsParameter[] = "google:assistedQueryStats";
 // Host/Domain Google searches are relative to.
 const char kGoogleBaseURLParameter[] = "google:baseURL";
 const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
@@ -106,6 +108,14 @@ bool TryEncoding(const string16& terms,
 }  // namespace
 
 
+// TemplateURLRef::SearchTermsArgs --------------------------------------------
+
+TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
+    : search_terms(search_terms),
+      accepted_suggestion(NO_SUGGESTIONS_AVAILABLE) {
+}
+
+
 // TemplateURLRef -------------------------------------------------------------
 
 TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
@@ -142,18 +152,13 @@ bool TemplateURLRef::SupportsReplacementUsingTermsData(
 }
 
 std::string TemplateURLRef::ReplaceSearchTerms(
-    const string16& terms,
-    int accepted_suggestion,
-    const string16& original_query_for_suggestion) const {
+    const SearchTermsArgs& search_terms_args) const {
   UIThreadSearchTermsData search_terms_data(owner_->profile());
-  return ReplaceSearchTermsUsingTermsData(terms, accepted_suggestion,
-      original_query_for_suggestion, search_terms_data);
+  return ReplaceSearchTermsUsingTermsData(search_terms_args, search_terms_data);
 }
 
 std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
-    const string16& terms,
-    int accepted_suggestion,
-    const string16& original_query_for_suggestion,
+    const SearchTermsArgs& search_terms_args,
     const SearchTermsData& search_terms_data) const {
   ParseIfNecessaryUsingTermsData(search_terms_data);
   if (!valid_)
@@ -182,7 +187,8 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   for (std::vector<std::string>::const_iterator i(
            owner_->input_encodings().begin());
        i != owner_->input_encodings().end(); ++i) {
-    if (TryEncoding(terms, original_query_for_suggestion, i->c_str(),
+    if (TryEncoding(search_terms_args.search_terms,
+                    search_terms_args.original_query, i->c_str(),
                     is_in_query, &encoded_terms, &encoded_original_query)) {
       input_encoding = *i;
       break;
@@ -190,7 +196,8 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   }
   if (input_encoding.empty()) {
     input_encoding = "UTF-8";
-    if (!TryEncoding(terms, original_query_for_suggestion,
+    if (!TryEncoding(search_terms_args.search_terms,
+                     search_terms_args.original_query,
                      input_encoding.c_str(), is_in_query, &encoded_terms,
                      &encoded_original_query))
       NOTREACHED();
@@ -207,12 +214,32 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         url.insert(i->index, input_encoding);
         break;
 
+      case GOOGLE_ASSISTED_QUERY_STATS:
+        if (!search_terms_args.assisted_query_stats.empty()) {
+          // Get the base URL without substituting AQS to avoid infinite
+          // recursion.  We need the URL to find out if it meets all
+          // AQS requirements (e.g. HTTPS protocol check).
+          // See TemplateURLRef::SearchTermsArgs for more details.
+          SearchTermsArgs search_terms_args_without_aqs(search_terms_args);
+          search_terms_args_without_aqs.assisted_query_stats.clear();
+          GURL base_url(ReplaceSearchTermsUsingTermsData(
+              search_terms_args_without_aqs, search_terms_data));
+          if (base_url.SchemeIs(chrome::kHttpsScheme)) {
+            url.insert(i->index,
+                       "aqs=" + search_terms_args.assisted_query_stats + "&");
+          }
+        }
+        break;
+
       case GOOGLE_ACCEPTED_SUGGESTION:
-        if (accepted_suggestion == NO_SUGGESTION_CHOSEN)
+        if (search_terms_args.accepted_suggestion == NO_SUGGESTION_CHOSEN) {
           url.insert(i->index, "aq=f&");
-        else if (accepted_suggestion != NO_SUGGESTIONS_AVAILABLE)
+        } else if (search_terms_args.accepted_suggestion !=
+                   NO_SUGGESTIONS_AVAILABLE) {
           url.insert(i->index,
-                     base::StringPrintf("aq=%d&", accepted_suggestion));
+                     base::StringPrintf("aq=%d&",
+                                        search_terms_args.accepted_suggestion));
+        }
         break;
 
       case GOOGLE_BASE_URL:
@@ -228,9 +255,11 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         break;
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
-        if (accepted_suggestion >= 0)
+        if (search_terms_args.accepted_suggestion >= 0 ||
+            !search_terms_args.assisted_query_stats.empty()) {
           url.insert(i->index, "oq=" + UTF16ToUTF8(encoded_original_query) +
                                "&");
+        }
         break;
 
       case GOOGLE_RLZ: {
@@ -257,7 +286,8 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
         std::string unescaped_terms;
-        base::UTF16ToCodepage(terms, input_encoding.c_str(),
+        base::UTF16ToCodepage(search_terms_args.search_terms,
+                              input_encoding.c_str(),
                               base::OnStringConversionError::SKIP,
                               &unescaped_terms);
         url.insert(i->index, std::string(unescaped_terms.begin(),
@@ -417,6 +447,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
       url->insert(start, kOutputEncodingType);
   } else if (parameter == kGoogleAcceptedSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ACCEPTED_SUGGESTION, start));
+  } else if (parameter == kGoogleAssistedQueryStatsParameter) {
+    replacements->push_back(Replacement(GOOGLE_ASSISTED_QUERY_STATS, start));
   } else if (parameter == kGoogleBaseURLParameter) {
     replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
   } else if (parameter == kGoogleBaseSuggestURLParameter) {

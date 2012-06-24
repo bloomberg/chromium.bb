@@ -318,8 +318,8 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
     return GURL(t_url->url());
 
   return GURL(search_ref.ReplaceSearchTermsUsingTermsData(
-      ASCIIToUTF16(kReplacementTerm), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-      string16(), search_terms_data));
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16(kReplacementTerm)),
+      search_terms_data));
 }
 
 bool TemplateURLService::CanReplaceKeyword(

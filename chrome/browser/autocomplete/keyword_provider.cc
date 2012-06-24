@@ -396,7 +396,7 @@ void KeywordProvider::FillInURLAndContents(
     // fixup to make the URL valid if necessary.
     DCHECK(element_ref.SupportsReplacement());
     match->destination_url = GURL(element_ref.ReplaceSearchTerms(
-        remaining_input, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+        TemplateURLRef::SearchTermsArgs(remaining_input)));
     std::vector<size_t> content_param_offsets;
     match->contents.assign(l10n_util::GetStringFUTF16(message_id,
                                                       element->short_name(),

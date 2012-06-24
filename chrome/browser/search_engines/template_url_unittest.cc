@@ -93,8 +93,8 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
-    GURL result(url.url_ref().ReplaceSearchTerms(value.terms,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+    GURL result(url.url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(value.terms)));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(value.output, result.spec());
   }
@@ -106,8 +106,8 @@ TEST_F(TemplateURLTest, URLRefTestCount) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://foox/", result.spec());
 }
@@ -118,8 +118,8 @@ TEST_F(TemplateURLTest, URLRefTestCount2) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://foox10/", result.spec());
 }
@@ -130,8 +130,8 @@ TEST_F(TemplateURLTest, URLRefTestIndices) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://fooxxy/", result.spec());
 }
@@ -142,8 +142,8 @@ TEST_F(TemplateURLTest, URLRefTestIndices2) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://fooxx1y1/", result.spec());
 }
@@ -154,8 +154,8 @@ TEST_F(TemplateURLTest, URLRefTestEncoding) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://fooxxutf-8ya/", result.spec());
 }
@@ -187,8 +187,8 @@ TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://fooxutf-8axyb/", result.spec());
 }
@@ -199,8 +199,8 @@ TEST_F(TemplateURLTest, URLRefTestEncoding2) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://fooxxutf-8yutf-8a/", result.spec());
 }
@@ -225,9 +225,8 @@ TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
     TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
-    GURL result(url.url_ref().ReplaceSearchTermsUsingTermsData(value.terms,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16(),
-        search_terms_data));
+    GURL result(url.url_ref().ReplaceSearchTermsUsingTermsData(
+        TemplateURLRef::SearchTermsArgs(value.terms), search_terms_data));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(value.output, result.spec());
   }
@@ -331,8 +330,8 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
     std::string expected_result = test_data[i].expected_result;
     ReplaceSubstringsAfterOffset(&expected_result, 0, "{language}",
         g_browser_process->GetApplicationLocale());
-    GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+    GURL result(url.url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X"))));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(expected_result, result.spec());
   }
@@ -369,8 +368,64 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
-    GURL result(url.url_ref().ReplaceSearchTerms(test_data[i].search_term,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+    GURL result(url.url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(test_data[i].search_term)));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(test_data[i].expected_result, result.spec());
+  }
+}
+
+// Tests replacing assisted query stats (AQS) in various scenarios.
+TEST_F(TemplateURLTest, ReplaceAssistedQueryStats) {
+  struct TestData {
+    const string16 search_term;
+    const std::string aqs;
+    const std::string base_url;
+    const std::string url;
+    const std::string expected_result;
+  } test_data[] = {
+    // No HTTPS, no AQS.
+    { ASCIIToUTF16("foo"),
+      "chrome.0.0l6",
+      "http://foo/",
+      "{google:baseURL}?{searchTerms}{google:assistedQueryStats}",
+      "http://foo/?foo" },
+    // HTTPS available, AQS should be replaced.
+    { ASCIIToUTF16("foo"),
+      "chrome.0.0l6",
+      "https://foo/",
+      "{google:baseURL}?{searchTerms}{google:assistedQueryStats}",
+      "https://foo/?fooaqs=chrome.0.0l6&" },
+    // HTTPS available, however AQS is empty.
+    { ASCIIToUTF16("foo"),
+      "",
+      "https://foo/",
+      "{google:baseURL}?{searchTerms}{google:assistedQueryStats}",
+      "https://foo/?foo" },
+    // No {google:baseURL} and protocol is HTTP, we must not substitute AQS.
+    { ASCIIToUTF16("foo"),
+      "chrome.0.0l6",
+      "",
+      "http://foo?{searchTerms}{google:assistedQueryStats}",
+      "http://foo/?foo" },
+    // A non-Google search provider with HTTPS should allow AQS.
+    { ASCIIToUTF16("foo"),
+      "chrome.0.0l6",
+      "",
+      "https://foo?{searchTerms}{google:assistedQueryStats}",
+      "https://foo/?fooaqs=chrome.0.0l6&" },
+  };
+  TemplateURLData data;
+  data.input_encodings.push_back("UTF-8");
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    data.SetURL(test_data[i].url);
+    TemplateURL url(NULL, data);
+    EXPECT_TRUE(url.url_ref().IsValid());
+    ASSERT_TRUE(url.url_ref().SupportsReplacement());
+    TemplateURLRef::SearchTermsArgs search_terms_args(test_data[i].search_term);
+    search_terms_args.assisted_query_stats = test_data[i].aqs;
+    UIThreadSearchTermsData::SetGoogleBaseURL(test_data[i].base_url);
+    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(test_data[i].expected_result, result.spec());
   }
@@ -401,9 +456,12 @@ TEST_F(TemplateURLTest, Suggestions) {
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
-    GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("foobar"),
-        test_data[i].accepted_suggestion,
-        test_data[i].original_query_for_suggestion));
+    TemplateURLRef::SearchTermsArgs search_terms_args(
+        ASCIIToUTF16("foobar"));
+    search_terms_args.accepted_suggestion = test_data[i].accepted_suggestion;
+    search_terms_args.original_query =
+        test_data[i].original_query_for_suggestion;
+    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(test_data[i].expected_result, result.spec());
   }
@@ -425,8 +483,8 @@ TEST_F(TemplateURLTest, RLZ) {
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
-  GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL result(url.url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("x"))));
   ASSERT_TRUE(result.is_valid());
   std::string expected_url = "http://bar/?";
   if (!rlz_string.empty())

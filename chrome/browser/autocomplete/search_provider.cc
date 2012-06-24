@@ -593,8 +593,8 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     const string16& text) {
   DCHECK(suggestions_url.SupportsReplacement());
   net::URLFetcher* fetcher = net::URLFetcher::Create(id,
-      GURL(suggestions_url.ReplaceSearchTerms(text,
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
+      GURL(suggestions_url.ReplaceSearchTerms(
+          TemplateURLRef::SearchTermsArgs(text))),
       net::URLFetcher::GET, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -1091,8 +1091,15 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
 
   const TemplateURLRef& search_url = provider_url->url_ref();
   DCHECK(search_url.SupportsReplacement());
-  match.destination_url = GURL(search_url.ReplaceSearchTerms(query_string,
-      accepted_suggestion, input_text));
+  match.search_terms_args.reset(
+      new TemplateURLRef::SearchTermsArgs(query_string));
+  match.search_terms_args->original_query = input_text;
+  match.search_terms_args->accepted_suggestion = accepted_suggestion;
+  // This is the destination URL sans assisted query stats.  This must be set
+  // so the AutocompleteController can properly de-dupe; the controller will
+  // eventually overwrite it before it reaches the user.
+  match.destination_url =
+      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get()));
 
   // Search results don't look like URLs.
   match.transition = is_keyword ?

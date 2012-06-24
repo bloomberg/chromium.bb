@@ -496,9 +496,8 @@ void BrowserFrameWin::HandleMetroNavSearchRequest(WPARAM w_param,
     if (default_provider) {
       const TemplateURLRef& search_url = default_provider->url_ref();
       DCHECK(search_url.SupportsReplacement());
-      request_url = GURL(search_url.ReplaceSearchTerms(search_string,
-                            TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-                            string16()));
+      request_url = GURL(search_url.ReplaceSearchTerms(
+          TemplateURLRef::SearchTermsArgs(search_string)));
     }
   }
   if (request_url.is_valid()) {

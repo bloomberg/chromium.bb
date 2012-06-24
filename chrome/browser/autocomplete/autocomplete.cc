@@ -11,9 +11,11 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
+#include "base/format_macros.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -52,6 +54,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using base::TimeDelta;
+
 
 // AutocompleteInput ----------------------------------------------------------
 
@@ -782,8 +785,13 @@ AutocompleteResult::iterator AutocompleteResult::end() {
 
 // Returns the match at the given index.
 const AutocompleteMatch& AutocompleteResult::match_at(size_t index) const {
-  DCHECK(index < matches_.size());
+  DCHECK_LT(index, matches_.size());
   return matches_[index];
+}
+
+AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
+  DCHECK_LT(index, matches_.size());
+  return &matches_[index];
 }
 
 void AutocompleteResult::Reset() {
@@ -851,6 +859,39 @@ void AutocompleteResult::MergeMatchesByProvider(const ACMatches& old_matches,
 }
 
 // AutocompleteController -----------------------------------------------------
+
+namespace {
+
+// Converts the given type to an integer based on the AQS specification.
+// For more details, See http://goto.google.com/binary-clients-logging .
+int AutocompleteMatchToAssistedQueryType(const AutocompleteMatch::Type& type) {
+  switch (type) {
+    case AutocompleteMatch::SEARCH_SUGGEST:        return 0;
+    case AutocompleteMatch::NAVSUGGEST:            return 5;
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED: return 57;
+    case AutocompleteMatch::URL_WHAT_YOU_TYPED:    return 58;
+    case AutocompleteMatch::SEARCH_HISTORY:        return 59;
+    case AutocompleteMatch::HISTORY_URL:           return 60;
+    case AutocompleteMatch::HISTORY_TITLE:         return 61;
+    case AutocompleteMatch::HISTORY_BODY:          return 62;
+    case AutocompleteMatch::HISTORY_KEYWORD:       return 63;
+    default:                                       return 64;
+  }
+}
+
+// Appends available autocompletion of the given type and number to the existing
+// available autocompletions string, encoding according to the spec.
+void AppendAvailableAutocompletion(int type,
+                                   int count,
+                                   std::string* autocompletions) {
+  if (!autocompletions->empty())
+    autocompletions->append("j");
+  base::StringAppendF(autocompletions, "%d", type);
+  if (count > 1)
+    base::StringAppendF(autocompletions, "l%d", count);
+}
+
+}  // namespace
 
 const int AutocompleteController::kNoItemSelected = -1;
 
@@ -1044,6 +1085,7 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
 
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
+  UpdateAssistedQueryStats(&result_);
 
   bool notify_default_match = is_synchronous_pass;
   if (!is_synchronous_pass) {
@@ -1097,6 +1139,43 @@ void AutocompleteController::UpdateAssociatedKeywords(
         match->associated_keyword.reset();
       }
     }
+  }
+}
+
+void AutocompleteController::UpdateAssistedQueryStats(
+    AutocompleteResult* result) {
+  if (result->empty())
+    return;
+
+  // Build the impressions string (the AQS part after ".").
+  std::string autocompletions;
+  int count = 0;
+  int last_type = -1;
+  for (ACMatches::iterator match(result->begin()); match != result->end();
+       ++match) {
+    int type = AutocompleteMatchToAssistedQueryType(match->type);
+    if (last_type != -1 && type != last_type) {
+      AppendAvailableAutocompletion(last_type, count, &autocompletions);
+      count = 1;
+    } else {
+      count++;
+    }
+    last_type = type;
+  }
+  AppendAvailableAutocompletion(last_type, count, &autocompletions);
+
+  // Go over all matches and set AQS if the match supports it.
+  for (size_t index = 0; index < result->size(); ++index) {
+    AutocompleteMatch* match = result->match_at(index);
+    const TemplateURL* template_url = match->GetTemplateURL(profile_);
+    if (!template_url || !match->search_terms_args.get())
+      continue;
+    match->search_terms_args->assisted_query_stats =
+        base::StringPrintf("chrome.%" PRIuS ".%s",
+                           index,
+                           autocompletions.c_str());
+    match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
+        *match->search_terms_args));
   }
 }
 

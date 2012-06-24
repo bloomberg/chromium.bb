@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -273,6 +274,15 @@ struct AutocompleteMatch {
 
   // True if this match is from a previous result.
   bool from_previous;
+
+  // Optional search terms args.  If present,
+  // AutocompleteController::UpdateAssistedQueryStats() will incorporate this
+  // data with additional data it calculates and pass the completed struct to
+  // TemplateURLRef::ReplaceSearchTerms() to reset the match's |destination_url|
+  // after the complete set of matches in the AutocompleteResult has been chosen
+  // and sorted.  Most providers will leave this as NULL, which will cause the
+  // AutocompleteController to do no additional transformations.
+  scoped_ptr<TemplateURLRef::SearchTermsArgs> search_terms_args;
 
 #ifndef NDEBUG
   // Does a data integrity check on this match.

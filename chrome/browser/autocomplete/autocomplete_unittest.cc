@@ -31,16 +31,20 @@ static std::ostream& operator<<(std::ostream& os,
 
 namespace {
 const size_t kResultsPerProvider = 3;
+const char kTestTemplateURLKeyword[] = "t";
 }
 
 // Autocomplete provider that provides known results. Note that this is
 // refcounted so that it can also be a task on the message loop.
 class TestProvider : public AutocompleteProvider {
  public:
-  TestProvider(int relevance, const string16& prefix)
-      : AutocompleteProvider(NULL, NULL, ""),
+  TestProvider(int relevance, const string16& prefix,
+               Profile* profile,
+               const string16 match_keyword)
+      : AutocompleteProvider(NULL, profile, ""),
         relevance_(relevance),
-        prefix_(prefix) {
+        prefix_(prefix),
+        match_keyword_(match_keyword) {
   }
 
   virtual void Start(const AutocompleteInput& input,
@@ -56,9 +60,15 @@ class TestProvider : public AutocompleteProvider {
   void Run();
 
   void AddResults(int start_at, int num);
+  void AddResultsWithSearchTermsArgs(
+      int start_at,
+      int num,
+      AutocompleteMatch::Type type,
+      const TemplateURLRef::SearchTermsArgs& search_terms_args);
 
   int relevance_;
   const string16 prefix_;
+  const string16 match_keyword_;
 };
 
 void TestProvider::Start(const AutocompleteInput& input,
@@ -68,8 +78,17 @@ void TestProvider::Start(const AutocompleteInput& input,
 
   matches_.clear();
 
-  // Generate one result synchronously, the rest later.
+  // Generate 4 results synchronously, the rest later.
   AddResults(0, 1);
+  AddResultsWithSearchTermsArgs(
+      1, 1, AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("echo")));
+  AddResultsWithSearchTermsArgs(
+      2, 1, AutocompleteMatch::NAVSUGGEST,
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("nav")));
+  AddResultsWithSearchTermsArgs(
+      3, 1, AutocompleteMatch::SEARCH_SUGGEST,
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("query")));
 
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     done_ = false;
@@ -87,9 +106,19 @@ void TestProvider::Run() {
 }
 
 void TestProvider::AddResults(int start_at, int num) {
+  AddResultsWithSearchTermsArgs(start_at,
+                                num,
+                                AutocompleteMatch::URL_WHAT_YOU_TYPED,
+                                TemplateURLRef::SearchTermsArgs(string16()));
+}
+
+void TestProvider::AddResultsWithSearchTermsArgs(
+    int start_at,
+    int num,
+    AutocompleteMatch::Type type,
+    const TemplateURLRef::SearchTermsArgs& search_terms_args) {
   for (int i = start_at; i < num; i++) {
-    AutocompleteMatch match(this, relevance_ - i, false,
-                            AutocompleteMatch::URL_WHAT_YOU_TYPED);
+    AutocompleteMatch match(this, relevance_ - i, false, type);
 
     match.fill_into_edit = prefix_ + UTF8ToUTF16(base::IntToString(i));
     match.destination_url = GURL(UTF16ToUTF8(match.fill_into_edit));
@@ -100,6 +129,12 @@ void TestProvider::AddResults(int start_at, int num) {
     match.description = match.fill_into_edit;
     match.description_class.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
+    match.search_terms_args.reset(
+        new TemplateURLRef::SearchTermsArgs(search_terms_args));
+    if (!match_keyword_.empty()) {
+      match.keyword = match_keyword_;
+      ASSERT_TRUE(match.GetTemplateURL(profile_) != NULL);
+    }
 
     matches_.push_back(match);
   }
@@ -114,7 +149,16 @@ class AutocompleteProviderTest : public testing::Test,
     const bool expected_keyword_result;
   };
 
+  struct AssistedQueryStatsTestData {
+    const AutocompleteMatch::Type match_type;
+    const std::string expected_aqs;
+  };
+
  protected:
+   // Registers a test TemplateURL under the given keyword.
+  void RegisterTemplateURL(const string16 keyword,
+                           const std::string& template_url);
+
   void ResetControllerWithTestProviders(bool same_destinations);
 
   // Runs a query on the input "a", and makes sure both providers' input is
@@ -122,6 +166,10 @@ class AutocompleteProviderTest : public testing::Test,
   void RunTest();
 
   void RunRedundantKeywordTest(const KeywordTestData* match_data, size_t size);
+
+  void RunAssistedQueryStatsTest(
+      const AssistedQueryStatsTestData* aqs_test_data,
+      size_t size);
 
   void RunQuery(const string16 query);
 
@@ -146,20 +194,56 @@ class AutocompleteProviderTest : public testing::Test,
   TestingProfile profile_;
 };
 
+void AutocompleteProviderTest:: RegisterTemplateURL(
+    const string16 keyword,
+    const std::string& template_url) {
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
+  TemplateURLData data;
+  data.SetURL(template_url);
+  data.SetKeyword(keyword);
+  TemplateURL* default_t_url = new TemplateURL(&profile_, data);
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
+  turl_model->Add(default_t_url);
+  turl_model->SetDefaultSearchProvider(default_t_url);
+  TemplateURLID default_provider_id = default_t_url->id();
+  ASSERT_NE(0, default_provider_id);
+}
+
 void AutocompleteProviderTest::ResetControllerWithTestProviders(
     bool same_destinations) {
   // Forget about any existing providers.  The controller owns them and will
   // Release() them below, when we delete it during the call to reset().
   providers_.clear();
 
+  // TODO: Move it outside this method, after refactoring the existing
+  // unit tests.  Specifically:
+  //   (1) Make sure that AutocompleteMatch.keyword is set iff there is
+  //       a corresponding call to RegisterTemplateURL; otherwise the
+  //       controller flow will crash; this practically means that
+  //       RunTests/ResetControllerXXX/RegisterTemplateURL should
+  //       be coordinated with each other.
+  //   (2) Inject test arguments rather than rely on the hardcoded values, e.g.
+  //       don't rely on kResultsPerProvided and default relevance ordering
+  //       (B > A).
+  RegisterTemplateURL(ASCIIToUTF16(kTestTemplateURLKeyword),
+                      "http://aqs/{searchTerms}/{google:assistedQueryStats}");
+
   // Construct two new providers, with either the same or different prefixes.
-  TestProvider* providerA = new TestProvider(kResultsPerProvider,
-                                             ASCIIToUTF16("http://a"));
+  TestProvider* providerA =
+      new TestProvider(kResultsPerProvider,
+                       ASCIIToUTF16("http://a"),
+                       &profile_,
+                       ASCIIToUTF16(kTestTemplateURLKeyword));
   providerA->AddRef();
   providers_.push_back(providerA);
 
-  TestProvider* providerB = new TestProvider(kResultsPerProvider * 2,
-      same_destinations ? ASCIIToUTF16("http://a") : ASCIIToUTF16("http://b"));
+  TestProvider* providerB = new TestProvider(
+      kResultsPerProvider * 2,
+      same_destinations ? ASCIIToUTF16("http://a") : ASCIIToUTF16("http://b"),
+      &profile_,
+      string16());
   providerB->AddRef();
   providers_.push_back(providerB);
 
@@ -217,8 +301,7 @@ void AutocompleteProviderTest::
   controller_.reset(new AutocompleteController(providers_, &profile_));
 }
 
-void AutocompleteProviderTest::
-    ResetControllerWithKeywordProvider() {
+void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
 
@@ -280,10 +363,36 @@ void AutocompleteProviderTest::RunRedundantKeywordTest(
 
   for (size_t j = 0; j < result.size(); ++j) {
     EXPECT_EQ(match_data[j].expected_keyword_result,
-        result.match_at(j).associated_keyword.get() != NULL);
+        result.match_at(j)->associated_keyword.get() != NULL);
   }
 }
 
+void AutocompleteProviderTest::RunAssistedQueryStatsTest(
+    const AssistedQueryStatsTestData* aqs_test_data,
+    size_t size) {
+  // Prepare input.
+  const size_t kMaxRelevance = 1000;
+  ACMatches matches;
+  for (size_t i = 0; i < size; ++i) {
+    AutocompleteMatch match(NULL, kMaxRelevance - i, false,
+                            aqs_test_data[i].match_type);
+    match.keyword = ASCIIToUTF16(kTestTemplateURLKeyword);
+    match.search_terms_args.reset(
+        new TemplateURLRef::SearchTermsArgs(string16()));
+    matches.push_back(match);
+  }
+  result_.Reset();
+  result_.AppendMatches(matches);
+
+  // Update AQS.
+  controller_->UpdateAssistedQueryStats(&result_);
+
+  // Verify data.
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_EQ(aqs_test_data[i].expected_aqs,
+              result_.match_at(i)->search_terms_args->assisted_query_stats);
+  }
+}
 
 void AutocompleteProviderTest::RunQuery(const string16 query) {
   result_.Reset();
@@ -333,6 +442,26 @@ TEST_F(AutocompleteProviderTest, Query) {
   EXPECT_EQ(kResultsPerProvider * 2, result_.size());  // two providers
   ASSERT_NE(result_.end(), result_.default_match());
   EXPECT_EQ(providers_[1], result_.default_match()->provider);
+}
+
+// Tests assisted query stats.
+TEST_F(AutocompleteProviderTest, AssistedQueryStats) {
+  ResetControllerWithTestProviders(false);
+  RunTest();
+
+  EXPECT_EQ(kResultsPerProvider * 2, result_.size());  // two providers
+
+  // Now, check the results from the second provider, as they should not have
+  // assisted query stats set.
+  for (size_t i = 0; i < kResultsPerProvider; ++i) {
+    EXPECT_TRUE(
+        result_.match_at(i)->search_terms_args->assisted_query_stats.empty());
+  }
+  // The first provider has a test keyword, so AQS should be non-empty.
+  for (size_t i = kResultsPerProvider; i < kResultsPerProvider * 2; ++i) {
+    EXPECT_FALSE(
+        result_.match_at(i)->search_terms_args->assisted_query_stats.empty());
+  }
 }
 
 TEST_F(AutocompleteProviderTest, RemoveDuplicates) {
@@ -392,6 +521,43 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
     SCOPED_TRACE("Duplicate url with multiple keywords");
     RunRedundantKeywordTest(multiple_keyword,
         ARRAYSIZE_UNSAFE(multiple_keyword));
+  }
+}
+
+TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
+  ResetControllerWithTestProviders(false);
+
+  {
+    AssistedQueryStatsTestData test_data[] = {
+      //  MSVC doesn't support zero-length arrays, so supply some dummy data.
+      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "" }
+    };
+    SCOPED_TRACE("No matches");
+    // Note: We pass 0 here to ignore the dummy data above.
+    RunAssistedQueryStatsTest(test_data, 0);
+  }
+
+  {
+    AssistedQueryStatsTestData test_data[] = {
+      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "chrome.0.57" }
+    };
+    SCOPED_TRACE("One match");
+    RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
+  }
+
+  {
+    AssistedQueryStatsTestData test_data[] = {
+      { AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, "chrome.0.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::URL_WHAT_YOU_TYPED, "chrome.1.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::NAVSUGGEST, "chrome.2.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::NAVSUGGEST, "chrome.3.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::SEARCH_SUGGEST, "chrome.4.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::SEARCH_SUGGEST, "chrome.5.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::SEARCH_SUGGEST, "chrome.6.57j58j5l2j0l3j59" },
+      { AutocompleteMatch::SEARCH_HISTORY, "chrome.7.57j58j5l2j0l3j59" },
+    };
+    SCOPED_TRACE("Multiple matches");
+    RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
   }
 }
 
