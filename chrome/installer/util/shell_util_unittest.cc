@@ -11,7 +11,6 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/md5.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/win/scoped_comptr.h"
@@ -89,7 +88,7 @@ bool VerifyChromeShortcut(const std::wstring& exe_path,
   return true;
 }
 
-class ShellUtilTestWithDirAndDist : public testing::Test {
+class ShellUtilTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -104,7 +103,7 @@ class ShellUtilTestWithDirAndDist : public testing::Test {
 };
 
 // Test that we can open archives successfully.
-TEST_F(ShellUtilTestWithDirAndDist, UpdateChromeShortcutTest) {
+TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
   // Create an executable in test path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
   EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
@@ -171,7 +170,7 @@ TEST_F(ShellUtilTestWithDirAndDist, UpdateChromeShortcutTest) {
                                    description2, 1));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, CreateChromeDesktopShortcutTest) {
+TEST_F(ShellUtilTest, CreateChromeDesktopShortcutTest) {
   // Run this test on Vista+ only if we are running elevated.
   if (base::win::GetVersion() > base::win::VERSION_XP && !IsUserAnAdmin()) {
     LOG(ERROR) << "Must be admin to run this test on Vista+";
@@ -364,14 +363,14 @@ TEST_F(ShellUtilTestWithDirAndDist, CreateChromeDesktopShortcutTest) {
       profile_names));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdBasic) {
+TEST_F(ShellUtilTest, BuildAppModelIdBasic) {
   std::vector<string16> components;
   const string16 base_app_id(dist_->GetBaseAppId());
   components.push_back(base_app_id);
   ASSERT_EQ(base_app_id, ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdManySmall) {
+TEST_F(ShellUtilTest, BuildAppModelIdManySmall) {
   std::vector<string16> components;
   const string16 suffixed_app_id(dist_->GetBaseAppId().append(L".gab"));
   components.push_back(suffixed_app_id);
@@ -381,7 +380,7 @@ TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdManySmall) {
             ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongUsernameNormalProfile) {
+TEST_F(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
   std::vector<string16> components;
   const string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
@@ -392,7 +391,7 @@ TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongUsernameNormalProfile) {
             ShellUtil::BuildAppModelId(components));
 }
 
-TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongEverything) {
+TEST_F(ShellUtilTest, BuildAppModelIdLongEverything) {
   std::vector<string16> components;
   const string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
@@ -404,26 +403,4 @@ TEST_F(ShellUtilTestWithDirAndDist, BuildAppModelIdLongEverything) {
   ASSERT_LE(constructed_app_id.length(), installer::kMaxAppModelIdLength);
   ASSERT_EQ(L"Chrome.a_user_wer_64_characters.A_crazy_profilethat_is_possible",
             constructed_app_id);
-}
-
-TEST(ShellUtilTest, MD5DigestToBase32) {
-  const base::MD5Digest digest = { 'f', 'o', 'o', 'b', 'a', 'f', 'o', 'o', 'b',
-                                   'a', 'f', 'o', 'o', 'b', 'a', 'f' };
-  EXPECT_EQ(L"MZXW6YTBMZXW6YTBMZXW6YTBMY",
-            ShellUtil::MD5DigestToBase32(digest));
-}
-
-TEST(ShellUtilTest, ByteArrayToBase32) {
-  // Tests from http://tools.ietf.org/html/rfc4648#section-10.
-  const unsigned char test_array[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
-
-  const string16 expected[] = { L"", L"MY", L"MZXQ", L"MZXW6", L"MZXW6YQ",
-                                L"MZXW6YTB", L"MZXW6YTBOI"};
-
-  // Run the tests, with one more letter in the input every pass.
-  for (int i = 0; i < arraysize(expected); ++i) {
-    EXPECT_EQ(expected[i],
-              ShellUtil::ByteArrayToBase32(test_array, i));
-  }
-
 }
