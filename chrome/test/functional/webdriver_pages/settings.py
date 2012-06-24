@@ -578,7 +578,6 @@ class BasicSettingsPage(object):
     self._FillStartupURL(url)
     self._driver.find_element_by_id('startup-overlay-cancel').click()
     self._driver.get(self._URL)
-<<<<<<< HEAD
 
 
 class CookiesAndSiteDataSettings(object):
@@ -647,5 +646,3 @@ class CookiesAndSiteDataSettings(object):
         # shows up, then click on the delete button.
         ActionChains(self._driver).move_to_element(
             delete_button_list[i]).click().perform()
-=======
->>>>>>> origin
