@@ -1,6 +1,6 @@
-<link rel="stylesheet" href="css/samples.css" />
+<link rel="stylesheet" href="../css/samples.css" />
 <script jscontent="search_data"></script>
-<script src="js/sample_search.js"></script>
+<script src="../js/sample_search.js"></script>
 
 <script type="text/prerenderjs">
   /**
@@ -47,7 +47,7 @@
     for (var i = 0; i < source_files.length; i++) {
       sample.source_files.push({
           'file': source_files[i],
-          'url': sample.path + source_files[i]
+          'url': '../' + sample.path + source_files[i]
       });
     }
   });
@@ -76,8 +76,8 @@
 </div>
 
 <div jsselect="samples" jsvalues="id:id" class="sample">
-  <img jsdisplay="icon != null" class="icon" jsvalues="src:path + icon" />
-  <img jsdisplay="icon == null" class="icon" src="images/sample-default-icon.png" />
+  <img jsdisplay="icon != null" class="icon" jsvalues="src:'../' + path + icon" />
+  <img jsdisplay="icon == null" class="icon" src="../images/sample-default-icon.png" />
   <h2 class="name">
     <a jscontent="name" jsvalues="href:'#'+$this.id"></a>
     <span jsdisplay="packaged_app">(packaged app)</span>
@@ -104,7 +104,7 @@
     </ul>
   </div>
   <div>
-    <a jsvalues="href:$this.zip_path">Download source</a>
+    <a jsvalues="href:'../' + $this.zip_path">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span jsdisplay="$this.crx_path != null">
     - <a jsvalues="href:$this.crx_path">Install extension</a>

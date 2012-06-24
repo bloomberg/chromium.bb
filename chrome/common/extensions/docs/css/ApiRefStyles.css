@@ -771,7 +771,7 @@ a.leftNavSelected,.leftNavSelected a,a.leftNavSelected:visited,.leftNavSelected 
 }
 
 #gc-toc .toggle {
-  background: url('../images/toggle_sprite.png') no-repeat 0px 0px;
+  background: url('../../images/toggle_sprite.png') no-repeat 0px 0px;
   width: 9px;
   height: 9px;
   overflow: hidden;

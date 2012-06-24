@@ -34,7 +34,7 @@ Spanish (<code>es</code>), and
 Korean (<code>ko</code>):
 </p>
 
-<img src="images/i18n-hierarchy.gif"
+<img src="../images/i18n-hierarchy.gif"
  alt='In the extension directory: manifest.json, *.html, *.js, _locales directory. In the _locales directory: en, es, and ko directories, each with a messages.json file.'
  width="385" height="77" />
 
@@ -46,7 +46,7 @@ Say you have an extension
 with the files shown in the following figure:
 </p>
 
-<img src="images/i18n-before.gif"
+<img src="../images/i18n-before.gif"
  alt='A manifest.json file and a file with JavaScript. The .json file has "name": "Hello World". The JavaScript file has title = "Hello World";'
  width="323" height="148">
 
@@ -65,7 +65,7 @@ Here's what the extension looks like when it's internationalized
 (note that it still has only English strings):
 </p>
 
-<img src="images/i18n-after-1.gif"
+<img src="../images/i18n-after-1.gif"
  alt='In the manifest.json file, "Hello World" has been changed to "__MSG_extName__", and a new "default_locale" item has the value "en". In the JavaScript file, "Hello World" has been changed to chrome.i18n.getMessage("extName"). A new file named _locales/en/messages.json defines "extName".'
  width="782" height="228">
 
@@ -159,7 +159,7 @@ The following figure shows the previous extension
 with a new Spanish translation.
 </p>
 
-<img src="images/i18n-after-2.gif"
+<img src="../images/i18n-after-2.gif"
  alt='This looks the same as the previous figure, but with a new file at _locales/es/messages.json that contains a Spanish translation of the messages.'
  width="782" height="358">
 
@@ -356,7 +356,7 @@ users running Google Chrome in any non-English language
 see the label "Colores" and the extension name "Hola mundo".
 </p>
 
-<img src="images/i18n-strings.gif"
+<img src="../images/i18n-strings.gif"
  alt='Four files: manifest.json and three messages.json files (for es, en, and en_GB).  The es and en files show entries for messages named "extName" and "colores"; the en_GB file has just one entry (for "colores").'
  width="493" height="488" />
 

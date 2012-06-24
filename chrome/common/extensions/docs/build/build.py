@@ -77,6 +77,8 @@ def RenderPages(family, dump_render_tree, single_page_name):
 
     shutil.copy(_page_shell_html, input_file)
 
+  print generator_url
+
   # Run DumpRenderTree and capture result
   dump_render_tree_timeout = 1000 * 60 * 5  # five minutes
   p = Popen(
