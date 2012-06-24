@@ -28,6 +28,9 @@ class MagnificationController {
   // returned object.
   static MagnificationController* CreateInstance();
 
+  // Enables (or disables if |enabled| is false) screen magnifier feature.
+  virtual void SetEnabled(bool enabled) = 0;
+
   // Sets the magnification ratio. 1.0f means no magnification.
   virtual void SetScale(float scale, bool animate) = 0;
   // Returns the current magnification ratio.

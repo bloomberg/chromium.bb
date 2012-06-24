@@ -19,10 +19,12 @@
 
 namespace {
 
-const float kMaximumMagnifiScale = 4.0f;
-const float kMaximumMagnifiScaleThreshold = 4.0f;
-const float kMinimumMagnifiScale = 1.0f;
-const float kMinimumMagnifiScaleThreshold = 1.1f;
+const float kMaxMagnifiedScale = 4.0f;
+const float kMaxMagnifiedScaleThreshold = 4.0f;
+const float kMinMagnifiedScaleThreshold = 1.1f;
+const float kNonMagnifiedScale = 1.0f;
+
+const float kInitialMagnifiedScale = 2.0f;
 
 }  // namespace
 
@@ -40,6 +42,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   virtual ~MagnificationControllerImpl();
 
   // MagnificationController overrides:
+  virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual void SetScale(float scale, bool animate) OVERRIDE;
   virtual float GetScale() const OVERRIDE { return scale_; }
   virtual void MoveWindow(int x, int y, bool animate) OVERRIDE;
@@ -103,6 +106,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // Otherwise, false.
   bool is_on_zooming_;
 
+  bool is_enabled_;
+
   // Current scale, origin (left-top) position of the magnification window.
   float scale_;
   gfx::Point origin_;
@@ -116,7 +121,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 MagnificationControllerImpl::MagnificationControllerImpl()
     : root_window_(ash::Shell::GetPrimaryRootWindow()),
       is_on_zooming_(false),
-      scale_(1.0f) {
+      is_enabled_(false),
+      scale_(kNonMagnifiedScale) {
   Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
@@ -306,19 +312,19 @@ gfx::Rect MagnificationControllerImpl::GetWindowRectDIP(float scale) const {
 }
 
 bool MagnificationControllerImpl::IsMagnified() const {
-  return scale_ >= kMinimumMagnifiScaleThreshold;
+  return scale_ >= kMinMagnifiedScaleThreshold;
 }
 
 void MagnificationControllerImpl::ValidateScale(float* scale) {
-  // Adjust the scale to just |kMinimumMagnifiScale| if scale is smaller than
-  // |kMinimumMagnifiScaleThreshold|;
-  if (*scale < kMinimumMagnifiScaleThreshold)
-    *scale = kMinimumMagnifiScale;
+  // Adjust the scale to just |kNonMagnifiedScale| if scale is smaller than
+  // |kMinMagnifiedScaleThreshold|;
+  if (*scale < kMinMagnifiedScaleThreshold)
+    *scale = kNonMagnifiedScale;
 
-  // Adjust the scale to just |kMinimumMagnifiScale| if scale is bigger than
-  // |kMinimumMagnifiScaleThreshold|;
-  if (*scale > kMaximumMagnifiScaleThreshold)
-    *scale = kMaximumMagnifiScale;
+  // Adjust the scale to just |kMinMagnifiedScale| if scale is bigger than
+  // |kMinMagnifiedScaleThreshold|;
+  if (*scale > kMaxMagnifiedScaleThreshold)
+    *scale = kMaxMagnifiedScale;
 }
 
 void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
@@ -330,6 +336,9 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
 // MagnificationControllerImpl: MagnificationController implementation
 
 void MagnificationControllerImpl::SetScale(float scale, bool animate) {
+  if (!is_enabled_)
+    return;
+
   ValidateScale(&scale);
 
   // Try not to change the point which the mouse cursor indicates to.
@@ -341,24 +350,46 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
 }
 
 void MagnificationControllerImpl::MoveWindow(int x, int y, bool animate) {
+  if (!is_enabled_)
+    return;
+
   Redraw(gfx::Point(x, y), scale_, animate);
 }
 
 void MagnificationControllerImpl::MoveWindow(const gfx::Point& point,
                                              bool animate) {
+  if (!is_enabled_)
+    return;
+
   Redraw(point, scale_, animate);
 }
 
 void MagnificationControllerImpl::EnsureRectIsVisible(
     const gfx::Rect& target_rect,
     bool animate) {
+  if (!is_enabled_)
+    return;
+
   EnsureRectIsVisibleWithScale(target_rect, scale_, animate);
 }
 
 void MagnificationControllerImpl::EnsurePointIsVisible(
     const gfx::Point& point,
     bool animate) {
+  if (!is_enabled_)
+    return;
+
   EnsurePointIsVisibleWithScale(point, scale_, animate);
+}
+
+void MagnificationControllerImpl::SetEnabled(bool enabled) {
+  if (enabled) {
+    is_enabled_ = enabled;
+    SetScale(kInitialMagnifiedScale, true);
+  } else {
+    SetScale(kNonMagnifiedScale, true);
+    is_enabled_ = enabled;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

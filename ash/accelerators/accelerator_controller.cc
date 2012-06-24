@@ -219,6 +219,24 @@ bool HandleToggleRootWindowFullScreen() {
   return true;
 }
 
+// Magnify the screen
+bool HandleMagnifyScreen(int delta_index) {
+  // TODO(yoshiki): Create the class like MagnifierStepScaleController, and
+  // move the following scale control to it.
+  float scale =
+       ash::Shell::GetInstance()->magnification_controller()->GetScale();
+  // Calculate rounded logarithm (base kMagnificationFactor) of scale.
+  int scale_index =
+      std::floor(std::log(scale) / std::log(kMagnificationFactor) + 0.5);
+
+  int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
+
+  ash::Shell::GetInstance()->magnification_controller()->
+      SetScale(std::pow(kMagnificationFactor, new_scale_index), true);
+
+  return true;
+}
+
 #if !defined(NDEBUG)
 bool HandlePrintLayerHierarchy() {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
@@ -241,22 +259,6 @@ bool HandlePrintWindowHierarchy() {
       Shell::GetPrimaryRootWindowController()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   PrintWindowHierarchy(container, 0);
-  return true;
-}
-
-// Magnify the screen
-bool HandleMagnifyScreen(int delta_index) {
-  float scale =
-       ash::Shell::GetInstance()->magnification_controller()->GetScale();
-  // Calculate rounded logarithm (base kMagnificationFactor) of scale.
-  int scale_index =
-      std::floor(std::log(scale) / std::log(kMagnificationFactor) + 0.5);
-
-  int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
-
-  ash::Shell::GetInstance()->magnification_controller()->
-      SetScale(std::pow(kMagnificationFactor, new_scale_index), true);
-
   return true;
 }
 
@@ -595,11 +597,11 @@ bool AcceleratorController::PerformAction(int action,
       if (DebugShortcutsEnabled())
         internal::MultiMonitorManager::ToggleMonitorScale();
       return true;
-#if !defined(NDEBUG)
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return HandleMagnifyScreen(-1);
+#if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
     case PRINT_WINDOW_HIERARCHY:

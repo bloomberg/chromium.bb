@@ -7,6 +7,7 @@
 #include <queue>
 
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -176,6 +177,10 @@ void EnableScreenMagnifier(bool enabled) {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
   pref_service->CommitPendingWrite();
+
+#if defined(USE_ASH)
+  ash::Shell::GetInstance()->magnification_controller()->SetEnabled(enabled);
+#endif
 }
 
 void EnableVirtualKeyboard(bool enabled) {
@@ -219,6 +224,15 @@ bool IsHighContrastEnabled() {
   bool high_contrast_enabled = prefs &&
       prefs->GetBoolean(prefs::kHighContrastEnabled);
   return high_contrast_enabled;
+}
+
+bool IsScreenMagnifierEnabled() {
+  if (!g_browser_process) {
+    return false;
+  }
+  PrefService* prefs = g_browser_process->local_state();
+  bool enabled = prefs && prefs->GetBoolean(prefs::kScreenMagnifierEnabled);
+  return enabled;
 }
 
 void MaybeSpeak(const std::string& utterance) {

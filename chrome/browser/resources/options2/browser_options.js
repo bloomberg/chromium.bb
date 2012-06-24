@@ -489,6 +489,11 @@ cr.define('options', function() {
           chrome.send('highContrastChange',
                       [$('accessibility-high-contrast-check').checked]);
         };
+
+        $('accessibility-screen-magnifier-check').onchange = function(event) {
+          chrome.send('screenMagnifierChange',
+                      [$('accessibility-screen-magnifier-check').checked]);
+        };
       }
 
       // Display management section (CrOS only).
@@ -1276,7 +1281,7 @@ cr.define('options', function() {
      * @private
      */
     setScreenMagnifierCheckboxState_: function(checked) {
-      // TODO(zork): Update UI
+      $('accessibility-screen-magnifier-check').checked = checked;
     },
 
     /**

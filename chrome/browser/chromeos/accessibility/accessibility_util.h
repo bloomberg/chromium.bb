@@ -43,6 +43,9 @@ bool IsSpokenFeedbackEnabled();
 // Returns true if High Contrast is enabled, or false if not.
 bool IsHighContrastEnabled();
 
+// Returns true if Screen Magnifier is enabled, or false if not.
+bool IsScreenMagnifierEnabled();
+
 // Speak the given text if the accessibility pref is already set.
 void MaybeSpeak(const std::string& utterance);
 
