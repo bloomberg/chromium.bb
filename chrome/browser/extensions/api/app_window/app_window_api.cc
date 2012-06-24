@@ -114,7 +114,7 @@ bool AppWindowCreateFunction::RunImpl() {
   return true;
 }
 
-bool AppWindowActivateFunction::RunWithWindow(ShellWindow* window) {
+bool AppWindowFocusFunction::RunWithWindow(ShellWindow* window) {
   window->Activate();
   return true;
 }

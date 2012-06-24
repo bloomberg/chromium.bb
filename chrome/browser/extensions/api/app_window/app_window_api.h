@@ -32,12 +32,12 @@ class AppWindowCreateFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class AppWindowActivateFunction : public AppWindowExtensionFunction {
+class AppWindowFocusFunction : public AppWindowExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.activate");
+  DECLARE_EXTENSION_FUNCTION_NAME("appWindow.focus");
 
  protected:
-  virtual ~AppWindowActivateFunction() {}
+  virtual ~AppWindowFocusFunction() {}
   virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
 };
 

@@ -34,7 +34,7 @@
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
 
-    static void activate();
+    static void focus();
     static void maximize();
     static void minimize();
     static void restore();
