@@ -106,27 +106,27 @@ const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
 };
 
 const Experiment::Choice kForceCompositingModeChoices[] = {
-  { IDS_FLAGS_FORCE_COMPOSITING_MODE_DEFAULT, "", "" },
-  { IDS_FLAGS_FORCE_COMPOSITING_MODE_ENABLED,
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kForceCompositingMode, ""},
-  { IDS_FLAGS_FORCE_COMPOSITING_MODE_DISABLED,
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kDisableForceCompositingMode, ""}
 };
 
 const Experiment::Choice kThreadedCompositingModeChoices[] = {
-  { IDS_FLAGS_THREADED_COMPOSITING_MODE_DEFAULT, "", "" },
-  { IDS_FLAGS_THREADED_COMPOSITING_MODE_DISABLED,
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kDisableThreadedCompositing, ""},
-  { IDS_FLAGS_THREADED_COMPOSITING_MODE_ENABLED,
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kEnableThreadedCompositing, ""}
 };
 
 const Experiment::Choice kTouchOptimizedUIChoices[] = {
   { IDS_FLAGS_TOUCH_OPTIMIZED_UI_AUTOMATIC, "", "" },
-  { IDS_FLAGS_TOUCH_OPTIMIZED_UI_ENABLED,
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kTouchOptimizedUI,
     switches::kTouchOptimizedUIEnabled },
-  { IDS_FLAGS_TOUCH_OPTIMIZED_UI_DISABLED,
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kTouchOptimizedUI,
     switches::kTouchOptimizedUIDisabled }
 };

@@ -5227,12 +5227,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_AUTOMATIC" desc="Option name for automatic selection of touch optimized UI mode.">
         Automatic
       </message>
-      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_ENABLED" desc="Option name for always enabling touch optimized UI mode.">
-        Enabled
-      </message>
-      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_DISABLED" desc="Option name for always disabling touch optimized UI mode.">
-        Disabled
-      </message>
       <message name="IDS_ENABLE_TOUCH_EVENTS_NAME" desc="Title of the enable touch-events flag." >
         Enable touch events
       </message>
@@ -5293,15 +5287,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Force compositing mode' lab.">
         Uses GPU accelerated compositing on all pages, not just those that include GPU-accelerated layers.
       </message>
-      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DEFAULT" desc="Option name for leaving compositing mode in its default state.">
-        Default
-      </message>
-      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_ENABLED" desc="Option name for turning on force compositing mode">
-        Enabled
-      </message>
-      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DISABLED" desc="Option name for turning off force compositing mode">
-        Disabled
-      </message>
       <message name="IDS_FLAGS_FORCE_HIGH_DPI_NAME" desc="Name of the 'Force high DPI mode' lab.">
         Force high DPI mode
       </message>
@@ -5338,15 +5323,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_DISABLE_DEFERRED_2D_CANVAS_DESCRIPTION" desc="Description of the 'Disable deferred 2D canvas' lab.">
         Disables the deferral of 2d canvas rendering, causing draw operations to be completed immediately, before running the next javascript command.
-      </message>
-      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_DEFAULT" desc="Option name for leaving threaded compositing in its default state.">
-        Default
-      </message>
-      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_ENABLED" desc="Option name for turning on threaded compositing">
-        Enabled
-      </message>
-      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_DISABLED" desc="Option name for turning off threaded compositing">
-        Disabled
       </message>
       <message name="IDS_FLAGS_DISABLE_THREADED_ANIMATION_NAME" desc="Name of the 'Disable accelerated CSS animations' lab.">
         Disable accelerated CSS animations
@@ -5644,6 +5620,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION" desc="Description for the flag to enable the mouse lock feature.">
         Web pages may capture the mouse pointer and remove it from the user's control. The mouse movement data is directed solely to the web application. Users can escape by pressing the 'Esc' key.
+      </message>
+      <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT" desc="Generic 'Default' experiment choice option name. E.G. shown in multi value options in about:flags.">
+        Default
+      </message>
+      <message name="IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED" desc="Generic 'Enabled' experiment choice option name. E.G. shown in multi value options in about:flags.">
+        Enabled
+      </message>
+      <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED" desc="Generic 'Disabled' experiment choice option name. E.G. shown in multi value options in about:flags.">
+        Disabled
       </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_NAME" desc="Title for flag to choose how windows are displayed.">
         Window mode
