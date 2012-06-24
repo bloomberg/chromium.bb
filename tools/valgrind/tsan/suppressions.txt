@@ -230,10 +230,18 @@
 }
 
 {
-  bug_84467b (Could be benign. See bug for details)
+  bug_84467b
   ThreadSanitizer:Race
   fun:getenv
   fun:unixTempFileDir
+}
+
+{
+  bug_84467c
+  ThreadSanitizer:Race
+  fun:__add_to_environ
+  fun:::EnvironmentImpl::SetVarImpl
+  fun:::EnvironmentImpl::SetVar
 }
 
 {
