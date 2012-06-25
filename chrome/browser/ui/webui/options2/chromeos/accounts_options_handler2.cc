@@ -15,11 +15,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -97,7 +97,7 @@ void AccountsOptionsHandler::HandleWhitelistUser(const base::ListValue* args) {
     return;
   }
 
-  WhitelistUser(Authenticator::Canonicalize(typed_email));
+  WhitelistUser(gaia::CanonicalizeEmail(typed_email));
 }
 
 void AccountsOptionsHandler::HandleUnwhitelistUser(
@@ -107,7 +107,7 @@ void AccountsOptionsHandler::HandleUnwhitelistUser(
     return;
   }
 
-  base::StringValue canonical_email(Authenticator::Canonicalize(email));
+  base::StringValue canonical_email(gaia::CanonicalizeEmail(email));
   CrosSettings::Get()->RemoveFromList(kAccountsPrefUsers, &canonical_email);
   UserManager::Get()->RemoveUser(email, NULL);
 }

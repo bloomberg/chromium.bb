@@ -16,7 +16,6 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/app_pack_updater.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "policy/policy_constants.h"
@@ -191,8 +191,7 @@ bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
 
   // Existing installations may not have a canonicalized version of the
   // registration domain in install attributes, so lower-case the data here.
-  if (registration_domain !=
-      chromeos::Authenticator::ExtractDomainName(policy_data.username())) {
+  if (registration_domain != gaia::ExtractDomainName(policy_data.username())) {
     LOG(WARNING) << "Refusing policy blob for " << policy_data.username()
                  << " which doesn't match domain " << registration_domain;
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchUserMismatch,

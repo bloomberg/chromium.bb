@@ -12,13 +12,13 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -141,7 +141,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::Show() {
   std::string user;
   is_auto_enrollment_ = controller_ && controller_->IsAutoEnrollment(&user);
   if (is_auto_enrollment_)
-    user_ = Authenticator::Sanitize(user);
+    user_ = gaia::SanitizeEmail(user);
   enrollment_failed_once_ = false;
 
   DoShow();
@@ -430,7 +430,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
     return;
   }
 
-  user_ = Authenticator::Sanitize(user);
+  user_ = gaia::SanitizeEmail(user);
   EnrollAfterLogin();
 }
 

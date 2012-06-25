@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTHENTICATOR_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -89,23 +91,6 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Profile (usually off the record ) that was used to perform the last
   // authentication process.
   Profile* authentication_profile() { return authentication_profile_; }
-
-  // Perform basic canonicalization of |email_address|, taking into account
-  // that gmail does not consider '.' or caps inside a username to matter.
-  // It also ignores everything after a '+'.
-  // For example, c.masone+abc@gmail.com == cMaSone@gmail.com, per
-  // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
-  static std::string Canonicalize(const std::string& email_address);
-
-  // Returns the canonical form of the given domain.
-  static std::string CanonicalizeDomain(const std::string& domain);
-
-  // Sanitize emails. Currently, it only ensures all emails have a domain by
-  // adding gmail.com if no domain is present.
-  static std::string Sanitize(const std::string& email_address);
-
-  // Extract the domain part from the canonical form of the given email.
-  static std::string ExtractDomainName(const std::string& email);
 
  protected:
   LoginStatusConsumer* consumer_;

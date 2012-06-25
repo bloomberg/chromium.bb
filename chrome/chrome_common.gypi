@@ -422,6 +422,8 @@
         'common/net/gaia/gaia_auth_consumer.h',
         'common/net/gaia/gaia_auth_fetcher.cc',
         'common/net/gaia/gaia_auth_fetcher.h',
+        'common/net/gaia/gaia_auth_util.cc',
+        'common/net/gaia/gaia_auth_util.h',
         'common/net/gaia/gaia_authenticator.cc',
         'common/net/gaia/gaia_authenticator.h',
         'common/net/gaia/gaia_oauth_client.cc',

@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -290,7 +291,7 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   }
 
   bool is_whitelisted = LoginUtils::IsWhitelisted(
-      Authenticator::Canonicalize(username));
+      gaia::CanonicalizeEmail(username));
   if (ScreenLocker::default_screen_locker() || is_whitelisted) {
     // Starts authentication if guest login is allowed or online auth pending.
     StartLoginCompletion();

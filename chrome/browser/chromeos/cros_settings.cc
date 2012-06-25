@@ -11,12 +11,12 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/device_settings_provider.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -108,7 +108,7 @@ bool CrosSettings::FindEmailInList(const std::string& path,
                                    const std::string& email) const {
   DCHECK(CalledOnValidThread());
   std::string canonicalized_email(
-      Authenticator::Canonicalize(Authenticator::Sanitize(email)));
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)));
   std::string wildcard_email;
   std::string::size_type at_pos = canonicalized_email.find('@');
   if (at_pos != std::string::npos) {
@@ -128,7 +128,7 @@ bool CrosSettings::FindEmailInList(const std::string& path,
       continue;
     }
     std::string canonicalized_entry(
-        Authenticator::Canonicalize(Authenticator::Sanitize(entry_string)));
+        gaia::CanonicalizeEmail(gaia::SanitizeEmail(entry_string)));
 
     if (canonicalized_entry == canonicalized_email ||
         canonicalized_entry == wildcard_email) {

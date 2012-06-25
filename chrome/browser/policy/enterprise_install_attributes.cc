@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 
 namespace policy {
 
@@ -69,7 +69,7 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
   CHECK_NE(device_mode, DEVICE_MODE_PENDING);
   CHECK_NE(device_mode, DEVICE_MODE_NOT_SET);
 
-  std::string domain = chromeos::Authenticator::ExtractDomainName(user);
+  std::string domain = gaia::ExtractDomainName(user);
 
   // Check for existing lock first.
   if (device_locked_) {
@@ -168,8 +168,7 @@ void EnterpriseInstallAttributes::ReadImmutableAttributes() {
                                             &enterprise_user) &&
           enterprise_owned == "true" &&
           !enterprise_user.empty()) {
-        registration_user_ =
-            chromeos::Authenticator::Canonicalize(enterprise_user);
+        registration_user_ = gaia::CanonicalizeEmail(enterprise_user);
 
         // Initialize the mode to the legacy enterprise mode here and update
         // below if more information is present.
@@ -181,11 +180,9 @@ void EnterpriseInstallAttributes::ReadImmutableAttributes() {
         // pre 19 revisions of the code, before these new attributes were added.
         if (cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
                                               &registration_domain_)) {
-          registration_domain_ =
-              chromeos::Authenticator::CanonicalizeDomain(registration_domain_);
+          registration_domain_ = gaia::CanonicalizeDomain(registration_domain_);
         } else {
-          registration_domain_ =
-              chromeos::Authenticator::ExtractDomainName(registration_user_);
+          registration_domain_ = gaia::ExtractDomainName(registration_user_);
         }
         if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDeviceId,
                                                &registration_device_id_)) {

@@ -10,12 +10,12 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -352,8 +352,7 @@ bool UserCloudPolicyStoreChromeOS::CheckPolicyUsername(
     return false;
 
   std::string policy_username =
-      chromeos::Authenticator::Canonicalize(
-          chromeos::Authenticator::Sanitize(policy.username()));
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(policy.username()));
   const chromeos::User& user = chromeos::UserManager::Get()->GetLoggedInUser();
   return user.email() == policy_username;
 }

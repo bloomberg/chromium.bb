@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -188,7 +189,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
     const std::string& password,
     const std::string& login_token,
     const std::string& login_captcha) {
-  std::string canonicalized = Authenticator::Canonicalize(username);
+  std::string canonicalized = gaia::CanonicalizeEmail(username);
   authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(
@@ -225,7 +226,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const std::string& username,
                                           const std::string& password) {
-  std::string canonicalized = Authenticator::Canonicalize(username);
+  std::string canonicalized = gaia::CanonicalizeEmail(username);
   authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(
@@ -270,7 +271,7 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                  const std::string& password) {
   current_state_.reset(
       new AuthAttemptState(
-          Authenticator::Canonicalize(username),
+          gaia::CanonicalizeEmail(username),
           CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password)));
   check_key_attempted_ = true;
   BrowserThread::PostTask(
@@ -431,7 +432,7 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                                       const std::string& login_captcha) {
   reauth_state_.reset(
       new AuthAttemptState(
-          Authenticator::Canonicalize(username),
+          gaia::CanonicalizeEmail(username),
           password,
           CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(password),
           login_token,
