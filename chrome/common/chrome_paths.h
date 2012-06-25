@@ -89,7 +89,7 @@ enum {
   FILE_NACL_HELPER_BOOTSTRAP,   // ... and nacl_helper_bootstrap executable.
 #endif
   FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.
-  FILE_PNACL_COMPONENT,         // Full path to the PNaCl component files.
+  DIR_PNACL_COMPONENT,          // Full path to the PNaCl component files.
   FILE_O3D_PLUGIN,              // Full path to the O3D Pepper plugin file.
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding

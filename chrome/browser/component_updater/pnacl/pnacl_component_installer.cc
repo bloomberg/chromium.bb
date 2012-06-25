@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -43,20 +45,28 @@ const char kPnaclManifestName[] = "PNaCl";
 
 // Name of the Pnacl architecture in the component manifest.
 // NOTE: this is independent of the Omaha query parameter.
-// TODO(jvoung): will this pre-processor define work with 64-bit Windows?
-// NaCl's sel_ldr is 64-bit, but the browser process is 32-bit.
-// Will the Omaha query do the right thing as well? If it doesn't, will
-// we need two separate Omaha queries (ouch)?
-const char kPnaclArch[] =
-#if defined(ARCH_CPU_X86)
-    "x86-32";
-#elif defined(ARCH_CPU_X86_64)
-    "x86-64";
-#elif defined(ARCH_CPU_ARMEL)
-    "arm";
+// TODO(jvoung): Will the Omaha query do the right thing for windows
+// on x86-64?  If it doesn't, will we need two separate Omaha queries (ouch)?
+const char* PnaclArch() {
+#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_X86_64)
+  bool x86_64 = true;
+#elif defined(OS_WIN)
+  bool x86_64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
+                 base::win::OSInfo::WOW64_ENABLED);
 #else
-#error "Unknown Architecture in Pnacl Component Installer."
+  bool x86_64 = false;
 #endif
+  return x86_64 ? "x86-64" : "x86-32";
+#elif defined(ARCH_CPU_ARMEL)
+  // Eventually we'll need to distinguish arm32 vs thumb2.
+  // That may need to be based on the actual nexe rather than a static
+  // choice, which would require substantial refactoring.
+  return "arm";
+#else
+#error "Add support for your architecture to Pnacl Component Installer."
+#endif
+}
 
 // The Pnacl components are in a directory with this name.
 const FilePath::CharType kPnaclBaseDirectory[] =
@@ -81,50 +91,79 @@ FilePath GetPnaclBaseDirectory() {
 // so we need to enumerate the directories to find the full path.
 // On success it returns something like:
 // <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
-//
-// TODO(jvoung): Does it garbage collect old versions when a new version is
-// installed? Do we need the architecture in the path too? That is for handling
-// cases when you share a profile but switch between machine-types (or ignore
-// that odd case?).
-bool GetLatestPnaclDirectory(FilePath* result, Version* latest) {
-  *result = GetPnaclBaseDirectory();
+bool GetLatestPnaclDirectory(FilePath* latest_dir, Version* latest_version,
+                             std::vector<FilePath>* older_dirs) {
+  FilePath base_dir = GetPnaclBaseDirectory();
   bool found = false;
   file_util::FileEnumerator
-      file_enumerator(*result, false, file_util::FileEnumerator::DIRECTORIES);
+      file_enumerator(base_dir, false, file_util::FileEnumerator::DIRECTORIES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     Version version(path.BaseName().MaybeAsASCII());
     if (!version.IsValid())
       continue;
-    if (version.CompareTo(*latest) > 0) {
-      *latest = version;
-      *result = path;
+    if (found) {
+      if (version.CompareTo(*latest_version) > 0) {
+        older_dirs->push_back(*latest_dir);
+        *latest_dir = path;
+        *latest_version = version;
+      } else {
+        older_dirs->push_back(path);
+      }
+    } else {
+      *latest_version = version;
+      *latest_dir = path;
       found = true;
     }
   }
   return found;
 }
 
+// Read the PNaCl specific manifest.
+base::DictionaryValue* ReadPnaclManifest(const FilePath& unpack_path) {
+  FilePath manifest = unpack_path.Append(FILE_PATH_LITERAL("pnacl.json"));
+  if (!file_util::PathExists(manifest))
+    return NULL;
+  JSONFileValueSerializer serializer(manifest);
+  std::string error;
+  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
+  if (!root.get())
+    return NULL;
+  if (!root->IsType(base::Value::TYPE_DICTIONARY))
+    return NULL;
+  return static_cast<base::DictionaryValue*>(root.release());
+}
+
 }  // namespace
 
 bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
+                                 base::DictionaryValue* pnacl_manifest,
                                  Version* version_out) {
   // Make sure we have the right manifest file.
   std::string name;
   manifest->GetStringASCII("name", &name);
-  if (name != kPnaclManifestName)
+  if (name != kPnaclManifestName) {
+    LOG(WARNING) << "'name' field in manifest is invalid ("
+                 << name << " vs " << kPnaclManifestName << ")";
     return false;
+  }
 
   std::string proposed_version;
   manifest->GetStringASCII("version", &proposed_version);
   Version version(proposed_version.c_str());
-  if (!version.IsValid())
+  if (!version.IsValid()) {
+    LOG(WARNING) << "'version' field in manifest is invalid "
+                 << version.GetString();
     return false;
+  }
 
   std::string arch;
-  manifest->GetStringASCII("x-pnacl-arch", &arch);
-  if (arch != kPnaclArch)
+  pnacl_manifest->GetStringASCII("pnacl-arch", &arch);
+  if (arch.compare(PnaclArch()) != 0) {
+    LOG(WARNING) << "'pnacl-arch' field in manifest is invalid ("
+                 << arch << " vs " << PnaclArch() << ")";
     return false;
+  }
 
   *version_out = version;
   return true;
@@ -154,25 +193,53 @@ void PnaclComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Pnacl update error: " << error;
 }
 
+namespace {
+
+bool PathContainsPnacl(const FilePath& base_path) {
+  // Check that at least one of the compiler files exists, for the current ISA.
+  return file_util::PathExists(
+      base_path.AppendASCII(PnaclArch()).Append(kPnaclCompilerFileName));
+}
+
+}  // namespace
+
 bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
                                       const FilePath& unpack_path) {
-  Version version;
-  if (!CheckPnaclComponentManifest(manifest, &version))
+  scoped_ptr<base::DictionaryValue> pnacl_manifest(
+      ReadPnaclManifest(unpack_path));
+  if (pnacl_manifest == NULL) {
+    LOG(WARNING) << "Failed to read pnacl manifest.";
     return false;
+  }
+
+  Version version;
+  if (!CheckPnaclComponentManifest(manifest,
+                                   pnacl_manifest.get(),
+                                   &version)) {
+    LOG(WARNING) << "CheckPnaclComponentManifest failed, not installing.";
+    return false;
+  }
+
+  // Don't install if the current version is actually newer.
   if (current_version_.CompareTo(version) > 0)
     return false;
 
-  // Make sure that at least one of the compiler files exists.
-  if (!file_util::PathExists(unpack_path.Append(kPnaclCompilerFileName)))
+  if (!PathContainsPnacl(unpack_path)) {
+    LOG(WARNING) << "PathContainsPnacl check failed, not installing.";
     return false;
+  }
 
   // Passed the basic tests. Time to install it.
   FilePath path =
       GetPnaclBaseDirectory().AppendASCII(version.GetString());
-  if (file_util::PathExists(path))
+  if (file_util::PathExists(path)) {
+    LOG(WARNING) << "Target path already exists, not installing.";
     return false;
-  if (!file_util::Move(unpack_path, path))
+  }
+  if (!file_util::Move(unpack_path, path)) {
+    LOG(WARNING) << "Move failed, not installing.";
     return false;
+  }
 
   // Installation is done. Now tell the rest of chrome (just the path service
   // for now). TODO(jvoung): we need notifications if someone surfed to a
@@ -181,7 +248,7 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
   // See: http://code.google.com/p/chromium/issues/detail?id=107438
   current_version_ = version;
 
-  PathService::Override(chrome::FILE_PNACL_COMPONENT, path);
+  PathService::Override(chrome::DIR_PNACL_COMPONENT, path);
   return true;
 }
 
@@ -214,22 +281,24 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
   }
 
   Version version(kNullVersion);
-  if (GetLatestPnaclDirectory(&path, &version)) {
-    // Check if one of the Pnacl files is really there.
-    FilePath compiler_path = path.Append(kPnaclCompilerFileName);
-    if (!file_util::PathExists(compiler_path)) {
+  std::vector<FilePath> older_dirs;
+  if (GetLatestPnaclDirectory(&path, &version, &older_dirs)) {
+    if (!PathContainsPnacl(path)) {
       version = Version(kNullVersion);
     } else {
-      // Register the existing path for now, before checking for updates.
-      // TODO(jvoung): Will this always happen "early" or will it
-      // race with the NaCl plugin in browser tests?
-      PathService::Override(chrome::FILE_PNACL_COMPONENT, path);
+      PathService::Override(chrome::DIR_PNACL_COMPONENT, path);
     }
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FinishPnaclUpdateRegistration, cus, version));
+
+  // Remove older versions of PNaCl.
+  for (std::vector<FilePath>::iterator iter = older_dirs.begin();
+       iter != older_dirs.end(); ++iter) {
+    file_util::Delete(*iter, true);
+  }
 }
 
 }  // namespace

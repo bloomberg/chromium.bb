@@ -275,9 +275,10 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(kInternalNaClPluginFileName);
       break;
-    case chrome::FILE_PNACL_COMPONENT:
+    case chrome::DIR_PNACL_COMPONENT:
       // TODO(jvoung): Do we want a default value or just the ability to
       // override immediately when testing on bots to avoid race conditions?
+      // Otherwise, this will be overriden once the component updater registers.
       return false;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     case chrome::FILE_NACL_HELPER:
