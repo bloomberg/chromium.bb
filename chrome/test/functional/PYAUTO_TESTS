@@ -484,9 +484,6 @@
       'translate',
       'youtube',
 
-      # Remove after r138552 reaches QA bots. (05/24/2012)
-      '-test_pyauto.PyAutoTest.testCallOnInvalidWindow',
-
       # ===========================
       # Permanently-disabled tests.
       # ===========================
