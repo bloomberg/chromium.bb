@@ -33,34 +33,6 @@ RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
       idb_index_id_));
 }
 
-WebString RendererWebIDBIndexImpl::name() const {
-  string16 result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_IndexName(idb_index_id_, &result));
-  return result;
-}
-
-WebIDBKeyPath RendererWebIDBIndexImpl::keyPath() const {
-  IndexedDBKeyPath result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
-  return result;
-}
-
-bool RendererWebIDBIndexImpl::unique() const {
-  bool result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_IndexUnique(idb_index_id_, &result));
-  return result;
-}
-
-bool RendererWebIDBIndexImpl::multiEntry() const {
-  bool result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_IndexMultiEntry(idb_index_id_, &result));
-  return result;
-}
-
 void RendererWebIDBIndexImpl::openObjectCursor(
     const WebKit::WebIDBKeyRange& range,
     unsigned short direction,

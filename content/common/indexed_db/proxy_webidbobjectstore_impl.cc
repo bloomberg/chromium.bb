@@ -46,41 +46,6 @@ RendererWebIDBObjectStoreImpl::~RendererWebIDBObjectStoreImpl() {
       new IndexedDBHostMsg_ObjectStoreDestroyed(idb_object_store_id_));
 }
 
-WebString RendererWebIDBObjectStoreImpl::name() const {
-  string16 result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreName(idb_object_store_id_, &result));
-  return result;
-}
-
-WebIDBKeyPath RendererWebIDBObjectStoreImpl::keyPath() const {
-  IndexedDBKeyPath result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreKeyPath(idb_object_store_id_, &result));
-  return result;
-}
-
-WebDOMStringList RendererWebIDBObjectStoreImpl::indexNames() const {
-  std::vector<string16> result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreIndexNames(
-          idb_object_store_id_, &result));
-  WebDOMStringList web_result;
-  for (std::vector<string16>::const_iterator it = result.begin();
-       it != result.end(); ++it) {
-    web_result.append(*it);
-  }
-  return web_result;
-}
-
-bool RendererWebIDBObjectStoreImpl::autoIncrement() const {
-  bool result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_ObjectStoreAutoIncrement(
-          idb_object_store_id_, &result));
-  return result;
-}
-
 void RendererWebIDBObjectStoreImpl::get(
     const WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks,

@@ -119,10 +119,6 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
 
     void OnMetadata(int32 idb_database_id,
                     IndexedDBDatabaseMetadata* metadata);
-    void OnName(int32 idb_database_id, string16* name);
-    void OnVersion(int32 idb_database_id, string16* version);
-    void OnObjectStoreNames(int32 idb_database_id,
-                            std::vector<string16>* object_stores);
     void OnCreateObjectStore(
         const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params,
         int32* object_store_id, WebKit::WebExceptionCode* ec);
@@ -158,11 +154,6 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    void OnName(int32 idb_index_id, string16* name);
-    void OnStoreName(int32 idb_index_id, string16* store_name);
-    void OnKeyPath(int32 idb_index_id, content::IndexedDBKeyPath* key_path);
-    void OnUnique(int32 idb_index_id, bool* unique);
-    void OnMultiEntry(int32 idb_index_id, bool* multi_entry);
     void OnOpenObjectCursor(
         const IndexedDBHostMsg_IndexOpenCursor_Params& params,
         WebKit::WebExceptionCode* ec);
@@ -196,12 +187,6 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    void OnName(int32 idb_object_store_id, string16* name);
-    void OnKeyPath(int32 idb_object_store_id,
-                   content::IndexedDBKeyPath* keyPath);
-    void OnIndexNames(int32 idb_object_store_id,
-                      std::vector<string16>* index_names);
-    void OnAutoIncrement(int32 idb_object_store_id, bool* auto_increment);
     void OnGet(int idb_object_store_id,
                int32 thread_id,
                int32 response_id,

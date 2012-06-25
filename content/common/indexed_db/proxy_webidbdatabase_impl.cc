@@ -79,32 +79,6 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
   return web_metadata;
 }
 
-WebString RendererWebIDBDatabaseImpl::name() const {
-  string16 result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseName(idb_database_id_, &result));
-  return result;
-}
-
-WebString RendererWebIDBDatabaseImpl::version() const {
-  string16 result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseVersion(idb_database_id_, &result));
-  return result;
-}
-
-WebDOMStringList RendererWebIDBDatabaseImpl::objectStoreNames() const {
-  std::vector<string16> result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseObjectStoreNames(idb_database_id_, &result));
-  WebDOMStringList webResult;
-  for (std::vector<string16>::const_iterator it = result.begin();
-       it != result.end(); ++it) {
-    webResult.append(*it);
-  }
-  return webResult;
-}
-
 WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
     const WebKit::WebString& name,
     const WebKit::WebIDBKeyPath& key_path,

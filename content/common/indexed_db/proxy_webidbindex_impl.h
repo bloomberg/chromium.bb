@@ -16,11 +16,6 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
   virtual ~RendererWebIDBIndexImpl();
 
   // WebKit::WebIDBIndex
-  virtual WebKit::WebString name() const;
-  virtual WebKit::WebIDBKeyPath keyPath() const;
-  virtual bool unique() const;
-  virtual bool multiEntry() const;
-
   virtual void openObjectCursor(const WebKit::WebIDBKeyRange& range,
                                 unsigned short direction,
                                 WebKit::WebIDBCallbacks* callbacks,

@@ -327,10 +327,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::DatabaseDispatcherHost,
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseMetadata, OnMetadata)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseName, OnName)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseVersion, OnVersion)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseObjectStoreNames,
-                        OnObjectStoreNames)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStore,
                         OnCreateObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
@@ -381,30 +377,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
     }
     metadata->object_stores.push_back(idb_store_metadata);
   }
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnName(
-    int32 object_id, string16* name) {
-  parent_->SyncGetter<string16>(&map_, object_id, name, &WebIDBDatabase::name);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnVersion(
-    int32 object_id, string16* version) {
-  parent_->SyncGetter<string16>(
-      &map_, object_id, version, &WebIDBDatabase::version);
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObjectStoreNames(
-    int32 idb_database_id, std::vector<string16>* object_stores) {
-  WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
-      &map_, idb_database_id);
-  if (!idb_database)
-    return;
-
-  WebDOMStringList web_object_stores = idb_database->objectStoreNames();
-  object_stores->reserve(web_object_stores.length());
-  for (unsigned i = 0; i < web_object_stores.length(); ++i)
-    object_stores->push_back(web_object_stores.item(i));
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
@@ -538,10 +510,6 @@ bool IndexedDBDispatcherHost::IndexDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::IndexDispatcherHost,
                            message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexName, OnName)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexKeyPath, OnKeyPath)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexUnique, OnUnique)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexMultiEntry, OnMultiEntry)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexOpenObjectCursor,
                                     OnOpenObjectCursor)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexOpenKeyCursor, OnOpenKeyCursor)
@@ -557,31 +525,6 @@ bool IndexedDBDispatcherHost::IndexDispatcherHost::OnMessageReceived(
 void IndexedDBDispatcherHost::IndexDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnName(
-    int32 object_id, string16* name) {
-  parent_->SyncGetter<string16>(&map_, object_id, name, &WebIDBIndex::name);
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(
-    int32 object_id, IndexedDBKeyPath* key_path) {
-  WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(&map_, object_id);
-  if (!idb_index)
-    return;
-
-  *key_path = IndexedDBKeyPath(idb_index->keyPath());
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnUnique(
-    int32 object_id, bool* unique) {
-  parent_->SyncGetter<bool>(&map_, object_id, unique, &WebIDBIndex::unique);
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnMultiEntry(
-    int32 object_id, bool* multi_entry) {
-  parent_->SyncGetter<bool>(
-      &map_, object_id, multi_entry, &WebIDBIndex::multiEntry);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
@@ -711,11 +654,6 @@ bool IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::ObjectStoreDispatcherHost,
                            message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreName, OnName)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreKeyPath, OnKeyPath)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreIndexNames, OnIndexNames)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreAutoIncrement,
-                        OnAutoIncrement)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreGet, OnGet)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStorePut, OnPut)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreDelete, OnDelete)
@@ -734,41 +672,6 @@ bool IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnMessageReceived(
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
-}
-
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnName(
-    int32 object_id, string16* name) {
-  parent_->SyncGetter<string16>(
-      &map_, object_id, name, &WebIDBObjectStore::name);
-}
-
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnKeyPath(
-    int32 object_id, IndexedDBKeyPath* key_path) {
-  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
-      &map_,object_id);
-  if (!idb_object_store)
-    return;
-
-  *key_path = IndexedDBKeyPath(idb_object_store->keyPath());
-}
-
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
-    int32 idb_object_store_id, std::vector<string16>* index_names) {
-  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
-      &map_, idb_object_store_id);
-  if (!idb_object_store)
-    return;
-
-  WebDOMStringList web_index_names = idb_object_store->indexNames();
-  index_names->reserve(web_index_names.length());
-  for (unsigned i = 0; i < web_index_names.length(); ++i)
-    index_names->push_back(web_index_names.item(i));
-}
-
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnAutoIncrement(
-    int32 idb_object_store_id, bool* auto_increment) {
-  parent_->SyncGetter<bool>(&map_, idb_object_store_id, auto_increment,
-                            &WebIDBObjectStore::autoIncrement);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(
