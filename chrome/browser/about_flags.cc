@@ -832,6 +832,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
   },
 #endif
+  {
+    "enable-speculative-resource-prefetching",
+    IDS_FLAGS_ENABLE_SPECULATIVE_RESOURCE_PREFETCHING_NAME,
+    IDS_FLAGS_ENABLE_SPECULATIVE_RESOURCE_PREFETCHING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSpeculativeResourcePrefetching),
+  },
 };
 
 const Experiment* experiments = kExperiments;

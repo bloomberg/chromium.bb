@@ -47,8 +47,10 @@ bool SyncResourceHandler::OnRequestRedirected(
     const GURL& new_url,
     ResourceResponse* response,
     bool* defer) {
-  if (rdh_->delegate())
-    rdh_->delegate()->OnRequestRedirected(request_, response);
+  if (rdh_->delegate()) {
+    rdh_->delegate()->OnRequestRedirected(request_, filter_->resource_context(),
+                                          response);
+  }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
   // TODO(darin): It would be much better if this could live in WebCore, but
@@ -66,8 +68,10 @@ bool SyncResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response,
     bool* defer) {
-  if (rdh_->delegate())
-    rdh_->delegate()->OnResponseStarted(request_, response, filter_);
+  if (rdh_->delegate()) {
+    rdh_->delegate()->OnResponseStarted(request_, filter_->resource_context(),
+                                        response, filter_);
+  }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
 

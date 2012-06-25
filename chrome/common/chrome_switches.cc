@@ -604,6 +604,10 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enable SPDY/3. This is a temporary testing flag.
 const char kEnableSpdy3[]                   = "enable-spdy3";
 
+// Enable speculative resource prefetching.
+const char kEnableSpeculativeResourcePrefetching[] =
+    "enable-speculative-resource-prefetching";
+
 // Enables the stacked tabstrip.
 const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 

@@ -33,9 +33,12 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/net/transport_security_persister.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -197,6 +200,13 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       new ChromeCookieMonsterDelegate(profile_getter);
   params->extension_info_map =
       ExtensionSystem::Get(profile)->info_map();
+
+  if (predictors::ResourcePrefetchPredictor* predictor =
+          predictors::ResourcePrefetchPredictorFactory::GetForProfile(
+              profile)) {
+    resource_prefetch_predictor_observer_.reset(
+        new chrome_browser_net::ResourcePrefetchPredictorObserver(predictor));
+  }
 
 #if defined(ENABLE_NOTIFICATIONS)
   params->notification_service =
@@ -549,6 +559,11 @@ void ProfileIOData::LazyInitialize() const {
 
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_->request_context_ = main_request_context_.get();
+
+  if (profile_params_->resource_prefetch_predictor_observer_.get()) {
+    resource_prefetch_predictor_observer_.reset(
+        profile_params_->resource_prefetch_predictor_observer_.release());
+  }
 
   LazyInitializeInternal(profile_params_.get());
 

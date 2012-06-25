@@ -19,6 +19,7 @@ namespace predictors {
 
 class AutocompleteActionPredictorTable;
 class PredictorDatabaseInternal;
+class ResourcePrefetchPredictorTables;
 
 class PredictorDatabase : public ProfileKeyedService {
  public:
@@ -26,6 +27,7 @@ class PredictorDatabase : public ProfileKeyedService {
   virtual ~PredictorDatabase();
 
   scoped_refptr<AutocompleteActionPredictorTable> autocomplete_table();
+  scoped_refptr<ResourcePrefetchPredictorTables> resource_prefetch_tables();
 
   // Used for testing.
   sql::Connection* GetDatabase();

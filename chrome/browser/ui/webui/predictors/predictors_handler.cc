@@ -8,14 +8,39 @@
 #include "base/values.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
+#include "webkit/glue/resource_type.h"
 
 using predictors::AutocompleteActionPredictor;
+using predictors::ResourcePrefetchPredictor;
+using predictors::ResourcePrefetchPredictorTables;
+
+namespace {
+
+std::string ConvertResourceType(ResourceType::Type type) {
+  switch (type) {
+    case ResourceType::IMAGE:
+      return "Image";
+    case ResourceType::STYLESHEET:
+      return "Stylesheet";
+    case ResourceType::SCRIPT:
+      return "Script";
+    default:
+      return "Unknown";
+  }
+}
+
+}  // namespace
 
 PredictorsHandler::PredictorsHandler(Profile* profile) {
   autocomplete_action_predictor_ =
       predictors::AutocompleteActionPredictorFactory::GetForProfile(profile);
+  resource_prefetch_predictor_ =
+      predictors::ResourcePrefetchPredictorFactory::GetForProfile(profile);
 }
 
 PredictorsHandler::~PredictorsHandler() { }
@@ -23,6 +48,9 @@ PredictorsHandler::~PredictorsHandler() { }
 void PredictorsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestAutocompleteActionPredictorDb",
       base::Bind(&PredictorsHandler::RequestAutocompleteActionPredictorDb,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("requestResourcePrefetchPredictorDb",
+      base::Bind(&PredictorsHandler::RequestResourcePrefetchPredictorDb,
                  base::Unretained(this)));
 }
 
@@ -50,5 +78,43 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
     dict.Set("db", db);
   }
 
-  web_ui()->CallJavascriptFunction("updateDatabaseTable", dict);
+  web_ui()->CallJavascriptFunction("updateAutocompleteActionPredictorDb", dict);
+}
+
+void PredictorsHandler::RequestResourcePrefetchPredictorDb(
+    const base::ListValue* args) {
+  const bool enabled = (resource_prefetch_predictor_ != NULL);
+  base::DictionaryValue dict;
+  dict.SetBoolean("enabled", enabled);
+
+  if (enabled) {
+    // Url Database cache.
+    base::ListValue* db = new base::ListValue();
+    for (ResourcePrefetchPredictor::UrlTableCacheMap::const_iterator it =
+         resource_prefetch_predictor_->url_table_cache_.begin();
+         it != resource_prefetch_predictor_->url_table_cache_.end();
+         ++it) {
+      base::DictionaryValue* main = new base::DictionaryValue();
+      main->SetString("main_frame_url", it->first.spec());
+      base::ListValue* resources = new base::ListValue();
+      for (ResourcePrefetchPredictor::UrlTableRowVector::const_iterator row =
+           it->second.rows.begin(); row != it->second.rows.end(); ++row) {
+        base::DictionaryValue* resource = new base::DictionaryValue();
+        resource->SetString("resource_url", row->resource_url.spec());
+        resource->SetString("resource_type",
+                            ConvertResourceType(row->resource_type));
+        resource->SetInteger("number_of_hits", row->number_of_hits);
+        resource->SetInteger("number_of_misses", row->number_of_misses);
+        resource->SetInteger("consecutive_misses", row->consecutive_misses);
+        resource->SetDouble("position", row->average_position);
+        resource->SetDouble("score", row->score);
+        resources->Append(resource);
+      }
+      main->Set("resources", resources);
+      db->Append(main);
+    }
+    dict.Set("db", db);
+  }
+
+  web_ui()->CallJavascriptFunction("updateResourcePrefetchPredictorDb", dict);
 }

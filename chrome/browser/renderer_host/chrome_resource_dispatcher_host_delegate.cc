@@ -18,6 +18,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/net/load_timing_observer.h"
+#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -149,6 +150,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   route_id,
                                   resource_type,
                                   throttles);
+
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (io_data->resource_prefetch_predictor_observer())
+    io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
+        request, resource_type, child_id, route_id);
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -320,6 +326,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
+    content::ResourceContext* resource_context,
     content::ResourceResponse* response,
     IPC::Sender* sender) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
@@ -346,10 +353,15 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   // suggest auto-login, if available.
   AutoLoginPrompter::ShowInfoBarIfPossible(request, info->GetChildID(),
                                            info->GetRouteID());
+
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (io_data->resource_prefetch_predictor_observer())
+    io_data->resource_prefetch_predictor_observer()->OnResponseStarted(request);
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
+    content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
@@ -362,6 +374,11 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
                                               info->GetRouteID());
 #endif
+
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (io_data->resource_prefetch_predictor_observer())
+    io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
+        request);
 }
 
 void ChromeResourceDispatcherHostDelegate::OnFieldTrialGroupFinalized(

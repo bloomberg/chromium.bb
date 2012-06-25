@@ -24,6 +24,10 @@ void PredictorTableBase::Initialize(sql::Connection* db) {
   CreateTableIfNonExistent();
 }
 
+void PredictorTableBase::SetCancelled() {
+  cancelled_.Set();
+}
+
 sql::Connection* PredictorTableBase::DB() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   return db_;

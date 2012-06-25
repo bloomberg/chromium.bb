@@ -31,6 +31,7 @@ class TransportSecurityPersister;
 
 namespace chrome_browser_net {
 class HttpServerPropertiesManager;
+class ResourcePrefetchPredictorObserver;
 }
 
 namespace net {
@@ -114,6 +115,11 @@ class ProfileIOData {
     return is_incognito_;
   }
 
+  chrome_browser_net::ResourcePrefetchPredictorObserver*
+      resource_prefetch_predictor_observer() const {
+    return resource_prefetch_predictor_observer_.get();
+  }
+
   // Initialize the member needed to track the metrics enabled state. This is
   // only to be called on the UI thread.
   void InitializeMetricsEnabledStateOnUIThread();
@@ -153,6 +159,8 @@ class ProfileIOData {
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
+    scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
+        resource_prefetch_predictor_observer_;
 
 #if defined(ENABLE_NOTIFICATIONS)
     DesktopNotificationService* notification_service;
@@ -344,6 +352,9 @@ class ProfileIOData {
 
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
   mutable scoped_refptr<CookieSettings> cookie_settings_;
+
+  mutable scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
+      resource_prefetch_predictor_observer_;
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;

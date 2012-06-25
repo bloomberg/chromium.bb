@@ -73,11 +73,14 @@ class ChromeResourceDispatcherHostDelegate
                                       int route_id) OVERRIDE;
   virtual bool ShouldForceDownloadResource(
       const GURL& url, const std::string& mime_type) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request,
-                                 content::ResourceResponse* response,
-                                 IPC::Sender* sender) OVERRIDE;
+  virtual void OnResponseStarted(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::ResourceResponse* response,
+      IPC::Message::Sender* sender) OVERRIDE;
   virtual void OnRequestRedirected(
       net::URLRequest* request,
+      content::ResourceContext* resource_context,
       content::ResourceResponse* response) OVERRIDE;
 
   // base::FieldTrialList::Observer implementation.

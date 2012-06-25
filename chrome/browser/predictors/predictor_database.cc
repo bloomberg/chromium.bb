@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/connection.h"
@@ -48,7 +49,11 @@ class PredictorDatabaseInternal
 
   FilePath db_path_;
   sql::Connection db_;
+
+  // TODO(shishir): These tables may not need to be refcounted. Maybe move them
+  // to using a WeakPtr instead.
   scoped_refptr<AutocompleteActionPredictorTable> autocomplete_table_;
+  scoped_refptr<ResourcePrefetchPredictorTables> resource_prefetch_tables_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorDatabaseInternal);
 };
@@ -56,7 +61,8 @@ class PredictorDatabaseInternal
 
 PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
-      autocomplete_table_(new AutocompleteActionPredictorTable()) {
+      autocomplete_table_(new AutocompleteActionPredictorTable()),
+      resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
 }
 
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {
@@ -72,6 +78,7 @@ void PredictorDatabaseInternal::Initialize() {
     return;
 
   autocomplete_table_->Initialize(&db_);
+  resource_prefetch_tables_->Initialize(&db_);
 
   LogDatabaseStats();
 }
@@ -79,7 +86,8 @@ void PredictorDatabaseInternal::Initialize() {
 void PredictorDatabaseInternal::SetCancelled() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  autocomplete_table_->cancelled_.Set();
+  autocomplete_table_->SetCancelled();
+  resource_prefetch_tables_->SetCancelled();
 }
 
 void PredictorDatabaseInternal::LogDatabaseStats() {
@@ -92,8 +100,8 @@ void PredictorDatabaseInternal::LogDatabaseStats() {
                           static_cast<int>(db_size / 1024));
 
   autocomplete_table_->LogDatabaseStats();
+  resource_prefetch_tables_->LogDatabaseStats();
 }
-
 
 PredictorDatabase::PredictorDatabase(Profile* profile)
     : db_(new PredictorDatabaseInternal(profile)) {
@@ -111,6 +119,11 @@ void PredictorDatabase::Shutdown() {
 scoped_refptr<AutocompleteActionPredictorTable>
     PredictorDatabase::autocomplete_table() {
   return db_->autocomplete_table_;
+}
+
+scoped_refptr<ResourcePrefetchPredictorTables>
+    PredictorDatabase::resource_prefetch_tables() {
+  return db_->resource_prefetch_tables_;
 }
 
 sql::Connection* PredictorDatabase::GetDatabase() {

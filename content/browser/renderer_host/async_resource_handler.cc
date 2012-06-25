@@ -144,8 +144,11 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
                                                bool* defer) {
   *defer = did_defer_ = true;
 
-  if (rdh_->delegate())
-    rdh_->delegate()->OnRequestRedirected(request_, response);
+  if (rdh_->delegate()) {
+    rdh_->delegate()->OnRequestRedirected(request_, filter_->resource_context(),
+                                          response);
+  }
+  *defer = true;
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
   response->head.request_start = request_->creation_time();
@@ -163,12 +166,14 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
 
-  if (rdh_->delegate())
-    rdh_->delegate()->OnResponseStarted(request_, response, filter_);
+  content::ResourceContext* resource_context = filter_->resource_context();
+  if (rdh_->delegate()) {
+    rdh_->delegate()->OnResponseStarted(request_, resource_context, response,
+                                        filter_);
+  }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
 
-  ResourceContext* resource_context = filter_->resource_context();
   HostZoomMap* host_zoom_map =
       GetHostZoomMapForResourceContext(resource_context);
 

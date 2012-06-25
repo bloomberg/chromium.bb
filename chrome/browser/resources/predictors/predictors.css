@@ -16,15 +16,15 @@ body {
   padding: 4px;
 }
 
-#databaseTable {
+table {
   background-color: white;
 }
 
-#databaseTable thead tr {
+thead tr {
   background-color: rgb(235, 250, 239);
 }
 
-#databaseTable th {
+th {
   border-color: gray;
   border-style: solid;
   border-width: 1px;
@@ -32,14 +32,14 @@ body {
   white-space: nowrap;
 }
 
-#databaseTable td {
+td {
   border-color: lightgray;
   border-style: solid;
   border-width: 1px;
   padding: 3px;
 }
 
-#databaseTable tbody > td:first-child {
+tbody > td:first-child {
   white-space: nowrap;
 }
 

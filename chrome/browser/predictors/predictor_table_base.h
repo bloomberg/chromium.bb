@@ -29,14 +29,15 @@ class PredictorTableBase
   virtual void CreateTableIfNonExistent() = 0;
   virtual void LogDatabaseStats() = 0;
   void Initialize(sql::Connection* db);
+  void SetCancelled();
   sql::Connection* DB();
   void ResetDB();
 
   bool CantAccessDatabase();
 
+ private:
   base::CancellationFlag cancelled_;
 
- private:
   friend class base::RefCountedThreadSafe<PredictorTableBase>;
 
   sql::Connection* db_;

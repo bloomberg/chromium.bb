@@ -1421,6 +1421,8 @@
         'browser/policy/user_policy_cache_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_unittest.cc',
+        'browser/predictors/resource_prefetch_predictor_unittest.cc',
+        'browser/predictors/resource_prefetch_predictor_tables_unittest.cc',
         'browser/preferences_mock_mac.cc',
         'browser/preferences_mock_mac.h',
         'browser/prefs/command_line_pref_store_unittest.cc',
