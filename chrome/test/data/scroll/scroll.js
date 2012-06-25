@@ -2,184 +2,120 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Inject this script on any page to measure framerate as the page is scrolled
+// twice from top to bottom.
+//
+// USAGE:
+//   1. To start the scrolling, invoke __scroll_test().
+//   2. Wait for __scrolling_complete to be true
+//   3. Read __initial_frame_times and __repeat_frame_times arrays.
+
+
 // Function that sets a callback called when the next frame is rendered.
 var __set_frame_callback;
 
+// Function that scrolls the page.
+var __scroll_by;
+
+// Element that can be scrolled. Must provide scrollTop property.
+var __scrollable_element;
+
 // Amount of scrolling at each frame.
 var __scroll_delta = 100;
+
+// Number of scrolls to perform.
+var __num_scrolls = 2;
 
 // Current scroll position.
 var __ypos;
 
 // Time of previous scroll callback execution.
-var __start_time;
-
-// Warmup run indicator.
-var __warm_up;
+var __start_time = 0;
 
 // True when all scrolling has completed.
-var __scrolling_complete;
+var __scrolling_complete = false;
 
-// Deltas are in milliseconds.
-var __delta_max;
-var __delta_min;
-var __delta_sum;
-var __delta_square_sum;
-var __n_samples;
+// Array of frame times for each scroll in __num_scrolls.
+var __frame_times = [[]];
 
-var __mean;  // Milliseconds between frames.
-var __mean_fps;  // Frames per second.
-var __variance;
-var __sigma;
-
-// Scrolling gmail.
-var __is_gmail_test = false;  // Set this to true when scrolling in Gmail.
-var __gmail_scrollable;
-var __gmail_scrollable_lines = 1000;
+// Set this to true when scrolling in Gmail.
+var __is_gmail_test = false;
 
 
 // Initializes the platform-independent frame callback scheduler function.
 function __init_set_frame_callback() {
-  if (!__set_frame_callback) {
-    if ("webkitRequestAnimationFrame" in window)
-      __set_frame_callback = webkitRequestAnimationFrame;
-    else if ("mozRequestAnimationFrame" in window)
-      __set_frame_callback = mozRequestAnimationFrame;
-  }
+  __set_frame_callback = window.requestAnimationFrame ||
+                         window.mozRequestAnimationFrame ||
+                         window.msRequestAnimationFrame ||
+                         window.oRequestAnimationFrame ||
+                         window.webkitRequestAnimationFrame;
 }
 
 
-// Collects statistical information for the time intervals between frames.
-function record_delta_time() {
-  var time = new Date().getTime();
-  if (__start_time != 0) {
-    var delta = time - __start_time;
-    document.title = delta + " (" + Math.round(1000.0 / delta) + ")";
-    __n_samples++;
-    __delta_sum += delta;
-    __delta_square_sum += delta * delta;
-    if (delta < __delta_min) {
-      __delta_min = delta;
-    }
-    if (delta > __delta_max) {
-      __delta_max = delta;
-    }
-  }
-  __start_time = time;
-}
-
-
-// Scrolls page down and reschedules itself until it hits the bottom.  Collects
-// stats along the way.
-function __frame_callback() {
-  record_delta_time();
-  window.scrollBy(0, __scroll_delta);
-  __ypos += __scroll_delta;
-  scrollable_distance = document.body.scrollHeight - window.innerHeight;
-  if (__ypos < scrollable_distance) {
-    __set_frame_callback(__frame_callback, document.body);
-  } else if (__warm_up) {
-    // The first pass is a warm up.  When done, start the scroll test again,
-    // this time for real.
-    __warm_up = false;
-    __continue_scroll_test();
-  } else {
-    __compute_results();
-    __scrolling_complete = true;
-  }
-}
-
-
-// Positions document to start test.
-function __first_frame_callback() {
-  document.body.scrollTop = 0;
-  __ypos = 0;
-  __set_frame_callback(__frame_callback, document.body);
-}
-
-
-// The next two functions are the same as the two functions above, but for the
-// Gmail test.
-function __gmail_frame_callback() {
-  record_delta_time();
-  __gmail_scrollable.scrollByLines(1);
-  __ypos += 1;
-  if (__ypos < __gmail_scrollable_lines) {
-    __set_frame_callback(__gmail_frame_callback, document.body);
-  } else if (__warm_up) {
-    // The first pass is a warm up.  For gmail, this also computes how far we
-    // can scroll.  When done, start the scroll test again, this time for real.
-    x = __gmail_scrollable.scrollTop;
-    __gmail_scrollable.scrollTop = 0;
-    __gmail_scrollable.scrollByLines(1);
-    // Number of lines = total pixels scrolled earlier / pixels for one line.
-    __gmail_scrollable_lines = x / __gmail_scrollable.scrollTop;
-    __warm_up = false;
-    __continue_scroll_test();
-  } else {
-    __compute_results();
-    __scrolling_complete = true;
-  }
-}
-
-
-// Positions document to start test.
-function __gmail_first_frame_callback() {
-  __gmail_scrollable.scrollTop = 0;
-  __ypos = 0;
-  __set_frame_callback(__gmail_frame_callback, document.body);
-}
-
-
-function __init_stats() {
-  __delta_max = 0
-  __delta_min = 1000000;
-  __delta_sum = 0.0;
-  __delta_square_sum = 0.0;
-  __n_samples = 0;
-}
-
-
-function __continue_scroll_test() {
-  __start_time = 0;
-  __init_set_frame_callback();
-  __init_stats();
+// Initializes the most realistic scrolling method.
+function __init_scroll_by() {
   if (__is_gmail_test) {
-    gmonkey.load("2.0", function(api) {
-        __gmail_scrollable = api.getScrollableElement();
-        __set_frame_callback(__gmail_first_frame_callback, document.body);
-    });
+    __scroll_by = function(x) {
+      __scrollable_element.scrollByLines(x / __scroll_delta);
+    };
+  } else if (window.chrome && window.chrome.benchmarking &&
+             window.chrome.benchmarking.smoothScrollBy) {
+    __scroll_by = window.chrome.benchmarking.smoothScrollBy;
   } else {
-    __set_frame_callback(__first_frame_callback, document.body);
+    __scroll_by = window.scrollBy;
   }
+}
+
+
+// Scrolls page down and reschedules itself until it hits the bottom.
+// Collects stats along the way.
+function __do_scroll(now_time) {
+  __scroll_by(0, __scroll_delta);
+  __set_frame_callback(function(now_time) {
+    if (__start_time) {
+      if (__scrollable_element.scrollTop > __ypos) {
+        // Scroll in progress, push a frame.
+        __frame_times[__frame_times.length-1].push(now_time - __start_time);
+      } else {
+        // Scroll complete, either scroll again or finish.
+        if (__frame_times.length < __num_scrolls) {
+          __scrollable_element.scrollTop = 0;
+          __frame_times.push([]);
+        } else {
+          console.log('frame_times', '' + __frame_times);
+          __scrolling_complete = true;
+          return;
+        }
+      }
+    }
+    __ypos = __scrollable_element.scrollTop;
+    __start_time = now_time;
+    __do_scroll();
+  });
+}
+
+
+function __start_scroll(scrollable_element) {
+  __scrollable_element = scrollable_element;
+  __init_scroll_by();
+  __set_frame_callback(__do_scroll);
 }
 
 
 // Performs the scroll test.
 function __scroll_test() {
-  __warm_up = true;
-  __scrolling_complete = false;
-  __continue_scroll_test();
+  __init_set_frame_callback();
+  if (__is_gmail_test) {
+    gmonkey.load("2.0", function(api) {
+        __start_scroll(api.getScrollableElement());
+    });
+  } else {
+    if (window.performance.timing.loadEventStart) {
+      __start_scroll(document.body);  // Page already loaded.
+    } else {
+      window.addEventListener('load', function() {
+        __start_scroll(document.body);  // Page hasn't loaded yet, schedule.
+      });
+    }
+  }
 }
-
-
-function __compute_results() {
-  __mean = __delta_sum / __n_samples;
-  __mean_fps = 1000.0 / __mean;
-  __variance = __delta_square_sum / __n_samples - __mean * __mean;
-  __sigma = Math.sqrt(__variance);
-}
-
-
-function __print_results() {
-  window.console.log(__n_samples + " scroll requests of " + __scroll_delta +
-                     " pixels each");
-  window.console.log("time between frames (ms):");
-  window.console.log("mean = " + __mean);
-  window.console.log("sigma = " + __sigma)
-  window.console.log("min = " + __delta_min);
-  window.console.log("max = " + __delta_max);
-  window.console.log("FPS = " + __mean_fps);
-}
-
-// To start the scrolling, invoke __scroll_test().

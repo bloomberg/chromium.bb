@@ -1605,6 +1605,39 @@ class FileUploadDownloadTest(BasePerfTest):
                               'upload_file')
 
 
+class FrameTimes(object):
+  """Container for a list of frame times."""
+
+  def __init__(self, frame_times):
+    self._frame_times = frame_times
+
+  def GetFps(self):
+    if not self._frame_times:
+      return 0
+    avg = sum(self._frame_times) / len(self._frame_times)
+    if not avg:
+      return 0
+    return int(1000.0 / avg)
+
+  def GetPercentBelow60Fps(self):
+    if not self._frame_times:
+      return 0
+    threshold = math.ceil(1000 / 60.)
+    num_frames_below_60 = len([t for t in self._frame_times if t > threshold])
+    num_frames = len(self._frame_times)
+    return (100. * num_frames_below_60) / num_frames
+
+
+class ScrollResults(object):
+  """Container for ScrollTest results."""
+
+  def __init__(self, first_paint_seconds, frame_times_lists):
+    assert len(frame_times_lists) == 2, 'Expecting initial and repeat times'
+    self.first_paint_times = []
+    self.initial_frame_times = FrameTimes(frame_times_lists[0])
+    self.repeat_frame_times = FrameTimes(frame_times_lists[1])
+
+
 class ScrollTest(BasePerfTest):
   """Tests to measure scrolling performance."""
 
@@ -1633,7 +1666,11 @@ class ScrollTest(BasePerfTest):
       scroll_text = f.read()
 
     def _RunSingleInvocation(url, scroll_text):
-      """Runs a single invocation of the scroll test and returns the FPS."""
+      """Runs a single invocation of the scroll test.
+
+      Returns:
+        Instance of ScrollResults.
+      """
       self.assertTrue(self.AppendTab(pyauto.GURL(url)),
                       msg='Failed to append tab for webpage.')
 
@@ -1662,21 +1699,25 @@ class ScrollTest(BasePerfTest):
 
       # Get the scroll test results from the webpage.
       results_js = """
-        window.domAutomationController.send(
-            JSON.stringify({'fps': __mean_fps}));
+        window.domAutomationController.send(JSON.stringify({
+            'first_paint_time': chrome.loadTimes().firstPaintTime -
+                                chrome.loadTimes().requestTime,
+            'frame_times': __frame_times,
+        }));
       """
-      fps = eval(self.ExecuteJavascript(results_js, tab_index=1))['fps']
+      results = eval(self.ExecuteJavascript(results_js, tab_index=1))
       self.GetBrowserWindow(0).GetTab(1).Close(True)
-      return fps
+      return ScrollResults(results['first_paint_time'], results['frame_times'])
 
     fps_vals = []
     for iteration in range(self._num_iterations + 1):
-      fps = _RunSingleInvocation(url, scroll_text)
+      result = _RunSingleInvocation(url, scroll_text)
       # Ignore the first iteration.
       if iteration:
-        fps_vals.append(fps)
+        fps = result.repeat_frame_times.GetFps()
         logging.info('Iteration %d of %d: %f fps', iteration,
                      self._num_iterations, fps)
+        fps_vals.append(fps)
 
     self._PrintSummaryResults(description, fps_vals, 'FPS', graph_name)
 
