@@ -6,9 +6,12 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -25,11 +28,14 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
       extension_(NULL),
       ui_loop_(MessageLoop::current()) {
   tracker_.reset(new ImageLoadingTracker(this));
-  BrowserList::AddObserver(this);
+  if (browser) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_BROWSER_CLOSING,
+                   content::Source<Browser>(browser));
+  }
 }
 
 ExtensionUninstallDialog::~ExtensionUninstallDialog() {
-  BrowserList::RemoveObserver(this);
 }
 
 void ExtensionUninstallDialog::ConfirmUninstall(
@@ -72,9 +78,11 @@ void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image,
   Show();
 }
 
-void ExtensionUninstallDialog::OnBrowserRemoved(Browser* browser) {
-  if (browser_ != browser)
-    return;
+void ExtensionUninstallDialog::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSING);
 
   browser_ = NULL;
   if (tracker_.get()) {

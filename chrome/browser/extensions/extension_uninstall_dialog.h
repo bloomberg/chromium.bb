@@ -11,9 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
 
+class Browser;
 class MessageLoop;
 
 namespace extensions {
@@ -22,7 +24,7 @@ class Extension;
 
 class ExtensionUninstallDialog
     : public ImageLoadingTracker::Observer,
-      public BrowserList::Observer,
+      public content::NotificationObserver,
       public base::SupportsWeakPtr<ExtensionUninstallDialog> {
  public:
   class Delegate {
@@ -75,8 +77,10 @@ class ExtensionUninstallDialog
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // BrowserList::Observer
-  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Displays the prompt. This should only be called after loading the icon.
   // The implementations of this method are platform-specific.
@@ -87,6 +91,8 @@ class ExtensionUninstallDialog
   // Keeps track of extension images being loaded on the File thread for the
   // purpose of showing the dialog.
   scoped_ptr<ImageLoadingTracker> tracker_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialog);
 };
