@@ -140,8 +140,8 @@
       <include name="IDR_SUGGESTIONS_PAGE_JS" file="resources\ntp4\suggestions_page.js" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TRACING_HTML" file="..\..\third_party\trace-viewer\src\tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_TRACING_JS" file="..\..\third_party\trace-viewer\src\tracing.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_TRACING_HTML" file="..\..\third_party\trace-viewer\src\about_tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_TRACING_JS" file="..\..\third_party\trace-viewer\src\about_tracing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
       <include name="IDR_FEEDBACK_HTML" file="resources\feedback.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_FEEDBACK_HTML_INVALID" file="resources\feedback_invalid.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />

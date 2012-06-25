@@ -54,8 +54,8 @@ ChromeWebUIDataSource* CreateTracingHTMLSource() {
       new ChromeWebUIDataSource(chrome::kChromeUITracingHost);
 
   source->set_json_path("strings.js");
-  source->add_resource_path("tracing.js", IDR_TRACING_JS);
   source->set_default_resource(IDR_TRACING_HTML);
+  source->add_resource_path("tracing.js", IDR_TRACING_JS);
   source->AddLocalizedString("tracingTitle", IDS_TRACING_TITLE);
   return source;
 }
