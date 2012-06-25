@@ -220,23 +220,26 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
   // The file may actually not exist yet, as the downloads system downloads
   // to a temp location and then renames the file. If this is the case, we
   // just retry opening the file later.
-  if (result != net::OK && upload_file_info->should_retry_file_open) {
+  if (result != net::OK) {
     DCHECK_EQ(result, net::ERR_FILE_NOT_FOUND);
-    // File open failed. Try again later.
-    upload_file_info->num_file_open_tries++;
 
-    DVLOG(1) << "Error opening \"" << upload_file_info->file_path.value()
-             << "\" for reading: " << net::ErrorToString(result)
-             << ", tries=" << upload_file_info->num_file_open_tries;
+    if (upload_file_info->should_retry_file_open) {
+      // File open failed. Try again later.
+      upload_file_info->num_file_open_tries++;
 
-    // Stop trying to open this file if we exceed kMaxFileOpenTries.
-    const bool exceeded_max_attempts =
-        upload_file_info->num_file_open_tries >= kMaxFileOpenTries;
-    upload_file_info->should_retry_file_open = !exceeded_max_attempts;
-    if (exceeded_max_attempts)
+      DVLOG(1) << "Error opening \"" << upload_file_info->file_path.value()
+               << "\" for reading: " << net::ErrorToString(result)
+               << ", tries=" << upload_file_info->num_file_open_tries;
+
+      // Stop trying to open this file if we exceed kMaxFileOpenTries.
+      const bool exceeded_max_attempts =
+          upload_file_info->num_file_open_tries >= kMaxFileOpenTries;
+      upload_file_info->should_retry_file_open = !exceeded_max_attempts;
+    }
+    if (!upload_file_info->should_retry_file_open) {
       UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
                    base::PLATFORM_FILE_ERROR_NOT_FOUND);
-
+    }
     return;
   }
 
