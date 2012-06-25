@@ -95,6 +95,11 @@ class FILEAPI_EXPORT_PRIVATE IsolatedFileUtil : public FileSystemFileUtil {
   bool GetPlatformPath(const FileSystemPath& virtual_path,
                        FilePath* platform_path) const;
 
+  // Returns false if the given |virtual_path| is not a valid path, or
+  // the file system is not writable.
+  bool GetPlatformPathForWrite(const FileSystemPath& virtual_path,
+                               FilePath* platform_path) const;
+
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtil);
 };
 

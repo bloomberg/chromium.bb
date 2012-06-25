@@ -279,14 +279,21 @@ PlatformFileError IsolatedFileUtil::Touch(
     const FileSystemPath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+  FilePath platform_path;
+  if (!GetPlatformPathForWrite(path, &platform_path) || platform_path.empty())
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+  return NativeFileUtil::Touch(
+      platform_path, last_access_time, last_modified_time);
 }
 
 PlatformFileError IsolatedFileUtil::Truncate(
     FileSystemOperationContext* context,
     const FileSystemPath& path,
     int64 length) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+  FilePath platform_path;
+  if (!GetPlatformPathForWrite(path, &platform_path) || platform_path.empty())
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+  return NativeFileUtil::Truncate(platform_path, length);
 }
 
 bool IsolatedFileUtil::PathExists(
@@ -372,6 +379,19 @@ bool IsolatedFileUtil::GetPlatformPath(const FileSystemPath& virtual_path,
           &root_path, platform_path))
     return false;
   return true;
+}
+
+bool IsolatedFileUtil::GetPlatformPathForWrite(
+    const FileSystemPath& virtual_path,
+    FilePath* platform_path) const {
+  DCHECK(platform_path);
+  std::string filesystem_id;
+  FilePath root_path;
+  if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
+          virtual_path.internal_path(), &filesystem_id,
+          &root_path, platform_path))
+    return false;
+  return IsolatedContext::GetInstance()->IsWritable(filesystem_id);
 }
 
 }  // namespace

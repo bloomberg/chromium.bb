@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
+#include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -182,6 +183,12 @@ class IsolatedFileUtilTest : public testing::Test {
       VerifyFilesHaveSameContent(file_util1, file_util2, path1, path2);
     }
   }
+
+  scoped_ptr<FileSystemOperationContext> GetOperationContext() {
+    return make_scoped_ptr(
+        new FileSystemOperationContext(file_system_context())).Pass();
+  }
+
 
  private:
   void SimulateDropFiles() {
@@ -445,6 +452,80 @@ TEST_F(IsolatedFileUtilTest, CopyOutDirectoryTest) {
 
     VerifyDirectoriesHaveSameContent(file_util(), other_file_util(),
                                      src_path, dest_path);
+  }
+}
+
+TEST_F(IsolatedFileUtilTest, TouchTest) {
+  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+    if (test_case.is_directory)
+      continue;
+    SCOPED_TRACE(testing::Message() << test_case.path);
+    FileSystemPath path = GetFileSystemPath(FilePath(test_case.path));
+
+    base::Time last_access_time = base::Time::FromTimeT(1000);
+    base::Time last_modified_time = base::Time::FromTimeT(2000);
+
+    // Set the filesystem non-writable and try calling Touch.
+    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), false));
+    EXPECT_EQ(base::PLATFORM_FILE_ERROR_SECURITY,
+              file_util()->Touch(GetOperationContext().get(), path,
+                                 last_access_time,
+                                 last_modified_time));
+
+    // Set the filesystem writable and try calling Touch.
+    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), true));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->Touch(GetOperationContext().get(), path,
+                                 last_access_time,
+                                 last_modified_time));
+
+    // Verification.
+    base::PlatformFileInfo info;
+    FilePath platform_path;
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->GetFileInfo(GetOperationContext().get(), path,
+                                       &info, &platform_path));
+    EXPECT_EQ(last_access_time.ToTimeT(), info.last_accessed.ToTimeT());
+    EXPECT_EQ(last_modified_time.ToTimeT(), info.last_modified.ToTimeT());
+  }
+}
+
+TEST_F(IsolatedFileUtilTest, TruncateTest) {
+  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+    if (test_case.is_directory)
+      continue;
+
+    SCOPED_TRACE(testing::Message() << test_case.path);
+    FileSystemPath path = GetFileSystemPath(FilePath(test_case.path));
+
+    // Set the filesystem non-writable and try calling Truncate.
+    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), false));
+    EXPECT_EQ(base::PLATFORM_FILE_ERROR_SECURITY,
+              file_util()->Truncate(GetOperationContext().get(), path, 0));
+
+    base::PlatformFileInfo info;
+    FilePath platform_path;
+
+    // Set the filesystem writable.
+    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), true));
+
+    // Truncate to 0.
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->Truncate(GetOperationContext().get(), path, 0));
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->GetFileInfo(GetOperationContext().get(), path,
+                                       &info, &platform_path));
+    EXPECT_EQ(0, info.size);
+
+    // Truncate (extend) to 999.
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->Truncate(GetOperationContext().get(), path, 999));
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              file_util()->GetFileInfo(GetOperationContext().get(), path,
+                                       &info, &platform_path));
+    EXPECT_EQ(999, info.size);
   }
 }
 
