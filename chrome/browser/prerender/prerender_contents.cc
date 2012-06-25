@@ -121,20 +121,20 @@ class PrerenderContents::TabContentsDelegateImpl
       prerender_contents_(prerender_contents) {
   }
 
- virtual WebContents* OpenURLFromTab(WebContents* source,
+  // content::WebContentsDelegate implementation:
+  virtual WebContents* OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) OVERRIDE {
     // |OpenURLFromTab| is typically called when a frame performs a navigation
     // that requires the browser to perform the transition instead of WebKit.
     // Examples include prerendering a site that redirects to an app URL,
     // or if --enable-strict-site-isolation is specified and the prerendered
     // frame redirects to a different origin.
-    // TODO(cbentzel): Consider supporting this is if it is a common case
-    // during prerenders.
+    // TODO(cbentzel): Consider supporting this if it is a common case during
+    // prerenders.
     prerender_contents_->Destroy(FINAL_STATUS_OPEN_URL);
     return NULL;
   }
 
-  // content::WebContentsDelegate implementation:
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       content::NavigationType navigation_type) OVERRIDE {
@@ -180,11 +180,26 @@ class PrerenderContents::TabContentsDelegateImpl
   }
 
   virtual void JSOutOfMemory(WebContents* tab) OVERRIDE {
-    prerender_contents_->OnJSOutOfMemory();
+    prerender_contents_->Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
-    return prerender_contents_->ShouldSuppressDialogs();
+    // Always suppress JavaScript messages if they're triggered by a page being
+    // prerendered.
+    // We still want to show the user the message when they navigate to this
+    // page, so cancel this prerender.
+    prerender_contents_->Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
+    return true;
+  }
+
+  virtual void RegisterProtocolHandler(WebContents* web_contents,
+                                       const std::string& protocol,
+                                       const GURL& url,
+                                       const string16& title,
+                                       bool user_gesture) OVERRIDE {
+    // TODO(mmenke): Consider supporting this if it is a common case during
+    // prerenders.
+    prerender_contents_->Destroy(FINAL_STATUS_REGISTER_PROTOCOL_HANDLER);
   }
 
   // Commits the History of Pages to the given TabContents.
@@ -544,10 +559,6 @@ bool PrerenderContents::MatchesURL(const GURL& url, GURL* matching_url) const {
   return false;
 }
 
-void PrerenderContents::OnJSOutOfMemory() {
-  Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
-}
-
 void PrerenderContents::RenderViewGone(base::TerminationStatus status) {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
@@ -581,15 +592,6 @@ void PrerenderContents::DidFinishLoad(int64 frame_id,
                                       bool is_main_frame) {
   if (is_main_frame)
     has_finished_loading_ = true;
-}
-
-bool PrerenderContents::ShouldSuppressDialogs() {
-  // Always suppress JavaScript messages if they're triggered by a page being
-  // prerendered.
-  // We still want to show the user the message when they navigate to this
-  // page, so cancel this prerender.
-  Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
-  return true;
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {

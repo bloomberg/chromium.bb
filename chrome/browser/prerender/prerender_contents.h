@@ -162,9 +162,6 @@ class PrerenderContents : public content::NotificationObserver,
   // and the session WebStorage.
   bool MatchesURL(const GURL& url, GURL* matching_url) const;
 
-  void OnJSOutOfMemory();
-  bool ShouldSuppressDialogs();
-
   // content::WebContentsObserver implementation.
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
