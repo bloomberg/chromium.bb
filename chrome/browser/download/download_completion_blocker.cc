@@ -14,10 +14,14 @@ DownloadCompletionBlocker::~DownloadCompletionBlocker() {
 }
 
 void DownloadCompletionBlocker::CompleteDownload() {
-  DCHECK(!is_complete_);
+  // Do not run |callback_| more than once.
+  if (is_complete_)
+    return;
   is_complete_ = true;
+
   if (callback_.is_null())
     return;
   callback_.Run();
-  callback_.Reset();
+  // |callback_| may delete |this|, so do not rely on |this| after running
+  // |callback_|!
 }
