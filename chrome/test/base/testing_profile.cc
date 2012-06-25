@@ -282,7 +282,7 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
 
 void TestingProfile::DestroyHistoryService() {
   scoped_refptr<HistoryService> history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this);
+      HistoryServiceFactory::GetForProfileIfExists(this);
   if (!history_service.get())
     return;
 
@@ -347,7 +347,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
               this, BuildBookmarkModel));
 
   HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this).get();
+      HistoryServiceFactory::GetForProfileIfExists(this).get();
   if (history_service) {
     history_service->history_backend_->bookmark_service_ =
         bookmark_service;
@@ -475,11 +475,11 @@ FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
 }
 
 HistoryService* TestingProfile::GetHistoryService(ServiceAccessType access) {
-  return HistoryServiceFactory::GetForProfileIfExists(this, access);
+  return HistoryServiceFactory::GetForProfileIfExists(this);
 }
 
 HistoryService* TestingProfile::GetHistoryServiceWithoutCreating() {
-  return HistoryServiceFactory::GetForProfileWithoutCreating(this);
+  return HistoryServiceFactory::GetForProfileIfExists(this);
 }
 
 net::CookieMonster* TestingProfile::GetCookieMonster() {
@@ -682,7 +682,7 @@ PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   scoped_refptr<HistoryService> history_service =
-      HistoryServiceFactory::GetForProfile(this, Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfileIfExists(this);
   DCHECK(history_service.get());
   DCHECK(MessageLoop::current());
 

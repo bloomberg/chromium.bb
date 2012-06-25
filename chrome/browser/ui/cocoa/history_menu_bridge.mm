@@ -84,8 +84,8 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     // may not be ready when the Bridge is created. If this happens, register
     // for a notification that tells us the HistoryService is ready.
     HistoryService* hs =
-        HistoryServiceFactory::GetForProfileIfExists(profile_,
-                                                     Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
     if (hs != NULL && hs->BackendLoaded()) {
       history_service_ = hs;
       Init();
@@ -150,8 +150,8 @@ void HistoryMenuBridge::Observe(int type,
   // profile. If so, perform final initialization.
   if (type == chrome::NOTIFICATION_HISTORY_LOADED) {
     HistoryService* hs =
-        HistoryServiceFactory::GetForProfileIfExists(profile_,
-                                                     Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
     if (hs != NULL && hs->BackendLoaded()) {
       history_service_ = hs;
       Init();

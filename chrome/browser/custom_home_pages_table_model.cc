@@ -159,8 +159,8 @@ void CustomHomePagesTableModel::Remove(int index) {
   // we get the loaded notification.
   if (entry->title_handle) {
     HistoryService* history_service =
-        HistoryServiceFactory::GetForProfileIfExists(profile_,
-                                                     Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
     if (history_service)
       history_service->CancelRequest(entry->title_handle);
   }
@@ -219,8 +219,8 @@ void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
 
 void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
   HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileIfExists(profile_,
-                                                   Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           Profile::EXPLICIT_ACCESS);
   if (history_service) {
     entry->title_handle = history_service->QueryURL(entry->url, false,
         &history_query_consumer_,

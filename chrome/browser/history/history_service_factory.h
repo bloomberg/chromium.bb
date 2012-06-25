@@ -21,9 +21,6 @@ class HistoryServiceFactory
       Profile* profile, Profile::ServiceAccessType sat);
 
   static scoped_refptr<HistoryService> GetForProfileIfExists(
-      Profile* profile, Profile::ServiceAccessType sat);
-
-  static scoped_refptr<HistoryService> GetForProfileWithoutCreating(
       Profile* profile);
 
   static HistoryServiceFactory* GetInstance();

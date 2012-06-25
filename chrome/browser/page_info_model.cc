@@ -281,8 +281,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
 
   // Request the number of visits.
   HistoryService* history =
-      HistoryServiceFactory::GetForProfileIfExists(profile,
-                                                   Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
   if (show_history && history) {
     history->GetVisibleVisitCountToHost(
         url,

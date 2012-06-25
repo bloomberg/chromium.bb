@@ -785,7 +785,7 @@ HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
 }
 
 HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
-  return HistoryServiceFactory::GetForProfileWithoutCreating(this).get();
+  return HistoryServiceFactory::GetForProfileIfExists(this).get();
 }
 
 history::ShortcutsBackend* ProfileImpl::GetShortcutsBackend() {
