@@ -618,6 +618,10 @@ RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   // ATL function to create the window.
   Create(parent);
+  // Creating an instance of the text input panel is crashy. Will reenable this
+  // after investigation.
+  // TODO(ananta)
+#if 0
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       !base::win::IsMetroProcess()) {
     virtual_keyboard_.CreateInstance(CLSID_TextInputPanel, NULL, CLSCTX_INPROC);
@@ -628,6 +632,7 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
       NOTREACHED() << "Failed to create instance of pen input panel";
     }
   }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
