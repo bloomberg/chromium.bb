@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
 class PrefService;
@@ -67,7 +67,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, DeserializeMapBasic);
   FRIEND_TEST_ALL_PREFIXES(InvalidatorStorageTest, MigrateLegacyPreferences);
 
-  base::NonThreadSafe non_thread_safe_;
+  base::ThreadChecker thread_checker_;
 
   // Helpers to convert between InvalidationVersionMap <--> ListValue.
   static void DeserializeFromList(

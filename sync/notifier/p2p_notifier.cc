@@ -152,33 +152,33 @@ P2PNotifier::P2PNotifier(scoped_ptr<notifier::PushClient> push_client,
 }
 
 P2PNotifier::~P2PNotifier() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   push_client_->RemoveObserver(this);
 }
 
 void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
 void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void P2PNotifier::SetUniqueId(const std::string& unique_id) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   unique_id_ = unique_id;
 }
 
 void P2PNotifier::SetStateDeprecated(const std::string& state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Do nothing.
 }
 
 void P2PNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   notifier::Subscription subscription;
   subscription.channel = kSyncP2PNotificationChannel;
   // There may be some subtle issues around case sensitivity of the
@@ -195,7 +195,7 @@ void P2PNotifier::UpdateCredentials(
 
 void P2PNotifier::UpdateEnabledTypes(
     syncable::ModelTypeSet enabled_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   const syncable::ModelTypeSet new_enabled_types =
       Difference(enabled_types, enabled_types_);
   enabled_types_ = enabled_types;
@@ -206,14 +206,14 @@ void P2PNotifier::UpdateEnabledTypes(
 
 void P2PNotifier::SendNotification(
     syncable::ModelTypeSet changed_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
       unique_id_, send_notification_target_, changed_types);
   SendNotificationData(notification_data);
 }
 
 void P2PNotifier::OnNotificationsEnabled() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   bool just_turned_on = (notifications_enabled_ == false);
   notifications_enabled_ = true;
   FOR_EACH_OBSERVER(
@@ -228,7 +228,7 @@ void P2PNotifier::OnNotificationsEnabled() {
 
 void P2PNotifier::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(
       SyncNotifierObserver, observer_list_,
       OnNotificationsDisabled(FromNotifierReason(reason)));
@@ -236,7 +236,7 @@ void P2PNotifier::OnNotificationsDisabled(
 
 void P2PNotifier::OnIncomingNotification(
     const notifier::Notification& notification) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Received notification " << notification.ToString();
   if (!logged_in_) {
     DVLOG(1) << "Not logged in yet -- not emitting notification";
@@ -275,13 +275,13 @@ void P2PNotifier::OnIncomingNotification(
 
 void P2PNotifier::SendNotificationDataForTest(
     const P2PNotificationData& notification_data) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   SendNotificationData(notification_data);
 }
 
 void P2PNotifier::SendNotificationData(
     const P2PNotificationData& notification_data) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   notifier::Notification notification;
   notification.channel = kSyncP2PNotificationChannel;
   notification.data = notification_data.ToString();

@@ -151,7 +151,7 @@ NonBlockingPushClient::NonBlockingPushClient(
 }
 
 NonBlockingPushClient::~NonBlockingPushClient() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NonBlockingPushClient::Core::DestroyOnDelegateThread,
@@ -159,18 +159,18 @@ NonBlockingPushClient::~NonBlockingPushClient() {
 }
 
 void NonBlockingPushClient::AddObserver(PushClientObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.AddObserver(observer);
 }
 
 void NonBlockingPushClient::RemoveObserver(PushClientObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
 }
 
 void NonBlockingPushClient::UpdateSubscriptions(
     const SubscriptionList& subscriptions) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NonBlockingPushClient::Core::UpdateSubscriptions,
@@ -179,7 +179,7 @@ void NonBlockingPushClient::UpdateSubscriptions(
 
 void NonBlockingPushClient::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NonBlockingPushClient::Core::UpdateCredentials,
@@ -188,7 +188,7 @@ void NonBlockingPushClient::UpdateCredentials(
 
 void NonBlockingPushClient::SendNotification(
     const Notification& notification) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NonBlockingPushClient::Core::SendNotification, core_.get(),
@@ -196,21 +196,21 @@ void NonBlockingPushClient::SendNotification(
 }
 
 void NonBlockingPushClient::OnNotificationsEnabled() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnNotificationsEnabled());
 }
 
 void NonBlockingPushClient::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnNotificationsDisabled(reason));
 }
 
 void NonBlockingPushClient::OnIncomingNotification(
     const Notification& notification) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnIncomingNotification(notification));
 }

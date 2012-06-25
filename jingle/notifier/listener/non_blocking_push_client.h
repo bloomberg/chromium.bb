@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 
@@ -57,7 +57,7 @@ class NonBlockingPushClient : public PushClient {
   void OnNotificationsDisabled(NotificationsDisabledReason reason);
   void OnIncomingNotification(const Notification& notification);
 
-  base::NonThreadSafe non_thread_safe_;
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<NonBlockingPushClient> weak_ptr_factory_;
   const scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
   const scoped_refptr<Core> core_;

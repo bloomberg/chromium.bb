@@ -86,7 +86,7 @@ InvalidatorStorage::~InvalidatorStorage() {
 }
 
 InvalidationVersionMap InvalidatorStorage::GetAllMaxVersions() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   InvalidationVersionMap max_versions;
   if (!pref_service_) {
     return max_versions;
@@ -100,7 +100,7 @@ InvalidationVersionMap InvalidatorStorage::GetAllMaxVersions() const {
 
 void InvalidatorStorage::SetMaxVersion(const invalidation::ObjectId& id,
                                        int64 max_version) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(pref_service_);
   InvalidationVersionMap max_versions = GetAllMaxVersions();
   InvalidationVersionMap::iterator it = max_versions.find(id);
@@ -220,7 +220,7 @@ std::string InvalidatorStorage::GetInvalidationState() const {
 }
 
 void InvalidatorStorage::SetInvalidationState(const std::string& state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::string utf8_state;
   base::Base64Encode(state, &utf8_state);
   pref_service_->SetString(prefs::kInvalidatorInvalidationState,
@@ -228,7 +228,7 @@ void InvalidatorStorage::SetInvalidationState(const std::string& state) {
 }
 
 void InvalidatorStorage::Clear() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   pref_service_->ClearPref(prefs::kInvalidatorMaxInvalidationVersions);
   pref_service_->ClearPref(prefs::kInvalidatorInvalidationState);
 }

@@ -19,12 +19,12 @@ XmppPushClient::XmppPushClient(const NotifierOptions& notifier_options)
 }
 
 XmppPushClient::~XmppPushClient() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void XmppPushClient::OnConnect(
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   base_task_ = base_task;
 
   if (!base_task_.get()) {
@@ -59,14 +59,14 @@ void XmppPushClient::OnConnect(
 }
 
 void XmppPushClient::OnTransientDisconnection() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   base_task_.reset();
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
 }
 
 void XmppPushClient::OnCredentialsRejected() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   base_task_.reset();
   FOR_EACH_OBSERVER(
       PushClientObserver, observers_,
@@ -75,42 +75,42 @@ void XmppPushClient::OnCredentialsRejected() {
 
 void XmppPushClient::OnNotificationReceived(
     const Notification& notification) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnIncomingNotification(notification));
 }
 
 void XmppPushClient::OnSubscribed() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnNotificationsEnabled());
 }
 
 void XmppPushClient::OnSubscriptionError() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
 }
 
 void XmppPushClient::AddObserver(PushClientObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.AddObserver(observer);
 }
 
 void XmppPushClient::RemoveObserver(PushClientObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
 }
 
 void XmppPushClient::UpdateSubscriptions(
     const SubscriptionList& subscriptions) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   subscriptions_ = subscriptions;
 }
 
 void XmppPushClient::UpdateCredentials(
       const std::string& email, const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Push: Updating credentials for " << email;
   xmpp_settings_ = MakeXmppClientSettings(notifier_options_, email, token);
   if (login_.get()) {
@@ -129,7 +129,7 @@ void XmppPushClient::UpdateCredentials(
 }
 
 void XmppPushClient::SendNotification(const Notification& notification) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!base_task_.get()) {
     // TODO(akalin): Figure out whether we really need to do this.
     DVLOG(1) << "Push: Cannot send notification "

@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/notifications_disabled_reason.h"
@@ -120,7 +120,7 @@ class P2PNotifier
  private:
   void SendNotificationData(const P2PNotificationData& notification_data);
 
-  base::NonThreadSafe non_thread_safe_;
+  base::ThreadChecker thread_checker_;
 
   ObserverList<SyncNotifierObserver> observer_list_;
 

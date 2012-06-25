@@ -17,7 +17,7 @@
 #include "ipc/ipc_channel_reader.h"
 
 namespace base {
-class NonThreadSafe;
+class ThreadChecker;
 }
 
 namespace IPC {
@@ -95,7 +95,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
 
   base::WeakPtrFactory<ChannelImpl> weak_factory_;
 
-  scoped_ptr<base::NonThreadSafe> thread_check_;
+  scoped_ptr<base::ThreadChecker> thread_check_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelImpl);
 };

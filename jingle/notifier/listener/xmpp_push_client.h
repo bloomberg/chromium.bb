@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 #include "jingle/notifier/listener/notification_defines.h"
@@ -65,7 +65,7 @@ class XmppPushClient :
   virtual void OnSubscriptionError() OVERRIDE;
 
  private:
-  base::NonThreadSafe non_thread_safe_;
+  base::ThreadChecker thread_checker_;
   const NotifierOptions notifier_options_;
   ObserverList<PushClientObserver> observers_;
 

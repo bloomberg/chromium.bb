@@ -13,7 +13,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_logging.h"
@@ -279,7 +279,7 @@ bool Channel::ChannelImpl::Connect() {
   DLOG_IF(WARNING, thread_check_.get()) << "Connect called more than once";
 
   if (!thread_check_.get())
-    thread_check_.reset(new base::NonThreadSafe());
+    thread_check_.reset(new base::ThreadChecker());
 
   if (pipe_ == INVALID_HANDLE_VALUE)
     return false;
