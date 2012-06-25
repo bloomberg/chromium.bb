@@ -25,6 +25,7 @@ desired threshold value.
 import BaseHTTPServer
 import commands
 import errno
+import itertools
 import logging
 import math
 import os
@@ -1909,7 +1910,7 @@ class BasePageCyclerTest(BasePerfTest):
 
     Args:
       pages: the list of pages
-      times: e.g. [page1_iter1, page1_iter2, ..., page2_iter1, page2_iter2, ...]
+      times: e.g. [page1_iter1, page2_iter1, ..., page1_iter2, page2_iter2, ...]
       iterations: the number of times for each page
     Yields:
       (pageN, [pageN_iter1, pageN_iter2, ...])
@@ -1921,9 +1922,8 @@ class BasePageCyclerTest(BasePerfTest):
         expected_num_times, num_times,
         msg=('num_times != num_pages * iterations: %s != %s * %s, times=%s' %
              (num_times, num_pages, iterations, times)))
-    next_time = iter(times).next
-    for page in pages:
-      yield page, [next_time() for _ in range(iterations)]
+    for i, page in enumerate(pages):
+      yield page, itertools.islice(times, i, None, num_pages)
 
   def CheckPageTimes(self, pages, times, iterations):
     """Assert that all the times are greater than zero."""
