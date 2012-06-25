@@ -33,6 +33,7 @@ void SendGeolocationPermissionResponse(int render_process_id,
                                        int render_view_id,
                                        int bridge_id,
                                        bool allowed) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderViewHostImpl* r = RenderViewHostImpl::FromID(
       render_process_id, render_view_id);
   if (!r)
@@ -149,8 +150,11 @@ void GeolocationDispatcherHostImpl::OnRequestPermission(
             &SendGeolocationPermissionResponse,
             render_process_id_, render_view_id, bridge_id));
   } else {
-    SendGeolocationPermissionResponse(
-        render_process_id_, render_view_id, bridge_id, true);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &SendGeolocationPermissionResponse,
+            render_process_id_, render_view_id, bridge_id, true));
   }
 }
 
