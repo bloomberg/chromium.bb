@@ -13,6 +13,7 @@
 namespace policy {
 
 struct PolicyDefinitionList;
+class PolicyMap;
 
 // Loads policies from the Windows registry, and watches for Group Policy
 // notifications to trigger reloads.
@@ -27,6 +28,9 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
 
  private:
+  void LoadChromePolicy(PolicyMap* chrome_policies);
+  void Load3rdPartyPolicies(PolicyBundle* bundle);
+
   // Installs the watchers for the Group Policy update events.
   void SetupWatches();
 

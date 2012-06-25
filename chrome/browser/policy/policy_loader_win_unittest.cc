@@ -30,6 +30,56 @@ const wchar_t kUnitTestMachineOverrideSubKey[] =
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
 
+// Installs |dict| at the given |path|, in the given |hive|. Currently only
+// string, int and dictionary types are converted; other types cause a failure.
+// Returns false if there was any failure, and true if |dict| was successfully
+// written.
+// TODO(joaodasilva): generate a schema for |dict| too, so that all types can
+// be retrieved.
+bool InstallDictionary(const base::DictionaryValue& dict,
+                       HKEY hive,
+                       const string16& path) {
+  // KEY_ALL_ACCESS causes the ctor to create the key if it does not exist yet.
+  RegKey key(hive, path.c_str(), KEY_ALL_ACCESS);
+  const string16 kPathSep = ASCIIToUTF16("\\");
+
+  for (base::DictionaryValue::Iterator it(dict); it.HasNext(); it.Advance()) {
+    string16 name(UTF8ToUTF16(it.key()));
+    switch (it.value().GetType()) {
+      case base::Value::TYPE_STRING: {
+        string16 value;
+        if (!it.value().GetAsString(&value))
+          return false;
+        if (key.WriteValue(name.c_str(), value.c_str()) != ERROR_SUCCESS)
+          return false;
+        break;
+      }
+
+      case base::Value::TYPE_INTEGER: {
+        int value;
+        if (!it.value().GetAsInteger(&value))
+          return false;
+        if (key.WriteValue(name.c_str(), value) != ERROR_SUCCESS)
+          return false;
+        break;
+      }
+
+      case base::Value::TYPE_DICTIONARY: {
+        const base::DictionaryValue* sub_dict = NULL;
+        if (!it.value().GetAsDictionary(&sub_dict))
+          return false;
+        if (!InstallDictionary(*sub_dict, hive, path + kPathSep + name))
+          return false;
+        break;
+      }
+
+      default:
+        return false;
+    }
+  }
+  return true;
+}
+
 // This class provides sandboxing and mocking for the parts of the Windows
 // Registry implementing Group Policy. It prepares two temporary sandbox keys
 // in |kUnitTestRegistrySubKey|, one for HKLM and one for HKCU. A test's calls
@@ -149,21 +199,21 @@ void TestHarness::InstallEmptyPolicy() {}
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  UTF8ToUTF16(policy_value).c_str());
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
 }
@@ -171,7 +221,7 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   RegKey key(hive_,
-             (string16(policy::kRegistryMandatorySubKey) + ASCIIToUTF16("\\") +
+             (string16(kRegistryMandatorySubKey) + ASCIIToUTF16("\\") +
               UTF8ToUTF16(policy_name)).c_str(),
              KEY_ALL_ACCESS);
   int index = 1;
@@ -192,7 +242,7 @@ void TestHarness::InstallDictionaryPolicy(
     const base::DictionaryValue* policy_value) {
   std::string json;
   base::JSONWriter::Write(policy_value, &json);
-  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  UTF8ToUTF16(json).c_str());
 }
@@ -225,14 +275,10 @@ class PolicyLoaderWinTest : public PolicyTestBase {
 };
 
 TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
-  RegKey hklm_key(HKEY_LOCAL_MACHINE,
-                  policy::kRegistryMandatorySubKey,
-                  KEY_ALL_ACCESS);
+  RegKey hklm_key(HKEY_LOCAL_MACHINE, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   hklm_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hklm").c_str());
-  RegKey hkcu_key(HKEY_CURRENT_USER,
-                  policy::kRegistryMandatorySubKey,
-                  KEY_ALL_ACCESS);
+  RegKey hkcu_key(HKEY_CURRENT_USER, kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hkcu").c_str());
 
@@ -246,6 +292,81 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
            POLICY_SCOPE_MACHINE,
            base::Value::CreateStringValue("hklm"));
   EXPECT_TRUE(bundle->Equals(expected_bundle));
+}
+
+// TODO(joaodasilva): share tests for 3rd party policy with
+// ConfigDirPolicyProvider once PolicyLoaderWin is able to load all types.
+TEST_F(PolicyLoaderWinTest, Load3rdParty) {
+  base::DictionaryValue dict;
+  dict.SetString("str", "string value");
+  dict.SetInteger("int", 123);
+  dict.Set("subdict", dict.DeepCopy());
+  dict.Set("subsubdict", dict.DeepCopy());
+  dict.Set("subsubsubdict", dict.DeepCopy());
+
+  base::DictionaryValue policy_dict;
+  policy_dict.Set("3rdparty.extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.policy",
+                  dict.DeepCopy());
+  policy_dict.Set("3rdparty.extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.policy",
+                  dict.DeepCopy());
+  EXPECT_TRUE(InstallDictionary(policy_dict, HKEY_LOCAL_MACHINE,
+                                kRegistryMandatorySubKey));
+
+  PolicyBundle expected;
+  expected.Get(POLICY_DOMAIN_EXTENSIONS, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+      .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  expected.Get(POLICY_DOMAIN_EXTENSIONS, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+      .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+
+  PolicyLoaderWin loader(&test_policy_definitions::kList);
+  scoped_ptr<PolicyBundle> loaded(loader.Load());
+  EXPECT_TRUE(loaded->Equals(expected));
+}
+
+TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
+  // Policy for the same extension will be provided at the 4 level/scope
+  // combinations, to verify that they overlap as expected.
+
+  const string16 kPathSuffix =
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\merge");
+  const string16 kMandatoryPath = kPathSuffix + ASCIIToUTF16("\\policy");
+  const string16 kRecommendedPath = kPathSuffix + ASCIIToUTF16("\\recommended");
+
+  const char kUserMandatory[] = "user-mandatory";
+  const char kUserRecommended[] = "user-recommended";
+  const char kMachineMandatory[] = "machine-mandatory";
+  const char kMachineRecommended[] = "machine-recommended";
+
+  base::DictionaryValue policy;
+  policy.SetString("a", kMachineMandatory);
+  EXPECT_TRUE(InstallDictionary(policy, HKEY_LOCAL_MACHINE, kMandatoryPath));
+  policy.SetString("a", kUserMandatory);
+  policy.SetString("b", kUserMandatory);
+  EXPECT_TRUE(InstallDictionary(policy, HKEY_CURRENT_USER, kMandatoryPath));
+  policy.SetString("a", kMachineRecommended);
+  policy.SetString("b", kMachineRecommended);
+  policy.SetString("c", kMachineRecommended);
+  EXPECT_TRUE(InstallDictionary(policy, HKEY_LOCAL_MACHINE, kRecommendedPath));
+  policy.SetString("a", kUserRecommended);
+  policy.SetString("b", kUserRecommended);
+  policy.SetString("c", kUserRecommended);
+  policy.SetString("d", kUserRecommended);
+  EXPECT_TRUE(InstallDictionary(policy, HKEY_CURRENT_USER, kRecommendedPath));
+
+  PolicyBundle expected;
+  PolicyMap& expected_policy = expected.Get(POLICY_DOMAIN_EXTENSIONS, "merge");
+  expected_policy.Set("a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      base::Value::CreateStringValue(kMachineMandatory));
+  expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      base::Value::CreateStringValue(kUserMandatory));
+  expected_policy.Set("c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+                      base::Value::CreateStringValue(kMachineRecommended));
+  expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                      base::Value::CreateStringValue(kUserRecommended));
+
+  PolicyLoaderWin loader(&test_policy_definitions::kList);
+  scoped_ptr<PolicyBundle> loaded(loader.Load());
+  EXPECT_TRUE(loaded->Equals(expected));
 }
 
 }  // namespace policy

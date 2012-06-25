@@ -27,10 +27,28 @@
 #include "policy/policy_constants.h"
 
 using base::win::RegKey;
+using base::win::RegistryKeyIterator;
+using base::win::RegistryValueIterator;
 
 namespace policy {
 
 namespace {
+
+// Suffix of kRegistryMandatorySubKey where 3rd party policies are stored.
+const char k3rdPartyPolicySubKey[] = "\\3rdparty\\";
+
+// Path separator for registry keys.
+const wchar_t kPathSep[] = L"\\";
+
+// Map of registry hives to their corresponding policy scope, in decreasing
+// order of priority.
+const struct {
+  HKEY hive;
+  PolicyScope scope;
+} kHives[] = {
+  { HKEY_LOCAL_MACHINE,   POLICY_SCOPE_MACHINE  },
+  { HKEY_CURRENT_USER,    POLICY_SCOPE_USER     },
+};
 
 // Determines the registry key with the highest priority that contains
 // the |key_path| key with a |value_name| value inside.
@@ -47,37 +65,28 @@ bool LoadHighestPriorityKey(const string16& key_path,
                             RegKey* key,
                             PolicyLevel* level,
                             PolicyScope* scope) {
-  // |path| is in decreasing order of priority.
+  // |kKeyPaths| is in decreasing order of priority.
   static const struct {
     const wchar_t* path;
     PolicyLevel level;
-  } key_paths[] = {
+  } kKeyPaths[] = {
     { kRegistryMandatorySubKey,   POLICY_LEVEL_MANDATORY    },
     { kRegistryRecommendedSubKey, POLICY_LEVEL_RECOMMENDED  },
   };
 
-  // |hive| is in decreasing order of priority.
-  static const struct {
-    HKEY hive;
-    PolicyScope scope;
-  } hives[] = {
-    { HKEY_LOCAL_MACHINE,   POLICY_SCOPE_MACHINE  },
-    { HKEY_CURRENT_USER,    POLICY_SCOPE_USER     },
-  };
-
   // Lookup at the mandatory path for both user and machine policies first, and
   // then at the recommended path.
-  for (size_t k = 0; k < arraysize(key_paths); ++k) {
-    for (size_t h = 0; h < arraysize(hives); ++h) {
-      string16 path(key_paths[k].path);
+  for (size_t k = 0; k < arraysize(kKeyPaths); ++k) {
+    for (size_t h = 0; h < arraysize(kHives); ++h) {
+      string16 path(kKeyPaths[k].path);
       if (!key_path.empty())
         path += ASCIIToUTF16("\\") + key_path;
-      key->Open(hives[h].hive, path.c_str(), KEY_READ);
+      key->Open(kHives[h].hive, path.c_str(), KEY_READ);
       if (!key->Valid())
         continue;
       if (value_name.empty() || key->HasValue(value_name.c_str())) {
-        *level = key_paths[k].level;
-        *scope = hives[h].scope;
+        *level = kKeyPaths[k].level;
+        *scope = kHives[h].scope;
         return true;
       }
     }
@@ -207,6 +216,62 @@ base::Value* ReadDictionaryValue(const string16& name,
   return base::JSONReader::Read(UTF16ToUTF8(value));
 }
 
+// Loads the dictionary at |path| in the given |hive|. Ownership is transferred
+// to the caller.
+base::DictionaryValue* ReadRegistryDictionaryValue(HKEY hive,
+                                                   const string16& path) {
+  // A "value" in the registry is like a file in a filesystem, and a "key" is
+  // like a directory, that contains other "values" and "keys".
+  // Unfortunately it is possible to have a name both as a "value" and a "key".
+  // In those cases, the sub "key" will be ignored; this choice is arbitrary.
+
+  // First iterate over all the "values" in |path| and convert them; then
+  // recurse into each "key" in |path| and convert them as dictionaries.
+
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  RegKey key(hive, path.c_str(), KEY_READ);
+
+  for (RegistryValueIterator it(hive, path.c_str()); it.Valid(); ++it) {
+    string16 name(it.Name());
+    switch (it.Type()) {
+      case REG_SZ: {
+        string16 value;
+        if (ReadRegistryString(&key, name, &value))
+          dict->SetString(UTF16ToUTF8(name), value);
+        break;
+      }
+
+      case REG_DWORD: {
+        uint32 value;
+        if (ReadRegistryInteger(&key, name, &value))
+          dict->SetInteger(UTF16ToUTF8(name), value);
+        break;
+      }
+
+      default:
+        // TODO(joaodasilva): use a schema to determine the correct types.
+        LOG(WARNING) << "Ignoring registry value with unsupported type: "
+                     << path << kPathSep << name;
+    }
+  }
+
+  for (RegistryKeyIterator it(hive, path.c_str()); it.Valid(); ++it) {
+    string16 name16(it.Name());
+    std::string name(UTF16ToUTF8(name16));
+    if (dict->HasKey(name)) {
+      LOG(WARNING) << "Ignoring registry key because a value exists with the "
+                      "same name: " << path << kPathSep << name;
+      continue;
+    }
+    base::DictionaryValue* value =
+        ReadRegistryDictionaryValue(hive, path + kPathSep + name16);
+    if (value)
+      dict->Set(name, value);
+  }
+
+  return dict;
+}
+
 }  // namespace
 
 PolicyLoaderWin::PolicyLoaderWin(const PolicyDefinitionList* policy_list)
@@ -237,39 +302,43 @@ void PolicyLoaderWin::InitOnFile() {
 }
 
 scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  LoadChromePolicy(&bundle->Get(POLICY_DOMAIN_CHROME, std::string()));
+  Load3rdPartyPolicies(bundle.get());
+  return bundle.Pass();
+}
+
+void PolicyLoaderWin::LoadChromePolicy(PolicyMap* chrome_policies) {
   // Reset the watches BEFORE reading the individual policies to avoid
   // missing a change notification.
   if (is_initialized_)
     SetupWatches();
-
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-  PolicyMap& chrome_policy = bundle->Get(POLICY_DOMAIN_CHROME, std::string());
 
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
     const string16 name(ASCIIToUTF16(current->name));
     PolicyLevel level = POLICY_LEVEL_MANDATORY;
     PolicyScope scope = POLICY_SCOPE_MACHINE;
-    Value* value = NULL;
+    base::Value* value = NULL;
 
     switch (current->value_type) {
-      case Value::TYPE_STRING:
+      case base::Value::TYPE_STRING:
         value = ReadStringValue(name, &level, &scope);
         break;
 
-      case Value::TYPE_LIST:
+      case base::Value::TYPE_LIST:
         value = ReadStringListValue(name, &level, &scope);
         break;
 
-      case Value::TYPE_BOOLEAN:
+      case base::Value::TYPE_BOOLEAN:
         value = ReadBooleanValue(name, &level, &scope);
         break;
 
-      case Value::TYPE_INTEGER:
+      case base::Value::TYPE_INTEGER:
         value = ReadIntegerValue(name, &level, &scope);
         break;
 
-      case Value::TYPE_DICTIONARY:
+      case base::Value::TYPE_DICTIONARY:
         value = ReadDictionaryValue(name, &level, &scope);
         break;
 
@@ -278,10 +347,69 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     }
 
     if (value)
-      chrome_policy.Set(current->name, level, scope, value);
+      chrome_policies->Set(current->name, level, scope, value);
   }
+}
 
-  return bundle.Pass();
+void PolicyLoaderWin::Load3rdPartyPolicies(PolicyBundle* bundle) {
+  // Each 3rd party namespace can have policies on both HKLM and HKCU. They
+  // should be merged, giving priority to HKLM for policies with the same name.
+
+  // Map of known domain name to their enum values.
+  static const struct {
+    const char* name;
+    PolicyDomain domain;
+  } kDomains[] = {
+    { "extensions",   POLICY_DOMAIN_EXTENSIONS },
+  };
+
+  // Map of policy paths to their corresponding policy level, in decreasing
+  // order of priority.
+  static const struct {
+    const char* path;
+    PolicyLevel level;
+  } kKeyPaths[] = {
+    { "policy",       POLICY_LEVEL_MANDATORY },
+    { "recommended",  POLICY_LEVEL_RECOMMENDED },
+  };
+
+  // Path where policies for components are stored.
+  const string16 kPathPrefix =
+      kRegistryMandatorySubKey + ASCIIToUTF16(k3rdPartyPolicySubKey);
+
+  for (size_t h = 0; h < arraysize(kHives); ++h) {
+    HKEY hkey = kHives[h].hive;
+
+    for (size_t d = 0; d < arraysize(kDomains); ++d) {
+      // Each subkey under this domain is a component of that domain.
+      // |domain_path| == SOFTWARE\Policies\Chromium\3rdparty\<domain>
+      string16 domain_path = kPathPrefix + ASCIIToUTF16(kDomains[d].name);
+
+      for (RegistryKeyIterator domain_iterator(hkey, domain_path.c_str());
+           domain_iterator.Valid(); ++domain_iterator) {
+        string16 component(domain_iterator.Name());
+        string16 component_path = domain_path + kPathSep + component;
+
+        for (size_t k = 0; k < arraysize(kKeyPaths); ++k) {
+          string16 path =
+              component_path + kPathSep + ASCIIToUTF16(kKeyPaths[k].path);
+
+          scoped_ptr<base::DictionaryValue> dictionary(
+              ReadRegistryDictionaryValue(hkey, path));
+          if (dictionary.get()) {
+            PolicyMap policies;
+            policies.LoadFrom(
+                dictionary.get(), kKeyPaths[k].level, kHives[h].scope);
+            // LoadFrom() overwrites any existing values. Use a temporary map
+            // and then use MergeFrom(), that only overwrites values with lower
+            // priority.
+            bundle->Get(kDomains[d].domain, UTF16ToUTF8(component))
+                .MergeFrom(policies);
+          }
+        }
+      }
+    }
+  }
 }
 
 void PolicyLoaderWin::SetupWatches() {
