@@ -197,14 +197,6 @@ void HandleTestParameters(const CommandLine& command_line) {
     int* bad_pointer = NULL;
     *bad_pointer = 0;
   }
-
-#if defined(OS_CHROMEOS)
-  // Test loading libcros and exit. We return 0 if the library could be loaded,
-  // and 1 if it can't be. This is for validation that the library is installed
-  // and versioned properly for Chrome to find.
-  if (command_line.HasSwitch(switches::kTestLoadLibcros))
-    exit(!chromeos::CrosLibrary::Get()->libcros_loaded());
-#endif
 }
 
 void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,

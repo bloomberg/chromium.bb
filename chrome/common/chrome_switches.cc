@@ -1349,10 +1349,6 @@ const char kLoginScreen[]                   = "login-screen";
 // Controls the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
 
-// Attempts to load libcros and validate it, then exits. A nonzero return code
-// means the library could not be loaded correctly.
-const char kTestLoadLibcros[]               = "test-load-libcros";
-
 // Specifies the profile to use once a chromeos user is logged in.
 const char kLoginProfile[]                  = "login-profile";
 

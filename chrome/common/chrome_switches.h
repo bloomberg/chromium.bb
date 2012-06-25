@@ -370,7 +370,6 @@ extern const char kLoginManager[];
 // purposes.
 extern const char kLoginScreen[];
 extern const char kLoginScreenSize[];
-extern const char kTestLoadLibcros[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kLoginPassword[];

@@ -101,9 +101,6 @@ enum {
                                 // binary data (e.g., html files and images
                                 // used by interal pages).
   DIR_RESOURCES_EXTENSION,      // Full path to extension resources.
-#if defined(OS_CHROMEOS)
-  FILE_CHROMEOS_API,            // Full path to chrome os api shared object.
-#endif
 
   // Valid only in development environment; TODO(darin): move these
   DIR_GEN_TEST_DATA,            // Directory where generated test data resides.
