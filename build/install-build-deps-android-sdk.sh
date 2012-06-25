@@ -11,9 +11,9 @@ set -e
 
 # Using Android 4.0, API Level: 14 (ice cream sandwich). The SDK package is
 # about 25M.
-SDK_FILE_NAME="android-sdk_r16-linux.tgz"
+SDK_FILE_NAME="android-sdk_r18-linux.tgz"
 SDK_DOWNLOAD_URL="http://dl.google.com/android/${SDK_FILE_NAME}"
-SDK_MD5SUM="3ba457f731d51da3741c29c8830a4583"
+SDK_MD5SUM="6cd716d0e04624b865ffed3c25b3485c"
 
 # Using "ANDROID_SDK_ROOT/tools/android list targets" to get the matching target
 # id which will be loaded in simulator for testing.
@@ -25,7 +25,7 @@ SDK_MD5SUM="3ba457f731d51da3741c29c8830a4583"
 #     API level: 13
 #     Revision: 1
 #     Skins: WXGA (default)
-SDK_TARGET_ID=android-14
+SDK_TARGET_ID=android-15
 
 # Using NDK r7; The package is about 64M.
 # *** DO NOT UPDATE THE NDK without updating the 64-bit linker changes ***
@@ -124,9 +124,12 @@ fi
 # Create a Android Virtual Device named 'buildbot' with default hardware
 # configuration and override the existing one, since there is no easy way to
 # check whether current AVD has correct configuration and it takes almost no
-# time to create a new one.
+# time to create a new one.  Create one ARM AVD and one x86 AVD.
 "${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name buildbot \
-  --target ${SDK_TARGET_ID} --force <<< "no"
+  --abi armeabi-v7a --target ${SDK_TARGET_ID} --force <<< "no"
+
+"${ANDROID_SDK_ROOT}/tools/android" --silent create avd --name buildbot \
+  --abi x86 --target ${SDK_TARGET_ID} --force <<< "no"
 
 # Install Android NDK if it doesn't exist.
 if [[ ! -d "${ANDROID_NDK_ROOT}" ]]; then
