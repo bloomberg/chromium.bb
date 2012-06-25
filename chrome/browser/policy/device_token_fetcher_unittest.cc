@@ -151,8 +151,6 @@ TEST_F(DeviceTokenFetcherTest, FetchDeviceToken) {
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, data_store->device_mode());
 }
 
-// TODO(pastarmovj): This test must be changed in accordance with
-// http://crosbug.com/26624.
 TEST_F(DeviceTokenFetcherTest, FetchDeviceTokenMissingMode) {
   testing::InSequence s;
   scoped_ptr<CloudPolicyDataStore> data_store(
@@ -168,7 +166,6 @@ TEST_F(DeviceTokenFetcherTest, FetchDeviceTokenMissingMode) {
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_NE("", data_store->device_token());
-  // TODO(pastarmovj): Modify when http://crosbug.com/26624 is resolved.
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, data_store->device_mode());
 }
 

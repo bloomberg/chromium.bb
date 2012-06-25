@@ -208,8 +208,6 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
 
         if (data_store_->policy_register_type() ==
                 em::DeviceRegisterRequest::DEVICE) {
-          // TODO(pastarmovj): Default to DEVICE_MODE_UNKNOWN once DM server has
-          // been updated. http://crosbug.com/26624
           DeviceMode mode = DEVICE_MODE_ENTERPRISE;
           if (register_response.has_enrollment_type()) {
             mode = TranslateProtobufDeviceMode(
