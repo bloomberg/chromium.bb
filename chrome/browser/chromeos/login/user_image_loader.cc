@@ -79,17 +79,21 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
 
   if (image_info.size > 0) {
     // Auto crop the image, taking the largest square in the center.
-    // Also make the image smaller to save space and memory.
     int size = std::min(decoded_image.width(), decoded_image.height());
     int x = (decoded_image.width() - size) / 2;
     int y = (decoded_image.height() - size) / 2;
     SkBitmap cropped_image =
         SkBitmapOperations::CreateTiledBitmap(decoded_image, x, y, size, size);
-    final_image =
-        skia::ImageOperations::Resize(cropped_image,
-                                      skia::ImageOperations::RESIZE_LANCZOS3,
-                                      image_info.size,
-                                      image_info.size);
+    if (size > image_info.size) {
+      // Also downsize the image to save space and memory.
+      final_image =
+          skia::ImageOperations::Resize(cropped_image,
+                                        skia::ImageOperations::RESIZE_LANCZOS3,
+                                        image_info.size,
+                                        image_info.size);
+    } else {
+      final_image = cropped_image;
+    }
   }
 
   scoped_ptr<UserImage> user_image;

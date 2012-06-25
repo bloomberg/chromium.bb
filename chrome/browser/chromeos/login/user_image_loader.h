@@ -33,7 +33,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // Start reading the image from |filepath| on the file thread. Calls
   // |loaded_cb| when image has been successfully loaded.
-  // If |size| is positive, image is resized to |size|x|size| pixels.
+  // If |size| is positive, image is cropped and (if needed) downsized to
+  // |size|x|size| pixels.
   // If |load_raw_image| is true, raw image is also passed to callback.
   void Start(const std::string& filepath, int size, bool load_raw_image,
              const LoadedCallback& loaded_cb);

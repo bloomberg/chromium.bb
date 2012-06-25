@@ -623,7 +623,7 @@ void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
                                             const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   image_loader_->Start(
-      path.value(), login::kUserImageSize, true,
+      path.value(), login::kMaxUserImageSize, true,
       base::Bind(&UserManagerImpl::SaveUserImage,
                  base::Unretained(this), username));
 }
@@ -823,6 +823,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
   const DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(UserManager::kUserDisplayEmail);
 
+  int user_image_size = GetCurrentUserImageSize();
+
   if (prefs_users) {
     for (ListValue::const_iterator it = prefs_users->begin();
          it != prefs_users->end(); ++it) {
@@ -848,7 +850,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
               DCHECK(!image_path.empty());
               // Load user image asynchronously.
               image_loader_->Start(
-                  image_path, 0, true,
+                  image_path, user_image_size, true,
                   base::Bind(&UserManagerImpl::SetUserImage,
                              base::Unretained(this), email, image_index));
             }
@@ -873,7 +875,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
               if (!image_path.empty()) {
                 // Load user image asynchronously.
                 image_loader_->Start(
-                    image_path, 0, true,
+                    image_path, user_image_size, true,
                     base::Bind(&UserManagerImpl::SetUserImage,
                                base::Unretained(this), email, image_index));
               }
@@ -1438,7 +1440,7 @@ void UserManagerImpl::CheckOwnership() {
 }
 
 int UserManagerImpl::GetDesiredImageSideLength() const {
-  return login::kUserImageSize;
+  return GetCurrentUserImageSize();
 }
 
 Profile* UserManagerImpl::GetBrowserProfile() {

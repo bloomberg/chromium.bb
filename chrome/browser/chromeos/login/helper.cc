@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -13,6 +14,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -100,6 +102,18 @@ string16 GetCurrentNetworkName(NetworkLibrary* network_library) {
   } else {
     return string16();
   }
+}
+
+int GetCurrentUserImageSize() {
+  // The biggest size that the profile picture is displayed at is currently
+  // 220px, used for the big preview on OOBE and Change Picture options page.
+  static const int kBaseUserImageSize = 220;
+  float scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
+  if (scale_factor > 1.0f)
+    return static_cast<int>(scale_factor * kBaseUserImageSize);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources))
+    return 2 * kBaseUserImageSize;
+  return kBaseUserImageSize;
 }
 
 }  // namespace chromeos

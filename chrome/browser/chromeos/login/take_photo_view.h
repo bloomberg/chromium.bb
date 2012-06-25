@@ -45,7 +45,7 @@ class TakePhotoView : public views::View,
   virtual ~TakePhotoView();
 
   // Initializes this view, its children and layout.
-  void Init();
+  void Init(int image_width, int image_height);
 
   // Updates image from camera.
   void UpdateVideoFrame(const SkBitmap& frame);

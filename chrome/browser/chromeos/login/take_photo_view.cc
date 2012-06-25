@@ -158,7 +158,7 @@ TakePhotoView::TakePhotoView(Delegate* delegate)
 TakePhotoView::~TakePhotoView() {
 }
 
-void TakePhotoView::Init() {
+void TakePhotoView::Init(int image_width, int image_height) {
   if (show_title_) {
     title_label_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE));
@@ -168,8 +168,7 @@ void TakePhotoView::Init() {
   }
 
   user_image_ = new CameraImageView();
-  user_image_->SetImageSize(
-      gfx::Size(login::kUserImageSize, login::kUserImageSize));
+  user_image_->SetImageSize(gfx::Size(image_width, image_height));
   user_image_->Init();
 
   snapshot_button_ = new views::ImageButton(this);
@@ -229,13 +228,7 @@ void TakePhotoView::UpdateVideoFrame(const SkBitmap& frame) {
     snapshot_button_->SetEnabled(true);
     snapshot_button_->RequestFocus();
   }
-  gfx::ImageSkia user_image =
-      skia::ImageOperations::Resize(
-          frame,
-          skia::ImageOperations::RESIZE_BOX,
-          login::kUserImageSize,
-          login::kUserImageSize);
-
+  gfx::ImageSkia user_image(frame);
   user_image_->SetImage(&user_image);
 }
 

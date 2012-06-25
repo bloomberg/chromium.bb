@@ -73,7 +73,7 @@ views::View* TakePhotoDialog::GetContentsView() {
   // Lazy initialization upon request.
   if (!take_photo_view_) {
     take_photo_view_ = new TakePhotoView(this);
-    take_photo_view_->Init();
+    take_photo_view_->Init(kFrameWidth, kFrameHeight);
     AddChildView(take_photo_view_);
     InitCamera();
   }
@@ -161,7 +161,8 @@ void TakePhotoDialog::Layout() {
 }
 
 gfx::Size TakePhotoDialog::GetPreferredSize() {
-  return gfx::Size(login::kUserImageSize * 2, (login::kUserImageSize * 3 / 2));
+  // Add 25% space around the camera view for buttons and caption.
+  return gfx::Size(kFrameWidth * 5 / 4, kFrameHeight * 5 / 4);
 }
 
 void TakePhotoDialog::InitCamera() {
