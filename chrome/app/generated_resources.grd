@@ -13646,6 +13646,9 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
         Take photo
       </message>
+      <message name="IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT" desc="Alt text for the big preview of user image.">
+        User image preview
+      </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
         Google Profile photo
       </message>

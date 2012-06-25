@@ -27,28 +27,6 @@ cr.define('oobe', function() {
   var UserImageScreen = cr.ui.define('div');
 
   /**
-   * Dimensions for camera capture.
-   * @const
-   */
-  var CAPTURE_SIZE = {
-    height: 480,
-    width: 480
-  };
-
-  /**
-   * Interval between consecutive camera presence checks in msec while camera is
-   * not present.
-   * @const
-   */
-  var CAMERA_CHECK_INTERVAL_MS = 3000;
-
-  /**
-   * Interval between consecutive camera liveness checks in msec.
-   * @const
-   */
-  var CAMERA_LIVENESS_CHECK_MS = 1000;
-
-  /**
    * Registers with Oobe.
    */
   UserImageScreen.register = function() {
@@ -75,12 +53,10 @@ cr.define('oobe', function() {
       var imageGrid = $('user-image-grid');
       UserImagesGrid.decorate(imageGrid);
 
-      imageGrid.addEventListener('change',
-                                 this.handleSelection_.bind(this));
+      imageGrid.addEventListener('select',
+                                 this.handleSelect_.bind(this));
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
-      imageGrid.addEventListener('dblclick',
-                                 this.handleImageDblClick_.bind(this));
 
       // Whether a button image is selected.
       this.buttonImageSelected_ = false;
@@ -204,7 +180,7 @@ cr.define('oobe', function() {
      * Handles selection change.
      * @private
      */
-    handleSelection_: function() {
+    handleSelect_: function() {
       var selectedItem = $('user-image-grid').selectedItem;
       if (selectedItem === null)
         return;
@@ -227,17 +203,6 @@ cr.define('oobe', function() {
       } else {
         $('ok-button').disabled = true;
       }
-    },
-
-    /**
-     * Handles double click on the image grid.
-     * @param {Event} e Double click Event.
-     */
-    handleImageDblClick_: function(e) {
-      // If an image is double-clicked and not the grid itself, handle this
-      // as 'OK' button button press.
-      if (e.target.id != 'user-image-grid')
-        this.acceptImage_();
     },
 
     /**
@@ -377,12 +342,14 @@ cr.define('oobe', function() {
       var imageGrid = $('user-image-grid');
       UserImagesGrid.decorate(imageGrid);
 
-      imageGrid.addEventListener('change',
-                                 this.handleSelection_.bind(this));
+      // Preview image will track the selected item's URL.
+      imageGrid.previewElement = $('user-image-preview');
+      imageGrid.selectionType = 'default';
+
+      imageGrid.addEventListener('select',
+                                 this.handleSelect_.bind(this));
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
-      imageGrid.addEventListener('dblclick',
-                                 this.handleImageDblClick_.bind(this));
 
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(
@@ -398,18 +365,17 @@ cr.define('oobe', function() {
             el.id = 'profile-image';
           });
       this.profileImage_.type = 'profile';
-      this.selectionType = 'default';
 
-      var video = $('user-image-stream');
-      video.addEventListener('canplay', this.handleVideoStarted_.bind(this));
-      video.addEventListener('timeupdate', this.handleVideoUpdate_.bind(this));
-      $('take-photo').addEventListener('click',
-                                       this.handleTakePhoto_.bind(this));
-      $('discard-photo').addEventListener('click',
-                                          this.handleDiscardPhoto_.bind(this));
-      this.cameraImage = null;
+      // Add camera stream element.
+      imageGrid.cameraImage = null;
+
       // Perform an early check if camera is present, without starting capture.
-      this.checkCameraPresence_(false, false);
+      imageGrid.checkCameraPresence(false, false);
+
+      $('take-photo').addEventListener(
+          'click', this.handleTakePhoto_.bind(this));
+      $('discard-photo').addEventListener(
+          'click', imageGrid.discardPhoto.bind(imageGrid));
     },
 
     /**
@@ -459,34 +425,6 @@ cr.define('oobe', function() {
     },
 
     /**
-     * True when camera is in live mode (i.e. no still photo selected).
-     * @type {boolean}
-     */
-    get cameraLive() {
-      return this.cameraLive_;
-    },
-    set cameraLive(value) {
-      this.cameraLive_ = value;
-      $('user-image-preview').classList[value ? 'add' : 'remove']('live');
-    },
-
-    /**
-     * Type of the selected image (one of 'default', 'profile', 'camera').
-     * @type {string}
-     */
-    get selectionType() {
-      return this.selectionType_;
-    },
-    set selectionType(value) {
-      this.selectionType_ = value;
-      var previewClassList = $('user-image-preview').classList;
-      previewClassList[value == 'default' ? 'add' : 'remove']('default-image');
-      previewClassList[value == 'profile' ? 'add' : 'remove']('profile-image');
-      previewClassList[value == 'camera' ? 'add' : 'remove']('camera');
-      this.updateCaption_();
-    },
-
-    /**
      * Handles image activation (by pressing Enter).
      * @private
      */
@@ -502,102 +440,27 @@ cr.define('oobe', function() {
     },
 
     /**
-     * Handles photo capture from the live camera stream.
-     * @private
-     */
-    handleTakePhoto_: function() {
-      var self = this;
-      var photoURL = this.captureFrame_($('user-image-stream'), CAPTURE_SIZE);
-      chrome.send('photoTaken', [photoURL]);
-      // Wait until image is loaded before displaying it.
-      var previewImg = new Image();
-      previewImg.addEventListener('load', function(e) {
-        self.cameraImage = this.src;
-      });
-      previewImg.src = photoURL;
-    },
-
-    /**
-     * Discard current photo and return to the live camera stream.
-     * @private
-     */
-    handleDiscardPhoto_: function() {
-      this.cameraImage = null;
-    },
-
-    /**
-     * Capture a single still frame from a <video> element.
-     * @param {HTMLVideoElement} video Video element to capture from.
-     * @param {{width: number, height: number}} destSize Capture size.
-     * @return {string} Captured frame as a data URL.
-     * @private
-     */
-    captureFrame_: function(video, destSize) {
-      var canvas = document.createElement('canvas');
-      canvas.width = destSize.width;
-      canvas.height = destSize.height;
-      var ctx = canvas.getContext('2d');
-      var width = video.videoWidth;
-      var height = video.videoHeight;
-      if (width < destSize.width || height < destSize.height) {
-        console.error('Video capture size too small: ' +
-                      width + 'x' + height + '!');
-      }
-      var src = {};
-      if (width / destSize.width > height / destSize.height) {
-        // Full height, crop left/right.
-        src.height = height;
-        src.width = height * destSize.width / destSize.height;
-      } else {
-        // Full width, crop top/bottom.
-        src.width = width;
-        src.height = width * destSize.height / destSize.width;
-      }
-      src.x = (width - src.width) / 2;
-      src.y = (height - src.height) / 2;
-      ctx.drawImage(video, src.x, src.y, src.width, src.height,
-                    0, 0, destSize.width, destSize.height);
-      return canvas.toDataURL('image/png');
-    },
-
-    /**
      * Handles selection change.
      * @private
      */
-    handleSelection_: function() {
-      var selectedItem = $('user-image-grid').selectedItem;
-      if (selectedItem === null)
-        return;
-
-      // Update preview image URL.
-      var url = selectedItem.url;
-      $('user-image-preview-img').src = url;
-
-      // Update current selection type.
-      this.selectionType = selectedItem.type;
-
-      // Show grey silhouette with the same border as stock images.
-      if (/^chrome:\/\/theme\//.test(url))
-        $('user-image-preview').classList.add('default-image');
-
-      if (ButtonImageUrls.indexOf(url) == -1) {
-        // Non-button image is selected.
-        $('ok-button').disabled = false;
-        chrome.send('selectImage', [url]);
-      } else {
+    handleSelect_: function() {
+      if (this.selectionType == 'camera' && this.cameraLive) {
+        // No current image selected.
         $('ok-button').disabled = true;
+      } else {
+        $('ok-button').disabled = false;
+        chrome.send('selectImage', [$('user-image-grid').selectedItemUrl]);
       }
+      this.updateCaption_();
     },
 
     /**
-     * Handles double click on the image grid.
-     * @param {Event} e Double click Event.
+     * Handle photo capture from the live camera stream.
      */
-    handleImageDblClick_: function(e) {
-      // If an image is double-clicked and not the grid itself, handle this
-      // as 'OK' button button press.
-      if (e.target.id != 'user-image-grid')
-        this.acceptImage_();
+    handleTakePhoto_: function(e) {
+      $('user-image-grid').takePhoto(function(photoURL) {
+        chrome.send('photoTaken', [photoURL]);
+      });
     },
 
     /**
@@ -606,17 +469,18 @@ cr.define('oobe', function() {
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
-      $('user-image-grid').updateAndFocus();
-      chrome.send('onUserImageScreenShown');
+      var imageGrid = $('user-image-grid');
+      imageGrid.updateAndFocus();
       // Now check again for camera presence and start capture.
-      this.checkCameraPresence_(true, true);
+      imageGrid.checkCameraPresence(true, true);
+      chrome.send('onUserImageScreenShown');
     },
 
     /**
      * Event handler that is invoked just before the screen is hidden.
      */
     onBeforeHide: function() {
-      $('user-image-stream').src = '';
+      $('user-image-grid').stopCamera();
     },
 
     /**
@@ -631,123 +495,6 @@ cr.define('oobe', function() {
         okButton.disabled = true;
         chrome.send('onUserImageAccepted');
       }
-    },
-
-    /**
-     * @param {boolean} present Whether a camera is present or not.
-     */
-    get cameraPresent() {
-      return this.cameraPresent_;
-    },
-    set cameraPresent(value) {
-      this.cameraPresent_ = value;
-      if (this.cameraLive)
-        this.cameraImage = null;
-    },
-
-    /**
-     * Start camera presence check.
-     * @param {boolean} autoplay Whether to start capture immediately.
-     * @param {boolean} preselect Whether to select camera automatically.
-     * @private
-     */
-    checkCameraPresence_: function(autoplay, preselect) {
-      $('user-image-preview').classList.remove('online');
-      navigator.webkitGetUserMedia(
-          {video: true},
-          this.handleCameraAvailable_.bind(this, autoplay, preselect),
-          // When ready to capture camera, poll regularly for camera presence.
-          this.handleCameraAbsent_.bind(this, /* recheck= */ autoplay));
-    },
-
-    /**
-     * Handles successful camera check.
-     * @param {boolean} autoplay Whether to start capture immediately.
-     * @param {boolean} preselect Whether to select camera automatically.
-     * @param {MediaStream} stream Stream object as returned by getUserMedia.
-     * @private
-     */
-    handleCameraAvailable_: function(autoplay, preselect, stream) {
-      if (autoplay)
-        $('user-image-stream').src = window.webkitURL.createObjectURL(stream);
-      this.cameraPresent = true;
-      if (preselect)
-        $('user-image-grid').selectedItem = this.cameraImage;
-    },
-
-    /**
-     * Handles camera check failure.
-     * @param {boolean} recheck Whether to check for camera again.
-     * @param {NavigatorUserMediaError=} err Error object.
-     * @private
-     */
-    handleCameraAbsent_: function(recheck, err) {
-      this.cameraPresent = false;
-      $('user-image-preview').classList.remove('online');
-      // |preselect| is |false| in this case to not override user's selection.
-      if (recheck) {
-        setTimeout(this.checkCameraPresence_.bind(this, true, false),
-                   CAMERA_CHECK_INTERVAL_MS);
-      }
-      if (this.cameraLiveCheckTimer_) {
-        clearInterval(this.cameraLiveCheckTimer_);
-        this.cameraLiveCheckTimer_ = null;
-      }
-    },
-
-    /**
-     * Handles successful camera capture start.
-     * @private
-     */
-    handleVideoStarted_: function() {
-      $('user-image-preview').classList.add('online');
-      this.cameraLiveCheckTimer_ = setInterval(this.checkCameraLive_.bind(this),
-                                               CAMERA_LIVENESS_CHECK_MS);
-    },
-
-    /**
-     * Handles camera stream update. Called regularly (at rate no greater then
-     * 4/sec) while camera stream is live.
-     * @private
-     */
-    handleVideoUpdate_: function() {
-      this.lastFrameTime_ = new Date().getTime();
-    },
-
-    /**
-     * Checks if camera is still live by comparing the timestamp of the last
-     * 'timeupdate' event with the current time.
-     * @private
-     */
-    checkCameraLive_: function() {
-      if (new Date().getTime() - this.lastFrameTime_ > CAMERA_LIVENESS_CHECK_MS)
-        this.handleCameraAbsent_(true, null);
-    },
-
-    /**
-     * Current image captured from camera as data URL. Setting to null will
-     * return to the live camera stream.
-     * @type {string=}
-     */
-    get cameraImage() {
-      return this.cameraImage_;
-    },
-    set cameraImage(imageUrl) {
-      this.cameraLive = !imageUrl;
-      var imageGrid = $('user-image-grid');
-      if (this.cameraPresent && !imageUrl) {
-        imageUrl = ButtonImages.TAKE_PHOTO;
-      }
-      if (imageUrl) {
-        this.cameraImage_ = this.cameraImage_ ?
-            imageGrid.updateItem(this.cameraImage_, imageUrl) :
-            imageGrid.addItem(imageUrl, undefined, undefined, 0);
-        this.cameraImage_.type = 'camera';
-      } else {
-        imageGrid.removeItem(this.cameraImage_);
-        this.cameraImage_ = null;
-      }
-      imageGrid.focus();
     },
 
     /**

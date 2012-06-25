@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "content/public/browser/notification_registrar.h"
@@ -24,7 +25,8 @@ namespace options2 {
 // ChromeOS user image options page UI handler.
 class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
                                     public SelectFileDialog::Listener,
-                                    public TakePhotoDialog::Delegate {
+                                    public TakePhotoDialog::Delegate,
+                                    public ImageDecoder::Delegate {
  public:
   ChangePictureOptionsHandler();
   virtual ~ChangePictureOptionsHandler();
@@ -63,6 +65,9 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
   // Opens the camera capture dialog.
   void HandleTakePhoto(const base::ListValue* args);
 
+  // Handles photo taken with WebRTC UI.
+  void HandlePhotoTaken(const base::ListValue* args);
+
   // Gets the list of available user images and sends it to the page.
   void HandleGetAvailableImages(const base::ListValue* args);
 
@@ -94,6 +99,11 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;
 
+  // Overriden from ImageDecoder::Delegate:
+  virtual void OnImageDecoded(const ImageDecoder* decoder,
+                              const SkBitmap& decoded_image) OVERRIDE;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   // Previous user image from camera/file and its data URL.
@@ -103,9 +113,19 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
   // Index of the previous user image.
   int previous_image_index_;
 
+  // Last user photo, if taken.
+  gfx::ImageSkia user_photo_;
+
+  // Data URL for |user_photo_|.
+  std::string user_photo_data_url_;
+
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ChangePictureOptionsHandler> weak_factory_;
+
+  // Last ImageDecoder instance used to decode an image blob received by
+  // HandlePhotoTaken.
+  scoped_refptr<ImageDecoder> image_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };

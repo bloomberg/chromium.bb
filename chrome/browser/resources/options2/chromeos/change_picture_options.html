@@ -1,9 +1,18 @@
-<div id="change-picture-page" class="page" hidden>
+<div id="change-picture-page" class="page" i18n-values="camera:cameraType" hidden>
   <div class="close-button"></div>
   <h1 i18n-content="changePicturePage"></h1>
   <div class="content-area">
-    <span i18n-content="changePicturePageDescription"></span>
-    <grid id="images-grid" class="image-picker"></grid>
+    <div i18n-content="changePicturePageDescription"></div>
+    <grid id="user-image-grid" class="user-image-picker"></grid>
+    <div id="user-image-preview">
+      <img class="user-image-preview-img" i18n-values="alt:previewAltText">
+      <div class="user-image-stream-area">
+        <video class="user-image-stream" autoplay></video>
+        <div class="spinner"></div>
+      </div>
+      <button id="discard-photo"></button>
+      <button id="take-photo"></button>
+    </div>
   </div>
   <div class="action-area">
     <div class="button-strip">

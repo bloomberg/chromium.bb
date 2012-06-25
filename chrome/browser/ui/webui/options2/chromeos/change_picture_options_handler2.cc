@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -22,12 +23,15 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/data_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
@@ -75,6 +79,8 @@ ChangePictureOptionsHandler::ChangePictureOptionsHandler()
 ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
+  if (image_decoder_.get())
+    image_decoder_->set_delegate(NULL);
 }
 
 void ChangePictureOptionsHandler::GetLocalizedValues(
@@ -93,9 +99,12 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("profilePhotoLoading",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO));
-
-  localized_strings->SetBoolean("userIsEphemeral",
-                                UserManager::Get()->IsCurrentUserEphemeral());
+  localized_strings->SetString("previewAltText",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHtml5Camera))
+    localized_strings->SetString("cameraType", "webrtc");
+  else
+    localized_strings->SetString("cameraType", "old");
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {
@@ -104,6 +113,9 @@ void ChangePictureOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("takePhoto",
       base::Bind(&ChangePictureOptionsHandler::HandleTakePhoto,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("photoTaken",
+      base::Bind(&ChangePictureOptionsHandler::HandlePhotoTaken,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onChangePicturePageShown",
       base::Bind(&ChangePictureOptionsHandler::HandlePageShown,
@@ -160,20 +172,45 @@ void ChangePictureOptionsHandler::HandleTakePhoto(const ListValue* args) {
   window->Show();
 }
 
+void ChangePictureOptionsHandler::HandlePhotoTaken(
+    const base::ListValue* args) {
+  std::string image_url;
+  if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
+    NOTREACHED();
+  DCHECK(!image_url.empty());
+
+  std::string mime_type, charset, raw_data;
+  if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
+    NOTREACHED();
+  DCHECK_EQ("image/png", mime_type);
+
+  user_photo_ = gfx::ImageSkia();
+  user_photo_data_url_ = image_url;
+
+  if (image_decoder_.get())
+    image_decoder_->set_delegate(NULL);
+  image_decoder_ = new ImageDecoder(this, raw_data);
+  image_decoder_->Start();
+}
+
 void ChangePictureOptionsHandler::HandlePageInitialized(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
-  // If no camera presence check has been performed in this session,
-  // start one now.
-  if (CameraDetector::camera_presence() ==
-      CameraDetector::kCameraPresenceUnknown) {
-    CheckCameraPresence();
-  }
 
-  // While the check is in progress, use previous camera presence state and
-  // presume it is present if no check has been performed yet.
-  SetCameraPresent(CameraDetector::camera_presence() !=
-                   CameraDetector::kCameraAbsent);
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableHtml5Camera)) {
+    // If no camera presence check has been performed in this session,
+    // start one now.
+    if (CameraDetector::camera_presence() ==
+        CameraDetector::kCameraPresenceUnknown) {
+      CheckCameraPresence();
+    }
+
+    // While the check is in progress, use previous camera presence state and
+    // presume it is present if no check has been performed yet.
+    SetCameraPresent(CameraDetector::camera_presence() !=
+                     CameraDetector::kCameraAbsent);
+  }
 
   SendDefaultImages();
 }
@@ -250,6 +287,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   UserManager* user_manager = UserManager::Get();
   const User& user = user_manager->GetLoggedInUser();
   int image_index = User::kInvalidImageIndex;
+  bool waiting_for_camera_photo = false;
 
   if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false)) {
     // Image from file/camera uses kChromeUIUserImageURL as URL while
@@ -273,6 +311,15 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
                               image_index,
                               kHistogramImagesCount);
     VLOG(1) << "Selected default user image: " << image_index;
+  } else if (image_url == user_photo_data_url_) {
+    // Camera image is selected.
+    if (user_photo_.empty()) {
+      DCHECK(image_decoder_.get());
+      waiting_for_camera_photo = true;
+      VLOG(1) << "Still waiting for camera image to decode";
+    } else {
+      OnPhotoAccepted(user_photo_);
+    }
   } else {
     // Profile image selected. Could be previous (old) user image.
     user_manager->SaveUserImageFromProfileImage(user.email());
@@ -289,6 +336,10 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
       VLOG(1) << "Selected profile image";
     }
   }
+
+  // Ignore the result of the previous decoding if it's no longer needed.
+  if (!waiting_for_camera_photo && image_decoder_.get())
+    image_decoder_->set_delegate(NULL);
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
@@ -300,6 +351,7 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromFile,
                             kHistogramImagesCount);
+  VLOG(1) << "Selected image from file";
 }
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
@@ -309,9 +361,13 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);
+  VLOG(1) << "Selected camera photo";
 }
 
 void ChangePictureOptionsHandler::CheckCameraPresence() {
+  // For WebRTC, camera presence checked is done on JS side.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHtml5Camera))
+    return;
   CameraDetector::StartPresenceCheck(
       base::Bind(&ChangePictureOptionsHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));
@@ -346,6 +402,20 @@ gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {
   if (!browser)
     return NULL;
   return browser->window()->GetNativeWindow();
+}
+
+void ChangePictureOptionsHandler::OnImageDecoded(
+    const ImageDecoder* decoder,
+    const SkBitmap& decoded_image) {
+  DCHECK_EQ(image_decoder_.get(), decoder);
+  image_decoder_ = NULL;
+  user_photo_ = gfx::ImageSkia(decoded_image);
+  OnPhotoAccepted(user_photo_);
+}
+
+void ChangePictureOptionsHandler::OnDecodeImageFailed(
+    const ImageDecoder* decoder) {
+  NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
 }  // namespace options2

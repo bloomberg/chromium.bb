@@ -511,13 +511,6 @@ html[oobe=old] #user-image {
   top: 14px;
 }
 
-#user-image-preview {
-  border-radius: 4px;
-  float: right;
-  margin: 4px;
-  max-width: 220px;
-}
-
 /**
  * #user-image-preview can have the following classes:
  * .default-image: one of the default images is selected (including the grey
@@ -528,6 +521,13 @@ html[oobe=old] #user-image {
  * .camera: camera (live or photo) is selected;
  * .live: camera is in live mode (no photo taken yet/last photo removed).
  */
+
+#user-image-preview {
+  border-radius: 4px;
+  float: right;
+  margin: 4px;
+  max-width: 220px;
+}
 
 html[dir=rtl] #user-image-preview {
   float: left;
