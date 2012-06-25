@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Thu Jun 21 17:17:39 2012. */
+/* From ppb_input_event.idl modified Fri Jun 22 15:22:14 2012. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -119,10 +119,26 @@ typedef enum {
    */
   PP_INPUTEVENT_TYPE_CHAR = 9,
   /**
+   * Notification that a context menu should be shown.
+   *
+   * This message will be sent when the user right-clicks or performs another
+   * OS-specific mouse command that should open a context menu. When this event
+   * is delivered depends on the system, on some systems (Mac) it will
+   * delivered after the mouse down event, and on others (Windows) it will be
+   * delivered after the mouse up event.
+   *
+   * You will always get the normal mouse events. For example, you may see
+   * MOUSEDOWN,CONTEXTMENU,MOUSEUP or MOUSEDOWN,MOUSEUP,CONTEXTMENU.
+   *
+   * The return value from the event handler determines if the context menu
+   * event will be passed to the page when you are using filtered input events
+   * (via RequestFilteringInputEvents()). In non-filtering mode the event will
+   * never be propagated and no context menu will be displayed. If you are
+   * handling mouse events in filtering mode, you may want to return true from
+   * this event even if you do not support a context menu to suppress the
+   * default one.
+   *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
-   */
-  /*
-   * TODO(brettw) when is this used?
    */
   PP_INPUTEVENT_TYPE_CONTEXTMENU = 10,
   /**
