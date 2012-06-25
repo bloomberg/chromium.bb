@@ -1,0 +1,3 @@
+0000000000000000: 0f c8                                        [P] dontcare %eax (su)
+0000000000000002: 48 0f c8                                     [P] dontcare %rax (su)
+0000000000000005: 66 0f c8                                     invalid

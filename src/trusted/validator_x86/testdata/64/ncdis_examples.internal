@@ -1822,24 +1822,24 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %xmm7, ExprUsed },
 };
 0000000000000000: 0f c8                                        bswap %eax
-  0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
-    Bswap $r8v
+  0f c8 - r0                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
       G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 0f c8                                     bswap %rax
-  0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
-    Bswap $r8v
+  0f c8 - r0                  386 OpcodePlusR OperandSize_o
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 49 0f cd                                     bswap %r13
-  0f cd - r5                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
-    Bswap $r8v
+  0f cd - r5                  386 OpcodePlusR OperandSize_o
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },

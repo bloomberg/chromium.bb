@@ -1,0 +1,8 @@
+# Test handling of different sizes for instruction bswap.
+# 32-bit example
+0f c8
+# 64-bit example
+48 0f c8
+# Bad case, we should not parse 16-bit operands
+66 0f c8
+

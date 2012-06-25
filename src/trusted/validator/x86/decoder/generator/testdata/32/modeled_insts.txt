@@ -3026,36 +3026,60 @@ Target: x86-32 bit mode
       Mo_Operand              OpUse OpSet
   0f c7                       INVALID OpcodeUsesModRm NaClIllegal
   --- c8 ---
-  0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f c8 - r0                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f c8 - r0                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- c9 ---
-  0f c9 - r1                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f c9 - r1                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f c9 - r1                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- ca ---
-  0f ca - r2                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f ca - r2                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f ca - r2                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- cb ---
-  0f cb - r3                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f cb - r3                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f cb - r3                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- cc ---
-  0f cc - r4                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f cc - r4                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f cc - r4                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- cd ---
-  0f cd - r5                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f cd - r5                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f cd - r5                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- ce ---
-  0f ce - r6                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f ce - r6                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f ce - r6                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- cf ---
-  0f cf - r7                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Bswap $r8v
+  0f cf - r7                  386 OpcodePlusR OperandSize_v
+    Bswap $r8vd
+      G_OpcodeBase            OpUse OpSet
+  0f cf - r7                  386 OpcodePlusR
+    Bswap $r8vq
       G_OpcodeBase            OpUse OpSet
   --- d0 ---
   0f d0                       INVALID NaClIllegal

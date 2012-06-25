@@ -75,6 +75,7 @@ static void NaCl3DNow0F0FInsts(struct NaClSymbolTable* st) {
 }
 
 void NaClDef0FInsts(struct NaClSymbolTable* st) {
+  int i;
   NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 1, 4);
   NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 3, 9);
   NaClDefPrefixInstMrmChoices_32_64(Prefix0F, 0x01, 7, 2, 4);
@@ -294,6 +295,11 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
   NaClEndDef(                                                         Exchange);
   NaClDefine("     0fc7/r:   Invalid",             NACLi_INVALID, st, Other);
-  NaClDefReg("     0fc8+@reg:  Bswap $r8v", 0, 7,  NACLi_386,     st,
+  for (i = 0; i <= 7; ++i) {
+    NaClDefPrefixInstChoices(Prefix0F, 0xc8 + i, 2);
+  }
+  NaClDefReg("     0fc8+@reg:  Bswap $r8vd", 0, 7, NACLi_386,     st,
+                                                                  UnaryUpdate);
+  NaClDefReg("     0fc8+@reg:  Bswap $r8vq", 0, 7,  NACLi_386,    st,
                                                                   UnaryUpdate);
 }

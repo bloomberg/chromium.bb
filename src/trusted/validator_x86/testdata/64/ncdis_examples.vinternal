@@ -1660,24 +1660,24 @@ NaClExpVector[2] = {
   { ExprRegister[0] , %xmm7, ExprUsed },
 };
 0000000000000000: 0f c8                                        [P] dontcare %eax (su)
-  0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    DontCare $r8v
+  0f c8 - r0                  386 OpcodePlusR OperandSize_v PartialInstruction
+    DontCare $r8vd
       G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 0f c8                                     [P] dontcare %rax (su)
-  0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    DontCare $r8v
+  0f c8 - r0                  386 OpcodePlusR OperandSize_o PartialInstruction
+    DontCare $r8vq
       G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 49 0f cd                                     [P] dontcare %r13 (su)
-  0f cd - r5                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
-    DontCare $r8v
+  0f cd - r5                  386 OpcodePlusR OperandSize_o PartialInstruction
+    DontCare $r8vq
       G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },

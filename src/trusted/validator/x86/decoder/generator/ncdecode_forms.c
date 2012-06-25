@@ -916,6 +916,28 @@ static void NaClOperandForm_r8v() {
                 NACL_IFLAG(OperandSize_o));
 }
 
+/* Note: The interpretation for r8vd is documented in ncdecode_forms.h. That is,
+ *   r8 - The 8 registers rAX, rCX, rDX, rBX, rSP, rBP, rSI, rDI, and the
+ *        optional registers r8-r15 if REX.b is set, based on the register value
+ *        embedded in the opcode
+ *   vd - A doubleword only when the effective operand size matches.
+ */
+static void NaClOperandForm_r8vd() {
+  NaClDefOp(G_OpcodeBase, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v));
+}
+
+/* Note: The interpretation for r8vq is documented in ncdecode_forms.h. That is,
+ *   r8 - The 8 registers rAX, rCX, rDX, rBX, rSP, rBP, rSI, rDI, and the
+ *        optional registers r8-r15 if REX.b is set, based on the register value
+ *        embedded in the opcode.
+ *   vq - A quadword only when the effective operand size matches.
+ */
+static void NaClOperandForm_r8vq() {
+  NaClDefOp(G_OpcodeBase, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_o));
+}
+
 static void NaClOperandForm_SGz() {
   NaClDefOp(Seg_G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
@@ -1568,6 +1590,8 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("rDIv",    NaClOperandForm_rDIv,      defop_st);
     NaClSymbolTablePutDefOp("r8b",     NaClOperandForm_r8b,       defop_st);
     NaClSymbolTablePutDefOp("r8v",     NaClOperandForm_r8v,       defop_st);
+    NaClSymbolTablePutDefOp("r8vd",    NaClOperandForm_r8vd,      defop_st);
+    NaClSymbolTablePutDefOp("r8vq",    NaClOperandForm_r8vq,      defop_st);
     NaClSymbolTablePutDefOp("SGz",     NaClOperandForm_SGz,       defop_st);
     NaClSymbolTablePutDefOp("Sw",      NaClOperandForm_Sw,        defop_st);
     NaClSymbolTablePutDefOp("Udq",     NaClOperandForm_Udq,       defop_st);
