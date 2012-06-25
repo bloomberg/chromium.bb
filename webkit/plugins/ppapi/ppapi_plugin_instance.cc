@@ -497,6 +497,8 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
   plugin_url_ = plugin_url;
   full_frame_ = full_frame;
 
+  container_->setIsAcceptingTouchEvents(IsAcceptingTouchEvents());
+
   argn_ = arg_names;
   argv_ = arg_values;
   scoped_array<const char*> argn_array(StringVectorToArgArray(argn_));
@@ -1051,6 +1053,11 @@ bool PluginInstance::LoadZoomInterface() {
 
 bool PluginInstance::PluginHasFocus() const {
   return has_webkit_focus_ && has_content_area_focus_;
+}
+
+bool PluginInstance::IsAcceptingTouchEvents() const {
+  return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
+      (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
 }
 
 void PluginInstance::ScheduleAsyncDidChangeView(
@@ -1876,6 +1883,8 @@ int32_t PluginInstance::RequestInputEvents(PP_Instance instance,
                                            uint32_t event_classes) {
   input_event_mask_ |= event_classes;
   filtered_input_event_mask_ &= ~(event_classes);
+  if (event_classes & PP_INPUTEVENT_CLASS_TOUCH)
+    container_->setIsAcceptingTouchEvents(IsAcceptingTouchEvents());
   return ValidateRequestInputEvents(false, event_classes);
 }
 
@@ -1883,6 +1892,8 @@ int32_t PluginInstance::RequestFilteringInputEvents(PP_Instance instance,
                                                     uint32_t event_classes) {
   filtered_input_event_mask_ |= event_classes;
   input_event_mask_ &= ~(event_classes);
+  if (event_classes & PP_INPUTEVENT_CLASS_TOUCH)
+    container_->setIsAcceptingTouchEvents(IsAcceptingTouchEvents());
   return ValidateRequestInputEvents(true, event_classes);
 }
 
@@ -1890,6 +1901,8 @@ void PluginInstance::ClearInputEventRequest(PP_Instance instance,
                                             uint32_t event_classes) {
   input_event_mask_ &= ~(event_classes);
   filtered_input_event_mask_ &= ~(event_classes);
+  if (event_classes & PP_INPUTEVENT_CLASS_TOUCH)
+    container_->setIsAcceptingTouchEvents(IsAcceptingTouchEvents());
 }
 
 void PluginInstance::ZoomChanged(PP_Instance instance, double factor) {

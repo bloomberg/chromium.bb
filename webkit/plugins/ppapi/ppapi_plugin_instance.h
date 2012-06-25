@@ -433,6 +433,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // (see has_webkit_focus_ below).
   bool PluginHasFocus() const;
 
+  // Returns true if the plugin has registered to accept touch events.
+  bool IsAcceptingTouchEvents() const;
+
   void ScheduleAsyncDidChangeView(const ::ppapi::ViewData& previous_view);
   void SendAsyncDidChangeView(const ::ppapi::ViewData& previous_view);
   void SendDidChangeView(const ::ppapi::ViewData& previous_view);
