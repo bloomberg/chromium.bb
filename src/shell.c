@@ -2013,6 +2013,7 @@ static void
 resume_desktop(struct desktop_shell *shell)
 {
 	struct shell_surface *tmp;
+	struct workspace *ws = get_current_workspace(shell);
 
 	wl_list_for_each(tmp, &shell->screensaver.surfaces, link)
 		hide_screensaver(shell, tmp);
@@ -2024,6 +2025,7 @@ resume_desktop(struct desktop_shell *shell)
 		       &shell->fullscreen_layer.link);
 	wl_list_insert(&shell->fullscreen_layer.link,
 		       &shell->panel_layer.link);
+	wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
 
 	pop_focus_state(shell, get_current_workspace(shell));
 
@@ -2515,6 +2517,7 @@ lock(struct wl_listener *listener, void *data)
 		container_of(listener, struct desktop_shell, lock_listener);
 	struct shell_surface *shsurf;
 	struct weston_output *output;
+	struct workspace *ws = get_current_workspace(shell);
 
 	if (shell->locked) {
 		wl_list_for_each(output, &shell->compositor->output_list, link)
@@ -2532,6 +2535,7 @@ lock(struct wl_listener *listener, void *data)
 
 	wl_list_remove(&shell->panel_layer.link);
 	wl_list_remove(&shell->fullscreen_layer.link);
+	wl_list_remove(&ws->layer.link);
 	wl_list_insert(&shell->compositor->cursor_layer.link,
 		       &shell->lock_layer.link);
 
@@ -3254,6 +3258,8 @@ workspace_up_binding(struct wl_seat *seat, uint32_t time,
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
 
+	if (!shell->locked)
+		return;
 	if (new_index != 0)
 		new_index--;
 
@@ -3267,6 +3273,8 @@ workspace_down_binding(struct wl_seat *seat, uint32_t time,
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
 
+	if (!shell->locked)
+		return;
 	if (new_index < shell->workspaces.num - 1)
 		new_index++;
 
@@ -3280,6 +3288,8 @@ workspace_f_binding(struct wl_seat *seat, uint32_t time,
 	struct desktop_shell *shell = data;
 	unsigned int new_index;
 
+	if (!shell->locked)
+		return;
 	new_index = key - KEY_F1;
 	if (new_index >= shell->workspaces.num)
 		new_index = shell->workspaces.num - 1;
