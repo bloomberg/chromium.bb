@@ -223,13 +223,23 @@ cr.define('extensions', function() {
       });
     }
 
-    if (extensionsData.developerMode) {
-      $('toggle-dev-on').checked = true;
-      $('extension-settings').classList.add('dev-mode');
-      $('dev-controls').hidden = false;
+    var pageDiv = $('extension-settings');
+    if (extensionsData.managedMode) {
+      pageDiv.classList.add('showing-banner');
+      pageDiv.classList.add('managed-mode');
+      $('toggle-dev-on').disabled = true;
     } else {
+      pageDiv.classList.remove('showing-banner');
+      pageDiv.classList.remove('managed-mode');
+      $('toggle-dev-on').disabled = false;
+    }
+
+    if (extensionsData.developerMode && !extensionsData.managedMode) {
+      pageDiv.classList.add('dev-mode');
+      $('toggle-dev-on').checked = true;
+    } else {
+      pageDiv.classList.remove('dev-mode');
       $('toggle-dev-on').checked = false;
-      $('extension-settings').classList.remove('dev-mode');
     }
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;

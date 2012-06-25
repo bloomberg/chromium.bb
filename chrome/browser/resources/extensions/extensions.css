@@ -253,3 +253,17 @@ html[dir='rtl'] #extension-settings .trash {
 .may-not-disable .optional-controls {
   display: none;
 }
+
+.page:not(.dev-mode) #dev-controls {
+  display: none;
+}
+
+/* Managed mode */
+
+.page:not(.managed-mode) #managed-mode-banner {
+  display: none;
+}
+
+.managed-mode .more-extensions-link {
+  display: none;
+}

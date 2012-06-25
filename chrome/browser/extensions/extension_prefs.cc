@@ -657,8 +657,13 @@ void ExtensionPrefs::SetAppNotificationDisabled(
                       Value::CreateBooleanValue(value));
 }
 
-std::string ExtensionPrefs::GetPolicyProviderName() const {
+std::string ExtensionPrefs::GetDebugPolicyProviderName() const {
+#ifdef NDEBUG
+  NOTREACHED();
+  return std::string();
+#else
   return "admin policy black/white/forcelist, via the ExtensionPrefs";
+#endif
 }
 
 bool ExtensionPrefs::UserMayLoad(const extensions::Extension* extension,

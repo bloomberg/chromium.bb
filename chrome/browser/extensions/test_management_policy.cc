@@ -27,7 +27,7 @@ void TestManagementPolicyProvider::SetProhibitedActions(
   must_remain_enabled_ = (prohibited_actions & MUST_REMAIN_ENABLED) != 0;
 }
 
-std::string TestManagementPolicyProvider::GetPolicyProviderName() const {
+std::string TestManagementPolicyProvider::GetDebugPolicyProviderName() const {
   return "the test management policy provider";
 }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,10 +38,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ManagedModeOnChange) {
 
   // Fire the extension event when entering managed mode. We directly call
   // SetInManagedMode() to bypass any confirmation dialogs etc.
-  ManagedMode::GetInstance()->SetInManagedMode(true);
+  ManagedMode::GetInstance()->SetInManagedMode(browser()->profile());
 
   // Fire the extension event when leaving managed mode.
-  ManagedMode::GetInstance()->SetInManagedMode(false);
+  ManagedMode::GetInstance()->SetInManagedMode(NULL);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

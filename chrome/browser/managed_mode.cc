@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
@@ -16,6 +17,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 ManagedMode* ManagedMode::GetInstance() {
@@ -25,12 +28,26 @@ ManagedMode* ManagedMode::GetInstance() {
 // static
 void ManagedMode::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInManagedMode, false);
+}
+
+// static
+void ManagedMode::Init(Profile* profile) {
+  GetInstance()->InitImpl(profile);
+}
+
+void ManagedMode::InitImpl(Profile* profile) {
+  DCHECK(g_browser_process);
+  DCHECK(g_browser_process->local_state());
+
+  Profile* original_profile = profile->GetOriginalProfile();
   // Set the value directly in the PrefService instead of using
   // CommandLinePrefStore so we can change it at runtime.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoManaged))
-    GetInstance()->SetInManagedMode(false);
-  else if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kManaged))
-    GetInstance()->SetInManagedMode(true);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoManaged)) {
+    SetInManagedMode(NULL);
+  } else if (IsInManagedModeImpl() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kManaged)) {
+    SetInManagedMode(original_profile);
+  }
 }
 
 // static
@@ -38,7 +55,7 @@ bool ManagedMode::IsInManagedMode() {
   return GetInstance()->IsInManagedModeImpl();
 }
 
-bool ManagedMode::IsInManagedModeImpl() {
+bool ManagedMode::IsInManagedModeImpl() const {
   // |g_browser_process| can be NULL during startup.
   if (!g_browser_process)
     return false;
@@ -56,11 +73,11 @@ void ManagedMode::EnterManagedMode(Profile* profile,
 
 void ManagedMode::EnterManagedModeImpl(Profile* profile,
                                        const EnterCallback& callback) {
+  Profile* original_profile = profile->GetOriginalProfile();
   if (IsInManagedModeImpl()) {
-    callback.Run(true);
+    callback.Run(original_profile == managed_profile_);
     return;
   }
-  Profile* original_profile = profile->GetOriginalProfile();
   if (!callbacks_.empty()) {
     // We are already in the process of entering managed mode, waiting for
     // browsers to close. Don't allow entering managed mode again for a
@@ -76,22 +93,23 @@ void ManagedMode::EnterManagedModeImpl(Profile* profile,
     callback.Run(false);
     return;
   }
-  managed_profile_ = original_profile;
   // Close all other profiles.
   // At this point, we shouldn't be waiting for other browsers to close (yet).
   DCHECK_EQ(0u, browsers_to_close_.size());
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if ((*i)->profile()->GetOriginalProfile() != managed_profile_)
+    if ((*i)->profile()->GetOriginalProfile() != original_profile)
       browsers_to_close_.insert(*i);
   }
 
   if (browsers_to_close_.empty()) {
-    SetInManagedMode(true);
-    managed_profile_ = NULL;
+    SetInManagedMode(original_profile);
     callback.Run(true);
     return;
   }
+  // Remember the profile we're trying to manage while we wait for other
+  // browsers to close.
+  managed_profile_ = original_profile;
   callbacks_.push_back(callback);
   registrar_.Add(this, content::NOTIFICATION_APP_EXITING,
                  content::NotificationService::AllSources());
@@ -111,7 +129,36 @@ void ManagedMode::LeaveManagedMode() {
 void ManagedMode::LeaveManagedModeImpl() {
   bool confirmed = PlatformConfirmLeave();
   if (confirmed)
-    SetInManagedMode(false);
+    SetInManagedMode(NULL);
+}
+
+std::string ManagedMode::GetDebugPolicyProviderName() const {
+  // Save the string space in official builds.
+#ifdef NDEBUG
+  NOTREACHED();
+  return std::string();
+#else
+  return "Managed Mode";
+#endif
+}
+
+bool ManagedMode::UserMayLoad(const extensions::Extension* extension,
+                              string16* error) const {
+  return ExtensionManagementPolicyImpl(error);
+}
+
+bool ManagedMode::UserMayModifySettings(const extensions::Extension* extension,
+                                        string16* error) const {
+  return ExtensionManagementPolicyImpl(error);
+}
+
+bool ManagedMode::ExtensionManagementPolicyImpl(string16* error) const {
+  if (!IsInManagedModeImpl())
+    return true;
+
+  if (error)
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_MODE);
+  return false;
 }
 
 void ManagedMode::OnBrowserAdded(Browser* browser) {
@@ -119,6 +166,7 @@ void ManagedMode::OnBrowserAdded(Browser* browser) {
   if (callbacks_.empty())
     return;
 
+  DCHECK(managed_profile_);
   if (browser->profile()->GetOriginalProfile() != managed_profile_)
     FinalizeEnter(false);
 }
@@ -128,6 +176,7 @@ void ManagedMode::OnBrowserRemoved(Browser* browser) {
   if (callbacks_.empty())
     return;
 
+  DCHECK(managed_profile_);
   if (browser->profile()->GetOriginalProfile() == managed_profile_) {
     // Ignore closing browser windows that are in managed mode.
     return;
@@ -144,7 +193,6 @@ ManagedMode::ManagedMode() : managed_profile_(NULL) {
 
 ManagedMode::~ManagedMode() {
   BrowserList::RemoveObserver(this);
-  DCHECK(!managed_profile_);
   DCHECK_EQ(0u, callbacks_.size());
   DCHECK_EQ(0u, browsers_to_close_.size());
 }
@@ -176,12 +224,11 @@ void ManagedMode::Observe(int type,
 
 void ManagedMode::FinalizeEnter(bool result) {
   if (result)
-    SetInManagedMode(true);
+    SetInManagedMode(managed_profile_);
   for (std::vector<EnterCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end(); ++it) {
     it->Run(result);
   }
-  managed_profile_ = NULL;
   callbacks_.clear();
   browsers_to_close_.clear();
   registrar_.RemoveAll();
@@ -197,13 +244,25 @@ bool ManagedMode::PlatformConfirmLeave() {
   return true;
 }
 
-void ManagedMode::SetInManagedMode(bool in_managed_mode) {
-  g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode,
-                                               in_managed_mode);
+void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
+  // Register the ManagementPolicy::Provider before changing the pref when
+  // setting it, and unregister it after changing the pref when clearing it,
+  // so pref observers see the correct ManagedMode state.
+  if (newly_managed_profile) {
+    DCHECK(!managed_profile_ || managed_profile_ == newly_managed_profile);
+    ExtensionSystem::Get(
+        newly_managed_profile)->management_policy()->RegisterProvider(this);
+    g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode, true);
+  } else {
+    ExtensionSystem::Get(
+        managed_profile_)->management_policy()->UnregisterProvider(this);
+    g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode, false);
+  }
+  managed_profile_ = newly_managed_profile;
+
   // This causes the avatar and the profile menu to get updated.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllBrowserContextsAndSources(),
       content::NotificationService::NoDetails());
 }
-

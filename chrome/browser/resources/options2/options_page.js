@@ -708,7 +708,7 @@ cr.define('options', function() {
       } else {
         this.pageDiv.classList.add('showing-banner');
 
-        var text = bannerDiv.querySelector('.managed-prefs-text');
+        var text = bannerDiv.querySelector('#managed-prefs-text');
         if (controlledByPolicy && !controlledByExtension) {
           text.textContent =
               loadTimeData.getString('policyManagedPrefsBannerText');

@@ -109,50 +109,6 @@ div.disabled {
   padding-top: 0;
 }
 
-.managed-prefs-banner {
-  background-color: white;
-  width: 100%;
-  z-index: 2;
-}
-
-.page:not(.showing-banner) .managed-prefs-banner {
-  display: none;
-}
-
-.managed-prefs-gradient {
-  background: -webkit-linear-gradient(rgb(255, 242, 183),
-                                      rgb(250, 230, 145));
-  border: 1px solid rgb(201, 189, 141);
-  border-radius: 3px;
-  height: 25px;
-  margin: 9px 9px 0 9px;
-}
-
-.main-page-banner .managed-prefs-gradient {
-  -webkit-margin-end: 20px;
-  -webkit-margin-start: 0;
-  margin-bottom: 9px;
-}
-
-.managed-prefs-text {
-  background-image: url('chrome://theme/IDR_MANAGED');
-  background-position: 5px center;
-  background-repeat: no-repeat;
-  background-size: 16px;
-  display: block;
-  line-height: 24px;
-  padding-left: 26px;
-}
-
-.managed-prefs-banner.clickable:active .managed-prefs-text {
-  background: -webkit-linear-gradient(rgb(250, 230, 145),
-                                      rgb(255, 242, 183));
-}
-
-#page-container .page.showing-banner {
-  margin-top: 45px;
-}
-
 .page list {
   /* Min height is a multiple of the list item height (32) */
   min-height: 192px;

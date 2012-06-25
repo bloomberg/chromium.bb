@@ -49,6 +49,7 @@
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -1603,7 +1604,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   translate_manager_ = TranslateManager::GetInstance();
   DCHECK(translate_manager_ != NULL);
 
-  // TODO(stevenjb): Move WIN and MACOSX specific code to apprpriate Parts.
+  // Initialize Managed Mode.
+  ManagedMode::Init(profile_);
+
+  // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
   PostProfileInit();
 

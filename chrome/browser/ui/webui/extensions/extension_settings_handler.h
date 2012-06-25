@@ -216,6 +216,7 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar pref_registrar_;
+  PrefChangeRegistrar local_state_pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsHandler);
 };

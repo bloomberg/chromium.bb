@@ -32,7 +32,7 @@ class TestManagementPolicyProvider : public ManagementPolicy::Provider {
 
   void SetProhibitedActions(int prohibited_actions);
 
-  virtual std::string GetPolicyProviderName() const OVERRIDE;
+  virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
 
   virtual bool UserMayLoad(const Extension* extension,
                            string16* error) const OVERRIDE;

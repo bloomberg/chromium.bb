@@ -41,8 +41,10 @@ bool ManagementPolicy::UserMayLoad(const Extension* extension,
     if (!(*it)->UserMayLoad(extension, error)) {
       // The extension may be NULL in testing.
       std::string id = extension ? extension->id() : "[test]";
-      DLOG(WARNING) << "Installation of extension " << id
-                    << " prohibited by " << (*it)->GetPolicyProviderName();
+      std::string name = extension ? extension->name() : "test";
+      DLOG(WARNING) << "Installation of extension " << name
+                    << "( " << id << ")"
+                    << " prohibited by " << (*it)->GetDebugPolicyProviderName();
       return false;
     }
   }
@@ -56,8 +58,10 @@ bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
     if (!(*it)->UserMayModifySettings(extension, error)) {
       // The extension may be NULL in testing.
       std::string id = extension ? extension->id() : "[test]";
-      DLOG(WARNING) << "Modification of extension " << id
-                    << " prohibited by " << (*it)->GetPolicyProviderName();
+      std::string name = extension ? extension->name() : "test";
+      DLOG(WARNING) << "Modification of extension " << name
+                    << "( " << id << ")"
+                    << " prohibited by " << (*it)->GetDebugPolicyProviderName();
       return false;
     }
   }
@@ -68,12 +72,14 @@ bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
                                          string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
       it != providers_.end(); ++it) {
+    if ((*it)->MustRemainEnabled(extension, error)) {
       // The extension may be NULL in testing.
       std::string id = extension ? extension->id() : "[test]";
-      if ((*it)->MustRemainEnabled(extension, error)) {
-      DLOG(WARNING) << "Extension " << id
+      std::string name = extension ? extension->name() : "test";
+      DLOG(WARNING) << "Extension " << name
+                    << "( " << id << ")"
                     << " required to remain enabled by "
-                    << (*it)->GetPolicyProviderName();
+                    << (*it)->GetDebugPolicyProviderName();
       return true;
     }
   }

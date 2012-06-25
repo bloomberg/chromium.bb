@@ -50,11 +50,10 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
       self.LoginWithTestAccount()
 
   def IsAnyBannerVisible(self):
-    """Returns true if any managed prefs banner is visible in the current page.
-    """
+    """Returns true if any banner (e.g. for managed prefs) is visible."""
     ret = self.ExecuteJavascript("""
         var visible = false;
-        var banners = document.querySelectorAll('.managed-prefs-banner');
+        var banners = document.querySelectorAll('.page-banner');
         for (var i=0; i<banners.length; i++) {
           if (banners[i].parentElement.id == 'templates')
             continue;

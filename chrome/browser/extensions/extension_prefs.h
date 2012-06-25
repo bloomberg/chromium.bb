@@ -211,7 +211,7 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
 
   // ManagementPolicy::Provider
   // These methods apply admin policy to extensions.
-  virtual std::string GetPolicyProviderName() const OVERRIDE;
+  virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
                            string16* error) const OVERRIDE;
   virtual bool UserMayModifySettings(const extensions::Extension* extension,

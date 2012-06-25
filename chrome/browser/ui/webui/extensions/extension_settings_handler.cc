@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -267,6 +269,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSTORE));
   localized_strings->SetString("extensionSettingsPolicyControlled",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
+  localized_strings->SetString("extensionSettingsManagedMode",
+     l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_MODE));
   localized_strings->SetString("extensionSettingsShowButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
   localized_strings->SetString("extensionSettingsLoadUnpackedButton",
@@ -501,10 +505,16 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   results.Set("extensions", extensions_list);
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  bool developer_mode =
-      profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  results.SetBoolean("developerMode", developer_mode);
+  if (ManagedMode::IsInManagedMode()) {
+    results.SetBoolean("managedMode", true);
+    results.SetBoolean("developerMode", false);
+  } else {
+    results.SetBoolean("managedMode", false);
+    Profile* profile = Profile::FromWebUI(web_ui());
+    bool developer_mode =
+        profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+    results.SetBoolean("developerMode", developer_mode);
+  }
 
   bool load_unpacked_disabled =
       extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();
@@ -519,6 +529,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
       const ListValue* args) {
+  if (ManagedMode::IsInManagedMode())
+    return;
+
   Profile* profile = Profile::FromWebUI(web_ui());
   bool developer_mode =
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
@@ -782,6 +795,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionInstallDenyList, this);
+  local_state_pref_registrar_.Init(g_browser_process->local_state());
+  local_state_pref_registrar_.Add(prefs::kInManagedMode, this);
 }
 
 std::vector<ExtensionPage>
