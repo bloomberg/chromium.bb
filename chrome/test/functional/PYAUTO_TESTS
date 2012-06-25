@@ -620,6 +620,7 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      '-perf.HTML5BenchmarkTest',  # crbug.com/134476
       '-perf.WebGLTest.testWebGLField',  # crbug.com/132797
 
       # ===========================
