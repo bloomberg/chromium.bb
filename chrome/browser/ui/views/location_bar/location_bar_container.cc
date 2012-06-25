@@ -15,18 +15,21 @@ const int kAnimationDuration = 180;
 
 }
 
-LocationBarContainer::LocationBarContainer(views::View* parent)
+LocationBarContainer::LocationBarContainer(views::View* parent,
+                                           bool instant_extended_api_enabled)
     : animator_(parent),
       view_parent_(NULL),
       location_bar_view_(NULL),
-      native_view_host_(NULL) {
+      native_view_host_(NULL),
+      in_toolbar_(true) {
   parent->AddChildView(this);
   animator_.SetAnimationDuration(kAnimationDuration);
   animator_.set_tween_type(ui::Tween::EASE_IN_OUT);
   PlatformInit();
-  // TODO(sky): conditionally enable this.
-  // view_parent_->set_background(
-  // views::Background::CreateSolidBackground(GetBackgroundColor()));
+  if (instant_extended_api_enabled) {
+    view_parent_->set_background(
+        views::Background::CreateSolidBackground(GetBackgroundColor()));
+  }
   SetLayoutManager(new views::FillLayout);
 }
 
@@ -41,10 +44,6 @@ void LocationBarContainer::SetLocationBarView(LocationBarView* view) {
 }
 
 void LocationBarContainer::AnimateTo(const gfx::Rect& bounds) {
-#if defined(USE_AURA)
-  SetPaintToLayer(true);
-  layer()->SetFillsBoundsOpaquely(false);
-#endif
   animator_.AnimateViewTo(this, bounds);
 }
 
@@ -72,7 +71,5 @@ void LocationBarContainer::GetAccessibleState(
 
 void LocationBarContainer::OnBoundsAnimatorDone(
     views::BoundsAnimator* animator) {
-#if defined(USE_AURA)
-  SetPaintToLayer(false);
-#endif
+  SetInToolbar(true);
 }

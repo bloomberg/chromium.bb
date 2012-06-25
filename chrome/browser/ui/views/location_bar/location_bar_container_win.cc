@@ -11,6 +11,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+void LocationBarContainer::SetInToolbar(bool in_toolbar) {
+  if (animator_.IsAnimating())
+    animator_.Cancel();
+}
+
 void LocationBarContainer::OnFocus() {
   // Reenable when convert back to widget.
   /*

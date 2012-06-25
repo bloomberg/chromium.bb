@@ -26,8 +26,11 @@ class LocationBarContainer : public views::View,
                              public views::BoundsAnimatorObserver {
  public:
   // Creates a new LocationBarContainer as a child of |parent|.
-  explicit LocationBarContainer(views::View* parent);
+  LocationBarContainer(views::View* parent, bool instant_extended_api_enabled);
   virtual ~LocationBarContainer();
+
+  // Sets whether the LocationBarContainer is in the toolbar.
+  void SetInToolbar(bool in_toolbar);
 
   void SetLocationBarView(LocationBarView* view);
 
@@ -76,6 +79,8 @@ class LocationBarContainer : public views::View,
   LocationBarView* location_bar_view_;
 
   views::NativeViewHost* native_view_host_;
+
+  bool in_toolbar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarContainer);
 };

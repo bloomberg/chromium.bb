@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
@@ -187,7 +188,9 @@ void ToolbarView::Init(views::View* location_bar_parent,
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
-  location_bar_container_ = new LocationBarContainer(location_bar_parent);
+  location_bar_container_ = new LocationBarContainer(
+      location_bar_parent,
+      chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()));
   location_bar_ = new LocationBarView(
       browser_->profile(),
       browser_->command_updater(),
@@ -849,6 +852,8 @@ void ToolbarView::SetLocationBarContainerBounds(
   views::View::ConvertPointToView(this, location_bar_container_->parent(),
                                   &origin);
   gfx::Rect target_bounds(origin, bounds.size());
-  if (location_bar_container_->GetTargetBounds() != target_bounds)
+  if (location_bar_container_->GetTargetBounds() != target_bounds) {
+    location_bar_container_->SetInToolbar(true);
     location_bar_container_->SetBoundsRect(target_bounds);
+  }
 }

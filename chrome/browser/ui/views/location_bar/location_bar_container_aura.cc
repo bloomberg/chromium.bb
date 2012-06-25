@@ -6,6 +6,17 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
+void LocationBarContainer::SetInToolbar(bool in_toolbar) {
+  if (animator_.IsAnimating())
+    animator_.Cancel();
+  // See comment in PlatformInit() as to why we do this.
+  SetPaintToLayer(!in_toolbar);
+  if (!in_toolbar) {
+    layer()->SetFillsBoundsOpaquely(false);
+    StackAtTop();
+  }
+}
+
 void LocationBarContainer::OnFocus() {
 }
 
