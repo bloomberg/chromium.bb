@@ -28,7 +28,7 @@
       'conditions': [
         ['chromeos==1', {
           'dependencies': [
-            '../chromeos/chromeos.gyp:chromeos_test_support',
+            '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../skia/skia.gyp:skia',
           ]
         }],
