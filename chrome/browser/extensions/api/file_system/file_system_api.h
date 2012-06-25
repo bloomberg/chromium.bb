@@ -20,6 +20,12 @@ class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
 };
 
 class FileSystemPickerFunction : public AsyncExtensionFunction {
+ public:
+  // Allow picker UI to be skipped in testing.
+  static void SkipPickerAndAlwaysSelectPathForTest(FilePath* path);
+  static void SkipPickerAndAlwaysCancelForTest();
+  static void StopSkippingPickerForTest();
+
  protected:
   class FilePicker;
 

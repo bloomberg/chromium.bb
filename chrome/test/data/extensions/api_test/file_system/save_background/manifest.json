@@ -1,0 +1,15 @@
+{
+  "name": "chrome.fileSystem save from background.",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test for chrome.fileSystem.chooseFile save from background.",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "experimental",
+    "fileSystem"
+  ]
+}

@@ -32,6 +32,9 @@ namespace ChooseFile = file_system::ChooseFile;
 
 namespace {
 
+bool g_skip_picker_for_test = false;
+FilePath* g_path_to_be_picked_for_test;
+
 bool GetFilePathOfFileEntry(const std::string& filesystem_name,
                             const std::string& filesystem_path,
                             const content::RenderViewHost* render_view_host,
@@ -126,6 +129,21 @@ class FileSystemPickerFunction::FilePicker : public SelectFileDialog::Listener {
     gfx::NativeWindow owning_window = web_contents ?
         platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
 
+    if (g_skip_picker_for_test) {
+      if (g_path_to_be_picked_for_test) {
+        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+            base::Bind(&FileSystemPickerFunction::FilePicker::FileSelected,
+                base::Unretained(this), *g_path_to_be_picked_for_test, 1,
+                static_cast<void*>(NULL)));
+      } else {
+        content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+            base::Bind(
+                &FileSystemPickerFunction::FilePicker::FileSelectionCanceled,
+                base::Unretained(this), static_cast<void*>(NULL)));
+      }
+      return;
+    }
+
     select_file_dialog_->SelectFile(for_save ?
                                         SelectFileDialog::SELECT_SAVEAS_FILE :
                                         SelectFileDialog::SELECT_OPEN_FILE,
@@ -181,6 +199,24 @@ bool FileSystemPickerFunction::ShowPicker(const FilePath& suggested_path,
   // will delete itself, which will also free the function instance.
   new FilePicker(this, shell_window->web_contents(), suggested_path, for_save);
   return true;
+}
+
+// static
+void FileSystemPickerFunction::SkipPickerAndAlwaysSelectPathForTest(
+    FilePath* path) {
+  g_skip_picker_for_test = true;
+  g_path_to_be_picked_for_test = path;
+}
+
+// static
+void FileSystemPickerFunction::SkipPickerAndAlwaysCancelForTest() {
+  g_skip_picker_for_test = true;
+  g_path_to_be_picked_for_test = NULL;
+}
+
+// static
+void FileSystemPickerFunction::StopSkippingPickerForTest() {
+  g_skip_picker_for_test = false;
 }
 
 void FileSystemPickerFunction::FileSelected(const FilePath& path,

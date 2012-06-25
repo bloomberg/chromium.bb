@@ -1,0 +1,16 @@
+{
+  "name": "chrome.fileSystem save existing file",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test for chrome.fileSystem.chooseFile saving existing file.",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "experimental",
+    "appWindow",
+    "fileSystem"
+  ]
+}

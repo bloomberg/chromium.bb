@@ -1,0 +1,16 @@
+{
+  "name": "chrome.fileSystem get display path",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test for chrome.fileSystem.getDisplayPath",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "experimental",
+    "appWindow",
+    "fileSystem"
+  ]
+}
