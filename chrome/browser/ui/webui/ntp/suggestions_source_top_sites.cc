@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,7 +62,7 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
 
   history_consumer_.CancelAllRequests();
   HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
   // |history| may be null during unit tests.
   if (history) {
     history::VisitFilter time_filter;

@@ -11,7 +11,6 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -111,7 +110,7 @@ void MemoryPurger::PurgeBrowser() {
     // Spinning up the history service is expensive, so we avoid doing it if it
     // hasn't been done already.
     HistoryService* history_service =
-        HistoryServiceFactory::GetForProfileIfExists(profiles[i]);
+        profiles[i]->GetHistoryServiceWithoutCreating();
     if (history_service)
       history_service->UnloadBackend();
 

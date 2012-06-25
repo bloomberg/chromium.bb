@@ -13,7 +13,6 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -280,8 +279,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
   }
 
   // Request the number of visits.
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  HistoryService* history = profile->GetHistoryService(
+      Profile::EXPLICIT_ACCESS);
   if (show_history && history) {
     history->GetVisibleVisitCountToHost(
         url,

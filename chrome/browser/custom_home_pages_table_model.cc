@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -159,8 +158,7 @@ void CustomHomePagesTableModel::Remove(int index) {
   // we get the loaded notification.
   if (entry->title_handle) {
     HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(profile_,
-                                             Profile::EXPLICIT_ACCESS);
+        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history_service)
       history_service->CancelRequest(entry->title_handle);
   }
@@ -219,8 +217,7 @@ void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
 
 void CustomHomePagesTableModel::LoadTitle(Entry* entry) {
   HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           Profile::EXPLICIT_ACCESS);
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (history_service) {
     entry->title_handle = history_service->QueryURL(entry->url, false,
         &history_query_consumer_,

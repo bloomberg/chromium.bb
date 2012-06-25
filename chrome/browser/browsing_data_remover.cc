@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -219,8 +218,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_HISTORY) {
     HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(profile_,
-                                             Profile::EXPLICIT_ACCESS);
+        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history_service) {
       std::set<GURL> restrict_urls;
       if (!remove_origin_.is_empty())

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -94,9 +93,8 @@ void FaviconTabHelper::SaveFavicon() {
 
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile_->GetOriginalProfile(),
-                                           Profile::IMPLICIT_ACCESS);
+  HistoryService* history = profile_->
+      GetOriginalProfile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   if (!history)
     return;
   history->AddPageNoVisitForBookmark(entry->GetURL());
