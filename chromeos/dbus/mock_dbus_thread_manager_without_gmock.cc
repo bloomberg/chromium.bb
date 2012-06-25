@@ -16,7 +16,8 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
 
 MockDBusThreadManagerWithoutGMock::~MockDBusThreadManagerWithoutGMock() {}
 
-void InitIBusBus(const std::string& ibus_address) {
+void MockDBusThreadManagerWithoutGMock::InitIBusBus(
+    const std::string& ibus_address) {
 }
 
 dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
@@ -158,6 +159,12 @@ SpeechSynthesizerClient*
 }
 
 UpdateEngineClient* MockDBusThreadManagerWithoutGMock::GetUpdateEngineClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+BluetoothOutOfBandClient*
+    MockDBusThreadManagerWithoutGMock::GetBluetoothOutOfBandClient() {
   NOTIMPLEMENTED();
   return NULL;
 }

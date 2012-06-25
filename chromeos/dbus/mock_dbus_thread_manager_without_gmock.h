@@ -57,6 +57,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual SMSClient* GetSMSClient() OVERRIDE;
   virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() OVERRIDE;
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
+  virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() OVERRIDE;
   virtual IBusClient* GetIBusClient() OVERRIDE;
   virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE;
 
