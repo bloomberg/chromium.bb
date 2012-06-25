@@ -114,13 +114,6 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view);
 
-// Deprecated, call the version above.
-WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes,
-    WebKit::WebView* web_view,
-    bool direct);
-
-
 // ------- URL load mocking.
 // Registers the file at |file_path| to be served when |url| is requested.
 // |response| is the response provided with the contents.

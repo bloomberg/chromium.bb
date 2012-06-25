@@ -443,24 +443,14 @@ GraphicsContext3DImplementation GetGraphicsContext3DImplementation() {
 WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view) {
-    return CreateGraphicsContext3D(attributes, web_view, true);
-}
-
-WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes,
-    WebKit::WebView* web_view,
-    bool direct) {
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
       return WebGraphicsContext3DInProcessImpl::CreateForWebView(
-          attributes, direct);
+          attributes, true /* direct */);
     case webkit_support::IN_PROCESS_COMMAND_BUFFER: {
-      WebKit::WebGraphicsContext3D* view_context = 0;
-      if (!direct)
-          view_context = web_view->graphicsContext3D();
       scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
           new WebGraphicsContext3DInProcessCommandBufferImpl());
-      if (!context->Initialize(attributes, view_context))
+      if (!context->Initialize(attributes, NULL))
         return NULL;
       return context.release();
     }
