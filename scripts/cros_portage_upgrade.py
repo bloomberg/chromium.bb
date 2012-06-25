@@ -1951,10 +1951,6 @@ def main(argv):
 
     boards = [b for b in boards if b != 'host']
 
-    # If --board and --upgrade are given then in almost all cases
-    # the user should cover all architectures.
-    upgrader.CheckBoardList(boards)
-
   # Make sure host pseudo-board is run first.
   if options.host and Upgrader.HOST_BOARD not in boards:
     boards.insert(0, Upgrader.HOST_BOARD)
@@ -1967,6 +1963,12 @@ def main(argv):
     if (board != Upgrader.HOST_BOARD and not _BoardIsSetUp(board)):
       parser.print_help()
       oper.Die('You must setup the %s board first.' % board)
+
+  # If --board and --upgrade are given then in almost all cases
+  # the user should cover all architectures.
+  if options.board:
+    non_host_boards = [b for b in boards if b != Upgrader.HOST_BOARD]
+    upgrader.CheckBoardList(non_host_boards)
 
   passed = True
   try:

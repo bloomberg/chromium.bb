@@ -475,12 +475,17 @@ class CpuTestBase(test_lib.MoxTestCase):
     portdir = '%s%s' % (eroot, DEFAULT_PORTDIR)
     return portdir
 
-  def _TearDownPlayground(self, playground=None):
+  def _TearDownPlayground(self):
     """Delete the temporary ebuild playground files."""
-    if playground:
-      playground.cleanup()
-    elif self.playground:
-      self.playground.cleanup()
+    if self.playground:
+      try:
+        self.playground.cleanup()
+      except OSError:
+        # The clever tmp cleanup code in osutils.TempDirDecorator
+        # will take care of the cleanup before this point if it
+        # is used in the current test.  Just move along.
+        pass
+
       self.playground = None
       self.playground_envvars = None
 
