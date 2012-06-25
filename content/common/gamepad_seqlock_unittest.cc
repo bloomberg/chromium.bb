@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/threading/platform_thread.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -24,11 +23,9 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
   BasicSeqLockTestThread() {}
 
   void Init(
-      content::GamepadSeqLock* seqlock,
-      TestData* data,
+      content::GamepadSeqLock<TestData>* seqlock,
       base::subtle::Atomic32* ready) {
     seqlock_ = seqlock;
-    data_ = data;
     ready_ = ready;
   }
   virtual void ThreadMain() {
@@ -38,12 +35,7 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
 
     for (unsigned i = 0; i < 1000; ++i) {
       TestData copy;
-      base::subtle::Atomic32 version;
-      do {
-        version = seqlock_->ReadBegin();
-        copy = *data_;
-      } while (seqlock_->ReadRetry(version));
-
+      seqlock_->ReadTo(&copy);
       EXPECT_EQ(copy.a + 100, copy.b);
       EXPECT_EQ(copy.c, copy.b + copy.a);
     }
@@ -52,37 +44,33 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
   }
 
  private:
-  content::GamepadSeqLock* seqlock_;
-  TestData* data_;
+  content::GamepadSeqLock<TestData>* seqlock_;
   base::AtomicRefCount* ready_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicSeqLockTestThread);
 };
 
 TEST(GamepadSeqLockTest, ManyThreads) {
-  content::GamepadSeqLock seqlock;
+  content::GamepadSeqLock<TestData> seqlock;
   TestData data = { 0, 0, 0 };
   base::AtomicRefCount ready = 0;
-
-  ANNOTATE_BENIGN_RACE_SIZED(&data, sizeof(data), "Racey reads are discarded");
 
   static const unsigned kNumReaderThreads = 10;
   BasicSeqLockTestThread threads[kNumReaderThreads];
   PlatformThreadHandle handles[kNumReaderThreads];
 
   for (unsigned i = 0; i < kNumReaderThreads; ++i)
-    threads[i].Init(&seqlock, &data, &ready);
+    threads[i].Init(&seqlock, &ready);
   for (unsigned i = 0; i < kNumReaderThreads; ++i)
     ASSERT_TRUE(PlatformThread::Create(0, &threads[i], &handles[i]));
 
   // The main thread is the writer, and the spawned are readers.
   unsigned counter = 0;
   for (;;) {
-    seqlock.WriteBegin();
     data.a = counter++;
     data.b = data.a + 100;
     data.c = data.b + data.a;
-    seqlock.WriteEnd();
+    seqlock.Write(data);
 
     if (counter == 1)
       base::AtomicRefCountIncN(&ready, kNumReaderThreads);

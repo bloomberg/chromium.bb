@@ -41,31 +41,7 @@ void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
   if (!base::SharedMemory::IsHandleValid(renderer_shared_memory_handle_))
     return;
 
-  // Only try to read this many times before failing to avoid waiting here
-  // very long in case of contention with the writer. TODO(scottmg) Tune this
-  // number (as low as 1?) if histogram shows distribution as mostly
-  // 0-and-maximum.
-  const int kMaximumContentionCount = 10;
-  int contention_count = -1;
-  base::subtle::Atomic32 version;
-  do {
-    version = gamepad_hardware_buffer_->sequence.ReadBegin();
-    memcpy(&read_into, &gamepad_hardware_buffer_->buffer, sizeof(read_into));
-    ++contention_count;
-    if (contention_count == kMaximumContentionCount)
-      break;
-  } while (gamepad_hardware_buffer_->sequence.ReadRetry(version));
-  UMA_HISTOGRAM_COUNTS("Gamepad.ReadContentionCount", contention_count);
-
-  if (contention_count >= kMaximumContentionCount) {
-      // We failed to successfully read, presumably because the hardware
-      // thread was taking unusually long. Don't copy the data to the output
-      // buffer, and simply leave what was there before.
-      return;
-  }
-
-  // New data was read successfully, copy it into the output buffer.
-  memcpy(&gamepads, &read_into, sizeof(gamepads));
+  gamepad_hardware_buffer_->gamepads.ReadTo(&gamepads);
 
   // Override the "connected" with false until the user has interacted
   // with the gamepad. This is to prevent fingerprinting on drive-by pages.

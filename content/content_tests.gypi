@@ -304,6 +304,7 @@
         'common/android/address_parser_unittest.cc',
         'common/mac/attributed_string_coder_unittest.mm',
         'common/mac/font_descriptor_unittest.mm',
+        'common/gamepad_seqlock_unittest.cc',
         'common/gpu/gpu_info_unittest.cc',
         'common/gpu/gpu_memory_manager_unittest.cc',
         'common/gpu/media/avc_config_record_builder_unittest.cc',
