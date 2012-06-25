@@ -412,7 +412,7 @@ void ProxyConfigServiceImpl::UISetCurrentNetwork(
       current_network);
   if (!network) {
     ResetUICache();
-    LOG(ERROR) << "can't find requested network " << current_network;
+    LOG(ERROR) << "Can't find requested network " << current_network;
     return;
   }
   current_ui_network_ = current_network;
@@ -424,7 +424,7 @@ void ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
       active_network_);
   if (!network) {
     ResetUICache();
-    LOG(ERROR) << "can't find requested network " << active_network_;
+    LOG(ERROR) << "Can't find requested network " << active_network_;
     return;
   }
   current_ui_network_ = active_network_;
@@ -439,7 +439,7 @@ void ProxyConfigServiceImpl::UIGetCurrentNetworkName(
   Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
       current_ui_network_);
   if (!network) {
-    LOG(ERROR) << "can't find requested network " << current_ui_network_;
+    LOG(ERROR) << "Can't find requested network " << current_ui_network_;
     return;
   }
   if (network->name().empty() && network->type() == chromeos::TYPE_ETHERNET) {
@@ -502,7 +502,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
       current_ui_config_.mode != ProxyConfig::MODE_PROXY_PER_SCHEME) {
     NOTREACHED();
     VLOG(1) << "Cannot set bypass rules for proxy mode ["
-             << current_ui_config_.mode << "]";
+            << current_ui_config_.mode << "]";
     return false;
   }
   current_ui_config_.bypass_rules = bypass_rules;
@@ -529,7 +529,7 @@ void ProxyConfigServiceImpl::RemoveNotificationCallback(
 void ProxyConfigServiceImpl::OnProxyConfigChanged(
     ProxyPrefs::ConfigState config_state,
     const net::ProxyConfig& config) {
-  VLOG(1) << this << ": got prefs change: " << ConfigStateToString(config_state)
+  VLOG(1) << "Got prefs change: " << ConfigStateToString(config_state)
           << ", mode=" << config.proxy_rules().type;
   Network* network = NULL;
   if (!active_network_.empty()) {
@@ -543,7 +543,7 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
 
 void ProxyConfigServiceImpl::OnNetworkManagerChanged(
     NetworkLibrary* network_lib) {
-  VLOG(1) << this << " OnNetworkManagerChanged: use-shared-proxies="
+  VLOG(1) << "OnNetworkManagerChanged: use-shared-proxies="
           << GetUseSharedProxies();
   OnActiveNetworkChanged(network_lib, network_lib->active_network());
 }
@@ -552,10 +552,10 @@ void ProxyConfigServiceImpl::OnNetworkChanged(NetworkLibrary* network_lib,
     const Network* network) {
   if (!network)
     return;
-  VLOG(1) << this << " OnNetworkChanged: "
-                  << (network->name().empty() ? network->service_path() :
-                                                network->name())
-                  << ", use-shared-proxies=" << GetUseSharedProxies();
+  VLOG(1) << "OnNetworkChanged: "
+          << (network->name().empty() ? network->service_path() :
+                                        network->name())
+          << ", use-shared-proxies=" << GetUseSharedProxies();
   // We only care about active network.
   if (network == network_lib->active_network())
     OnActiveNetworkChanged(network_lib, network);
@@ -580,7 +580,7 @@ void ProxyConfigServiceImpl::Observe(
       *(content::Details<std::string>(details).ptr()) ==
           prefs::kUseSharedProxies) {
     if (content::Source<PrefService>(source).ptr() == prefs()) {
-      VLOG(1) << this << ": new use-shared-proxies = " << GetUseSharedProxies();
+      VLOG(1) << "New use-shared-proxies = " << GetUseSharedProxies();
       // Determine new proxy config which may have changed because of new
       // use-shared-proxies. If necessary, activate it.
       Network* network = NULL;
@@ -588,7 +588,7 @@ void ProxyConfigServiceImpl::Observe(
         network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
             active_network_);
         if (!network)
-          LOG(WARNING) << "can't find requested network " << active_network_;
+          LOG(WARNING) << "Can't find requested network " << active_network_;
       }
       DetermineEffectiveConfig(network, true);
     }
@@ -603,8 +603,8 @@ void ProxyConfigServiceImpl::OnUISetProxyConfig() {
   // Update config to flimflam.
   std::string value;
   if (current_ui_config_.SerializeForNetwork(&value)) {
-    VLOG(1) << this << ": set proxy (mode=" << current_ui_config_.mode
-                    << ") for " << current_ui_network_;
+    VLOG(1) << "Set proxy (mode=" << current_ui_config_.mode
+            << ") for " << current_ui_network_;
     current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
     SetProxyConfigForNetwork(current_ui_network_, value, false);
   }
@@ -617,18 +617,18 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
     new_network = active_network->service_path();
 
   if (active_network_ == new_network) {  // Same active network.
-    VLOG(1) << this << ": same active network: "
-                    << (new_network.empty() ? "empty" :
-                        (active_network->name().empty() ?
+    VLOG(1) << "Same active network: "
+            << (new_network.empty() ? "empty" :
+                    (active_network->name().empty() ?
                          new_network : active_network->name()));
     // Even though network is the same, its proxy config (e.g. if private
     // version of network replaces the shared version after login), or
     // use-shared-proxies setting (e.g. after login) may have changed,
     // so re-determine effective proxy config, and activate if different.
     if (active_network) {
-      VLOG(1) << this << ": profile=" << active_network->profile_type()
-                      << "," << active_network->profile_path()
-                      << ", proxy=" << active_network->proxy_config();
+      VLOG(1) << "Profile=" << active_network->profile_type()
+              << "," << active_network->profile_path()
+              << ", proxy=" << active_network->proxy_config();
       DetermineEffectiveConfig(active_network, true);
     }
     return;
@@ -641,24 +641,23 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
   active_network_ = new_network;
 
   if (active_network_.empty()) {
-    VLOG(1) << this << ": new active network: empty";
+    VLOG(1) << "New active network: empty";
     DetermineEffectiveConfig(active_network, true);
     return;
   }
 
-  VLOG(1) << this << ": new active network: path="
-                  << active_network->service_path()
-                  << ", name=" << active_network->name()
-                  << ", profile=" << active_network->profile_type()
-                  << "," << active_network->profile_path()
-                  << ", proxy=" << active_network->proxy_config();
+  VLOG(1) << "New active network: path=" << active_network->service_path()
+          << ", name=" << active_network->name()
+          << ", profile=" << active_network->profile_type()
+          << "," << active_network->profile_path()
+          << ", proxy=" << active_network->proxy_config();
 
   // Register observer for new network.
   network_lib->AddNetworkObserver(active_network_, this);
 
   // If necessary, migrate config to flimflam.
   if (active_network->proxy_config().empty() && !device_config_.empty()) {
-    VLOG(1) << this << ": try migrating device config to " << active_network_;
+    VLOG(1) << "Try migrating device config to " << active_network_;
     SetProxyConfigForNetwork(active_network_, device_config_, true);
   } else  {
     // Otherwise, determine and activate possibly new effective proxy config.
@@ -672,14 +671,14 @@ void ProxyConfigServiceImpl::SetProxyConfigForNetwork(
   Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
       network_path);
   if (!network) {
-    NOTREACHED() << "can't find requested network " << network_path;
+    NOTREACHED() << "Can't find requested network " << network_path;
     return;
   }
   if (!only_set_if_empty || network->proxy_config().empty()) {
     network->SetProxyConfig(value);
-    VLOG(1) << this << ": set proxy for " << (network->name().empty() ?
-                                              network_path : network->name())
-                    << ", value=" << value;
+    VLOG(1) << "Set proxy for "
+            << (network->name().empty() ? network_path : network->name())
+            << ", value=" << value;
     if (network_path == active_network_)
       DetermineEffectiveConfig(network, true);
   }
@@ -712,7 +711,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfig(const Network* network,
     ignore_proxy = activate ? IgnoreProxy(network) : false;
     // If network is shared but use-shared-proxies is off, use direct mode.
     if (ignore_proxy) {
-      VLOG(1) << this << ": shared network && !use-shared-proxies, use direct";
+      VLOG(1) << "Shared network && !use-shared-proxies, use direct";
       network_availability = net::ProxyConfigService::CONFIG_VALID;
     } else if (!network->proxy_config().empty()) {
       // Network is private or shared with user using shared proxies.
@@ -792,12 +791,11 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfig(const Network* network,
 
 void ProxyConfigServiceImpl::OnUISetCurrentNetwork(const Network* network) {
   DetermineEffectiveConfig(network, false);
-  VLOG(1) << this << ": current ui network: "
-                  << (network->name().empty() ?
-                      current_ui_network_ : network->name())
-                  << ", " << ModeToString(current_ui_config_.mode)
-                  << ", " << ConfigStateToString(current_ui_config_.state)
-                  << ", modifiable:" << current_ui_config_.user_modifiable;
+  VLOG(1) << "Current ui network: "
+          << (network->name().empty() ? current_ui_network_ : network->name())
+          << ", " << ModeToString(current_ui_config_.mode)
+          << ", " << ConfigStateToString(current_ui_config_.state)
+          << ", modifiable:" << current_ui_config_.user_modifiable;
   // Notify whoever is interested in this change.
   std::vector<base::Closure>::iterator iter = callbacks_.begin();
   while (iter != callbacks_.end()) {
@@ -826,12 +824,12 @@ void ProxyConfigServiceImpl::FetchProxyPolicy() {
   std::string policy_value;
   if (!CrosSettings::Get()->GetString(kSettingProxyEverywhere,
                                       &policy_value)) {
-    LOG(WARNING) << this << ": Error retrieving proxy setting from device";
+    VLOG(1) << "No proxy configuration exists in the device settings.";
     device_config_.clear();
     return;
   }
 
-  VLOG(1) << this << ": Retrieved proxy setting from device, value=["
+  VLOG(1) << "Retrieved proxy setting from device, value=["
           << policy_value << "]";
   ProxyConfig device_config;
   if (!device_config.DeserializeForDevice(policy_value) ||
@@ -841,7 +839,7 @@ void ProxyConfigServiceImpl::FetchProxyPolicy() {
     return;
   }
   if (!active_network_.empty()) {
-    VLOG(1) << this << ": try migrating device config to " << active_network_;
+    VLOG(1) << "Try migrating device config to " << active_network_;
     SetProxyConfigForNetwork(active_network_, device_config_, true);
   }
 }
