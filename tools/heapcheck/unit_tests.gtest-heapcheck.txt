@@ -1,3 +1,6 @@
+# Due to http://crbug.com/132867 all unit tests are broken
+*.*
+
 # Disable JavaScript tests that cause V8 to install a SIGPROF handler that
 # times out the subsequent fork() calls.
 # http://crbug.com/79320

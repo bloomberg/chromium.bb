@@ -1,3 +1,6 @@
+# Due to http://crbug.com/132867 all test_shell tests are broken
+*.*
+
 # Fails on Chrome OS, http://crbug.com/93022
 WebDOMEventListenerTest.SameListenerMultipleEvents
 
