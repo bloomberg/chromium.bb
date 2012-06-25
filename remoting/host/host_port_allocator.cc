@@ -100,18 +100,20 @@ void HostPortAllocatorSession::SendSessionRequest(const std::string& host,
 
 void HostPortAllocatorSession::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  int response_code = source->GetResponseCode();
+  std::string response;
+  source->GetResponseAsString(&response);
+
   url_fetchers_.erase(source);
   delete source;
 
-  if (source->GetResponseCode() != net::HTTP_OK) {
+  if (response_code != net::HTTP_OK) {
     LOG(WARNING) << "Received error when allocating relay session: "
-                 << source->GetResponseCode();
+                 << response_code;
     TryCreateRelaySession();
     return;
   }
 
-  std::string response;
-  source->GetResponseAsString(&response);
   ReceiveSessionResponse(response);
 }
 
