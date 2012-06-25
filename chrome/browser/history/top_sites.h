@@ -158,7 +158,7 @@ class TopSites
   virtual bool IsFull();
 
   // Returns the set of prepopulate pages.
-  static MostVisitedURLList GetPrepopulatePages();
+  MostVisitedURLList GetPrepopulatePages();
 
   struct PrepopulatedPage {
     // The string resource for the url.
@@ -250,7 +250,7 @@ class TopSites
 
   // Add prepopulated pages: 'welcome to Chrome' and themes gallery to |urls|.
   // Returns true if any pages were added.
-  static bool AddPrepopulatedPages(MostVisitedURLList* urls);
+  bool AddPrepopulatedPages(MostVisitedURLList* urls);
 
   // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
   void ApplyBlacklist(const MostVisitedURLList& urls, MostVisitedURLList* out);
@@ -358,6 +358,9 @@ class TopSites
 
   // See description above TopSitesLoadState.
   TopSitesLoadState top_sites_state_;
+
+  // URL List of prepopulated page.
+  std::vector<GURL> prepopulated_page_urls_;
 
   // Are we loaded?
   bool loaded_;

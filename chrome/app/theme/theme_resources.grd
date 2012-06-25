@@ -112,6 +112,7 @@
       <include name="IDR_MEDIA_STREAM_CAPTURE_LED" file="default_100_percent/media_stream_capture_led.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="default_100_percent/minimize_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="default_100_percent/ntp_welcome_thumb.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_CHROMEOS_WELCOME_PAGE_THUMBNAIL" file="default_100_percent/ntp_welcome_thumb_chromeos.png" type="BINDATA" />
       <include name="IDR_NEWTAB_MENU_MASK" file="default_100_percent/ntp_menu_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION" file="default_100_percent/ntp_option.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_H" file="default_100_percent/ntp_option_hover.png" type="BINDATA" />

@@ -209,7 +209,7 @@ class TopSitesTest : public HistoryUnitTestBase {
   }
 
   MostVisitedURLList GetPrepopulatePages() {
-    return TopSites::GetPrepopulatePages();
+    return top_sites()->GetPrepopulatePages();
   }
 
   // Returns true if the TopSitesQuerier contains the prepopulate data starting
@@ -317,7 +317,7 @@ class TopSitesTest : public HistoryUnitTestBase {
   bool IsTopSitesLoaded() { return top_sites()->loaded_; }
 
   bool AddPrepopulatedPages(MostVisitedURLList* urls) {
-    return TopSites::AddPrepopulatedPages(urls);
+    return top_sites()->AddPrepopulatedPages(urls);
   }
 
  private:

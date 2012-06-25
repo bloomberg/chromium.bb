@@ -2045,7 +2045,7 @@ NTPInfoObserver::NTPInfoObserver(
 
   // Add default site URLs.
   ListValue* default_sites_list = new ListValue;
-  history::MostVisitedURLList urls = history::TopSites::GetPrepopulatePages();
+  history::MostVisitedURLList urls = top_sites_->GetPrepopulatePages();
   for (size_t i = 0; i < urls.size(); ++i) {
     default_sites_list->Append(Value::CreateStringValue(
         urls[i].url.possibly_invalid_spec()));

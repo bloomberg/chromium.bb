@@ -64,6 +64,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Tells the controller to resume a pending login.
   void ResumeLogin();
 
+  // Returns Getting Started Guide URL with parameters.
+  std::string GetGettingStartedGuideURL() const;
+
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount() OVERRIDE;
   virtual string16 GetConnectedNetworkName() OVERRIDE;
@@ -133,9 +136,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Adds first-time login URLs.
   void InitializeStartUrls() const;
-
-  // Returns Getting Started Guide URL with parameters.
-  std::string GetGettingStartedGuideURL() const;
 
   // Shows "Release Notes"/"What's new"/Getting started guide on update.
   void OptionallyShowReleaseNotes(Profile* profile) const;
