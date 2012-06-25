@@ -59,10 +59,18 @@ class ShellWindowCocoa : public ShellWindow {
   // Called when the window is about to be closed.
   void WindowWillClose();
 
+ protected:
+  // ShellWindow implementation.
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreenOrPending() const OVERRIDE;
+
  private:
   virtual ~ShellWindowCocoa();
 
   NSWindow* window() const;
+
+  bool is_fullscreen_;
+  NSRect restored_bounds_;
 
   scoped_nsobject<ShellWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention

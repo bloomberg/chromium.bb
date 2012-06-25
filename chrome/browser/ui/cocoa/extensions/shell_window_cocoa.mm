@@ -18,6 +18,25 @@
 - (void)setBottomCornerRounded:(BOOL)rounded;
 @end
 
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (SnowLeopardSDKDeclarations)
+- (void)setStyleMask:(NSUInteger)styleMask;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_6
+
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (LionSDKDeclarations)
+- (void)toggleFullScreen:(id)sender;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
+
 @implementation ShellWindowController
 
 @synthesize shellWindow = shellWindow_;
@@ -100,7 +119,56 @@ bool ShellWindowCocoa::IsMinimized() const {
 }
 
 bool ShellWindowCocoa::IsFullscreen() const {
-  return false;
+  return is_fullscreen_;
+}
+
+void ShellWindowCocoa::SetFullscreen(bool fullscreen) {
+  if (fullscreen == is_fullscreen_)
+    return;
+  is_fullscreen_ = fullscreen;
+
+  if (base::mac::IsOSLionOrLater()) {
+    [window() toggleFullScreen:nil];
+    return;
+  }
+
+  DCHECK(base::mac::IsOSSnowLeopardOrEarlier());
+
+  // Fade to black.
+  const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
+  bool didFadeOut = false;
+  CGDisplayFadeReservationToken token;
+  if (CGAcquireDisplayFadeReservation(kFadeDurationSeconds, &token) ==
+      kCGErrorSuccess) {
+    didFadeOut = true;
+    CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendNormal,
+        kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
+  }
+
+  if (fullscreen) {
+    restored_bounds_ = [window() frame];
+    [window() setStyleMask:NSBorderlessWindowMask];
+    [window() setFrame:[window()
+        frameRectForContentRect:[[window() screen] frame]]
+               display:YES];
+    base::mac::RequestFullScreen(base::mac::kFullScreenModeAutoHideAll);
+  } else {
+    base::mac::ReleaseFullScreen(base::mac::kFullScreenModeAutoHideAll);
+    [window() setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
+                           NSMiniaturizableWindowMask | NSResizableWindowMask];
+    [window() setFrame:restored_bounds_ display:YES];
+  }
+
+  // Fade back in.
+  if (didFadeOut) {
+    CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendSolidColor,
+        kCGDisplayBlendNormal, 0.0, 0.0, 0.0, /*synchronous=*/false);
+    CGReleaseDisplayFadeReservation(token);
+  }
+}
+
+bool ShellWindowCocoa::IsFullscreenOrPending() const {
+  return is_fullscreen_;
 }
 
 gfx::NativeWindow ShellWindowCocoa::GetNativeWindow() {
