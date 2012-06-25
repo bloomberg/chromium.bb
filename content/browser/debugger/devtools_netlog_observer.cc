@@ -280,7 +280,7 @@ void DevToolsNetLogObserver::PopulateResponseInfo(
       DevToolsNetLogObserver::GetInstance();
   if (dev_tools_net_log_observer == NULL)
     return;
-  response->devtools_info =
+  response->head.devtools_info =
       dev_tools_net_log_observer->GetResourceInfo(source_id);
 }
 

@@ -28,23 +28,24 @@ namespace {
 
 void PopulateResourceResponse(net::URLRequest* request,
                               ResourceResponse* response) {
-  response->status = request->status();
-  response->request_time = request->request_time();
-  response->response_time = request->response_time();
-  response->headers = request->response_headers();
-  request->GetCharset(&response->charset);
-  response->content_length = request->GetExpectedContentSize();
-  request->GetMimeType(&response->mime_type);
+  response->head.status = request->status();
+  response->head.request_time = request->request_time();
+  response->head.response_time = request->response_time();
+  response->head.headers = request->response_headers();
+  request->GetCharset(&response->head.charset);
+  response->head.content_length = request->GetExpectedContentSize();
+  request->GetMimeType(&response->head.mime_type);
   net::HttpResponseInfo response_info = request->response_info();
-  response->was_fetched_via_spdy = response_info.was_fetched_via_spdy;
-  response->was_npn_negotiated = response_info.was_npn_negotiated;
-  response->npn_negotiated_protocol = response_info.npn_negotiated_protocol;
-  response->was_fetched_via_proxy = request->was_fetched_via_proxy();
-  response->socket_address = request->GetSocketAddress();
+  response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
+  response->head.was_npn_negotiated = response_info.was_npn_negotiated;
+  response->head.npn_negotiated_protocol =
+      response_info.npn_negotiated_protocol;
+  response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
+  response->head.socket_address = request->GetSocketAddress();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
       request,
-      &response->appcache_id,
-      &response->appcache_manifest_url);
+      &response->head.appcache_id,
+      &response->head.appcache_manifest_url);
 }
 
 }  // namespace
@@ -491,7 +492,7 @@ bool ResourceLoader::CompleteResponseStarted() {
     int cert_id =
         CertStore::GetInstance()->StoreCert(request_->ssl_info().cert,
                                             info->GetChildID());
-    response->security_info = SerializeSecurityInfo(
+    response->head.security_info = SerializeSecurityInfo(
         cert_id,
         request_->ssl_info().cert_status,
         request_->ssl_info().security_bits,

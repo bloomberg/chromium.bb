@@ -136,7 +136,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
   SetContentDisposition(content_disposition);
-  SetContentLength(response->content_length);
+  SetContentLength(response->head.content_length);
 
   const ResourceRequestInfoImpl* request_info =
       ResourceRequestInfoImpl::ForRequest(request_);
@@ -164,7 +164,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->state = DownloadItem::IN_PROGRESS;
   info->has_user_gesture = request_info->HasUserGesture();
   info->content_disposition = content_disposition_;
-  info->mime_type = response->mime_type;
+  info->mime_type = response->head.mime_type;
   info->remote_address = request_->GetSocketAddress().host();
   download_stats::RecordDownloadMimeType(info->mime_type);
 
@@ -184,15 +184,14 @@ bool DownloadResourceHandler::OnResponseStarted(
   }
 
   std::string content_type_header;
-  if (!response->headers ||
-      !response->headers->GetMimeType(&content_type_header))
+  if (!response->head.headers ||
+      !response->head.headers->GetMimeType(&content_type_header))
     content_type_header = "";
   info->original_mime_type = content_type_header;
 
-  if (!response->headers ||
-      !response->headers->EnumerateHeader(NULL,
-                                          "Accept-Ranges",
-                                          &accept_ranges_)) {
+  if (!response->head.headers ||
+      !response->head.headers->EnumerateHeader(
+          NULL, "Accept-Ranges", &accept_ranges_)) {
     accept_ranges_ = "";
   }
 

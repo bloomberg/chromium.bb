@@ -50,7 +50,7 @@ bool X509UserCertResourceHandler::OnRequestRedirected(int request_id,
 bool X509UserCertResourceHandler::OnResponseStarted(int request_id,
                                                     ResourceResponse* resp,
                                                     bool* defer) {
-  return (resp->mime_type == "application/x-x509-user-cert");
+  return (resp->head.mime_type == "application/x-x509-user-cert");
 }
 
 bool X509UserCertResourceHandler::OnWillStart(int request_id,

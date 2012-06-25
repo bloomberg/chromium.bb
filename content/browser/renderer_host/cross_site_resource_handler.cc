@@ -92,7 +92,8 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // cross-site navigation, since we are unable to tell when to destroy it.
   // See RenderViewHostManager::RendererAbortedProvisionalLoad.
   if (info->is_download() ||
-      (response->headers && response->headers->response_code() == 204)) {
+      (response->head.headers &&
+       response->head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(request_id, response, defer);
   }
 

@@ -148,10 +148,10 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
     rdh_->delegate()->OnRequestRedirected(request_, response);
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
-  response->request_start = request_->creation_time();
-  response->response_start = TimeTicks::Now();
+  response->head.request_start = request_->creation_time();
+  response->head.response_start = TimeTicks::Now();
   return filter_->Send(new ResourceMsg_ReceivedRedirect(
-      routing_id_, request_id, new_url, *response));
+      routing_id_, request_id, new_url, response->head));
 }
 
 bool AsyncResourceHandler::OnResponseStarted(int request_id,
@@ -181,10 +181,10 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
             request_url))));
   }
 
-  response->request_start = request_->creation_time();
-  response->response_start = TimeTicks::Now();
+  response->head.request_start = request_->creation_time();
+  response->head.response_start = TimeTicks::Now();
   filter_->Send(new ResourceMsg_ReceivedResponse(
-      routing_id_, request_id, *response));
+      routing_id_, request_id, response->head));
 
   if (request_->response_info().metadata) {
     std::vector<char> copy(request_->response_info().metadata->data(),

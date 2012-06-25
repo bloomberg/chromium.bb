@@ -164,7 +164,8 @@ bool BufferedResourceHandler::DelayResponse() {
   const bool sniffing_blocked =
       LowerCaseEqualsASCII(content_type_options, "nosniff");
   const bool not_modified_status =
-      response_->headers && response_->headers->response_code() == 304;
+      (response_->head.headers &&
+       response_->head.headers->response_code() == 304);
   const bool we_would_like_to_sniff = not_modified_status ?
       false : net::ShouldSniffMimeType(request_->url(), mime_type);
 
@@ -184,7 +185,7 @@ bool BufferedResourceHandler::DelayResponse() {
     // mime type.  What's a browser to do?  Turns out, we're supposed to treat
     // the response as "text/plain".  This is the most secure option.
     mime_type.assign("text/plain");
-    response_->mime_type.assign(mime_type);
+    response_->head.mime_type.assign(mime_type);
   }
 
   if (!not_modified_status && ShouldWaitForPlugins()) {
@@ -231,7 +232,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
       }
     }
     sniff_content_ = false;
-    response_->mime_type.assign(new_type);
+    response_->head.mime_type.assign(new_type);
 
     // We just sniffed the mime type, maybe there is a doctype to process.
     if (ShouldWaitForPlugins())
@@ -260,8 +261,8 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
     // are doing it for an X.509 client certificates.
     // TODO(darin): This does not belong here!
 
-    if (response_->headers &&  // Can be NULL if FTP.
-        response_->headers->response_code() / 100 != 2) {
+    if (response_->head.headers &&  // Can be NULL if FTP.
+        response_->head.headers->response_code() / 100 != 2) {
       // The response code indicates that this is an error page, but we are
       // expecting an X.509 user certificate. We follow Firefox here and show
       // our own error page instead of handling the error page as a
@@ -282,9 +283,8 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
   if (info->allow_download() && ShouldDownload(NULL)) {
     // Forward the data to the download thread.
-
-    if (response_->headers &&  // Can be NULL if FTP.
-        response_->headers->response_code() / 100 != 2) {
+    if (response_->head.headers &&  // Can be NULL if FTP.
+        response_->head.headers->response_code() / 100 != 2) {
       // The response code indicates that this is an error page, but we don't
       // know how to display the content.  We follow Firefox here and show our
       // own error page instead of triggering a download.
@@ -328,7 +328,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
 bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   if (need_plugin_list)
     *need_plugin_list = false;
-  std::string type = StringToLowerASCII(response_->mime_type);
+  std::string type = StringToLowerASCII(response_->head.mime_type);
 
   // First, examine Content-Disposition.
   std::string disposition;

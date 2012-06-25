@@ -60,9 +60,9 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response,
     bool* defer) {
-  if (response->status.is_success()) {
+  if (response->head.status.is_success()) {
     DCHECK(deletable_file_ && !deletable_file_->path().empty());
-    response->download_file_path = deletable_file_->path();
+    response->head.download_file_path = deletable_file_->path();
   }
   return next_handler_->OnResponseStarted(request_id, response, defer);
 }
