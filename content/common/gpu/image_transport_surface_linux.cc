@@ -100,8 +100,7 @@ class EGLImageTransportSurface
   // ImageTransportSurface implementation
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnPostSubBufferACK() OVERRIDE;
+  virtual void OnBufferPresented() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -157,8 +156,7 @@ class GLXImageTransportSurface
   // ImageTransportSurface implementation:
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnPostSubBufferACK() OVERRIDE;
+  virtual void OnBufferPresented() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -216,8 +214,7 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   // ImageTransportSurface implementation:
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnPostSubBufferACK() OVERRIDE;
+  virtual void OnBufferPresented() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -519,11 +516,7 @@ void EGLImageTransportSurface::OnNewSurfaceACK(
   helper_->SetScheduled(true);
 }
 
-void EGLImageTransportSurface::OnBuffersSwappedACK() {
-  helper_->SetScheduled(true);
-}
-
-void EGLImageTransportSurface::OnPostSubBufferACK() {
+void EGLImageTransportSurface::OnBufferPresented() {
   helper_->SetScheduled(true);
 }
 
@@ -760,11 +753,7 @@ void GLXImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {
 }
 
-void GLXImageTransportSurface::OnBuffersSwappedACK() {
-  helper_->SetScheduled(true);
-}
-
-void GLXImageTransportSurface::OnPostSubBufferACK() {
+void GLXImageTransportSurface::OnBufferPresented() {
   helper_->SetScheduled(true);
 }
 
@@ -902,11 +891,7 @@ std::string OSMesaImageTransportSurface::GetExtensions() {
   return extensions;
 }
 
-void OSMesaImageTransportSurface::OnBuffersSwappedACK() {
-  helper_->SetScheduled(true);
-}
-
-void OSMesaImageTransportSurface::OnPostSubBufferACK() {
+void OSMesaImageTransportSurface::OnBufferPresented() {
   helper_->SetScheduled(true);
 }
 

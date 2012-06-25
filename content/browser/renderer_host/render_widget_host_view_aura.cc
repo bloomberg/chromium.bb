@@ -552,7 +552,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface.
     // Must still send the ACK.
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params_in_pixel.route_id,
+    RenderWidgetHostImpl::AcknowledgeBufferPresent(params_in_pixel.route_id,
         gpu_host_id);
   } else {
     gfx::Size surface_size_in_pixel =
@@ -566,12 +566,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       // However only do so if we're not between the Draw() and the
       // OnCompositingEnded(), because out-of-order execution in the GPU process
       // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgeSwapBuffers(
+      RenderWidgetHostImpl::AcknowledgeBufferPresent(
           params_in_pixel.route_id, gpu_host_id);
     } else {
       // Add sending an ACK to the list of things to do OnCompositingEnded
       on_compositing_ended_callbacks_.push_back(
-          base::Bind(&RenderWidgetHostImpl::AcknowledgeSwapBuffers,
+          base::Bind(&RenderWidgetHostImpl::AcknowledgeBufferPresent,
                      params_in_pixel.route_id, gpu_host_id));
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);
@@ -589,7 +589,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
-    RenderWidgetHostImpl::AcknowledgePostSubBuffer(
+    RenderWidgetHostImpl::AcknowledgeBufferPresent(
         params_in_pixel.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size_in_pixel =
@@ -610,12 +610,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
       // However only do so if we're not between the Draw() and the
       // OnCompositingEnded(), because out-of-order execution in the GPU process
       // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgePostSubBuffer(
+      RenderWidgetHostImpl::AcknowledgeBufferPresent(
           params_in_pixel.route_id, gpu_host_id);
     } else {
       // Add sending an ACK to the list of things to do OnCompositingEnded
       on_compositing_ended_callbacks_.push_back(
-          base::Bind(&RenderWidgetHostImpl::AcknowledgePostSubBuffer,
+          base::Bind(&RenderWidgetHostImpl::AcknowledgeBufferPresent,
                      params_in_pixel.route_id, gpu_host_id));
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);

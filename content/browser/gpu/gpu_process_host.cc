@@ -104,7 +104,7 @@ void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
     GpuProcessHost* host = GpuProcessHost::FromID(host_id);
     if (host) {
       if (alive)
-        host->Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
+        host->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id));
       else {
         host->ForceShutdown();
       }

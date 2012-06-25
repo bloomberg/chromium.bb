@@ -63,8 +63,7 @@ class ImageTransportSurface {
 
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
-  virtual void OnBuffersSwappedACK() = 0;
-  virtual void OnPostSubBufferACK() = 0;
+  virtual void OnBufferPresented() = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
@@ -135,8 +134,7 @@ class ImageTransportHelper : public IPC::Listener {
 
   // IPC::Message handlers.
   void OnNewSurfaceACK(uint64 surface_handle, TransportDIB::Handle shm_handle);
-  void OnBuffersSwappedACK();
-  void OnPostSubBufferACK();
+  void OnBufferPresented();
   void OnResizeViewACK();
 
   // Backbuffer resize callback.
@@ -174,8 +172,7 @@ class PassThroughImageTransportSurface
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnPostSubBufferACK() OVERRIDE;
+  virtual void OnBufferPresented() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 

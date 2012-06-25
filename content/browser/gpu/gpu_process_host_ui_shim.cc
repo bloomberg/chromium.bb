@@ -334,7 +334,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
   ScopedSendOnIOThread delayed_send(
       host_id_,
-      new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
+      new AcceleratedSurfaceMsg_BufferPresented(params.route_id));
 
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
@@ -358,7 +358,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
   ScopedSendOnIOThread delayed_send(
       host_id_,
-      new AcceleratedSurfaceMsg_PostSubBufferACK(params.route_id));
+      new AcceleratedSurfaceMsg_BufferPresented(params.route_id));
 
   RenderWidgetHostViewPort* view =
       GetRenderWidgetHostViewFromSurfaceID(params.surface_id);

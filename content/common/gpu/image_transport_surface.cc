@@ -90,10 +90,8 @@ void ImageTransportHelper::Destroy() {}
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BuffersSwappedACK,
-                        OnBuffersSwappedACK)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_PostSubBufferACK,
-                        OnPostSubBufferACK)
+    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
+                        OnBufferPresented)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_NewACK,
                         OnNewSurfaceACK)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
@@ -201,12 +199,8 @@ void ImageTransportHelper::OnNewSurfaceACK(
   surface_->OnNewSurfaceACK(surface_handle, shm_handle);
 }
 
-void ImageTransportHelper::OnBuffersSwappedACK() {
-  surface_->OnBuffersSwappedACK();
-}
-
-void ImageTransportHelper::OnPostSubBufferACK() {
-  surface_->OnPostSubBufferACK();
+void ImageTransportHelper::OnBufferPresented() {
+  surface_->OnBufferPresented();
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -309,12 +303,7 @@ void PassThroughImageTransportSurface::OnNewSurfaceACK(
     TransportDIB::Handle shm_handle) {
 }
 
-void PassThroughImageTransportSurface::OnBuffersSwappedACK() {
-  DCHECK(transport_);
-  helper_->SetScheduled(true);
-}
-
-void PassThroughImageTransportSurface::OnPostSubBufferACK() {
+void PassThroughImageTransportSurface::OnBufferPresented() {
   DCHECK(transport_);
   helper_->SetScheduled(true);
 }

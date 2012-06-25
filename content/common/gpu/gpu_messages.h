@@ -201,13 +201,9 @@ IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
                     uint64 /* surface_handle */,
                     TransportDIB::Handle /* shared memory buffer */)
 
-// Tells the GPU process that the browser process handled the swap
-// buffers request.
-IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BuffersSwappedACK)
-
-// Tells the GPU process that the browser process handled the
-// PostSubBuffer command.
-IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_PostSubBufferACK)
+// Tells the GPU process that the browser process has handled the swap
+// buffers or post sub-buffer request.
+IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BufferPresented)
 
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)

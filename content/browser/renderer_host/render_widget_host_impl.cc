@@ -1241,7 +1241,7 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped");
   if (!view_) {
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(route_id,
+    RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
                                                  gpu_process_host_id);
     return;
   }
@@ -1848,19 +1848,11 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 // static
-void RenderWidgetHostImpl::AcknowledgeSwapBuffers(int32 route_id,
-                                                  int gpu_host_id) {
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
-  if (ui_shim)
-    ui_shim->Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
-}
-
-// static
-void RenderWidgetHostImpl::AcknowledgePostSubBuffer(int32 route_id,
+void RenderWidgetHostImpl::AcknowledgeBufferPresent(int32 route_id,
                                                     int gpu_host_id) {
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
   if (ui_shim)
-    ui_shim->Send(new AcceleratedSurfaceMsg_PostSubBufferACK(route_id));
+    ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id));
 }
 
 void RenderWidgetHostImpl::DelayedAutoResized() {

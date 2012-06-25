@@ -349,7 +349,7 @@ void TextureImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {
 }
 
-void TextureImageTransportSurface::OnBuffersSwappedACK() {
+void TextureImageTransportSurface::OnBufferPresented() {
   if (helper_->MakeCurrent()) {
     if (textures_[front_].size != textures_[back()].size) {
       CreateBackTexture(textures_[front_].size);
@@ -361,10 +361,6 @@ void TextureImageTransportSurface::OnBuffersSwappedACK() {
   // Even if MakeCurrent fails, schedule anyway, to trigger the lost context
   // logic.
   helper_->SetScheduled(true);
-}
-
-void TextureImageTransportSurface::OnPostSubBufferACK() {
-  OnBuffersSwappedACK();
 }
 
 void TextureImageTransportSurface::OnResizeViewACK() {

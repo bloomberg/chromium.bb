@@ -44,8 +44,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   // ImageTransportSurface implementation
   virtual void OnNewSurfaceACK(uint64 surface_handle,
                                TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnPostSubBufferACK() OVERRIDE;
+  virtual void OnBufferPresented() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -235,11 +234,7 @@ gfx::Size IOSurfaceImageTransportSurface::GetSize() {
   return size_;
 }
 
-void IOSurfaceImageTransportSurface::OnBuffersSwappedACK() {
-  helper_->SetScheduled(true);
-}
-
-void IOSurfaceImageTransportSurface::OnPostSubBufferACK() {
+void IOSurfaceImageTransportSurface::OnBufferPresented() {
   helper_->SetScheduled(true);
 }
 

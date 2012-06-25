@@ -46,8 +46,7 @@ class TextureImageTransportSurface :
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnPostSubBufferACK() OVERRIDE;
+  virtual void OnBufferPresented() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 

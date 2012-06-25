@@ -1029,13 +1029,13 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
-  RenderWidgetHostImpl::AcknowledgePostSubBuffer(params.route_id, gpu_host_id);
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {

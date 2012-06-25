@@ -1028,7 +1028,7 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::AckPendingSwapBuffers");
   while (!pending_swap_buffers_acks_.empty()) {
     if (pending_swap_buffers_acks_.front().first != 0) {
-      RenderWidgetHostImpl::AcknowledgeSwapBuffers(
+      RenderWidgetHostImpl::AcknowledgeBufferPresent(
           pending_swap_buffers_acks_.front().first,
           pending_swap_buffers_acks_.front().second);
     }

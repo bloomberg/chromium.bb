@@ -1393,8 +1393,8 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
       int32 gpu_process_host_id) {
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwappedNoHost");
-  RenderWidgetHostImpl::AcknowledgeSwapBuffers(route_id,
-                                               gpu_process_host_id);
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
+                                                 gpu_process_host_id);
 }
 
 }  // namespace content
