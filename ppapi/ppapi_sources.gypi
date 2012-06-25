@@ -311,6 +311,9 @@
     #
     'test_common_source_files': [
       # Common test files
+      'lib/gl/gles2/gles2.c',
+      'lib/gl/gles2/gl2ext_ppapi.c',
+      'lib/gl/gles2/gl2ext_ppapi.h',
       'tests/all_c_includes.h',
       'tests/all_cpp_includes.h',
       'tests/arch_dependent_sizes_32.h',
@@ -336,6 +339,8 @@
       'tests/test_file_system.h',
       'tests/test_graphics_2d.cc',
       'tests/test_graphics_2d.h',
+      'tests/test_graphics_3d.cc',
+      'tests/test_graphics_3d.h',
       'tests/test_host_resolver_private.cc',
       'tests/test_host_resolver_private.h',
       'tests/test_image_data.cc',
@@ -395,9 +400,6 @@
     #
     'test_trusted_source_files': [
       # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
-      'lib/gl/gles2/gles2.c',
-      'lib/gl/gles2/gl2ext_ppapi.c',
-      'lib/gl/gles2/gl2ext_ppapi.h',
       'tests/test_broker.cc',
       'tests/test_broker.h',
       'tests/test_browser_font.cc',
@@ -424,8 +426,6 @@
       'tests/test_flash_message_loop.h',
       'tests/test_fullscreen.cc',
       'tests/test_fullscreen.h',
-      'tests/test_graphics_3d.cc',
-      'tests/test_graphics_3d.h',
       'tests/test_net_address_private.cc',
       'tests/test_net_address_private.h',
       'tests/test_network_monitor_private.cc',
