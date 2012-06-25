@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -902,8 +902,11 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
     rv_2 = callback_2.WaitForResult();
   if (rv_2 != PP_ERROR_INPROGRESS)
     return ReportError("FileIO::Read", rv_2);
+  callback_1.WaitForResult();
 
-  // Cannot query while the write is pending.
+  // Cannot query while a write is pending.
+  rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1), callback_1);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
   TestCompletionCallback callback_3(instance_->pp_instance(), force_async_);
   PP_FileInfo info;
   int32_t rv_3 = file_io.Query(&info, callback_3);
@@ -911,23 +914,28 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
     rv_3 = callback_3.WaitForResult();
   if (rv_3 != PP_ERROR_INPROGRESS)
     return ReportError("FileIO::Query", rv_3);
+  callback_1.WaitForResult();
 
-  // Cannot touch while the write is pending.
+  // Cannot touch while a write is pending.
+  rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1), callback_1);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
   TestCompletionCallback callback_4(instance_->pp_instance(), force_async_);
   int32_t rv_4 = file_io.Touch(1234.0, 5678.0, callback_4);
   if (rv_4 == PP_OK_COMPLETIONPENDING)
     rv_4 = callback_4.WaitForResult();
   if (rv_4 != PP_ERROR_INPROGRESS)
     return ReportError("FileIO::Touch", rv_4);
+  callback_1.WaitForResult();
 
-  // Cannot set length while the write is pending.
+  // Cannot set length while a write is pending.
+  rv_1 = file_io.Write(write_offset_1, buf_1, strlen(buf_1), callback_1);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, rv_1);
   TestCompletionCallback callback_5(instance_->pp_instance(), force_async_);
   int32_t rv_5 = file_io.SetLength(123, callback_5);
   if (rv_5 == PP_OK_COMPLETIONPENDING)
     rv_5 = callback_5.WaitForResult();
   if (rv_5 != PP_ERROR_INPROGRESS)
     return ReportError("FileIO::SetLength", rv_5);
-
   callback_1.WaitForResult();
 
   PASS();

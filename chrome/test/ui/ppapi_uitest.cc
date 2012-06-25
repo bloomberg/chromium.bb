@@ -827,8 +827,7 @@ TEST_PPAPI_NACL_VIA_HTTP(FileIO_Open)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_AbortCalls)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ParallelReads)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelWrites)
-// crbug.com/134442
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO_NotAllowMixedReadWrite)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NACL_FileIO_TouchQuery)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
 // The following test requires PPB_FileIO_Trusted, not available in NaCl.
