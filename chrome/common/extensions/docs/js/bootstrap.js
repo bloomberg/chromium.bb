@@ -70,7 +70,8 @@ if (window.location.search == "?regenerate" ||
 } else {
   window.onload = function() {
     var currentBranch = getCurrentBranch();
-    if (currentBranch == '') {
+    if (currentBranch == '' &&
+        location.pathname.split('/').reverse()[1] != 'apps') {
       document.getElementById('unofficialWarning').style.display = 'block';
       document.getElementById('goToOfficialDocs').onclick = function() {
         location.href = officialURL;
