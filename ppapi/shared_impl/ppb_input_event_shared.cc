@@ -155,10 +155,9 @@ uint32_t PPB_InputEvent_Shared::GetTouchCount(PP_TouchListType list) {
       return data_.changed_touches.size();
     case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
       return data_.target_touches.size();
-    default:
-      return 0;
   }
-  return data_.touches.size();
+
+  return 0;
 }
 
 PP_TouchPoint PPB_InputEvent_Shared::GetTouchByIndex(PP_TouchListType list,
