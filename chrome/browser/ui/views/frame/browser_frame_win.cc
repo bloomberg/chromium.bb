@@ -408,8 +408,11 @@ void BrowserFrameWin::UpdateDWMFrame() {
 
 void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
   system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                             IDS_TASK_MANAGER);
+
+  if (browser_view()->browser()->CanOpenTaskManager()) {
+    system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
+                                               IDS_TASK_MANAGER);
+  }
   system_menu_contents_->AddSeparator();
   system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
   system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -420,7 +423,7 @@ void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
 
 void BrowserFrameWin::BuildSystemMenuForAppOrPopupWindow() {
   Browser* browser = browser_view()->browser();
-  if (browser->is_app()) {
+  if (browser->is_app() && browser->CanOpenTaskManager()) {
     system_menu_contents_->AddSeparator();
     system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);

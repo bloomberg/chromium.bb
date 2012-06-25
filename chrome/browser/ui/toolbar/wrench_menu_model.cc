@@ -61,6 +61,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
 
@@ -172,7 +173,10 @@ void ToolsMenuModel::Build(Browser* browser) {
 #endif
 
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-  AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
+
+  if (browser->CanOpenTaskManager())
+    AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
+
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
   AddSeparator();

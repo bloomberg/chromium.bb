@@ -1562,6 +1562,15 @@ void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
       action);
 }
 
+bool Browser::CanOpenTaskManager() {
+#if defined(OS_WIN)
+  // In metro we can't display the task manager, as it is a native window.
+  return !base::win::IsMetroProcess();
+#else
+  return true;
+#endif
+}
+
 void Browser::OpenTaskManager(bool highlight_background_resources) {
   content::RecordAction(UserMetricsAction("TaskManager"));
   if (highlight_background_resources)
@@ -3683,7 +3692,7 @@ void Browser::InitCommandState() {
   UpdateOpenFileState();
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   UpdateCommandsForDevTools();
-  command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
+  command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, CanOpenTaskManager());
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_KEYBOARD, true);

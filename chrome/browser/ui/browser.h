@@ -558,6 +558,9 @@ class Browser : public TabStripModelDelegate,
   void OpenFile();
   void OpenCreateShortcutsDialog();
   void ToggleDevToolsWindow(DevToolsToggleAction action);
+
+  // Returns true if the task manager can be opened.
+  bool CanOpenTaskManager();
   void OpenTaskManager(bool highlight_background_resources);
   void OpenFeedbackDialog();
 

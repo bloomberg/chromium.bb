@@ -37,6 +37,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 // The task manager window default size.
 static const int kDefaultWidth = 460;
 static const int kDefaultHeight = 270;
@@ -574,6 +578,9 @@ gfx::Size TaskManagerView::GetPreferredSize() {
 
 // static
 void TaskManagerView::Show(bool highlight_background_resources) {
+  // In Windows Metro it's not good to open this native window.
+  DCHECK(!base::win::IsMetroProcess());
+
   if (instance_) {
     if (instance_->highlight_background_resources_ !=
         highlight_background_resources) {
