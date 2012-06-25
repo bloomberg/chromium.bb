@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,13 +28,10 @@ typedef std::map<NSButton*, int> PopupLinks;
 
   IBOutlet NSButton* manageButton_;
   IBOutlet NSButton* doneButton_;
-  IBOutlet NSButton* loadAllPluginsButton_;
+  IBOutlet NSButton* loadButton_;
 
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
-
-  // The info button of the cookies bubble.
-  IBOutlet NSButton* infoButton_;
 
   IBOutlet NSTextField* blockedResourcesField_;
 
@@ -61,7 +58,10 @@ typedef std::map<NSButton*, int> PopupLinks;
 // Callback for "info" link.
 - (IBAction)showMoreInfo:(id)sender;
 
-// Callback for "load all plugins" button.
-- (IBAction)loadAllPlugins:(id)sender;
+// Callback for "load" (plug-ins, mixed script) button.
+- (IBAction)load:(id)sender;
+
+// Callback for "Learn More" link.
+- (IBAction)learnMoreLinkClicked:(id)sender;
 
 @end

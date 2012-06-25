@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)initializeRadioGroup;
 - (void)initializePopupList;
 - (void)initializeGeoLists;
-- (void)sizeToFitLoadPluginsButton;
+- (void)sizeToFitLoadButton;
 - (void)sizeToFitManageDoneButtons;
 - (void)removeInfoButton;
 - (void)popupLinkClicked:(id)sender;
@@ -120,7 +120,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   scoped_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
   DCHECK(model.get());
 
-  const int settingsType = model->content_type();
+  ContentSettingsType settingsType = model->content_type();
   NSString* nibPath = @"";
   switch (settingsType) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
@@ -135,6 +135,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
       nibPath = @"ContentBlockedPopups"; break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       nibPath = @"ContentBlockedGeolocation"; break;
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+      nibPath = @"ContentBlockedMixedScript"; break;
     default:
       NOTREACHED();
   }
@@ -398,15 +400,15 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [contentsContainer_ setFrame:containerFrame];
 }
 
-- (void)sizeToFitLoadPluginsButton {
+- (void)sizeToFitLoadButton {
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
-  [loadAllPluginsButton_ setEnabled:content.custom_link_enabled];
+  [loadButton_ setEnabled:content.custom_link_enabled];
 
   // Resize horizontally to fit button if necessary.
   NSRect windowFrame = [[self window] frame];
-  int widthNeeded = NSWidth([loadAllPluginsButton_ frame]) +
-      2 * NSMinX([loadAllPluginsButton_ frame]);
+  int widthNeeded = NSWidth([loadButton_ frame]) +
+      2 * NSMinX([loadButton_ frame]);
   if (NSWidth(windowFrame) < widthNeeded) {
     windowFrame.size.width = widthNeeded;
     [[self window] setFrame:windowFrame display:NO];
@@ -441,7 +443,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
   ContentSettingsType type = contentSettingBubbleModel_->content_type();
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    [self sizeToFitLoadPluginsButton];
+    [self sizeToFitLoadButton];
     [self initializeBlockedPluginsList];
   }
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
@@ -478,9 +480,13 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [self close];
 }
 
-- (IBAction)loadAllPlugins:(id)sender {
+- (IBAction)load:(id)sender {
   contentSettingBubbleModel_->OnCustomLinkClicked();
   [self close];
+}
+
+- (IBAction)learnMoreLinkClicked:(id)sender {
+  contentSettingBubbleModel_->OnManageLinkClicked();
 }
 
 - (IBAction)manageBlocking:(id)sender {

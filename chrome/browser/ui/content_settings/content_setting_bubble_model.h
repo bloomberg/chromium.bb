@@ -25,17 +25,7 @@ class TabContents;
 // the action triggered when the allow / block radio buttons are triggered.
 class ContentSettingBubbleModel : public content::NotificationObserver {
  public:
-  virtual ~ContentSettingBubbleModel();
-
   typedef ContentSettingBubbleModelDelegate Delegate;
-
-  static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
-      Delegate* delegate,
-      TabContents* tab_contents,
-      Profile* profile,
-      ContentSettingsType content_type);
-
-  ContentSettingsType content_type() const { return content_type_; }
 
   struct PopupItem {
     SkBitmap bitmap;
@@ -80,6 +70,16 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
    private:
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
   };
+
+  static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
+      Delegate* delegate,
+      TabContents* tab_contents,
+      Profile* profile,
+      ContentSettingsType content_type);
+
+  virtual ~ContentSettingBubbleModel();
+
+  ContentSettingsType content_type() const { return content_type_; }
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
 

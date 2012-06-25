@@ -55,15 +55,14 @@ ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 }
 
 // Check that the bubble doesn't crash or leak for any settings type
-// http://crbug.com/134060.
-TEST_F(ContentSettingBubbleControllerTest, DISABLED_Init) {
+TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
         i == CONTENT_SETTINGS_TYPE_INTENTS ||
         i == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
         i == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
         i == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
-      // Notifications, web intents and auto select certificate have no bubble.
+      // These types have no bubble.
       continue;
     }
 
@@ -85,7 +84,7 @@ TEST_F(ContentSettingBubbleControllerTest, DISABLED_Init) {
                                                         profile(),
                                                         settingsType)
         parentWindow:parent
-         anchoredAt:NSMakePoint(50, 20)];
+          anchoredAt:NSMakePoint(50, 20)];
     EXPECT_TRUE(controller != nil);
     EXPECT_TRUE([[controller window] isVisible]);
     [parent.get() close];
