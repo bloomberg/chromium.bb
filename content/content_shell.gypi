@@ -483,7 +483,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          'target_name': 'content_shell_content_view',
+          'target_name': 'libcontent_shell_content_view',
           'type': 'shared_library',
           'dependencies': [
             'content_shell_jni_headers',
