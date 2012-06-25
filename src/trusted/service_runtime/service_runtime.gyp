@@ -301,19 +301,6 @@
           ],
         }],
       ],
-    }, {
-       # This currently tests linking of sel_main_chrome.c *only*.  We
-       # do not expect this program to do anything meaningful when
-       # run.
-      'target_name': 'sel_main_chrome_test',
-      'type': 'executable',
-      'dependencies': [
-        'sel',
-        '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
-      ],
-      'sources': [
-        'sel_main_chrome_test.c',
-      ],
     },
   ],
   'conditions': [
@@ -390,23 +377,6 @@
           ],
           'sources': [
             'sel_main.c',
-          ],
-        },
-        {
-          # This currently tests linking of sel_main_chrome.c *only*.  We
-          # do not expect this program to do anything meaningful when
-          # run.
-          'target_name': 'sel_main_chrome_test64',
-          'type': 'executable',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'dependencies': [
-            'sel64',
-            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
-          ],
-          'sources': [
-            'sel_main_chrome_test.c',
           ],
         },
       ],

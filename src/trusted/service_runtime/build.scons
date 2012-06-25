@@ -933,11 +933,6 @@ if (not env.CrossToolsBuild() and
                          is_broken=env.Bit('windows'))
 
 
-# This currently tests linking of sel_main_chrome.c *only*.  We do not
-# expect this program to do anything meaningful when run.
-env.ComponentProgram('sel_main_chrome_test', ['sel_main_chrome_test.c'],
-                     EXTRA_LIBS=sel_ldr_libs)
-
 exe = env.ComponentProgram('nacl_error_gio_test',
                            ['nacl_error_gio_test.c'],
                            EXTRA_LIBS=sel_ldr_libs)

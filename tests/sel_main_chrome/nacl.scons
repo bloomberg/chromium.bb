@@ -1,0 +1,37 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+# This test uses a nexe built by another test.  Nexes do not get
+# staged in pexe mode, so only run this test in nonpexe mode.
+if env.Bit('pnacl_generate_pexe'):
+  Return()
+
+sel_main_chrome_test = trusted_env.ComponentProgram(
+    'sel_main_chrome_test', ['sel_main_chrome_test.cc'],
+    EXTRA_LIBS=['nonnacl_util', 'sel', 'sel_debug_dummy'])
+
+env_vars = []
+if env.Bit('target_arm') and env.UsingEmulator():
+  # No-execute page protection does not work under qemu-arm.
+  env_vars.append('NACL_DANGEROUS_SKIP_QUALIFICATION_TEST=1')
+
+test_command = [sel_main_chrome_test, env.GetIrtNexe(),
+                env.File('${STAGING_DIR}/hello_world.nexe')]
+bootstrap, _ = env.GetBootstrap()
+if bootstrap is not None:
+  test_command = [bootstrap] + test_command
+
+node = env.CommandTest(
+    'sel_main_chrome_test.out', test_command, osenv=env_vars,
+    stdout_golden=env.File('../hello_world/hello_world.stdout'))
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_sel_main_chrome_test',
+                       is_broken=not env.Bit('nacl_static_link'))

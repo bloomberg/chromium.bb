@@ -3464,6 +3464,7 @@ irt_variant_tests = [
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/sbrk/nacl.scons',
+    'tests/sel_main_chrome/nacl.scons',
     'tests/signal_handler/nacl.scons',
     'tests/sleep/nacl.scons',
     'tests/srpc/nacl.scons',

@@ -1,4 +1,5 @@
-/* Copyright (c) 2011 The Native Client Authors. All rights reserved.
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,7 +8,10 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_VALGRIND_HOOKS_H__ 1
 
 #include <stdlib.h>
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
+
+EXTERN_C_BEGIN
 
 /*
  * When running under Valgrind, calls to these functions are intercepted and
@@ -26,5 +30,7 @@ void NaClFileNameForValgrind(const char* name);
 
 /* Tells Valgrind the base address of the sandbox. */
 void NaClSandboxMemoryStartForValgrind(uintptr_t mem_start);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_VALGRIND_HOOKS_H__ */

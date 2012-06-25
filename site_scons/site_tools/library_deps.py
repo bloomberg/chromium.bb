@@ -13,6 +13,8 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'gio',
         ],
     'sel': [
+        'nacl_error_code',
+        'env_cleanser',
         'manifest_proxy',
         'simple_service',
         'thread_interface',
