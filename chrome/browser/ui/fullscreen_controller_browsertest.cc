@@ -13,6 +13,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_navigation_observer.h"
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
@@ -339,3 +340,60 @@ IN_PROC_BROWSER_TEST_F(
   }
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       PendingMouseLockExitsOnTabSwitch) {
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
+                       content::PAGE_TRANSITION_TYPED);
+  WebContents* tab2 = browser()->GetActiveWebContents();
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
+                       content::PAGE_TRANSITION_TYPED);
+  WebContents* tab1 = browser()->GetActiveWebContents();
+
+  // Request mouse lock. Bubble is displayed.
+  RequestToLockMouse(tab1, true, false);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+
+  // Activate current tab. Mouse lock bubble remains.
+  browser()->ActivateTabAt(0, true);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+
+  // Activate tab2. Mouse lock bubble clears.
+  {
+    MouseLockNotificationObserver mouse_lock_observer;
+    browser()->ActivateTabAt(1, true);
+    mouse_lock_observer.Wait();
+  }
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Now, test that closing an unrelated tab does not disturb a request.
+
+  // Request mouse lock. Bubble is displayed.
+  RequestToLockMouse(tab2, true, false);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+
+  // Close tab1. Mouse lock bubble remains.
+  browser()->CloseTabContents(tab1);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       PendingMouseLockExitsOnTabClose) {
+  // Add more tabs.
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
+                       content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
+                       content::PAGE_TRANSITION_TYPED);
+
+  // Request mouse lock. Bubble is displayed.
+  RequestToLockMouse(browser()->GetActiveWebContents(), true, false);
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+
+  // Close tab. Bubble is cleared.
+  {
+    MouseLockNotificationObserver mouse_lock_observer;
+    browser()->CloseTab();
+    mouse_lock_observer.Wait();
+  }
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+}

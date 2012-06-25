@@ -246,7 +246,9 @@ void FullscreenController::LostMouseLock() {
 }
 
 void FullscreenController::OnTabClosing(WebContents* web_contents) {
-  if (IsFullscreenForTabOrPending(web_contents)) {
+  const TabContents* contents = TabContents::FromWebContents(web_contents);
+  if (contents &&
+      (contents == fullscreened_tab_ || contents == mouse_lock_tab_)) {
     ExitTabFullscreenOrMouseLockIfNecessary();
     // The call to exit fullscreen may result in asynchronous notification of
     // fullscreen state change (e.g., on Linux). We don't want to rely on it
@@ -258,7 +260,8 @@ void FullscreenController::OnTabClosing(WebContents* web_contents) {
 }
 
 void FullscreenController::OnTabDeactivated(TabContents* contents) {
-  if (contents == fullscreened_tab_)
+  if (contents &&
+      (contents == fullscreened_tab_ || contents == mouse_lock_tab_))
     ExitTabFullscreenOrMouseLockIfNecessary();
 }
 

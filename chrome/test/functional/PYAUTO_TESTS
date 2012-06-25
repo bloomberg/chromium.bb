@@ -91,8 +91,6 @@
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       # crbug.com/99475
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
-      # crbug.com/131702
-      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMLBubbleWhenTabLoseFocus',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/128563
