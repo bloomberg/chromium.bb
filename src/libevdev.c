@@ -211,9 +211,9 @@ int EvdevProbeAbsinfo(EvdevPtr device, size_t key) {
 }
 
 int EvdevProbeMTSlot(EvdevPtr device, MTSlotInfoPtr req) {
-  if (ioctl(device->fd, EVIOCGMTSLOTS((sizeof(req))), &req) < 0) {
+  if (ioctl(device->fd, EVIOCGMTSLOTS((sizeof(*req))), req) < 0) {
       LOG_ERROR(device, "ioctl EVIOCGMTSLOTS(req.code=%d) failed: %s\n",
-          req->code, strerror(errno));
+                req->code, strerror(errno));
       return !Success;
   } else {
       return Success;
