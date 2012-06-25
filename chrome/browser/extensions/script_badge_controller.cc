@@ -88,13 +88,14 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     const ExecuteScriptCallback& callback,
     bool success,
     int32 page_id,
-    const std::string& error) {
+    const std::string& error,
+    const base::ListValue& script_results) {
   if (success && page_id == GetPageID()) {
     if (InsertExtension(extension_id))
       Notify();
   }
 
-  callback.Run(success, page_id, error);
+  callback.Run(success, page_id, error, script_results);
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() {

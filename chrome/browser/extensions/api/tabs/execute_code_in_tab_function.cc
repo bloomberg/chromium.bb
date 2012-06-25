@@ -143,13 +143,25 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
 void ExecuteCodeInTabFunction::OnExecuteCodeFinished(bool success,
                                                      int32 page_id,
-                                                     const std::string& error) {
+                                                     const std::string& error,
+                                                     const ListValue& result) {
   if (!error.empty()) {
     CHECK(!success);
     error_ = error;
   }
 
   SendResponse(success);
+}
+
+
+void TabsExecuteScriptFunction::OnExecuteCodeFinished(bool success,
+                                                      int32 page_id,
+                                                      const std::string& error,
+                                                      const ListValue& result) {
+  if (error.empty())
+    result_.reset(result.DeepCopy());
+  ExecuteCodeInTabFunction::OnExecuteCodeFinished(success, page_id, error,
+                                                   result);
 }
 
 void ExecuteCodeInTabFunction::DidLoadFile(bool success,

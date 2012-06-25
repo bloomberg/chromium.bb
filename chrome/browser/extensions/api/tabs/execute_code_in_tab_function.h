@@ -23,12 +23,13 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
- private:
   // Message handler.
-  void OnExecuteCodeFinished(bool success,
-                             int32 page_id,
-                             const std::string& error);
+  virtual void OnExecuteCodeFinished(bool success,
+                                     int32 page_id,
+                                     const std::string& error,
+                                     const ListValue& script_result);
 
+ private:
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.
   void DidLoadFile(bool success, const std::string& data);
@@ -66,6 +67,9 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
  private:
   virtual ~TabsExecuteScriptFunction() {}
+  virtual void OnExecuteCodeFinished(bool success, int32 page_id,
+                                     const std::string& error,
+                                     const ListValue& script_result) OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.executeScript")
 };

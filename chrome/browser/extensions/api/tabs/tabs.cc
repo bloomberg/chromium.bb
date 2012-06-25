@@ -1363,7 +1363,8 @@ void UpdateTabFunction::PopulateResult() {
 
 void UpdateTabFunction::OnExecuteCodeFinished(bool success,
                                               int32 page_id,
-                                              const std::string& error) {
+                                              const std::string& error,
+                                              const ListValue& script_result) {
   if (!error.empty()) {
     CHECK(!success);
     error_ = error;
