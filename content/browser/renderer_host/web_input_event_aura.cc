@@ -176,6 +176,14 @@ WebKit::WebGestureEvent MakeWebGestureEvent(aura::ScrollEvent* event) {
   return gesture_event;
 }
 
+WebKit::WebGestureEvent MakeWebGestureEventFlingCancel() {
+  WebKit::WebGestureEvent gesture_event;
+
+  // All other fields are ignored on a GestureFlingCancel event.
+  gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
+  return gesture_event;
+}
+
 WebKit::WebTouchPoint* UpdateWebTouchEvent(aura::TouchEvent* event,
                                            WebKit::WebTouchEvent* web_event) {
 #if defined(OS_WIN)

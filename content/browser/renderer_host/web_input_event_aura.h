@@ -31,6 +31,7 @@ CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
     aura::GestureEvent* event);
 CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
     aura::ScrollEvent* event);
+CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEventFlingCancel();
 
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
