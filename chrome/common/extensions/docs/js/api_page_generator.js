@@ -503,19 +503,29 @@ function filterDocumented(things) {
   });
 }
 
-function stableAPIs() {
-  return schema.filter(function(module) {
-    return !disableDocs(module) &&
-           module.namespace.indexOf('experimental') < 0;
-  }).map(function(module) {
-    return module.namespace;
-  }).sort();
-}
+function listChromeAPIs(packageType, includeExperimental) {
+  // Super ghetto to use a synchronous XHR here, but this only runs during
+  // generation of docs, so I guess it's ok.
+  var req = new XMLHttpRequest();
+  req.open('GET', '../../api/_permission_features.json', false);
+  req.send(null);
 
-function experimentalAPIs() {
+  var permissionFeatures = JSON.parse(JSON.minify(req.responseText));
+
   return schema.filter(function(module) {
-    return !disableDocs(module) &&
-           module.namespace.indexOf('experimental') == 0;
+    if (disableDocs(module))
+      return false;
+
+    if ((module.namespace.indexOf('experimental') > -1) !=
+        includeExperimental) {
+      return false;
+    }
+
+    var feature = permissionFeatures[module.namespace];
+    if (feature && feature.extension_types.indexOf(packageType) == -1)
+      return false;
+
+    return true;
   }).map(function(module) {
     return module.namespace;
   }).sort();
