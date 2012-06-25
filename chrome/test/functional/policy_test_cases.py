@@ -98,7 +98,7 @@ class PolicyPrefsTestCases(object):
     'MediaCacheSize': ('kMediaCacheSize', 200, [], ['win', 'mac', 'linux']),
     'DownloadDirectory': (None, '${user_home}/test-downloads', [BROWSER],
                           ['win', 'mac', 'linux']),
-    'ClearSiteDataOnExit': ('kClearSiteDataOnExit', True, [CONTENT], OS_ALL),
+    'ClearSiteDataOnExit': (None, True, [CONTENT], OS_ALL),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
     'ProxyMode': (None, 'direct', [], ['win', 'mac', 'linux']),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749

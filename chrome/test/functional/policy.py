@@ -662,6 +662,32 @@ class PolicyTest(policy_base.PolicyTestBase):
       expect_retval=True),
       msg='The force install extension was never installed.')
 
+  def testClearSiteDataOnExit(self):
+    """Verify the ClearSiteDataOnExit policy is taking effect.
+
+    Install a cookie and make sure the cookie gets removed on browser restart
+    when the policy is set.
+    """
+    cookie_url = 'http://example.com'
+    cookie_val = 'ponies=unicorns'
+    self.SetCookie(pyauto.GURL(cookie_url),
+                   cookie_val + ';expires=Wed Jan 01 3000 00:00:00 GMT')
+
+    # Cookie should be kept over restarts.
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual(
+        cookie_val, self.GetCookie(pyauto.GURL(cookie_url)),
+        msg='Cookie on ' + cookie_url + ' does not match ' + cookie_val + '.');
+
+    # With the policy set, the cookie should be gone after a restart.
+    self.SetUserPolicy({
+      'ClearSiteDataOnExit': True
+    })
+    self.RestartBrowser(clear_profile=False)
+    self.assertFalse(
+        self.GetCookie(pyauto.GURL(cookie_url)),
+        msg='Cookie present on ' + cookie_url + '.');
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
