@@ -1479,3 +1479,11 @@
    fun:ChromeRenderViewHostTestHarness::SetUp
    fun:TabContentsTestHarness::SetUp
 }
+{
+   bug_134527
+   Heapcheck:Leak
+   fun:IA__FcMatrixCopy
+   fun:gfx::RenderTextLinux::EnsureLayout
+   fun:gfx::RenderText::IndexOfAdjacentGrapheme
+   fun:gfx::RenderTextTest_GraphemePositions_Test::TestBody
+}
