@@ -308,7 +308,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       new chromeos::options2::UserImageSource();
   ChromeURLDataManager::AddDataSource(profile, user_image_source);
 
-  // Set up the chrome://wallpaper/ source.
+  // Set up the chrome://wallpaper-thumb/ source.
   chromeos::options2::WallpaperThumbnailSource* wallpaper_thumbnail_source =
       new chromeos::options2::WallpaperThumbnailSource();
   ChromeURLDataManager::AddDataSource(profile, wallpaper_thumbnail_source);

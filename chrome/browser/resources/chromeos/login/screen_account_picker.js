@@ -185,6 +185,15 @@ cr.define('login', function() {
     $('pod-row').classList[enabled ? 'add' : 'remove']('capslock-on');
   };
 
+  /**
+   * Sets wallpaper for lock screen.
+   */
+  AccountPickerScreen.setWallpaper = function() {
+    var oobe = Oobe.getInstance();
+    if (oobe.isNewOobe() && oobe.isLockScreen())
+      document.body.background = 'chrome://wallpaper/';
+  }
+
   return {
     AccountPickerScreen: AccountPickerScreen
   };

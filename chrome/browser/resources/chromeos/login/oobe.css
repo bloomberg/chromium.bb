@@ -27,6 +27,10 @@ html[oobe=new]:not([screen=lock]) body {
   background-color: transparent;
 }
 
+html[oobe=new][screen=lock] body {
+  -webkit-background-size: 100% 100%;
+}
+
 progress {
   border: solid 1px #bbb;
   padding: 1px;

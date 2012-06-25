@@ -31,9 +31,7 @@ class Widget;
 namespace ash {
 
 namespace internal {
-void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
-                             WallpaperLayout wallpaper_layout,
-                             aura::RootWindow* root_window);
+void CreateDesktopBackground(aura::RootWindow* root_window);
 
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
 

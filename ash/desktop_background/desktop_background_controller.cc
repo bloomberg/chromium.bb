@@ -98,6 +98,24 @@ DesktopBackgroundController::~DesktopBackgroundController() {
   CancelPendingWallpaperOperation();
 }
 
+gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {
+  if (current_wallpaper_.get())
+    return current_wallpaper_->wallpaper_image;
+  return gfx::ImageSkia();
+}
+
+WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
+  if (current_wallpaper_.get())
+    return current_wallpaper_->wallpaper_layout;
+  return CENTER_CROPPED;
+}
+
+SkBitmap DesktopBackgroundController::GetCurrentWallpaperImage() {
+  if (desktop_background_mode_ != BACKGROUND_IMAGE)
+    return SkBitmap();
+  return GetWallpaper();
+}
+
 void DesktopBackgroundController::OnRootWindowAdded(
     aura::RootWindow* root_window) {
   switch (desktop_background_mode_) {
@@ -105,8 +123,7 @@ void DesktopBackgroundController::OnRootWindowAdded(
       if (current_wallpaper_.get()) {
         SetDesktopBackgroundImage(root_window);
       } else {
-        gfx::ImageSkia dummy;
-        internal::CreateDesktopBackground(dummy, CENTER, root_window);
+        internal::CreateDesktopBackground(root_window);
       }
       break;
     case BACKGROUND_SOLID_COLOR:
@@ -146,6 +163,7 @@ void DesktopBackgroundController::SetCustomWallpaper(
     WallpaperLayout layout) {
   CancelPendingWallpaperOperation();
   current_wallpaper_.reset(new WallpaperData(layout, wallpaper));
+  desktop_background_mode_ = BACKGROUND_IMAGE;
   UpdateDesktopBackgroundImageMode();
 }
 
@@ -164,6 +182,9 @@ void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode(
   // TODO(derat): Remove this in favor of having the compositor only clear the
   // viewport when there are regions not covered by a layer:
   // http://crbug.com/113445
+  current_wallpaper_.reset(NULL);
+  background_color_ = color;
+  desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
@@ -178,23 +199,19 @@ void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode(
         background_layer);
     GetRootWindowLayoutManager(root_window)->SetBackgroundWidget(NULL);
   }
-  background_color_ = color;
-  desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImage(
     aura::RootWindow* root_window) {
   GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
-  if (!current_wallpaper_->wallpaper_image.empty()) {
-    internal::CreateDesktopBackground(
-        current_wallpaper_->wallpaper_image,
-        current_wallpaper_->wallpaper_layout,
-        root_window);
-  }
+  if (current_wallpaper_.get() &&
+      !current_wallpaper_->wallpaper_image.empty())
+    internal::CreateDesktopBackground(root_window);
 }
 
 void DesktopBackgroundController::UpdateDesktopBackgroundImageMode() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     SetDesktopBackgroundImage(*iter);
@@ -213,13 +230,13 @@ void DesktopBackgroundController::OnWallpaperLoadCompleted(
 }
 
 void DesktopBackgroundController::CreateEmptyWallpaper() {
+  current_wallpaper_.reset(NULL);
+  desktop_background_mode_ = BACKGROUND_IMAGE;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    gfx::ImageSkia dummy;
-    internal::CreateDesktopBackground(dummy, CENTER, *iter);
+    internal::CreateDesktopBackground(*iter);
   }
-  desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
 }  // namespace ash

@@ -3986,6 +3986,8 @@
         'browser/ui/webui/options2/chromeos/system_settings_provider2.h',
         'browser/ui/webui/options2/chromeos/user_image_source2.cc',
         'browser/ui/webui/options2/chromeos/user_image_source2.h',
+        'browser/ui/webui/options2/chromeos/wallpaper_source2.cc',
+        'browser/ui/webui/options2/chromeos/wallpaper_source2.h',
         'browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.cc',
         'browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h',
         'browser/ui/webui/options2/clear_browser_data_handler2.cc',

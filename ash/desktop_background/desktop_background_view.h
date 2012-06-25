@@ -16,8 +16,7 @@ namespace internal {
 
 class DesktopBackgroundView : public views::WidgetDelegateView {
  public:
-  DesktopBackgroundView(const gfx::ImageSkia& wallpaper,
-                        WallpaperLayout wallpaper_layout);
+  DesktopBackgroundView();
   virtual ~DesktopBackgroundView();
 
  private:
@@ -25,9 +24,6 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
-
-  gfx::ImageSkia wallpaper_;
-  WallpaperLayout wallpaper_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };

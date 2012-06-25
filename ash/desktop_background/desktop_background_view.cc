@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "ash/ash_export.h"
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -64,10 +65,7 @@ static int RoundPositive(double x) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopBackgroundView, public:
 
-DesktopBackgroundView::DesktopBackgroundView(const gfx::ImageSkia& wallpaper,
-                                             WallpaperLayout wallpaper_layout) {
-  wallpaper_ = wallpaper;
-  wallpaper_layout_ = wallpaper_layout;
+DesktopBackgroundView::DesktopBackgroundView() {
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
@@ -82,42 +80,47 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   // than the largest display supported, if not we will center it rather than
   // streching to avoid upsampling artifacts (Note that we could tile too, but
   // decided not to do this at the moment).
-  gfx::Rect wallpaper_rect(0, 0, wallpaper_.width(), wallpaper_.height());
-  if (wallpaper_layout_ == ash::CENTER_CROPPED && wallpaper_.width() > width()
-      && wallpaper_.height() > height()) {
+  DesktopBackgroundController* controller = ash::Shell::GetInstance()->
+      desktop_background_controller();
+  gfx::ImageSkia wallpaper = controller->GetWallpaper();
+  WallpaperLayout wallpaper_layout = controller->GetWallpaperLayout();
+
+  gfx::Rect wallpaper_rect(0, 0, wallpaper.width(), wallpaper.height());
+  if (wallpaper_layout == ash::CENTER_CROPPED && wallpaper.width() > width()
+      && wallpaper.height() > height()) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
     double horizontal_ratio = static_cast<double>(width()) /
-        static_cast<double>(wallpaper_.width());
+        static_cast<double>(wallpaper.width());
     double vertical_ratio = static_cast<double>(height()) /
-        static_cast<double>(wallpaper_.height());
+        static_cast<double>(wallpaper.height());
 
     gfx::Size cropped_size;
     if (vertical_ratio > horizontal_ratio) {
       cropped_size = gfx::Size(
           RoundPositive(static_cast<double>(width()) / vertical_ratio),
-          wallpaper_.height());
+          wallpaper.height());
     } else {
-      cropped_size = gfx::Size(wallpaper_.width(),
+      cropped_size = gfx::Size(wallpaper.width(),
           RoundPositive(static_cast<double>(height()) / horizontal_ratio));
     }
 
     gfx::Rect wallpaper_cropped_rect = wallpaper_rect.Center(cropped_size);
-    canvas->DrawImageInt(wallpaper_,
+    canvas->DrawImageInt(wallpaper,
         wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
         0, 0, width(), height(),
         true);
-  } else if (wallpaper_layout_ == ash::TILE) {
-    canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
-  } else if (wallpaper_layout_ == ash::STRETCH) {
+  } else if (wallpaper_layout == ash::TILE) {
+    canvas->TileImageInt(wallpaper, 0, 0, width(), height());
+  } else if (wallpaper_layout == ash::STRETCH) {
     // This is generally not recommended as it may show artifacts.
-    canvas->DrawImageInt(wallpaper_, 0, 0, wallpaper_.width(),
-        wallpaper_.height(), 0, 0, width(), height(), true);
+    canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(),
+        wallpaper.height(), 0, 0, width(), height(), true);
   } else {
     // All other are simply centered, and not scaled (but may be clipped).
-     canvas->DrawImageInt(wallpaper_, (width() - wallpaper_.width()) / 2,
-         (height() - wallpaper_.height()) / 2);
+     canvas->DrawImageInt(wallpaper, (width() - wallpaper.width()) / 2,
+         (height() - wallpaper.height()) / 2);
   }
 }
 
@@ -130,16 +133,15 @@ void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
     Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
 }
 
-void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
-                             WallpaperLayout wallpaper_layout,
-                             aura::RootWindow* root_window) {
+void CreateDesktopBackground(aura::RootWindow* root_window) {
+  DesktopBackgroundController* controller = ash::Shell::GetInstance()->
+      desktop_background_controller();
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  DesktopBackgroundView* view = new DesktopBackgroundView(wallpaper,
-                                                          wallpaper_layout);
+  DesktopBackgroundView* view = new DesktopBackgroundView();
   params.delegate = view;
-  if (wallpaper.empty())
+  if (controller->GetWallpaper().empty())
     params.transparent = true;
   params.parent = root_window->GetChildById(
       ash::internal::kShellWindowId_DesktopBackgroundContainer);

@@ -11,14 +11,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace aura {
 class RootWindow;
-}
-
-namespace gfx {
-class ImageSkia;
 }
 
 namespace ash {
@@ -54,6 +52,14 @@ class ASH_EXPORT DesktopBackgroundController {
   BackgroundMode desktop_background_mode() const {
     return desktop_background_mode_;
   }
+
+  gfx::ImageSkia GetWallpaper() const;
+
+  WallpaperLayout GetWallpaperLayout() const;
+
+  // Provides current image on the background, or empty SkBitmap if there is
+  // no image, e.g. background is solid color.
+  SkBitmap GetCurrentWallpaperImage();
 
   // Initialize root window's background.
   void OnRootWindowAdded(aura::RootWindow* root_window);

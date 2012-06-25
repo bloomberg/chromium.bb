@@ -7,7 +7,8 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var UserImagesGrid = options.UserImagesGrid;
 
-  /** @const */ var CUSTOM_WALLPAPER_PREFIX = 'chrome://wallpaper/custom_';
+  /** @const */ var CUSTOM_WALLPAPER_PREFIX =
+      'chrome://wallpaper-thumb/custom_';
 
   /////////////////////////////////////////////////////////////////////////////
   // SetWallpaperOptions class:

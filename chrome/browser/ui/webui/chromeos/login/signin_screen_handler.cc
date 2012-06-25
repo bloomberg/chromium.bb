@@ -1032,6 +1032,8 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
       chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+  if (ScreenLocker::default_screen_locker())
+    web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setWallpaper");
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

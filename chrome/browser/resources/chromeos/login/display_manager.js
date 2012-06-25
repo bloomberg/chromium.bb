@@ -315,7 +315,14 @@ cr.define('cr.ui.login', function() {
      */
     isNewOobe: function() {
       return document.documentElement.getAttribute('oobe') == 'new';
-    }
+    },
+
+    /**
+     * Returns true if the current screen is the lock screen.
+     */
+    isLockScreen: function() {
+      return document.documentElement.getAttribute('screen') == 'lock';
+    },
   };
 
   /**
