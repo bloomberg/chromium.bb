@@ -48,7 +48,6 @@ VolumeManager.Error = {
   UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
   INVALID_ARCHIVE: 'error_invalid_archive',
-  LIBCROS_MISSING: 'error_libcros_missing',
   AUTHENTICATION: 'error_authentication',
   PATH_UNMOUNTED: 'error_path_unmounted'
 };

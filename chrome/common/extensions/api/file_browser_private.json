@@ -266,9 +266,8 @@
             "type": "string",
             "enum": ["success", "error_unknown", "error_internal",
                      "error_unknown_filesystem", "error_unsuported_filesystem",
-                     "error_invalid_archive", "error_libcros_missing",
-                     "error_authentication", "error_network",
-                     "error_path_unmounted"],
+                     "error_invalid_archive", "error_authentication",
+                     "error_network", "error_path_unmounted"],
             "description": "Event type that tells listeners if mount was successful or an error occurred. It also specifies the error."
           },
           "sourcePath": {
