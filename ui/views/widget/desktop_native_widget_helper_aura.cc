@@ -108,7 +108,8 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   // TODO(erg): This doesn't map perfectly to what I want to do. TYPE_POPUP is
   // used for lots of stuff, like dragged tabs, and I only want this to trigger
   // for the status bubble and the omnibox.
-  if (params.type == Widget::InitParams::TYPE_POPUP) {
+  if (params.type == Widget::InitParams::TYPE_POPUP ||
+      params.type == Widget::InitParams::TYPE_BUBBLE) {
     is_embedded_window_ = true;
     position_client_.reset(new EmbeddedWindowScreenPositionClient(widget_));
     aura::client::SetScreenPositionClient(window, position_client_.get());
