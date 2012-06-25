@@ -5613,7 +5613,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disable throttling the rate of window resize. We throttle the resize for less perceived latency.
       </message>
       <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_NAME" desc="Title for the flag to enable the pointer lock feature.">
-        Enable Pointer Lock
+        Pointer Lock
       </message>
       <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION" desc="Description for the flag to enable the mouse lock feature.">
         Web pages may capture the mouse pointer and remove it from the user's control. The mouse movement data is directed solely to the web application. Users can escape by pressing the 'Esc' key.
