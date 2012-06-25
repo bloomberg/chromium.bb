@@ -33,6 +33,7 @@ CloudPolicyDataStore::CloudPolicyDataStore(
       policy_register_type_(policy_register_type),
       policy_type_(policy_type),
       known_machine_id_(false),
+      reregister_(false),
       token_cache_loaded_(false),
       policy_fetching_enabled_(true),
       device_mode_(DEVICE_MODE_PENDING) {}
@@ -122,6 +123,10 @@ void CloudPolicyDataStore::set_device_mode(DeviceMode device_mode) {
   device_mode_ = device_mode;
 }
 
+void CloudPolicyDataStore::set_reregister(bool reregister) {
+  reregister_ = reregister;
+}
+
 const std::string& CloudPolicyDataStore::device_token() const {
   return device_token_;
 }
@@ -177,6 +182,10 @@ bool CloudPolicyDataStore::known_machine_id() const {
 
 DeviceMode CloudPolicyDataStore::device_mode() const {
   return device_mode_;
+}
+
+bool CloudPolicyDataStore::reregister() const {
+  return reregister_;
 }
 
 #if defined(OS_CHROMEOS)
