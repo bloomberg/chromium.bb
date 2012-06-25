@@ -23,6 +23,7 @@ struct ChannelConfig {
   enum TransportType {
     TRANSPORT_STREAM,
     TRANSPORT_DATAGRAM,
+    TRANSPORT_NONE,
   };
 
   enum Codec {
@@ -30,6 +31,7 @@ struct ChannelConfig {
     CODEC_VERBATIM,
     CODEC_ZIP,
     CODEC_VP8,
+    CODEC_VORBIS,
   };
 
   ChannelConfig();
@@ -50,6 +52,8 @@ struct ChannelConfig {
 // chromotocol configuration.
 class SessionConfig {
  public:
+  SessionConfig();
+
   void set_control_config(const ChannelConfig& control_config) {
     control_config_ = control_config;
   }
@@ -62,6 +66,14 @@ class SessionConfig {
     video_config_ = video_config;
   }
   const ChannelConfig& video_config() const { return video_config_; }
+  void set_audio_config(const ChannelConfig& audio_config) {
+    audio_config_ = audio_config;
+  }
+  const ChannelConfig& audio_config() const { return audio_config_; }
+
+  bool is_audio_enabled() const {
+    return audio_config_.transport != ChannelConfig::TRANSPORT_NONE;
+  }
 
   static SessionConfig GetDefault();
 
@@ -69,6 +81,7 @@ class SessionConfig {
   ChannelConfig control_config_;
   ChannelConfig event_config_;
   ChannelConfig video_config_;
+  ChannelConfig audio_config_;
 };
 
 // Defines session description that is sent from client to the host in the
@@ -100,6 +113,14 @@ class CandidateSessionConfig {
 
   std::vector<ChannelConfig>* mutable_video_configs() {
     return &video_configs_;
+  }
+
+  const std::vector<ChannelConfig>& audio_configs() const {
+    return audio_configs_;
+  }
+
+  std::vector<ChannelConfig>* mutable_audio_configs() {
+    return &audio_configs_;
   }
 
   // Selects session configuration that is supported by both participants.
@@ -140,6 +161,7 @@ class CandidateSessionConfig {
   std::vector<ChannelConfig> control_configs_;
   std::vector<ChannelConfig> event_configs_;
   std::vector<ChannelConfig> video_configs_;
+  std::vector<ChannelConfig> audio_configs_;
 };
 
 }  // namespace protocol

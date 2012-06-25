@@ -26,6 +26,8 @@ AudioReader::~AudioReader() {
 
 // static
 scoped_ptr<AudioReader> AudioReader::Create(const SessionConfig& config) {
+  if (!config.is_audio_enabled())
+    return scoped_ptr<AudioReader>(NULL);
   // TODO(kxing): Support different session configurations.
   return scoped_ptr<AudioReader>(new AudioReader(AudioPacket::ENCODING_RAW));
 }

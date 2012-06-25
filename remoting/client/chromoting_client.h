@@ -15,6 +15,7 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/chromoting_view.h"
+#include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
@@ -37,7 +38,8 @@ class RectangleUpdateDecoder;
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub,
-                         public protocol::VideoStub {
+                         public protocol::VideoStub,
+                         public protocol::AudioStub {
  public:
   // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
@@ -72,6 +74,10 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                   const base::Closure& done) OVERRIDE;
   virtual int GetPendingPackets() OVERRIDE;
+
+  // AudioStub implementation.
+  virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
+                                  const base::Closure& done) OVERRIDE;
 
  private:
   struct QueuedVideoPacket {

@@ -27,6 +27,7 @@ const char kDescriptionTag[] = "description";
 const char kControlTag[] = "control";
 const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
+const char kAudioTag[] = "audio";
 const char kDeprecatedResolutionTag[] = "initial-resolution";
 
 const char kTransportAttr[] = "transport";
@@ -37,10 +38,12 @@ const char kDeprecatedHeightAttr[] = "height";
 
 const char kStreamTransport[] = "stream";
 const char kDatagramTransport[] = "datagram";
+const char kNoneTransport[] = "none";
 
 const char kVerbatimCodec[] = "verbatim";
 const char kVp8Codec[] = "vp8";
 const char kZipCodec[] = "zip";
+const char kVorbisCodec[] = "vorbis";
 
 const char* GetTransportName(ChannelConfig::TransportType type) {
   switch (type) {
@@ -48,6 +51,8 @@ const char* GetTransportName(ChannelConfig::TransportType type) {
       return kStreamTransport;
     case ChannelConfig::TRANSPORT_DATAGRAM:
       return kDatagramTransport;
+    case ChannelConfig::TRANSPORT_NONE:
+      return kNoneTransport;
   }
   NOTREACHED();
   return NULL;
@@ -61,6 +66,8 @@ const char* GetCodecName(ChannelConfig::Codec type) {
       return kVp8Codec;
     case ChannelConfig::CODEC_ZIP:
       return kZipCodec;
+    case ChannelConfig::CODEC_VORBIS:
+      return kVorbisCodec;
     default:
       break;
   }
@@ -97,6 +104,8 @@ bool ParseTransportName(const std::string& value,
     *transport = ChannelConfig::TRANSPORT_STREAM;
   } else if (value == kDatagramTransport) {
     *transport = ChannelConfig::TRANSPORT_DATAGRAM;
+  } else if (value == kNoneTransport) {
+    *transport = ChannelConfig::TRANSPORT_NONE;
   } else {
     return false;
   }
@@ -110,6 +119,8 @@ bool ParseCodecName(const std::string& value, ChannelConfig::Codec* codec) {
     *codec = ChannelConfig::CODEC_VP8;
   } else if (value == kZipCodec) {
     *codec = ChannelConfig::CODEC_ZIP;
+  } else if (value == kVorbisCodec) {
+    *codec = ChannelConfig::CODEC_VORBIS;
   } else {
     return false;
   }
@@ -163,6 +174,7 @@ ContentDescription* ContentDescription::Copy() const {
 //     <control transport="stream" version="1" />
 //     <event transport="datagram" version="1" />
 //     <video transport="stream" codec="vp8" version="1" />
+//     <audio transport="stream" codec="vorbis" version="1" />
 //     <authentication>
 //      Message created by Authenticator implementation.
 //     </authentication>
@@ -187,6 +199,11 @@ XmlElement* ContentDescription::ToXml() const {
   for (it = config()->video_configs().begin();
        it != config()->video_configs().end(); ++it) {
     root->AddElement(FormatChannelConfig(*it, kVideoTag));
+  }
+
+  for (it = config()->audio_configs().begin();
+       it != config()->audio_configs().end(); ++it) {
+    root->AddElement(FormatChannelConfig(*it, kAudioTag));
   }
 
   // Older endpoints require an initial-resolution tag, but otherwise ignore it.
@@ -243,6 +260,25 @@ ContentDescription* ContentDescription::ParseXml(
         return NULL;
       config->mutable_video_configs()->push_back(channel_config);
       child = child->NextNamed(video_tag);
+    }
+
+    // <audio> tags.
+    QName audio_tag(kChromotingXmlNamespace, kAudioTag);
+    child = element->FirstNamed(audio_tag);
+    if (!child) {
+      // If there's no mention of audio, implicitly assume
+      // TRANSPORT_NONE for the audio_channel.
+      ChannelConfig no_audio(ChannelConfig::TRANSPORT_NONE,
+                             kDefaultStreamVersion,
+                             ChannelConfig::CODEC_VERBATIM);
+      config->mutable_audio_configs()->push_back(no_audio);
+    }
+    while (child) {
+      ChannelConfig channel_config;
+      if (!ParseChannelConfig(child, true, &channel_config))
+        return NULL;
+      config->mutable_audio_configs()->push_back(channel_config);
+      child = child->NextNamed(audio_tag);
     }
 
     scoped_ptr<XmlElement> authenticator_message;

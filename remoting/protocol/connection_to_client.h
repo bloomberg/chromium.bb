@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "remoting/protocol/audio_writer.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
 
@@ -83,6 +84,10 @@ class ConnectionToClient : public base::NonThreadSafe {
   // Send encoded update stream data to the viewer.
   virtual VideoStub* video_stub();
 
+  // Send audio stream data to the viewer.
+  // Returns NULL if audio is not enabled.
+  virtual AudioStub* audio_stub();
+
   // Send control data to the viewer/client.
   virtual ClientStub* client_stub();
 
@@ -123,6 +128,7 @@ class ConnectionToClient : public base::NonThreadSafe {
   scoped_ptr<HostControlDispatcher> control_dispatcher_;
   scoped_ptr<HostEventDispatcher> event_dispatcher_;
   scoped_ptr<VideoWriter> video_writer_;
+  scoped_ptr<AudioWriter> audio_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClient);
 };

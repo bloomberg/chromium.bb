@@ -31,6 +31,8 @@ class VideoPacket;
 
 namespace protocol {
 
+class AudioReader;
+class AudioStub;
 class Authenticator;
 class ClientControlDispatcher;
 class ClientEventDispatcher;
@@ -74,7 +76,8 @@ class ConnectionToHost : public SignalStrategy::Listener,
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
                        ClipboardStub* clipboard_stub,
-                       VideoStub* video_stub);
+                       VideoStub* video_stub,
+                       AudioStub* audio_stub);
 
   virtual void Disconnect(const base::Closure& shutdown_task);
 
@@ -129,12 +132,14 @@ class ConnectionToHost : public SignalStrategy::Listener,
   ClientStub* client_stub_;
   ClipboardStub* clipboard_stub_;
   VideoStub* video_stub_;
+  AudioStub* audio_stub_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<SessionManager> session_manager_;
   scoped_ptr<Session> session_;
 
   scoped_ptr<VideoReader> video_reader_;
+  scoped_ptr<AudioReader> audio_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
   scoped_ptr<ClientEventDispatcher> event_dispatcher_;
   ClipboardFilter clipboard_forwarder_;

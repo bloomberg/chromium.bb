@@ -8,6 +8,7 @@
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/negotiating_authenticator.h"
@@ -60,7 +61,7 @@ void ChromotingClient::Start(
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, transport_factory.Pass(),
-                       authenticator.Pass(), this, this, this, this);
+                       authenticator.Pass(), this, this, this, this, this);
 
   view_->Initialize();
 }
@@ -138,6 +139,12 @@ void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
 int ChromotingClient::GetPendingPackets() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return received_packets_.size();
+}
+
+void ChromotingClient::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
+                                          const base::Closure& done) {
+  // TODO(kxing): Playback audio.
+  done.Run();
 }
 
 void ChromotingClient::DispatchPacket() {
