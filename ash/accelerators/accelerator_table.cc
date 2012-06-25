@@ -10,8 +10,16 @@
 namespace ash {
 
 const AcceleratorData kAcceleratorData[] = {
+  // We have to define 3 entries for Shift+Alt. VKEY_[LR]MENU might be sent to
+  // the accelerator controller when RenderWidgetHostViewAura is focused, and
+  // VKEY_MENU might be when it's not (e.g. when NativeWidgetAura is focused).
+  { false, ui::VKEY_LMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
   { false, ui::VKEY_MENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  { false, ui::VKEY_RMENU, ui::EF_SHIFT_DOWN, NEXT_IME },
+  // The same is true for Alt+Shift.
+  { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
   { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
+  { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
 #if defined(OS_CHROMEOS)
   // When X11 is in use, a modifier-only accelerator like Shift+Alt could be
   // sent to the accelerator controller in unnormalized form (e.g. when

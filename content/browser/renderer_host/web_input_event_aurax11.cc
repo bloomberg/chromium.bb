@@ -38,7 +38,9 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
 #include <cstdlib>
+#include <X11/keysym.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "base/event_types.h"
 #include "base/logging.h"
@@ -104,7 +106,33 @@ int EventFlagsToWebEventModifiers(int flags) {
 }
 
 int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
-  return ui::KeyboardCodeFromXKeyEvent((XEvent*)event);
+  int windows_key_code =
+      ui::KeyboardCodeFromXKeyEvent(reinterpret_cast<XEvent*>(event));
+  if (windows_key_code == ui::VKEY_SHIFT ||
+      windows_key_code == ui::VKEY_CONTROL ||
+      windows_key_code == ui::VKEY_MENU) {
+    // To support DOM3 'location' attribute, we need to lookup an X KeySym and
+    // set ui::VKEY_[LR]XXX instead of ui::VKEY_XXX.
+    KeySym keysym = XK_VoidSymbol;
+    XLookupString(event, NULL, 0, &keysym, NULL);
+    switch (keysym) {
+      case XK_Shift_L:
+        return ui::VKEY_LSHIFT;
+      case XK_Shift_R:
+        return ui::VKEY_RSHIFT;
+      case XK_Control_L:
+        return ui::VKEY_LCONTROL;
+      case XK_Control_R:
+        return ui::VKEY_RCONTROL;
+      case XK_Meta_L:
+      case XK_Alt_L:
+        return ui::VKEY_LMENU;
+      case XK_Meta_R:
+      case XK_Alt_R:
+        return ui::VKEY_RMENU;
+    }
+  }
+  return windows_key_code;
 }
 
 // From

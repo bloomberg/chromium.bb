@@ -121,7 +121,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F3, ui::EF_NONE, IDC_FIND_NEXT },
   { ui::VKEY_F3, ui::EF_SHIFT_DOWN, IDC_FIND_PREVIOUS },
   { ui::VKEY_F10, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
+  { ui::VKEY_LMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
   { ui::VKEY_MENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
+  { ui::VKEY_RMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
   { ui::VKEY_F6, ui::EF_NONE, IDC_FOCUS_NEXT_PANE },
   { ui::VKEY_F6, ui::EF_SHIFT_DOWN, IDC_FOCUS_PREVIOUS_PANE },
   // On Windows, all VKEY_BROWSER_* keys except VKEY_BROWSER_SEARCH are handled
