@@ -150,6 +150,18 @@ remoting.HostSetupDialog = function(hostController) {
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.showForStart = function() {
+  // Although we don't need an access token in order to start the host,
+  // using callWithToken here ensures consistent error handling in the
+  // case where the refresh token is invalid.
+  remoting.oauth2.callWithToken(this.showForStartWithToken_.bind(this),
+                                remoting.defaultOAuthErrorHandler);
+};
+
+/**
+ * @param {string} token The OAuth2 token.
+ * @private
+ */
+remoting.HostSetupDialog.prototype.showForStartWithToken_ = function(token) {
   /** @type {remoting.HostSetupDialog} */
   var that = this;
 
@@ -423,7 +435,7 @@ remoting.HostSetupDialog.validPin_ = function(pin) {
     }
   }
   return true;
-}
+};
 
 /**
  * @return {void} Nothing.
@@ -436,14 +448,14 @@ remoting.HostSetupDialog.prototype.onInstallDialogOk = function() {
   } else {
     remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL_PENDING);
   }
-}
+};
 
 /**
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.onInstallDialogRetry = function() {
   remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
-}
+};
 
 /** @type {remoting.HostSetupDialog} */
 remoting.hostSetupDialog = null;

@@ -26,20 +26,16 @@ var lastShareWasCancelled_ = false;
  */
 remoting.tryShare = function() {
   console.log('Attempting to share...');
-  lastShareWasCancelled_ = false;
-  if (remoting.oauth2.needsNewAccessToken()) {
-    console.log('Refreshing token...');
-    remoting.oauth2.refreshAccessToken(function() {
-      if (remoting.oauth2.needsNewAccessToken()) {
-        // If we still need it, we're going to infinite loop.
-        showShareError_(remoting.Error.AUTHENTICATION_FAILED);
-        throw 'Unable to get access token';
-      }
-      remoting.tryShare();
-    });
-    return;
-  }
+  remoting.oauth2.callWithToken(remoting.tryShareWithToken_,
+                                remoting.defaultOAuthErrorHandler);
+};
 
+/**
+ * @param {string} token The OAuth access token.
+ * @private
+ */
+remoting.tryShareWithToken_ = function(token) {
+  lastShareWasCancelled_ = false;
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
   document.getElementById('cancel-share-button').disabled = false;
@@ -50,7 +46,7 @@ remoting.tryShare = function() {
   remoting.hostSession.createPluginAndConnect(
       document.getElementById('host-plugin-container'),
       /** @type {string} */(remoting.oauth2.getCachedEmail()),
-      remoting.oauth2.getAccessToken(),
+      token,
       onNatTraversalPolicyChanged_,
       onHostStateChanged_,
       logDebugInfo_);
@@ -124,7 +120,7 @@ function onHostStateChanged_(state) {
 
   } else if (state == remoting.HostSession.State.ERROR) {
     console.error('Host plugin state: ERROR');
-    showShareError_(remoting.Error.GENERIC);
+    showShareError_(remoting.Error.UNEXPECTED);
   } else {
     console.error('Unknown state -> ' + state);
   }
@@ -172,7 +168,7 @@ remoting.cancelShare = function() {
     // the host plugin, like we do for the client, which should handle crash
     // reporting and it should use a more detailed error message than the
     // default 'generic' one. See crbug.com/94624
-    showShareError_(remoting.Error.GENERIC);
+    showShareError_(remoting.Error.UNEXPECTED);
   }
   disableTimeoutCountdown_();
 };

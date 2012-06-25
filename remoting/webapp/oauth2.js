@@ -184,8 +184,9 @@ remoting.OAuth2.prototype.needsNewAccessToken = function() {
  * Will throw if !isAuthenticated() or needsNewAccessToken().
  *
  * @return {string} The access token.
+ * @private
  */
-remoting.OAuth2.prototype.getAccessToken = function() {
+remoting.OAuth2.prototype.getAccessToken_ = function() {
   if (this.needsNewAccessToken()) {
     throw 'Access Token expired.';
   }
@@ -245,8 +246,9 @@ remoting.OAuth2.prototype.processTokenResponse_ = function(onDone, xhr) {
  * @param {function(XMLHttpRequest): void} onDone Callback to invoke on
  *     completion.
  * @return {void} Nothing.
+ * @private
  */
-remoting.OAuth2.prototype.refreshAccessToken = function(onDone) {
+remoting.OAuth2.prototype.refreshAccessToken_ = function(onDone) {
   if (!this.isAuthenticated()) {
     throw 'Not Authenticated.';
   }
@@ -335,24 +337,51 @@ remoting.OAuth2.prototype.revokeToken_ = function(token) {
  *
  * The access token will remain valid for at least 2 minutes.
  *
- * @param {function(string?):void} myfunc Function to invoke with access token.
+ * @param {function(string):void} onOk Function to invoke with access token if
+ *     an access token was successfully retrieved.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.callWithToken = function(myfunc) {
-  /** @type {remoting.OAuth2} */
-  var that = this;
+remoting.OAuth2.prototype.callWithToken = function(onOk, onError) {
   if (this.needsNewAccessToken()) {
-    var onRefresh = function() {
-      if (that.needsNewAccessToken()) {
-        myfunc(null);
-      } else {
-        myfunc(that.getAccessToken());
-      }
-    };
-    this.refreshAccessToken(onRefresh);
+    this.refreshAccessToken_(this.onRefreshToken_.bind(this, onOk, onError));
   } else {
-    myfunc(this.getAccessToken());
+    onOk(this.getAccessToken_());
   }
+};
+
+/**
+ * Process token refresh results and notify caller.
+ *
+ * @param {function(string):void} onOk Function to invoke with access token if
+ *     an access token was successfully retrieved.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
+ * @param {XMLHttpRequest} xhr The result of the refresh operation.
+ * @private
+ */
+remoting.OAuth2.prototype.onRefreshToken_ = function(onOk, onError, xhr) {
+  var error = remoting.Error.UNEXPECTED;
+  if (xhr.status == 200) {
+    onOk(this.getAccessToken_());
+    return;
+  } else if (xhr.status == 400) {
+    var result =
+        /** @type {{error: string}} */ (jsonParseSafe(xhr.responseText));
+    if (result && result.error == 'invalid_grant') {
+      error = remoting.Error.AUTHENTICATION_FAILED;
+    }
+  } else if (xhr.status == 401) {
+    // According to the OAuth2 draft RFC, the server shouldn't return 401,
+    // but AUTHENTICATION_FAILED is the obvious interpretation if it does.
+    console.warn('Unexpected 401 in response to refresh.');
+    error = remoting.Error.AUTHENTICATION_FAILED;
+  } else if (xhr.status == 503) {
+    error = remoting.Error.SERVICE_UNAVAILABLE;
+  }
+  // TODO(jamiewalch): Add timeout support.
+  onError(error);
 };
 
 /**
@@ -378,20 +407,20 @@ remoting.OAuth2.prototype.getEmail = function(setEmail) {
     setEmail(that.email);
   };
 
-  /** @param {string?} token The access token. */
+  /** @param {string} token The access token. */
   var getEmailFromToken = function(token) {
-    if (token) {
-      var headers = { 'Authorization': 'OAuth ' + token };
-      // TODO(ajwong): Update to new v2 API.
-      remoting.xhr.get('https://www.googleapis.com/userinfo/email',
-                       onResponse, '', headers);
-    } else {
-      console.error('Unable to get email address: no access token');
-      setEmail(null);
-    }
+    var headers = { 'Authorization': 'OAuth ' + token };
+    // TODO(ajwong): Update to new v2 API.
+    remoting.xhr.get('https://www.googleapis.com/userinfo/email',
+                     onResponse, '', headers);
+  };
+  /** @param {remoting.Error} error */
+  var onError = function(error) {
+    console.error('Unable to get email address: ' + error);
+    setEmail(null);
   };
 
-  this.callWithToken(getEmailFromToken);
+  this.callWithToken(getEmailFromToken, onError);
 };
 
 /**

@@ -22,6 +22,7 @@ var remoting = remoting || {};
 remoting.AppMode = {
   HOME: 'home',
     UNAUTHENTICATED: 'home.auth',
+    TOKEN_REFRESH_FAILED: 'home.token-refresh-failed',
     HOST: 'home.host',
       HOST_WAITING_FOR_CODE: 'home.host.waiting-for-code',
       HOST_WAITING_FOR_CONNECTION: 'home.host.waiting-for-connection',

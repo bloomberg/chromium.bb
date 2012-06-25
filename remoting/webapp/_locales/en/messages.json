@@ -127,16 +127,12 @@
     "description": "Column header in the connection history table showing the length of time for which a connection was active, if available."
   },
   "ERROR_AUTHENTICATION_FAILED": {
-    "message": "Authentication failed. Please sign out of Chromoting and try again.",
+    "message": "Authentication failed. Please sign in to Chromoting again.",
     "description": "Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem."
   },
   "ERROR_BAD_PLUGIN_VERSION": {
     "message": "Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.",
     "description": "Error displayed if the host or client plugin are missing or if they could not be loaded."
-  },
-  "ERROR_GENERIC": {
-    "message": "An unknown error occurred. Please sign out of Chromoting and try again.",
-    "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."
   },
   "ERROR_HOST_OVERLOAD": {
     "message": "Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.",
@@ -427,6 +423,10 @@
   "SHRINK_TO_FIT": {
     "message": "Shrink to fit",
     "description": "Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window."
+  },
+  "SIGN_IN_BUTTON": {
+    "message": "Sign in",
+    "description": "Sign in button, visible if the user's authentication token is corrupt, in which case the user has to sign in (authenticate) to the app again."
   },
   "SIGN_OUT_BUTTON": {
     "message": "Sign out",

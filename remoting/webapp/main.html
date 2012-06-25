@@ -140,7 +140,12 @@ found in the LICENSE file.
         </div>
         <div id="me2me-content">
           <div id="host-list" hidden></div>
-          <div id="host-list-error" class="error-state" hidden></div>
+          <div id="host-list-error" class="box" hidden>
+            <div id="host-list-error-message" class="error-state"></div>
+            <div class="box-spacer"></div>
+            <button type="button"
+                    id="host-list-refresh-failed-button"></button>
+          </div>
           <div id="daemon-control" data-daemon-state="enabled disabled" hidden>
             <div class="section-row no-non-local-hosts"
                  data-daemon-state="disabled">
@@ -182,14 +187,33 @@ found in the LICENSE file.
     </div> <!-- home -->
 
     <div id="dialog-screen"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup home.token-refresh-failed"
          hidden></div>
 
     <div id="dialog-container"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup home.token-refresh-failed"
          hidden>
 
       <div class="box-spacer"></div>
+
+      <!-- TODO(jamiewalch): Refactor the various error-state divs -->
+      <div class="kd-modaldialog" data-ui-mode="home.token-refresh-failed">
+        <div class="message">
+          <span id="token-refresh-error-message" class="error-state"></span>
+        </div>
+        <div id="token-refresh-auth-failed" class="box">
+          <div class="box-spacer"></div>
+          <button id="token-refresh-error-sign-in"
+                  type="button"
+                  i18n-content="SIGN_IN_BUTTON"></button>
+        </div>
+        <div id="token-refresh-other-error" class="box">
+          <div class="box-spacer"></div>
+          <button id="token-refresh-error-ok"
+                  type="button"
+                  i18n-content="OK"></button>
+        </div>
+      </div> <!-- home.token-refresh-failed -->
 
       <div id="host-setup-dialog"
            class="kd-modaldialog"

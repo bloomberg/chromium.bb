@@ -225,14 +225,14 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
    *  @param {string} publicKey */
   function onKeyGenerated(privateKey, publicKey) {
     remoting.oauth2.callWithToken(
-        /** @param {string?} oauthToken */
+        /** @param {string} oauthToken */
         function(oauthToken) {
-          if (oauthToken) {
-            doRegisterHost(privateKey, publicKey, oauthToken);
-          } else {
-            // TODO(jamiewalch): Have a more specific error code here?
-            callback(remoting.HostController.AsyncResult.FAILED);
-          }
+          doRegisterHost(privateKey, publicKey, oauthToken);
+        },
+        /** @param {remoting.Error} error */
+        function(error) {
+          // TODO(jamiewalch): Have a more specific error code here?
+          callback(remoting.HostController.AsyncResult.FAILED);
         });
   };
 

@@ -22,7 +22,6 @@ remoting.Error = {
   BAD_PLUGIN_VERSION: /*i18n-content*/'ERROR_BAD_PLUGIN_VERSION',
   NETWORK_FAILURE: /*i18n-content*/'ERROR_NETWORK_FAILURE',
   HOST_OVERLOAD: /*i18n-content*/'ERROR_HOST_OVERLOAD',
-  GENERIC: /*i18n-content*/'ERROR_GENERIC',
   UNEXPECTED: /*i18n-content*/'ERROR_UNEXPECTED',
   SERVICE_UNAVAILABLE: /*i18n-content*/'ERROR_SERVICE_UNAVAILABLE'
 };
@@ -40,7 +39,8 @@ remoting.init = function() {
   remoting.formatIq = new remoting.FormatIq();
   remoting.hostList = new remoting.HostList(
       document.getElementById('host-list'),
-      document.getElementById('host-list-error'));
+      document.getElementById('host-list-error-message'),
+      document.getElementById('host-list-refresh-failed-button'));
   remoting.toolbar = new remoting.Toolbar(
       document.getElementById('session-toolbar'));
   remoting.clipboard = new remoting.Clipboard();
@@ -321,4 +321,22 @@ remoting.timestamp = function() {
       pad(now.getHours(), 2) + pad(now.getMinutes(), 2) +
       pad(now.getSeconds(), 2) + '.' + pad(now.getMilliseconds(), 3);
   return '[' + timestamp + ']';
+};
+
+/**
+ * Default handler for OAuth token refresh failures. This switches the app mode
+ * to display an error message, optionally including a short-cut for signing in
+ * to Chromoting again.
+ *
+ * @param {remoting.Error} error
+ * @return {void} Nothing.
+ */
+remoting.defaultOAuthErrorHandler = function(error) {
+  l10n.localizeElementFromTag(
+      document.getElementById('token-refresh-error-message'),
+      error);
+  var auth_failed = (error == remoting.Error.AUTHENTICATION_FAILED);
+  document.getElementById('token-refresh-auth-failed').hidden = !auth_failed;
+  document.getElementById('token-refresh-other-error').hidden = auth_failed;
+  remoting.setMode(remoting.AppMode.TOKEN_REFRESH_FAILED);
 };

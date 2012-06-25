@@ -33,24 +33,21 @@ remoting.WcsLoader = function() {
 /**
  * Load WCS if necessary, then invoke the callback with an access token.
  *
- * @param {function(string?): void} onReady The callback function, called with
- *     an OAuth2 access token when WCS has been loaded, or with null on error.
+ * @param {function(string): void} onReady The callback function, called with
+ *     an OAuth2 access token when WCS has been loaded.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
  * @return {void} Nothing.
  */
-remoting.WcsLoader.load = function(onReady) {
+remoting.WcsLoader.load = function(onReady, onError) {
   if (!remoting.wcsLoader) {
     remoting.wcsLoader = new remoting.WcsLoader();
   }
-  /** @param {string?} token The OAuth2 access token. */
+  /** @param {string} token The OAuth2 access token. */
   var start = function(token) {
-    if (token) {
-      remoting.wcsLoader.start_(token, onReady);
-    } else {
-      console.error('WcsLoader: Authentication failed.');
-      onReady(null);
-    }
+    remoting.wcsLoader.start_(token, onReady, onError);
   };
-  remoting.oauth2.callWithToken(start);
+  remoting.oauth2.callWithToken(start, onError);
 };
 
 /**
@@ -79,15 +76,18 @@ remoting.WcsLoader.prototype.SCRIPT_NODE_LOADED_FLAG_ = 'wcs-script-loaded';
  * Starts loading the WCS IQ client.
  *
  * When it's loaded, construct remoting.wcs as a wrapper for it.
- * When the WCS connection is ready, or on error, call |onReady|.
+ * When the WCS connection is ready, or on error, call |onReady| or |onError|,
+ * respectively.
  *
  * @param {string} token An OAuth2 access token.
- * @param {function(string?): void} onReady The callback function, called with
- *     an OAuth2 access token when WCS has been loaded, or with null on error.
+ * @param {function(string): void} onReady The callback function, called with
+ *     an OAuth2 access token when WCS has been loaded.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
  * @return {void} Nothing.
  * @private
  */
-remoting.WcsLoader.prototype.start_ = function(token, onReady) {
+remoting.WcsLoader.prototype.start_ = function(token, onReady, onError) {
   var node = document.getElementById(this.SCRIPT_NODE_ID_);
   if (!node) {
     // The first time, there will be no script node, so create one.
@@ -111,21 +111,22 @@ remoting.WcsLoader.prototype.start_ = function(token, onReady) {
     typedNode.setAttribute(that.SCRIPT_NODE_LOADED_FLAG_, true);
     that.constructWcs_(token, onReady);
   };
-  var onError = function() {
+  var removeNodeAndNotify = function() {
     var typedNode = /** @type {Element} */ (node);
     typedNode.parentNode.removeChild(node);
-    onReady(null);
+    // TODO(jamiewalch): See if we can do better by looking at the event.
+    onError(remoting.Error.NETWORK_FAILURE);
   };
   node.addEventListener('load', onLoad, false);
-  node.addEventListener('error', onError, false);
+  node.addEventListener('error', removeNodeAndNotify, false);
 };
 
 /**
  * Constructs the remoting.wcs object.
  *
  * @param {string} token An OAuth2 access token.
- * @param {function(string?): void} onReady The callback function, called with
- *     an OAuth2 access token when WCS has been loaded, or with null on error.
+ * @param {function(string): void} onReady The callback function, called with
+ *     an OAuth2 access token when WCS has been loaded.
  * @return {void} Nothing.
  * @private
  */

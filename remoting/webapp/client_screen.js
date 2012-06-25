@@ -70,7 +70,8 @@ remoting.currentConnectionType = null;
  */
 remoting.connectIt2Me = function() {
   remoting.currentConnectionType = remoting.ConnectionType.It2Me;
-  remoting.WcsLoader.load(connectIt2MeWithAccessToken_);
+  remoting.WcsLoader.load(connectIt2MeWithAccessToken_,
+                          remoting.defaultOAuthErrorHandler);
 };
 
 /**
@@ -176,7 +177,7 @@ function connectIt2MeWithAccessToken_(token) {
     } else {
       var supportId = remoting.accessCode.substring(0, kSupportIdLen);
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-      resolveSupportId(supportId);
+      resolveSupportId(supportId, token);
     }
   } else {
     showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
@@ -264,7 +265,7 @@ function onClientStateChange_(oldState, newState) {
                remoting.ClientSession.ConnectionError.HOST_OVERLOAD) {
       showConnectError_(remoting.Error.HOST_OVERLOAD);
     } else {
-      showConnectError_(remoting.Error.GENERIC);
+      showConnectError_(remoting.Error.UNEXPECTED);
     }
 
     if (clearPin) {
@@ -334,7 +335,8 @@ function startSession_() {
       showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
     }
   };
-  remoting.oauth2.callWithToken(createPluginAndConnect);
+  remoting.oauth2.callWithToken(createPluginAndConnect,
+                                remoting.defaultOAuthErrorHandler);
 }
 
 /**
@@ -397,7 +399,7 @@ function parseServerResponse_(xhr) {
       console.error('Invalid "support-hosts" response from server.');
     }
   }
-  var errorMsg = remoting.Error.GENERIC;
+  var errorMsg = remoting.Error.UNEXPECTED;
   if (xhr.status == 404) {
     errorMsg = remoting.Error.INVALID_ACCESS_CODE;
   } else if (xhr.status == 0) {
@@ -426,10 +428,11 @@ function normalizeAccessCode_(accessCode) {
  * Initiate a request to the server to resolve a support ID.
  *
  * @param {string} supportId The canonicalized support ID.
+ * @param {string} token The OAuth access token.
  */
-function resolveSupportId(supportId) {
+function resolveSupportId(supportId, token) {
   var headers = {
-    'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
+    'Authorization': 'OAuth ' + token
   };
 
   remoting.supportHostsXhr_ = remoting.xhr.get(
@@ -506,7 +509,8 @@ remoting.connectMe2MeWithPin = function() {
   document.title = chrome.i18n.getMessage('PRODUCT_NAME') + ': ' +
       host.hostName;
 
-  remoting.WcsLoader.load(connectMe2MeWithAccessToken_);
+  remoting.WcsLoader.load(connectMe2MeWithAccessToken_,
+                          remoting.defaultOAuthErrorHandler);
 };
 
 /**

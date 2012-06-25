@@ -12,7 +12,15 @@ function onLoad() {
     window.location.replace(chrome.extension.getURL('main.html'));
   };
   var goEnterAccessCode = function() {
-    remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
+    // We don't need a token until we authenticate, but asking for one here
+    // handles the token-expired case earlier, avoiding asking the user for
+    // the access code both before and after re-authentication.
+    remoting.oauth2.callWithToken(
+        /** @param {string} token */
+        function(token) {
+          remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
+        },
+        remoting.defaultOAuthErrorHandler);
   };
   var goFinishedIt2Me = function() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
@@ -87,7 +95,10 @@ function onLoad() {
       { event: 'click', id: 'host-config-install-dismiss',
         fn: function() { remoting.hostSetupDialog.hide(); } },
       { event: 'click', id: 'host-config-install-retry', fn: function() {
-          remoting.hostSetupDialog.onInstallDialogRetry(); } }
+          remoting.hostSetupDialog.onInstallDialogRetry(); } },
+      { event: 'click', id: 'token-refresh-error-ok',
+        fn: function() { remoting.setMode(remoting.AppMode.HOME); } },
+      { event: 'click', id: 'token-refresh-error-sign-in', fn: doAuthRedirect }
   ];
 
   for (var i = 0; i < actions.length; ++i) {
