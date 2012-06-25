@@ -234,19 +234,6 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
   if (!pref_service_->HasPrefPath(prefs::kHttpServerProperties))
     return;
 
-  // String is host/port pair of spdy server.
-  StringVector* spdy_servers = new StringVector;
-
-  // Parse the preferences into a SpdySettingsMap.
-  net::SpdySettingsMap* spdy_settings_map = new net::SpdySettingsMap;
-
-  // Parse the preferences into a AlternateProtocolMap.
-  net::AlternateProtocolMap* alternate_protocol_map =
-      new net::AlternateProtocolMap;
-
-  net::PipelineCapabilityMap* pipeline_capability_map =
-      new net::PipelineCapabilityMap;
-
   bool detected_corrupted_prefs = false;
   const base::DictionaryValue& http_server_properties_dict =
       *pref_service_->GetDictionary(prefs::kHttpServerProperties);
@@ -274,6 +261,14 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
     }
     servers_dict = servers_dict_temp;
   }
+
+  // String is host/port pair of spdy server.
+  scoped_ptr<StringVector> spdy_servers(new StringVector);
+  scoped_ptr<net::SpdySettingsMap> spdy_settings_map(new net::SpdySettingsMap);
+  scoped_ptr<net::PipelineCapabilityMap> pipeline_capability_map(
+      new net::PipelineCapabilityMap);
+  scoped_ptr<net::AlternateProtocolMap> alternate_protocol_map(
+      new net::AlternateProtocolMap);
 
   for (base::DictionaryValue::key_iterator it = servers_dict->begin_keys();
        it != servers_dict->end_keys();
@@ -389,10 +384,10 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       base::Bind(&HttpServerPropertiesManager::
                  UpdateCacheFromPrefsOnIO,
                  base::Unretained(this),
-                 base::Owned(spdy_servers),
-                 base::Owned(spdy_settings_map),
-                 base::Owned(alternate_protocol_map),
-                 base::Owned(pipeline_capability_map),
+                 base::Owned(spdy_servers.release()),
+                 base::Owned(spdy_settings_map.release()),
+                 base::Owned(alternate_protocol_map.release()),
+                 base::Owned(pipeline_capability_map.release()),
                  detected_corrupted_prefs));
 }
 
