@@ -43,7 +43,7 @@ class User {
   static const int kInvalidImageIndex = -3;
 
   enum WallpaperType {
-    DAILY = 0,
+    RANDOM = 0,
     CUSTOMIZED = 1,
     DEFAULT = 2,
     UNKNOWN = 3

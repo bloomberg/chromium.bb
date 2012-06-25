@@ -39,9 +39,8 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD1(GetUserDisplayName, string16(const std::string&));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD3(GetLoggedInUserWallpaperProperties, void(User::WallpaperType*,
-                                                        int*,
-                                                        base::Time*));
+  MOCK_METHOD2(GetLoggedInUserWallpaperProperties, void(User::WallpaperType*,
+                                                        int*));
   MOCK_METHOD2(SaveLoggedInUserWallpaperProperties, void(User::WallpaperType,
                                                          int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));

@@ -749,8 +749,6 @@
         'browser/chromeos/login/version_info_updater.cc',
         'browser/chromeos/login/version_info_updater.h',
         'browser/chromeos/login/view_screen.h',
-        'browser/chromeos/login/wallpaper_manager.cc',
-        'browser/chromeos/login/wallpaper_manager.h',
         'browser/chromeos/login/web_page_screen.cc',
         'browser/chromeos/login/web_page_screen.h',
         'browser/chromeos/login/web_page_view.cc',

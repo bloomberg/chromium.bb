@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -72,8 +71,7 @@ class UserManagerImpl : public UserManager,
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
   virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
-      int* index,
-      base::Time* last_modification_date) OVERRIDE;
+                                                  int* index) OVERRIDE;
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
                                                    int index) OVERRIDE;
   virtual void SaveUserDefaultImageIndex(const std::string& username,
@@ -125,7 +123,6 @@ class UserManagerImpl : public UserManager,
  private:
   friend class UserManagerImplWrapper;
   friend class UserManagerTest;
-  friend class WallpaperManager;
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
@@ -174,7 +171,7 @@ class UserManagerImpl : public UserManager,
 
   // Migrate the old wallpaper index to a new wallpaper structure.
   // The new wallpaper structure is:
-  // { WallpaperType: DAILY|CUSTOMIZED|DEFAULT,
+  // { WallpaperType: RANDOM|CUSTOMIZED|DEFAULT,
   //   index: index of the default wallpapers }
   void MigrateWallpaperData();
 
@@ -185,14 +182,9 @@ class UserManagerImpl : public UserManager,
                     int image_index,
                     const UserImage& user_image);
 
-  // Get wallpaper |type|, |index| and |last_modification_date| of |username|
-  // from local state.
   void GetUserWallpaperProperties(const std::string& username,
                                  User::WallpaperType* type,
-                                 int* index,
-                                 base::Time* last_modification_date);
-
-  // Set |username|'s wallpaper |type|, |index| and local date to local state.
+                                 int* index);
   void SaveUserWallpaperProperties(const std::string& username,
                                    User::WallpaperType type,
                                    int index);
@@ -304,8 +296,6 @@ class UserManagerImpl : public UserManager,
   // |stub_user_| instance.
   User* logged_in_user_;
 
-  WallpaperManager* wallpaper_manager_;
-
   // True if SessionStarted() has been called.
   bool session_started_;
 
@@ -331,9 +321,6 @@ class UserManagerImpl : public UserManager,
   // Cached flag indicating whether ephemeral users are enabled. Defaults to
   // |false| if the value has not been read from trusted device policy yet.
   bool ephemeral_users_enabled_;
-
-  // True if user pod row is showed at login screen.
-  bool show_users_;
 
   // Cached name of device owner. Defaults to empty string if the value has not
   // been read from trusted device policy yet.
