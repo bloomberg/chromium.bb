@@ -24,6 +24,18 @@ namespace net {
 class IOBuffer;
 }  // namespace net
 
+enum UsbTransferStatus {
+  USB_TRANSFER_COMPLETED = 0,
+  USB_TRANSFER_ERROR,
+  USB_TRANSFER_TIMEOUT,
+  USB_TRANSFER_CANCELLED,
+  USB_TRANSFER_STALLED,
+  USB_TRANSFER_DISCONNECT,
+  USB_TRANSFER_OVERFLOW,
+};
+
+typedef base::Callback<void(UsbTransferStatus)> UsbTransferCallback;
+
 // A UsbDevice wraps the platform's underlying representation of what a USB
 // device actually is, and provides accessors for performing many of the
 // standard USB operations.
@@ -52,21 +64,21 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
                        net::IOBuffer* buffer,
                        const size_t length,
                        const unsigned int timeout,
-                       const net::CompletionCallback& callback);
+                       const UsbTransferCallback& callback);
 
   void BulkTransfer(const TransferDirection direction,
                     const uint8 endpoint,
                     net::IOBuffer* buffer,
                     const size_t length,
                     const unsigned int timeout,
-                    const net::CompletionCallback& callback);
+                    const UsbTransferCallback& callback);
 
   void InterruptTransfer(const TransferDirection direction,
                          const uint8 endpoint,
                          net::IOBuffer* buffer,
                          const size_t length,
                          const unsigned int timeout,
-                         const net::CompletionCallback& callback);
+                         const UsbTransferCallback& callback);
 
   void IsochronousTransfer(const TransferDirection direction,
                            const uint8 endpoint,
@@ -75,7 +87,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
                            const unsigned int packets,
                            const unsigned int packet_length,
                            const unsigned int timeout,
-                           const net::CompletionCallback& callback);
+                           const UsbTransferCallback& callback);
 
   // Normal code should not call this function. It is called by the platform's
   // callback mechanism in such a way that it cannot be made private. Invokes
@@ -89,7 +101,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
     ~Transfer();
 
     scoped_refptr<net::IOBuffer> buffer;
-    net::CompletionCallback callback;
+    UsbTransferCallback callback;
   };
 
   friend class base::RefCounted<UsbDevice>;
@@ -102,7 +114,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   // the completion callback until the transfer finishes, whereupon it invokes
   // the callback then releases the buffer.
   void SubmitTransfer(PlatformUsbTransferHandle handle, net::IOBuffer* buffer,
-                      const net::CompletionCallback& callback);
+                      const UsbTransferCallback& callback);
 
   // The UsbService isn't referenced here to prevent a dependency cycle between
   // the service and the devices. Since a service owns every device, and is

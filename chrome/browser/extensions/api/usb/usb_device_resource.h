@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+#include "chrome/browser/usb/usb_device.h"
 #include "chrome/common/extensions/api/experimental_usb.h"
 
 class UsbDevice;
@@ -48,7 +49,7 @@ class UsbDeviceResource : public APIResource {
   // Invoked by the underlying device's transfer callbacks. Indicates transfer
   // completion to the APIResource's event notifier.
   void TransferComplete(net::IOBuffer* buffer, const size_t length,
-                        int success);
+                        UsbTransferStatus status);
 
   scoped_refptr<UsbDevice> device_;
 

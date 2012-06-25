@@ -21,6 +21,8 @@ using extensions::api::experimental_usb::IsochronousTransferInfo;
 using std::string;
 using std::vector;
 
+namespace {
+
 static const char* kDirectionIn = "in";
 static const char* kDirectionOut = "out";
 
@@ -34,7 +36,12 @@ static const char* kRecipientInterface = "interface";
 static const char* kRecipientEndpoint = "endpoint";
 static const char* kRecipientOther = "other";
 
-namespace {
+static const char* kErrorGeneric = "Transfer failed";
+static const char* kErrorTimeout = "Transfer timed out";
+static const char* kErrorCancelled = "Transfer was cancelled";
+static const char* kErrorStalled = "Transfer stalled";
+static const char* kErrorDisconnect = "Device disconnected";
+static const char* kErrorOverflow = "Inbound transfer overflow";
 
 static bool ConvertDirection(const string& input,
                              UsbDevice::TransferDirection* output) {
@@ -116,6 +123,29 @@ static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
   memcpy(buffer->data(), input.data->GetBuffer(), size);
 
   return buffer;
+}
+
+static const char* ConvertTransferStatusToErrorString(
+    const UsbTransferStatus status) {
+  switch (status) {
+    case USB_TRANSFER_COMPLETED:
+      return "";
+    case USB_TRANSFER_ERROR:
+      return kErrorGeneric;
+    case USB_TRANSFER_TIMEOUT:
+      return kErrorTimeout;
+    case USB_TRANSFER_CANCELLED:
+      return kErrorCancelled;
+    case USB_TRANSFER_STALLED:
+      return kErrorStalled;
+    case USB_TRANSFER_DISCONNECT:
+      return kErrorDisconnect;
+    case USB_TRANSFER_OVERFLOW:
+      return kErrorOverflow;
+  }
+
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace
@@ -204,11 +234,12 @@ void UsbDeviceResource::IsochronousTransfer(
 
 void UsbDeviceResource::TransferComplete(net::IOBuffer* buffer,
                                          const size_t length,
-                                         int success) {
+                                         UsbTransferStatus status) {
   if (buffer) {
     base::BinaryValue* const response_buffer =
         base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), length);
-    event_notifier()->OnTransferComplete(success, response_buffer);
+    event_notifier()->OnTransferComplete(status,
+        ConvertTransferStatusToErrorString(status), response_buffer);
   }
 }
 

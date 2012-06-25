@@ -35,7 +35,8 @@
           if (eventHandler) {
             switch (event.type) {
               case 'transferComplete':
-                eventHandler({resultCode: event.resultCode, data: event.data});
+                eventHandler({resultCode: event.resultCode, data: event.data,
+                    error: event.error});
                 break;
               default:
                 console.error('Unexpected UsbEvent, type ' + event.type);

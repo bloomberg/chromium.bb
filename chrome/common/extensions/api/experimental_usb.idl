@@ -89,6 +89,10 @@
     // indicate failure.
     long? resultCode;
 
+    // If resultCode is not 0, this field will contain a textual description of
+    // the error that occurred during the transfer.
+    DOMString? error;
+
     // If the transfer was an input transfer then this field will contain all
     // of the input data requested.
     ArrayBuffer? data;

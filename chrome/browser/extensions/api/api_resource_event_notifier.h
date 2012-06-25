@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "chrome/browser/usb/usb_device.h"
 #include "googleurl/src/gurl.h"
 
 class ExtensionEventRouter;
@@ -60,7 +61,9 @@ class APIResourceEventNotifier
 
   virtual void OnWriteComplete(int result_code);
 
-  virtual void OnTransferComplete(int result_code, base::BinaryValue* data);
+  virtual void OnTransferComplete(UsbTransferStatus status,
+                                  const std::string& error,
+                                  base::BinaryValue* data);
 
   static std::string APIResourceEventTypeToString(
       APIResourceEventType event_type);

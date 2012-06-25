@@ -61,6 +61,28 @@ static uint8 CreateRequestType(const UsbDevice::TransferDirection direction,
   return result;
 }
 
+static UsbTransferStatus ConvertTransferStatus(
+    const libusb_transfer_status status) {
+  switch (status) {
+    case LIBUSB_TRANSFER_COMPLETED:
+      return USB_TRANSFER_COMPLETED;
+    case LIBUSB_TRANSFER_ERROR:
+      return USB_TRANSFER_ERROR;
+    case LIBUSB_TRANSFER_TIMED_OUT:
+      return USB_TRANSFER_TIMEOUT;
+    case LIBUSB_TRANSFER_STALL:
+      return USB_TRANSFER_STALLED;
+    case LIBUSB_TRANSFER_NO_DEVICE:
+      return USB_TRANSFER_DISCONNECT;
+    case LIBUSB_TRANSFER_OVERFLOW:
+      return USB_TRANSFER_OVERFLOW;
+    case LIBUSB_TRANSFER_CANCELLED:
+      return USB_TRANSFER_CANCELLED;
+  }
+  NOTREACHED();
+  return USB_TRANSFER_ERROR;
+}
+
 static void HandleTransferCompletion(struct libusb_transfer* transfer) {
   UsbDevice* const device = reinterpret_cast<UsbDevice*>(transfer->user_data);
   device->TransferComplete(transfer);
@@ -88,10 +110,11 @@ void UsbDevice::Close() {
 void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   base::AutoLock lock(lock_);
 
+  // TODO(gdk): Handle device disconnect.
   DCHECK(ContainsKey(transfers_, handle)) << "Missing transfer completed";
   Transfer* const transfer = &transfers_[handle];
   if (transfer->buffer.get()) {
-    transfer->callback.Run(handle->status != LIBUSB_TRANSFER_COMPLETED);
+    transfer->callback.Run(ConvertTransferStatus(handle->status));
   }
 
   transfers_.erase(handle);
@@ -102,7 +125,7 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
     const TransferRequestType request_type, const TransferRecipient recipient,
     const uint8 request, const uint16 value, const uint16 index,
     net::IOBuffer* buffer, const size_t length, const unsigned int timeout,
-    const net::CompletionCallback& callback) {
+    const UsbTransferCallback& callback) {
   CheckDevice();
 
   struct libusb_transfer* const transfer = libusb_alloc_transfer(0);
@@ -118,7 +141,7 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
 
 void UsbDevice::BulkTransfer(const TransferDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
-    const unsigned int timeout, const net::CompletionCallback& callback) {
+    const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
 
   struct libusb_transfer* const transfer = libusb_alloc_transfer(0);
@@ -132,7 +155,7 @@ void UsbDevice::BulkTransfer(const TransferDirection direction,
 
 void UsbDevice::InterruptTransfer(const TransferDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
-    const unsigned int timeout, const net::CompletionCallback& callback) {
+    const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
 
   struct libusb_transfer* const transfer = libusb_alloc_transfer(0);
@@ -147,7 +170,7 @@ void UsbDevice::InterruptTransfer(const TransferDirection direction,
 void UsbDevice::IsochronousTransfer(const TransferDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int packets, const unsigned int packet_length,
-    const unsigned int timeout, const net::CompletionCallback& callback) {
+    const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
 
   struct libusb_transfer* const transfer = libusb_alloc_transfer(packets);
@@ -167,7 +190,7 @@ void UsbDevice::CheckDevice() {
 
 void UsbDevice::SubmitTransfer(PlatformUsbTransferHandle handle,
                                net::IOBuffer* buffer,
-                               const net::CompletionCallback& callback) {
+                               const UsbTransferCallback& callback) {
   libusb_submit_transfer(handle);
 
   Transfer transfer;

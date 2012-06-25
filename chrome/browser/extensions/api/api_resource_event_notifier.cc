@@ -35,6 +35,7 @@ const char kResultCodeKey[] = "resultCode";
 const char kDataKey[] = "data";
 const char kAddressKey[] = "address";
 const char kPortKey[] = "port";
+const char kErrorKey[] = "error";
 
 APIResourceEventNotifier::APIResourceEventNotifier(
     ExtensionEventRouter* router,
@@ -81,7 +82,8 @@ void APIResourceEventNotifier::OnWriteComplete(int result_code) {
                           API_RESOURCE_EVENT_WRITE_COMPLETE, result_code);
 }
 
-void APIResourceEventNotifier::OnTransferComplete(int result_code,
+void APIResourceEventNotifier::OnTransferComplete(UsbTransferStatus status,
+                                                  const std::string& error,
                                                   base::BinaryValue* data) {
   if (src_id_ < 0) {
     delete data;
@@ -90,8 +92,12 @@ void APIResourceEventNotifier::OnTransferComplete(int result_code,
 
   DictionaryValue* event = CreateAPIResourceEvent(
       API_RESOURCE_EVENT_TRANSFER_COMPLETE);
-  event->SetInteger(kResultCodeKey, result_code);
+  event->SetInteger(kResultCodeKey, status);
   event->Set(kDataKey, data);
+  if (!error.empty()) {
+    event->SetString(kErrorKey, error);
+  }
+
   DispatchEvent(events::kExperimentalUsbOnEvent, event);
 }
 
