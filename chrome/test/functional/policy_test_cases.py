@@ -176,6 +176,8 @@ class PolicyPrefsTestCases(object):
         ('kManagedDefaultNotificationsSetting', 2, [CONTENT], OS_ALL),
     'DefaultGeolocationSetting':
         ('kManagedDefaultGeolocationSetting', 2, [CONTENT], OS_ALL),
+    'DefaultMediaStreamSetting':
+        ('kManagedDefaultMediaStreamSetting', 2, [CONTENT], OS_ALL),
     'AutoSelectCertificateForUrls':
         ('kManagedAutoSelectCertificateForUrls',
          ['{\'pattern\':\'https://example.com\',' +

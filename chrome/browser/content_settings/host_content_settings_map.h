@@ -165,6 +165,9 @@ class HostContentSettingsMap
                                       ContentSetting setting,
                                       ContentSettingsType content_type);
 
+  // Returns true if the values for content type are of type dictionary/map.
+  static bool ContentTypeHasCompoundValue(ContentSettingsType type);
+
   // Detaches the HostContentSettingsMap from all Profile-related objects like
   // PrefService. This methods needs to be called before destroying the Profile.
   // Afterwards, none of the methods above that should only be called on the UI

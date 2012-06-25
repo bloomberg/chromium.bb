@@ -30,6 +30,8 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
       content::MediaStreamDeviceType type,
       std::string* device_id) const;
 
+  bool always_allow() const { return always_allow_; }
+
   // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -44,6 +46,9 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
   // Internal method to add the |devices| to the current menu.
   void AddDevices(const content::MediaStreamDevices& devices);
 
+  // Internal method to add "always allow" option to the current menu.
+  void AddAlwaysAllowOption(bool audio, bool video);
+
   // Map of command IDs to devices.
   CommandMap commands_;
 
@@ -51,6 +56,8 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
   // devices entries in the menu, or -1 if there is no selected ID.
   int selected_command_id_audio_;
   int selected_command_id_video_;
+
+  bool always_allow_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesMenuModel);
 };

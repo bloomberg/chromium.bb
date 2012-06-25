@@ -62,12 +62,12 @@ void MediaStreamInfoBar::ViewHierarchyChanged(bool is_add,
                                               views::View* parent,
                                               views::View* child) {
   if (is_add && child == this && (label_ == NULL)) {
-    int message_id = IDS_MEDIA_CAPTURE_MIC_AND_VIDEO;
-    DCHECK(GetDelegate()->has_audio() || GetDelegate()->has_video());
-    if (!GetDelegate()->has_audio())
+    int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+    DCHECK(GetDelegate()->HasAudio() || GetDelegate()->HasVideo());
+    if (!GetDelegate()->HasAudio())
       message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-    else if (!GetDelegate()->has_video())
-      message_id = IDS_MEDIA_CAPTURE_MIC_ONLY;
+    else if (!GetDelegate()->HasVideo())
+      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
 
     label_ = CreateLabel(l10n_util::GetStringFUTF16(message_id,
         UTF8ToUTF16(GetDelegate()->GetSecurityOrigin().spec())));
@@ -101,7 +101,8 @@ void MediaStreamInfoBar::ButtonPressed(views::Button* sender,
         content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audio_id);
     devices_menu_model_.GetSelectedDeviceId(
         content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &video_id);
-    GetDelegate()->Accept(audio_id, video_id);
+    bool always_allow = devices_menu_model_.always_allow();
+    GetDelegate()->Accept(audio_id, video_id, always_allow);
     RemoveSelf();
   } else if (sender == deny_button_) {
     GetDelegate()->Deny();

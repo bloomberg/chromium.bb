@@ -44,6 +44,7 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_FULLSCREEN
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_MOUSELOCK
   CONTENT_SETTING_DEFAULT,  // CONTENT_SETTINGS_TYPE_MIXEDSCRIPT
+  CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_MEDIASTREAM
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
                default_settings_incorrect_size);
@@ -157,6 +158,11 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       "ContentSettings.DefaultMouseCursorSetting",
       ValueToContentSetting(
           default_settings_[CONTENT_SETTINGS_TYPE_MOUSELOCK].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultMediaStreamSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_MEDIASTREAM].get()),
       CONTENT_SETTING_NUM_SETTINGS);
 
   pref_change_registrar_.Init(prefs_);

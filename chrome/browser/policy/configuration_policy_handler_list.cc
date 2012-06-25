@@ -282,6 +282,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kRestrictSigninToPattern,
     prefs::kGoogleServicesUsernamePattern,
     Value::TYPE_STRING },
+  { key::kDefaultMediaStreamSetting,
+    prefs::kManagedDefaultMediaStreamSetting,
+    Value::TYPE_INTEGER },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

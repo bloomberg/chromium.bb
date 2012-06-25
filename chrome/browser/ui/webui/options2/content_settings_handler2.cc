@@ -339,6 +339,7 @@ const ContentSettingsHandler::ExContentSettingsTypeNameEntry
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
   {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script"},
   {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
 };
 
 ContentSettingsHandler::ContentSettingsHandler() {
@@ -433,6 +434,11 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "protectedContentInfo", IDS_PROTECTED_CONTENT_INFO },
     { "protectedContentEnable", IDS_PROTECTED_CONTENT_ENABLE},
 #endif  // defined(OS_CHROMEOS)
+    // Media stream capture device filter.
+    { "mediaStreamTabLabel", IDS_MEDIA_STREAM_TAB_LABEL },
+    { "media-stream_header", IDS_MEDIA_STREAM_HEADER },
+    { "mediaStreamAsk", IDS_MEDIA_STREAM_ASK_RADIO },
+    { "mediaStreamBlock", IDS_MEDIA_STREAM_BLOCK_RADIO },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -461,6 +467,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_MOUSE_LOCK_TAB_LABEL);
   RegisterTitle(localized_strings, "pepper-flash-cameramic",
                 IDS_PEPPER_FLASH_CAMERAMIC_TAB_LABEL);
+  RegisterTitle(localized_strings, "media-stream",
+                IDS_MEDIA_STREAM_TAB_LABEL);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   localized_strings->SetBoolean(
@@ -866,9 +874,17 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     // wildcard pattern. So only show settings that the user is able to modify.
     // TODO(bauerb): Support a read-only view for those patterns.
     if (entries[i].secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      exceptions.Append(
-          GetExceptionForPage(entries[i].primary_pattern, entries[i].setting,
-                              entries[i].source));
+      // Media Stream is using compound values for exceptions, which are
+      // granted as |CONTENT_SETTING_ALLOW|.
+      ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
+      if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+        content_setting = CONTENT_SETTING_ALLOW;
+      else
+        content_setting = entries[i].setting;
+
+      exceptions.Append(GetExceptionForPage(entries[i].primary_pattern,
+                                            content_setting,
+                                            entries[i].source));
     } else {
       LOG(ERROR) << "Secondary content settings patterns are not "
                  << "supported by the content settings UI";
@@ -915,10 +931,19 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
     // TODO(bauerb): Support a read-only view for those patterns.
     if (otr_entries[i].secondary_pattern ==
         ContentSettingsPattern::Wildcard()) {
-      otr_exceptions.Append(
-          GetExceptionForPage(otr_entries[i].primary_pattern,
-                              otr_entries[i].setting,
-                              otr_entries[i].source));
+      ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
+      // Media Stream is using compound values for its exceptions and arbitrary
+      // values for its default setting. And all the exceptions are granted as
+      // |CONTENT_SETTING_ALLOW|.
+      if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
+          otr_entries[i].primary_pattern != ContentSettingsPattern::Wildcard())
+        content_setting = CONTENT_SETTING_ALLOW;
+      else
+        content_setting = otr_entries[i].setting;
+
+      otr_exceptions.Append(GetExceptionForPage(otr_entries[i].primary_pattern,
+                                                content_setting,
+                                                otr_entries[i].source));
     } else {
       LOG(ERROR) << "Secondary content settings patterns are not "
                  << "supported by the content settings UI";
@@ -928,6 +953,94 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   StringValue type_string(ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
                                    type_string, otr_exceptions);
+}
+
+void ContentSettingsHandler::RemoveGeolocationException(
+    const ListValue* args, size_t arg_index) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  std::string origin;
+  std::string embedding_origin;
+  bool rv = args->GetString(arg_index++, &origin);
+  DCHECK(rv);
+  rv = args->GetString(arg_index++, &embedding_origin);
+  DCHECK(rv);
+
+  profile->GetHostContentSettingsMap()->
+      SetContentSetting(ContentSettingsPattern::FromString(origin),
+                        ContentSettingsPattern::FromString(embedding_origin),
+                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                        std::string(),
+                        CONTENT_SETTING_DEFAULT);
+}
+
+void ContentSettingsHandler::RemoveNotificationException(
+    const ListValue* args, size_t arg_index) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  std::string origin;
+  std::string setting;
+  bool rv = args->GetString(arg_index++, &origin);
+  DCHECK(rv);
+  rv = args->GetString(arg_index++, &setting);
+  DCHECK(rv);
+  ContentSetting content_setting = ContentSettingFromString(setting);
+
+  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_BLOCK);
+  DesktopNotificationServiceFactory::GetForProfile(profile)->
+      ClearSetting(ContentSettingsPattern::FromString(origin));
+}
+
+void ContentSettingsHandler::RemoveFlashCameraMicException(
+    const ListValue* args, size_t arg_index) {
+  std::string mode;
+  bool rv = args->GetString(arg_index++, &mode);
+  DCHECK(rv);
+  DCHECK_EQ(mode, "normal");
+
+  std::string pattern;
+  rv = args->GetString(arg_index++, &pattern);
+  DCHECK(rv);
+
+  CachedPepperFlashSettings::SiteMap::iterator iter =
+      flash_cameramic_settings_.sites.find(pattern);
+  if (iter != flash_cameramic_settings_.sites.end()) {
+    flash_cameramic_settings_.sites.erase(iter);
+    ppapi::FlashSiteSettings site_settings(
+        1,
+        ppapi::FlashSiteSetting(pattern,
+                                PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT));
+    flash_settings_manager_->SetSitePermission(
+        PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC,
+        site_settings);
+  } else {
+    NOTREACHED();
+  }
+
+  UpdateFlashCameraMicExceptionsView();
+}
+
+void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
+    const ListValue* args, size_t arg_index,
+    const ExContentSettingsType& type) {
+  std::string mode;
+  bool rv = args->GetString(arg_index++, &mode);
+  DCHECK(rv);
+
+  std::string pattern;
+  rv = args->GetString(arg_index++, &pattern);
+  DCHECK(rv);
+
+  HostContentSettingsMap* settings_map =
+      mode == "normal" ? GetContentSettingsMap() :
+                         GetOTRContentSettingsMap();
+  if (settings_map) {
+    settings_map->SetWebsiteSetting(
+        ContentSettingsPattern::FromString(pattern),
+        ContentSettingsPattern::Wildcard(),
+        type.ToContentSettingsType(),
+        "",
+        NULL);
+  }
 }
 
 void ContentSettingsHandler::RegisterMessages() {
@@ -1052,6 +1165,10 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
       content::RecordAction(
           UserMetricsAction("Options_DefaultFlashCameraMicSettingChanged"));
       break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultMediaStreamSettingChanged"));
+      break;
     default:
       break;
   }
@@ -1062,77 +1179,20 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ExContentSettingsType type = ExContentSettingsTypeFromGroupName(
-      type_string);
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    std::string origin;
-    std::string embedding_origin;
-    bool rv = args->GetString(arg_i++, &origin);
-    DCHECK(rv);
-    rv = args->GetString(arg_i++, &embedding_origin);
-    DCHECK(rv);
-
-    profile->GetHostContentSettingsMap()->
-        SetContentSetting(ContentSettingsPattern::FromString(origin),
-                          ContentSettingsPattern::FromString(embedding_origin),
-                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                          std::string(),
-                          CONTENT_SETTING_DEFAULT);
-  } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    std::string origin;
-    std::string setting;
-    bool rv = args->GetString(arg_i++, &origin);
-    DCHECK(rv);
-    rv = args->GetString(arg_i++, &setting);
-    DCHECK(rv);
-    ContentSetting content_setting = ContentSettingFromString(setting);
-
-    DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-           content_setting == CONTENT_SETTING_BLOCK);
-    DesktopNotificationServiceFactory::GetForProfile(profile)->
-        ClearSetting(ContentSettingsPattern::FromString(origin));
-  } else {
-    std::string mode;
-    bool rv = args->GetString(arg_i++, &mode);
-    DCHECK(rv);
-
-    std::string pattern;
-    rv = args->GetString(arg_i++, &pattern);
-    DCHECK(rv);
-
-    if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
-      DCHECK_EQ(mode, "normal");
-
-      CachedPepperFlashSettings::SiteMap::iterator iter =
-          flash_cameramic_settings_.sites.find(pattern);
-      if (iter != flash_cameramic_settings_.sites.end()) {
-        flash_cameramic_settings_.sites.erase(iter);
-        ppapi::FlashSiteSettings site_settings(1,
-            ppapi::FlashSiteSetting(
-                pattern, PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT));
-        flash_settings_manager_->SetSitePermission(
-            PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC,
-            site_settings);
-      } else {
-        NOTREACHED();
-      }
-      UpdateFlashCameraMicExceptionsView();
-    } else {
-      HostContentSettingsMap* settings_map =
-          mode == "normal" ? GetContentSettingsMap() :
-                             GetOTRContentSettingsMap();
-      // The settings map could be null if the mode was OTR but the OTR profile
-      // got destroyed before we received this message.
-      if (settings_map) {
-        settings_map->SetContentSetting(
-            ContentSettingsPattern::FromString(pattern),
-            ContentSettingsPattern::Wildcard(),
-            type.ToContentSettingsType(),
-            "",
-            CONTENT_SETTING_DEFAULT);
-      }
-    }
+  ExContentSettingsType type = ExContentSettingsTypeFromGroupName(type_string);
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      RemoveGeolocationException(args, arg_i);
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      RemoveNotificationException(args, arg_i);
+      break;
+    case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
+      RemoveFlashCameraMicException(args, arg_i);
+      break;
+    default:
+      RemoveExceptionFromHostContentSettingsMap(args, arg_i, type);
+      break;
   }
 }
 
@@ -1149,7 +1209,8 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
 
   ExContentSettingsType type = ExContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     NOTREACHED();
   } else if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
     DCHECK(IsValidHost(pattern));

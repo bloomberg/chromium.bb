@@ -2,110 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <functional>
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/media_stream_infobar_delegate.h"
-#include "content/public/common/media_stream_request.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
-
-// A predicate that checks if a StreamDeviceInfo object has the same ID as the
-// device ID specified at construction.
-class DeviceIdEquals {
- public:
-  explicit DeviceIdEquals(const std::string& device_id)
-      : device_id_(device_id) {
-  }
-
-  bool operator() (const content::MediaStreamDevice& device) {
-    return device.device_id == device_id_;
-  }
-
- private:
-  std::string device_id_;
-};
-
-}  // namespace
-
 MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
     InfoBarTabHelper* tab_helper,
-    const content::MediaStreamRequest* request,
-    const content::MediaResponseCallback& callback)
+    MediaStreamDevicesController* controller)
     : InfoBarDelegate(tab_helper),
-      request_(request),
-      callback_(callback) {
-  DCHECK(request_);
-  has_audio_ = request_->devices.count(
-      content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) != 0;
-  has_video_ = request_->devices.count(
-      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE) != 0;
+      controller_(controller) {
+  DCHECK(controller_.get());
 }
 
-MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {
+MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {}
+
+bool MediaStreamInfoBarDelegate::HasAudio() const {
+  return controller_->has_audio();
+}
+
+bool MediaStreamInfoBarDelegate::HasVideo() const {
+  return controller_->has_video();
 }
 
 content::MediaStreamDevices
     MediaStreamInfoBarDelegate::GetAudioDevices() const {
-  if (!has_audio_)
-    return content::MediaStreamDevices();
-  content::MediaStreamDeviceMap::const_iterator it =
-      request_->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
-  DCHECK(it != request_->devices.end());
-  return it->second;
+  return controller_->GetAudioDevices();
 }
 
 content::MediaStreamDevices
     MediaStreamInfoBarDelegate::GetVideoDevices() const {
-  if (!has_video_)
-    return content::MediaStreamDevices();
-  content::MediaStreamDeviceMap::const_iterator it =
-      request_->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-  DCHECK(it != request_->devices.end());
-  return it->second;
+  return controller_->GetVideoDevices();
 }
 
 const GURL& MediaStreamInfoBarDelegate::GetSecurityOrigin() const {
-  return request_->security_origin;
+  return controller_->GetSecurityOrigin();
 }
 
 void MediaStreamInfoBarDelegate::Accept(const std::string& audio_id,
-                                        const std::string& video_id) {
-  content::MediaStreamDevices devices;
-
-  if (has_audio_) {
-    AddDeviceWithId(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                    audio_id, &devices);
-  }
-  if (has_video_) {
-    AddDeviceWithId(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
-                    video_id, &devices);
-  }
-
-  callback_.Run(devices);
+                                        const std::string& video_id,
+                                        bool always_allow) {
+  controller_->Accept(audio_id, video_id, always_allow);
 }
 
 void MediaStreamInfoBarDelegate::Deny() {
-  callback_.Run(content::MediaStreamDevices());
-}
-
-void MediaStreamInfoBarDelegate::AddDeviceWithId(
-    content::MediaStreamDeviceType type,
-    const std::string& id,
-    content::MediaStreamDevices* devices) {
-  DCHECK(devices);
-  content::MediaStreamDeviceMap::const_iterator device_it =
-      request_->devices.find(type);
-  if (device_it != request_->devices.end()) {
-    content::MediaStreamDevices::const_iterator it = std::find_if(
-        device_it->second.begin(), device_it->second.end(), DeviceIdEquals(id));
-    if (it != device_it->second.end())
-      devices->push_back(*it);
-  }
+  controller_->Deny();
 }
 
 // MediaStreamInfoBarDelegate::CreateInfoBar is implemented in platform-specific
@@ -118,7 +61,7 @@ void MediaStreamInfoBarDelegate::InfoBarDismissed() {
 }
 
 gfx::Image* MediaStreamInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(has_video_ ?
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(HasVideo() ?
       IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC);
 }
 

@@ -641,6 +641,7 @@ extern const char kManagedDefaultPluginsSetting[];
 extern const char kManagedDefaultPopupsSetting[];
 extern const char kManagedDefaultGeolocationSetting[];
 extern const char kManagedDefaultNotificationsSetting[];
+extern const char kManagedDefaultMediaStreamSetting[];
 
 extern const char kManagedCookiesAllowedForUrls[];
 extern const char kManagedCookiesBlockedForUrls[];

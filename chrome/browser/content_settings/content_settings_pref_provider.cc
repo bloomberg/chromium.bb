@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -361,17 +362,33 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
           }
         }
       }
-      int setting = CONTENT_SETTING_DEFAULT;
-      if (settings_dictionary->GetIntegerWithoutPathExpansion(
-              GetTypeName(ContentSettingsType(i)), &setting)) {
-        DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-        setting = FixObsoleteCookiePromptMode(content_type,
-                                              ContentSetting(setting));
+      Value* value = NULL;
+      if (HostContentSettingsMap::ContentTypeHasCompoundValue(content_type)) {
+        DictionaryValue* setting = NULL;
+        // TODO(xians): Handle the non-dictionary types.
+        if (settings_dictionary->GetDictionaryWithoutPathExpansion(
+            GetTypeName(ContentSettingsType(i)), &setting)) {
+          DCHECK(!setting->empty());
+          value = setting->DeepCopy();
+        }
+      } else {
+        int setting = CONTENT_SETTING_DEFAULT;
+        if (settings_dictionary->GetIntegerWithoutPathExpansion(
+                GetTypeName(ContentSettingsType(i)), &setting)) {
+          DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
+          setting = FixObsoleteCookiePromptMode(content_type,
+                                                ContentSetting(setting));
+          value = Value::CreateIntegerValue(setting);
+        }
+      }
+
+      // |value_map_| will take the ownership of |value|.
+      if (value != NULL) {
         value_map_.SetValue(pattern_pair.first,
                             pattern_pair.second,
                             content_type,
                             ResourceIdentifier(""),
-                            Value::CreateIntegerValue(setting));
+                            value);
       }
     }
   }

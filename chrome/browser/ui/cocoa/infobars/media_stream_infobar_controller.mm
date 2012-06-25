@@ -100,9 +100,10 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
       content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audioId);
   deviceMenuModel_->GetSelectedDeviceId(
       content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &videoId);
+  bool alwaysAllow = deviceMenuModel_->always_allow();
 
-  static_cast<MediaStreamInfoBarDelegate*>([self delegate])->Accept(audioId,
-                                                                    videoId);
+  static_cast<MediaStreamInfoBarDelegate*>([self delegate])->Accept(
+      audioId, videoId, alwaysAllow);
 
   // Remove the infobar, we're done.
   [super removeSelf];
@@ -165,12 +166,12 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
 
   // Get the requested media type(s) and add corresponding text to the text
   // field.
-  int messageId = IDS_MEDIA_CAPTURE_MIC_AND_VIDEO;
-  DCHECK(delegate->has_audio() || delegate->has_video());
-  if (!delegate->has_audio())
+  int messageId = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+  DCHECK(delegate->HasAudio() || delegate->HasVideo());
+  if (!delegate->HasAudio())
     messageId = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!delegate->has_video())
-    messageId = IDS_MEDIA_CAPTURE_MIC_ONLY;
+  else if (!delegate->HasVideo())
+    messageId = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
 
   string16 securityOrigin = UTF8ToUTF16(delegate->GetSecurityOrigin().spec());
   NSString* text = l10n_util::GetNSStringF(messageId, securityOrigin);

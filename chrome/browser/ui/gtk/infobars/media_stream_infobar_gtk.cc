@@ -36,12 +36,12 @@ void MediaStreamInfoBarGtk::Init() {
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);
   size_t offset = 0;
 
-  int message_id = IDS_MEDIA_CAPTURE_MIC_AND_VIDEO;
-  DCHECK(GetDelegate()->has_audio() || GetDelegate()->has_video());
-  if (!GetDelegate()->has_audio())
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+  DCHECK(GetDelegate()->HasAudio() || GetDelegate()->HasVideo());
+  if (!GetDelegate()->HasAudio())
     message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!GetDelegate()->has_video())
-    message_id = IDS_MEDIA_CAPTURE_MIC_ONLY;
+  else if (!GetDelegate()->HasVideo())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
 
   string16 security_origin = UTF8ToUTF16(
       GetDelegate()->GetSecurityOrigin().spec());
@@ -82,7 +82,8 @@ void MediaStreamInfoBarGtk::OnAllowButton(GtkWidget* widget) {
       content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audio_id);
   devices_menu_model_->GetSelectedDeviceId(
       content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &video_id);
-  GetDelegate()->Accept(audio_id, video_id);
+  bool always_allow = devices_menu_model_->always_allow();
+  GetDelegate()->Accept(audio_id, video_id, always_allow);
   RemoveSelf();
 }
 

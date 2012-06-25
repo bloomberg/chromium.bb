@@ -66,13 +66,6 @@ COMPILE_ASSERT(arraysize(kProviderSourceMap) ==
                    HostContentSettingsMap::NUM_PROVIDER_TYPES,
                kProviderSourceMap_has_incorrect_size);
 
-bool ContentTypeHasCompoundValue(ContentSettingsType type) {
-  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE are
-  // of type dictionary/map. Compound types like dictionaries can't be mapped to
-  // the type |ContentSetting|.
-  return type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE;
-}
-
 // Returns true if the |content_type| supports a resource identifier.
 // Resource identifiers are supported (but not required) for plug-ins.
 bool SupportsResourceIdentifier(ContentSettingsType content_type) {
@@ -167,8 +160,6 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type,
     std::string* provider_id) const {
-  DCHECK(!ContentTypeHasCompoundValue(content_type));
-
   // Iterate through the list of providers and return the first non-NULL value
   // that matches |primary_url| and |secondary_url|.
   for (ConstProviderIterator provider = content_settings_providers_.begin();
@@ -237,7 +228,6 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
-  DCHECK(!ContentTypeHasCompoundValue(content_type));
   DCHECK(IsSettingAllowedForType(prefs_, setting, content_type));
 
   base::Value* value = NULL;
@@ -328,7 +318,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 
 bool HostContentSettingsMap::IsValueAllowedForType(
     PrefService* prefs, const base::Value* value, ContentSettingsType type) {
-  return IsSettingAllowedForType(
+  return ContentTypeHasCompoundValue(type) || IsSettingAllowedForType(
       prefs, content_settings::ValueToContentSetting(value), type);
 }
 
@@ -367,10 +357,21 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       return setting == CONTENT_SETTING_ASK;
     default:
       return false;
   }
+}
+
+// static
+bool HostContentSettingsMap::ContentTypeHasCompoundValue(
+    ContentSettingsType type) {
+  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE are
+  // of type dictionary/map. Compound types like dictionaries can't be mapped to
+  // the type |ContentSetting|.
+  return (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
+          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
 void HostContentSettingsMap::OnContentSettingChanged(
@@ -468,9 +469,21 @@ void HostContentSettingsMap::AddSettingsForOneType(
                                 incognito));
   while (rule_iterator->HasNext()) {
     const content_settings::Rule& rule = rule_iterator->Next();
+    ContentSetting setting_value = CONTENT_SETTING_DEFAULT;
+    // TODO(bauerb): Return rules as a list of values, not content settings.
+    // Handle the case using compound values for its exceptions and arbitrary
+    // values for its default setting. Here we assume all the exceptions
+    // are granted as |CONTENT_SETTING_ALLOW|.
+    if (ContentTypeHasCompoundValue(content_type) &&
+        rule.value.get() &&
+        rule.primary_pattern != ContentSettingsPattern::Wildcard()) {
+      setting_value = CONTENT_SETTING_ALLOW;
+    } else {
+      setting_value = content_settings::ValueToContentSetting(rule.value.get());
+    }
     settings->push_back(ContentSettingPatternSource(
         rule.primary_pattern, rule.secondary_pattern,
-        content_settings::ValueToContentSetting(rule.value.get()),
+        setting_value,
         kProviderNames[provider_type],
         incognito));
   }

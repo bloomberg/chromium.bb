@@ -1353,6 +1353,8 @@
         'browser/media/media_internals.h',
         'browser/media/media_stream_capture_indicator.cc',
         'browser/media/media_stream_capture_indicator.h',
+        'browser/media/media_stream_devices_controller.cc',
+        'browser/media/media_stream_devices_controller.h',
         'browser/media/media_stream_devices_menu_model.cc',
         'browser/media/media_stream_devices_menu_model.h',
         'browser/media_gallery/media_device_notifications_linux.cc',

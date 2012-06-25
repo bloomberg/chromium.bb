@@ -93,6 +93,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds just the Pepper Flash camera and microphone exception
   // table.
   void UpdateFlashCameraMicExceptionsView();
+  // Clobbers and rebuilds just the Media Stream device exception table.
+  void UpdateMediaStreamExceptionsView();
   // Clobbers and rebuilds an exception table that's managed by the host content
   // settings map.
   void UpdateExceptionsViewFromHostContentSettingsMap(ContentSettingsType type);
@@ -101,6 +103,17 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
       ContentSettingsType type);
   // Updates the radio buttons for enabling / disabling handlers.
   void UpdateHandlersEnabledRadios();
+  // Removes one geolocation exception.
+  void RemoveGeolocationException(const ListValue* args, size_t arg_index);
+  // Removes one notification exception.
+  void RemoveNotificationException(const ListValue* args, size_t arg_index);
+  // Removes one Pepper Flash camera and microphone exception.
+  void RemoveFlashCameraMicException(const ListValue* args, size_t arg_index);
+  // Removes one exception of |type| from the host content settings map.
+  void RemoveExceptionFromHostContentSettingsMap(
+      const ListValue* args,
+      size_t arg_index,
+      const ExContentSettingsType& type);
 
   // Callbacks used by the page ------------------------------------------------
 

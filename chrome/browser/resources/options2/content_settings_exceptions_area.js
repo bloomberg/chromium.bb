@@ -9,6 +9,7 @@ cr.define('options.contentSettings', function() {
 
   /**
    * Creates a new exceptions list item.
+   *
    * @param {string} contentType The type of the list.
    * @param {string} mode The browser mode, 'otr' or 'normal'.
    * @param {boolean} enableAskOption Whether to show an 'ask every time'
@@ -111,9 +112,11 @@ cr.define('options.contentSettings', function() {
 
       this.updateEditables();
 
-      // Editing notifications and geolocation is disabled for now.
+      // Editing notifications, geolocation and media-stream is disabled for
+      // now.
       if (this.contentType == 'notifications' ||
-          this.contentType == 'location') {
+          this.contentType == 'location' ||
+          this.contentType == 'media-stream') {
         this.editable = false;
       }
 
@@ -155,6 +158,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * The pattern (e.g., a URL) for the exception.
+     *
      * @type {string}
      */
     get pattern() {
@@ -166,6 +170,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * The setting (allow/block) for the exception.
+     *
      * @type {string}
      */
     get setting() {
@@ -177,6 +182,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Gets a human-readable setting string.
+     *
      * @type {string}
      */
     settingForDisplay: function() {
@@ -193,8 +199,9 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Update this list item to reflect whether the input is a valid pattern.
-     * @param {boolean} valid Whether said pattern is valid in the context of
-     *     a content exception setting.
+     *
+     * @param {boolean} valid Whether said pattern is valid in the context of a
+     *     content exception setting.
      */
     setPatternValid: function(valid) {
       if (valid || !this.input.value)
@@ -239,6 +246,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Called when committing an edit.
+     *
      * @param {Event} e The end event.
      * @private
      */
@@ -251,6 +259,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Called when cancelling an edit; resets the control states.
+     *
      * @param {Event} e The cancel event.
      * @private
      */
@@ -261,6 +270,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Editing is complete; update the model.
+     *
      * @param {string} newPattern The pattern that the user entered.
      * @param {string} newSetting The setting the user chose.
      */
@@ -287,10 +297,11 @@ cr.define('options.contentSettings', function() {
    * Creates a new list item for the Add New Item row, which doesn't represent
    * an actual entry in the exceptions list but allows the user to add new
    * exceptions.
+   *
    * @param {string} contentType The type of the list.
    * @param {string} mode The browser mode, 'otr' or 'normal'.
-   * @param {boolean} enableAskOption Whether to show an 'ask every time'
-   *     option in the select.
+   * @param {boolean} enableAskOption Whether to show an 'ask every time' option
+   *     in the select.
    * @constructor
    * @extends {cr.ui.ExceptionsListItem}
    */
@@ -334,6 +345,7 @@ cr.define('options.contentSettings', function() {
     /**
      * Editing is complete; update the model. As long as the pattern isn't
      * empty, we'll just add it.
+     *
      * @param {string} newPattern The pattern that the user entered.
      * @param {string} newSetting The setting the user chose.
      */
@@ -346,6 +358,7 @@ cr.define('options.contentSettings', function() {
 
   /**
    * Creates a new exceptions list.
+   *
    * @constructor
    * @extends {cr.ui.List}
    */
@@ -384,6 +397,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Creates an item to go in the list.
+     *
      * @param {Object} entry The element from the data model for this row.
      */
     createItem: function(entry) {
@@ -403,6 +417,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Sets the exceptions in the js model.
+     *
      * @param {Object} entries A list of dictionaries of values, each dictionary
      *     represents an exception.
      */
@@ -420,11 +435,12 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
-     * The browser has finished checking a pattern for validity. Update the
-     * list item to reflect this.
+     * The browser has finished checking a pattern for validity. Update the list
+     * item to reflect this.
+     *
      * @param {string} pattern The pattern.
-     * @param {bool} valid Whether said pattern is valid in the context of
-     *     a content exception setting.
+     * @param {bool} valid Whether said pattern is valid in the context of a
+     *     content exception setting.
      */
     patternValidityCheckComplete: function(pattern, valid) {
       var listItems = this.items;
@@ -442,10 +458,11 @@ cr.define('options.contentSettings', function() {
      * Returns whether the rows are editable in this list.
      */
     isEditable: function() {
-      // Editing notifications and geolocation is disabled for now.
+      // Exceptions of the following lists are not editable for now.
       return !(this.contentType == 'notifications' ||
                this.contentType == 'location' ||
-               this.contentType == 'fullscreen');
+               this.contentType == 'fullscreen' ||
+               this.contentType == 'media-stream');
     },
 
     /**
@@ -483,6 +500,7 @@ cr.define('options.contentSettings', function() {
 
   /**
    * Encapsulated handling of content settings list subpage.
+   *
    * @constructor
    */
   function ContentSettingsExceptionsArea() {
@@ -515,6 +533,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Shows one list and hides all others.
+     *
      * @param {string} type The content type.
      */
     showList: function(type) {

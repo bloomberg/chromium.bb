@@ -6786,6 +6786,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ALLOW_WEB_INTENTS" desc="Label for checkbox to enable and disable Web Intents.">
         Allow Web Intents to enable me to connect my applications.
       </message>
+      <message name="IDS_MEDIA_STREAM_TAB_LABEL" desc="Label for media device tab on Content Settings dialog">
+        Media
+      </message>
+      <message name="IDS_MEDIA_STREAM_HEADER" desc="Header for media device exception management page on Content Settings dialog">
+        Media exceptions
+      </message>
+      <message name="IDS_MEDIA_STREAM_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access any capture device.">
+        Do not allow sites to access my camera and microphone
+      </message>
+      <message name="IDS_MEDIA_STREAM_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access capture devices.">
+        Ask me when a site requires access to my camera and microphone (recommended)
+      </message>
 
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->
       <if expr="not is_macosx and not pp_ifdef('chromeos')">
@@ -16348,16 +16360,16 @@ Battery full
     </message>
 
     <!-- Media Capture messages -->
-    <message name="IDS_MEDIA_CAPTURE_MIC_AND_VIDEO" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone and camera.">
+    <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone and camera.">
       <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera and microphone.
     </message>
-    <message name="IDS_MEDIA_CAPTURE_MIC_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone.">
+    <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone.">
       <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your microphone.
     </message>
     <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's camera.">
       <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera.
     </message>
-    <message name="IDS_MEDIA_CAPTURE_MIC" desc="Label for a microphone element in a device list.">
+    <message name="IDS_MEDIA_CAPTURE_AUDIO" desc="Label for a microphone element in a device list.">
       Microphone: <ph name="DEVICE_NAME">$1<ex>default microphone</ex></ph>
     </message>
     <message name="IDS_MEDIA_CAPTURE_VIDEO" desc="Label for a camera element in a device list.">
@@ -16368,6 +16380,15 @@ Battery full
     </message>
     <message name="IDS_MEDIA_CAPTURE_DENY" desc="Label for a button that denies access to a web page, so they can use a camera and/or a microphone.">
       Deny
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_AUDIO_AND_VIDEO" desc="Label for the menu item to always allow a web page to access a camera and a microphone.">
+      Always allow this site to use this microphone and this camera
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_AUDIO_ONLY" desc="Label for the menu item to always allow a web page to access a microphone.">
+      Always allow this site to use this microphone
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_VIDEO_ONLY" desc="Label for the menu item to always allow a web page to access a camera.">
+      Always allow this site to use this camera
     </message>
     <message name="IDS_MEDIA_CAPTURE_DEVICES_MENU_TITLE" desc="Label for a drop-down menu button that will, when clicked, list the available and selected camera and/or microphone devices.">
       Options
