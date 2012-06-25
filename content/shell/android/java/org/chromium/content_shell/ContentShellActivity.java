@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.common.CommandLine;
@@ -98,7 +99,7 @@ public class ContentShellActivity extends Activity {
     }
 
     private void initializeContentViewResources() {
-        ContentView.registerPopupOverlayCornerRadius(0);
-        ContentView.registerPopupOverlayResourceId(R.drawable.popup_zoomer_overlay);
+        AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS = R.dimen.link_preview_overlay_radius;
+        AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY = R.drawable.popup_zoomer_overlay;
     }
 }

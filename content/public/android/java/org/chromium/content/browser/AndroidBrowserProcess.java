@@ -9,9 +9,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
+import org.chromium.content.app.AppResource;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.common.CommandLine;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
 public class AndroidBrowserProcess {
@@ -88,6 +90,23 @@ public class AndroidBrowserProcess {
         LibraryLoader.loadAndInitSync();
 
         Context appContext = context.getApplicationContext();
+
+        // This block is inside genericChromiumProcessInit() instead
+        // of initChromiumBrowserProcess() to make sure we do it once.
+        // In here it is protected with the sInitialized.
+        if (hostIsChrome) {
+            if (nativeIsOfficialBuild() ||
+                    CommandLine.getInstance().hasSwitch(CommandLine.ADD_OFFICIAL_COMMAND_LINE)) {
+                Resources res = context.getResources();
+                try {
+                    String[] switches = res.getStringArray(AppResource.ARRAY_OFFICIAL_COMMAND_LINE);
+                    CommandLine.getInstance().appendSwitchesAndArguments(switches);
+                } catch (Resources.NotFoundException e) {
+                    // Do nothing.  It is fine to have no command line
+                    // additions for an official build.
+                }
+            }
+        }
 
         int maxRenderers = normalizeMaxRendererProcesses(appContext, maxRendererProcesses);
         Log.i(TAG, "Initializing chromium process, renderers=" + maxRenderers +

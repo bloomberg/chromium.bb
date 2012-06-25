@@ -12,6 +12,7 @@ import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
 import org.chromium.base.WeakContext;
+import org.chromium.content.app.AppResource;
 import org.chromium.content.common.TraceEvent;
 
 public class ContentView extends FrameLayout {
@@ -93,24 +94,6 @@ public class ContentView extends FrameLayout {
      */
     public static void enableMultiProcess(Context context, int maxRendererProcesses) {
         AndroidBrowserProcess.initContentViewProcess(context, maxRendererProcesses);
-    }
-
-    /**
-     * Registers the drawable to be used for overlaying the popup zoomer contents.  The drawable
-     * should be transparent in the middle to allow the zoomed content to show.
-     *
-     * @param id The id of the drawable to be used to overlay the popup zoomer contents.
-     */
-    public static void registerPopupOverlayResourceId(int id) {
-        // TODO(tedchoc): Implement.
-    }
-
-    /**
-     * Sets how much to round the corners of the popup contents.
-     * @param r The radius of the rounded corners of the popup overlay drawable.
-     */
-    public static void registerPopupOverlayCornerRadius(float r) {
-        // TODO(tedchoc): Implement.
     }
 
     public ContentView(Context context, int nativeWebContents, int personality) {
