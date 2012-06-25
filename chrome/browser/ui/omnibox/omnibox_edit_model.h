@@ -376,6 +376,9 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
       const string16& new_text,
       size_t caret_position) const;
 
+  // Notifies the SearchTabHelper that autocomplete state has changed.
+  void NotifySearchTabHelper();
+
   // Tries to start an instant preview for |match|. Returns true if instant
   // processed the match.
   bool DoInstant(const AutocompleteMatch& match, string16* suggested_text);

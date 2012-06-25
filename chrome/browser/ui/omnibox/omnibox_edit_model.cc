@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -396,6 +397,8 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   if (user_input_in_progress_)
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
   controller_->OnInputInProgress(in_progress);
+
+  NotifySearchTabHelper();
 }
 
 void OmniboxEditModel::Revert() {
@@ -662,6 +665,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   InstantController* instant = controller_->GetInstant();
   if (instant)
     instant->OnAutocompleteGotFocus();
+
+  NotifySearchTabHelper();
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
@@ -670,6 +675,8 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
   InstantController* instant = controller_->GetInstant();
   if (instant)
     instant->OnAutocompleteLostFocus(view_gaining_focus);
+
+  NotifySearchTabHelper();
 }
 
 void OmniboxEditModel::OnKillFocus() {
@@ -1051,6 +1058,13 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
   return !keyword.empty() &&
       !autocomplete_controller_->keyword_provider()->
           GetKeywordForText(keyword).empty();
+}
+
+void OmniboxEditModel::NotifySearchTabHelper() {
+  if (controller_->GetTabContents()) {
+    controller_->GetTabContents()->search_tab_helper()->
+        OmniboxEditModelChanged(this);
+  }
 }
 
 bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match,
