@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -23,11 +24,6 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-namespace {
-// Grace interval for policy timestamp checks, in seconds.
-const int kTimestampGraceIntervalSeconds = 60;
-}
-
 // Decodes a CloudPolicySettings object into a policy map. The implementation is
 // generated code in policy/cloud_policy_generated.cc.
 void DecodePolicy(const em::CloudPolicySettings& policy,
@@ -39,9 +35,8 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenCache::Delegate,
  public:
   typedef base::Callback<void(const std::string&,
                               const std::string&,
-                              bool has_policy,
-                              const em::PolicyFetchResponse&,
-                              CloudPolicyStore::Status)> Callback;
+                              CloudPolicyStore::Status,
+                              scoped_ptr<em::PolicyFetchResponse>)> Callback;
 
   LegacyPolicyCacheLoader(const FilePath& token_cache_file,
                           const FilePath& policy_cache_file);
@@ -76,7 +71,7 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenCache::Delegate,
   std::string dm_token_;
   std::string device_id_;
   bool has_policy_;
-  em::PolicyFetchResponse policy_;
+  scoped_ptr<em::PolicyFetchResponse> policy_;
   CloudPolicyStore::Status status_;
 
   Callback callback_;
@@ -117,10 +112,8 @@ void LegacyPolicyCacheLoader::OnDiskCacheLoaded(
     const em::CachedCloudPolicyResponse& policy) {
   status_ = TranslateLoadResult(result);
   if (result == UserPolicyDiskCache::LOAD_RESULT_SUCCESS) {
-    if (policy.has_cloud_policy()) {
-      has_policy_ = true;
-      policy_.CopyFrom(policy.cloud_policy());
-    }
+    if (policy.has_cloud_policy())
+      policy_.reset(new em::PolicyFetchResponse(policy.cloud_policy()));
   } else {
     LOG(WARNING) << "Failed to load legacy policy cache: " << result;
   }
@@ -130,7 +123,7 @@ void LegacyPolicyCacheLoader::OnDiskCacheLoaded(
 
 void LegacyPolicyCacheLoader::CheckLoadFinished() {
   if (!token_loader_.get() && !policy_cache_.get())
-    callback_.Run(dm_token_, device_id_, has_policy_, policy_, status_);
+    callback_.Run(dm_token_, device_id_, status_, policy_.Pass());
 }
 
 // static
@@ -142,7 +135,7 @@ CloudPolicyStore::Status LegacyPolicyCacheLoader::TranslateLoadResult(
       return CloudPolicyStore::STATUS_OK;
     case UserPolicyDiskCache::LOAD_RESULT_PARSE_ERROR:
     case UserPolicyDiskCache::LOAD_RESULT_READ_ERROR:
-      return CloudPolicyStore::STATUS_PERSIST_LOAD_ERROR;
+      return CloudPolicyStore::STATUS_LOAD_ERROR;
   }
   NOTREACHED();
   return CloudPolicyStore::STATUS_OK;
@@ -163,25 +156,17 @@ UserCloudPolicyStoreChromeOS::~UserCloudPolicyStoreChromeOS() {}
 
 void UserCloudPolicyStoreChromeOS::Store(
     const em::PolicyFetchResponse& policy) {
-  if (!Validate(policy, NULL, NULL)) {
-    NotifyStoreError();
-    return;
-  }
-
-  std::string policy_data;
-  if (!policy.SerializeToString(&policy_data)) {
-    status_ = STATUS_PERSIST_SERIALIZE_ERROR;
-    NotifyStoreError();
-    return;
-  }
-
-  session_manager_client_->StoreUserPolicy(
-      policy_data,
-      base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyStored,
-                 weak_factory_.GetWeakPtr()));
+  // Cancel all pending requests.
+  weak_factory_.InvalidateWeakPtrs();
+  Validate(scoped_ptr<em::PolicyFetchResponse>(
+               new em::PolicyFetchResponse(policy)),
+           base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
+                      weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStoreChromeOS::Load() {
+  // Cancel all pending requests.
+  weak_factory_.InvalidateWeakPtrs();
   session_manager_client_->RetrieveUserPolicy(
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
                  weak_factory_.GetWeakPtr()));
@@ -198,7 +183,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
                      weak_factory_.GetWeakPtr()));
     } else {
       // session_manager doesn't have policy. Adjust internal state and notify
-      // the world that about the policy update.
+      // the world about the policy update.
       policy_.reset();
       NotifyStoreLoaded();
     }
@@ -208,21 +193,32 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   // Policy is supplied by session_manager. Disregard legacy data from now on.
   legacy_loader_.reset();
 
-  em::PolicyFetchResponse policy;
-  if (!policy.ParseFromString(policy_blob)) {
-    status_ = STATUS_PERSIST_PARSE_ERROR;
+  scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
+  if (!policy->ParseFromString(policy_blob)) {
+    status_ = STATUS_PARSE_ERROR;
     NotifyStoreError();
     return;
   }
 
-  if (!InstallPolicy(policy)) {
+  Validate(policy.Pass(),
+           base::Bind(&UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated,
+                      weak_factory_.GetWeakPtr()));
+}
+
+void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
+    UserCloudPolicyValidator* validator) {
+  validation_status_ = validator->status();
+  if (!validator->success()) {
+    status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
     return;
   }
+
+  InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+  status_ = STATUS_OK;
 
   // Policy has been loaded successfully. This indicates that new-style policy
   // is working, so the legacy cache directory can be removed.
-  status_ = STATUS_OK;
   if (!legacy_cache_dir_.empty()) {
     content::BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
@@ -233,145 +229,109 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   NotifyStoreLoaded();
 }
 
+void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
+    UserCloudPolicyValidator* validator) {
+  validation_status_ = validator->status();
+  if (!validator->success()) {
+    status_ = STATUS_VALIDATION_ERROR;
+    NotifyStoreError();
+    return;
+  }
+
+  std::string policy_blob;
+  if (!validator->policy()->SerializeToString(&policy_blob)) {
+    status_ = STATUS_SERIALIZE_ERROR;
+    NotifyStoreError();
+    return;
+  }
+
+  session_manager_client_->StoreUserPolicy(
+      policy_blob,
+      base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyStored,
+                 weak_factory_.GetWeakPtr()));
+}
+
 void UserCloudPolicyStoreChromeOS::OnPolicyStored(bool success) {
   if (!success) {
-    status_ = STATUS_PERSIST_STORE_ERROR;
+    status_ = STATUS_STORE_ERROR;
     NotifyStoreError();
   } else {
+    // TODO(mnissler): Once we do signature verifications, we'll have to reload
+    // the key at this point to account for key rotations.
     Load();
   }
 }
 
-bool UserCloudPolicyStoreChromeOS::InstallPolicy(
-    const em::PolicyFetchResponse& policy) {
-  scoped_ptr<em::PolicyData> new_policy(new em::PolicyData());
-  em::CloudPolicySettings cloud_policy;
-  if (!Validate(policy, new_policy.get(), &cloud_policy))
-    return false;
-
+void UserCloudPolicyStoreChromeOS::InstallPolicy(
+    scoped_ptr<em::PolicyData> policy_data,
+    scoped_ptr<em::CloudPolicySettings> payload) {
   // Decode the payload.
-  PolicyMap new_policy_map;
-  DecodePolicy(cloud_policy, &new_policy_map);
-
-  policy_.swap(new_policy);
-  policy_map_.Swap(&new_policy_map);
-  return true;
+  policy_map_.Clear();
+  DecodePolicy(*payload, &policy_map_);
+  policy_ = policy_data.Pass();
 }
 
-bool UserCloudPolicyStoreChromeOS::Validate(
-    const em::PolicyFetchResponse& policy,
-    em::PolicyData* policy_data_ptr,
-    em::CloudPolicySettings* cloud_policy_ptr) {
-  // Check for error codes in PolicyFetchResponse.
-  if ((policy.has_error_code() && policy.error_code() != 200) ||
-      (policy.has_error_message() && !policy.error_message().empty())) {
-    LOG(ERROR) << "Error in policy blob."
-               << " code: " << policy.error_code()
-               << " message: " << policy.error_message();
-    status_ = STATUS_VALIDATION_ERROR_CODE_PRESENT;
-    return false;
-  }
+void UserCloudPolicyStoreChromeOS::Validate(
+    scoped_ptr<em::PolicyFetchResponse> policy,
+    const UserCloudPolicyValidator::CompletionCallback& callback) {
+  // Configure the validator.
+  UserCloudPolicyValidator* validator =
+      UserCloudPolicyValidator::Create(policy.Pass(), callback);
+  validator->ValidateUsername(
+      chromeos::UserManager::Get()->GetLoggedInUser().email());
+  validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
+  validator->ValidateAgainstCurrentPolicy(policy_.get());
+  validator->ValidatePayload();
 
-  // TODO(mnissler): Signature verification would go here.
+  // TODO(mnissler): Do a signature check here as well. The key is stored by
+  // session_manager in the root-owned cryptohome area, which is currently
+  // inaccessible to Chrome though.
 
-  // Parse policy data.
-  em::PolicyData policy_data;
-  if (!policy_data.ParseFromString(policy.policy_data()) ||
-      !policy_data.IsInitialized()) {
-    LOG(ERROR) << "Failed to parse policy response";
-    status_ = STATUS_VALIDATION_PAYLOAD_PARSE_ERROR;
-    return false;
-  }
-
-  // Policy type check.
-  if (!policy_data.has_policy_type() ||
-      policy_data.policy_type() != dm_protocol::kChromeUserPolicyType) {
-    LOG(ERROR) << "Invalid policy type " << policy_data.policy_type();
-    status_ = STATUS_VALIDATION_POLICY_TYPE;
-    return false;
-  }
-
-  // Timestamp should be from the past. We allow for a 1-minute grace interval
-  // to cover clock drift.
-  base::Time policy_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(policy_data.timestamp());
-  base::Time max_valid_time =
-      base::Time::NowFromSystemTime() +
-      base::TimeDelta::FromSeconds(kTimestampGraceIntervalSeconds);
-  if (!policy_data.has_timestamp() ||
-      (policy_time > max_valid_time)) {
-    LOG(ERROR) << "Invalid timestamp " << policy_data.timestamp();
-    status_ = STATUS_VALIDATION_TIMESTAMP;
-    return false;
-  }
-
-  // Check the DM token.
-  if (!policy_data.has_request_token() ||
-      (policy_.get() &&
-       policy_->has_request_token() &&
-       policy_data.request_token() != policy_->request_token())) {
-    LOG(ERROR) << "Invalid DM token " << policy_data.request_token();
-    status_ = STATUS_VALIDATION_TOKEN;
-    return false;
-  }
-
-  // Make sure the username corresponds to the currently logged-in user.
-  if (!CheckPolicyUsername(policy_data)) {
-    LOG(ERROR) << "Invalid username " << policy_data.username();
-    status_ = STATUS_VALIDATION_USERNAME;
-    return false;
-  }
-
-  // Parse cloud policy.
-  em::CloudPolicySettings cloud_policy;
-  if (!policy_data.has_policy_value() ||
-      !cloud_policy.ParseFromString(policy_data.policy_value()) ||
-      !cloud_policy.IsInitialized()) {
-    LOG(ERROR) << "Failed to decode policy protobuf";
-    status_ = STATUS_VALIDATION_POLICY_PARSE_ERROR;
-    return false;
-  }
-
-  // Success.
-  if (policy_data_ptr)
-    policy_data_ptr->Swap(&policy_data);
-  if (cloud_policy_ptr)
-    cloud_policy_ptr->Swap(&cloud_policy);
-
-  return true;
-}
-
-bool UserCloudPolicyStoreChromeOS::CheckPolicyUsername(
-    const em::PolicyData& policy) {
-  if (!policy.has_username())
-    return false;
-
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  if (!user_manager->IsUserLoggedIn())
-    return false;
-
-  std::string policy_username =
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(policy.username()));
-  const chromeos::User& user = chromeos::UserManager::Get()->GetLoggedInUser();
-  return user.email() == policy_username;
+  // Start validation.
+  validator->StartValidation();
 }
 
 void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
     const std::string& dm_token,
     const std::string& device_id,
-    bool has_policy,
-    const em::PolicyFetchResponse& policy,
-    Status status) {
+    Status status,
+    scoped_ptr<em::PolicyFetchResponse> policy) {
   status_ = status;
-  if (has_policy && InstallPolicy(policy)) {
+  if (policy.get()) {
+    Validate(policy.Pass(),
+             base::Bind(&UserCloudPolicyStoreChromeOS::OnLegacyPolicyValidated,
+                        weak_factory_.GetWeakPtr(),
+                        dm_token, device_id));
+  } else {
+    InstallLegacyTokens(dm_token, device_id);
+  }
+}
+
+void UserCloudPolicyStoreChromeOS::OnLegacyPolicyValidated(
+    const std::string& dm_token,
+    const std::string& device_id,
+    UserCloudPolicyValidator* validator) {
+  validation_status_ = validator->status();
+  if (validator->success()) {
+    status_ = STATUS_OK;
+    InstallPolicy(validator->policy_data().Pass(),
+                  validator->payload().Pass());
+
     // Clear the public key version. The public key version field would
     // otherwise indicate that we have key installed in the store when in fact
     // we haven't. This may result in policy updates failing signature
     // verification.
     policy_->clear_public_key_version();
+  } else {
+    status_ = STATUS_VALIDATION_ERROR;
   }
 
+  InstallLegacyTokens(dm_token, device_id);
+}
+
+void UserCloudPolicyStoreChromeOS::InstallLegacyTokens(
+    const std::string& dm_token,
+    const std::string& device_id) {
   // Write token and device ID to |policy_|, giving them precedence over the
   // policy blob. This is to match the legacy behavior, which used token and
   // device id exclusively from the token cache file.

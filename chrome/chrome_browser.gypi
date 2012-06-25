@@ -1618,6 +1618,8 @@
         'browser/policy/cloud_policy_store.h',
         'browser/policy/cloud_policy_subsystem.cc',
         'browser/policy/cloud_policy_subsystem.h',
+        'browser/policy/cloud_policy_validator.cc',
+        'browser/policy/cloud_policy_validator.h',
         'browser/policy/config_dir_policy_loader.cc',
         'browser/policy/config_dir_policy_loader.h',
         'browser/policy/configuration_policy_handler.cc',

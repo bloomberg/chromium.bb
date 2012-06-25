@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/policy/cloud_policy_validator.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
@@ -25,29 +26,15 @@ class CloudPolicyStore {
     // Everything is in good order.
     STATUS_OK,
     // Loading policy from the underlying data store failed.
-    STATUS_PERSIST_LOAD_ERROR,
+    STATUS_LOAD_ERROR,
     // Failed to store policy to the data store.
-    STATUS_PERSIST_STORE_ERROR,
+    STATUS_STORE_ERROR,
     // Failed to parse the policy read from the data store.
-    STATUS_PERSIST_PARSE_ERROR,
+    STATUS_PARSE_ERROR,
     // Failed to serialize policy for storage.
-    STATUS_PERSIST_SERIALIZE_ERROR,
-    // Validation failure: Bad signature.
-    STATUS_VALIDATION_BAD_SIGNATURE,
-    // Validation failure: Policy blob contains error code.
-    STATUS_VALIDATION_ERROR_CODE_PRESENT,
-    // Validation failure: Policy payload failed to decode.
-    STATUS_VALIDATION_PAYLOAD_PARSE_ERROR,
-    // Validation failure: Unexpected policy type.
-    STATUS_VALIDATION_POLICY_TYPE,
-    // Validation failure: Time stamp from the future.
-    STATUS_VALIDATION_TIMESTAMP,
-    // Validation failure: Token doesn't match.
-    STATUS_VALIDATION_TOKEN,
-    // Validation failure: Username doesn't match.
-    STATUS_VALIDATION_USERNAME,
-    // Policy protobuf parse error.
-    STATUS_VALIDATION_POLICY_PARSE_ERROR,
+    STATUS_SERIALIZE_ERROR,
+    // Validation error.
+    STATUS_VALIDATION_ERROR,
   };
 
   // Callbacks for policy store events. Most importantly, policy updates.
@@ -81,6 +68,9 @@ class CloudPolicyStore {
            policy_->state() == enterprise_management::PolicyData::ACTIVE;
   }
   Status status() const { return status_; }
+  CloudPolicyValidatorBase::Status validation_status() const {
+    return validation_status_;
+  }
 
   // Store a new policy blob. Pending store operations will be canceled. The
   // store operation may proceed asynchronously and observers are notified once
@@ -115,6 +105,9 @@ class CloudPolicyStore {
 
   // Latest status code.
   Status status_;
+
+  // Latest validation status.
+  CloudPolicyValidatorBase::Status validation_status_;
 
  private:
   // Whether the store has completed asynchronous initialization, which is

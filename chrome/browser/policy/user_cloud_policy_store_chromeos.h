@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
+#include "chrome/browser/policy/cloud_policy_validator.h"
 
 namespace chromeos {
 class SessionManagerClient;
@@ -51,37 +52,42 @@ class UserCloudPolicyStoreChromeOS : public CloudPolicyStore {
   // Called back from SessionManagerClient for policy load operations.
   void OnPolicyRetrieved(const std::string& policy_blob);
 
+  // Completion handler for policy validation on the Load() path. Installs the
+  // policy and publishes it if validation succeeded.
+  void OnRetrievedPolicyValidated(UserCloudPolicyValidator* validator);
+
+  // Completion handler for policy validation on the Load() path. Starts a store
+  // operation if the validation succeeded.
+  void OnPolicyToStoreValidated(UserCloudPolicyValidator* validator);
+
   // Called back from SessionManagerClient for policy store operations.
   void OnPolicyStored(bool);
 
-  // Decodes and installs |policy|. This may fail for various reasons, in which
-  // case this function updates |status_| and returns false.
-  bool InstallPolicy(const enterprise_management::PolicyFetchResponse& policy);
+  // Installs |policy_data| and |payload|.
+  void InstallPolicy(
+      scoped_ptr<enterprise_management::PolicyData> policy_data,
+      scoped_ptr<enterprise_management::CloudPolicySettings> payload);
 
-  // Validates a policy blob. This makes sure the policy blob is indeed user
-  // policy, is issued to the correct user, the DM Token matches what we already
-  // have, and its timestamp is in the past. Updates |status_| appropriately and
-  // returns false if any issues are found. On success, |policy_data_ptr| and
-  // |cloud_policy_ptr| will be filled in with valid data and true is returned.
-  //
-  // TODO(mnissler): Performing a signature check here as well would be good,
-  // but that requires access to the policy key managed by session_manager,
-  // which is stored in a file currently not accessible to Chrome.
-  bool Validate(
-      const enterprise_management::PolicyFetchResponse& policy,
-      enterprise_management::PolicyData* policy_data_ptr,
-      enterprise_management::CloudPolicySettings* cloud_policy_ptr);
-
-  // Checks whether the in |policy| matches the currently logged-in user.
-  bool CheckPolicyUsername(const enterprise_management::PolicyData& policy);
+  // Starts policy blob validation.
+  void Validate(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+      const UserCloudPolicyValidator::CompletionCallback& callback);
 
   // Callback for loading legacy caches.
   void OnLegacyLoadFinished(
       const std::string& dm_token,
       const std::string& device_id,
-      bool has_policy,
-      const enterprise_management::PolicyFetchResponse& policy,
-      Status status);
+      Status status,
+      scoped_ptr<enterprise_management::PolicyFetchResponse>);
+
+  // Completion callback for legacy policy validation.
+  void OnLegacyPolicyValidated(const std::string& dm_token,
+                               const std::string& device_id,
+                               UserCloudPolicyValidator* validator);
+
+  // Installs legacy tokens.
+  void InstallLegacyTokens(const std::string& dm_token,
+                           const std::string& device_id);
 
   // Removes the passed-in legacy cache directory.
   static void RemoveLegacyCacheDir(const FilePath& dir);
