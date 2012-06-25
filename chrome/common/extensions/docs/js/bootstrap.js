@@ -69,26 +69,26 @@ if (window.location.search == "?regenerate" ||
   }
 } else {
   window.onload = function() {
-    var currentBranch = getCurrentBranch();
-    if (currentBranch == '' &&
-        location.pathname.split('/').reverse()[1] != 'apps') {
-      document.getElementById('unofficialWarning').style.display = 'block';
-      document.getElementById('goToOfficialDocs').onclick = function() {
-        location.href = officialURL;
-      };
-    } else if (currentBranch != 'stable') {
-      document.getElementById("branchName").textContent =
-          currentBranch.toUpperCase();
-      document.getElementById('branchWarning').style.display = 'block';
-      document.getElementById('branchChooser').onchange = function() {
-        location.href = officialURL + this.value + "/";
-      };
-    }
-
-    if (currentBranch != 'stable' && currentBranch != 'beta') {
-      var warning = document.getElementById('eventPageWarning');
-      if (warning)
-        warning.style.display = 'block';
+    if (location.pathname.split('/').reverse()[1] != 'apps') {
+      var currentBranch = getCurrentBranch();
+      if (currentBranch == '') {
+        document.getElementById('unofficialWarning').style.display = 'block';
+        document.getElementById('goToOfficialDocs').onclick = function() {
+          location.href = officialURL;
+        };
+      } else if (currentBranch != 'stable') {
+        document.getElementById("branchName").textContent =
+            currentBranch.toUpperCase();
+        document.getElementById('branchWarning').style.display = 'block';
+        document.getElementById('branchChooser').onchange = function() {
+          location.href = officialURL + this.value + "/";
+        };
+      }
+      if (currentBranch != 'stable' && currentBranch != 'beta') {
+        var warning = document.getElementById('eventPageWarning');
+        if (warning)
+          warning.style.display = 'block';
+      }
     }
   }
 }
