@@ -50,7 +50,7 @@ cr.define('options', function() {
       $('set-wallpaper-layout').addEventListener('change',
           this.handleLayoutChange_);
       $('set-custom-wallpaper').onclick = this.handleChooseFile_;
-      $('use-random-wallpaper').onclick = this.handleCheckboxClick_.bind(this);
+      $('use-daily-wallpaper').onclick = this.handleCheckboxClick_.bind(this);
       $('set-wallpaper-overlay-confirm').onclick = function() {
         OptionsPage.closeOverlay();
       };
@@ -187,10 +187,10 @@ cr.define('options', function() {
      */
     handleCheckboxClick_: function() {
       var wallpaperGrid = $('wallpaper-grid');
-      if ($('use-random-wallpaper').checked) {
+      if ($('use-daily-wallpaper').checked) {
         wallpaperGrid.disabled = true;
         $('attribution-label').hidden = false;
-        chrome.send('selectRandomWallpaper');
+        chrome.send('selectDailyWallpaper');
         wallpaperGrid.classList.add('grayout');
         $('set-wallpaper-layout').hidden = true;
       } else {
@@ -203,20 +203,19 @@ cr.define('options', function() {
 
     /**
      * Selects corresponding wallpaper thumbnail with the given URL and toggle
-     * the "I'm feeling lucky" checkbox.
+     * the "Change wallpaper daily..." checkbox.
      * @param {string} url URL of the wallpaper thumbnail to select.
-     * @param {boolean} isRandom True if user checked "I'm feeling lucky"
+     * @param {boolean} isDaily True if user checked "Change wallpaper daily..."
      * checkbox.
      * @private
      */
-    setSelectedImage_: function(url, isRandom) {
+    setSelectedImage_: function(url, isDaily) {
       var wallpaperGrid = $('wallpaper-grid');
       wallpaperGrid.selectedItemUrl = url;
       this.setWallpaperAttribution_(url);
-      if (isRandom) {
-        // Do not call chrome.send('selectRandomWallpaper'), it is not
-        // neccessary to generate a new random index here.
-        $('use-random-wallpaper').checked = true;
+      if (isDaily) {
+        // Do not call chrome.send('selectDailyWallpaper').
+        $('use-daily-wallpaper').checked = true;
         wallpaperGrid.disabled = true;
         wallpaperGrid.classList.add('grayout');
       }
@@ -241,14 +240,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Display layout drop down box and disable random mode if enabled. Called
+     * Display layout drop down box and disable daily mode if enabled. Called
      * when user select a valid file from file system.
      */
     didSelectFile_: function() {
       $('set-wallpaper-layout').hidden = false;
       var wallpaperGrid = $('wallpaper-grid');
-      if ($('use-random-wallpaper').checked) {
-        $('use-random-wallpaper').checked = false;
+      if ($('use-daily-wallpaper').checked) {
+        $('use-daily-wallpaper').checked = false;
         wallpaperGrid.disabled = false;
         wallpaperGrid.classList.remove('grayout');
       }

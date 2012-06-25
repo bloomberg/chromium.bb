@@ -13607,8 +13607,8 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
         Photo by
       </message>
-      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM" desc="Label for option to randomly choose wallpaper at login.">
-        I'm feeling lucky
+      <message name="IDS_OPTIONS_SET_WALLPAPER_DAILY" desc="Label for option to change wallpaper daily.">
+        Change wallpaper daily
       </message>
       <message name="IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT" desc="Label for option to center a customized wallpaper.">
         Center

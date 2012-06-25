@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -77,6 +78,7 @@ const char kImageIndexNodeName[] = "index";
 
 const char kWallpaperTypeNodeName[] = "type";
 const char kWallpaperIndexNodeName[] = "index";
+const char kWallpaperDateNodeName[] = "date";
 
 const int kThumbnailWidth = 128;
 const int kThumbnailHeight = 80;
@@ -214,6 +216,7 @@ UserManagerImpl::UserManagerImpl()
   }
 
   MigrateWallpaperData();
+  wallpaper_manager_ = new WallpaperManager();
 
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       content::NotificationService::AllSources());
@@ -393,12 +396,11 @@ void UserManagerImpl::UserSelected(const std::string& email) {
   if (IsKnownUser(email)) {
     User::WallpaperType type;
     int index;
-    GetUserWallpaperProperties(email, &type, &index);
-    if (type == User::RANDOM) {
-      // Generate a new random wallpaper index if the selected user chose
-      // RANDOM wallpaper.
-      index = ash::GetRandomWallpaperIndex();
-      SaveUserWallpaperProperties(email, User::RANDOM, index);
+    base::Time date;
+    GetUserWallpaperProperties(email, &type, &index, &date);
+    if (type == User::DAILY && date != base::Time::Now().LocalMidnight()) {
+      index = ash::GetNextWallpaperIndex(index);
+      SaveUserWallpaperProperties(email, User::DAILY, index);
     } else if (type == User::CUSTOMIZED) {
       std::string wallpaper_path =
           GetWallpaperPathForUser(email, false).value();
@@ -414,6 +416,7 @@ void UserManagerImpl::UserSelected(const std::string& email) {
     }
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetDefaultWallpaper(index);
+    wallpaper_manager_->SetLastSelectedUser(email);
   }
 }
 
@@ -869,7 +872,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
 void UserManagerImpl::EnsureLoggedInUserWallpaperLoaded() {
   User::WallpaperType type;
   int index;
-  GetLoggedInUserWallpaperProperties(&type, &index);
+  base::Time last_modification_date;
+  GetLoggedInUserWallpaperProperties(&type, &index, &last_modification_date);
 
   if (type != current_user_wallpaper_type_ ||
       index != current_user_wallpaper_index_)
@@ -1041,7 +1045,8 @@ void UserManagerImpl::MigrateWallpaperData() {
 
 void UserManagerImpl::GetLoggedInUserWallpaperProperties(
     User::WallpaperType* type,
-    int* index) {
+    int* index,
+    base::Time* last_modification_date) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(logged_in_user_);
 
@@ -1051,7 +1056,10 @@ void UserManagerImpl::GetLoggedInUserWallpaperProperties(
     return;
   }
 
-  GetUserWallpaperProperties(GetLoggedInUser().email(), type, index);
+  GetUserWallpaperProperties(GetLoggedInUser().email(),
+                             type,
+                             index,
+                             last_modification_date);
 }
 
 void UserManagerImpl::SaveLoggedInUserWallpaperProperties(
@@ -1091,8 +1099,9 @@ void UserManagerImpl::SetUserImage(const std::string& username,
 }
 
 void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
-                                                 User::WallpaperType* type,
-                                                 int* index) {
+    User::WallpaperType* type,
+    int* index,
+    base::Time* last_modification_date) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Default to the values cached in memory.
@@ -1112,6 +1121,13 @@ void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
       wallpaper_properties->GetInteger(kWallpaperTypeNodeName,
                                        reinterpret_cast<int*>(type));
       wallpaper_properties->GetInteger(kWallpaperIndexNodeName, index);
+      std::string date_string;
+      int64 val;
+      if (!(wallpaper_properties->GetString(kWallpaperDateNodeName,
+                                            &date_string) &&
+            base::StringToInt64(date_string, &val)))
+        val = 0;
+      *last_modification_date = base::Time::FromInternalValue(val);
     }
   }
 }
@@ -1138,6 +1154,8 @@ void UserManagerImpl::SaveUserWallpaperProperties(const std::string& username,
                             new base::FundamentalValue(type));
   wallpaper_properties->Set(kWallpaperIndexNodeName,
                             new base::FundamentalValue(index));
+  wallpaper_properties->SetString(kWallpaperDateNodeName,
+      base::Int64ToString(base::Time::Now().LocalMidnight().ToInternalValue()));
   wallpaper_update->SetWithoutPathExpansion(username, wallpaper_properties);
 }
 

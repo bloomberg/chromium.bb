@@ -64,8 +64,8 @@ void SetWallpaperOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT));
   localized_strings->SetString("setWallpaperAuthor",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
-  localized_strings->SetString("randomCheckbox",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_RANDOM));
+  localized_strings->SetString("dailyWallpaperLabel",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_DAILY));
   localized_strings->SetString("customWallpaper",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CUSTOME_WALLPAPER));
 }
@@ -80,8 +80,8 @@ void SetWallpaperOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("selectDefaultWallpaper",
       base::Bind(&SetWallpaperOptionsHandler::HandleDefaultWallpaper,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("selectRandomWallpaper",
-      base::Bind(&SetWallpaperOptionsHandler::HandleRandomWallpaper,
+  web_ui()->RegisterMessageCallback("selectDailyWallpaper",
+      base::Bind(&SetWallpaperOptionsHandler::HandleDailyWallpaper,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("chooseWallpaper",
       base::Bind(&SetWallpaperOptionsHandler::HandleChooseFile,
@@ -159,9 +159,17 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
   User::WallpaperType type;
   int index;
-  UserManager::Get()->GetLoggedInUserWallpaperProperties(&type, &index);
+  base::Time date;
+  UserManager::Get()->GetLoggedInUserWallpaperProperties(&type, &index, &date);
+  if (type == User::DAILY && date != base::Time::Now().LocalMidnight()) {
+      index = ash::GetNextWallpaperIndex(index);
+      UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY,
+                                                              index);
+      ash::Shell::GetInstance()->user_wallpaper_delegate()->
+          InitializeWallpaper();
+  }
   base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
-  base::FundamentalValue is_random(type == User::RANDOM);
+  base::FundamentalValue is_daily(type == User::DAILY);
   if (type == User::CUSTOMIZED) {
     ash::WallpaperLayout layout = static_cast<ash::WallpaperLayout>(index);
     SendLayoutOptions(layout);
@@ -169,7 +177,7 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   } else {
     SendLayoutOptions(ash::CENTER_CROPPED);
     web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",
-                                     image_url, is_random);
+                                     image_url, is_daily);
   }
 }
 
@@ -223,15 +231,20 @@ void SetWallpaperOptionsHandler::HandleDefaultWallpaper(const ListValue* args) {
   }
 }
 
-void SetWallpaperOptionsHandler::HandleRandomWallpaper(const ListValue* args) {
-  int index = ash::GetRandomWallpaperIndex();
-  UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::RANDOM, index);
+void SetWallpaperOptionsHandler::HandleDailyWallpaper(const ListValue* args) {
+  User::WallpaperType type;
+  int index;
+  base::Time date;
+  UserManager::Get()->GetLoggedInUserWallpaperProperties(&type, &index, &date);
+  if (date != base::Time::Now().LocalMidnight())
+    index = ash::GetNextWallpaperIndex(index);
+  UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY, index);
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetDefaultWallpaper(index);
   base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
-  base::FundamentalValue is_random(true);
+  base::FundamentalValue is_daily(true);
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",
-                                   image_url, is_random);
+                                   image_url, is_daily);
 }
 
 gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {

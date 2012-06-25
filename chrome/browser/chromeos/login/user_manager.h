@@ -10,6 +10,7 @@
 
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/singleton.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler2.h"
 
@@ -174,7 +175,8 @@ class UserManager {
   // Sets |type| and |index| to the value saved in local state for logged in
   // user.
   virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
-                                                  int* index) = 0;
+      int* index,
+      base::Time* last_modification_date) = 0;
 
   // Saves |type| and |index| chose by logged in user to Local State.
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
