@@ -16,6 +16,7 @@
 #include <X11/Xlib.h>
 
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "ui/base/x/x11_util.h"
 
@@ -110,6 +111,11 @@ class KeyRewriterTest : public testing::Test {
         keycode_end_(XKeysymToKeycode(display_, XK_End)) {
   }
   virtual ~KeyRewriterTest() {}
+  virtual void SetUp() {
+    // Mocking user manager because the real one needs to be called on UI thread
+    EXPECT_CALL(*user_manager_mock_.user_manager(), IsLoggedInAsGuest())
+        .WillRepeatedly(testing::Return(false));
+  }
 
  protected:
   Display* display_;
@@ -155,6 +161,7 @@ class KeyRewriterTest : public testing::Test {
   const KeyCode keycode_next_;
   const KeyCode keycode_home_;
   const KeyCode keycode_end_;
+  chromeos::ScopedMockUserManagerEnabler user_manager_mock_;
 };
 
 }  // namespace

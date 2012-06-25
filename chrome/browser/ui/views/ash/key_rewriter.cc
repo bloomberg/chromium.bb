@@ -20,9 +20,14 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 
+// Get rid of a macro from Xlib.h that conflicts with OwnershipService class.
+#undef Status
+
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
@@ -349,6 +354,18 @@ bool KeyRewriter::IsAppleKeyboard() const {
 }
 
 bool KeyRewriter::RewriteModifiers(aura::KeyEvent* event) {
+  // Do nothing if we have just logged in as guest but have not restarted chrome
+  // process yet (so we are still on the login screen). In this situations we
+  // have no user profile so can not do anything useful.
+  // Note that currently, unlike other accounts, when user logs in as guest, we
+  // restart chrome process. In future this is to be changed.
+  // TODO(glotov): remove the following condition when we do not restart chrome
+  // when user logs in as guest.
+ #if defined(OS_CHROMEOS)
+   if (chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
+       chromeos::BaseLoginDisplayHost::default_host())
+     return false;
+ #endif  // defined(OS_CHROMEOS)
   const PrefService* pref_service =
       pref_service_ ? pref_service_ : GetPrefService();
   if (!pref_service)

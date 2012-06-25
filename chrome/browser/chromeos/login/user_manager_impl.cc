@@ -203,6 +203,8 @@ UserManagerImpl::UserManagerImpl()
       observed_sync_service_(NULL),
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
+  // UserManager instance should be used only on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If we're not running on ChromeOS, and are not showing the login manager
   // or attempting a command line login? Then login the stub user.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -238,6 +240,8 @@ const UserList& UserManagerImpl::GetUsers() const {
 
 void UserManagerImpl::UserLoggedIn(const std::string& email,
                                    bool browser_restart) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Remove the stub user if it is still around.
   if (logged_in_user_) {
     DCHECK(IsLoggedInAsStub());
@@ -334,6 +338,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 }
 
 void UserManagerImpl::DemoUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   is_current_user_ephemeral_ = true;
   logged_in_user_ = new User(kDemoUser, false);
@@ -343,6 +348,7 @@ void UserManagerImpl::DemoUserLoggedIn() {
 }
 
 void UserManagerImpl::GuestUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_ephemeral_ = true;
   SetInitialUserWallpaper(kGuestUser);
   logged_in_user_ = new User(kGuestUser, true);
@@ -350,6 +356,7 @@ void UserManagerImpl::GuestUserLoggedIn() {
 }
 
 void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   is_current_user_ephemeral_ = true;
   logged_in_user_ = CreateUser(email);
@@ -359,6 +366,7 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
 }
 
 void UserManagerImpl::StubUserLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_ephemeral_ = true;
   logged_in_user_ = new User(kStubUser, false);
   logged_in_user_->SetImage(UserImage(GetDefaultImage(kStubDefaultImageIndex)),
@@ -367,7 +375,6 @@ void UserManagerImpl::StubUserLoggedIn() {
 
 void UserManagerImpl::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (!IsUserLoggedIn()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe)) {
       bool show_users = true;
@@ -390,6 +397,7 @@ void UserManagerImpl::InitializeWallpaper() {
 }
 
 void UserManagerImpl::UserSelected(const std::string& email) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (IsKnownUser(email)) {
     User::WallpaperType type;
     int index;
@@ -418,6 +426,7 @@ void UserManagerImpl::UserSelected(const std::string& email) {
 }
 
 void UserManagerImpl::SessionStarted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   session_started_ = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SESSION_STARTED,
@@ -427,6 +436,8 @@ void UserManagerImpl::SessionStarted() {
 
 void UserManagerImpl::RemoveUser(const std::string& email,
                                  RemoveUserDelegate* delegate) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!IsKnownUser(email))
     return;
 
@@ -446,6 +457,7 @@ void UserManagerImpl::RemoveUser(const std::string& email,
 }
 
 void UserManagerImpl::RemoveUserFromList(const std::string& email) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   EnsureUsersLoaded();
   RemoveUserFromListInternal(email);
 }
@@ -455,16 +467,19 @@ bool UserManagerImpl::IsKnownUser(const std::string& email) const {
 }
 
 const User* UserManagerImpl::FindUser(const std::string& email) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (logged_in_user_ && logged_in_user_->email() == email)
     return logged_in_user_;
   return FindUserInList(email);
 }
 
 const User& UserManagerImpl::GetLoggedInUser() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return *logged_in_user_;
 }
 
 User& UserManagerImpl::GetLoggedInUser() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return *logged_in_user_;
 }
 
@@ -581,11 +596,14 @@ void UserManagerImpl::SaveUserDefaultImageIndex(const std::string& username,
 
 void UserManagerImpl::SaveUserImage(const std::string& username,
                                     const UserImage& user_image) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SaveUserImageInternal(username, User::kExternalImageIndex, user_image);
 }
 
 void UserManagerImpl::SetLoggedInUserCustomWallpaperLayout(
     ash::WallpaperLayout layout) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // TODO(bshe): We current disabled the customized wallpaper feature for
   // Ephemeral user. As we dont want to keep a copy of customized wallpaper in
   // memory. Need a smarter way to solve this.
@@ -603,6 +621,7 @@ void UserManagerImpl::SetLoggedInUserCustomWallpaperLayout(
 
 void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
                                             const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   image_loader_->Start(
       path.value(), login::kUserImageSize, true,
       base::Bind(&UserManagerImpl::SaveUserImage,
@@ -613,6 +632,7 @@ void UserManagerImpl::SaveUserWallpaperFromFile(const std::string& username,
                                                 const FilePath& path,
                                                 ash::WallpaperLayout layout,
                                                 WallpaperDelegate* delegate) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // For wallpapers, save the image without resizing.
   image_loader_->Start(
       path.value(), 0 /* Original size */, false,
@@ -623,6 +643,7 @@ void UserManagerImpl::SaveUserWallpaperFromFile(const std::string& username,
 
 void UserManagerImpl::SaveUserImageFromProfileImage(
     const std::string& username) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!downloaded_profile_image_.empty()) {
     // Profile image has already been downloaded, so save it to file right now.
     SaveUserImageInternal(username, User::kProfileImageIndex,
@@ -635,6 +656,8 @@ void UserManagerImpl::SaveUserImageFromProfileImage(
 }
 
 void UserManagerImpl::DownloadProfileImage(const std::string& reason) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (profile_image_downloader_.get()) {
     // Another download is already in progress
     return;
@@ -699,56 +722,69 @@ void UserManagerImpl::OnStateChanged() {
 }
 
 bool UserManagerImpl::IsCurrentUserOwner() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lk(is_current_user_owner_lock_);
   return is_current_user_owner_;
 }
 
 void UserManagerImpl::SetCurrentUserIsOwner(bool is_current_user_owner) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lk(is_current_user_owner_lock_);
   is_current_user_owner_ = is_current_user_owner;
 }
 
 bool UserManagerImpl::IsCurrentUserNew() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return is_current_user_new_;
 }
 
 bool UserManagerImpl::IsCurrentUserEphemeral() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return is_current_user_ephemeral_;
 }
 
 bool UserManagerImpl::IsUserLoggedIn() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return logged_in_user_;
 }
 
 bool UserManagerImpl::IsLoggedInAsDemoUser() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return IsUserLoggedIn() && logged_in_user_->email() == kDemoUser;
 }
 
 bool UserManagerImpl::IsLoggedInAsGuest() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return IsUserLoggedIn() && logged_in_user_->email() == kGuestUser;
 }
 
 bool UserManagerImpl::IsLoggedInAsStub() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return IsUserLoggedIn() && logged_in_user_->email() == kStubUser;
 }
 
 bool UserManagerImpl::IsSessionStarted() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return session_started_;
 }
 
 void UserManagerImpl::AddObserver(Observer* obs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_list_.AddObserver(obs);
 }
 
 void UserManagerImpl::RemoveObserver(Observer* obs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_list_.RemoveObserver(obs);
 }
 
 const SkBitmap& UserManagerImpl::DownloadedProfileImage() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return downloaded_profile_image_;
 }
 
 void UserManagerImpl::NotifyLocalStateChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
     Observer,
     observer_list_,

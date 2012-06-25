@@ -64,8 +64,6 @@ class UserManagerImplWrapper {
 
 // static
 UserManager* UserManager::Get() {
-  // UserManager instance should be used only on UI thread.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return UserManagerImplWrapper::GetInstance()->get();
 }
 
