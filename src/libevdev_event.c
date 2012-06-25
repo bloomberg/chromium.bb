@@ -391,11 +391,11 @@ Event_Print(EvdevPtr device, struct input_event* ev)
                 ev->time.tv_sec, ev->time.tv_usec);
             return;
         case SYN_DROPPED:
-            LOG_DEBUG(device, "@ %ld.%06ld  ++++++++ SYN_DROPPED ++++++++\n",
+            LOG_WARNING(device, "@ %ld.%06ld  ++++++++ SYN_DROPPED ++++++++\n",
                 ev->time.tv_sec, ev->time.tv_usec);
             return;
         default:
-            LOG_DEBUG(device, "@ %ld.%06ld  ?????? SYN_UNKNOWN (%d) ?????\n",
+            LOG_WARNING(device, "@ %ld.%06ld  ?????? SYN_UNKNOWN (%d) ?????\n",
                 ev->time.tv_sec, ev->time.tv_usec, ev->code);
             return;
         }
@@ -555,7 +555,7 @@ Event_Abs_MT(EvdevPtr device, struct input_event* ev)
     MtSlotPtr slot = evstate->slot_current;
 
     if (axis == NULL) {
-        LOG_ERROR(device, "ABS_MT[%02x] was not reported by this device\n",
+        LOG_WARNING(device, "ABS_MT[%02x] was not reported by this device\n",
                   ev->code);
         return;
     }
@@ -569,7 +569,7 @@ Event_Abs_MT(EvdevPtr device, struct input_event* ev)
     }
 
     if (slot == NULL) {
-        LOG_ERROR(device, "MT slot not set. Ignoring ABS_MT event\n");
+        LOG_WARNING(device, "MT slot not set. Ignoring ABS_MT event\n");
         return;
     }
 
