@@ -66,8 +66,9 @@ void ExtensionManagedModeEventRouter::Observe(
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
   ExtensionEventRouter* event_router = profile_->GetExtensionEventRouter();
-  event_router->DispatchEventToRenderers(kChangeEventName, json_args,
-                                         NULL, GURL());
+  event_router->DispatchEventToRenderers(kChangeEventName, json_args, NULL,
+                                         GURL(),
+                                         extensions::EventFilteringInfo());
 }
 
 GetManagedModeFunction::~GetManagedModeFunction() { }

@@ -14,6 +14,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/event_listener_map.h"
+#include "chrome/common/extensions/event_filtering_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_sender.h"
@@ -31,7 +33,14 @@ namespace extensions {
 class Extension;
 }
 
-class ExtensionEventRouter : public content::NotificationObserver {
+struct ExtensionEvent;
+
+using extensions::EventFilteringInfo;
+using extensions::EventListener;
+using extensions::EventListenerMap;
+
+class ExtensionEventRouter : public content::NotificationObserver,
+                             public extensions::EventListenerMap::Delegate {
  public:
   // These constants convey the state of our knowledge of whether we're in
   // a user-caused gesture as part of DispatchEvent.
@@ -48,7 +57,8 @@ class ExtensionEventRouter : public content::NotificationObserver {
                             const std::string& event_name,
                             const base::Value& event_args,
                             const GURL& event_url,
-                            UserGestureState user_gesture);
+                            UserGestureState user_gesture,
+                            const extensions::EventFilteringInfo& info);
 
   // This invocation is deprecated. All future consumers of this API should be
   // sending Values as event arguments, using the above version.
@@ -57,7 +67,8 @@ class ExtensionEventRouter : public content::NotificationObserver {
                             const std::string& event_name,
                             const std::string& event_args,
                             const GURL& event_url,
-                            UserGestureState user_gesture);
+                            UserGestureState user_gesture,
+                            const extensions::EventFilteringInfo& info);
 
   explicit ExtensionEventRouter(Profile* profile);
   virtual ~ExtensionEventRouter();
@@ -82,6 +93,21 @@ class ExtensionEventRouter : public content::NotificationObserver {
   void RemoveLazyEventListener(const std::string& event_name,
                                const std::string& extension_id);
 
+  // If |add_lazy_listener| is true also add the lazy version of this listener.
+  void AddFilteredEventListener(const std::string& event_name,
+                                content::RenderProcessHost* process,
+                                const std::string& extension_id,
+                                const base::DictionaryValue& filter,
+                                bool add_lazy_listener);
+
+  // If |remove_lazy_listener| is true also remove the lazy version of this
+  // listener.
+  void RemoveFilteredEventListener(const std::string& event_name,
+                                   content::RenderProcessHost* process,
+                                   const std::string& extension_id,
+                                   const base::DictionaryValue& filter,
+                                   bool remove_lazy_listener);
+
   // Returns true if there is at least one listener for the given event.
   bool HasEventListener(const std::string& event_name);
 
@@ -95,6 +121,14 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // normal profile only works if extension is allowed incognito access). If
   // |event_url| is not empty, the event is only sent to extension with host
   // permissions for this url.
+  void DispatchEventToRenderers(
+      const std::string& event_name,
+      const std::string& event_args,
+      Profile* restrict_to_profile,
+      const GURL& event_url,
+      extensions::EventFilteringInfo info);
+
+  // As above, but defaults |info| to EventFilteringInfo().
   void DispatchEventToRenderers(
       const std::string& event_name,
       const std::string& event_args,
@@ -146,9 +180,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
   void OnEventAck(Profile* profile, const std::string& extension_id);
 
  private:
-  // The details of an event to be dispatched.
-  struct ExtensionEvent;
-
   // The extension and process that contains the event listener for a given
   // event.
   struct ListenerProcess;
@@ -168,16 +199,21 @@ class ExtensionEventRouter : public content::NotificationObserver {
                             const std::string& extension_id,
                             const std::string& event_name);
 
-  // Shared by DispatchEvent*. If |extension_id| is empty, the event is
-  // broadcast. If |process| is non-NULL, the event is only dispatched to that
-  // particular process.
+  // Shared by DispatchEvent*. If |restrict_to_extension_id| is empty, the
+  // event is broadcast.
   // An event that just came off the pending list may not be delayed again.
-  void DispatchEventImpl(const std::string& extension_id,
+  void DispatchEventImpl(const std::string& restrict_to_extension_id,
                          const linked_ptr<ExtensionEvent>& event);
 
-  // Dispatches the event to a single listener process.
-  void DispatchEventToListener(const ListenerProcess& listener,
-                               const linked_ptr<ExtensionEvent>& event);
+  // Ensures that all lazy background pages that are interested in the given
+  // event are loaded, and queues the event if the page is not ready yet.
+  void DispatchLazyEvent(const std::string& extension_id,
+                         const linked_ptr<ExtensionEvent>& event);
+
+  // Dispatches the event to the specified extension running in |process|.
+  void DispatchEventToProcess(const std::string& extension_id,
+                              content::RenderProcessHost* process,
+                              const linked_ptr<ExtensionEvent>& event);
 
   // Returns false when the event is scoped to a profile and the listening
   // extension does not have access to events from that profile. Also fills
@@ -189,17 +225,9 @@ class ExtensionEventRouter : public content::NotificationObserver {
       const linked_ptr<ExtensionEvent>& event,
       const base::Value** event_args);
 
-  // Ensures that all lazy background pages that are interested in the given
-  // event are loaded, and queues the event if the page is not ready yet.
-  // If |extension_id| is non-empty, we load only that extension's page
-  // (assuming it is interested in the event).
-  void LoadLazyBackgroundPagesForEvent(
-      const std::string& extension_id,
-      const linked_ptr<ExtensionEvent>& event);
-
   // Possibly loads given extension's background page in preparation to
   // dispatch an event.
-  void MaybeLoadLazyBackgroundPage(
+  void MaybeLoadLazyBackgroundPageToDispatchEvent(
       Profile* profile,
       const extensions::Extension* extension,
       const linked_ptr<ExtensionEvent>& event);
@@ -212,21 +240,57 @@ class ExtensionEventRouter : public content::NotificationObserver {
   void DispatchPendingEvent(const linked_ptr<ExtensionEvent>& event,
                             ExtensionHost* host);
 
+  // Implementation of extensions::EventListenerMap::Delegate.
+  virtual void OnListenerAdded(const EventListener* listener) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListener* listener) OVERRIDE;
+
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 
-  // The list of active extension processes that are listening to events.
-  ListenerMap listeners_;
-
-  // The list of all the lazy (non-persistent) background pages that are
-  // listening to events. This is just a cache of the real list, which is
-  // stored on disk in the extension prefs.
-  ListenerMap lazy_listeners_;
+  EventListenerMap listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventRouter);
 };
+
+struct ExtensionEvent {
+  std::string event_name;
+  scoped_ptr<Value> event_args;
+  GURL event_url;
+  Profile* restrict_to_profile;
+  scoped_ptr<Value> cross_incognito_args;
+  ExtensionEventRouter::UserGestureState user_gesture;
+  extensions::EventFilteringInfo info;
+
+  ExtensionEvent(const std::string& event_name,
+                 const Value& event_args,
+                 const GURL& event_url,
+                 Profile* restrict_to_profile,
+                 const Value& cross_incognito_args,
+                 ExtensionEventRouter::UserGestureState user_gesture,
+                 const extensions::EventFilteringInfo& info);
+
+  // TODO(gdk): This variant should be retired once the callers are switched to
+  // providing Values instead of just strings.
+  ExtensionEvent(const std::string& event_name,
+                 const std::string& event_args,
+                 const GURL& event_url,
+                 Profile* restrict_to_profile,
+                 const std::string& cross_incognito_args,
+                 ExtensionEventRouter::UserGestureState user_gesture,
+                 const extensions::EventFilteringInfo& info);
+
+  ExtensionEvent(const std::string& event_name,
+                 const Value& event_args,
+                 const GURL& event_url,
+                 Profile* restrict_to_profile,
+                 ExtensionEventRouter::UserGestureState user_gesture,
+                 const extensions::EventFilteringInfo& info);
+
+  ~ExtensionEvent();
+};
+
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_ROUTER_H_

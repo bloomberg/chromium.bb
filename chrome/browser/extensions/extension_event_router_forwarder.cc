@@ -114,7 +114,8 @@ void ExtensionEventRouterForwarder::CallExtensionEventRouter(
   if (extension_id.empty()) {
     profile->GetExtensionEventRouter()->
         DispatchEventToRenderers(
-            event_name, event_args, restrict_to_profile, event_url);
+            event_name, event_args, restrict_to_profile, event_url,
+            extensions::EventFilteringInfo());
   } else {
     profile->GetExtensionEventRouter()->
         DispatchEventToExtension(

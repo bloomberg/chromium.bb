@@ -163,7 +163,8 @@ void HistoryExtensionEventRouter::DispatchEvent(Profile* profile,
                                                 const std::string& json_args) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, GURL());
+        event_name, json_args, profile, GURL(),
+        extensions::EventFilteringInfo());
   }
 }
 

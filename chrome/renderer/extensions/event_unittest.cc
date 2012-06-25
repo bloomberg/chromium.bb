@@ -22,13 +22,41 @@ class EventUnittest : public ModuleSystemTest {
     OverrideNativeHandler("event_bindings",
         "var assert = requireNative('assert');"
         "var attachedListeners = exports.attachedListeners = {};"
+        "var attachedFilteredListeners = "
+        "    exports.attachedFilteredListeners = {};"
+        "var nextId = 0;"
+        "var idToName = {};"
+
         "exports.AttachEvent = function(eventName) {"
         "  assert.AssertFalse(!!attachedListeners[eventName]);"
         "  attachedListeners[eventName] = 1;"
         "};"
+
         "exports.DetachEvent = function(eventName) {"
         "  assert.AssertTrue(!!attachedListeners[eventName]);"
         "  delete attachedListeners[eventName];"
+        "};"
+
+        "exports.IsEventAttached = function(eventName) {"
+        "  return !!attachedListeners[eventName];"
+        "};"
+
+        "exports.AttachFilteredEvent = function(name, filters) {"
+        "  var id = nextId++;"
+        "  idToName[id] = name;"
+        "  attachedFilteredListeners[name] ="
+        "    attachedFilteredListeners[name] || [];"
+        "  attachedFilteredListeners[name][id] = filters;"
+        "  return id;"
+        "};"
+
+        "exports.DetachFilteredEvent = function(id, manual) {"
+        "  var i = attachedFilteredListeners[idToName[id]].indexOf(id);"
+        "  attachedFilteredListeners[idToName[id]].splice(i, 1);"
+        "};"
+
+        "exports.HasFilteredListener = function(name) {"
+        "  return attachedFilteredListeners[name].length;"
         "};");
     OverrideNativeHandler("chrome_hidden",
         "var chromeHidden = {};"
@@ -62,6 +90,39 @@ TEST_F(EventUnittest, AddRemoveTwoListeners) {
   module_system_->Require("test");
 }
 
+TEST_F(EventUnittest, OnUnloadDetachesAllListeners) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var assert = requireNative('assert');"
+      "var event = require('event');"
+      "var eventBindings = requireNative('event_bindings');"
+      "var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();"
+      "var myEvent = new event.Event('named-event');"
+      "var cb1 = function() {};"
+      "var cb2 = function() {};"
+      "myEvent.addListener(cb1);"
+      "myEvent.addListener(cb2);"
+      "chromeHidden.dispatchOnUnload();"
+      "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, OnUnloadDetachesAllListenersEvenDupes) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var assert = requireNative('assert');"
+      "var event = require('event');"
+      "var eventBindings = requireNative('event_bindings');"
+      "var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();"
+      "var myEvent = new event.Event('named-event');"
+      "var cb1 = function() {};"
+      "myEvent.addListener(cb1);"
+      "myEvent.addListener(cb1);"
+      "chromeHidden.dispatchOnUnload();"
+      "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
+  module_system_->Require("test");
+}
+
 TEST_F(EventUnittest, EventsThatSupportRulesMustHaveAName) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
@@ -89,6 +150,99 @@ TEST_F(EventUnittest, NamedEventDispatch) {
       "e.addListener(function() { called = true; });"
       "chromeHidden.Event.dispatch('myevent', []);"
       "assert.AssertTrue(called);");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, AddListenerWithFiltersThrowsErrorByDefault) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var event = require('event');"
+      "var assert = requireNative('assert');"
+      "var e = new event.Event('myevent');"
+      "var filter = [{"
+      "  url: {hostSuffix: 'google.com'},"
+      "}];"
+      "var caught = false;"
+      "try {"
+      "  e.addListener(function() {}, filter);"
+      "} catch (e) {"
+      "  caught = true;"
+      "}"
+      "assert.AssertTrue(caught);");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, FilteredEventsAttachment) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var event = require('event');"
+      "var assert = requireNative('assert');"
+      "var bindings = requireNative('event_bindings');"
+      "var eventOpts = {supportsListeners: true, supportsFilters: true};"
+      "var e = new event.Event('myevent', undefined, eventOpts);"
+      "var cb = function() {};"
+      "var filters = {url: [{hostSuffix: 'google.com'}]};"
+      "e.addListener(cb, filters);"
+      "assert.AssertTrue(bindings.HasFilteredListener('myevent'));"
+      "e.removeListener(cb);"
+      "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, DetachFilteredEvent) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var event = require('event');"
+      "var assert = requireNative('assert');"
+      "var bindings = requireNative('event_bindings');"
+      "var eventOpts = {supportsListeners: true, supportsFilters: true};"
+      "var e = new event.Event('myevent', undefined, eventOpts);"
+      "var cb1 = function() {};"
+      "var cb2 = function() {};"
+      "var filters = {url: [{hostSuffix: 'google.com'}]};"
+      "e.addListener(cb1, filters);"
+      "e.addListener(cb2, filters);"
+      "e.detach_();"
+      "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, AttachAndRemoveSameFilteredEventListener) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var event = require('event');"
+      "var assert = requireNative('assert');"
+      "var bindings = requireNative('event_bindings');"
+      "var eventOpts = {supportsListeners: true, supportsFilters: true};"
+      "var e = new event.Event('myevent', undefined, eventOpts);"
+      "var cb = function() {};"
+      "var filters = {url: [{hostSuffix: 'google.com'}]};"
+      "e.addListener(cb, filters);"
+      "e.addListener(cb, filters);"
+      "assert.AssertTrue(bindings.HasFilteredListener('myevent'));"
+      "e.removeListener(cb);"
+      "assert.AssertTrue(bindings.HasFilteredListener('myevent'));"
+      "e.removeListener(cb);"
+      "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
+  module_system_->Require("test");
+}
+
+TEST_F(EventUnittest, AddingFilterWithUrlFieldNotAListThrowsException) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("test",
+      "var event = require('event');"
+      "var assert = requireNative('assert');"
+      "var eventOpts = {supportsListeners: true, supportsFilters: true};"
+      "var e = new event.Event('myevent', undefined, eventOpts);"
+      "var cb = function() {};"
+      "var filters = {url: {hostSuffix: 'google.com'}};"
+      "var caught = false;"
+      "try {"
+      "  e.addListener(cb, filters);"
+      "} catch (e) {"
+      "  caught = true;"
+      "}"
+      "assert.AssertTrue(caught);");
   module_system_->Require("test");
 }
 
