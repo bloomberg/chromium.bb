@@ -35,6 +35,11 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
+#if defined(USE_ASH)
+#include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif
+
 namespace extensions {
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
@@ -96,7 +101,7 @@ const Extension* ComponentLoader::Add(
 }
 
 const Extension* ComponentLoader::Add(
-    std::string& manifest_contents,
+    const std::string& manifest_contents,
     const FilePath& root_directory) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
@@ -277,6 +282,26 @@ void ComponentLoader::AddOrReloadEnterpriseWebStore() {
   }
 }
 
+void ComponentLoader::AddChromeApp() {
+#if defined(USE_ASH)
+  std::string manifest_contents =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_CHROME_APP_MANIFEST,
+          ui::SCALE_FACTOR_NONE).as_string();
+
+  // The Value is kept for the lifetime of the ComponentLoader. This is
+  // required in case LoadAll() is called again.
+  DictionaryValue* manifest = ParseManifest(manifest_contents);
+
+  // Update manifest to use a proper name.
+  manifest->SetString(extension_manifest_keys::kName,
+                      l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
+
+  if (manifest)
+    Add(manifest, FilePath(FILE_PATH_LITERAL("chrome_app")));
+#endif
+}
+
 void ComponentLoader::AddDefaultComponentExtensions() {
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
@@ -346,6 +371,10 @@ void ComponentLoader::AddDefaultComponentExtensions() {
   // it is specified by policy, and on ChromeOS policies are loaded after
   // the browser process has started.
   AddOrReloadEnterpriseWebStore();
+
+#if defined(USE_ASH)
+  AddChromeApp();
+#endif
 }
 
 void ComponentLoader::Observe(

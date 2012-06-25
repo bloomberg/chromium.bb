@@ -153,7 +153,7 @@
       <include name="IDR_UBER_UTILS_JS" file="resources\uber\uber_utils.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_ENTERPRISE_WEBSTORE_MANIFEST" file="resources\enterprise_webstore_app\manifest.json" type="BINDATA" />
-      <if expr="pp_ifdef('use_aura')">
+      <if expr="pp_ifdef('use_ash')">
         <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_COMMANDS_JS" file="resources\task_manager\commands.js" type="BINDATA" />
         <!-- The following defines.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
@@ -164,6 +164,7 @@
         <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" /> 
         <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" /> 
+        <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo\sync_promo.js" flattenhtml="true" type="BINDATA" />
@@ -208,14 +209,14 @@
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_WALLPAPERMANAGER_MANIFEST" file="resources\chromeos\wallpaper_manager\manifest.json" type="BINDATA" />
       </if>
-      <if expr="(is_linux and pp_ifdef('toolkit_views')) or pp_ifdef('use_aura')">
+      <if expr="(is_linux and pp_ifdef('toolkit_views')) or pp_ifdef('use_ash')">
         <include name="IDR_HTTP_AUTH_HTML" file="resources\http_auth.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_TAB_MODAL_CONFIRM_DIALOG_HTML" file="resources\tab_modal_confirm_dialog.html" flattenhtml="true" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('use_aura')">
+      <if expr="pp_ifdef('use_ash')">
         <include name="IDR_GESTURE_CONFIG_CSS" file="resources\gesture_config.css" type="BINDATA" />
         <include name="IDR_GESTURE_CONFIG_HTML" file="resources\gesture_config.html" type="BINDATA" />
         <include name="IDR_GESTURE_CONFIG_JS" file="resources\gesture_config.js" type="BINDATA" />

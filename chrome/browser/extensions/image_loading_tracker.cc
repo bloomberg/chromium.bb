@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -215,11 +218,19 @@ void ImageLoadingTracker::LoadImages(const Extension* extension,
 
   for (std::vector<ImageInfo>::const_iterator it = info_list.begin();
        it != info_list.end(); ++it) {
-    // Load resources for WebStore component extension.
+    // Load resources for special component extensions.
     if (load_info.extension_id == extension_misc::kWebStoreAppId) {
       if (!loader_)
         loader_ = new ImageLoader(this);
       loader_->LoadResource(it->resource, it->max_size, id, IDR_WEBSTORE_ICON);
+      continue;
+    } else if (load_info.extension_id == extension_misc::kChromeAppId) {
+      if (!loader_)
+        loader_ = new ImageLoader(this);
+      loader_->LoadResource(it->resource,
+                            it->max_size,
+                            id,
+                            IDR_PRODUCT_LOGO_128);
       continue;
     }
 

@@ -121,6 +121,7 @@ const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
+const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
 const char kAppsPromoHistogram[] = "Extensions.AppsPromo";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 #if defined(OS_CHROMEOS)

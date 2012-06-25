@@ -5,51 +5,23 @@
 #include "chrome/browser/ui/views/ash/app_list/apps_model_builder.h"
 
 #include "base/i18n/case_conversion.h"
-#include "base/i18n/string_search.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using extensions::Extension;
 
 namespace {
 
 const char* kSpecialApps[] = {
+  extension_misc::kChromeAppId,
   extension_misc::kWebStoreAppId,
-};
-
-class ChromeAppItem : public ChromeAppListItem {
- public:
-  ChromeAppItem() : ChromeAppListItem(TYPE_OTHER) {
-    SetTitle(l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SetIcon(*rb.GetImageNamed(IDR_PRODUCT_LOGO_128).ToSkBitmap());
-  }
-
- private:
-  // Overridden from ChromeAppListItem:
-  virtual void Activate(int event_flags) OVERRIDE {
-    ChromeLauncherController* controller = ChromeLauncherController::instance();
-    if (event_flags & ui::EF_CONTROL_DOWN)
-      controller->CreateNewWindow();
-    else
-      controller->CreateNewTab();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppItem);
 };
 
 // ModelItemSortData provides a string key to sort with
@@ -170,8 +142,6 @@ void AppsModelBuilder::GetExtensionApps(Apps* apps) {
 
 void AppsModelBuilder::CreateSpecialApps() {
   DCHECK(model_ && model_->item_count() == 0);
-
-  model_->Add(new ChromeAppItem());
 
   bool is_guest_session = Profile::IsGuestSession();
   ExtensionService* service = profile_->GetExtensionService();

@@ -74,6 +74,17 @@ void ACMatchClassificationsToTags(
   }
 }
 
+const extensions::Extension* GetExtensionByURL(Profile* profile,
+                                               const GURL& url) {
+  ExtensionService* service = profile->GetExtensionService();
+  // Need to explicitly get chrome app because it does not override new tab and
+  // not having a web extent to include new tab url, thus GetInstalledApp does
+  // not find it.
+  return url.spec() == chrome::kChromeUINewTabURL ?
+      service->extensions()->GetByID(extension_misc::kChromeAppId) :
+      service->GetInstalledApp(url);
+}
+
 // SearchBuildResult is an app list SearchResult built from an
 // AutocompleteMatch.
 class SearchBuilderResult : public app_list::SearchResult,
@@ -94,9 +105,8 @@ class SearchBuilderResult : public app_list::SearchResult,
  private:
   void UpdateIcon() {
     if (match_.type == AutocompleteMatch::EXTENSION_APP) {
-      ExtensionService* service = profile_->GetExtensionService();
       const extensions::Extension* extension =
-          service->GetInstalledApp(match_.destination_url);
+          GetExtensionByURL(profile_, match_.destination_url);
       if (extension) {
         LoadExtensionIcon(extension);
         return;
@@ -220,9 +230,8 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
   const AutocompleteMatch& match = builder_result->match();
 
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
-    ExtensionService* service = profile_->GetExtensionService();
     const extensions::Extension* extension =
-        service->GetInstalledApp(match.destination_url);
+        GetExtensionByURL(profile_, match.destination_url);
     if (extension)
       extension_utils::OpenExtension(profile_, extension, event_flags);
   } else {

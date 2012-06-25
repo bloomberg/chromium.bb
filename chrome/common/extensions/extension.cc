@@ -96,20 +96,20 @@ const char kDefaultContentSecurityPolicy[] =
     "'self' blob: data: filesystem: chrome-extension-resource:"
 const char kDefaultPlatformAppContentSecurityPolicy[] =
     // Platform apps can only use local resources by default.
-   "default-src 'self' chrome-extension-resource:;"
-   // For remote resources, they can fetch them via XMLHttpRequest.
-   "connect-src *;"
-   // And serve them via blob:, data: or filesystem: URLs
-   "style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
-   "img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-   "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-   "font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-   // Media can be loaded from remote resources since:
-   // 1. <video> and <audio> have good fallback behavior when offline or under
-   //    spotty connectivity.
-   // 2. Fetching via XHR and serving via blob: URLs currently does not allow
-   //    streaming or partial buffering.
-   "media-src *;";
+    "default-src 'self' chrome-extension-resource:;"
+    // For remote resources, they can fetch them via XMLHttpRequest.
+    "connect-src *;"
+    // And serve them via blob:, data: or filesystem: URLs
+    "style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
+    "img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+    "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+    "font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+    // Media can be loaded from remote resources since:
+    // 1. <video> and <audio> have good fallback behavior when offline or under
+    //    spotty connectivity.
+    // 2. Fetching via XHR and serving via blob: URLs currently does not allow
+    //    streaming or partial buffering.
+    "media-src *;";
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms";
@@ -775,7 +775,7 @@ bool Extension::LoadGlobsHelper(
     const char* globs_property_name,
     string16* error,
     void(UserScript::*add_method)(const std::string& glob),
-    UserScript *instance) {
+    UserScript* instance) {
   if (!content_script->HasKey(globs_property_name))
     return true;  // they are optional
 
@@ -1253,6 +1253,10 @@ bool Extension::LoadLaunchURL(string16* error) {
           cloud_print_service_url.ReplaceComponents(replacements);
       OverrideLaunchUrl(cloud_print_enable_connector_url);
     }
+  } else if (id() == extension_misc::kChromeAppId) {
+    // Override launch url to new tab.
+    launch_web_url_ = chrome::kChromeUINewTabURL;
+    extent_.ClearPatterns();
   }
 
   return true;
@@ -3701,7 +3705,7 @@ bool Extension::InstallWarning::operator==(const InstallWarning& other) const {
   return format == other.format && message == other.message;
 }
 
-void PrintTo(const Extension::InstallWarning& warning, ::std::ostream* os){
+void PrintTo(const Extension::InstallWarning& warning, ::std::ostream* os) {
   *os << "InstallWarning(";
   switch (warning.format) {
     case Extension::InstallWarning::FORMAT_TEXT:

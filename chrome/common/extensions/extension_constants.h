@@ -113,6 +113,9 @@ namespace extension_misc {
   // The extension id of the Cloud Print component application.
   extern const char kCloudPrintAppId[];
 
+  // The extension id of the Chrome component application.
+  extern const char kChromeAppId[];
+
   // Note: this structure is an ASN.1 which encodes the algorithm used
   // with its parameters. This is defined in PKCS #1 v2.1 (RFC 3447).
   // It is encoding: { OID sha1WithRSAEncryption      PARAMETERS NULL }

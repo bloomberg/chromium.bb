@@ -268,6 +268,10 @@ void ExtensionAppItem::Activate(int event_flags) {
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
+  // No context menu for Chrome app.
+  if (extension_id_ == extension_misc::kChromeAppId)
+    return NULL;
+
   if (!context_menu_model_.get()) {
     context_menu_model_.reset(new ui::SimpleMenuModel(this));
     context_menu_model_->AddItem(LAUNCH, UTF8ToUTF16(title()));

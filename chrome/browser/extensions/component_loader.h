@@ -40,7 +40,7 @@ class ComponentLoader : public content::NotificationObserver {
   // Registers and possibly loads a component extension. If ExtensionService
   // has been initialized, the extension is loaded; otherwise, the load is
   // deferred until LoadAll is called.
-  const Extension* Add(std::string& manifest_contents,
+  const Extension* Add(const std::string& manifest_contents,
                        const FilePath& root_directory);
 
   // Convenience method for registering a component extension by resource id.
@@ -116,6 +116,8 @@ class ComponentLoader : public content::NotificationObserver {
 
   // Add the enterprise webstore extension, or reload it if already loaded.
   void AddOrReloadEnterpriseWebStore();
+
+  void AddChromeApp();
 
   // Determine the extension id.
   static std::string GenerateId(const base::DictionaryValue* manifest);
