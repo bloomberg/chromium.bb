@@ -29,6 +29,10 @@ class ContentsContainer : public views::View {
   // sized to an empty rect.
   views::View* header();
 
+  // Sets the overlay. The overlay is sized to the bounds of this view.
+  void SetOverlay(views::View* overlay);
+  views::View* overlay() { return overlay_; }
+
   // Makes the preview view the active view and nulls out the old active view.
   // It's assumed the caller will delete or remove the old active view
   // separately.
@@ -58,6 +62,7 @@ class ContentsContainer : public views::View {
 
   HeaderView* header_;
   views::View* active_;
+  views::View* overlay_;
   views::View* preview_;
   content::WebContents* preview_web_contents_;
 

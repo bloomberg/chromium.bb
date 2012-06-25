@@ -56,6 +56,7 @@ class JumpList;
 
 #if defined(USE_AURA)
 class BrowserLauncherItemController;
+class SearchViewController;
 #endif
 
 namespace autofill {
@@ -699,6 +700,10 @@ class BrowserView : public BrowserWindow,
   PendingFullscreenRequest fullscreen_request_;
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
+
+#if defined(USE_AURA)
+  scoped_ptr<SearchViewController> search_view_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

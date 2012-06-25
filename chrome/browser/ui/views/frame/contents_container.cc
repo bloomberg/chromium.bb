@@ -41,6 +41,7 @@ const char ContentsContainer::kViewClassName[] =
 ContentsContainer::ContentsContainer(views::View* active)
     : header_(new HeaderView()),
       active_(active),
+      overlay_(NULL),
       preview_(NULL),
       preview_web_contents_(NULL),
       active_top_margin_(0) {
@@ -53,6 +54,15 @@ ContentsContainer::~ContentsContainer() {
 }
 
 views::View* ContentsContainer::header() { return header_; }
+
+void ContentsContainer::SetOverlay(views::View* overlay) {
+  if (overlay_)
+    RemoveChildView(overlay_);
+  overlay_ = overlay;
+  if (overlay_)
+    AddChildView(overlay_);
+  Layout();
+}
 
 void ContentsContainer::MakePreviewContentsActiveContents() {
   DCHECK(preview_);
@@ -107,6 +117,9 @@ void ContentsContainer::Layout() {
     header_->SetBoundsRect(gfx::Rect());
   }
   active_->SetBounds(0, content_y, width(), content_height);
+
+  if (overlay_)
+    overlay_->SetBounds(0, 0, width(), height());
 
   if (preview_)
     preview_->SetBounds(0, 0, width(), height());

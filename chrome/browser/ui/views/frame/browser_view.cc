@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -123,6 +124,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"
+#include "chrome/browser/ui/views/search_view_controller.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "ui/gfx/screen.h"
 #endif
@@ -329,6 +331,11 @@ BrowserView::~BrowserView() {
   // Destroy BrowserLauncherItemController early on as it listens to the
   // TabstripModel, which is destroyed by the browser.
   launcher_item_controller_.reset();
+#endif
+
+  // Destroy SearchViewController before the Browser.
+#if defined(USE_AURA)
+  search_view_controller_.reset(NULL);
 #endif
 
   browser_->tab_strip_model()->RemoveObserver(this);
@@ -1289,6 +1296,10 @@ void BrowserView::ShowInstant(TabContents* preview) {
   }
   contents_->SetPreview(preview_container_, preview->web_contents());
   preview_container_->SetWebContents(preview->web_contents());
+#if defined(USE_AURA)
+  if (search_view_controller_.get())
+    search_view_controller_->InstantReady();
+#endif
   RestackLocationBarContainer();
 }
 
@@ -1358,6 +1369,10 @@ void BrowserView::TabDetachedAt(TabContents* contents, int index) {
     contents_container_->SetWebContents(NULL);
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
+#if defined(USE_AURA)
+    if (search_view_controller_.get())
+      search_view_controller_->SetTabContents(NULL);
+#endif
   }
 }
 
@@ -1891,6 +1906,14 @@ void BrowserView::Init() {
 
   ReorderChildView(toolbar_->location_bar_container(), child_count() - 1);
 
+  // SearchViewController doesn't work on windows yet.
+#if defined(USE_AURA)
+  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
+    search_view_controller_.reset(new SearchViewController(
+        contents_, toolbar_->location_bar_container()));
+  }
+#endif
+
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
 }
@@ -2378,6 +2401,10 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   UpdateUIForContents(new_contents);
   if (change_tab_contents) {
     contents_container_->SetWebContents(new_contents->web_contents());
+#if defined(USE_AURA)
+    if (search_view_controller_.get())
+      search_view_controller_->SetTabContents(new_contents);
+#endif
     RestackLocationBarContainer();
   }
 
@@ -2486,5 +2513,9 @@ void BrowserView::ShowPasswordGenerationBubble(
 }
 
 void BrowserView::RestackLocationBarContainer() {
+#if defined(USE_AURA)
+  if (search_view_controller_.get())
+    search_view_controller_->StackAtTop();
+#endif
   toolbar_->location_bar_container()->StackAtTop();
 }
