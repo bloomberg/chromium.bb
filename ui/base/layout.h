@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
