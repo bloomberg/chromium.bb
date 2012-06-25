@@ -465,13 +465,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePanels)
   },
   {
-    "disable-shortcuts-provider",
-    IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER,
-    IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableShortcutsProvider)
-  },
-  {
     // See http://crbug.com/120416 for how to remove this flag.
     "save-page-as-mhtml",  // FLAGS:RECORD_UMA
     IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,

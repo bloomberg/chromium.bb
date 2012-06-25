@@ -377,9 +377,6 @@ const char kDisableRestoreBackgroundContents[] =
 // restoring the browsing session.
 const char kDisableRestoreSessionState[]    = "disable-restore-session-state";
 
-// Disables the ShortcutsProvider for autocomplete results.
-const char kDisableShortcutsProvider[]      = "disable-shortcuts-provider";
-
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 

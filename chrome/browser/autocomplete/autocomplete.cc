@@ -918,9 +918,6 @@ AutocompleteController::AutocompleteController(
   if (hqp_enabled)
     providers_.push_back(new HistoryQuickProvider(this, profile));
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableShortcutsProvider))
-    providers_.push_back(new ShortcutsProvider(this, profile));
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHistoryURLProvider))
     providers_.push_back(new HistoryURLProvider(this, profile));
 #if !defined(OS_ANDROID)
@@ -928,6 +925,7 @@ AutocompleteController::AutocompleteController(
   keyword_provider_ = new KeywordProvider(this, profile);
   providers_.push_back(keyword_provider_);
 #endif  // !OS_ANDROID
+  providers_.push_back(new ShortcutsProvider(this, profile));
   providers_.push_back(new HistoryContentsProvider(this, profile, hqp_enabled));
   providers_.push_back(new BuiltinProvider(this, profile));
   providers_.push_back(new ExtensionAppProvider(this, profile));
