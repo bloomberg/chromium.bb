@@ -94,7 +94,6 @@ class BluetoothGetServicesFunction : public AsyncExtensionFunction {
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-
 #if defined(OS_CHROMEOS)
  private:
   void GetServiceRecordsCallback(
