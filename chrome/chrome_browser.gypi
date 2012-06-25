@@ -4997,8 +4997,8 @@
           'sources': [
             # Using built-in rule in vstudio for midl.
             'browser/history/history_indexer.idl',
-            'browser/ui/views/network_profile_bubble.cc',
-            'browser/ui/views/network_profile_bubble.h',
+            'browser/ui/views/network_profile_bubble_view.cc',
+            'browser/ui/views/network_profile_bubble_view.h',
             'browser/ui/webui/conflicts_ui.cc',
             'browser/ui/webui/conflicts_ui.h',
           ],

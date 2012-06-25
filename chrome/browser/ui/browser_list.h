@@ -109,7 +109,7 @@ class BrowserList {
   // GetLastActive().
   friend class BrowserView;
   friend class ChromeShellDelegate;
-  friend class NetworkProfileBubble;
+  friend class NetworkProfileBubbleView;
   friend class PrintPreviewHandler;
   friend class SelectFileDialogExtension;
   friend class StartupBrowserCreatorImpl;

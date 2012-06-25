@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_H_
-#define CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_VIEW_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,8 +13,6 @@
 #include "ui/views/controls/link_listener.h"
 
 class Browser;
-class FilePath;
-class PrefService;
 class Profile;
 
 namespace content {
@@ -23,37 +21,37 @@ class PageNavigator;
 
 // This class will try to detect if the profile is on a network share and if
 // this is the case notify the user with an info bubble.
-class NetworkProfileBubble : public views::BubbleDelegateView,
-                             public views::ButtonListener,
-                             public views::LinkListener {
+class NetworkProfileBubbleView : public views::BubbleDelegateView,
+                                 public views::ButtonListener,
+                                 public views::LinkListener {
  public:
   // Verifies that the profile folder is not located on a network share, and if
   // it is shows the warning bubble to the user.
-  static void CheckNetworkProfile(const FilePath& profile_path);
+  static void CheckNetworkProfile(Profile* profile);
 
   // Returns true if the check for network located profile should be done. This
   // test is only performed up to |kMaxWarnings| times in a row and then
   // repeated after a period of silence that lasts |kSilenceDurationDays| days.
-  static bool ShouldCheckNetworkProfile(PrefService* prefs);
+  static bool ShouldCheckNetworkProfile(Profile* profile);
 
   // Shows the notification bubble using the provided |browser|.
   static void ShowNotification(Browser* browser);
 
  private:
-  NetworkProfileBubble(views::View* anchor,
-                       content::PageNavigator* navigator,
-                       Profile* profile);
-  virtual ~NetworkProfileBubble();
+  NetworkProfileBubbleView(views::View* anchor,
+                           content::PageNavigator* navigator,
+                           Profile* profile);
+  virtual ~NetworkProfileBubbleView();
 
-  // views::BubbleDelegateView overrides:
+  // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
-  // views::ButtonListener overrides:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // views::LinkListener overrides:
+  // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // This function creates the notification bubble, attaches it to the
@@ -69,7 +67,7 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   content::PageNavigator* navigator_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkProfileBubble);
+  DISALLOW_COPY_AND_ASSIGN(NetworkProfileBubbleView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_VIEW_H_

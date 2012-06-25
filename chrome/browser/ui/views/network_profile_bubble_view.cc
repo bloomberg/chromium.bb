@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/network_profile_bubble.h"
+#include "chrome/browser/ui/views/network_profile_bubble_view.h"
 
 #include <wtsapi32.h>
 // Make sure we link the wtsapi lib file in.
@@ -98,7 +98,7 @@ void BrowserListObserver::OnBrowserRemoved(Browser* browser) {
 }
 
 void BrowserListObserver::OnBrowserSetLastActive(Browser* browser) {
-  NetworkProfileBubble::ShowNotification(browser);
+  NetworkProfileBubbleView::ShowNotification(browser);
   // No need to observe anymore.
   BrowserList::RemoveObserver(this);
   delete this;
@@ -107,13 +107,13 @@ void BrowserListObserver::OnBrowserSetLastActive(Browser* browser) {
 }  // namespace
 
 // static
-bool NetworkProfileBubble::notification_shown_ = false;
+bool NetworkProfileBubbleView::notification_shown_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkProfileBubble, public:
+// NetworkProfileBubbleView, public:
 
 // static
-void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
+void NetworkProfileBubbleView::CheckNetworkProfile(Profile* profile) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   // On Windows notify the users if their profiles are located on a network
   // share as we don't officially support this setup yet.
@@ -146,11 +146,11 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
   // their profile on a network share.
   if (*type == 0) {
     bool profile_on_network = false;
-    if (!profile_path.empty()) {
+    if (!profile->GetPath().empty()) {
       FilePath temp_file;
       // Try to create some non-empty temp file in the profile dir and use
       // it to check if there is a reparse-point free path to it.
-      if (file_util::CreateTemporaryFileInDir(profile_path, &temp_file) &&
+      if (file_util::CreateTemporaryFileInDir(profile->GetPath(), &temp_file) &&
           file_util::WriteFile(temp_file, ".", 1)) {
         FilePath normalized_temp_file;
         if (!file_util::NormalizeFilePath(temp_file, &normalized_temp_file))
@@ -164,7 +164,7 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
       RecordUmaEvent(METRIC_PROFILE_ON_NETWORK);
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&NetworkProfileBubble::NotifyNetworkProfileDetected));
+          base::Bind(&NetworkProfileBubbleView::NotifyNetworkProfileDetected));
     } else {
       RecordUmaEvent(METRIC_PROFILE_NOT_ON_NETWORK);
     }
@@ -176,7 +176,8 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
 }
 
 // static
-bool NetworkProfileBubble::ShouldCheckNetworkProfile(PrefService* prefs) {
+bool NetworkProfileBubbleView::ShouldCheckNetworkProfile(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
   if (prefs->GetInteger(prefs::kNetworkProfileWarningsLeft))
     return !notification_shown_;
   int64 last_check = prefs->GetInt64(prefs::kNetworkProfileLastWarningTime);
@@ -191,13 +192,13 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(PrefService* prefs) {
 }
 
 // static
-void NetworkProfileBubble::ShowNotification(Browser* browser) {
+void NetworkProfileBubbleView::ShowNotification(Browser* browser) {
   views::View* anchor = NULL;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (browser_view && browser_view->GetToolbarView())
     anchor = browser_view->GetToolbarView()->app_menu();
-  NetworkProfileBubble* bubble =
-      new NetworkProfileBubble(anchor, browser, browser->profile());
+  NetworkProfileBubbleView* bubble =
+      new NetworkProfileBubbleView(anchor, browser, browser->profile());
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
   notification_shown_ = true;
@@ -213,20 +214,21 @@ void NetworkProfileBubble::ShowNotification(Browser* browser) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkProfileBubble, private:
+// NetworkProfileBubbleView, private:
 
-NetworkProfileBubble::NetworkProfileBubble(views::View* anchor,
-                                           content::PageNavigator* navigator,
-                                           Profile* profile)
+NetworkProfileBubbleView::NetworkProfileBubbleView(
+    views::View* anchor,
+    content::PageNavigator* navigator,
+    Profile* profile)
     : BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile) {
 }
 
-NetworkProfileBubble::~NetworkProfileBubble() {
+NetworkProfileBubbleView::~NetworkProfileBubbleView() {
 }
 
-void NetworkProfileBubble::Init() {
+void NetworkProfileBubbleView::Init() {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   layout->SetInsets(0, kInset, kInset, kInset);
   SetLayoutManager(layout);
@@ -265,14 +267,22 @@ void NetworkProfileBubble::Init() {
   layout->AddView(ok_button);
 }
 
-gfx::Rect NetworkProfileBubble::GetAnchorRect() {
+gfx::Rect NetworkProfileBubbleView::GetAnchorRect() {
   // Compensate for padding in anchor.
   gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
   rect.Inset(0, anchor_view() ? kAnchorVerticalInset : 0);
   return rect;
 }
 
-void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
+void NetworkProfileBubbleView::ButtonPressed(views::Button* sender,
+                                             const views::Event& event) {
+  RecordUmaEvent(METRIC_ACKNOWLEDGED);
+
+  GetWidget()->Close();
+}
+
+void NetworkProfileBubbleView::LinkClicked(views::Link* source,
+                                           int event_flags) {
   RecordUmaEvent(METRIC_LEARN_MORE_CLICKED);
   WindowOpenDisposition disposition =
       browser::DispositionFromEventFlags(event_flags);
@@ -292,15 +302,8 @@ void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
   GetWidget()->Close();
 }
 
-void NetworkProfileBubble::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
-  RecordUmaEvent(METRIC_ACKNOWLEDGED);
-
-  GetWidget()->Close();
-}
-
 // static
-void NetworkProfileBubble::NotifyNetworkProfileDetected() {
+void NetworkProfileBubbleView::NotifyNetworkProfileDetected() {
   if (BrowserList::GetLastActive() != NULL)
     ShowNotification(BrowserList::GetLastActive());
   else

@@ -151,7 +151,7 @@
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/ui/views/network_profile_bubble.h"
+#include "chrome/browser/ui/views/network_profile_bubble_view.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -1654,11 +1654,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Verify that the profile is not on a network share and if so prepare to show
   // notification to the user.
-  if (NetworkProfileBubble::ShouldCheckNetworkProfile(profile_->GetPrefs())) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&NetworkProfileBubble::CheckNetworkProfile,
-                   profile_->GetPath()));
+  if (NetworkProfileBubbleView::ShouldCheckNetworkProfile(profile_)) {
+    content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&NetworkProfileBubbleView::CheckNetworkProfile, profile_));
   }
 #endif  // OS_WIN
 
