@@ -9,7 +9,6 @@
        page may easily be indexed by search engines.
 --><html xmlns="http://www.w3.org/1999/xhtml"><head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
     <link href="../css/print.css" rel="stylesheet" type="text/css" media="print">
     <script type="text/javascript" src="../../../../third_party/jstemplate/jstemplate_compiled.js">
     </script>
@@ -19,7 +18,8 @@
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
   <title>chrome.* APIs - Google Chrome Extensions - Google Code</title></head>
-  <body>  <div id="devModeWarning" class="displayModeWarning">
+  <body><link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
+  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
   <div id="branchWarning" class="displayModeWarning">
@@ -52,7 +52,7 @@
     <!-- API HEADER -->
     <table id="header" width="100%" cellspacing="0" border="0">
       <tbody><tr>
-        <td valign="middle"><a href="http://code.google.com/"><img src="images/chrome_logo.gif" alt="Google Code" style="border:0; margin:0;"></a></td>
+        <td valign="middle"><a href="http://code.google.com/"><img src="../images/chrome_logo.gif" alt="Google Code" style="border:0; margin:0;"></a></td>
         <td valign="middle" width="100%" style="padding-left:0.6em;">
           <form action="http://www.google.com/cse" id="cse" style="margin-top:0.5em">
             <div id="gsc-search-box">
@@ -60,7 +60,7 @@
               <input type="hidden" name="ie" value="UTF-8">
               <input id="gsc-search-input" type="text" name="q" value="" size="55">
               <button class="gsc-search-button" type="submit" name="sa">
-                <img class="gsc-search-button-lens" src="images/search.png" alt="Search">
+                <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
               </button>
               <br>
               <span class="greytext">e.g. "page action" or "tabs"</span>
@@ -79,19 +79,19 @@
         <h1>Packaged Apps</h1>
         <ul id="home" class="gc-topnav-tabs">
           <li id="home_link">
-            <a href="app_landing.html" title="Packaged Apps home page">Home</a>
+            <a href="app_landing.html" title="Packaged Apps home page"><span>Home</span></a>
           </li>
           <li id="docs_link">
-            <a href="about_apps.html" title="Official Packaged apps documentation">Docs</a>
+            <a href="about_apps.html" title="Official Packaged apps documentation"><span>Docs</span></a>
           </li>
           <li id="samples_link">
-            <a href="app_samples.html" title="Sample apps (with source code)">Samples</a>
+            <a href="app_samples.html" title="Sample apps (with source code)"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum">Group</a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
-            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow">Questions?</a>
+            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
