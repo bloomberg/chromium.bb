@@ -124,8 +124,7 @@ void BrowserPlugin::LoadGuest(
 }
 
 void BrowserPlugin::AdvanceFocus(bool reverse) {
-  // TODO(fsamuel): Uncomment this once http://wkbug.com/88827 lands.
-  // render_view()->GetWebView()->advanceFocus(reverse);
+  render_view()->GetWebView()->advanceFocus(reverse);
 }
 
 void BrowserPlugin::Replace(
