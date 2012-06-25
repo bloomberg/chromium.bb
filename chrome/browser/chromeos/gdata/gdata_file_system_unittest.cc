@@ -145,10 +145,26 @@ void DriveSearchCallback(
   message_loop->Quit();
 }
 
-// Action used to set mock expectations for GetDocuments.
+// Action used to set mock expectations for
+// DocumentsService::GetDocumentEntry().
 ACTION_P2(MockGetDocumentEntryCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg1, status, base::Passed(value)));
+}
+
+// Action used to set mock expectations for
+// GDataUploaderInterface::UploadExistingFile().
+ACTION_P4(MockUploadExistingFile,
+          error, gdata_path, local_file_path, document_entry) {
+  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
+  upload_file_info->gdata_path = gdata_path;
+  upload_file_info->file_path = local_file_path;
+  upload_file_info->entry.reset(document_entry);
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(arg5, error, base::Passed(&upload_file_info)));
+
+  const int kUploadId = 123;
+  return kUploadId;
 }
 
 }  // anonymous namespace
@@ -358,8 +374,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
-    GDataEntry* entry = file_system_->root_->GetEntryByResourceId(resource_id);
-    return entry ? entry->AsGDataFile() : NULL;
+    return file_system_->root_->GetEntryByResourceId(resource_id);
   }
 
   // Gets the entry info for |file_path| and compares the contents against
@@ -3357,6 +3372,121 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),
             callback_helper_->download_path_.value());
+}
+
+TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
+  LoadRootFeedDocument("root_feed.json");
+
+  // This is a file defined in root_feed.json.
+  const FilePath kFilePath(FILE_PATH_LITERAL("drive/File 1.txt"));
+  const std::string kResourceId("file:2_file_resource_id");
+  const std::string kMd5("3b4382ebefec6e743578c76bbd0575ce");
+
+  // Pin the file so it'll be store in "persistent" directory.
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(kResourceId, kMd5)).Times(1);
+  TestPin(kResourceId,
+          kMd5,
+          base::PLATFORM_FILE_OK,
+          GDataCache::CACHE_STATE_PINNED,
+          GDataCache::CACHE_TYPE_PINNED);
+
+  // First store a file to cache. A cache file will be created at:
+  const FilePath cache_file_path =
+      GDataCache::GetCacheRootPath(profile_.get())
+      .AppendASCII("persistent")
+      .AppendASCII(kResourceId + "." + kMd5);
+  TestStoreToCache(kResourceId,
+                   kMd5,
+                   GetTestFilePath("root_feed.json"),  // Anything works.
+                   base::PLATFORM_FILE_OK,
+                   GDataCache::CACHE_STATE_PRESENT |
+                   GDataCache::CACHE_STATE_PINNED,
+                   GDataCache::CACHE_TYPE_PERSISTENT);
+  ASSERT_TRUE(file_util::PathExists(cache_file_path));
+
+  // Create a DocumentEntry, which is needed to mock
+  // GDataUploaderInterface::UploadExistingFile().
+  // TODO(satorux): This should be cleaned up. crbug.com/134240.
+  DocumentEntry* document_entry = NULL;
+  scoped_ptr<base::Value> value(LoadJSONFile("root_feed.json"));
+  ASSERT_TRUE(value.get());
+  base::DictionaryValue* as_dict = NULL;
+  base::ListValue* entry_list = NULL;
+  if (value->GetAsDictionary(&as_dict) &&
+      as_dict->GetList("feed.entry", &entry_list)) {
+    for (size_t i = 0; i < entry_list->GetSize(); ++i) {
+      base::DictionaryValue* entry = NULL;
+      std::string resource_id;
+      if (entry_list->GetDictionary(i, &entry) &&
+          entry->GetString("gd$resourceId.$t", &resource_id) &&
+          resource_id == kResourceId) {
+        // This will be deleted by UploadExistingFile().
+        document_entry = DocumentEntry::CreateFrom(entry);
+      }
+    }
+  }
+  ASSERT_TRUE(document_entry);
+
+  // The mock uploader will be used to simulate a file upload.
+  EXPECT_CALL(*mock_uploader_, UploadExistingFile(
+      GURL("https://file_link_resumable_edit_media/"),
+      kFilePath,
+      cache_file_path,
+      892721,  // The size is written in the root_feed.json.
+      "audio/mpeg",
+      _))  // callback
+      .WillOnce(MockUploadExistingFile(
+          base::PLATFORM_FILE_OK,
+          FilePath::FromUTF8Unsafe("drive/File1"),
+          cache_file_path,
+          document_entry));
+
+  // We'll notify the directory change to the observer upon completion.
+  EXPECT_CALL(*mock_directory_observer_,
+              OnDirectoryChanged(Eq(FilePath(kGDataRootDirectory)))).Times(1);
+
+  // The callback will be called upon completion of
+  // UpdateFileByResourceId().
+  FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  // Check the number of files in the root directory. We'll compare the
+  // number after updating a file.
+  GDataEntry* root_entry =
+      FindEntryByResourceId(kGDataRootDirectoryResourceId);
+  ASSERT_TRUE(root_entry);
+  GDataDirectory* root_directory = root_entry->AsGDataDirectory();
+  ASSERT_TRUE(root_directory);
+  const size_t num_files_in_root = root_directory->child_files().size();
+
+  file_system_->UpdateFileByResourceId(kResourceId, callback);
+  RunAllPendingForIO();  // Get the file from the cache.
+  RunAllPendingForIO();  // Storing back the file to the cache.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+  // Make sure that the number of files did not change (i.e. we updated an
+  // existing file, rather than adding a new file. The number of files
+  // increases if we don't handle the file update right).
+  EXPECT_EQ(num_files_in_root, root_directory->child_files().size());
+}
+
+TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
+  LoadRootFeedDocument("root_feed.json");
+
+  // This is nonexistent in root_feed.json.
+  const FilePath kFilePath(FILE_PATH_LITERAL("drive/Nonexistent.txt"));
+  const std::string kResourceId("file:nonexistent_resource_id");
+  const std::string kMd5("nonexistent_md5");
+
+  // The callback will be called upon completion of
+  // UpdateFileByResourceId().
+  FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->UpdateFileByResourceId(kResourceId, callback);
+  RunAllPendingForIO();  // Get the file from the cache.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 }
 
 TEST_F(GDataFileSystemTest, ContentSearch) {

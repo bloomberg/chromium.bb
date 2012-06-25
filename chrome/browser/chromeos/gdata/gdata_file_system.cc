@@ -2189,6 +2189,99 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
   return entry;
 }
 
+void GDataFileSystem::UpdateFileByResourceId(
+    const std::string& resource_id,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::UpdateFileByResourceIdOnUIThread,
+                 ui_weak_ptr_,
+                 resource_id,
+                 CreateRelayCallback(callback)));
+}
+
+void GDataFileSystem::UpdateFileByResourceIdOnUIThread(
+    const std::string& resource_id,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+  if (!entry || !entry->AsGDataFile()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+  GDataFile* file = entry->AsGDataFile();
+
+  cache_->GetFileOnUIThread(
+      resource_id,
+      file->file_md5(),
+      base::Bind(&GDataFileSystem::OnGetFileCompleteForUpdateFile,
+                 ui_weak_ptr_,
+                 callback));
+}
+
+void GDataFileSystem::OnGetFileCompleteForUpdateFile(
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    const std::string& resource_id,
+    const std::string& md5,
+    const FilePath& cache_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+    return;
+  }
+
+  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+  if (!entry || !entry->AsGDataFile()) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  GDataFile* file = entry->AsGDataFile();
+
+  uploader_->UploadExistingFile(
+      file->upload_url(),
+      file->GetFilePath(),
+      cache_file_path,
+      file->file_info().size,
+      file->content_mime_type(),
+      base::Bind(&GDataFileSystem::OnUpdatedFileUploaded,
+                 ui_weak_ptr_,
+                 callback));
+}
+
+void GDataFileSystem::OnUpdatedFileUploaded(
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<UploadFileInfo> upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info.get());
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+    return;
+  }
+
+  // See comments in OnTransferCompleted() for why we copy this pointer.
+  const UploadFileInfo* upload_file_info_ptr = upload_file_info.get();
+  AddUploadedFile(upload_file_info_ptr->gdata_path.DirName(),
+                  upload_file_info_ptr->entry.get(),
+                  upload_file_info_ptr->file_path,
+                  GDataCache::FILE_OPERATION_MOVE,
+                  base::Bind(&OnAddUploadFileCompleted,
+                             callback,
+                             error,
+                             base::Passed(&upload_file_info)));
+}
+
 void GDataFileSystem::GetCacheState(const std::string& resource_id,
                                     const std::string& md5,
                                     const GetCacheStateCallback& callback) {
@@ -3389,6 +3482,16 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
   if (!new_entry.get()) {
     callback.Run();
     return;
+  }
+
+  // Remove an existing entry if present. This is needed when uploading a
+  // file to update an existing file, rather than adding a new file.
+  GDataEntry* existing_entry = root_->GetEntryByResourceId(
+      new_entry->resource_id());
+  if (existing_entry &&
+      // This should always match, but just in case.
+      existing_entry->parent() == parent_dir) {
+    parent_dir->RemoveEntry(existing_entry);
   }
 
   GDataFile* file = new_entry->AsGDataFile();

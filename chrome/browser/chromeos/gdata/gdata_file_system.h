@@ -284,6 +284,16 @@ class GDataFileSystemInterface {
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback) = 0;
 
+  // Updates a file by the given |resource_id| on the gdata server by
+  // uploading an updated version. Used for uploading dirty files. The file
+  // should already be present in the cache.
+  //
+  // Can be called from UI/IO thread. |callback| and is run on the calling
+  // thread.
+  virtual void UpdateFileByResourceId(
+      const std::string& resource_id,
+      const FileOperationCallback& callback) = 0;
+
   // Gets the cache state of file corresponding to |resource_id| and |md5| if it
   // exists on disk.
   // Initializes cache if it has not been initialized.
@@ -411,6 +421,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
+  virtual void UpdateFileByResourceId(
+      const std::string& resource_id,
+      const FileOperationCallback& callback) OVERRIDE;
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;
@@ -1071,6 +1084,22 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError error,
       const GDataFileProto* file_proto);
 
+  // Called when GDataCache::GetFileOnUIThread() is completed for
+  // UpdateFileByResourceId().
+  void OnGetFileCompleteForUpdateFile(
+      const FileOperationCallback& callback,
+      base::PlatformFileError error,
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& cache_file_path);
+
+  // Called when GDataUploader::UploadUpdatedFile() is completed for
+  // UpdateFileByResourceId().
+  void OnUpdatedFileUploaded(
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<UploadFileInfo> upload_file_info);
+
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
@@ -1100,6 +1129,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback);
+  void UpdateFileByResourceIdOnUIThread(
+      const std::string& resource_id,
+      const FileOperationCallback& callback);
   void GetEntryInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetEntryInfoCallback& callback);
