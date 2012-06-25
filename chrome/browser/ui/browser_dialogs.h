@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #pragma once
 
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;

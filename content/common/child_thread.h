@@ -12,6 +12,7 @@
 #include "base/tracked_objects.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
+#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "webkit/glue/resource_loader_bridge.h"
 
 class FileSystemDispatcher;
