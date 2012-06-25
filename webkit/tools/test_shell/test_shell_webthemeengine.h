@@ -57,6 +57,7 @@ class Engine : public WebKit::WebThemeEngine {
       WebKit::WebCanvas*, const WebKit::WebRect& barRect,
       const WebKit::WebRect& valueRect,
       bool determinate, double time);
+  virtual WebKit::WebSize getSize(int part);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Engine);

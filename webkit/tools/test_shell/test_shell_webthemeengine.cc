@@ -569,4 +569,8 @@ void Engine::paintProgressBar(WebKit::WebCanvas* canvas,
   drawProgressBar(canvas, ctype, cstate, barRect, valueRect);
 }
 
+WebKit::WebSize Engine::getSize(int part) {
+  return WebKit::WebSize();
+}
+
 }  // namespace TestShellWebTheme
