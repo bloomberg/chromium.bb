@@ -36,3 +36,5 @@ setbacklight_SOURCES =				\
 	$(top_srcdir)/src/libbacklight.h
 
 setbacklight_LDADD = -ludev -ldrm
+
+EXTRA_DIST = weston-test
