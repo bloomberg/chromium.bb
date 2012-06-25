@@ -7,8 +7,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -51,18 +50,19 @@ ExtensionDialog::~ExtensionDialog() {
 // static
 ExtensionDialog* ExtensionDialog::Show(
     const GURL& url,
-    Browser* browser,
+    BaseWindow* base_window,
+    Profile* profile,
     WebContents* web_contents,
     int width,
     int height,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  ExtensionHost* host = CreateExtensionHost(url, browser, NULL);
+  ExtensionHost* host = CreateExtensionHost(url, profile);
   if (!host)
     return NULL;
   host->SetAssociatedWebContents(web_contents);
 
-  return ExtensionDialog::ShowInternal(url, browser, host, width, height,
+  return ExtensionDialog::ShowInternal(url, base_window, host, width, height,
                                        false, title, observer);
 }
 
@@ -73,7 +73,7 @@ ExtensionDialog* ExtensionDialog::ShowFullscreen(
     Profile* profile,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  ExtensionHost* host = CreateExtensionHost(url, NULL, profile);
+  ExtensionHost* host = CreateExtensionHost(url, profile);
   if (!host)
     return NULL;
 
@@ -84,21 +84,21 @@ ExtensionDialog* ExtensionDialog::ShowFullscreen(
 
 // static
 ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
-    Browser* browser,
+    BaseWindow* base_window,
     ExtensionHost* host,
     int width,
     int height,
     bool fullscreen,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  CHECK(fullscreen || browser);
+  CHECK(fullscreen || base_window);
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
 
   if (fullscreen)
     dialog->InitWindowFullscreen();
   else
-    dialog->InitWindow(browser, width, height);
+    dialog->InitWindow(base_window, width, height);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -113,19 +113,14 @@ ExtensionDialog* ExtensionDialog::ShowInternal(const GURL& url,
 
 // static
 ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
-                                                    Browser* browser,
                                                     Profile* profile) {
-  // Prefer picking the extension manager from the profile if given.
-  ExtensionProcessManager* manager = NULL;
-  if (profile)
-    manager = profile->GetExtensionProcessManager();
-  else
-    manager = browser->profile()->GetExtensionProcessManager();
+  DCHECK(profile);
+  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
 
   DCHECK(manager);
   if (!manager)
     return NULL;
-  return manager->CreateDialogHost(url, browser);
+  return manager->CreateDialogHost(url);
 }
 
 #if defined(USE_AURA)
@@ -155,15 +150,22 @@ void ExtensionDialog::InitWindowFullscreen() {
 #endif
 
 
-void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
-  gfx::NativeWindow parent = browser->window()->GetNativeWindow();
+void ExtensionDialog::InitWindow(BaseWindow* base_window,
+                                 int width,
+                                 int height) {
+  gfx::NativeWindow parent = base_window->GetNativeWindow();
   window_ = views::Widget::CreateWindowWithParent(this, parent);
 
   // Center the window over the browser.
-  gfx::Point center = browser->window()->GetBounds().CenterPoint();
+  gfx::Point center = base_window->GetBounds().CenterPoint();
   int x = center.x() - width / 2;
   int y = center.y() - height / 2;
-  window_->SetBounds(gfx::Rect(x, y, width, height));
+  // Ensure the top left and top right of the window are on screen, with
+  // priority given to the top left.
+  gfx::Rect screen_rect = gfx::Screen::GetDisplayNearestPoint(center).bounds();
+  gfx::Rect bounds_rect = gfx::Rect(x, y, width, height);
+  bounds_rect = bounds_rect.AdjustToFit(screen_rect);
+  window_->SetBounds(bounds_rect);
 
   window_->Show();
   // TODO(jamescook): Remove redundant call to Activate()?

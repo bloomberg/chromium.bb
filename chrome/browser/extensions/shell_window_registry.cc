@@ -58,6 +58,17 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForRenderViewHost(
   return NULL;
 }
 
+ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindow(
+    gfx::NativeWindow window) const {
+  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+       i != shell_windows_.end(); ++i) {
+    if ((*i)->GetNativeWindow() == window)
+      return *i;
+  }
+
+  return NULL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Factory boilerplate
 

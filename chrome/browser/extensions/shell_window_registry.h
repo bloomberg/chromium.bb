@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 class ShellWindow;
@@ -61,8 +62,10 @@ class ShellWindowRegistry : public ProfileKeyedService {
   ShellWindowSet GetShellWindowsForApp(const std::string app_id) const;
   const ShellWindowSet& shell_windows() const { return shell_windows_; }
 
+  // Helper functions to find shell windows with particular attributes.
   ShellWindow* GetShellWindowForRenderViewHost(
       content::RenderViewHost* render_view_host) const;
+  ShellWindow* GetShellWindowForNativeWindow(gfx::NativeWindow window) const;
 
  private:
   class Factory : public ProfileKeyedServiceFactory {

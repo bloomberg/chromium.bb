@@ -61,6 +61,7 @@ class ShellWindow : public content::NotificationObserver,
 
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
+  const TabContents* tab_contents() const { return contents_.get(); }
   content::WebContents* web_contents() const { return web_contents_; }
 
  protected:

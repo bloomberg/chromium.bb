@@ -64,7 +64,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
                                  const GURL& url,
                                  Browser* browser);
   ExtensionHost* CreatePopupHost(const GURL& url, Browser* browser);
-  ExtensionHost* CreateDialogHost(const GURL& url, Browser* browser);
+  ExtensionHost* CreateDialogHost(const GURL& url);
   ExtensionHost* CreateInfobarHost(const extensions::Extension* extension,
                                    const GURL& url,
                                    Browser* browser);

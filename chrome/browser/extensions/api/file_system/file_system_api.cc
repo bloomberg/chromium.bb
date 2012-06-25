@@ -107,7 +107,7 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
 }
 
 // Handles showing a dialog to the user to ask for the filename for a file to
-// save.
+// save or open.
 class FileSystemPickerFunction::FilePicker : public SelectFileDialog::Listener {
  public:
   FilePicker(FileSystemPickerFunction* function,

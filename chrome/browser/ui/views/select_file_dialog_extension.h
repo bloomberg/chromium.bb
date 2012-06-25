@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
-class Browser;
 class ExtensionDialog;
+class Profile;
 
 namespace content {
 class RenderViewHost;
@@ -92,10 +92,10 @@ class SelectFileDialogExtension
   // ID of the tab that spawned this dialog, used to route callbacks.
   int32 tab_id_;
 
-  // Cache a pointer to our owner browser. Since we're a child window of our
-  // owner browser, if this browser gets deleted, it will also close us.
-  Browser* owner_browser_;
+  // Pointer to the profile the dialog is running in.
+  Profile* profile_;
 
+  // The window that created the dialog.
   gfx::NativeWindow owner_window_;
 
   // We defer the callback into SelectFileDialog::Listener until the window

@@ -243,9 +243,8 @@ ExtensionHost* ExtensionProcessManager::CreatePopupHost(
   return CreateViewHost(url, browser, chrome::VIEW_TYPE_EXTENSION_POPUP);
 }
 
-ExtensionHost* ExtensionProcessManager::CreateDialogHost(
-    const GURL& url, Browser* browser) {
-  return CreateViewHost(url, browser, chrome::VIEW_TYPE_EXTENSION_DIALOG);
+ExtensionHost* ExtensionProcessManager::CreateDialogHost(const GURL& url) {
+  return CreateViewHost(url, NULL, chrome::VIEW_TYPE_EXTENSION_DIALOG);
 }
 
 ExtensionHost* ExtensionProcessManager::CreateInfobarHost(
