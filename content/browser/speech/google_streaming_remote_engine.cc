@@ -556,7 +556,7 @@ std::string GoogleStreamingRemoteEngine::GetAcceptedLanguages() const {
     DCHECK(request_context);
     std::string accepted_language_list = request_context->accept_language();
     size_t separator = accepted_language_list.find_first_of(",;");
-    if (separator > std::string::npos)
+    if (separator != std::string::npos)
       langs = accepted_language_list.substr(0, separator);
   }
   if (langs.empty())
