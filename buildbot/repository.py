@@ -7,12 +7,10 @@ Repository module to handle different types of repositories the Builders use.
 """
 
 import constants
-import filecmp
 import logging
 import os
 import re
 import shutil
-import tempfile
 
 from chromite.buildbot import configure_repo
 from chromite.lib import cros_build_lib
@@ -143,8 +141,10 @@ class RepoRepository(object):
       referenced_repo = None
     self._referenced_repo = referenced_repo
     self._manifest = manifest
-    self._initialized = IsARepoRoot(self.directory)
-    if not self._initialized and InARepoRepository(self.directory):
+
+    # If the repo exists already, force a selfupdate as the first step.
+    self._repo_update_needed = IsARepoRoot(self.directory)
+    if not self._repo_update_needed and InARepoRepository(self.directory):
       raise ValueError('Given directory %s is not the root of a repository.'
                        % self.directory)
 
@@ -168,16 +168,23 @@ class RepoRepository(object):
                       replace .repo/manifest.xml.
       extra_args: Extra args to pass to 'repo init'
     """
-    if self._initialized:
-      # Remove the 'default' branch to work around bug where during branch
-      # switching repo init tries to rebase the 'default' branch.
-      # TODO(rcui): crosbug.com/31241 - remove when that's fixed.
-      manifests_path = os.path.join(self.directory, '.repo', 'manifests')
-      cros_build_lib.RunGitCommand(manifests_path, ['checkout', '--detach'])
-      cros_build_lib.RunGitCommand(manifests_path, ['branch', '-D', 'default'],
-                                   error_code_ok=True)
-
     # Base command.
+    # Force a repo self update first; during reinit, repo doesn't do the
+    # update itself, but we could be doing the init on a repo version less
+    # then v1.9.4, which didn't have proper support for doing reinit that
+    # involved changing the manifest branch in use; thus selfupdate.
+    # Additionally, if the self update fails for *any* reason, wipe the repo
+    # innards and force repo init to redownload it; same end result, just
+    # less efficient.
+    # Additionally, note that this method may be called multiple times;
+    # thus code appropriately.
+    if self._repo_update_needed:
+      try:
+        cros_build_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
+      except cros_build_lib.RunCommandError:
+        shutil.rmtree(os.path.join(self.directory, '.repo', 'repo'))
+      self._repo_update_needed = False
+
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
     if self._referenced_repo:
       init_cmd.extend(['--reference', self._referenced_repo])
@@ -191,8 +198,35 @@ class RepoRepository(object):
       init_cmd.extend(['--manifest-branch', self.branch])
 
     cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
+    self._FixRepoManifestBugs()
     if local_manifest and local_manifest != self.DEFAULT_MANIFEST:
       self._SwitchToLocalManifest(local_manifest)
+
+  def _FixRepoManifestBugs(self):
+    # pylint: disable=C0301
+    # Repo v1.9.4 has some known bugs; see
+    # https://groups.google.com/forum/?fromgroups#!msg/repo-discuss/4WmUJ2ttN8o/ssYVLO5TCVYJ
+    # TODO(ferringb): Remove this, both via upstream fixes, and via running
+    # down where/why cbuildbot is stupidly leaving the manifest on a
+    # detached HEAD.
+    path = os.path.join(self.directory, '.repo', 'manifests')
+    branch = ('master' if not self.branch else
+              cros_build_lib.StripLeadingRefsHeads(self.branch, False))
+    if cros_build_lib.GetCurrentBranch(path) != 'default':
+      # This actually isn't a repo bug; something within cbuildbot, or an
+      # interaction w/ repo's misbehaviours, results in this occurring.
+      logging.warn("Repository %s had its manifest on a branch other than "
+                   "repo's norm of 'default'; fixing it.", self.directory)
+      cros_build_lib.RunGitCommand(
+        path, ['checkout', '-B', 'default',
+               '-t', 'remotes/origin/%s' % branch])
+    else:
+      # During branch switches, v1.9.4 is known to leave an invalid git
+      # configuration in place; thus manually force these settings.
+      cros_build_lib.RunGitCommand(
+          path, ['config', 'branch.default.origin', 'origin'])
+      cros_build_lib.RunGitCommand(
+          path, ['config', 'branch.default.merge', branch])
 
   @property
   def _ManifestConfig(self):
@@ -256,11 +290,6 @@ class RepoRepository(object):
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
 
-      # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
-      # if we're deploying a new manifest that uses new repo functionality,
-      # we have to repo up to date else it would fail.
-      cros_build_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
-
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
 
@@ -307,7 +336,7 @@ class RepoRepository(object):
         extra_env={'PAGER':'cat'}).output
 
     if not mark_revision:
-        return output
+      return output
     modified = cros_build_lib.RunGitCommand(
         os.path.join(self.directory, '.repo/manifests'),
         ['rev-list', '-n1', 'HEAD'])
