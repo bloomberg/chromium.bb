@@ -17,13 +17,8 @@ namespace autofill {
 class PasswordGenerator;
 }
 
-namespace content {
-class RenderViewHost;
-}
-
 class BubbleGtk;
-class PasswordManager;
-class Profile;
+class TabContents;
 
 // PasswordGenerationBubbleGtk is a bubble use to show possible generated
 // passwords to users. It is set in page content, anchored at |anchor_rect|.
@@ -33,11 +28,8 @@ class PasswordGenerationBubbleGtk {
  public:
   PasswordGenerationBubbleGtk(const gfx::Rect& anchor_rect,
                               const webkit::forms::PasswordForm& form,
-                              GtkWidget* anchor_widget,
-                              Profile* profile,
-                              content::RenderViewHost* render_view_host,
-                              autofill::PasswordGenerator* password_generator,
-                              PasswordManager* password_manager);
+                              TabContents* tab,
+                              autofill::PasswordGenerator* password_generator);
   virtual ~PasswordGenerationBubbleGtk();
 
  private:
@@ -48,21 +40,17 @@ class PasswordGenerationBubbleGtk {
 
   BubbleGtk* bubble_;
   GtkWidget* text_field_;
-  Profile* profile_;
 
   // Form that contains the password field that we are generating a password
   // for. Used by the password_manager_.
   webkit::forms::PasswordForm form_;
 
-  // RenderViewHost associated with the button that spawned this bubble.
-  content::RenderViewHost* render_view_host_;
+  // TabContents associated with the button that spawned this bubble.
+  TabContents* tab_;
 
   // Object that deals with generating passwords. The class won't take the
   // ownership of it.
   autofill::PasswordGenerator* password_generator_;
-
-  // PasswordManager for this tab.
-  PasswordManager* password_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationBubbleGtk);
 };

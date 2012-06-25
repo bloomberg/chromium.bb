@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
@@ -21,22 +22,19 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::RenderViewHost;
+
 const int kContentBorder = 4;
 const int kHorizontalSpacing = 4;
 
 PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
     const gfx::Rect& anchor_rect,
     const webkit::forms::PasswordForm& form,
-    GtkWidget* anchor_widget,
-    Profile* profile,
-    content::RenderViewHost* render_view_host,
-    autofill::PasswordGenerator* password_generator,
-    PasswordManager* password_manager)
-    : profile_(profile),
-      form_(form),
-      render_view_host_(render_view_host),
-      password_generator_(password_generator),
-      password_manager_(password_manager) {
+    TabContents* tab,
+    autofill::PasswordGenerator* password_generator)
+    : form_(form),
+      tab_(tab),
+      password_generator_(password_generator) {
   // TODO(gcasto): Localize text after we have finalized the UI.
   // crbug.com/118062
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
@@ -69,14 +67,14 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
   // Set initial focus to the text field containing the generated password.
   gtk_widget_grab_focus(text_field_);
 
-  bubble_ = BubbleGtk::Show(anchor_widget,
+  bubble_ = BubbleGtk::Show(tab->web_contents()->GetContentNativeView(),
                             &anchor_rect,
                             content,
                             BubbleGtk::ARROW_LOCATION_TOP_LEFT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
                                 BubbleGtk::GRAB_INPUT,
-                            GtkThemeService::GetFrom(profile_),
+                            GtkThemeService::GetFrom(tab_->profile()),
                             NULL);  // delegate
 
   g_signal_connect(content, "destroy",
@@ -96,15 +94,16 @@ void PasswordGenerationBubbleGtk::OnDestroy(GtkWidget* widget) {
 }
 
 void PasswordGenerationBubbleGtk::OnAcceptClicked(GtkWidget* widget) {
-  render_view_host_->Send(new AutofillMsg_GeneratedPasswordAccepted(
-      render_view_host_->GetRoutingID(),
+  RenderViewHost* render_view_host = tab_->web_contents()->GetRenderViewHost();
+  render_view_host->Send(new AutofillMsg_GeneratedPasswordAccepted(
+      render_view_host->GetRoutingID(),
       UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(text_field_)))));
-  password_manager_->SetFormHasGeneratedPassword(form_);
+  tab_->password_manager()->SetFormHasGeneratedPassword(form_);
   bubble_->Close();
 }
 
 void PasswordGenerationBubbleGtk::OnLearnMoreLinkClicked(GtkButton* button) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindBrowserWithWebContents(tab_->web_contents());
   content::OpenURLParams params(
       GURL(chrome::kAutoPasswordGenerationLearnMoreURL), content::Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);

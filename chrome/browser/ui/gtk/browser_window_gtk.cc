@@ -1291,13 +1291,7 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
   if (!tab_contents)
     return;
 
-  new PasswordGenerationBubbleGtk(rect,
-                                  form,
-                                  web_contents->GetContentNativeView(),
-                                  browser()->profile(),
-                                  web_contents->GetRenderViewHost(),
-                                  password_generator,
-                                  tab_contents->password_manager());
+  new PasswordGenerationBubbleGtk(rect, form, tab_contents, password_generator);
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

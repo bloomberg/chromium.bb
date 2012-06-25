@@ -1129,7 +1129,7 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal() {
 
   gfx::Rect bounds = gtk_util::WidgetBounds(location_icon_image_);
   bounds.set_x(bounds.x() + kFirstRunBubbleLeftSpacing);
-  FirstRunBubble::Show(browser_->profile(), location_icon_image_, bounds);
+  FirstRunBubble::Show(browser_, location_icon_image_, bounds);
 }
 
 gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,

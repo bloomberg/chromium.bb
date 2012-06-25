@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -30,28 +31,28 @@ const int kInterLineSpacing = 5;
 }  // namespace
 
 // static
-void FirstRunBubble::Show(Profile* profile,
+void FirstRunBubble::Show(Browser* browser,
                           GtkWidget* anchor,
                           const gfx::Rect& rect) {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
-  new FirstRunBubble(profile, anchor, rect);
+  new FirstRunBubble(browser, anchor, rect);
 }
 
 void FirstRunBubble::BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) {
   // TODO(port): Enable parent window
 }
 
-FirstRunBubble::FirstRunBubble(Profile* profile,
+FirstRunBubble::FirstRunBubble(Browser* browser,
                                GtkWidget* anchor,
                                const gfx::Rect& rect)
-    : profile_(profile),
+    : browser_(browser),
       bubble_(NULL) {
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile_);
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(browser->profile());
   GtkWidget* title = theme_service->BuildLabel("", ui::kGdkBlack);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_TITLE,
-          GetDefaultSearchEngineName(profile_)).c_str());
+          GetDefaultSearchEngineName(browser->profile())).c_str());
   gtk_label_set_markup(GTK_LABEL(title), markup);
   g_free(markup);
 
@@ -96,8 +97,8 @@ void FirstRunBubble::HandleDestroy(GtkWidget* sender) {
 void FirstRunBubble::HandleChangeLink(GtkWidget* sender) {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_CHANGE_INVOKED);
 
-  // Get |profile_|'s browser before closing the bubble, which deletes |this|.
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
+  // Cache browser_ before closing the bubble, which deletes |this|.
+  Browser* browser = browser_;
   bubble_->Close();
   if (browser)
     chrome::ShowSearchEngineSettings(browser);
