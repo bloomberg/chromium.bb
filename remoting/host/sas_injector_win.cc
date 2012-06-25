@@ -9,8 +9,9 @@
 
 #include "base/logging.h"
 #include "base/file_path.h"
-#include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/scoped_native_library.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 
@@ -116,48 +117,43 @@ class SasInjectorWin : public SasInjector {
   virtual bool InjectSas() OVERRIDE;
 
  private:
-  base::NativeLibrary sas_dll_;
+  base::ScopedNativeLibrary sas_dll_;
   SendSasFunc send_sas_;
 };
 
-SasInjectorWin::SasInjectorWin() : sas_dll_(NULL), send_sas_(NULL) {
+SasInjectorWin::SasInjectorWin() : send_sas_(NULL) {
 }
 
 SasInjectorWin::~SasInjectorWin() {
-  if (sas_dll_ != NULL) {
-    base::UnloadNativeLibrary(sas_dll_);
-  }
 }
 
 bool SasInjectorWin::InjectSas() {
   // Load sas.dll. The library is expected to be in the same folder as this
   // binary.
-  if (sas_dll_ == NULL) {
+  if (!sas_dll_.is_valid()) {
     FilePath exe_path;
     if (!PathService::Get(base::FILE_EXE, &exe_path)) {
       LOG(ERROR) << "Failed to get the executable file name.";
       return false;
     }
 
-    std::string error;
-    sas_dll_ = base::LoadNativeLibrary(
-                   exe_path.DirName().Append(kSasDllFileName),
-                   &error);
-    if (sas_dll_ == NULL) {
-      LOG(ERROR) << "Failed to load '" << kSasDllFileName << "'";
-      return false;
-    }
+    sas_dll_.Reset(base::LoadNativeLibrary(
+        exe_path.DirName().Append(kSasDllFileName), NULL));
+  }
+  if (!sas_dll_.is_valid()) {
+    LOG(ERROR) << "Failed to load '" << kSasDllFileName << "'";
+    return false;
   }
 
   // Get the pointer to sas!SendSAS().
   if (send_sas_ == NULL) {
-    send_sas_ = reinterpret_cast<SendSasFunc>(
-      base::GetFunctionPointerFromNativeLibrary(sas_dll_, kSendSasName));
-    if (send_sas_ == NULL) {
-      LOG(ERROR) << "Failed to retrieve the address of '" << kSendSasName
-                 << "()'";
-      return false;
-    }
+    send_sas_ = static_cast<SendSasFunc>(
+        sas_dll_.GetFunctionPointer(kSendSasName));
+  }
+  if (send_sas_ == NULL) {
+    LOG(ERROR) << "Failed to retrieve the address of '" << kSendSasName
+               << "()'";
+    return false;
   }
 
   // Enable software SAS generation by services and send SAS. SAS can still fail

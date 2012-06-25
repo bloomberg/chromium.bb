@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/native_library.h"
+#include "base/scoped_native_library.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "remoting/base/capture_data.h"
@@ -29,7 +29,7 @@ const UINT DWM_EC_ENABLECOMPOSITION = 1;
 
 typedef HRESULT (WINAPI * DwmEnableCompositionFunc)(UINT);
 
-const wchar_t kDwmapiLibraryName[] = L"dwmapi";
+const char kDwmapiLibraryName[] = "dwmapi";
 
 // Pixel colors used when generating cursor outlines.
 const uint32 kPixelBgraBlack = 0xff000000;
@@ -140,7 +140,7 @@ class CapturerGdi : public Capturer {
   // Class to calculate the difference between two screen bitmaps.
   scoped_ptr<Differ> differ_;
 
-  base::NativeLibrary dwmapi_library_;
+  base::ScopedNativeLibrary dwmapi_library_;
   DwmEnableCompositionFunc composition_func_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturerGdi);
@@ -159,7 +159,6 @@ CapturerGdi::CapturerGdi()
       dc_size_(SkISize::Make(0, 0)),
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
-      dwmapi_library_(NULL),
       composition_func_(NULL) {
   memset(target_bitmap_, 0, sizeof(target_bitmap_));
   memset(buffers_, 0, sizeof(buffers_));
@@ -168,10 +167,6 @@ CapturerGdi::CapturerGdi()
 
 CapturerGdi::~CapturerGdi() {
   ReleaseBuffers();
-
-  if (dwmapi_library_ != NULL) {
-    base::UnloadNativeLibrary(dwmapi_library_);
-  }
 }
 
 media::VideoFrame::Format CapturerGdi::pixel_format() const {
@@ -242,17 +237,14 @@ void CapturerGdi::Start(
   cursor_shape_changed_callback_ = callback;
 
   // Load dwmapi.dll dynamically since it is not available on XP.
-  if (dwmapi_library_ == NULL) {
-    std::string error;
-    dwmapi_library_ = base::LoadNativeLibrary(
-        FilePath(base::GetNativeLibraryName(WideToUTF16(kDwmapiLibraryName))),
-        &error);
+  if (!dwmapi_library_.is_valid()) {
+    FilePath path(base::GetNativeLibraryName(UTF8ToUTF16(kDwmapiLibraryName)));
+    dwmapi_library_.Reset(base::LoadNativeLibrary(path, NULL));
   }
 
-  if (dwmapi_library_ != NULL && composition_func_ == NULL) {
-    composition_func_ = reinterpret_cast<DwmEnableCompositionFunc>(
-        base::GetFunctionPointerFromNativeLibrary(dwmapi_library_,
-                                                  "DwmEnableComposition"));
+  if (dwmapi_library_.is_valid() && composition_func_ == NULL) {
+    composition_func_ = static_cast<DwmEnableCompositionFunc>(
+        dwmapi_library_.GetFunctionPointer("DwmEnableComposition"));
   }
 
   // Vote to disable Aero composited desktop effects while capturing. Windows
