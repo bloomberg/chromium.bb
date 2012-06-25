@@ -323,9 +323,6 @@ const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 // Disable the use of the HistoryQuickProvider for autocomplete results.
 const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
 
-// Disable the use of the HistoryURLProvider for autocomplete results.
-const char kDisableHistoryURLProvider[]     = "disable-history-url-provider";
-
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
