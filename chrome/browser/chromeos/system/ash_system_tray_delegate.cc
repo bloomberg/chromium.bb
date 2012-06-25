@@ -14,6 +14,7 @@
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/power/power_status_observer.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -952,12 +953,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void LockScreen() OVERRIDE {
     screen_locked_ = true;
-    tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+    ash::Shell::GetInstance()->status_area_widget()->
+        UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
   virtual void UnlockScreen() OVERRIDE {
     screen_locked_ = false;
-    tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+    ash::Shell::GetInstance()->status_area_widget()->
+        UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
   virtual void UnlockScreenFailed() OVERRIDE {
@@ -1058,7 +1061,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_SESSION_STARTED: {
-        tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+        ash::Shell::GetInstance()->status_area_widget()->
+            UpdateAfterLoginStatusChange(GetUserLoginStatus());
         SetProfile(ProfileManager::GetDefaultProfile());
         break;
       }

@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
+#include "ash/system/user/login_status.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "ui/views/widget/widget.h"
 
@@ -52,6 +53,11 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void ShowWebNotificationBubble(UserAction user_action);
   void HideWebNotificationBubble();
 
+  // Called by the client when the login status changes. Caches login_status
+  // and calls UpdateAfterLoginStatusChange for the system tray and the web
+  // notification tray.
+  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
+
   SystemTray* system_tray() { return system_tray_; }
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
@@ -59,6 +65,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   WebNotificationTray* web_notification_tray() {
     return web_notification_tray_;
   }
+
+  user::LoginStatus login_status() const { return login_status_; }
 
  private:
   void AddSystemTray(SystemTray* system_tray, ShellDelegate* shell_delegate);
@@ -69,6 +77,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   internal::StatusAreaWidgetDelegate* widget_delegate_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
+  user::LoginStatus login_status_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

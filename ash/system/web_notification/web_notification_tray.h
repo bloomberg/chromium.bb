@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ash/system/user/login_status.h"
 #include "base/gtest_prod_util.h"
 #include "ui/aura/event_filter.h"
 
@@ -110,6 +111,9 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   // Hide the notification bubble. Should only be called by StatusAreaWidget.
   void HideBubble();
 
+  // Updates tray visibility login status of the system changes.
+  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
+
   // Request the Delegate to the settings dialog.
   void ShowSettings(const std::string& id);
 
@@ -147,6 +151,7 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   views::View* tray_container_;
   views::ImageView* icon_;
   Delegate* delegate_;
+  bool show_bubble_on_unlock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

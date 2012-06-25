@@ -660,7 +660,8 @@ WebNotificationTray::WebNotificationTray(
       notification_list_(new WebNotificationList()),
       tray_container_(NULL),
       icon_(NULL),
-      delegate_(NULL) {
+      delegate_(NULL),
+      show_bubble_on_unlock_(false) {
   tray_container_ = new views::View;
   tray_container_->set_border(views::Border::CreateEmptyBorder(
       kTrayBorder, kTrayBorder, kTrayBorder, kTrayBorder));
@@ -756,6 +757,10 @@ void WebNotificationTray::DisableByUrl(const std::string& id) {
 }
 
 void WebNotificationTray::ShowBubble() {
+  if (status_area_widget_->login_status() == user::LOGGED_IN_LOCKED) {
+    show_bubble_on_unlock_ = true;
+    return;
+  }
   if (bubble())
     return;
   bubble_.reset(new Bubble(this));
@@ -763,6 +768,21 @@ void WebNotificationTray::ShowBubble() {
 
 void WebNotificationTray::HideBubble() {
   bubble_.reset();
+  show_bubble_on_unlock_ = false;
+}
+
+void WebNotificationTray::UpdateAfterLoginStatusChange(
+    user::LoginStatus login_status) {
+  if (login_status == user::LOGGED_IN_LOCKED) {
+    if (bubble()) {
+      HideBubble();
+      show_bubble_on_unlock_ = true;
+    }
+  } else if (show_bubble_on_unlock_) {
+    ShowBubble();
+    show_bubble_on_unlock_ = false;
+  }
+  UpdateIcon();
 }
 
 void WebNotificationTray::ShowSettings(const std::string& id) {
@@ -799,7 +819,8 @@ int WebNotificationTray::GetNotificationCount() const {
 
 void WebNotificationTray::UpdateIcon() {
   int count = GetNotificationCount();
-  if (count == 0) {
+  if (count == 0 ||
+      status_area_widget_->login_status() == user::LOGGED_IN_LOCKED) {
     SetVisible(false);
   } else {
     icon_->SetImage(gfx::ImageSkia(GetNotificationImage(count)));

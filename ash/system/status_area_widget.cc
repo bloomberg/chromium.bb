@@ -278,7 +278,8 @@ namespace internal {
 StatusAreaWidget::StatusAreaWidget()
     : widget_delegate_(new internal::StatusAreaWidgetDelegate),
       system_tray_(NULL),
-      web_notification_tray_(NULL) {
+      web_notification_tray_(NULL),
+      login_status_(user::LOGGED_IN_NONE) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = widget_delegate_;
@@ -371,6 +372,15 @@ void StatusAreaWidget::HideWebNotificationBubble() {
   // Show any hidden or suppressed system notifications.
   if (system_tray_)
     system_tray_->SetHideNotifications(false);
+}
+
+void StatusAreaWidget::UpdateAfterLoginStatusChange(
+    user::LoginStatus login_status) {
+  login_status_ = login_status;
+  if (system_tray_)
+    system_tray_->UpdateAfterLoginStatusChange(login_status);
+  if (web_notification_tray_)
+    web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
 }
 
 }  // namespace internal
