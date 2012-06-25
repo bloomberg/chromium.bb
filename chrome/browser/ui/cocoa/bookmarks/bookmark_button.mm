@@ -360,6 +360,9 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (BOOL)canBecomeKeyView {
+  if (![super canBecomeKeyView])
+    return NO;
+
   // If button is an item in a folder menu, don't become key.
   return ![[self cell] isFolderButtonCell];
 }
