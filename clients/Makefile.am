@@ -9,7 +9,8 @@ noinst_PROGRAMS =				\
 libexec_PROGRAMS =				\
 	$(desktop_shell)			\
 	$(tablet_shell)				\
-	$(screenshooter)
+	$(screenshooter)			\
+	$(screensaver)
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
@@ -141,14 +142,13 @@ CLEANFILES = $(BUILT_SOURCES)
 endif
 
 if BUILD_FULL_GL_CLIENTS
-full_gl_client_programs =			\
-	gears					\
-	wscreensaver
+full_gl_client_programs = gears
 
 gears_SOURCES = gears.c
 gears_LDADD = $(toolkit_libs)
 
-wscreensaver_SOURCES =				\
+screensaver = weston-screensaver
+weston_screensaver_SOURCES =			\
 	wscreensaver.c				\
 	wscreensaver.h				\
 	desktop-shell-client-protocol.h		\
@@ -157,7 +157,7 @@ wscreensaver_SOURCES =				\
 	wscreensaver-glue.h			\
 	glmatrix.c				\
 	matrix3.xpm
-wscreensaver_LDADD = $(toolkit_libs) -lGLU
+weston_screensaver_LDADD = $(toolkit_libs) -lGLU
 endif
 
 @wayland_scanner_rules@
