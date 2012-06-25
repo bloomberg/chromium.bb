@@ -11,9 +11,8 @@ cr.define('options', function() {
    * @class
    */
   function ClearBrowserDataOverlay() {
-    OptionsPage.call(this, 'clearBrowserData',
-                     loadTimeData.getString('clearBrowserDataOverlayTabTitle'),
-                     'clearBrowserDataOverlay');
+    OptionsPage.call(this, 'clearBrowserData', '',
+                     'clear-browser-data-overlay');
   }
 
   cr.addSingletonGetter(ClearBrowserDataOverlay);
@@ -43,16 +42,16 @@ cr.define('options', function() {
       });
 
       var checkboxes = document.querySelectorAll(
-          '#cbdContentArea input[type=checkbox]');
+          '#cbd-content-area input[type=checkbox]');
       for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].onclick = f;
       }
       this.updateCommitButtonState_();
 
-      $('clearBrowserDataDismiss').onclick = function(event) {
+      $('clear-browser-data-dismiss').onclick = function(event) {
         ClearBrowserDataOverlay.dismiss();
       };
-      $('clearBrowserDataCommit').onclick = function(event) {
+      $('clear-browser-data-commit').onclick = function(event) {
         ClearBrowserDataOverlay.setClearingState(true);
         chrome.send('performClearBrowserData');
       };
@@ -61,7 +60,7 @@ cr.define('options', function() {
     // Set the enabled state of the commit button.
     updateCommitButtonState_: function() {
       var checkboxes = document.querySelectorAll(
-          '#cbdContentArea input[type=checkbox]');
+          '#cbd-content-area input[type=checkbox]');
       var isChecked = false;
       for (var i = 0; i < checkboxes.length; i++) {
         if (checkboxes[i].checked) {
@@ -69,7 +68,7 @@ cr.define('options', function() {
           break;
         }
       }
-      $('clearBrowserDataCommit').disabled = !isChecked;
+      $('clear-browser-data-commit').disabled = !isChecked;
     },
   };
 
@@ -77,20 +76,20 @@ cr.define('options', function() {
   // Chrome callbacks
   //
   ClearBrowserDataOverlay.setClearingState = function(state) {
-    $('deleteBrowsingHistoryCheckbox').disabled = state;
-    $('deleteDownloadHistoryCheckbox').disabled = state;
-    $('deleteCacheCheckbox').disabled = state;
-    $('deleteCookiesCheckbox').disabled = state;
-    $('deletePasswordsCheckbox').disabled = state;
-    $('deleteFormDataCheckbox').disabled = state;
-    $('deleteHostedAppsDataCheckbox').disabled = state;
-    $('deauthorizeContentLicensesCheckbox').disabled = state;
-    $('clearBrowserDataTimePeriod').disabled = state;
-    $('cbdThrobber').style.visibility = state ? 'visible' : 'hidden';
-    $('clearBrowserDataDismiss').disabled = state;
+    $('delete-browsing-history-checkbox').disabled = state;
+    $('delete-download-history-checkbox').disabled = state;
+    $('delete-cache-checkbox').disabled = state;
+    $('delete-cookies-checkbox').disabled = state;
+    $('delete-passwords-checkbox').disabled = state;
+    $('delete-form-data-checkbox').disabled = state;
+    $('delete-hosted-apps-data-checkbox').disabled = state;
+    $('deauthorize-content-licenses-checkbox').disabled = state;
+    $('clear-browser-data-time-period').disabled = state;
+    $('cbd-throbber').style.visibility = state ? 'visible' : 'hidden';
+    $('clear-browser-data-dismiss').disabled = state;
 
     if (state)
-      $('clearBrowserDataCommit').disabled = true;
+      $('clear-browser-data-commit').disabled = true;
     else
       ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
   };
