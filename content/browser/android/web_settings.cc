@@ -10,15 +10,10 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "jni/web_settings_jni.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
-
-// TODO(tedchoc): Remove once the JNI generator has been updated to allow
-// namespace specification.
-namespace content {
-#include "jni/web_settings_jni.h"
-}
 
 using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF16;
@@ -95,9 +90,9 @@ struct WebSettings::FieldIds {
 
 WebSettings::WebSettings(JNIEnv* env,
                          jobject obj,
-                         content::WebContents* contents,
+                         WebContents* contents,
                          bool is_master_mode)
-    : content::WebContentsObserver(contents),
+    : WebContentsObserver(contents),
       is_master_mode_(is_master_mode) {
   web_settings_.Reset(env, obj);
 }
@@ -117,13 +112,11 @@ void WebSettings::Destroy(JNIEnv* env, jobject obj) {
 void WebSettings::SyncFromNativeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  if (!field_ids_.get()) {
+  if (!field_ids_.get())
     field_ids_.reset(new FieldIds(env));
-  }
 
   jobject obj = web_settings_.obj();
-  content::RenderViewHost* render_view_host =
-      web_contents()->GetRenderViewHost();
+  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
   ScopedJavaLocalRef<jstring> str =
@@ -204,13 +197,11 @@ void WebSettings::SyncFromNativeImpl() {
 void WebSettings::SyncToNativeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  if (!field_ids_.get()) {
+  if (!field_ids_.get())
     field_ids_.reset(new FieldIds(env));
-  }
 
   jobject obj = web_settings_.obj();
-  content::RenderViewHost* render_view_host =
-      web_contents()->GetRenderViewHost();
+  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
   ScopedJavaLocalRef<jstring> str(
@@ -288,24 +279,23 @@ void WebSettings::SyncToNative(JNIEnv* env, jobject obj) {
   SyncToNativeImpl();
 }
 
-void WebSettings::RenderViewCreated(content::RenderViewHost*) {
-  if (is_master_mode_) {
+void WebSettings::RenderViewCreated(RenderViewHost* render_view_host) {
+  if (is_master_mode_)
     SyncToNativeImpl();
-  }
 }
 
-static jint Init(
+jint Init(
     JNIEnv* env, jobject obj, jint nativeContentView,
     jboolean is_master_mode) {
-  content::WebContents* web_contents =
-      reinterpret_cast<content::ContentViewImpl*>(nativeContentView)
+  WebContents* web_contents =
+      reinterpret_cast<ContentViewImpl*>(nativeContentView)
           ->web_contents();
   WebSettings* web_settings =
       new WebSettings(env, obj, web_contents, is_master_mode);
   return reinterpret_cast<jint>(web_settings);
 }
 
-static jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
+jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
   // "Version/4.0" had been hardcoded in the legacy WebView.
   std::string ua = webkit_glue::BuildUserAgentFromProduct("Version/4.0");
   return base::android::ConvertUTF8ToJavaString(env, ua).Release();

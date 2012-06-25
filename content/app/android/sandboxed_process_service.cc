@@ -36,8 +36,8 @@ class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer {
                                            int primary_id,
                                            int secondary_id) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    Java_SandboxedProcessService_establishSurfaceTexturePeer(env, service_,
-        pid, type, j_surface_texture, primary_id, secondary_id);
+    content::Java_SandboxedProcessService_establishSurfaceTexturePeer(
+       env, service_,  pid, type, j_surface_texture, primary_id, secondary_id);
     CheckException(env);
   }
 
@@ -70,12 +70,14 @@ void InternalInitSandboxedProcess(int ipc_fd,
 
 }  // namespace <anonymous>
 
-static void InitSandboxedProcess(JNIEnv* env,
-                                 jclass clazz,
-                                 jobject context,
-                                 jobject service,
-                                 jint ipc_fd,
-                                 jint crash_fd) {
+namespace content {
+
+void InitSandboxedProcess(JNIEnv* env,
+                          jclass clazz,
+                          jobject context,
+                          jobject service,
+                          jint ipc_fd,
+                          jint crash_fd) {
   InternalInitSandboxedProcess(static_cast<int>(ipc_fd),
       static_cast<int>(crash_fd), env, clazz, context, service);
 
@@ -84,15 +86,11 @@ static void InitSandboxedProcess(JNIEnv* env,
   LOG(INFO) << "SandboxedProcessService: Drop out of SandboxedProcessMain.";
 }
 
-static void ExitSandboxedProcess(JNIEnv* env, jclass clazz) {
+void ExitSandboxedProcess(JNIEnv* env, jclass clazz) {
   LOG(INFO) << "SandboxedProcessService: Exiting sandboxed process.";
-  // TODO(tedchoc): These methods should also be in the content namespace to
-  // avoid specifying it in the LibraryLoaderExitHook call.
-  content::LibraryLoaderExitHook();
+  LibraryLoaderExitHook();
   _exit(0);
 }
-
-namespace content {
 
 bool RegisterSandboxedProcessService(JNIEnv* env) {
   return RegisterNativesImpl(env);

@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.browser.SandboxedProcessConnection;
 import org.chromium.content.common.ISandboxedProcessCallback;
@@ -33,6 +34,7 @@ import org.chromium.content.common.SurfaceCallback;
  *              android:process=":sandboxed_processX" />
  * for X in 0...N-1 (where N is {@link SandboxedProcessLauncher#MAX_REGISTERED_SERVICES})
  */
+@JNINamespace("content")
 public class SandboxedProcessService extends Service {
     private static final String MAIN_THREAD_NAME = "SandboxedProcessMain";
     private static final String TAG = "SandboxedProcessService";

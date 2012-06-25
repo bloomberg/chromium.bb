@@ -37,7 +37,7 @@ class WebSettings : public WebContentsObserver {
   void SyncToNativeImpl();
 
   // WebContentsObserver overrides:
-  virtual void RenderViewCreated(RenderViewHost*) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // Determines whether a sync to native should be triggered when a new render
   // view is created.

@@ -10,6 +10,7 @@ import android.webkit.WebSettings.PluginState;
 import android.webkit.WebView;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
 /**
@@ -18,6 +19,7 @@ import org.chromium.base.ThreadUtils;
  * ContentView.PERSONALITY_VIEW role, all settings are read / write. If ContentView
  * is in the ContentView.PERSONALITY_CHROME role, setting can only be read.
  */
+@JNINamespace("content")
 public class WebSettings {
     private static final String TAG = "WebSettings";
 
