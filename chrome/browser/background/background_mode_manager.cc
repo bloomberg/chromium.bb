@@ -25,6 +25,7 @@
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -93,11 +94,7 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(int item) {
 
 Browser* BackgroundModeManager::BackgroundModeData::GetBrowserWindow() {
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  if (!browser) {
-    Browser::OpenEmptyWindow(profile_);
-    browser = browser::FindLastActiveWithProfile(profile_);
-  }
-  return browser;
+  return browser ? browser : chrome::OpenEmptyWindow(profile_);
 }
 
 int BackgroundModeManager::BackgroundModeData::GetBackgroundAppCount() const {
@@ -496,7 +493,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id) {
       chrome::ShowAboutChrome(bmd->GetBrowserWindow());
       break;
     case IDC_TASK_MANAGER:
-      bmd->GetBrowserWindow()->OpenTaskManager(true);
+      chrome::OpenTaskManager(bmd->GetBrowserWindow(), true);
       break;
     case IDC_EXIT:
       content::RecordAction(UserMetricsAction("Exit"));

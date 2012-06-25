@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
@@ -139,14 +140,14 @@ void ChromeShellDelegate::NewTab() {
   // If the browser was not active, we call BrowserWindow::Show to make it
   // visible. Otherwise, we let Browser::NewTab handle the active window change.
   const bool was_active = browser->window()->IsActive();
-  browser->NewTab();
+  chrome::NewTab(browser);
   if (!was_active)
     browser->window()->Show();
 }
 
 void ChromeShellDelegate::NewWindow(bool is_incognito) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  Browser::NewEmptyWindow(
+  chrome::NewEmptyWindow(
       is_incognito ? profile->GetOffTheRecordProfile() : profile);
 }
 
@@ -236,10 +237,10 @@ bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
 
   switch (direction) {
     case ash::Shell::FORWARD:
-      browser->FocusNextPane();
+      chrome::FocusNextPane(browser);
       break;
     case ash::Shell::BACKWARD:
-      browser->FocusPreviousPane();
+      chrome::FocusPreviousPane(browser);
       break;
   }
   return true;
@@ -255,7 +256,7 @@ void ChromeShellDelegate::ShowKeyboardOverlay() {
 void ChromeShellDelegate::ShowTaskManager() {
   Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
-  browser->OpenTaskManager(false);
+  chrome::OpenTaskManager(browser, false);
 }
 
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {

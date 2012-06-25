@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
@@ -602,7 +603,7 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
 
   DCHECK(home_.get() && button == home_->widget()) <<
       "Unexpected button click callback";
-  browser_->Home(event_utils::DispositionForCurrentButtonPressEvent());
+  chrome::Home(browser_, event_utils::DispositionForCurrentButtonPressEvent());
 }
 
 gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,

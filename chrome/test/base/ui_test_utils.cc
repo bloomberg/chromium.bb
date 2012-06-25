@@ -36,6 +36,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -373,7 +374,7 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 }
 
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
-  Browser::OpenURLOffTheRecord(profile, url);
+  chrome::OpenURLOffTheRecord(profile, url);
   Browser* browser = browser::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(), false);
   WaitForNavigations(&browser->GetActiveWebContents()->GetController(), 1);

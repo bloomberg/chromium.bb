@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -408,7 +409,7 @@ bool ChromeLauncherController::IsLoggedInAsGuest() {
 }
 
 void ChromeLauncherController::CreateNewIncognitoWindow() {
-  Browser::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile());
+  chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile());
 }
 
 bool ChromeLauncherController::CanPin() const {
@@ -510,14 +511,14 @@ void ChromeLauncherController::CreateNewTab() {
     return;
   }
 
-  last_browser->NewTab();
+  chrome::NewTab(last_browser);
   aura::Window* window = last_browser->window()->GetNativeWindow();
   window->Show();
   ash::wm::ActivateWindow(window);
 }
 
 void ChromeLauncherController::CreateNewWindow() {
-  Browser::NewEmptyWindow(GetProfileForNewWindows());
+  chrome::NewEmptyWindow(GetProfileForNewWindows());
 }
 
 void ChromeLauncherController::ItemClicked(const ash::LauncherItem& item,

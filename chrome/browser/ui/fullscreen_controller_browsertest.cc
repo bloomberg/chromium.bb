@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen_controller_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -392,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   // Close tab. Bubble is cleared.
   {
     MouseLockNotificationObserver mouse_lock_observer;
-    browser()->CloseTab();
+    chrome::CloseTab(browser());
     mouse_lock_observer.Wait();
   }
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());

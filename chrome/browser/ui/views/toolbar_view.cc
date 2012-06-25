@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error_service.h"
@@ -405,7 +406,7 @@ void ToolbarView::ShowPageInfo(content::WebContents* web_contents,
                           const GURL& url,
                           const content::SSLStatus& ssl,
                           bool show_history) {
-  browser_->ShowPageInfo(web_contents, url, ssl, show_history);
+  chrome::ShowPageInfo(browser_, web_contents, url, ssl, show_history);
 }
 
 views::Widget* ToolbarView::CreateViewsBubble(

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/navigation_controller.h"
@@ -72,7 +73,7 @@ void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
 }
 
 void BrowserTabRestoreServiceDelegate::CloseTab() {
-  browser_->CloseTab();
+  chrome::CloseTab(browser_);
 }
 
 // Implementations of TabRestoreServiceDelegate static methods

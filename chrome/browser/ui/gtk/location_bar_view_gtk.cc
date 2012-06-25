@@ -38,6 +38,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -1152,7 +1153,8 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
       NOTREACHED();
       return FALSE;
     }
-    browser_->ShowPageInfo(tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
+    chrome::ShowPageInfo(browser_, tab, nav_entry->GetURL(),
+                         nav_entry->GetSSL(), true);
     return TRUE;
   } else if (event->button == 2) {
     // When the user middle clicks on the location icon, try to open the

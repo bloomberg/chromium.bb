@@ -11,6 +11,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -188,8 +189,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
     bool goForward = isRightScroll;
     bool canGoBack = false, canGoForward = false;
     if (browser) {
-      canGoBack = browser->CanGoBack();
-      canGoForward = browser->CanGoForward();
+      canGoBack = chrome::CanGoBack(browser);
+      canGoForward = chrome::CanGoForward(browser);
     }
 
     // If "forward" is inactive and the user rubber-bands to the right,
@@ -262,9 +263,9 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
               historyOverlay.view.window);
           if (ended && browser) {
             if (goForward)
-              browser->GoForward(CURRENT_TAB);
+              chrome::GoForward(browser, CURRENT_TAB);
             else
-              browser->GoBack(CURRENT_TAB);
+              chrome::GoBack(browser, CURRENT_TAB);
           }
 
           if (isComplete)

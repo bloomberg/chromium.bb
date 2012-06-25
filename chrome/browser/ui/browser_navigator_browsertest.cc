@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1117,7 +1118,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(1, browser()->tab_count());
 
-  browser()->NewTab();
+  chrome::NewTab(browser());
   EXPECT_EQ(2, browser()->tab_count());
 
   {
@@ -1144,7 +1145,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(GetClearBrowsingDataURL(),
             browser()->GetActiveWebContents()->GetURL());
 
-  browser()->NewTab();
+  chrome::NewTab(browser());
   EXPECT_EQ(2, browser()->tab_count());
 
   {
@@ -1210,7 +1211,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser::Navigate(&p);
 
   // Focus the omnibox.
-  browser()->FocusLocationBar();
+  chrome::FocusLocationBar(browser());
 
   OmniboxEditController* controller =
       browser()->window()->GetLocationBar()->GetLocationEntry()->model()->
@@ -1227,7 +1228,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   // Go back to the first tab. The focus should not be in the omnibox.
-  browser()->SelectPreviousTab();
+  chrome::SelectPreviousTab(browser());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(),
                                             VIEW_ID_LOCATION_BAR));

@@ -7,6 +7,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "content/public/browser/navigation_controller.h"
@@ -106,7 +107,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     return true;
   }
   Browser* browser = browser::FindBrowserWithWebContents(tab);
-  browser->ShowPageInfo(tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
+  chrome::ShowPageInfo(browser, tab, nav_entry->GetURL(), nav_entry->GetSSL(),
+                       true);
   return true;
 }
 

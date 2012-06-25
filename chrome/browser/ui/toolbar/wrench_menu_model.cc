@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error.h"
 #include "chrome/browser/ui/global_error_service.h"
@@ -174,7 +175,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
 
-  if (browser->CanOpenTaskManager())
+  if (chrome::CanOpenTaskManager())
     AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
 
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);

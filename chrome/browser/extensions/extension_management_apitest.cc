@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(app_browser));
 
-  app_browser->CloseWindow();
+  chrome::CloseWindow(app_browser);
   signal.Wait();
 
   // Unload the extension.

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -74,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(1, browser()->GetWebContentsAt(2)->GetMaxPageID());
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
 
   // Open another Web UI page in a new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -111,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeHangInNTP) {
 
   // Visit chrome://hang/ again in another NTP. Don't bother waiting for the
   // NTP to load, because it's hung.
-  browser()->NewTab();
+  chrome::NewTab(browser());
   browser()->OpenURL(OpenURLParams(
       GURL(chrome::kChromeUIHangURL), Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));

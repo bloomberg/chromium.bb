@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/process.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // Create another new tab.  It should share the process with the other WebUI.
-  browser()->NewTab();
+  chrome::NewTab(browser());
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
@@ -191,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // Create another new tab.  It should share the process with the other WebUI.
-  browser()->NewTab();
+  chrome::NewTab(browser());
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;

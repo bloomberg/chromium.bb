@@ -4,6 +4,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -120,7 +121,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   NavigateAndCommitActiveTab(url2);
 
   // Go back in a new background tab.
-  browser()->GoBack(NEW_BACKGROUND_TAB);
+  chrome::GoBack(browser(), NEW_BACKGROUND_TAB);
   EXPECT_EQ(0, browser()->active_index());
   ASSERT_EQ(2, browser()->tab_count());
 
@@ -144,7 +145,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   // (to test both codepaths).
   CommitPendingLoad(&first->GetController());
   EXPECT_EQ(1, browser()->active_index());
-  browser()->GoForward(NEW_BACKGROUND_TAB);
+  chrome::GoForward(browser(), NEW_BACKGROUND_TAB);
 
   // The previous tab should be unchanged and still in the foreground.
   EXPECT_EQ(url1, first->GetURL());
@@ -164,14 +165,14 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   browser()->ActivateTabAt(2, true);
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&second->GetController());
-  browser()->GoBack(NEW_FOREGROUND_TAB);
+  chrome::GoBack(browser(), NEW_FOREGROUND_TAB);
   ASSERT_EQ(3, browser()->active_index());
   ASSERT_EQ(url1, browser()->GetActiveWebContents()->GetURL());
 
   // Same thing again for forward.
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&browser()->GetActiveWebContents()->GetController());
-  browser()->GoForward(NEW_FOREGROUND_TAB);
+  chrome::GoForward(browser(), NEW_FOREGROUND_TAB);
   ASSERT_EQ(4, browser()->active_index());
   ASSERT_EQ(url2, browser()->GetActiveWebContents()->GetURL());
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
                                    content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
   EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
   EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
   EXPECT_TRUE(location_entry->IsSelectAll());
 }
@@ -287,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
     EXPECT_FALSE(match.deletable);
   }
 
-  browser()->NewTab();
+  chrome::NewTab(browser());
 
   // Try out the hosted app.
   {

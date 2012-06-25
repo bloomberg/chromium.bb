@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -31,8 +32,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
   ASSERT_TRUE(test_server()->Start());
 
   // Create new tab; open findbar.
-  browser()->NewTab();
-  browser()->Find();
+  chrome::NewTab(browser());
+  chrome::Find(browser());
 
   // Create new tab with an arbitrary URL.
   GURL url = test_server()->GetURL(kSimplePage);
@@ -46,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
 
   // Set focus somewhere else, so that we can test clicking on the findbar
   // works.
-  browser()->FocusLocationBar();
+  chrome::FocusLocationBar(browser());
   ui_test_utils::ClickOnView(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 }
@@ -65,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(
                    G_CALLBACK(OnClicked), &has_been_clicked);
 
   // Create new tab.
-  browser()->NewTab();
+  chrome::NewTab(browser());
 
   // Wait for the floating bar to appear.
   MessageLoop::current()->RunAllPending();

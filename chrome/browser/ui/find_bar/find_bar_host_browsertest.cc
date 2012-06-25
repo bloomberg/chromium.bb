@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -118,7 +119,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   void EnsureFindBoxOpenForBrowser(Browser* browser) {
-    browser->ShowFindBar();
+    chrome::ShowFindBar(browser);
     gfx::Point position;
     bool fully_visible = false;
     EXPECT_TRUE(GetFindBarWindowInfoForBrowser(
@@ -625,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   GURL url2 = GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -640,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
       content::Source<NavigationController>(
           &browser()->GetActiveTabContents()->web_contents()->
               GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
 
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
@@ -658,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindStayVisibleOnAnchorLoad) {
   GURL url = GetURL(kAnchorPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -691,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -701,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_TRUE(fully_visible);
 
   // Open another tab (tab B).
-  browser()->NewTab();
+  chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Make sure Find box is closed.
@@ -709,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_FALSE(fully_visible);
 
   // Close tab B.
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
 
   // Make sure Find window appears again.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
@@ -727,7 +728,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   GURL url = GetURL(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
 
   // This is needed on GTK because the reposition operation is asynchronous.
   MessageLoop::current()->RunAllPending();
@@ -804,7 +805,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(0, ordinal);
 
   // Open another tab (tab B).
-  browser()->NewTab();
+  chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Simulate what happens when you press F3 for FindNext. We should get a
@@ -814,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(0, ordinal);
 
   // Open another tab (tab C).
-  browser()->NewTab();
+  chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Simulate what happens when you press F3 for FindNext. We should get a
@@ -841,7 +842,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
       focus_manager->GetCurrentTargetForAccelerator(escape);
   EXPECT_TRUE(old_target != NULL);
 
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
 
   // Our Find bar should be the new target.
   ui::AcceleratorTarget* new_target =
@@ -862,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
   // Show find bar again with animation on, and the target should be
   // on find bar.
   DropdownBarHost::disable_animations_during_testing_ = false;
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
   EXPECT_EQ(new_target,
             focus_manager->GetCurrentTargetForAccelerator(escape));
 }
@@ -875,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  browser()->ShowFindBar();
+  chrome::ShowFindBar(browser());
 
   // Simulate a user clearing the search string. Ideally, we should be
   // simulating keypresses here for searching for something and pressing
@@ -1224,7 +1225,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Close it.
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
 
   // See if the Find window has moved.
   gfx::Point position2;
@@ -1235,7 +1236,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // there isn't a good way other than looping and polling to see when it's
   // done. So instead we change the state and open a new tab, since the new tab
   // animation doesn't happen on tab change.
-  browser()->ToggleBookmarkBar();
+  chrome::ToggleBookmarkBar(browser());
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, NEW_FOREGROUND_TAB,
@@ -1248,7 +1249,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
   EXPECT_TRUE(GetFindBarWindowInfo(&position2, NULL));
   EXPECT_EQ(position, position2);
 }

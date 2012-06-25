@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -427,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ProvisionalLoadWaiter load_failed_observer(tab);
 
   // Simulate user clicking on back button (crbug.com/39248).
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
 
   // Wait until we hear the load failure, and make sure we haven't swapped out
   // the previous page.  Prevents regression of http://crbug.com/82667.
@@ -547,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
     tabs[i] = browser()->AddSelectedTabWithURL(
         slaveUrl, content::PAGE_TRANSITION_LINK);
   }
-  browser()->SelectNextTab();
+  chrome::SelectNextTab(browser());
 
   // Visit a page which waits for one TLS handshake failure.
   // The title will be changed to 'PASS'.
@@ -665,8 +666,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   // NAV_ENTRY_COMMITTED notification because going back with an
   // active interstitial simply hides the interstitial.
   ASSERT_TRUE(tab->GetInterstitialPage() != NULL);
-  EXPECT_TRUE(browser()->CanGoBack());
-  browser()->GoBack(CURRENT_TAB);
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
+  chrome::GoBack(browser(), CURRENT_TAB);
 }
 
 //

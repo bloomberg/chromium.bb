@@ -34,6 +34,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -634,9 +635,9 @@ bool CreateWindowFunction::RunImpl() {
     target_tab_strip->InsertTabContentsAt(urls.size(), contents,
                                           TabStripModel::ADD_NONE);
   } else if (urls.empty()) {
-    new_window->NewTab();
+    chrome::NewTab(new_window);
   }
-  new_window->SelectNumberedTab(0);
+  chrome::SelectNumberedTab(new_window, 0);
 
   // Unlike other window types, Panels do not take focus by default.
   if (!saw_focus_key && window_type == Browser::TYPE_PANEL)

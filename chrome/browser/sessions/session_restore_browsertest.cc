@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -110,7 +111,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::BrowserAddedObserver window_observer;
     content::TestNavigationObserver navigation_observer(
         content::NotificationService::AllSources(), NULL, expected_tab_count);
-    Browser::NewEmptyWindow(profile);
+    chrome::NewEmptyWindow(profile);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
     navigation_observer.Wait();
     g_browser_process->ReleaseModule();
@@ -122,7 +123,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser, CURRENT_TAB);
     observer.Wait();
   }
 
@@ -130,7 +131,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser->GoForward(CURRENT_TAB);
+    chrome::GoForward(browser, CURRENT_TAB);
     observer.Wait();
   }
 
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
 
   // Create a new window, which should open NTP.
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  incognito_browser->NewWindow();
+  chrome::NewWindow(incognito_browser);
   Browser* new_browser = browser_added_observer.WaitForSingleNewBrowser();
 
   ASSERT_TRUE(new_browser);
@@ -234,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Create a new window, which should trigger session restore.
   ui_test_utils::BrowserAddedObserver observer;
-  popup->NewWindow();
+  chrome::NewWindow(popup);
   Browser* new_browser = observer.WaitForSingleNewBrowser();
 
   ASSERT_TRUE(new_browser != NULL);
@@ -361,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
 
   // Create a new window, which should trigger session restore.
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  incognito_browser->NewWindow();
+  chrome::NewWindow(incognito_browser);
   Browser* new_browser = browser_added_observer.WaitForSingleNewBrowser();
 
   // The first tab should have 'url' as its url.
@@ -558,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2_, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
 
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
 
@@ -742,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   ASSERT_EQ(2, new_browser->tab_count());
   ASSERT_EQ(0, new_browser->active_index());
   // Close the pinned tab.
-  new_browser->CloseTab();
+  chrome::CloseTab(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
   ASSERT_EQ(0, new_browser->active_index());
   // Use the existing tab to navigate away, so that we can verify it was really

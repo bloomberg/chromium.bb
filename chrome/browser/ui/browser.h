@@ -296,23 +296,6 @@ class Browser : public TabStripModelDelegate,
   // Returns the state of the bookmark bar.
   BookmarkBar::State bookmark_bar_state() const { return bookmark_bar_state_; }
 
-  // Browser Creation Helpers /////////////////////////////////////////////////
-
-  // Opens a new window with the default blank tab.
-  static void NewEmptyWindow(Profile* profile);
-
-  // Opens a new window with the default blank tab. This bypasses metrics and
-  // various internal bookkeeping; NewEmptyWindow (above) is preferred.
-  static Browser* OpenEmptyWindow(Profile* profile);
-
-  // Opens a new window with the tabs from |profile|'s TabRestoreService.
-  static void OpenWindowWithRestoredTabs(Profile* profile);
-
-  // Opens the specified URL in a new browser window in an incognito session.
-  // If there is already an existing active incognito session for the specified
-  // |profile|, that session is re-used.
-  static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
-
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
   // Gets the Favicon of the page in the selected tab.
@@ -447,10 +430,6 @@ class Browser : public TabStripModelDelegate,
       const std::string& extension_app_id,
       content::SessionStorageNamespace* session_storage_namespace);
 
-  // Navigate to an index in the tab history, opening a new tab depending on the
-  // disposition.
-  bool NavigateToIndexWithDisposition(int index, WindowOpenDisposition disp);
-
   // Invoked when the fullscreen state of the window changes.
   // BrowserWindow::EnterFullscreen invokes this after the window has become
   // fullscreen.
@@ -461,32 +440,6 @@ class Browser : public TabStripModelDelegate,
   // NOTE: Within each of the following sections, the IDs are ordered roughly by
   // how they appear in the GUI/menus (left to right, top to bottom, etc.).
 
-  // Navigation commands
-  bool CanGoBack() const;
-  void GoBack(WindowOpenDisposition disposition);
-  bool CanGoForward() const;
-  void GoForward(WindowOpenDisposition disposition);
-  void Reload(WindowOpenDisposition disposition);
-  void ReloadIgnoringCache(WindowOpenDisposition disposition);  // Shift-reload.
-  void Home(WindowOpenDisposition disposition);
-  void OpenCurrentURL();
-  void Stop();
-  // Window management commands
-  void NewWindow();
-  void NewIncognitoWindow();
-  void CloseWindow();
-  void NewTab();
-  void CloseTab();
-  void SelectNextTab();
-  void SelectPreviousTab();
-  void OpenTabpose();
-  void MoveTabNext();
-  void MoveTabPrevious();
-  void SelectNumberedTab(int index);
-  void SelectLastTab();
-  void DuplicateTab();
-  void WriteCurrentURLToClipboard();
-  void ConvertPopupToTabbedBrowser();
   // In kiosk mode, the first toggle is valid, the rest is discarded.
   void ToggleFullscreenMode();
   // See the description of
@@ -499,19 +452,9 @@ class Browser : public TabStripModelDelegate,
 #if defined(OS_MACOSX)
   void TogglePresentationMode();
 #endif
-  void Exit();
 
   // Page-related commands
-  void BookmarkCurrentPage();
-  void PinCurrentPageToStartScreen();
-  void SavePage();
   void ViewSelectedSource();
-  void ShowFindBar();
-  void ShowPageInfo(content::WebContents* web_contents,
-                    const GURL& url,
-                    const content::SSLStatus& ssl,
-                    bool show_history);
-  void ShowChromeToMobileBubble();
 
   // Returns true if the Browser supports the specified feature. The value of
   // this varies during the lifetime of the browser. For example, if the window
@@ -526,52 +469,18 @@ class Browser : public TabStripModelDelegate,
 
   // TODO(port): port these, and re-merge the two function declaration lists.
   // Page-related commands.
-  void Print();
-  void AdvancedPrint();
-  void EmailPageLocation();
   void ToggleEncodingAutoDetect();
   void OverrideEncoding(int encoding_id);
-
-  // Clipboard commands
-  void Cut();
-  void Copy();
-  void Paste();
-
-  // Find-in-page
-  void Find();
-  void FindNext();
-  void FindPrevious();
-
-  // Zoom
-  void Zoom(content::PageZoom zoom);
-
-  // Focus various bits of UI
-  void FocusToolbar();
-  void FocusLocationBar();  // Also selects any existing text.
-  void FocusSearch();
-  void FocusAppMenu();
-  void FocusBookmarksToolbar();
-  void FocusNextPane();
-  void FocusPreviousPane();
 
   // Show various bits of UI
   void OpenFile();
   void OpenCreateShortcutsDialog();
-  void ToggleDevToolsWindow(DevToolsToggleAction action);
 
-  // Returns true if the task manager can be opened.
-  bool CanOpenTaskManager();
-  void OpenTaskManager(bool highlight_background_resources);
-  void OpenFeedbackDialog();
+  void UpdateDownloadShelfVisibility(bool visible);
 
-  void ToggleBookmarkBar();
-
-  void ShowAppMenu();
-  void ShowAvatarMenu();
-  void OpenUpdateChromeDialog();
-  void ToggleSpeechInput();
-
-  virtual void UpdateDownloadShelfVisibility(bool visible);
+  // Commits the current instant, returning true on success. This is intended
+  // for use from OpenCurrentURL.
+  bool OpenInstant(WindowOpenDisposition disposition);
 
   /////////////////////////////////////////////////////////////////////////////
 
@@ -1189,10 +1098,6 @@ class Browser : public TabStripModelDelegate,
   // the browser.
   bool SupportsWindowFeatureImpl(WindowFeature feature,
                                  bool check_fullscreen) const;
-
-  // Commits the current instant, returning true on success. This is intended
-  // for use from OpenCurrentURL.
-  bool OpenInstant(WindowOpenDisposition disposition);
 
   // If this browser should have instant one is created, otherwise does nothing.
   void CreateInstantIfNecessary();

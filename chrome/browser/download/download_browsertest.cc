@@ -37,6 +37,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -1127,7 +1128,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
 #endif
 
   // Close the Incognito window and don't crash.
-  incognito->CloseWindow();
+  chrome::CloseWindow(incognito);
 
 #if !defined(OS_MACOSX)
   signal.Wait();
@@ -1370,7 +1371,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
 #endif
 
   // Close the new window.
-  download_browser->CloseWindow();
+  chrome::CloseWindow(download_browser);
 
 #if !defined(OS_MACOSX)
   signal.Wait();
@@ -1589,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   signal.Wait();
 }
 
@@ -2016,7 +2017,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
       new DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
           false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  browser()->SavePage();
+  chrome::SavePage(browser());
   waiter->WaitForFinished();
   EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -2095,7 +2096,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
       new DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
           false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  browser()->SavePage();
+  chrome::SavePage(browser());
   waiter->WaitForFinished();
   EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);

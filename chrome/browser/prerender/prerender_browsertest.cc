@@ -26,6 +26,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -665,7 +666,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-    current_browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(current_browser(), CURRENT_TAB);
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -685,7 +686,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    current_browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(current_browser(), CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

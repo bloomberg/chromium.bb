@@ -15,6 +15,7 @@
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -427,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
     url = test_server()->GetURL("files/printing/test1.html");
     ui_test_utils::NavigateToURL(browser(), url);
   }
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0., CompareWithResult(L"popup_delayed_print"))
@@ -455,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
     url = test_server()->GetURL("files/printing/test1.html");
     ui_test_utils::NavigateToURL(browser(), url);
   }
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0., CompareWithResult(L"iframe")) << L"iframe";

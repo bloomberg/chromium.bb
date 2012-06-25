@@ -8,6 +8,7 @@
 #include "base/win/metro.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -23,11 +24,11 @@ void NewMetroWindow(Browser* source_browser, Profile* profile) {
 
   Browser* browser = browser::FindTabbedBrowser(profile, false);
   if (!browser) {
-    Browser::OpenEmptyWindow(profile);
+    chrome::OpenEmptyWindow(profile);
     return;
   }
 
-  browser->NewTab();
+  chrome::NewTab(browser);
 
   if (browser != source_browser) {
     // Tell the metro_driver to flip our window. This causes the current
@@ -38,32 +39,30 @@ void NewMetroWindow(Browser* source_browser, Profile* profile) {
 
 }  // namespace
 
-void Browser::NewWindow() {
+namespace chrome {
+
+void NewWindow(Browser* browser) {
   if (base::win::IsMetroProcess()) {
-    NewMetroWindow(this, profile_->GetOriginalProfile());
+    NewMetroWindow(browser, browser->profile()->GetOriginalProfile());
     return;
   }
-  NewEmptyWindow(profile_->GetOriginalProfile());
+  NewEmptyWindow(browser->profile()->GetOriginalProfile());
 }
 
-void Browser::NewIncognitoWindow() {
+void NewIncognitoWindow(Browser* browser) {
   if (base::win::IsMetroProcess()) {
-    NewMetroWindow(this, profile_->GetOffTheRecordProfile());
+    NewMetroWindow(browser, browser->profile()->GetOffTheRecordProfile());
     return;
   }
-  NewEmptyWindow(profile_->GetOffTheRecordProfile());
+  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile());
 }
 
-void Browser::SetMetroSnapMode(bool enable) {
-  fullscreen_controller_->SetMetroSnapMode(enable);
-}
-
-void Browser::PinCurrentPageToStartScreen() {
+void PinCurrentPageToStartScreen(Browser* browser) {
   HMODULE metro_module = base::win::GetMetroModule();
   if (metro_module) {
     GURL url;
     string16 title;
-    TabContents* tab = GetActiveTabContents();
+    TabContents* tab = browser->GetActiveTabContents();
     bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
 
     typedef BOOL (*MetroPinUrlToStartScreen)(const string16&, const string16&);
@@ -80,4 +79,10 @@ void Browser::PinCurrentPageToStartScreen() {
     metro_pin_url_to_start_screen(title, UTF8ToUTF16(url.spec()));
     return;
   }
+}
+
+}  // namespace chrome
+
+void Browser::SetMetroSnapMode(bool enable) {
+  fullscreen_controller_->SetMetroSnapMode(enable);
 }

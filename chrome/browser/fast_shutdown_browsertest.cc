@@ -8,6 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -97,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, SlowTermination) {
   ASSERT_EQ(2u, BrowserList::size());
   BrowserList::const_iterator i = BrowserList::begin();
   ++i;
-  (*i)->CloseWindow();
+  chrome::CloseWindow(*i);
 
   // Need to wait for the renderer process to shutdown to ensure that we got the
   // set cookies IPC.
@@ -106,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, SlowTermination) {
         content::NotificationService::AllSources());
   // Close the tab. This should launch the unload handler, which sets a cookie
   // that's stored to disk.
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
   renderer_shutdown_observer.Wait();
 
   

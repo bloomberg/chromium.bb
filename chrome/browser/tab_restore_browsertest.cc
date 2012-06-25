@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -122,7 +123,7 @@ class TabRestoreTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser, CURRENT_TAB);
     observer.Wait();
   }
 
@@ -280,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
   ui_test_utils::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   observer.Wait();
   EXPECT_EQ(1u, BrowserList::size());
 
@@ -434,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url2, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_FALSE(browser()->CanGoForward());
+  EXPECT_FALSE(chrome::CanGoForward(browser()));
   EXPECT_EQ(http_url2, browser()->GetActiveWebContents()->GetURL());
 }
 
@@ -459,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   ui_test_utils::WindowedNotificationObserver close_window_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   close_window_observer.Wait();
   EXPECT_EQ(window_count - 1, BrowserList::size());
 

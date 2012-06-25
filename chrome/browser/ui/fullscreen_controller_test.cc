@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -138,7 +139,7 @@ void FullscreenControllerTest::GoBack() {
   content::TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);
 
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
 
   observer.Wait();
 }
@@ -147,7 +148,7 @@ void FullscreenControllerTest::Reload() {
   content::TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);
 
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
 
   observer.Wait();
 }

@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_mac.h"
@@ -100,7 +101,7 @@ NSString* NSPopoverDidShowNotification = @"NSPopoverDidShowNotification";
 NSString* NSPopoverDidCloseNotification = @"NSPopoverDidCloseNotification";
 #endif
 
-// True while AppController is calling Browser::NewEmptyWindow(). We need a
+// True while AppController is calling chrome::NewEmptyWindow(). We need a
 // global flag here, analogue to StartupBrowserCreator::InProcessStartup()
 // because otherwise the SessionService will try to restore sessions when we
 // make a new window while there are no other active windows.
@@ -122,7 +123,7 @@ Browser* ActivateBrowser(Profile* profile) {
 Browser* CreateBrowser(Profile* profile) {
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    Browser::NewEmptyWindow(profile);
+    chrome::NewEmptyWindow(profile);
   }
 
   Browser* browser = browser::GetLastActiveBrowser();
@@ -843,7 +844,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       CreateBrowser(lastProfile->GetOffTheRecordProfile());
       break;
     case IDC_RESTORE_TAB:
-      Browser::OpenWindowWithRestoredTabs(lastProfile);
+      chrome::OpenWindowWithRestoredTabs(lastProfile);
       break;
     case IDC_OPEN_FILE:
       CreateBrowser(lastProfile)->ExecuteCommand(IDC_OPEN_FILE);

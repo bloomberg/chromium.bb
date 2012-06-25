@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -73,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
             &browser()->GetActiveWebContents()->GetController()));
-    browser()->Reload(CURRENT_TAB);
+    chrome::Reload(browser(), CURRENT_TAB);
     observer.Wait();
   }
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(

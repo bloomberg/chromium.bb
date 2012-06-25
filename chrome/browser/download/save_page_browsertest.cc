@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -365,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
-  browser()->SavePage();
+  chrome::SavePage(browser());
   observer.Wait();
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -405,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
-  browser()->SavePage();
+  chrome::SavePage(browser());
   observer.Wait();
   CheckDownloadHistory(url, full_file_name, -1);
 

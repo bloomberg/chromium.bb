@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/oom_priority_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -105,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   WindowedNotificationObserver reload1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  browser()->SelectNumberedTab(0);
+  chrome::SelectNumberedTab(browser(), 0);
   reload1.Wait();
   // Make sure the FindBarController gets the right TabContents.
   EXPECT_EQ(browser()->GetFindBarController()->tab_contents(),
@@ -119,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   WindowedNotificationObserver reload2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  browser()->SelectNumberedTab(2);
+  chrome::SelectNumberedTab(browser(), 2);
   reload2.Wait();
   EXPECT_EQ(2, browser()->active_index());
   EXPECT_FALSE(browser()->IsTabDiscarded(0));
@@ -128,22 +129,22 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
   // Navigate the third tab back twice.  We used to crash here due to
   // crbug.com/121373.
-  EXPECT_TRUE(browser()->CanGoBack());
-  EXPECT_FALSE(browser()->CanGoForward());
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
+  EXPECT_FALSE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
   back1.Wait();
-  EXPECT_TRUE(browser()->CanGoBack());
-  EXPECT_TRUE(browser()->CanGoForward());
+  EXPECT_TRUE(chrome::CanGoBack(browser()));
+  EXPECT_TRUE(chrome::CanGoForward(browser()));
   WindowedNotificationObserver back2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
   back2.Wait();
-  EXPECT_FALSE(browser()->CanGoBack());
-  EXPECT_TRUE(browser()->CanGoForward());
+  EXPECT_FALSE(chrome::CanGoBack(browser()));
+  EXPECT_TRUE(chrome::CanGoForward(browser()));
 }
 
 }  // namespace

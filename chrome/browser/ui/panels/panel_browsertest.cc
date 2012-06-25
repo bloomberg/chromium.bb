@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -817,7 +818,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   browser()->window()->Activate();
   WaitForPanelActiveState(panel2, SHOW_AS_INACTIVE);
   // Close the main tabbed window. That should move focus back to panel.
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   WaitForPanelActiveState(panel2, SHOW_AS_ACTIVE);
 
   // Activate another panel.
@@ -1249,7 +1250,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   signal.Wait();
 
   EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
@@ -1415,7 +1416,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   TabContents* contents = browser()->tab_strip_model()->DetachTabContentsAt(0);
   panel_browser->tab_strip_model()->InsertTabContentsAt(
       0, contents, TabStripModel::ADD_NONE);
-  panel_browser->SelectNumberedTab(0);
+  chrome::SelectNumberedTab(panel_browser, 0);
   EXPECT_EQ(contents, panel_browser->GetActiveTabContents());
   EXPECT_EQ(1, PanelManager::GetInstance()->num_panels());
 
@@ -1437,7 +1438,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
-  panel_browser->ConvertPopupToTabbedBrowser();
+  chrome::ConvertPopupToTabbedBrowser(panel_browser);
   signal.Wait();
   EXPECT_EQ(0, PanelManager::GetInstance()->num_panels());
 
@@ -1689,8 +1690,8 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
   EXPECT_EQ(1, panel_browser->tab_count());
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());
 
-  panel_browser->CloseWindow();
-  browser()->CloseWindow();
+  chrome::CloseWindow(panel_browser);
+  chrome::CloseWindow(browser());
 }
 
 // See crbug 113779.
@@ -1715,7 +1716,7 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   signal.Wait();
   ASSERT_EQ(1U, BrowserList::size());
   ASSERT_EQ(NULL, browser::FindTabbedBrowser(profile, false));
@@ -1735,12 +1736,12 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
   Browser* tabbed_browser = browser::FindTabbedBrowser(profile, false);
   EXPECT_EQ(1, tabbed_browser->tab_count());
   ASSERT_TRUE(tabbed_browser->window()->IsDownloadShelfVisible());
-  tabbed_browser->CloseWindow();
+  chrome::CloseWindow(tabbed_browser);
 
   EXPECT_EQ(1, panel_browser->tab_count());
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());
 
-  panel_browser->CloseWindow();
+  chrome::CloseWindow(panel_browser);
 }
 
 #endif // OS_MACOSX

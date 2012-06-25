@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -94,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   ASSERT_EQ(1u, browser::GetTabbedBrowserCount(browser()->profile()));
 
   // Create an incognito window.
-  browser()->NewIncognitoWindow();
+  chrome::NewIncognitoWindow(browser());
 
   ASSERT_EQ(2u, BrowserList::size());
   ASSERT_EQ(1u, browser::GetTabbedBrowserCount(browser()->profile()));
@@ -104,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   ui_test_utils::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   observer.Wait();
 
   // There should only be the incognito window open now.

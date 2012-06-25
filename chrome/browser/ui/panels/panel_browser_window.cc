@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -337,7 +338,7 @@ DownloadShelf* PanelBrowserWindow::GetDownloadShelf() {
     Browser::CreateParams params(Browser::TYPE_TABBED, profile);
     params.initial_bounds = window_bounds;
     tabbed_browser = Browser::CreateWithParams(params);
-    tabbed_browser->NewTab();
+    chrome::NewTab(tabbed_browser);
   }
 
   tabbed_browser->window()->Show();  // Ensure download shelf is visible.

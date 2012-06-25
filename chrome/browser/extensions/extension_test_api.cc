@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
@@ -88,7 +88,7 @@ ExtensionTestCreateIncognitoTabFunction::
 bool ExtensionTestCreateIncognitoTabFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  Browser::OpenURLOffTheRecord(profile(), GURL(url));
+  chrome::OpenURLOffTheRecord(profile(), GURL(url));
   return true;
 }
 

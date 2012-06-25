@@ -16,6 +16,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_model.h"
@@ -409,7 +410,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
 void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
   system_menu_contents_->AddSeparator();
 
-  if (browser_view()->browser()->CanOpenTaskManager()) {
+  if (chrome::CanOpenTaskManager()) {
     system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);
   }
@@ -423,7 +424,7 @@ void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
 
 void BrowserFrameWin::BuildSystemMenuForAppOrPopupWindow() {
   Browser* browser = browser_view()->browser();
-  if (browser->is_app() && browser->CanOpenTaskManager()) {
+  if (browser->is_app() && chrome::CanOpenTaskManager()) {
     system_menu_contents_->AddSeparator();
     system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);

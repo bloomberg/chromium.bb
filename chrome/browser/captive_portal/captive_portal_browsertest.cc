@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -1467,7 +1468,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, CloseLoginTab) {
   FailLoadsWithoutLogin(browser(), 1);
 
   // Close login tab.
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
 
   // Go through the standard slow load login, and make sure it still works.
   SlowLoadBehindCaptivePortal(browser(), true);
@@ -1524,7 +1525,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, AbortLoad) {
 
   // Switch back to the hung tab from the login tab, and abort the navigation.
   browser()->ActivateTabAt(0, true);
-  browser()->Stop();
+  chrome::Stop(browser());
   navigation_observer.WaitForNavigations(1);
 
   EXPECT_EQ(0, NumBrokenTabs());
@@ -1617,7 +1618,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBack) {
 
   // Activate the error page tab again and go back.
   browser()->ActivateTabAt(0, true);
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
   navigation_observer.WaitForNavigations(1);
 
   EXPECT_EQ(1, navigation_observer.NumNavigationsForTab(
@@ -1652,7 +1653,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   // Go to the error page.
   MultiNavigationObserver navigation_observer;
   CaptivePortalObserver portal_observer(browser()->profile());
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
 
   // Wait for both the check triggered by the broken tab and the first load
   // of the login tab, and for the login tab to stop loading.

@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -2287,10 +2288,10 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
   // Handle back/forward.
   if (event->type == GDK_BUTTON_PRESS) {
     if (event->button == 8) {
-      browser_->GoBack(CURRENT_TAB);
+      chrome::GoBack(browser_.get(), CURRENT_TAB);
       return TRUE;
     } else if (event->button == 9) {
-      browser_->GoForward(CURRENT_TAB);
+      chrome::GoForward(browser_.get(), CURRENT_TAB);
       return TRUE;
     }
   }

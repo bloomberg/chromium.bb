@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -153,7 +154,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
       return;
 
     if (browser_)
-      browser_->Stop();
+      chrome::Stop(browser_);
 
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.

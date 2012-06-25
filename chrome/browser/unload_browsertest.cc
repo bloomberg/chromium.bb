@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -163,7 +164,7 @@ class UnloadTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
-    browser()->CloseWindow();
+    chrome::CloseWindow(browser());
     window_observer.Wait();
   }
 
@@ -256,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   ui_test_utils::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   ClickModalDialogButton(true);
   window_observer.Wait();
 }
@@ -266,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 // If this test flakes, reopen http://crbug.com/123110
 IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
 
   // We wait for the title to change after cancelling the popup to ensure that
   // in-flight IPCs from the renderer reach the browser. Otherwise the browser
@@ -281,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   ui_test_utils::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   ClickModalDialogButton(true);
   window_observer.Wait();
 }
@@ -304,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
   ui_test_utils::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::NotificationService::AllSources());
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   ClickModalDialogButton(true);
   window_observer.Wait();
 }
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   ui_test_utils::WindowedNotificationObserver tab_close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
-  browser()->CloseTab();
+  chrome::CloseTab(browser());
   tab_close_observer.Wait();
 
   CheckTitle("only_one_unload");

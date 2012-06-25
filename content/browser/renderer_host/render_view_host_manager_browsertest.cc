@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -862,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
   {
@@ -870,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
   {
@@ -878,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
 
@@ -888,7 +889,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoForward(CURRENT_TAB);
+    chrome::GoForward(browser(), CURRENT_TAB);
     forward_nav_load_observer.Wait();
   }
   {
@@ -896,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoForward(CURRENT_TAB);
+    chrome::GoForward(browser(), CURRENT_TAB);
     forward_nav_load_observer.Wait();
   }
 
@@ -906,7 +907,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
   {
@@ -914,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &contents->GetController()));
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
 
@@ -1000,7 +1001,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
             &browser()->GetActiveWebContents()->GetController()));
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
 

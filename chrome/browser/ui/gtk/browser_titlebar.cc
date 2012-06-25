@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -887,9 +888,9 @@ gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
   if (event->direction == GDK_SCROLL_LEFT ||
       event->direction == GDK_SCROLL_UP) {
     if (index != 0)
-      browser->SelectPreviousTab();
+      chrome::SelectPreviousTab(browser);
   } else if (index + 1 < browser->tab_count()) {
-    browser->SelectNextTab();
+    chrome::SelectNextTab(browser);
   }
   return TRUE;
 }

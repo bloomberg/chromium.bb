@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
@@ -194,8 +195,11 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
   int controller_index = MenuIndexToNavEntryIndex(index);
   WindowOpenDisposition disposition =
       browser::DispositionFromEventFlags(event_flags);
-  if (!browser_->NavigateToIndexWithDisposition(controller_index, disposition))
+  if (!chrome::NavigateToIndexWithDisposition(browser_,
+                                              controller_index,
+                                              disposition)) {
     NOTREACHED();
+  }
 }
 
 void BackForwardMenuModel::MenuWillShow() {

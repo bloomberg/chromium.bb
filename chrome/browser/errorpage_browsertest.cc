@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -93,9 +94,9 @@ class ErrorPageTest : public InProcessBrowserTest {
         NULL,
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {
-      browser()->GoBack(CURRENT_TAB);
+      chrome::GoBack(browser(), CURRENT_TAB);
     } else if (direction == HISTORY_NAVIGATE_FORWARD) {
-      browser()->GoForward(CURRENT_TAB);
+      chrome::GoForward(browser(), CURRENT_TAB);
     } else {
       FAIL();
     }

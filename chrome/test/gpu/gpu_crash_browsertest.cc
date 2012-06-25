@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -22,7 +23,7 @@ void SimulateGPUCrash(Browser* browser) {
   ui_test_utils::NavigateToURLWithDisposition(browser,
       GURL(chrome::kChromeUIGpuCrashURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
-  browser->SelectPreviousTab();
+  chrome::SelectPreviousTab(browser);
   LOG(ERROR) << "SimulateGPUCrash, after CloseTab";
 }
 

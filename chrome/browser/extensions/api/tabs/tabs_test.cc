@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -490,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
   Browser* popup_browser = Browser::CreateWithParams(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
   int window_id = ExtensionTabUtil::GetWindowId(popup_browser);
-  popup_browser->CloseWindow();
+  chrome::CloseWindow(popup_browser);
 
   scoped_refptr<CreateTabFunction> create_tab_function(new CreateTabFunction());
   // Without a callback the function will not generate a result.

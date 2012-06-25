@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -467,8 +468,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
         false));
     auth_needed_waiter.Wait();
     WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-    ASSERT_TRUE(browser()->CanGoBack());
-    browser()->GoBack(CURRENT_TAB);
+    ASSERT_TRUE(chrome::CanGoBack(browser()));
+    chrome::GoBack(browser(), CURRENT_TAB);
     auth_cancelled_waiter.Wait();
     load_stop_waiter.Wait();
     EXPECT_TRUE(observer.handlers_.empty());
@@ -478,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
   ui_test_utils::NavigateToURL(browser(), no_auth_page_3);
   {
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
-    browser()->GoBack(CURRENT_TAB);  // Should take us to page 1
+    chrome::GoBack(browser(), CURRENT_TAB);  // Should take us to page 1
     load_stop_waiter.Wait();
   }
 
@@ -491,8 +492,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
         false));
     auth_needed_waiter.Wait();
     WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-    ASSERT_TRUE(browser()->CanGoForward());
-    browser()->GoForward(CURRENT_TAB);  // Should take us to page 3
+    ASSERT_TRUE(chrome::CanGoForward(browser()));
+    chrome::GoForward(browser(), CURRENT_TAB);  // Should take us to page 3
     auth_cancelled_waiter.Wait();
     load_stop_waiter.Wait();
     EXPECT_TRUE(observer.handlers_.empty());

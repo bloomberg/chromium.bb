@@ -12,6 +12,7 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -69,7 +70,7 @@
 
   if ((self = [super init])) {
     browser_ = Browser::Create(aProfile);
-    browser_->NewTab();
+    chrome::NewTab(browser_);
     browser_->window()->Show();
     scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:browser_->session_id().id()]);

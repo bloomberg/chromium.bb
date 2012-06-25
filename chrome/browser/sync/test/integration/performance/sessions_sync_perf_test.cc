@@ -4,6 +4,7 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
@@ -60,7 +61,7 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
   GURL url;
   std::vector<GURL> urls;
   for (int i = 0; i < browser->tab_count(); ++i) {
-    browser->SelectNumberedTab(i);
+    chrome::SelectNumberedTab(browser, i);
     url = NextURL();
     browser->OpenURL(
         OpenURLParams(url,

@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -86,7 +87,7 @@ class AppApiTest : public ExtensionApiTest {
     ui_test_utils::WindowedNotificationObserver tab_added_observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
-    browser()->NewTab();
+    chrome::NewTab(browser());
     tab_added_observer.Wait();
     LOG(INFO) << "New tab.";
     ui_test_utils::NavigateToURL(browser(),
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  browser()->NewTab();
+  chrome::NewTab(browser());
   tab_added_observer.Wait();
   LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
@@ -267,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  browser()->NewTab();
+  chrome::NewTab(browser());
   tab_added_observer.Wait();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   EXPECT_FALSE(process_map->Contains(
@@ -315,9 +316,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
   // Open two tabs in the app.
   GURL base_url = GetTestBaseURL("app_process");
 
-  browser()->NewTab();
+  chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
-  browser()->NewTab();
+  chrome::NewTab(browser());
   // Wait until the second tab finishes its redirect train (2 hops).
   // 1. We navigate to redirect.html
   // 2. Renderer navigates and finishes, counting as a load stop.
@@ -387,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   reload_observer.Wait();
   EXPECT_TRUE(process_map->Contains(
       contents->GetRenderProcessHost()->GetID()));
@@ -398,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
       contents->GetRenderProcessHost()->GetID()));
@@ -578,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(), L"",

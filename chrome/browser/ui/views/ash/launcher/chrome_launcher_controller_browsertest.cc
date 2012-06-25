@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -474,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
   ui_test_utils::WindowedNotificationObserver open_observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
-  Browser::NewEmptyWindow(browser()->profile());
+  chrome::NewEmptyWindow(browser()->profile());
   open_observer.Wait();
   Browser* browser2 = browser::FindLastActiveWithProfile(browser()->profile());
   printf("browser2 is active: %d\n", browser2->window()->IsActive());

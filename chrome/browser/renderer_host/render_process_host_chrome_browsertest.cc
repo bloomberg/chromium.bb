@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // DevTools start in docked mode (no new tab), in a separate process.
-  browser()->ToggleDevToolsWindow(DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_INSPECT);
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -115,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // DevTools start in docked mode (no new tab), in a separate process.
-  browser()->ToggleDevToolsWindow(DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_INSPECT);
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());

@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -139,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAliasMapping) {
 
     EXPECT_EQ(kEncodingTestDatas[i].encoding_name,
               browser()->GetActiveWebContents()->GetEncoding());
-    browser()->CloseTab();
+    chrome::CloseTab(browser());
   }
 }
 
@@ -280,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
     content::TestNavigationObserver observer(
         content::Source<content::NavigationController>(
             &web_contents->GetController()));
-    browser()->Reload(CURRENT_TAB);
+    chrome::Reload(browser(), CURRENT_TAB);
     observer.Wait();
 
     // Re-get the encoding of page. It should return the real encoding now.

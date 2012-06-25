@@ -6,6 +6,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -120,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ui_test_utils::WindowedNotificationObserver notification_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   notification_observer.Wait();
 
   ASSERT_TRUE(tab_destroyed_observer.tab_destroyed());

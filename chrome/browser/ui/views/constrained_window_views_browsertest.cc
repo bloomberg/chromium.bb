@@ -4,6 +4,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -153,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   int tab_with_constrained_window = browser()->active_index();
 
   // Create a new tab.
-  browser()->NewTab();
+  chrome::NewTab(browser());
 
   // The constrained dialog should no longer be selected.
   EXPECT_NE(test_dialog2->GetInitiallyFocusedView(),

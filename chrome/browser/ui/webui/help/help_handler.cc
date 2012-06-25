@@ -17,6 +17,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -316,7 +317,7 @@ void HelpHandler::OpenFeedbackDialog(const ListValue* args) {
   DCHECK(args->empty());
   Browser* browser = browser::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
-  browser->OpenFeedbackDialog();
+  chrome::OpenFeedbackDialog(browser);
 }
 
 void HelpHandler::OpenHelpPage(const base::ListValue* args) {

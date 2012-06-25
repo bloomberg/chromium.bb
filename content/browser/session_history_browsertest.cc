@@ -5,6 +5,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -78,7 +79,7 @@ class SessionHistoryTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-    browser()->GoBack(CURRENT_TAB);
+    chrome::GoBack(browser(), CURRENT_TAB);
     load_stop_observer.Wait();
   }
 
@@ -86,7 +87,7 @@ class SessionHistoryTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-    browser()->GoForward(CURRENT_TAB);
+    chrome::GoForward(browser(), CURRENT_TAB);
     load_stop_observer.Wait();
   }
 };
@@ -95,7 +96,7 @@ class SessionHistoryTest : public InProcessBrowserTest {
 // http://crbug.com/102094 on mac.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
   // about:blank should be loaded first.
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("bot1.html", "bot1"));
@@ -120,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
 
   // history is [blank, bot1, *bot3]
 
-  ASSERT_FALSE(browser()->CanGoForward());
+  ASSERT_FALSE(chrome::CanGoForward(browser()));
   EXPECT_EQ("bot3", GetTabTitle());
 
   GoBack();
@@ -129,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
   GoBack();
   EXPECT_EQ("about:blank", GetTabTitle());
 
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   GoForward();
@@ -144,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
   // about:blank should be loaded first.
   GURL home(chrome::kAboutBlankURL);
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
   EXPECT_EQ(GURL(chrome::kAboutBlankURL), GetTabURL());
 
@@ -187,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
 
   // history is [blank, bot1, bot2, *bot1]
 
-  ASSERT_FALSE(browser()->CanGoForward());
+  ASSERT_FALSE(chrome::CanGoForward(browser()));
   EXPECT_EQ("bot1", GetTabTitle());
   EXPECT_EQ(frames, GetTabURL());
 
@@ -204,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameBackForward) {
 // If this flakes use http://crbug.com/61619
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameFormBackForward) {
   // about:blank should be loaded first.
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("frames.html", "bot1"));
@@ -259,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FrameFormBackForward) {
 // Hangs, see http://crbug.com/45058.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, CrossFrameFormBackForward) {
   // about:blank should be loaded first.
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   GURL frames(GetURL("frames.html"));
@@ -297,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, CrossFrameFormBackForward) {
 // If this flakes use http://crbug.com/61619.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
   // about:blank should be loaded first.
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   GURL fragment(GetURL("fragment.html"));
@@ -325,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
 
   // history is [blank, fragment, fragment#a, bot3]
 
-  ASSERT_FALSE(browser()->CanGoForward());
+  ASSERT_FALSE(chrome::CanGoForward(browser()));
   EXPECT_EQ(GetURL("bot3.html"), GetTabURL());
 
   GoBack();
@@ -345,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
 // about 1/4 of the time on Vista by failing to execute JavascriptGo (see bug).
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   // about:blank should be loaded first.
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle("bot1.html", "bot1"));
@@ -374,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   JavascriptGo("-3");
   EXPECT_EQ("about:blank", GetTabTitle());
 
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   JavascriptGo("1");
@@ -384,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
 
   // history is [blank, bot1, *bot3]
 
-  ASSERT_FALSE(browser()->CanGoForward());
+  ASSERT_FALSE(chrome::CanGoForward(browser()));
   EXPECT_EQ("bot3", GetTabTitle());
 
   JavascriptGo("-1");
@@ -393,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
   JavascriptGo("-1");
   EXPECT_EQ("about:blank", GetTabTitle());
 
-  ASSERT_FALSE(browser()->CanGoBack());
+  ASSERT_FALSE(chrome::CanGoBack(browser()));
   EXPECT_EQ("about:blank", GetTabTitle());
 
   JavascriptGo("1");

@@ -2371,6 +2371,8 @@
         'browser/ui/bookmarks/bookmark_tab_helper_delegate.h',
         'browser/ui/browser.cc',
         'browser/ui/browser.h',
+        'browser/ui/browser_commands.cc',
+        'browser/ui/browser_commands.h',
         'browser/ui/browser_content_setting_bubble_model_delegate.cc',
         'browser/ui/browser_content_setting_bubble_model_delegate.h',
         'browser/ui/browser_dialogs.h',

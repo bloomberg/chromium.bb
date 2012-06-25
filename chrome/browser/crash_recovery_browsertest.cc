@@ -4,6 +4,7 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -53,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -142,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
   EXPECT_EQ("Showing icon 2", GetBrowserActionsBar().GetTooltip(0));
 
   // Open a new tab, the title should go back.
-  browser()->NewTab();
+  chrome::NewTab(browser());
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 
   // Go back to first tab, changed title should reappear.
@@ -302,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   browser()->profile()->GetExtensionService()->extension_prefs()->
       SetIsIncognitoEnabled(extension->id(), true);
 
-  incognito_browser->CloseWindow();
+  chrome::CloseWindow(incognito_browser);
   incognito_browser = Browser::Create(incognito_profile);
   ASSERT_EQ(1,
             BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());

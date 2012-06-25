@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -58,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 
   content::TestNavigationObserver reload_observer(
       content::NotificationService::AllSources());
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   reload_observer.Wait();
 
   ASSERT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_PRINT));

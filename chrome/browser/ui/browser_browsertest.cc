@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -143,7 +144,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
 // Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
 void CloseWindowCallback(Browser* browser) {
-  browser->CloseWindow();
+  chrome::CloseWindow(browser);
 }
 
 // Used by CloseWithAppMenuOpen. Posts a CloseWindowCallback and shows the app
@@ -152,7 +153,7 @@ void RunCloseWithAppMenuCallback(Browser* browser) {
   // ShowAppMenu is modal under views. Schedule a task that closes the window.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&CloseWindowCallback, browser));
-  browser->ShowAppMenu();
+  chrome::ShowAppMenu(browser);
 }
 
 // Displays "INTERSTITIAL" while the interstitial is attached.
@@ -312,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 
   // Navigate to another page, but click cancel in the dialog.  Make sure that
   // the throbber stops spinning.
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
   EXPECT_FALSE(browser()->GetActiveWebContents()->IsLoading());
@@ -402,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Reload the page, and check that we get a "before reload" dialog.
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
 
@@ -911,10 +912,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Add a non pinned tab.
-  browser()->NewTab();
+  chrome::NewTab(browser());
 
   // Add a pinned non-app tab.
-  browser()->NewTab();
+  chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   model->SetTabPinned(2, true);
 
@@ -1071,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
   back_nav_load_observer.Wait();
   EXPECT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
 
@@ -1079,7 +1080,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->GoForward(CURRENT_TAB);
+  chrome::GoForward(browser(), CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser
   // won't process the renderer's response until the Wait() call below.
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
@@ -1212,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   ui_test_utils::WindowedNotificationObserver zoom_in_observer(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::NotificationService::AllSources());
-  browser()->Zoom(content::PAGE_ZOOM_IN);
+  chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
   zoom_in_observer.Wait();
   EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 110);
   EXPECT_TRUE(enable_plus);
@@ -1221,7 +1222,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   ui_test_utils::WindowedNotificationObserver zoom_reset_observer(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::NotificationService::AllSources());
-  browser()->Zoom(content::PAGE_ZOOM_RESET);
+  chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
   zoom_reset_observer.Wait();
   EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 100);
   EXPECT_TRUE(enable_plus);
@@ -1230,13 +1231,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
   ui_test_utils::WindowedNotificationObserver zoom_out_observer(
       content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       content::NotificationService::AllSources());
-  browser()->Zoom(content::PAGE_ZOOM_OUT);
+  chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
   zoom_out_observer.Wait();
   EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 90);
   EXPECT_TRUE(enable_plus);
   EXPECT_TRUE(enable_minus);
 
-  browser()->Zoom(content::PAGE_ZOOM_RESET);
+  chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
@@ -1319,7 +1320,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, UserGesturesReported) {
   EXPECT_TRUE(mock_observer.got_user_gesture());
 
   mock_observer.set_got_user_gesture(false);
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   EXPECT_TRUE(mock_observer.got_user_gesture());
 }
 
@@ -1519,12 +1520,12 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   ui_test_utils::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
-  browser()->CloseWindow();
+  chrome::CloseWindow(browser());
   observer.Wait();
   EXPECT_EQ(0u, BrowserList::size());
 
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  Browser::NewEmptyWindow(profile);
+  chrome::NewEmptyWindow(profile);
   browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, BrowserList::size());

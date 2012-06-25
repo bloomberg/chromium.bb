@@ -101,6 +101,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -636,7 +637,7 @@ void TestingAutomationProvider::Reload(int handle,
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
       new NavigationNotificationObserver(
           tab, this, reply_message, 1, false, false);
-      browser->Reload(CURRENT_TAB);
+      chrome::Reload(browser, CURRENT_TAB);
       return;
     }
   }
@@ -1377,7 +1378,7 @@ void TestingAutomationProvider::HandleOpenFindInPageRequest(
     const IPC::Message& message, int handle) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    browser->FindInPage(false, false);
+    chrome::FindInPage(browser, false, false);
   }
 }
 
@@ -1624,7 +1625,7 @@ void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
       new NavigationNotificationObserver(tab, this, reply_message,
                                          number_of_navigations, false, false);
-      browser->GoBack(CURRENT_TAB);
+      chrome::GoBack(browser, CURRENT_TAB);
       return;
     }
   }
@@ -1642,7 +1643,7 @@ void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
       new NavigationNotificationObserver(tab, this, reply_message,
                                          number_of_navigations, false, false);
-      browser->GoForward(CURRENT_TAB);
+      chrome::GoForward(browser, CURRENT_TAB);
       return;
     }
   }
@@ -3146,7 +3147,7 @@ void TestingAutomationProvider::SetOmniboxText(Browser* browser,
     reply.SendError("text missing");
     return;
   }
-  browser->FocusLocationBar();
+  chrome::FocusLocationBar(browser);
   LocationBar* loc_bar = browser->window()->GetLocationBar();
   if (!loc_bar) {
     reply.SendError("The specified browser does not have a location bar.");

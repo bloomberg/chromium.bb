@@ -9,6 +9,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -389,20 +390,20 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Go back to B.
-  browser()->GoBack(CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
   title_watcher.reset(new ui_test_utils::TitleWatcher(tab, expected_title));
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Reload to B.
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
   title_watcher.reset(new ui_test_utils::TitleWatcher(tab, expected_title));
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Shift-reload to B.
-  browser()->ReloadIgnoringCache(CURRENT_TAB);
+  chrome::ReloadIgnoringCache(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 }

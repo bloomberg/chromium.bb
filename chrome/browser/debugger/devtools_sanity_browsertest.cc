@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -534,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &browser()->GetActiveWebContents()->GetController()));
-  browser()->Reload(CURRENT_TAB);
+  chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
 
   RunTestFunction(window_, "testReattachAfterCrash");

@@ -17,6 +17,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
@@ -213,7 +214,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 
   TestTabStripModelObserver tabstrip_observer(
       browser()->tab_strip_model(), this);
-  browser()->Print();
+  chrome::Print(browser());
   tabstrip_observer.WaitForObservation(
       base::Bind(&ui_test_utils::RunMessageLoop),
       base::Bind(&MessageLoop::Quit,

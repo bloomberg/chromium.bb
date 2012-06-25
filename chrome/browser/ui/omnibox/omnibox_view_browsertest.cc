@@ -22,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -156,7 +157,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   virtual void SetUpOnMainThread() {
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
     // Use Textfield's view id on pure views. See crbug.com/71144.
 #if defined(USE_AURA)
     location_bar_focus_view_id_ = VIEW_ID_OMNIBOX;
@@ -392,20 +393,20 @@ class OmniboxViewTest : public InProcessBrowserTest,
     int tab_count = browser()->tab_count();
 
     // Create a new Tab.
-    browser()->NewTab();
+    chrome::NewTab(browser());
     ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 
     // Select the first Tab.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_1, kCtrlOrCmdMask));
     ASSERT_EQ(0, browser()->active_index());
 
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
 
     // Select the second Tab.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_2, kCtrlOrCmdMask));
     ASSERT_EQ(1, browser()->active_index());
 
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
 
     // Try ctrl-w to close a Tab.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_W, kCtrlOrCmdMask));
@@ -452,7 +453,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(
         GetOmniboxViewForBrowser(popup, &omnibox_view));
-    popup->FocusLocationBar();
+    chrome::FocusLocationBar(popup);
     EXPECT_TRUE(omnibox_view->IsSelectAll());
 
 #if !defined(OS_MACOSX)
@@ -473,7 +474,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
     // Set the edit text to "Hello world".
     omnibox_view->SetUserText(ASCIIToUTF16("Hello world"));
-    popup->FocusLocationBar();
+    chrome::FocusLocationBar(popup);
     EXPECT_TRUE(omnibox_view->IsSelectAll());
 
     // Try editing the location bar text -- should be disallowed.
@@ -550,7 +551,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
   void EscapeTest() {
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
 
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -625,7 +626,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
 
     // Test that entering a single character then Enter performs a search.
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
     EXPECT_TRUE(omnibox_view->IsSelectAll());
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchSingleCharKeys));
     ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
@@ -683,7 +684,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
   void BasicTextOperationsTest() {
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
 
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -992,7 +993,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     model->SetDefaultSearchProvider(NULL);
 
     ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
-    browser()->FocusLocationBar();
+    chrome::FocusLocationBar(browser());
 
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -1238,7 +1239,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
 
     // Create a new tab.
-    browser()->NewTab();
+    chrome::NewTab(browser());
 
     // Switch back to the first tab.
     browser()->ActivateTabAt(0, true);
@@ -1478,7 +1479,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 #if defined(TOOLKIT_GTK) || defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
-  browser()->FocusLocationBar();
+  chrome::FocusLocationBar(browser());
 
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));

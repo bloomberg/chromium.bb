@@ -14,6 +14,7 @@
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -555,7 +556,7 @@ void GaiaOAuthFetcher::OnGetOAuthTokenFetched(const std::string& token) {
   if (popup_) {
     Browser* popped_up = popup_;
     popup_ = NULL;
-    popped_up->CloseWindow();
+    chrome::CloseWindow(popped_up);
   }
   consumer_->OnGetOAuthTokenSuccess(token);
   if (ShouldAutoFetch(OAUTH1_ALL_ACCESS_TOKEN))
