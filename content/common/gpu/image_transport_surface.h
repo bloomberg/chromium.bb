@@ -63,7 +63,7 @@ class ImageTransportSurface {
 
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
-  virtual void OnBufferPresented() = 0;
+  virtual void OnBufferPresented(uint32 sync_point) = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
@@ -72,6 +72,7 @@ class ImageTransportSurface {
       CreateSurface(GpuChannelManager* manager,
                     GpuCommandBufferStub* stub,
                     const gfx::GLSurfaceHandle& handle);
+
  protected:
   // Used by certain implements of PostSubBuffer to determine
   // how much needs to be copied between frames.
@@ -134,7 +135,7 @@ class ImageTransportHelper : public IPC::Listener {
 
   // IPC::Message handlers.
   void OnNewSurfaceACK(uint64 surface_handle, TransportDIB::Handle shm_handle);
-  void OnBufferPresented();
+  void OnBufferPresented(uint32 sync_point);
   void OnResizeViewACK();
 
   // Backbuffer resize callback.
@@ -172,7 +173,7 @@ class PassThroughImageTransportSurface
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBufferPresented() OVERRIDE;
+  virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 

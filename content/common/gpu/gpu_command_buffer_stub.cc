@@ -88,9 +88,11 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
-  // Echo, which just sends an IPC).
+  // Echo, RetireSyncPoint, or WaitSyncPoint).
   if (decoder_.get() &&
-      message.type() != GpuCommandBufferMsg_Echo::ID) {
+      message.type() != GpuCommandBufferMsg_Echo::ID &&
+      message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
+      message.type() != GpuCommandBufferMsg_WaitSyncPoint::ID) {
     if (!MakeCurrent())
       return false;
   }
@@ -703,7 +705,7 @@ void GpuCommandBufferStub::RemoveDestructionObserver(
 }
 
 void GpuCommandBufferStub::SetPreemptByCounter(
-   scoped_refptr<gpu::RefCountedCounter> counter) {
+    scoped_refptr<gpu::RefCountedCounter> counter) {
   preempt_by_counter_ = counter;
   if (scheduler_.get())
     scheduler_->SetPreemptByCounter(preempt_by_counter_);

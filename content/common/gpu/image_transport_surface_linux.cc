@@ -100,7 +100,7 @@ class EGLImageTransportSurface
   // ImageTransportSurface implementation
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBufferPresented() OVERRIDE;
+  virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -156,7 +156,7 @@ class GLXImageTransportSurface
   // ImageTransportSurface implementation:
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBufferPresented() OVERRIDE;
+  virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -214,7 +214,7 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   // ImageTransportSurface implementation:
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBufferPresented() OVERRIDE;
+  virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -516,7 +516,7 @@ void EGLImageTransportSurface::OnNewSurfaceACK(
   helper_->SetScheduled(true);
 }
 
-void EGLImageTransportSurface::OnBufferPresented() {
+void EGLImageTransportSurface::OnBufferPresented(uint32 sync_point) {
   helper_->SetScheduled(true);
 }
 
@@ -753,7 +753,7 @@ void GLXImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {
 }
 
-void GLXImageTransportSurface::OnBufferPresented() {
+void GLXImageTransportSurface::OnBufferPresented(uint32 sync_point) {
   helper_->SetScheduled(true);
 }
 
@@ -891,7 +891,7 @@ std::string OSMesaImageTransportSurface::GetExtensions() {
   return extensions;
 }
 
-void OSMesaImageTransportSurface::OnBufferPresented() {
+void OSMesaImageTransportSurface::OnBufferPresented(uint32 sync_point) {
   helper_->SetScheduled(true);
 }
 

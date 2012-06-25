@@ -65,6 +65,10 @@ class DefaultTransportFactory
     return NULL;
   }
 
+  virtual uint32 InsertSyncPoint(ui::Compositor* compositor) OVERRIDE {
+    return 0;
+  }
+
   virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() OVERRIDE {
     return NULL;
   }
@@ -265,6 +269,13 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
                                          context_for_thread));
     }
     return data->gl_helper.get();
+  }
+
+  virtual uint32 InsertSyncPoint(ui::Compositor* compositor) OVERRIDE {
+    PerCompositorData* data = per_compositor_data_[compositor];
+    if (!data)
+      data = CreatePerCompositorData(compositor);
+    return data->shared_context->insertSyncPoint();
   }
 
   virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() { return NULL; }

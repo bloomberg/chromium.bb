@@ -230,6 +230,10 @@ class RenderWidgetHostViewAura
   // Run the compositing callbacks.
   void RunCompositingCallbacks();
 
+  // Insert a sync point into the compositor's command stream and acknowledge
+  // that we have presented the accelerated surface buffer.
+  void InsertSyncPointAndACK(int32 route_id, int gpu_host_id);
+
   // Called when window_ is removed from the window tree.
   void RemovingFromRootWindow();
 
@@ -290,7 +294,7 @@ class RenderWidgetHostViewAura
   // Current tooltip text.
   string16 tooltip_;
 
-  std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
+  std::vector< base::Callback<void(void)> > on_compositing_started_callbacks_;
 
   std::map<uint64, scoped_refptr<ImageTransportClient> >
       image_transport_clients_;

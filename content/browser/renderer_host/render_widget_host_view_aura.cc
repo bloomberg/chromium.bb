@@ -494,7 +494,6 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
   needs_update_texture_ = false;
   if (current_surface_ != 0 &&
       host_->is_accelerated_compositing_active()) {
-
     ImageTransportClient* container =
         image_transport_clients_[current_surface_];
     if (container)
@@ -552,8 +551,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface.
     // Must still send the ACK.
-    RenderWidgetHostImpl::AcknowledgeBufferPresent(params_in_pixel.route_id,
-        gpu_host_id);
+    InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size_in_pixel =
         image_transport_clients_[params_in_pixel.surface_handle]->size();
@@ -561,18 +559,16 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
                                                        surface_size_in_pixel);
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
-    if (!resize_locks_.empty() && !compositor->DrawPending()) {
+    if (!resize_locks_.empty()) {
       // If we are waiting for the resize, fast-track the ACK.
-      // However only do so if we're not between the Draw() and the
-      // OnCompositingEnded(), because out-of-order execution in the GPU process
-      // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgeBufferPresent(
-          params_in_pixel.route_id, gpu_host_id);
+      InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id);
     } else {
-      // Add sending an ACK to the list of things to do OnCompositingEnded
-      on_compositing_ended_callbacks_.push_back(
-          base::Bind(&RenderWidgetHostImpl::AcknowledgeBufferPresent,
-                     params_in_pixel.route_id, gpu_host_id));
+      // Add sending an ACK to the list of things to do OnCompositingStarted
+      on_compositing_started_callbacks_.push_back(
+          base::Bind(&RenderWidgetHostViewAura::InsertSyncPointAndACK,
+                     base::Unretained(this),
+                     params_in_pixel.route_id,
+                     gpu_host_id));
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);
     }
@@ -589,8 +585,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
-    RenderWidgetHostImpl::AcknowledgeBufferPresent(
-        params_in_pixel.route_id, gpu_host_id);
+    InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id);
   } else {
     gfx::Size surface_size_in_pixel =
         image_transport_clients_[params_in_pixel.surface_handle]->size();
@@ -605,18 +600,16 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
         params_in_pixel.height));
     window_->SchedulePaintInRect(rect_to_paint);
 
-    if (!resize_locks_.empty() && !compositor->DrawPending()) {
+    if (!resize_locks_.empty()) {
       // If we are waiting for the resize, fast-track the ACK.
-      // However only do so if we're not between the Draw() and the
-      // OnCompositingEnded(), because out-of-order execution in the GPU process
-      // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgeBufferPresent(
-          params_in_pixel.route_id, gpu_host_id);
+      InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id);
     } else {
-      // Add sending an ACK to the list of things to do OnCompositingEnded
-      on_compositing_ended_callbacks_.push_back(
-          base::Bind(&RenderWidgetHostImpl::AcknowledgeBufferPresent,
-                     params_in_pixel.route_id, gpu_host_id));
+      // Add sending an ACK to the list of things to do OnCompositingStarted
+      on_compositing_started_callbacks_.push_back(
+          base::Bind(&RenderWidgetHostViewAura::InsertSyncPointAndACK,
+                     base::Unretained(this),
+                     params_in_pixel.route_id,
+                     gpu_host_id));
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);
     }
@@ -1209,11 +1202,11 @@ void RenderWidgetHostViewAura::OnLostActive() {
 void RenderWidgetHostViewAura::OnCompositingStarted(
     ui::Compositor* compositor) {
   locks_pending_draw_.clear();
+  RunCompositingCallbacks();
+  compositor->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
-  RunCompositingCallbacks();
-  compositor->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAura::OnCompositingAborted(
@@ -1354,11 +1347,18 @@ bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
 
 void RenderWidgetHostViewAura::RunCompositingCallbacks() {
   for (std::vector< base::Callback<void(void)> >::const_iterator
-      it = on_compositing_ended_callbacks_.begin();
-      it != on_compositing_ended_callbacks_.end(); ++it) {
+      it = on_compositing_started_callbacks_.begin();
+      it != on_compositing_started_callbacks_.end(); ++it) {
     it->Run();
   }
-  on_compositing_ended_callbacks_.clear();
+  on_compositing_started_callbacks_.clear();
+}
+
+void RenderWidgetHostViewAura::InsertSyncPointAndACK(int32 route_id,
+                                                     int gpu_host_id) {
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(
+      route_id, gpu_host_id, factory->InsertSyncPoint(GetCompositor()));
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -17,7 +18,8 @@ class GpuChannelManager;
 class TextureImageTransportSurface :
     public ImageTransportSurface,
     public GpuCommandBufferStub::DestructionObserver,
-    public gfx::GLSurface {
+    public gfx::GLSurface,
+    public base::SupportsWeakPtr<TextureImageTransportSurface> {
  public:
   TextureImageTransportSurface(GpuChannelManager* manager,
                                GpuCommandBufferStub* stub,
@@ -46,7 +48,8 @@ class TextureImageTransportSurface :
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(
       uint64 surface_handle, TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnBufferPresented() OVERRIDE;
+  virtual void OnBufferPresented(
+      uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -77,6 +80,7 @@ class TextureImageTransportSurface :
   void ReleaseBackTexture();
   void AttachBackTextureToFBO();
   void ReleaseParentStub();
+  void BufferPresentedImpl();
   int back() const { return 1 - front_; }
 
   // The framebuffer that represents this surface (service id). Allocated lazily

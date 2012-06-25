@@ -199,8 +199,8 @@ void ImageTransportHelper::OnNewSurfaceACK(
   surface_->OnNewSurfaceACK(surface_handle, shm_handle);
 }
 
-void ImageTransportHelper::OnBufferPresented() {
-  surface_->OnBufferPresented();
+void ImageTransportHelper::OnBufferPresented(uint32 sync_point) {
+  surface_->OnBufferPresented(sync_point);
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -303,7 +303,7 @@ void PassThroughImageTransportSurface::OnNewSurfaceACK(
     TransportDIB::Handle shm_handle) {
 }
 
-void PassThroughImageTransportSurface::OnBufferPresented() {
+void PassThroughImageTransportSurface::OnBufferPresented(uint32 sync_point) {
   DCHECK(transport_);
   helper_->SetScheduled(true);
 }

@@ -4,10 +4,14 @@
 
 #include "content/common/gpu/texture_image_transport_surface.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -22,7 +26,7 @@ namespace {
 
 class ScopedFrameBufferBinder {
  public:
-  ScopedFrameBufferBinder(unsigned int fbo) {
+  explicit ScopedFrameBufferBinder(unsigned int fbo) {
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &old_fbo_);
     glBindFramebufferEXT(GL_FRAMEBUFFER, fbo);
   }
@@ -37,7 +41,7 @@ class ScopedFrameBufferBinder {
 
 class ScopedTextureBinder {
  public:
-  ScopedTextureBinder(unsigned int id) {
+  explicit ScopedTextureBinder(unsigned int id) {
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &old_id_);
     glBindTexture(GL_TEXTURE_2D, id);
   }
@@ -349,7 +353,21 @@ void TextureImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {
 }
 
-void TextureImageTransportSurface::OnBufferPresented() {
+void TextureImageTransportSurface::OnBufferPresented(uint32 sync_point) {
+  if (sync_point == 0) {
+    BufferPresentedImpl();
+  } else {
+    helper_->manager()->sync_point_manager()->AddSyncPointCallback(
+        sync_point,
+        base::Bind(&TextureImageTransportSurface::BufferPresentedImpl,
+                   this->AsWeakPtr()));
+  }
+}
+
+void TextureImageTransportSurface::BufferPresentedImpl() {
+  // We're relying on the fact that the parent context is
+  // finished with it's context when it inserts the sync point that
+  // triggers this callback.
   if (helper_->MakeCurrent()) {
     if (textures_[front_].size != textures_[back()].size) {
       CreateBackTexture(textures_[front_].size);

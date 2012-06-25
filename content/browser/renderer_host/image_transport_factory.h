@@ -85,6 +85,9 @@ class ImageTransportFactory {
   // GLHelper will get destroyed whenever the context is lost (
   virtual content::GLHelper* GetGLHelper(ui::Compositor* compositor) = 0;
 
+  // Inserts a SyncPoint into the compositor's context.
+  virtual uint32 InsertSyncPoint(ui::Compositor* compositor) = 0;
+
   // Returns a ScopedMakeCurrent that can be used to make current a context that
   // is shared with the compositor context, e.g. to create a texture in its
   // namespace. The caller gets ownership of the object.

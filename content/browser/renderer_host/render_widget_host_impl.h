@@ -356,8 +356,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);
 
-  // Called by the view in response to AcceleratedSurfaceBuffersSwapped.
-  static void AcknowledgeBufferPresent(int32 route_id, int gpu_host_id);
+  // Called by the view in response to AcceleratedSurfaceBuffersSwapped or
+  // AcceleratedSurfacePostSubBuffer.
+  static void AcknowledgeBufferPresent(
+      int32 route_id,
+      int gpu_host_id,
+      uint32 sync_point);
 
   // Signals that the compositing surface was updated, e.g. after a lost context
   // event.

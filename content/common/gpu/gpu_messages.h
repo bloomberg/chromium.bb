@@ -202,8 +202,10 @@ IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
                     TransportDIB::Handle /* shared memory buffer */)
 
 // Tells the GPU process that the browser process has handled the swap
-// buffers or post sub-buffer request.
-IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BufferPresented)
+// buffers or post sub-buffer request. A non-zero sync point means
+// that we should wait for the sync point.
+IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_BufferPresented,
+                    uint32 /* sync_point */)
 
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)
