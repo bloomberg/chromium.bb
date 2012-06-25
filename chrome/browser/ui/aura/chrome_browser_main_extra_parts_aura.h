@@ -21,6 +21,7 @@ class DesktopStackingClient;
 class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAura();
+  virtual ~ChromeBrowserMainExtraPartsAura();
 
   // Overridden from ChromeBrowserMainExtraParts:
   virtual void PreProfileInit() OVERRIDE;

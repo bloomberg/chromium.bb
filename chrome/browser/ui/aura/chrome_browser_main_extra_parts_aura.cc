@@ -24,6 +24,9 @@
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
 }
 
+ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
+}
+
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #if !defined(USE_ASH)
   gfx::Screen::SetInstance(aura::CreateDesktopScreen());
