@@ -671,6 +671,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableJavaScriptI18NAPI,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
+    switches::kDisablePointerLock,
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSeccompSandbox,
     switches::kDisableSessionStorage,

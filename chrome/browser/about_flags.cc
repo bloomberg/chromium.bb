@@ -131,6 +131,14 @@ const Experiment::Choice kTouchOptimizedUIChoices[] = {
     switches::kTouchOptimizedUIDisabled }
 };
 
+const Experiment::Choice kPointerLockUIChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnablePointerLock, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisablePointerLock, ""}
+};
+
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -525,7 +533,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_POINTER_LOCK_NAME,
     IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnablePointerLock)
+    MULTI_VALUE_TYPE(kPointerLockUIChoices)
   },
 #if defined(USE_ASH)
   {
