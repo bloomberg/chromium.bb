@@ -4,6 +4,7 @@
 
 #include "webkit/tools/test_shell/webview_host.h"
 
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/rect.h"
@@ -44,6 +45,7 @@ WebViewHost* WebViewHost::Create(HWND parent_view,
   host->webwidget_ = WebView::create(delegate);
   host->webview()->setDevToolsAgentClient(dev_tools_client);
   prefs.Apply(host->webview());
+  host->webview()->settings()->setExperimentalCSSGridLayoutEnabled(true);
   host->webview()->initializeMainFrame(delegate);
 
   return host;

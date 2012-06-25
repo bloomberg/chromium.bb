@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/webpreferences.h"
@@ -30,6 +31,7 @@ WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
   host->webwidget_ = WebView::create(delegate);
   host->webview()->setDevToolsAgentClient(dev_tools_client);
   prefs.Apply(host->webview());
+  host->webview()->settings()->setExperimentalCSSGridLayoutEnabled(true);
   host->webview()->initializeMainFrame(delegate);
   host->webwidget_->layout();
 

@@ -9,6 +9,7 @@
 
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -42,6 +43,7 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
   host->webwidget_ = WebView::create(delegate);
   host->webview()->setDevToolsAgentClient(dev_tools_client);
   prefs.Apply(host->webview());
+  host->webview()->settings()->setExperimentalCSSGridLayoutEnabled(true);
   host->webview()->initializeMainFrame(delegate);
   host->webwidget_->resize(WebSize(NSWidth(content_rect),
                                    NSHeight(content_rect)));
