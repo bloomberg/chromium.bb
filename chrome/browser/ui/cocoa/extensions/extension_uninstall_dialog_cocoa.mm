@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include <string>
 
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -25,7 +25,7 @@ namespace {
 // so there's no way for the dialog to outlive its delegate.
 class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogCocoa(Profile* profile, Delegate* delegate);
+  ExtensionUninstallDialogCocoa(Browser* browser, Delegate* delegate);
   virtual ~ExtensionUninstallDialogCocoa() OVERRIDE;
 
  private:
@@ -33,8 +33,8 @@ class ExtensionUninstallDialogCocoa : public ExtensionUninstallDialog {
 };
 
 ExtensionUninstallDialogCocoa::ExtensionUninstallDialogCocoa(
-    Profile* profile, ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(profile, delegate) {}
+    Browser* browser, ExtensionUninstallDialog::Delegate* delegate)
+    : ExtensionUninstallDialog(browser, delegate) {}
 
 ExtensionUninstallDialogCocoa::~ExtensionUninstallDialogCocoa() {}
 
@@ -67,6 +67,6 @@ void ExtensionUninstallDialogCocoa::Show() {
 
 // static
 ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Profile* profile, Delegate* delegate) {
-  return new ExtensionUninstallDialogCocoa(profile, delegate);
+    Browser* browser, Delegate* delegate) {
+  return new ExtensionUninstallDialogCocoa(browser, delegate);
 }

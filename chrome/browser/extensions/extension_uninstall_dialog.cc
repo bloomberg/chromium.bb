@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -19,15 +18,19 @@
 static const int kIconSize = 69;
 
 ExtensionUninstallDialog::ExtensionUninstallDialog(
-    Profile* profile,
+    Browser* browser,
     ExtensionUninstallDialog::Delegate* delegate)
-    : profile_(profile),
+    : browser_(browser),
       delegate_(delegate),
       extension_(NULL),
-      ui_loop_(MessageLoop::current()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {}
+      ui_loop_(MessageLoop::current()) {
+  tracker_.reset(new ImageLoadingTracker(this));
+  BrowserList::AddObserver(this);
+}
 
-ExtensionUninstallDialog::~ExtensionUninstallDialog() {}
+ExtensionUninstallDialog::~ExtensionUninstallDialog() {
+  BrowserList::RemoveObserver(this);
+}
 
 void ExtensionUninstallDialog::ConfirmUninstall(
     const extensions::Extension* extension) {
@@ -38,9 +41,9 @@ void ExtensionUninstallDialog::ConfirmUninstall(
       extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
-  tracker_.LoadImage(extension_, image,
-                     gfx::Size(kIconSize, kIconSize),
-                     ImageLoadingTracker::DONT_CACHE);
+  tracker_->LoadImage(extension_, image,
+                      gfx::Size(kIconSize, kIconSize),
+                      ImageLoadingTracker::DONT_CACHE);
 }
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
@@ -62,5 +65,22 @@ void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image,
                                              int index) {
   SetIcon(image);
 
+  // Reset the tracker so that we can use its presence as a signal that we're
+  // still waiting for the icon to load.
+  tracker_.reset();
+
   Show();
+}
+
+void ExtensionUninstallDialog::OnBrowserRemoved(Browser* browser) {
+  if (browser_ != browser)
+    return;
+
+  browser_ = NULL;
+  if (tracker_.get()) {
+    // If we're waiting for the icon, stop doing so because we're not going to
+    // show the dialog.
+    tracker_.reset();
+    delegate_->ExtensionUninstallCanceled();
+  }
 }

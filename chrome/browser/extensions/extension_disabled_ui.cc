@@ -263,7 +263,7 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
 #if !defined(OS_ANDROID)
   uninstall_dialog_.reset(
-      ExtensionUninstallDialog::Create(service_->profile(), this));
+      ExtensionUninstallDialog::Create(browser, this));
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
   MessageLoop::current()->PostTask(FROM_HERE,

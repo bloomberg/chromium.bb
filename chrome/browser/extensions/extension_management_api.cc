@@ -475,7 +475,7 @@ bool UninstallFunction::RunImpl() {
     if (show_confirm_dialog) {
       AddRef(); // Balanced in ExtensionUninstallAccepted/Canceled
       extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-          profile_, this));
+          GetCurrentBrowser(), this));
       extension_uninstall_dialog_->ConfirmUninstall(extension);
     } else {
       Finish(true);

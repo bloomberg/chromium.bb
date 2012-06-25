@@ -61,7 +61,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
     }
 
     ExtensionUninstallDialog* dialog =
-        ExtensionUninstallDialog::Create(profile_, this);
+        ExtensionUninstallDialog::Create(NULL, this);
     dialog->ConfirmUninstall(extension);
   }
 

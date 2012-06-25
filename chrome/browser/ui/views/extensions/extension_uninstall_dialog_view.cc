@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -37,18 +36,17 @@ class ExtensionUninstallDialogDelegateView;
 // Returns parent window for extension uninstall dialog.
 // For ash, use app list window if it is visible.
 // For other platforms or when app list is not visible on ash,
-// use browser window of given |profile|.
+// use the given browser window.
 // Note this function could return NULL if ash app list is not visible and
-// there is no browser window open for |profile|.
-gfx::NativeWindow GetParent(Profile* profile) {
+// there is no browser window.
+gfx::NativeWindow GetParent(Browser* browser) {
 #if defined(USE_ASH)
   gfx::NativeWindow app_list = ash::Shell::GetInstance()->GetAppListWindow();
   if (app_list)
     return app_list;
 #endif
 
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  if (browser && browser->window())
+  if (browser->window())
     return browser->window()->GetNativeWindow();
 
   return NULL;
@@ -57,7 +55,7 @@ gfx::NativeWindow GetParent(Profile* profile) {
 // Views implementation of the uninstall dialog.
 class ExtensionUninstallDialogViews : public ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogViews(Profile* profile,
+  ExtensionUninstallDialogViews(Browser* browser,
                                 ExtensionUninstallDialog::Delegate* delegate);
   virtual ~ExtensionUninstallDialogViews();
 
@@ -118,8 +116,8 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 };
 
 ExtensionUninstallDialogViews::ExtensionUninstallDialogViews(
-    Profile* profile, ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(profile, delegate),
+    Browser* browser, ExtensionUninstallDialog::Delegate* delegate)
+    : ExtensionUninstallDialog(browser, delegate),
       view_(NULL) {
 }
 
@@ -132,7 +130,7 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
-  gfx::NativeWindow parent = GetParent(profile_);
+  gfx::NativeWindow parent = GetParent(browser_);
   if (!parent) {
     delegate_->ExtensionUninstallCanceled();
     return;
@@ -243,6 +241,6 @@ void ExtensionUninstallDialogDelegateView::Layout() {
 
 // static
 ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Profile* profile, Delegate* delegate) {
-  return new ExtensionUninstallDialogViews(profile, delegate);
+    Browser* browser, Delegate* delegate) {
+  return new ExtensionUninstallDialogViews(browser, delegate);
 }

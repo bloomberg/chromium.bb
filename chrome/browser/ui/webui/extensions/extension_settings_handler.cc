@@ -510,10 +510,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     results.SetBoolean("developerMode", false);
   } else {
     results.SetBoolean("managedMode", false);
-    Profile* profile = Profile::FromWebUI(web_ui());
-    bool developer_mode =
-        profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-    results.SetBoolean("developerMode", developer_mode);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  bool developer_mode =
+      profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  results.SetBoolean("developerMode", developer_mode);
   }
 
   bool load_unpacked_disabled =
@@ -863,8 +863,10 @@ ExtensionUninstallDialog*
 ExtensionSettingsHandler::GetExtensionUninstallDialog() {
 #if !defined(OS_ANDROID)
   if (!extension_uninstall_dialog_.get()) {
+    Browser* browser = browser::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui()), this));
+        ExtensionUninstallDialog::Create(browser, this));
   }
   return extension_uninstall_dialog_.get();
 #else

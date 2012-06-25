@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -46,11 +47,11 @@ using extensions::Extension;
 // Also acts as the extension's UI delegate in order to display the dialog.
 class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
  public:
-  AsyncUninstaller(const Extension* extension, Profile* profile)
+  AsyncUninstaller(const Extension* extension, Browser* browser)
       : extension_(extension),
-        profile_(profile) {
+        profile_(browser->profile()) {
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(profile, this));
+        ExtensionUninstallDialog::Create(browser, this));
     extension_uninstall_dialog_->ConfirmUninstall(extension_);
   }
 
@@ -184,7 +185,7 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextUninstall: {
-      uninstaller_.reset(new AsyncUninstaller(extension_, profile_));
+      uninstaller_.reset(new AsyncUninstaller(extension_, browser));
       break;
     }
     case kExtensionContextHide: {

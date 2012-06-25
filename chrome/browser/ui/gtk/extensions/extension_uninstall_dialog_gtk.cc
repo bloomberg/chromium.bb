@@ -5,12 +5,13 @@
 // Currently this file is only used for the uninstall prompt. The install prompt
 // code is in extension_install_prompt2_gtk.cc.
 
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
+
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/common/extensions/extension.h"
@@ -18,8 +19,6 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
-
-class Profile;
 
 namespace {
 
@@ -29,7 +28,7 @@ const int kPanelHorizMargin = 13;
 // GTK implementation of the uninstall dialog.
 class ExtensionUninstallDialogGtk : public ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogGtk(Profile* profile, Delegate* delegate);
+  ExtensionUninstallDialogGtk(Browser* browser, Delegate* delegate);
   virtual ~ExtensionUninstallDialogGtk() OVERRIDE;
 
  private:
@@ -41,18 +40,12 @@ class ExtensionUninstallDialogGtk : public ExtensionUninstallDialog {
 };
 
 ExtensionUninstallDialogGtk::ExtensionUninstallDialogGtk(
-    Profile* profile, ExtensionUninstallDialog::Delegate* delegate)
-    : ExtensionUninstallDialog(profile, delegate),
+    Browser* browser, ExtensionUninstallDialog::Delegate* delegate)
+    : ExtensionUninstallDialog(browser, delegate),
       dialog_(NULL) {}
 
 void ExtensionUninstallDialogGtk::Show() {
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  if (!browser) {
-    delegate_->ExtensionUninstallCanceled();
-    return;
-  }
-
-  BrowserWindow* browser_window = browser->window();
+  BrowserWindow* browser_window = browser_->window();
   if (!browser_window) {
     delegate_->ExtensionUninstallCanceled();
     return;
@@ -128,6 +121,6 @@ void ExtensionUninstallDialogGtk::OnResponse(
 // static
 // Platform specific implementation of the uninstall dialog show method.
 ExtensionUninstallDialog* ExtensionUninstallDialog::Create(
-    Profile* profile, Delegate* delegate) {
-  return new ExtensionUninstallDialogGtk(profile, delegate);
+    Browser* browser, Delegate* delegate) {
+  return new ExtensionUninstallDialogGtk(browser, delegate);
 }

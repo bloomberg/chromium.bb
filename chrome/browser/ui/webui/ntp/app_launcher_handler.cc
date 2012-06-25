@@ -975,8 +975,10 @@ void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
 
 ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
+    Browser* browser = browser::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
     extension_uninstall_dialog_.reset(
-        ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui()), this));
+        ExtensionUninstallDialog::Create(browser, this));
   }
   return extension_uninstall_dialog_.get();
 }
