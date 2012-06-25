@@ -26,15 +26,14 @@ static const base::TimeDelta kDefaultTransitionDuration =
 static const base::TimeDelta kTimerInterval =
     base::TimeDelta::FromMilliseconds(10);
 
-// For visual debugging, slow animations down by this factor.
-const int kSlowAnimationScaleFactor = 4;
-
 }  // namespace
 
 // static
 bool LayerAnimator::disable_animations_for_test_ = false;
 // static
 bool LayerAnimator::slow_animation_mode_ = false;
+// static
+int LayerAnimator::slow_animation_scale_factor_ = 4;
 
 // LayerAnimator public --------------------------------------------------------
 
@@ -229,10 +228,6 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
        queue_iter != animation_queue_.end(); ++queue_iter) {
     (*queue_iter)->RemoveObserver(observer);
   }
-}
-
-int LayerAnimator::slow_animation_scale_factor() {
-  return kSlowAnimationScaleFactor;
 }
 
 // LayerAnimator protected -----------------------------------------------------

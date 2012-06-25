@@ -9,11 +9,16 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+
+#if defined(USE_AURA)
+#include "ui/compositor/layer_animator.h"
+#endif
 
 namespace {
 
@@ -82,13 +87,27 @@ void InstantUIMessageHandler::GetPreferenceValue(const base::ListValue* args) {
 
 void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
   std::string pref_name;
+  if (!args->GetString(0, &pref_name)) return;
+
   double value;
-  if (!args->GetString(0, &pref_name) || !args->GetDouble(1, &value)) return;
+  if (!args->GetDouble(1, &value)) return;
 
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
   prefs->SetDouble(pref_name.c_str(), value);
+
+#if defined(USE_AURA)
+  if (pref_name == prefs::kInstantAnimationScaleFactor) {
+    // Clamp to something reasonable.
+    value = std::max(0.0, std::min(value, 10.0));
+    ui::LayerAnimator::set_slow_animation_mode(value > 1.0);
+    ui::LayerAnimator::set_slow_animation_scale_factor(
+        static_cast<int>(value));
+  }
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 }  // namespace

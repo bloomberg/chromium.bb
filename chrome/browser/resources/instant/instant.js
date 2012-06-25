@@ -21,9 +21,9 @@ var instantConfig = (function() {
   var FIELDS = [
     {
       key: 'animation_scale_factor',
-      label: 'Scale factor used to slow down animations',
-      units: 'no units, range 1.0 to 10.0',
-      default: 1.0
+      label: 'Slow down animations by:',
+      units: 'no units, range 1 to 10',
+      default: 1
     }
   ];
 
@@ -56,7 +56,7 @@ var instantConfig = (function() {
 
       var input = createElementWithClass('input', 'row-input');
       input.type = 'number';
-      input.size = 5;
+      input.size = 3;
       input.id = field.key;
       input.min = field.min || 0;
       input.title = "Default Value: " + field.default;
@@ -129,6 +129,18 @@ var instantConfig = (function() {
     return false;
   }
 
+  /**
+   * Saves data back into Chrome preferences.
+   */
+  function onSave() {
+    for (var i = 0; i < FIELDS.length; i++) {
+      var field = FIELDS[i];
+      setPreferenceValue(field.key, $(field.key).value);
+    }
+    return false;
+  }
+
+
   function loadForm() {
     for (var i = 0; i < FIELDS.length; i++)
       getPreferenceValue(FIELDS[i].key);
@@ -143,6 +155,7 @@ var instantConfig = (function() {
     initForm();
 
     $('reset-button').onclick = onReset.bind(this);
+    $('save-button').onclick = onSave.bind(this);
   }
 
   return {
