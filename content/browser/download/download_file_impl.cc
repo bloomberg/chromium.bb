@@ -52,6 +52,7 @@ DownloadFileImpl::DownloadFileImpl(
           weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
           power_save_blocker_(power_save_blocker.Pass()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(download_manager.get());
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
@@ -232,27 +233,23 @@ void DownloadFileImpl::StreamActive() {
     // Our controller will clean us up.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
-    if (download_manager_.get()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&DownloadManager::OnDownloadInterrupted,
-                     download_manager_, id_.local(),
-                     BytesSoFar(), GetHashState(), reason));
-    }
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadManager::OnDownloadInterrupted,
+                   download_manager_, id_.local(),
+                   BytesSoFar(), GetHashState(), reason));
   } else if (state == content::ByteStreamReader::STREAM_COMPLETE) {
     // Signal successful completion and shut down processing.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
-    if (download_manager_.get()) {
-      std::string hash;
-      if (!GetHash(&hash) || file_.IsEmptyHash(hash))
-        hash.clear();
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&DownloadManager::OnResponseCompleted,
-                     download_manager_, id_.local(),
-                     BytesSoFar(), hash));
-    }
+    std::string hash;
+    if (!GetHash(&hash) || file_.IsEmptyHash(hash))
+      hash.clear();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadManager::OnResponseCompleted,
+                   download_manager_, id_.local(),
+                   BytesSoFar(), hash));
   }
   if (bound_net_log_.IsLoggingAllEvents()) {
     bound_net_log_.AddEvent(
@@ -263,11 +260,9 @@ void DownloadFileImpl::StreamActive() {
 }
 
 void DownloadFileImpl::SendUpdate() {
-  if (download_manager_.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManager::UpdateDownload,
-                   download_manager_, id_.local(),
-                   BytesSoFar(), CurrentSpeed(), GetHashState()));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DownloadManager::UpdateDownload,
+                 download_manager_, id_.local(),
+                 BytesSoFar(), CurrentSpeed(), GetHashState()));
 }

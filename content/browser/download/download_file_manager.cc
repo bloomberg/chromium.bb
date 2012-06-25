@@ -301,14 +301,7 @@ void DownloadFileManager::CancelDownloadOnRename(
     return;
 
   DownloadManager* download_manager = download_file->GetDownloadManager();
-  if (!download_manager) {
-    // Without a download manager, we can't cancel the request normally, so we
-    // need to do it here.  The normal path will also update the download
-    // history before canceling the request.
-    download_file->CancelDownloadRequest();
-    return;
-  }
-
+  DCHECK(download_manager);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadManager::OnDownloadInterrupted,
