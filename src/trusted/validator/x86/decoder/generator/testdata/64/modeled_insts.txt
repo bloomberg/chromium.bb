@@ -2018,14 +2018,10 @@ Target: x86-64 bit mode
   0f 18 / 3                   MMX OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
     Prefetcht2 $Mb
       Mb_Operand
-  0f 18 / 4                   386 OpcodeInModRm OpcodeUsesModRm
-    Nop
-  0f 18 / 5                   386 OpcodeInModRm OpcodeUsesModRm
-    Nop
-  0f 18 / 6                   386 OpcodeInModRm OpcodeUsesModRm
-    Nop
-  0f 18 / 7                   386 OpcodeInModRm OpcodeUsesModRm
-    Nop
+  0f 18 / 4                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
+  0f 18 / 5                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
+  0f 18 / 6                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
+  0f 18 / 7                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
   --- 19 ---
   0f 19                       386 OpcodeUsesModRm NaClIllegal
     Nop

@@ -314,7 +314,7 @@ static const NaClOp g_Operands[306] = {
   /* 305 */ { I_Operand, NACL_OPFLAG(OpUse), "$Ib" },
 };
 
-static const NaClInst g_Opcodes[582] = {
+static const NaClInst g_Opcodes[578] = {
   /* 0 */
   { NACLi_INVALID,
     NACL_EMPTY_IFLAGS,
@@ -1752,894 +1752,878 @@ static const NaClInst g_Opcodes[582] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 173, NACL_OPCODE_NULL_OFFSET  },
   /* 359 */
-  { NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x07, 0, 0, NACL_OPCODE_NULL_OFFSET  },
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x03, 1, 166, 305  },
   /* 360 */
-  { NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x06, 0, 0, 359  },
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x02, 1, 166, 359  },
   /* 361 */
-  { NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x05, 0, 0, 360  },
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x01, 1, 166, 360  },
   /* 362 */
-  { NACLi_386,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x04, 0, 0, 361  },
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x00, 1, 166, 361  },
   /* 363 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x03, 1, 166, 362  },
-  /* 364 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 1, 166, 363  },
-  /* 365 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x01, 1, 166, 364  },
-  /* 366 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x00, 1, 166, 365  },
-  /* 367 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 368 */
+  /* 364 */
   { NACLi_386,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x00, 0, 0, 367  },
-  /* 369 */
+    InstDontCare, 0x00, 0, 0, 363  },
+  /* 365 */
   { NACLi_SYSTEM,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 370 */
+  /* 366 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 174, NACL_OPCODE_NULL_OFFSET  },
-  /* 371 */
+  /* 367 */
   { NACLi_SSE,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 175, NACL_OPCODE_NULL_OFFSET  },
-  /* 372 */
+  /* 368 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 176, NACL_OPCODE_NULL_OFFSET  },
-  /* 373 */
+  /* 369 */
   { NACLi_RDMSR,
     NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 374 */
+  /* 370 */
   { NACLi_RDTSC,
     NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 177, NACL_OPCODE_NULL_OFFSET  },
-  /* 375 */
+  /* 371 */
   { NACLi_SYSENTER,
     NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 376 */
+  /* 372 */
   { NACLi_CMOV,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 37, NACL_OPCODE_NULL_OFFSET  },
-  /* 377 */
+  /* 373 */
   { NACLi_SSE,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 179, NACL_OPCODE_NULL_OFFSET  },
-  /* 378 */
+  /* 374 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 170, NACL_OPCODE_NULL_OFFSET  },
-  /* 379 */
+  /* 375 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 181, NACL_OPCODE_NULL_OFFSET  },
-  /* 380 */
+  /* 376 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 174, NACL_OPCODE_NULL_OFFSET  },
-  /* 381 */
+  /* 377 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 182, NACL_OPCODE_NULL_OFFSET  },
-  /* 382 */
+  /* 378 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 183, NACL_OPCODE_NULL_OFFSET  },
-  /* 383 */
+  /* 379 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 184, NACL_OPCODE_NULL_OFFSET  },
-  /* 384 */
+  /* 380 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x06, 2, 186, 302  },
+  /* 381 */
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x05, 0, 0, 380  },
+  /* 382 */
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x04, 2, 186, 381  },
+  /* 383 */
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x03, 0, 0, 382  },
+  /* 384 */
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x02, 2, 186, 383  },
   /* 385 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x05, 0, 0, 384  },
+    InstInvalid, 0x01, 0, 0, 384  },
   /* 386 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x04, 2, 186, 385  },
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x00, 0, 0, 385  },
   /* 387 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x03, 0, 0, 386  },
+    InstInvalid, 0x04, 0, 0, 381  },
   /* 388 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 2, 186, 387  },
-  /* 389 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x01, 0, 0, 388  },
+    InstInvalid, 0x03, 0, 0, 387  },
+  /* 389 */
+  { NACLi_MMX,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x02, 2, 186, 388  },
   /* 390 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x00, 0, 0, 389  },
+    InstInvalid, 0x01, 0, 0, 389  },
   /* 391 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x04, 0, 0, 385  },
+    InstInvalid, 0x00, 0, 0, 390  },
   /* 392 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x03, 0, 0, 391  },
-  /* 393 */
-  { NACLi_MMX,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 2, 186, 392  },
-  /* 394 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x01, 0, 0, 393  },
-  /* 395 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x00, 0, 0, 394  },
-  /* 396 */
   { NACLi_MMX,
     NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 397 */
+  /* 393 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 188, NACL_OPCODE_NULL_OFFSET  },
-  /* 398 */
+  /* 394 */
   { NACLi_MMX,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 189, NACL_OPCODE_NULL_OFFSET  },
-  /* 399 */
+  /* 395 */
   { NACLi_386,
     NACL_IFLAG(OpcodeHasImmed_v) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(ConditionalJump) | NACL_IFLAG(PartialInstruction),
     InstDontCareCondJump, 0x00, 2, 150, NACL_OPCODE_NULL_OFFSET  },
-  /* 400 */
+  /* 396 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 59, NACL_OPCODE_NULL_OFFSET  },
-  /* 401 */
+  /* 397 */
   { NACLi_386,
     NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 4, 190, NACL_OPCODE_NULL_OFFSET  },
-  /* 402 */
+  /* 398 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 403 */
+  /* 399 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 194, NACL_OPCODE_NULL_OFFSET  },
-  /* 404 */
+  /* 400 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 197, NACL_OPCODE_NULL_OFFSET  },
-  /* 405 */
+  /* 401 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 406 */
+  /* 402 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 200, NACL_OPCODE_NULL_OFFSET  },
-  /* 407 */
+  /* 403 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 203, NACL_OPCODE_NULL_OFFSET  },
-  /* 408 */
+  /* 404 */
   { NACLi_SFENCE_CLFLUSH,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x07, 1, 206, NACL_OPCODE_NULL_OFFSET  },
+  /* 405 */
+  { NACLi_SFENCE_CLFLUSH,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x77, 0, 0, 404  },
+  /* 406 */
+  { NACLi_SFENCE_CLFLUSH,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x67, 0, 0, 405  },
+  /* 407 */
+  { NACLi_SFENCE_CLFLUSH,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x57, 0, 0, 406  },
+  /* 408 */
+  { NACLi_SFENCE_CLFLUSH,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x47, 0, 0, 407  },
   /* 409 */
   { NACLi_SFENCE_CLFLUSH,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x77, 0, 0, 408  },
+    InstDontCare, 0x37, 0, 0, 408  },
   /* 410 */
   { NACLi_SFENCE_CLFLUSH,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x67, 0, 0, 409  },
+    InstDontCare, 0x27, 0, 0, 409  },
   /* 411 */
   { NACLi_SFENCE_CLFLUSH,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x57, 0, 0, 410  },
+    InstDontCare, 0x17, 0, 0, 410  },
   /* 412 */
   { NACLi_SFENCE_CLFLUSH,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x47, 0, 0, 411  },
+    InstDontCare, 0x07, 0, 0, 411  },
   /* 413 */
-  { NACLi_SFENCE_CLFLUSH,
+  { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x37, 0, 0, 412  },
+    InstDontCare, 0x76, 0, 0, 412  },
   /* 414 */
-  { NACLi_SFENCE_CLFLUSH,
+  { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x27, 0, 0, 413  },
+    InstDontCare, 0x66, 0, 0, 413  },
   /* 415 */
-  { NACLi_SFENCE_CLFLUSH,
+  { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x17, 0, 0, 414  },
+    InstDontCare, 0x56, 0, 0, 414  },
   /* 416 */
-  { NACLi_SFENCE_CLFLUSH,
+  { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x07, 0, 0, 415  },
+    InstDontCare, 0x46, 0, 0, 415  },
   /* 417 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x76, 0, 0, 416  },
+    InstDontCare, 0x36, 0, 0, 416  },
   /* 418 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x66, 0, 0, 417  },
+    InstDontCare, 0x26, 0, 0, 417  },
   /* 419 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x56, 0, 0, 418  },
+    InstDontCare, 0x16, 0, 0, 418  },
   /* 420 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x46, 0, 0, 419  },
+    InstDontCare, 0x06, 0, 0, 419  },
   /* 421 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x36, 0, 0, 420  },
+    InstDontCare, 0x75, 0, 0, 420  },
   /* 422 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x26, 0, 0, 421  },
+    InstDontCare, 0x65, 0, 0, 421  },
   /* 423 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x16, 0, 0, 422  },
+    InstDontCare, 0x55, 0, 0, 422  },
   /* 424 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x06, 0, 0, 423  },
+    InstDontCare, 0x45, 0, 0, 423  },
   /* 425 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x75, 0, 0, 424  },
+    InstDontCare, 0x35, 0, 0, 424  },
   /* 426 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x65, 0, 0, 425  },
+    InstDontCare, 0x25, 0, 0, 425  },
   /* 427 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x55, 0, 0, 426  },
+    InstDontCare, 0x15, 0, 0, 426  },
   /* 428 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x45, 0, 0, 427  },
+    InstDontCare, 0x05, 0, 0, 427  },
   /* 429 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x35, 0, 0, 428  },
-  /* 430 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x25, 0, 0, 429  },
-  /* 431 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x15, 0, 0, 430  },
-  /* 432 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeInModRmRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x05, 0, 0, 431  },
-  /* 433 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x04, 0, 0, 432  },
+    InstInvalid, 0x04, 0, 0, 428  },
+  /* 430 */
+  { NACLi_SSE,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x03, 1, 138, 429  },
+  /* 431 */
+  { NACLi_SSE,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x02, 1, 133, 430  },
+  /* 432 */
+  { NACLi_FXSAVE,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x01, 0, 0, 431  },
+  /* 433 */
+  { NACLi_FXSAVE,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x00, 0, 0, 432  },
   /* 434 */
-  { NACLi_SSE,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x03, 1, 138, 433  },
-  /* 435 */
-  { NACLi_SSE,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 1, 133, 434  },
-  /* 436 */
-  { NACLi_FXSAVE,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x01, 0, 0, 435  },
-  /* 437 */
-  { NACLi_FXSAVE,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x00, 0, 0, 436  },
-  /* 438 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 6, NACL_OPCODE_NULL_OFFSET  },
-  /* 439 */
+  /* 435 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 207, NACL_OPCODE_NULL_OFFSET  },
-  /* 440 */
+  /* 436 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 210, NACL_OPCODE_NULL_OFFSET  },
-  /* 441 */
+  /* 437 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 213, NACL_OPCODE_NULL_OFFSET  },
-  /* 442 */
+  /* 438 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 215, NACL_OPCODE_NULL_OFFSET  },
-  /* 443 */
+  /* 439 */
   { NACLi_386,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x07, 0, 0, 116  },
-  /* 444 */
+  /* 440 */
   { NACLi_386,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x06, 0, 0, 443  },
-  /* 445 */
+    InstDontCare, 0x06, 0, 0, 439  },
+  /* 441 */
   { NACLi_386,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x05, 0, 0, 444  },
-  /* 446 */
+    InstDontCare, 0x05, 0, 0, 440  },
+  /* 442 */
   { NACLi_386,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x04, 0, 0, 445  },
-  /* 447 */
+    InstDontCare, 0x04, 0, 0, 441  },
+  /* 443 */
   { NACLi_386,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 37, NACL_OPCODE_NULL_OFFSET  },
-  /* 448 */
+  /* 444 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 217, NACL_OPCODE_NULL_OFFSET  },
-  /* 449 */
+  /* 445 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 219, NACL_OPCODE_NULL_OFFSET  },
-  /* 450 */
+  /* 446 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 221, NACL_OPCODE_NULL_OFFSET  },
-  /* 451 */
+  /* 447 */
   { NACLi_SSE41,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 223, NACL_OPCODE_NULL_OFFSET  },
-  /* 452 */
+  /* 448 */
   { NACLi_CMPXCHG8B,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeLockable) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x01, 3, 226, 116  },
-  /* 453 */
+  /* 449 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 454 */
+  /* 450 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x00, 1, 230, 453  },
-  /* 455 */
+    InstDontCare, 0x00, 1, 230, 449  },
+  /* 451 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x01, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 456 */
+  /* 452 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x01, 1, 230, 455  },
-  /* 457 */
+    InstDontCare, 0x01, 1, 230, 451  },
+  /* 453 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x02, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 458 */
+  /* 454 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 1, 230, 457  },
-  /* 459 */
+    InstDontCare, 0x02, 1, 230, 453  },
+  /* 455 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x03, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 460 */
+  /* 456 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x03, 1, 230, 459  },
-  /* 461 */
+    InstDontCare, 0x03, 1, 230, 455  },
+  /* 457 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x04, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 462 */
+  /* 458 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x04, 1, 230, 461  },
-  /* 463 */
+    InstDontCare, 0x04, 1, 230, 457  },
+  /* 459 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x05, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 464 */
+  /* 460 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x05, 1, 230, 463  },
-  /* 465 */
+    InstDontCare, 0x05, 1, 230, 459  },
+  /* 461 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x06, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 466 */
+  /* 462 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x06, 1, 230, 465  },
-  /* 467 */
+    InstDontCare, 0x06, 1, 230, 461  },
+  /* 463 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x07, 1, 229, NACL_OPCODE_NULL_OFFSET  },
-  /* 468 */
+  /* 464 */
   { NACLi_386,
     NACL_IFLAG(OpcodePlusR) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x07, 1, 230, 467  },
-  /* 469 */
+    InstDontCare, 0x07, 1, 230, 463  },
+  /* 465 */
   { NACLi_MMX,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 223, NACL_OPCODE_NULL_OFFSET  },
-  /* 470 */
+  /* 466 */
   { NACLi_MMX,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 140, NACL_OPCODE_NULL_OFFSET  },
-  /* 471 */
+  /* 467 */
   { NACLi_MMX,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 231, NACL_OPCODE_NULL_OFFSET  },
-  /* 472 */
+  /* 468 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 233, NACL_OPCODE_NULL_OFFSET  },
-  /* 473 */
+  /* 469 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 234, NACL_OPCODE_NULL_OFFSET  },
-  /* 474 */
+  /* 470 */
   { NACLi_SSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 233, NACL_OPCODE_NULL_OFFSET  },
-  /* 475 */
+  /* 471 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(NaClIllegal),
     InstInvalid, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 476 */
+  /* 472 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 235, NACL_OPCODE_NULL_OFFSET  },
-  /* 477 */
+  /* 473 */
   { NACLi_SSE4A,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 140, NACL_OPCODE_NULL_OFFSET  },
-  /* 478 */
+  /* 474 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 236, NACL_OPCODE_NULL_OFFSET  },
-  /* 479 */
+  /* 475 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 238, NACL_OPCODE_NULL_OFFSET  },
-  /* 480 */
+  /* 476 */
   { NACLi_SSE4A,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 240, NACL_OPCODE_NULL_OFFSET  },
-  /* 481 */
+  /* 477 */
   { NACLi_SSE4A,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 243, NACL_OPCODE_NULL_OFFSET  },
-  /* 482 */
+  /* 478 */
   { NACLi_SSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 170, NACL_OPCODE_NULL_OFFSET  },
-  /* 483 */
+  /* 479 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 244, NACL_OPCODE_NULL_OFFSET  },
-  /* 484 */
+  /* 480 */
   { NACLi_SSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 246, NACL_OPCODE_NULL_OFFSET  },
-  /* 485 */
+  /* 481 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 172, NACL_OPCODE_NULL_OFFSET  },
-  /* 486 */
+  /* 482 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 246, NACL_OPCODE_NULL_OFFSET  },
-  /* 487 */
+  /* 483 */
   { NACLi_SSE3,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 247, NACL_OPCODE_NULL_OFFSET  },
-  /* 488 */
+  /* 484 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 176, NACL_OPCODE_NULL_OFFSET  },
-  /* 489 */
+  /* 485 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 248, NACL_OPCODE_NULL_OFFSET  },
-  /* 490 */
+  /* 486 */
   { NACLi_SSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 170, NACL_OPCODE_NULL_OFFSET  },
-  /* 491 */
+  /* 487 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(NaClIllegal),
     InstInvalid, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 492 */
+  /* 488 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 235, NACL_OPCODE_NULL_OFFSET  },
-  /* 493 */
+  /* 489 */
   { NACLi_SSE4A,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 138, NACL_OPCODE_NULL_OFFSET  },
-  /* 494 */
+  /* 490 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 249, NACL_OPCODE_NULL_OFFSET  },
-  /* 495 */
+  /* 491 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 170, NACL_OPCODE_NULL_OFFSET  },
-  /* 496 */
+  /* 492 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 176, NACL_OPCODE_NULL_OFFSET  },
-  /* 497 */
+  /* 493 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 170, NACL_OPCODE_NULL_OFFSET  },
-  /* 498 */
+  /* 494 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 181, NACL_OPCODE_NULL_OFFSET  },
-  /* 499 */
+  /* 495 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 238, NACL_OPCODE_NULL_OFFSET  },
-  /* 500 */
+  /* 496 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 173, NACL_OPCODE_NULL_OFFSET  },
-  /* 501 */
+  /* 497 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 251, NACL_OPCODE_NULL_OFFSET  },
-  /* 502 */
+  /* 498 */
   { NACLi_POPCNT,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 37, NACL_OPCODE_NULL_OFFSET  },
-  /* 503 */
+  /* 499 */
   { NACLi_LZCNT,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 37, NACL_OPCODE_NULL_OFFSET  },
-  /* 504 */
+  /* 500 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 252, NACL_OPCODE_NULL_OFFSET  },
-  /* 505 */
+  /* 501 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRep) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 224, NACL_OPCODE_NULL_OFFSET  },
-  /* 506 */
+  /* 502 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 246, NACL_OPCODE_NULL_OFFSET  },
-  /* 507 */
+  /* 503 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 254, NACL_OPCODE_NULL_OFFSET  },
-  /* 508 */
+  /* 504 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 139, NACL_OPCODE_NULL_OFFSET  },
-  /* 509 */
+  /* 505 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 140, NACL_OPCODE_NULL_OFFSET  },
-  /* 510 */
+  /* 506 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 173, NACL_OPCODE_NULL_OFFSET  },
-  /* 511 */
+  /* 507 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 174, NACL_OPCODE_NULL_OFFSET  },
-  /* 512 */
+  /* 508 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 175, NACL_OPCODE_NULL_OFFSET  },
-  /* 513 */
+  /* 509 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 233, NACL_OPCODE_NULL_OFFSET  },
-  /* 514 */
+  /* 510 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 255, NACL_OPCODE_NULL_OFFSET  },
-  /* 515 */
+  /* 511 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
     InstInvalid, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 516 */
+  /* 512 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 170, NACL_OPCODE_NULL_OFFSET  },
-  /* 517 */
+  /* 513 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 181, NACL_OPCODE_NULL_OFFSET  },
-  /* 518 */
+  /* 514 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 183, NACL_OPCODE_NULL_OFFSET  },
-  /* 519 */
+  /* 515 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 257, NACL_OPCODE_NULL_OFFSET  },
-  /* 520 */
+  /* 516 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
     InstInvalid, 0x07, 0, 0, NACL_OPCODE_NULL_OFFSET  },
+  /* 517 */
+  { NACLi_SSE2,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x06, 2, 259, 516  },
+  /* 518 */
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x05, 0, 0, 517  },
+  /* 519 */
+  { NACLi_SSE2,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x04, 2, 259, 518  },
+  /* 520 */
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x03, 0, 0, 519  },
   /* 521 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x06, 2, 259, 520  },
+    InstDontCare, 0x02, 2, 259, 520  },
   /* 522 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x05, 0, 0, 521  },
+    InstInvalid, 0x01, 0, 0, 521  },
   /* 523 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x04, 2, 259, 522  },
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x00, 0, 0, 522  },
   /* 524 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x03, 0, 0, 523  },
-  /* 525 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 2, 259, 524  },
-  /* 526 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x01, 0, 0, 525  },
-  /* 527 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x00, 0, 0, 526  },
-  /* 528 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x07, 2, 259, NACL_OPCODE_NULL_OFFSET  },
+  /* 525 */
+  { NACLi_SSE2,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x06, 2, 259, 524  },
+  /* 526 */
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x05, 0, 0, 525  },
+  /* 527 */
+  { NACLi_INVALID,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
+    InstInvalid, 0x04, 0, 0, 526  },
+  /* 528 */
+  { NACLi_SSE2,
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x03, 2, 259, 527  },
   /* 529 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x06, 2, 259, 528  },
+    InstDontCare, 0x02, 2, 259, 528  },
   /* 530 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x05, 0, 0, 529  },
+    InstInvalid, 0x01, 0, 0, 529  },
   /* 531 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x04, 0, 0, 530  },
+    InstInvalid, 0x00, 0, 0, 530  },
   /* 532 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x03, 2, 259, 531  },
-  /* 533 */
-  { NACLi_SSE2,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x02, 2, 259, 532  },
-  /* 534 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x01, 0, 0, 533  },
-  /* 535 */
-  { NACLi_INVALID,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
-    InstInvalid, 0x00, 0, 0, 534  },
-  /* 536 */
   { NACLi_INVALID,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal),
     InstInvalid, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 537 */
+  /* 533 */
   { NACLi_SSE4A,
     NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeHasImmed2_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
-    InstDontCare, 0x00, 0, 0, 536  },
-  /* 538 */
+    InstDontCare, 0x00, 0, 0, 532  },
+  /* 534 */
   { NACLi_SSE4A,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 243, NACL_OPCODE_NULL_OFFSET  },
-  /* 539 */
+  /* 535 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 188, NACL_OPCODE_NULL_OFFSET  },
-  /* 540 */
+  /* 536 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 251, NACL_OPCODE_NULL_OFFSET  },
-  /* 541 */
+  /* 537 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 261, NACL_OPCODE_NULL_OFFSET  },
-  /* 542 */
+  /* 538 */
   { NACLi_SSE,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 221, NACL_OPCODE_NULL_OFFSET  },
-  /* 543 */
+  /* 539 */
   { NACLi_SSE41,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 263, NACL_OPCODE_NULL_OFFSET  },
-  /* 544 */
+  /* 540 */
   { NACLi_SSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 246, NACL_OPCODE_NULL_OFFSET  },
-  /* 545 */
+  /* 541 */
   { NACLi_SSE2,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 266, NACL_OPCODE_NULL_OFFSET  },
-  /* 546 */
+  /* 542 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 263, NACL_OPCODE_NULL_OFFSET  },
-  /* 547 */
+  /* 543 */
   { NACLi_SSE2,
     NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 267, NACL_OPCODE_NULL_OFFSET  },
-  /* 548 */
+  /* 544 */
   { NACLi_E3DNOW,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 174, NACL_OPCODE_NULL_OFFSET  },
-  /* 549 */
+  /* 545 */
   { NACLi_3DNOW,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 174, NACL_OPCODE_NULL_OFFSET  },
-  /* 550 */
+  /* 546 */
   { NACLi_SSSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 174, NACL_OPCODE_NULL_OFFSET  },
-  /* 551 */
+  /* 547 */
   { NACLi_MOVBE,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 269, NACL_OPCODE_NULL_OFFSET  },
-  /* 552 */
+  /* 548 */
   { NACLi_MOVBE,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 271, NACL_OPCODE_NULL_OFFSET  },
-  /* 553 */
+  /* 549 */
   { NACLi_SSSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 181, NACL_OPCODE_NULL_OFFSET  },
-  /* 554 */
+  /* 550 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 181, NACL_OPCODE_NULL_OFFSET  },
-  /* 555 */
+  /* 551 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 273, NACL_OPCODE_NULL_OFFSET  },
-  /* 556 */
+  /* 552 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 274, NACL_OPCODE_NULL_OFFSET  },
-  /* 557 */
+  /* 553 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 275, NACL_OPCODE_NULL_OFFSET  },
-  /* 558 */
+  /* 554 */
   { NACLi_SSE41,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 247, NACL_OPCODE_NULL_OFFSET  },
-  /* 559 */
+  /* 555 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 181, NACL_OPCODE_NULL_OFFSET  },
-  /* 560 */
+  /* 556 */
   { NACLi_VMX,
     NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 561 */
+  /* 557 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 276, NACL_OPCODE_NULL_OFFSET  },
-  /* 562 */
+  /* 558 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsRepne) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 278, NACL_OPCODE_NULL_OFFSET  },
-  /* 563 */
+  /* 559 */
   { NACLi_SSSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 184, NACL_OPCODE_NULL_OFFSET  },
-  /* 564 */
+  /* 560 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 257, NACL_OPCODE_NULL_OFFSET  },
-  /* 565 */
+  /* 561 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 252, NACL_OPCODE_NULL_OFFSET  },
-  /* 566 */
+  /* 562 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 244, NACL_OPCODE_NULL_OFFSET  },
-  /* 567 */
+  /* 563 */
   { NACLi_SSSE3,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 257, NACL_OPCODE_NULL_OFFSET  },
-  /* 568 */
+  /* 564 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 280, NACL_OPCODE_NULL_OFFSET  },
-  /* 569 */
+  /* 565 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 282, NACL_OPCODE_NULL_OFFSET  },
-  /* 570 */
+  /* 566 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 284, NACL_OPCODE_NULL_OFFSET  },
-  /* 571 */
+  /* 567 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 286, NACL_OPCODE_NULL_OFFSET  },
-  /* 572 */
+  /* 568 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 288, NACL_OPCODE_NULL_OFFSET  },
-  /* 573 */
+  /* 569 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 290, NACL_OPCODE_NULL_OFFSET  },
-  /* 574 */
+  /* 570 */
   { NACLi_SSE41,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 292, NACL_OPCODE_NULL_OFFSET  },
-  /* 575 */
+  /* 571 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 4, 294, NACL_OPCODE_NULL_OFFSET  },
-  /* 576 */
+  /* 572 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 5, 298, NACL_OPCODE_NULL_OFFSET  },
-  /* 577 */
+  /* 573 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 2, 257, NACL_OPCODE_NULL_OFFSET  },
-  /* 578 */
+  /* 574 */
   { NACLi_SSE42,
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 303, NACL_OPCODE_NULL_OFFSET  },
-  /* 579 */
+  /* 575 */
   { NACLi_X87_FSINCOS,
     NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 580 */
+  /* 576 */
   { NACLi_X87,
     NACL_EMPTY_IFLAGS,
     InstInvalid, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 581 */
+  /* 577 */
   { NACLi_X87,
     NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 73, NACL_OPCODE_NULL_OFFSET  },
@@ -2674,104 +2658,104 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*   250 */ 189, 189, 285, 285, 309, 316, 322, 341, 342, 342, 
   /*   260 */ 14, NACL_OPCODE_NULL_OFFSET, 189, NACL_OPCODE_NULL_OFFSET, 189, 189, 14, 7, 14, 350, 
   /*   270 */ 351, 352, 353, 354, 356, 357, 358, 358, 356, 357, 
-  /*   280 */ 366, 367, 367, 367, 367, 367, 367, 368, 369, 369, 
-  /*   290 */ 369, 369, 14, 14, 14, 14, 353, 354, 370, 371, 
-  /*   300 */ 353, 353, 372, 353, 373, 374, 373, 189, 375, 375, 
+  /*   280 */ 362, 363, 363, 363, 363, 363, 363, 364, 365, 365, 
+  /*   290 */ 365, 365, 14, 14, 14, 14, 353, 354, 366, 367, 
+  /*   300 */ 353, 353, 368, 353, 369, 370, 369, 189, 371, 371, 
   /*   310 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
-  /*   320 */ 376, 376, 376, 376, 376, 376, 376, 376, 376, 376, 
-  /*   330 */ 376, 376, 376, 376, 376, 376, 377, 353, 353, 353, 
-  /*   340 */ 353, 353, 353, 353, 353, 353, 378, 379, 353, 353, 
-  /*   350 */ 353, 353, 380, 380, 380, 380, 380, 380, 380, 380, 
-  /*   360 */ 381, 381, 381, 380, 14, 14, 382, 380, 383, 390, 
-  /*   370 */ 390, 395, 380, 380, 380, 396, 14, 14, 14, 14, 
-  /*   380 */ 14, 14, 397, 398, 399, 399, 399, 399, 399, 399, 
-  /*   390 */ 399, 399, 399, 399, 399, 399, 399, 399, 399, 399, 
-  /*   400 */ 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 
-  /*   410 */ 400, 400, 400, 400, 400, 400, 7, 7, 401, 402, 
-  /*   420 */ 403, 404, 14, 14, 7, 7, 189, 405, 406, 407, 
-  /*   430 */ 437, 438, 439, 440, 65, 405, 65, 65, 441, 442, 
-  /*   440 */ 14, 116, 446, 405, 447, 447, 441, 442, 107, 108, 
-  /*   450 */ 448, 449, 450, 451, 448, 452, 454, 456, 458, 460, 
-  /*   460 */ 462, 464, 466, 468, 14, 380, 380, 380, 380, 380, 
-  /*   470 */ 14, 469, 380, 380, 380, 380, 380, 380, 380, 380, 
-  /*   480 */ 380, 380, 380, 380, 380, 380, 14, 470, 380, 380, 
-  /*   490 */ 380, 380, 380, 380, 380, 380, 14, 380, 380, 380, 
-  /*   500 */ 380, 380, 380, 471, 380, 380, 380, 380, 380, 380, 
-  /*   510 */ 380, 14, NACL_OPCODE_NULL_OFFSET, 472, 473, 474, 475, 475, 475, 475, 
-  /*   520 */ 475, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   530 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 475, 475, 476, 
-  /*   540 */ 477, 478, 478, 475, 475, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   320 */ 372, 372, 372, 372, 372, 372, 372, 372, 372, 372, 
+  /*   330 */ 372, 372, 372, 372, 372, 372, 373, 353, 353, 353, 
+  /*   340 */ 353, 353, 353, 353, 353, 353, 374, 375, 353, 353, 
+  /*   350 */ 353, 353, 376, 376, 376, 376, 376, 376, 376, 376, 
+  /*   360 */ 377, 377, 377, 376, 14, 14, 378, 376, 379, 386, 
+  /*   370 */ 386, 391, 376, 376, 376, 392, 14, 14, 14, 14, 
+  /*   380 */ 14, 14, 393, 394, 395, 395, 395, 395, 395, 395, 
+  /*   390 */ 395, 395, 395, 395, 395, 395, 395, 395, 395, 395, 
+  /*   400 */ 396, 396, 396, 396, 396, 396, 396, 396, 396, 396, 
+  /*   410 */ 396, 396, 396, 396, 396, 396, 7, 7, 397, 398, 
+  /*   420 */ 399, 400, 14, 14, 7, 7, 189, 401, 402, 403, 
+  /*   430 */ 433, 434, 435, 436, 65, 401, 65, 65, 437, 438, 
+  /*   440 */ 14, 116, 442, 401, 443, 443, 437, 438, 107, 108, 
+  /*   450 */ 444, 445, 446, 447, 444, 448, 450, 452, 454, 456, 
+  /*   460 */ 458, 460, 462, 464, 14, 376, 376, 376, 376, 376, 
+  /*   470 */ 14, 465, 376, 376, 376, 376, 376, 376, 376, 376, 
+  /*   480 */ 376, 376, 376, 376, 376, 376, 14, 466, 376, 376, 
+  /*   490 */ 376, 376, 376, 376, 376, 376, 14, 376, 376, 376, 
+  /*   500 */ 376, 376, 376, 467, 376, 376, 376, 376, 376, 376, 
+  /*   510 */ 376, 14, NACL_OPCODE_NULL_OFFSET, 468, 469, 470, 471, 471, 471, 471, 
+  /*   520 */ 471, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   530 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 471, 471, 472, 
+  /*   540 */ 473, 474, 474, 471, 471, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   550 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   560 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   570 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 475, 472, 475, 
-  /*   580 */ 475, 475, 475, 475, 475, 472, 472, 472, 475, 472, 
-  /*   590 */ 472, 472, 472, 475, 475, 475, 475, 475, 475, 475, 
-  /*   600 */ 475, 475, 475, 475, 475, 475, 475, 475, 475, 479, 
-  /*   610 */ 475, 475, 475, 475, 475, 475, 475, 480, 481, 475, 
-  /*   620 */ 475, 482, 482, 475, 475, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   570 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 471, 468, 471, 
+  /*   580 */ 471, 471, 471, 471, 471, 468, 468, 468, 471, 468, 
+  /*   590 */ 468, 468, 468, 471, 471, 471, 471, 471, 471, 471, 
+  /*   600 */ 471, 471, 471, 471, 471, 471, 471, 471, 471, 475, 
+  /*   610 */ 471, 471, 471, 471, 471, 471, 471, 476, 477, 471, 
+  /*   620 */ 471, 478, 478, 471, 471, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   630 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   640 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   650 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   660 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   670 */ NACL_OPCODE_NULL_OFFSET, 475, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   680 */ NACL_OPCODE_NULL_OFFSET, 475, 475, 475, 475, 475, 475, 475, 475, NACL_OPCODE_NULL_OFFSET, 
-  /*   690 */ NACL_OPCODE_NULL_OFFSET, 483, 475, 475, 475, 475, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   700 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 484, 475, 475, 475, 475, 
-  /*   710 */ 475, 485, 475, 475, 475, 475, 475, 475, 475, 475, 
-  /*   720 */ 475, 475, 475, 475, 475, 475, 475, 486, 475, 475, 
-  /*   730 */ 475, 475, 475, 475, 475, 475, 475, 487, 475, 475, 
-  /*   740 */ 475, 475, 475, 475, 475, 475, 475, 475, 475, 475, 
-  /*   750 */ 475, 475, 475, NACL_OPCODE_NULL_OFFSET, 488, 489, 490, 491, 491, 491, 
-  /*   760 */ 490, 491, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   770 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 491, 491, 
-  /*   780 */ 492, 493, 494, 494, 491, 491, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   670 */ NACL_OPCODE_NULL_OFFSET, 471, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   680 */ NACL_OPCODE_NULL_OFFSET, 471, 471, 471, 471, 471, 471, 471, 471, NACL_OPCODE_NULL_OFFSET, 
+  /*   690 */ NACL_OPCODE_NULL_OFFSET, 479, 471, 471, 471, 471, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   700 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 480, 471, 471, 471, 471, 
+  /*   710 */ 471, 481, 471, 471, 471, 471, 471, 471, 471, 471, 
+  /*   720 */ 471, 471, 471, 471, 471, 471, 471, 482, 471, 471, 
+  /*   730 */ 471, 471, 471, 471, 471, 471, 471, 483, 471, 471, 
+  /*   740 */ 471, 471, 471, 471, 471, 471, 471, 471, 471, 471, 
+  /*   750 */ 471, 471, 471, NACL_OPCODE_NULL_OFFSET, 484, 485, 486, 487, 487, 487, 
+  /*   760 */ 486, 487, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   770 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 487, 487, 
+  /*   780 */ 488, 489, 490, 490, 487, 487, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   790 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   800 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   810 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 491, 495, 
-  /*   820 */ 488, 488, 491, 491, 491, 491, 488, 488, 496, 497, 
-  /*   830 */ 488, 488, 488, 488, 491, 491, 491, 491, 491, 491, 
-  /*   840 */ 491, 491, 491, 491, 491, 491, 491, 491, 491, 498, 
-  /*   850 */ 499, 491, 491, 491, 491, 491, 491, 491, 491, 491, 
-  /*   860 */ 491, 491, 491, 491, 500, 501, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   810 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 487, 491, 
+  /*   820 */ 484, 484, 487, 487, 487, 487, 484, 484, 492, 493, 
+  /*   830 */ 484, 484, 484, 484, 487, 487, 487, 487, 487, 487, 
+  /*   840 */ 487, 487, 487, 487, 487, 487, 487, 487, 487, 494, 
+  /*   850 */ 495, 487, 487, 487, 487, 487, 487, 487, 487, 487, 
+  /*   860 */ 487, 487, 487, 487, 496, 497, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   870 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   880 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   890 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   900 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*   910 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   920 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 502, 491, 491, 491, 491, 503, 491, 491, 
-  /*   930 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 504, 491, 491, 491, 491, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*   940 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 491, 491, 491, 491, 
-  /*   950 */ 491, 491, 505, 491, 491, 491, 491, 491, 491, 491, 
-  /*   960 */ 491, 491, 491, 491, 491, 491, 491, 491, 500, 491, 
-  /*   970 */ 491, 491, 491, 491, 491, 491, 491, 491, 491, 491, 
-  /*   980 */ 491, 491, 491, 491, 491, 491, 491, 491, 491, 491, 
-  /*   990 */ 491, 491, 491, 491, NACL_OPCODE_NULL_OFFSET, 506, 507, 508, 509, 510, 
-  /*  1000 */ 510, 508, 509, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1010 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 506, 
-  /*  1020 */ 507, 511, 512, 506, 506, 513, 513, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   920 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 498, 487, 487, 487, 487, 499, 487, 487, 
+  /*   930 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 500, 487, 487, 487, 487, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*   940 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 487, 487, 487, 487, 
+  /*   950 */ 487, 487, 501, 487, 487, 487, 487, 487, 487, 487, 
+  /*   960 */ 487, 487, 487, 487, 487, 487, 487, 487, 496, 487, 
+  /*   970 */ 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 
+  /*   980 */ 487, 487, 487, 487, 487, 487, 487, 487, 487, 487, 
+  /*   990 */ 487, 487, 487, 487, NACL_OPCODE_NULL_OFFSET, 502, 503, 504, 505, 506, 
+  /*  1000 */ 506, 504, 505, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1010 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 502, 
+  /*  1020 */ 503, 507, 508, 502, 502, 509, 509, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1030 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1040 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1050 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 514, 
-  /*  1060 */ 506, 515, 515, 506, 506, 506, 506, 506, 506, 506, 
-  /*  1070 */ 516, 506, 506, 506, 506, 510, 510, 510, 517, 517, 
-  /*  1080 */ 517, 517, 517, 510, 510, 510, 517, 510, 510, 518, 
-  /*  1090 */ 517, 519, 527, 527, 535, 517, 517, 517, 515, 537, 
-  /*  1100 */ 538, 515, 515, 506, 506, 539, 540, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1050 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 510, 
+  /*  1060 */ 502, 511, 511, 502, 502, 502, 502, 502, 502, 502, 
+  /*  1070 */ 512, 502, 502, 502, 502, 506, 506, 506, 513, 513, 
+  /*  1080 */ 513, 513, 513, 506, 506, 506, 513, 506, 506, 514, 
+  /*  1090 */ 513, 515, 523, 523, 531, 513, 513, 513, 511, 533, 
+  /*  1100 */ 534, 511, 511, 502, 502, 535, 536, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1110 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1120 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1130 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1140 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1150 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 515, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1150 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 511, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1160 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1170 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 541, 515, 542, 543, 541, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1180 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 544, 517, 517, 
-  /*  1190 */ 517, 517, 517, 545, 546, 517, 517, 517, 517, 517, 
-  /*  1200 */ 517, 517, 517, 517, 517, 517, 517, 517, 517, 517, 
-  /*  1210 */ 512, 517, 517, 517, 517, 517, 517, 517, 517, 515, 
-  /*  1220 */ 517, 517, 517, 517, 517, 517, 547, 517, 517, 517, 
-  /*  1230 */ 517, 517, 517, 517, 515, NACL_OPCODE_NULL_OFFSET, 548, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1170 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 537, 511, 538, 539, 537, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1180 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 540, 513, 513, 
+  /*  1190 */ 513, 513, 513, 541, 542, 513, 513, 513, 513, 513, 
+  /*  1200 */ 513, 513, 513, 513, 513, 513, 513, 513, 513, 513, 
+  /*  1210 */ 508, 513, 513, 513, 513, 513, 513, 513, 513, 511, 
+  /*  1220 */ 513, 513, 513, 513, 513, 513, 543, 513, 513, 513, 
+  /*  1230 */ 513, 513, 513, 513, 511, NACL_OPCODE_NULL_OFFSET, 544, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1240 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1250 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 548, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1250 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 544, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1260 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1270 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1280 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
@@ -2782,15 +2766,15 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*  1330 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1340 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1350 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1360 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 548, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 548, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 
-  /*  1370 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 549, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 
-  /*  1380 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 
-  /*  1390 */ 549, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 
-  /*  1400 */ 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 549, 549, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1410 */ NACL_OPCODE_NULL_OFFSET, 548, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 549, NACL_OPCODE_NULL_OFFSET, 550, 550, 550, 
-  /*  1420 */ 550, 550, 550, 550, 550, 550, 550, 550, 550, 14, 
+  /*  1360 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 544, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 544, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 
+  /*  1370 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 545, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 
+  /*  1380 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 
+  /*  1390 */ 545, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 
+  /*  1400 */ 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 545, 545, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1410 */ NACL_OPCODE_NULL_OFFSET, 544, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 545, NACL_OPCODE_NULL_OFFSET, 546, 546, 546, 
+  /*  1420 */ 546, 546, 546, 546, 546, 546, 546, 546, 546, 14, 
   /*  1430 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
-  /*  1440 */ 14, 14, 14, 14, 14, 550, 550, 550, 14, 14, 
+  /*  1440 */ 14, 14, 14, 14, 14, 546, 546, 546, 14, 14, 
   /*  1450 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
   /*  1460 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
   /*  1470 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
@@ -2811,44 +2795,44 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*  1620 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
   /*  1630 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
   /*  1640 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
-  /*  1650 */ 14, 14, 14, 14, 14, 14, 14, 551, 552, 14, 
+  /*  1650 */ 14, 14, 14, 14, 14, 14, 14, 547, 548, 14, 
   /*  1660 */ 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 
-  /*  1670 */ 14, 14, 14, 553, 553, 553, 553, 553, 553, 553, 
-  /*  1680 */ 553, 553, 553, 553, 553, 515, 515, 515, 515, 554, 
-  /*  1690 */ 515, 515, 515, 554, 554, 515, 554, 515, 515, 515, 
-  /*  1700 */ 515, 553, 553, 553, 515, 555, 556, 557, 555, 556, 
-  /*  1710 */ 555, 515, 515, 554, 554, 558, 554, 515, 515, 515, 
-  /*  1720 */ 515, 555, 556, 557, 555, 556, 555, 515, 559, 554, 
-  /*  1730 */ 554, 554, 554, 554, 554, 554, 554, 554, 554, 515, 
-  /*  1740 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1750 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1760 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1770 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1780 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1790 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1800 */ 515, 560, 560, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1810 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1820 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1830 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1840 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1850 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1860 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1870 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1880 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1890 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1900 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, 515, 
-  /*  1910 */ 515, 515, 515, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 515, 515, 515, 515, 515, 
-  /*  1920 */ 515, 515, 515, 515, 515, 515, 515, 515, 515, NACL_OPCODE_NULL_OFFSET, 
-  /*  1930 */ 561, 562, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 563, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 564, 564, 565, 
-  /*  1940 */ 566, 564, 564, 564, 567, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 568, 
-  /*  1950 */ 569, 570, 571, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1960 */ NACL_OPCODE_NULL_OFFSET, 572, 573, 574, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1670 */ 14, 14, 14, 549, 549, 549, 549, 549, 549, 549, 
+  /*  1680 */ 549, 549, 549, 549, 549, 511, 511, 511, 511, 550, 
+  /*  1690 */ 511, 511, 511, 550, 550, 511, 550, 511, 511, 511, 
+  /*  1700 */ 511, 549, 549, 549, 511, 551, 552, 553, 551, 552, 
+  /*  1710 */ 551, 511, 511, 550, 550, 554, 550, 511, 511, 511, 
+  /*  1720 */ 511, 551, 552, 553, 551, 552, 551, 511, 555, 550, 
+  /*  1730 */ 550, 550, 550, 550, 550, 550, 550, 550, 550, 511, 
+  /*  1740 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1750 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1760 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1770 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1780 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1790 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1800 */ 511, 556, 556, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1810 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1820 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1830 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1840 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1850 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1860 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1870 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1880 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1890 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1900 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, 511, 
+  /*  1910 */ 511, 511, 511, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 511, 511, 511, 511, 511, 
+  /*  1920 */ 511, 511, 511, 511, 511, 511, 511, 511, 511, NACL_OPCODE_NULL_OFFSET, 
+  /*  1930 */ 557, 558, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 559, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 560, 560, 561, 
+  /*  1940 */ 562, 560, 560, 560, 563, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 564, 
+  /*  1950 */ 565, 566, 567, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1960 */ NACL_OPCODE_NULL_OFFSET, 568, 569, 570, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1970 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  1980 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  1990 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 564, 564, 564, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
+  /*  1990 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 560, 560, 560, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  2000 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
   /*  2010 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 
-  /*  2020 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 575, 576, 577, 578, NACL_OPCODE_NULL_OFFSET, 
+  /*  2020 */ NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, NACL_OPCODE_NULL_OFFSET, 571, 572, 573, 574, NACL_OPCODE_NULL_OFFSET, 
   /*  2030 */ NACL_OPCODE_NULL_OFFSET, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2040 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2050 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
@@ -2861,7 +2845,7 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*  2120 */ 14, 14, 14, 14, 14, 14, 14, 14, 131, 131, 
   /*  2130 */ 14, 14, 131, 131, 14, 14, 131, 131, 131, 131, 
   /*  2140 */ 131, 131, 131, 14, 131, 131, 131, 131, 131, 131, 
-  /*  2150 */ 131, 131, 131, 131, 131, 579, 131, 131, 131, 131, 
+  /*  2150 */ 131, 131, 131, 131, 131, 575, 131, 131, 131, 131, 
   /*  2160 */ NACL_OPCODE_NULL_OFFSET, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2170 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2180 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
@@ -2893,11 +2877,11 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*  2440 */ 14, 14, 14, 14, 14, 14, 131, 131, 131, 131, 
   /*  2450 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2460 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
-  /*  2470 */ 131, 131, 131, 131, 131, 131, 131, 131, NACL_OPCODE_NULL_OFFSET, 580, 
-  /*  2480 */ 580, 580, 580, 580, 580, 580, 580, 580, 580, 580, 
-  /*  2490 */ 580, 580, 580, 580, 580, 580, 580, 580, 580, 580, 
-  /*  2500 */ 580, 580, 580, 580, 580, 580, 580, 580, 580, 580, 
-  /*  2510 */ 580, 581, 14, 14, 14, 14, 14, 14, 14, 131, 
+  /*  2470 */ 131, 131, 131, 131, 131, 131, 131, 131, NACL_OPCODE_NULL_OFFSET, 576, 
+  /*  2480 */ 576, 576, 576, 576, 576, 576, 576, 576, 576, 576, 
+  /*  2490 */ 576, 576, 576, 576, 576, 576, 576, 576, 576, 576, 
+  /*  2500 */ 576, 576, 576, 576, 576, 576, 576, 576, 576, 576, 
+  /*  2510 */ 576, 577, 14, 14, 14, 14, 14, 14, 14, 131, 
   /*  2520 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2530 */ 131, 131, 131, 131, 131, 14, 14, 14, 14, 14, 
   /*  2540 */ 14, 14, 14, };

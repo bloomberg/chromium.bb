@@ -158,7 +158,7 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("     0f18/2:   Prefetcht1 $Mb",      NACLi_MMX,     st, Other);
   NaClDefine("     0f18/3:   Prefetcht2 $Mb",      NACLi_MMX,     st, Other);
   /* The following 4 are reserved for future prefetch instructions. */
-  NaClDefIter("    0f18/@i:  Nop", 4, 7,           NACLi_386,     st, Other);
+  NaClDefIter("    0f18/@i:  Invalid", 4, 7,       NACLi_INVALID, st, Other);
   NaClDefine("     0f1f/0:   Nop",                 NACLi_386,     st, Other);
   NaClDefIter("    0f19+@i/r: Nop", 0, 6,          NACLi_386,     st, Other);
   NaClDefine("     0f20:     Mov $Rd/q, $Cd/q",    NACLi_SYSTEM,  st, Move);
