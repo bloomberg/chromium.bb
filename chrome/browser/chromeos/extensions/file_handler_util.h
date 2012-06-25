@@ -82,7 +82,6 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
                                   const GURL source_url,
                                   const std::string& extension_id,
                                   const std::string& action_id);
-  virtual ~FileTaskExecutor();
 
   // Same as ExecuteAndNotify, but no notification is performed.
   virtual bool Execute(const std::vector<GURL>& file_urls);
@@ -98,6 +97,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 
  protected:
   explicit FileTaskExecutor(Profile* profile);
+  virtual ~FileTaskExecutor();
 
   // Returns the profile that this task was created with.
   Profile* profile() { return profile_; }
@@ -105,6 +105,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   // Returns a browser to use for the current browser.
   Browser* GetBrowser() const;
  private:
+  friend class base::RefCountedThreadSafe<FileTaskExecutor>;
 
   Profile* profile_;
 };

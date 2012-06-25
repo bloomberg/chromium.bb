@@ -122,6 +122,7 @@ class AppListItemView::IconOperation
 
  private:
   friend class base::RefCountedThreadSafe<AppListItemView::IconOperation>;
+  ~IconOperation() {}
 
   base::CancellationFlag cancel_flag_;
 

@@ -197,6 +197,10 @@ class JobRestartRequest
   }
 
  private:
+  friend class base::RefCountedThreadSafe<JobRestartRequest>;
+
+  ~JobRestartRequest() {}
+
   void RestartJob() {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(

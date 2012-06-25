@@ -49,17 +49,7 @@ class ImageTransportClientEGL : public ImageTransportClient {
         image_(NULL) {
   }
 
-  virtual ~ImageTransportClientEGL() {
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
-    if (image_)
-      eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
-    unsigned int texture = texture_id();
-    if (texture)
-      glDeleteTextures(1, &texture);
-    glFlush();
-  }
-
-  virtual bool Initialize(uint64* surface_handle) {
+  virtual bool Initialize(uint64* surface_handle) OVERRIDE {
     scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
     image_ = eglCreateImageKHR(
         gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
@@ -73,9 +63,20 @@ class ImageTransportClientEGL : public ImageTransportClient {
     return true;
   }
 
-  virtual void Update() { }
-  virtual TransportDIB::Handle Handle() const {
+  virtual void Update() OVERRIDE {}
+  virtual TransportDIB::Handle Handle() const OVERRIDE {
     return TransportDIB::DefaultHandleValue();
+  }
+
+ protected:
+  virtual ~ImageTransportClientEGL() {
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
+    if (image_)
+      eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
+    unsigned int texture = texture_id();
+    if (texture)
+      glDeleteTextures(1, &texture);
+    glFlush();
   }
 
  private:
@@ -93,23 +94,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
         acquired_(false) {
   }
 
-  virtual ~ImageTransportClientGLX() {
-    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
-    Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
-    if (glx_pixmap_) {
-      if (acquired_)
-        glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
-      glXDestroyGLXPixmap(dpy, glx_pixmap_);
-    }
-    if (pixmap_)
-      XFreePixmap(dpy, pixmap_);
-    unsigned int texture = texture_id();
-    if (texture)
-      glDeleteTextures(1, &texture);
-    glFlush();
-  }
-
-  virtual bool Initialize(uint64* surface_handle) {
+  virtual bool Initialize(uint64* surface_handle) OVERRIDE {
     TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Initialize");
     Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
 
@@ -136,7 +121,7 @@ class ImageTransportClientGLX : public ImageTransportClient {
     return true;
   }
 
-  virtual void Update() {
+  virtual void Update() OVERRIDE {
     TRACE_EVENT0("renderer_host", "ImageTransportClientGLX::Update");
     Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
     scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
@@ -148,8 +133,25 @@ class ImageTransportClientGLX : public ImageTransportClient {
     glFlush();
   }
 
-  virtual TransportDIB::Handle Handle() const {
+  virtual TransportDIB::Handle Handle() const OVERRIDE {
     return TransportDIB::DefaultHandleValue();
+  }
+
+ protected:
+  virtual ~ImageTransportClientGLX() {
+    scoped_ptr<gfx::ScopedMakeCurrent> bind(factory_->GetScopedMakeCurrent());
+    Display* dpy = base::MessagePumpForUI::GetDefaultXDisplay();
+    if (glx_pixmap_) {
+      if (acquired_)
+        glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
+      glXDestroyGLXPixmap(dpy, glx_pixmap_);
+    }
+    if (pixmap_)
+      XFreePixmap(dpy, pixmap_);
+    unsigned int texture = texture_id();
+    if (texture)
+      glDeleteTextures(1, &texture);
+    glFlush();
   }
 
  private:
@@ -237,17 +239,7 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
         factory_(factory) {
   }
 
-  virtual ~ImageTransportClientOSMesa() {
-    unsigned int texture = texture_id();
-    if (texture) {
-      scoped_ptr<gfx::ScopedMakeCurrent> bind(
-          factory_->GetScopedMakeCurrent());
-      glDeleteTextures(1, &texture);
-      glFlush();
-    }
-  }
-
-  virtual bool Initialize(uint64* surface_handle) {
+  virtual bool Initialize(uint64* surface_handle) OVERRIDE {
     // We expect to make the handle here, so don't want the other end giving us
     // one.
     DCHECK_EQ(*surface_handle, static_cast<uint64>(0));
@@ -270,7 +262,7 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
     return true;
   }
 
-  virtual void Update() {
+  virtual void Update() OVERRIDE {
     glBindTexture(GL_TEXTURE_2D, texture_id());
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  size().width(), size().height(), 0,
@@ -278,7 +270,20 @@ class ImageTransportClientOSMesa : public ImageTransportClient {
     glFlush();
   }
 
-  virtual TransportDIB::Handle Handle() const { return shared_mem_->handle(); }
+  virtual TransportDIB::Handle Handle() const OVERRIDE {
+    return shared_mem_->handle();
+  }
+
+ protected:
+  virtual ~ImageTransportClientOSMesa() {
+    unsigned int texture = texture_id();
+    if (texture) {
+      scoped_ptr<gfx::ScopedMakeCurrent> bind(
+          factory_->GetScopedMakeCurrent());
+      glDeleteTextures(1, &texture);
+      glFlush();
+    }
+  }
 
  private:
   ImageTransportFactory* factory_;

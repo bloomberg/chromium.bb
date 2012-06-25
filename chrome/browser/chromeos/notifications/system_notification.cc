@@ -141,4 +141,6 @@ SystemNotification::Delegate::GetRenderViewHost() const {
   return NULL;
 }
 
+SystemNotification::Delegate::~Delegate() {}
+
 }  // namespace chromeos

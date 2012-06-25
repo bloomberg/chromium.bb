@@ -53,6 +53,8 @@ class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.sendInput")
 
  protected:
+  virtual ~SendInputToTerminalProcessFunction();
+
   // TerminalPrivateFunction:
   virtual bool RunTerminalFunction() OVERRIDE;
 
@@ -67,6 +69,8 @@ class CloseTerminalProcessFunction : public TerminalPrivateFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.closeTerminalProcess")
 
  protected:
+  virtual ~CloseTerminalProcessFunction();
+
   virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
@@ -80,6 +84,8 @@ class OnTerminalResizeFunction : public TerminalPrivateFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.onTerminalResize")
 
  protected:
+  virtual ~OnTerminalResizeFunction();
+
   virtual bool RunTerminalFunction() OVERRIDE;
 
  private:

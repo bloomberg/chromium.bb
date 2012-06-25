@@ -79,6 +79,9 @@ class SystemNotification : public PowerManagerClient::Observer {
     virtual std::string id() const OVERRIDE;
     virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
 
+   protected:
+    virtual ~Delegate();
+
    private:
     std::string id_;
 

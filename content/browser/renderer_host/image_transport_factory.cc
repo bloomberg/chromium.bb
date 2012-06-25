@@ -122,11 +122,13 @@ class ImageTransportClientTexture : public ImageTransportClient {
     return true;
   }
 
-  virtual ~ImageTransportClientTexture() {}
   virtual void Update() OVERRIDE {}
   virtual TransportDIB::Handle Handle() const OVERRIDE {
     return TransportDIB::DefaultHandleValue();
   }
+
+ protected:
+  virtual ~ImageTransportClientTexture() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);

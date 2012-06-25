@@ -26,7 +26,6 @@ namespace chromeos {
 class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
   explicit Authenticator(LoginStatusConsumer* consumer);
-  virtual ~Authenticator();
 
   // Given externally authenticated |username| and |password|, this method
   // attempts to complete authentication process.
@@ -93,10 +92,14 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   Profile* authentication_profile() { return authentication_profile_; }
 
  protected:
+  virtual ~Authenticator();
+
   LoginStatusConsumer* consumer_;
   Profile* authentication_profile_;
 
  private:
+  friend class base::RefCountedThreadSafe<Authenticator>;
+
   DISALLOW_COPY_AND_ASSIGN(Authenticator);
 };
 

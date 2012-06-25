@@ -88,11 +88,7 @@ namespace chromeos {
 // CellularConfigDocument
 //
 ////////////////////////////////////////////////////////////////////////////////
-CellularConfigDocument::CellularConfigDocument() {
-}
-
-CellularConfigDocument::~CellularConfigDocument() {
-}
+CellularConfigDocument::CellularConfigDocument() {}
 
 std::string CellularConfigDocument::GetErrorMessage(const std::string& code) {
   base::AutoLock create(config_lock_);
@@ -115,6 +111,15 @@ void CellularConfigDocument::LoadCellularConfigFile() {
     LOG(ERROR) << "Error loading cellular config file: " <<
         kCellularConfigPath;
   }
+}
+
+CellularConfigDocument::~CellularConfigDocument() {}
+
+void CellularConfigDocument::SetErrorMap(
+    const ErrorMap& map) {
+  base::AutoLock create(config_lock_);
+  error_map_.clear();
+  error_map_.insert(map.begin(), map.end());
 }
 
 bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
@@ -151,13 +156,6 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
   }
   SetErrorMap(error_map);
   return true;
-}
-
-void CellularConfigDocument::SetErrorMap(
-    const ErrorMap& map) {
-  base::AutoLock create(config_lock_);
-  error_map_.clear();
-  error_map_.insert(map.begin(), map.end());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

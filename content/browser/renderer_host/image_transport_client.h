@@ -21,8 +21,6 @@ class ImageTransportFactory;
 // data is only valid after the first Update().
 class ImageTransportClient : public ui::Texture {
  public:
-  virtual ~ImageTransportClient() {}
-
   // Initializes the client with the surface id.
   virtual bool Initialize(uint64* surface_handle) = 0;
 
@@ -39,6 +37,7 @@ class ImageTransportClient : public ui::Texture {
 
  protected:
   ImageTransportClient(bool flipped, const gfx::Size& size);
+  virtual ~ImageTransportClient() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClient);

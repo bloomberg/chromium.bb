@@ -1229,7 +1229,6 @@ class GDataFileSystemTest : public testing::Test {
           quota_bytes_total_(0),
           quota_bytes_used_(0),
           file_proto_(NULL) {}
-    virtual ~CallbackHelper() {}
 
     virtual void GetFileCallback(base::PlatformFileError error,
                                  const FilePath& file_path,
@@ -1300,6 +1299,12 @@ class GDataFileSystemTest : public testing::Test {
     scoped_ptr<GDataEntryProto> entry_proto_;
     scoped_ptr<GDataFileProto> file_proto_;
     scoped_ptr<GDataDirectoryProto> directory_proto_;
+
+   protected:
+    virtual ~CallbackHelper() {}
+
+   private:
+    friend class base::RefCountedThreadSafe<CallbackHelper>;
   };
 
   MessageLoopForUI message_loop_;

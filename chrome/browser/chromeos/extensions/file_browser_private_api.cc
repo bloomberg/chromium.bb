@@ -690,6 +690,10 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
 
 ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {}
 
+void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
+  SendResponse(success);
+}
+
 ExecuteTasksFileBrowserFunction::~ExecuteTasksFileBrowserFunction() {}
 
 bool ExecuteTasksFileBrowserFunction::RunImpl() {
@@ -740,10 +744,6 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
 
   result_.reset(new base::FundamentalValue(true));
   return true;
-}
-
-void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
-  SendResponse(success);
 }
 
 SetDefaultTaskFileBrowserFunction::SetDefaultTaskFileBrowserFunction() {}

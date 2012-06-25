@@ -104,7 +104,6 @@ class FileBrowserNotifications::NotificationMessage {
              const std::string& id)
         : host_(host),
           id_(id) {}
-    virtual ~Delegate() {}
     virtual void Display() OVERRIDE {}
     virtual void Error() OVERRIDE {}
     virtual void Close(bool by_user) OVERRIDE {
@@ -120,6 +119,8 @@ class FileBrowserNotifications::NotificationMessage {
     }
 
    private:
+    virtual ~Delegate() {}
+
     base::WeakPtr<FileBrowserNotifications> host_;
     std::string id_;
 

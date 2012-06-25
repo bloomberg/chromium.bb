@@ -60,13 +60,13 @@ class TouchEvent;
 class AURA_EXPORT CompositorLock :
     public base::RefCounted<CompositorLock>,
     public base::SupportsWeakPtr<CompositorLock> {
- public:
-  ~CompositorLock();
-
  private:
+  friend class base::RefCounted<CompositorLock>;
   friend class RootWindow;
 
   CompositorLock(RootWindow* root_window);
+  ~CompositorLock();
+
   void CancelLock();
 
   RootWindow* root_window_;

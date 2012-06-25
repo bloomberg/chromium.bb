@@ -52,7 +52,6 @@ class AppPackExternalExtensionLoader
       public base::SupportsWeakPtr<AppPackExternalExtensionLoader> {
  public:
   AppPackExternalExtensionLoader() {}
-  virtual ~AppPackExternalExtensionLoader() {}
 
   // Used by the AppPackUpdater to update the current list of extensions.
   // The format of |prefs| is detailed in the ExternalExtensionLoader/Provider
@@ -69,6 +68,9 @@ class AppPackExternalExtensionLoader
             << app_pack_prefs_.size() << " crx files.";
     LoadFinished();
   }
+
+ protected:
+  virtual ~AppPackExternalExtensionLoader() {}
 
  private:
   base::DictionaryValue app_pack_prefs_;

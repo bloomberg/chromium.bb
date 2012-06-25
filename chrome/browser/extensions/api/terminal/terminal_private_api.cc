@@ -114,6 +114,8 @@ void OpenTerminalProcessFunction::OpenOnFileThread() {
       base::Bind(&OpenTerminalProcessFunction::RespondOnUIThread, this, pid));
 }
 
+SendInputToTerminalProcessFunction::~SendInputToTerminalProcessFunction() {}
+
 void OpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
   result_.reset(new base::FundamentalValue(pid));
   SendResponse(true);
@@ -149,6 +151,8 @@ void SendInputToTerminalProcessFunction::RespondOnUIThread(bool success) {
   SendResponse(true);
 }
 
+CloseTerminalProcessFunction::~CloseTerminalProcessFunction() {}
+
 bool CloseTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 1)
     return false;
@@ -175,6 +179,8 @@ void CloseTerminalProcessFunction::RespondOnUIThread(bool success) {
   result_.reset(new base::FundamentalValue(success));
   SendResponse(true);
 }
+
+OnTerminalResizeFunction::~OnTerminalResizeFunction() {}
 
 bool OnTerminalResizeFunction::RunTerminalFunction() {
   if (args_->GetSize() != 3)

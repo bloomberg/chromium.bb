@@ -23,8 +23,6 @@ typedef base::Callback<
 class RemoteFileSystemProxyInterface :
     public base::RefCountedThreadSafe<RemoteFileSystemProxyInterface> {
  public:
-  virtual ~RemoteFileSystemProxyInterface() {}
-
   // Gets the file or directory info for given|path|.
   virtual void GetFileInfo(const GURL& path,
       const FileSystemOperationInterface::GetMetadataCallback& callback) = 0;
@@ -95,6 +93,10 @@ class RemoteFileSystemProxyInterface :
       base::ProcessHandle peer_handle,
       const FileSystemOperationInterface::OpenFileCallback& callback) = 0;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
+
+ protected:
+  friend class base::RefCountedThreadSafe<RemoteFileSystemProxyInterface>;
+  virtual ~RemoteFileSystemProxyInterface() {}
 };
 
 }  // namespace fileapi

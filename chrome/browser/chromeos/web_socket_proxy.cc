@@ -464,11 +464,11 @@ class SSLChan : public MessageLoopForIO::Watcher {
       DCHECK(host_->data());
     }
 
+   protected:
     virtual ~DerivedIOBufferWithSize() {
       data_ = NULL;  // We do not own memory, bypass base class destructor.
     }
 
-   protected:
     scoped_refptr<net::IOBuffer> host_;
   };
 

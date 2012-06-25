@@ -22,7 +22,6 @@ class CellularConfigDocument
     : public base::RefCountedThreadSafe<CellularConfigDocument> {
  public:
   CellularConfigDocument();
-  virtual ~CellularConfigDocument();
 
   // Return error message for a given code.
   std::string GetErrorMessage(const std::string& code);
@@ -30,7 +29,10 @@ class CellularConfigDocument
   const std::string& version() { return version_; }
 
  private:
+  friend class base::RefCountedThreadSafe<CellularConfigDocument>;
   typedef std::map<std::string, std::string> ErrorMap;
+
+  virtual ~CellularConfigDocument();
 
   void SetErrorMap(const ErrorMap& map);
   bool LoadFromFile(const FilePath& config_path);

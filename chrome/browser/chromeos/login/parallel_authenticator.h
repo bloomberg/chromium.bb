@@ -67,7 +67,6 @@ class ParallelAuthenticator : public Authenticator,
   };
 
   explicit ParallelAuthenticator(LoginStatusConsumer* consumer);
-  virtual ~ParallelAuthenticator();
 
   // Authenticator overrides.
   virtual void CompleteLogin(Profile* profile,
@@ -144,6 +143,9 @@ class ParallelAuthenticator : public Authenticator,
 
   void OnOffTheRecordLoginSuccess();
   void OnPasswordChangeDetected();
+
+ protected:
+  virtual ~ParallelAuthenticator();
 
  private:
   friend class ParallelAuthenticatorTest;

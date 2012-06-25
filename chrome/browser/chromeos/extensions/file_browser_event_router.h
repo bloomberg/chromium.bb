@@ -92,6 +92,9 @@ class FileBrowserEventRouter
    public:
     explicit FileWatcherDelegate(FileBrowserEventRouter* router);
 
+   protected:
+    virtual ~FileWatcherDelegate() {}
+
    private:
     // base::files::FilePathWatcher::Delegate overrides.
     virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;

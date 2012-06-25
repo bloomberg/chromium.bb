@@ -45,6 +45,9 @@ class LocaleChangeGuard::Delegate : public NotificationDelegate {
     return NULL;
   }
 
+ protected:
+  virtual ~Delegate() {}
+
  private:
   chromeos::LocaleChangeGuard* master_;
 

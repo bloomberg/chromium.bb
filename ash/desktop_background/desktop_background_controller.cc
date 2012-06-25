@@ -52,7 +52,7 @@ struct DesktopBackgroundController::WallpaperData {
 // loading.
 class DesktopBackgroundController::WallpaperOperation
     : public base::RefCountedThreadSafe<
-    DesktopBackgroundController::WallpaperOperation> {
+          DesktopBackgroundController::WallpaperOperation> {
  public:
   explicit WallpaperOperation(int index) : index_(index) {
   }
@@ -78,6 +78,8 @@ class DesktopBackgroundController::WallpaperOperation
  private:
   friend class base::RefCountedThreadSafe<
       DesktopBackgroundController::WallpaperOperation>;
+
+  ~WallpaperOperation() {}
 
   base::CancellationFlag cancel_flag_;
 

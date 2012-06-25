@@ -48,9 +48,6 @@ class LowMemoryObserverImpl
     : public base::RefCountedThreadSafe<LowMemoryObserverImpl> {
  public:
   LowMemoryObserverImpl() : watcher_delegate_(this), file_descriptor_(-1) {}
-  ~LowMemoryObserverImpl() {
-    StopObservingOnFileThread();
-  }
 
   // Start watching the low memory file for readability.
   // Calls to StartObserving should always be matched with calls to
@@ -63,6 +60,12 @@ class LowMemoryObserverImpl
   void StopObservingOnFileThread();
 
  private:
+  friend class base::RefCountedThreadSafe<LowMemoryObserverImpl>;
+
+  ~LowMemoryObserverImpl() {
+    StopObservingOnFileThread();
+  }
+
   // Start a timer to resume watching the low memory file descriptor.
   void ScheduleNextObservation();
 

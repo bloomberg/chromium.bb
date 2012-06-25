@@ -179,6 +179,35 @@ void RelayOpenFileSystemCallbackToFileThread(
 
 FileHandlerSelectFileFunction::FileHandlerSelectFileFunction() {}
 
+void FileHandlerSelectFileFunction::OnFilePathSelected(
+    bool success,
+    const FilePath& full_path) {
+  if (!success) {
+    Respond(false, std::string(), GURL(), FilePath());
+    return;
+  }
+
+  full_path_ = full_path;
+
+  BrowserContext::GetFileSystemContext(profile_)->OpenFileSystem(
+      source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
+      base::Bind(&RelayOpenFileSystemCallbackToFileThread,
+          base::Bind(&FileHandlerSelectFileFunction::CreateFileOnFileThread,
+                     this)));
+};
+
+// static
+void FileHandlerSelectFileFunction::set_file_selector_for_test(
+    FileSelector* file_selector) {
+  FileHandlerSelectFileFunction::file_selector_for_test_ = file_selector;
+}
+
+// static
+void FileHandlerSelectFileFunction::set_gesture_check_disabled_for_test(
+    bool disabled) {
+  FileHandlerSelectFileFunction::gesture_check_disabled_for_test_ = disabled;
+}
+
 FileHandlerSelectFileFunction::~FileHandlerSelectFileFunction() {}
 
 bool FileHandlerSelectFileFunction::RunImpl() {
@@ -197,35 +226,6 @@ bool FileHandlerSelectFileFunction::RunImpl() {
   file_selector->SelectFile(suggested_name.BaseName(), GetCurrentBrowser());
   return true;
 }
-
-// static
-void FileHandlerSelectFileFunction::set_file_selector_for_test(
-    FileSelector* file_selector) {
-  FileHandlerSelectFileFunction::file_selector_for_test_ = file_selector;
-}
-
-// static
-void FileHandlerSelectFileFunction::set_gesture_check_disabled_for_test(
-    bool disabled) {
-  FileHandlerSelectFileFunction::gesture_check_disabled_for_test_ = disabled;
-}
-
-void FileHandlerSelectFileFunction::OnFilePathSelected(
-    bool success,
-    const FilePath& full_path) {
-  if (!success) {
-    Respond(false, std::string(), GURL(), FilePath());
-    return;
-  }
-
-  full_path_ = full_path;
-
-  BrowserContext::GetFileSystemContext(profile_)->OpenFileSystem(
-      source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
-      base::Bind(&RelayOpenFileSystemCallbackToFileThread,
-          base::Bind(&FileHandlerSelectFileFunction::CreateFileOnFileThread,
-                     this)));
-};
 
 void FileHandlerSelectFileFunction::CreateFileOnFileThread(
     bool success,

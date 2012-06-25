@@ -170,6 +170,10 @@ class SimUnlockHandler : public WebUIMessageHandler,
     }
 
    private:
+    friend class base::RefCountedThreadSafe<TaskProxy>;
+
+    ~TaskProxy() {}
+
     base::WeakPtr<SimUnlockHandler> handler_;
 
     // Pending code input (PIN/PUK).

@@ -38,7 +38,6 @@ class HelpAppLauncher : public LoginWebDialog::Delegate,
 
   // Parent window is used to show dialog.
   explicit HelpAppLauncher(gfx::NativeWindow parent_window);
-  virtual ~HelpAppLauncher();
 
   // Shows specified help topic.
   void ShowHelpTopic(HelpTopic help_topic_id);
@@ -47,10 +46,14 @@ class HelpAppLauncher : public LoginWebDialog::Delegate,
   bool is_open() const { return dialog_.get() && dialog_->is_open(); }
 
  protected:
+  virtual ~HelpAppLauncher();
+
   // LoginWebDialog::Delegate implementation:
   virtual void OnDialogClosed() OVERRIDE {}
 
  private:
+  friend class base::RefCountedThreadSafe<HelpAppLauncher>;
+
   // Shows help topic dialog for specified GURL.
   void ShowHelpTopicDialog(const GURL& topic_url);
 

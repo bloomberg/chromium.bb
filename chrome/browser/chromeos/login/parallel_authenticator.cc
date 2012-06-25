@@ -181,8 +181,6 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
   OwnershipService::GetSharedInstance()->StartLoadOwnerKeyAttempt();
 }
 
-ParallelAuthenticator::~ParallelAuthenticator() {}
-
 void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
     const std::string& username,
@@ -615,6 +613,8 @@ void ParallelAuthenticator::Resolve() {
       break;
   }
 }
+
+ParallelAuthenticator::~ParallelAuthenticator() {}
 
 ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

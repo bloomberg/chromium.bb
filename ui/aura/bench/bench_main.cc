@@ -142,11 +142,11 @@ class WebGLTexture : public ui::Texture {
                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
 
+ private:
   virtual ~WebGLTexture() {
     context_->deleteTexture(texture_id());
   }
 
- private:
   WebGraphicsContext3D* context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLTexture);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,6 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
   };
 
   OwnerManager();
-  virtual ~OwnerManager();
 
   // Sets a new owner key from a provided memory buffer.
   void UpdateOwnerKey(const content::BrowserThread::ID thread_id,
@@ -90,7 +89,12 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
               const std::vector<uint8>& signature,
               Delegate* d);
 
+ protected:
+  virtual ~OwnerManager();
+
  private:
+  friend class base::RefCountedThreadSafe<OwnerManager>;
+
   // A helper method to send a notification on another thread.
   void SendNotification(int type,
                         const content::NotificationDetails& details);

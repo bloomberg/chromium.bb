@@ -23,7 +23,6 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // |profile| is used to create GDataFileSystem, which is a per-profile
   // instance.
   explicit GDataFileSystemProxy(GDataFileSystemInterface* file_system);
-  virtual ~GDataFileSystemProxy();
 
   // fileapi::RemoteFileSystemProxyInterface overrides.
   virtual void GetFileInfo(const GURL& path,
@@ -64,6 +63,9 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::OpenFileCallback&
           callback) OVERRIDE;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
+
+ protected:
+  virtual ~GDataFileSystemProxy();
 
  private:
   // Checks if a given |url| belongs to this file system. If it does,

@@ -41,6 +41,9 @@ class ScreensaverUnpackerClient : public SandboxedExtensionUnpackerClient {
                        const Extension* extension) OVERRIDE;
   void OnUnpackFailure(const string16& error) OVERRIDE;
 
+ protected:
+  virtual ~ScreensaverUnpackerClient() {}
+
  private:
   void LoadScreensaverExtension(
       const FilePath& extension_base_path,

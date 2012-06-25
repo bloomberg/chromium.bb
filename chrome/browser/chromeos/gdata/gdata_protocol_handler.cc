@@ -127,7 +127,6 @@ void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
 class GDataURLRequestJob : public net::URLRequestJob {
  public:
   explicit GDataURLRequestJob(net::URLRequest* request);
-  virtual ~GDataURLRequestJob();
 
   // net::URLRequestJob overrides:
   virtual void Start() OVERRIDE;
@@ -138,6 +137,9 @@ class GDataURLRequestJob : public net::URLRequestJob {
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
                            int* bytes_read) OVERRIDE;
+
+ protected:
+  virtual ~GDataURLRequestJob();
 
  private:
   // Helper for Start() to let us start asynchronously.
@@ -231,10 +233,6 @@ GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request)
   download_growable_buf_->SetCapacity(kInitialDownloadBufferSizeInBytes);
   download_drainable_buf_ = new net::DrainableIOBuffer(
       download_growable_buf_, download_growable_buf_->capacity());
-}
-
-GDataURLRequestJob::~GDataURLRequestJob() {
-  CloseFileStream();
 }
 
 void GDataURLRequestJob::Start() {
@@ -459,6 +457,12 @@ bool GDataURLRequestJob::ReadRawData(net::IOBuffer* dest,
            << ", " << (streaming_download_ ? "download" : "file")
            << "_remaining=" << remaining_bytes_;
   return rc;
+}
+
+//======================= GDataURLRequestJob protected methods ================
+
+GDataURLRequestJob::~GDataURLRequestJob() {
+  CloseFileStream();
 }
 
 //======================= GDataURLRequestJob private methods ===================

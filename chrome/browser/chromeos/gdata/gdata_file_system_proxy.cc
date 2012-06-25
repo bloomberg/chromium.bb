@@ -177,11 +177,6 @@ GDataFileSystemProxy::GDataFileSystemProxy(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-GDataFileSystemProxy::~GDataFileSystemProxy() {
-  // Should be deleted from the CrosMountPointProvider on IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
 void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
     const FileSystemOperationInterface::GetMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -461,6 +456,11 @@ void GDataFileSystemProxy::CreateWritableSnapshotFile(
                  this,
                  file_path,
                  callback));
+}
+
+GDataFileSystemProxy::~GDataFileSystemProxy() {
+  // Should be deleted from the CrosMountPointProvider on IO thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 // static.

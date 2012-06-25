@@ -193,6 +193,8 @@ class ChromeOSTermsHandler
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ChromeOSTermsHandler>;
+
   ChromeOSTermsHandler(AboutUIHTMLSource* source,
                        const std::string& path,
                        int request_id)
@@ -201,6 +203,8 @@ class ChromeOSTermsHandler
       request_id_(request_id),
       locale_(chromeos::WizardController::GetInitialLocale()) {
   }
+
+  ~ChromeOSTermsHandler() {}
 
   void StartOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

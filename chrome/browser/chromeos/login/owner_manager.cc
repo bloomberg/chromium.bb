@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,8 +26,6 @@ OwnerManager::OwnerManager()
       public_key_(0),
       utils_(OwnerKeyUtils::Create()) {
 }
-
-OwnerManager::~OwnerManager() {}
 
 void OwnerManager::UpdateOwnerKey(const BrowserThread::ID thread_id,
                                   const std::vector<uint8>& key,
@@ -134,6 +132,8 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
                  std::vector<uint8>()));
   BootTimesLoader::Get()->AddLoginTimeMarker("VerifyEnd", false);
 }
+
+OwnerManager::~OwnerManager() {}
 
 void OwnerManager::SendNotification(
     int type,

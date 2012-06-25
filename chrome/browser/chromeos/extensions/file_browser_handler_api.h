@@ -32,8 +32,9 @@ class FileSelector {
 
 class FileHandlerSelectFileFunction : public AsyncExtensionFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserHandlerInternal.selectFile");
+
   FileHandlerSelectFileFunction();
-  virtual ~FileHandlerSelectFileFunction() OVERRIDE;
 
   // Called by FileSelector implementation when the user selects new file's
   // file path.
@@ -47,6 +48,7 @@ class FileHandlerSelectFileFunction : public AsyncExtensionFunction {
   static void set_gesture_check_disabled_for_test(bool disabled);
 
  protected:
+  virtual ~FileHandlerSelectFileFunction() OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
 
  private:
@@ -87,8 +89,6 @@ class FileHandlerSelectFileFunction : public AsyncExtensionFunction {
   // Once set they will be used for every extension function call.
   static file_handler::FileSelector* file_selector_for_test_;
   static bool gesture_check_disabled_for_test_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserHandlerInternal.selectFile");
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_HANDLER_API_H_

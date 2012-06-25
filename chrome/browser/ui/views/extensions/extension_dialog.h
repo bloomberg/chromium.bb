@@ -29,8 +29,6 @@ class ExtensionDialog : public views::WidgetDelegate,
                         public content::NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
-  virtual ~ExtensionDialog();
-
   // Create and show a dialog with |url| centered over the browser window.
   // |browser| is the browser to which the pop-up will be attached.
   // |web_contents| is the tab that spawned the dialog.
@@ -92,7 +90,12 @@ class ExtensionDialog : public views::WidgetDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+ protected:
+  virtual ~ExtensionDialog();
+
  private:
+  friend class base::RefCounted<ExtensionDialog>;
+
   // Use Show() to create instances.
   ExtensionDialog(ExtensionHost* host, ExtensionDialogObserver* observer);
 
