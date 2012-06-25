@@ -27,6 +27,28 @@ namespace {
 const char kMapViewOfSectionName[] = "NtMapViewOfSection";
 const char kUnmapViewOfSectionName[] = "NtUnmapViewOfSection";
 
+// Standard allocation granularity and page size for Windows.
+const size_t kAllocGranularity = 65536;
+const size_t kPageSize = 4096;
+
+// Find a random offset within 64k and aligned to ceil(log2(size)).
+size_t GetGranularAlignedRandomOffset(size_t size) {
+  CHECK_LE(size, kAllocGranularity);
+  unsigned int offset;
+
+  do {
+    rand_s(&offset);
+    offset &= (kAllocGranularity - 1);
+  } while (offset > (kAllocGranularity - size));
+
+  // Find an alignment between 64 and the page size (4096).
+  size_t align_size = kPageSize;
+  for (size_t new_size = align_size / 2;  new_size >= size; new_size /= 2) {
+    align_size = new_size;
+  }
+  return offset & ~(align_size - 1);
+}
+
 }  // namespace
 
 namespace sandbox {
@@ -360,15 +382,29 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
     ADD_NT_INTERCEPTION(NtUnmapViewOfSection, UNMAP_VIEW_OF_SECTION_ID, 12);
   }
 
+  // Reserve a full 64k memory range in the child process.
+  HANDLE child = child_->Process();
+  BYTE* thunk_base = reinterpret_cast<BYTE*>(
+                         ::VirtualAllocEx(child, NULL, kAllocGranularity,
+                                          MEM_RESERVE, PAGE_NOACCESS));
+
+  // Find an aligned, random location within the reserved range.
   size_t thunk_bytes = interceptions_.size() * sizeof(ThunkData) +
                        sizeof(DllInterceptionData);
+  size_t thunk_offset = GetGranularAlignedRandomOffset(thunk_bytes);
 
-  // Allocate memory on the child, without specifying the desired address
-  HANDLE child = child_->Process();
+  // Split the base and offset along page boundaries.
+  thunk_base += thunk_offset & ~(kPageSize - 1);
+  thunk_offset &= kPageSize - 1;
+
+  // Make an aligned, padded allocation, and move the pointer to our chunk.
+  size_t thunk_bytes_padded = (thunk_bytes + kPageSize - 1) & kPageSize;
+  thunk_base = reinterpret_cast<BYTE*>(
+                   ::VirtualAllocEx(child, thunk_base, thunk_bytes_padded,
+                                    MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+  CHECK(thunk_base);  // If this fails we'd crash anyway on an invalid access.
   DllInterceptionData* thunks = reinterpret_cast<DllInterceptionData*>(
-                                    ::VirtualAllocEx(child, NULL, thunk_bytes,
-                                                     MEM_COMMIT,
-                                                     PAGE_EXECUTE_READWRITE));
+                                    thunk_base + thunk_offset);
 
   DllInterceptionData dll_data;
   dll_data.data_bytes = thunk_bytes;

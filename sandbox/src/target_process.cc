@@ -47,8 +47,8 @@ void PoisonLowerAddressRange(HANDLE process) {
   rand_s(&limit);
   char* ptr = 0;
   const size_t kMask64k = 0xFFFF;
-  // Random range (512k-4.5mb) in 64k steps.
-  const char* end = ptr + ((((limit % 4096) + 512) * 1024) & ~kMask64k);
+  // Random range (512k-16.5mb) in 64k steps.
+  const char* end = ptr + ((((limit % 16384) + 512) * 1024) & ~kMask64k);
   while (ptr < end) {
     MEMORY_BASIC_INFORMATION memory_info;
     if (!::VirtualQueryEx(process, ptr, &memory_info, sizeof(memory_info)))
