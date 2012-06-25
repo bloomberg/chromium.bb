@@ -63,7 +63,6 @@ CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
 CONTENT_EXPORT extern const char kDisableSmoothScrolling[];
 CONTENT_EXPORT extern const char kDisablePlugins[];
-extern const char kDisablePointerLock[];
 CONTENT_EXPORT extern const char kDisablePopupBlocking[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRendererAccessibility[];

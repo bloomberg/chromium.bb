@@ -567,7 +567,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableFullScreen));
 
   WebKit::WebRuntimeFeatures::enablePointerLock(
-      !command_line.HasSwitch(switches::kDisablePointerLock));
+      command_line.HasSwitch(switches::kEnablePointerLock));
 
   WebKit::WebRuntimeFeatures::enableVideoTrack(
       command_line.HasSwitch(switches::kEnableVideoTrack));
