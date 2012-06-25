@@ -128,7 +128,8 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     return false;
   }
 
-  // Limit Intel on Mac to 512.
+  // Limit Intel on Mac to 4096 max tex size and 512 max cube map tex size.
+  // Limit AMD on Mac to 4096 max tex size and max cube map tex size.
   // TODO(gman): Update this code to check for a specific version of
   // the drivers above which we no longer need this fix.
 #if defined(OS_MACOSX)
@@ -137,6 +138,12 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
         static_cast<GLint>(4096), max_texture_size);
     max_cube_map_texture_size = std::min(
         static_cast<GLint>(512), max_cube_map_texture_size);
+  }
+  if (feature_info_->feature_flags().is_amd) {
+    max_texture_size = std::min(
+        static_cast<GLint>(4096), max_texture_size);
+    max_cube_map_texture_size = std::min(
+        static_cast<GLint>(4096), max_cube_map_texture_size);
   }
 #endif
   texture_manager_.reset(new TextureManager(feature_info_.get(),
