@@ -5,17 +5,15 @@
 
 """Upload a single build command stats file to appengine."""
 
+import logging
 import optparse
 import os
 import re
+import sys
 import urllib
 import urllib2
 
 from chromite.lib import cros_build_lib
-from chromite.lib import operation
-
-MODULE = os.path.splitext(os.path.basename(__file__))[0]
-oper = operation.Operation(MODULE)
 
 # To test with an app engine instance on localhost, set envvar
 # export CROS_BUILD_STATS_SITE="http://localhost:8080"
@@ -30,6 +28,11 @@ DISABLE_FILE = os.path.join(os.environ['HOME'], '.disable_build_stats_upload')
 
 DOMAIN_RE = re.compile(r'\.(?:corp\.google\.com|golo\.chromium\.org)$')
 GIT_ID_RE = re.compile(r'(?:@google\.com|@chromium\.org)$')
+
+
+class StatsError(RuntimeError):
+  """Any error during uploading of stats."""
+
 
 class Stats(object):
   """Manage one set of build command stats."""
@@ -52,7 +55,7 @@ class Stats(object):
       first_line = f.readline().rstrip()
       match = re.match(r'Chromium OS .+ Version (\d+)$', first_line)
       if not match:
-        oper.Die('Stats file not in expected format')
+        raise StatsError('Stats file not in expected format')
 
       version = int(match.group(1))
       loader = self._GetLinesLoader(version)
@@ -60,7 +63,7 @@ class Stats(object):
       if loader:
         loader(self, f.readlines())
       else:
-        oper.Die('Stats file version %s not supported.' % version)
+        raise StatsError('Stats file version %s not supported.' % version)
 
   def _GetLinesLoader(self, version):
     if version < len(self.loaders) and version >= 0:
@@ -84,14 +87,14 @@ class Stats(object):
 
   def Upload(self, url):
     """Upload stats in |self.data| to |url|."""
-    oper.Notice('Uploading command stats to %r' % url)
+    logging.info('Uploading command stats to %r', url)
     data = urllib.urlencode(self.data)
     request = urllib2.Request(url)
 
     try:
       urllib2.urlopen(request, data)
     except (urllib2.HTTPError, urllib2.URLError) as ex:
-      oper.Die('Failed to upload command stats to %r: "%s"' % (url, ex))
+      raise StatsError('Failed to upload command stats to %r: "%s"' % (url, ex))
 
 def UploadConditionsMet():
   """Return True if upload conditions are met."""
@@ -126,19 +129,29 @@ def main(argv):
   parser = optparse.OptionParser(usage=usage, epilog=epilog)
   (_options, args) = parser.parse_args(argv)
 
+  logging.getLogger().setLevel(logging.INFO)
+
   if len(args) > 1:
-    oper.Die('Only one argument permitted.')
+    logging.error('Only one argument permitted.')
+    sys.exit(1)
   if len(args) < 1:
-    oper.Die('Missing command stats file argument.')
+    logging.error('Missing command stats file argument.')
+    sys.exit(1)
 
   # Silently do nothing if the conditions for uploading are not met.
   if UploadConditionsMet():
-    stats = Stats()
-    stats.LoadFile(args[0])
-
     try:
+      stats = Stats()
+      stats.LoadFile(args[0])
+
       with cros_build_lib.SubCommandTimeout(UPLOAD_TIMEOUT):
         stats.Upload(URL)
 
     except cros_build_lib.TimeoutError:
-      oper.Die('Timed out during upload - waited %i seconds' % UPLOAD_TIMEOUT)
+      logging.error('Timed out during upload - waited %i seconds',
+                    UPLOAD_TIMEOUT)
+      sys.exit(1)
+
+    except StatsError as ex:
+      logging.error(ex)
+      sys.exit(1)
