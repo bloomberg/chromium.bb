@@ -22,7 +22,6 @@ weston_SOURCES =				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
 	clipboard.c				\
-	text-cursor-position.c			\
 	text-cursor-position-protocol.c		\
 	text-cursor-position-server-protocol.h	\
 	zoom.c					\

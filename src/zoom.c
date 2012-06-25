@@ -20,7 +20,70 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+
 #include "compositor.h"
+#include "text-cursor-position-server-protocol.h"
+
+struct text_cursor_position {
+	struct wl_object base;
+	struct weston_compositor *ec;
+	struct wl_global *global;
+	struct wl_listener destroy_listener;
+};
+
+static void
+text_cursor_position_notify(struct wl_client *client,
+			    struct wl_resource *resource,
+			    struct wl_resource *surface_resource,
+			    wl_fixed_t x, wl_fixed_t y)
+{
+	weston_text_cursor_position_notify((struct weston_surface *) surface_resource, x, y);
+}
+
+struct text_cursor_position_interface text_cursor_position_implementation = {
+	text_cursor_position_notify
+};
+
+static void
+bind_text_cursor_position(struct wl_client *client,
+	     void *data, uint32_t version, uint32_t id)
+{
+	wl_client_add_object(client, &text_cursor_position_interface,
+			     &text_cursor_position_implementation, id, data);
+}
+
+static void
+text_cursor_position_notifier_destroy(struct wl_listener *listener, void *data)
+{
+	struct text_cursor_position *text_cursor_position =
+		container_of(listener, struct text_cursor_position, destroy_listener);
+
+	wl_display_remove_global(text_cursor_position->ec->wl_display, text_cursor_position->global);
+	free(text_cursor_position);
+}
+
+void
+text_cursor_position_notifier_create(struct weston_compositor *ec)
+{
+	struct text_cursor_position *text_cursor_position;
+
+	text_cursor_position = malloc(sizeof *text_cursor_position);
+	if (text_cursor_position == NULL)
+		return;
+
+	text_cursor_position->base.interface = &text_cursor_position_interface;
+	text_cursor_position->base.implementation =
+		(void(**)(void)) &text_cursor_position_implementation;
+	text_cursor_position->ec = ec;
+
+	text_cursor_position->global = wl_display_add_global(ec->wl_display,
+						&text_cursor_position_interface,
+						text_cursor_position, bind_text_cursor_position);
+
+	text_cursor_position->destroy_listener.notify = text_cursor_position_notifier_destroy;
+	wl_signal_add(&ec->destroy_signal, &text_cursor_position->destroy_listener);
+}
 
 WL_EXPORT void
 weston_text_cursor_position_notify(struct weston_surface *surface,
