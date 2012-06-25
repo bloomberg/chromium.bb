@@ -12,8 +12,6 @@
     '../net/net.gyp:net',
     '../ppapi/ppapi_internal.gyp:ppapi_proxy',
     '../skia/skia.gyp:skia',
-    '../third_party/flac/flac.gyp:libflac',
-    '../third_party/speex/speex.gyp:libspeex',
     '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../third_party/zlib/zlib.gyp:zlib',
     '../ui/surface/surface.gyp:surface',
@@ -852,9 +850,6 @@
       ],
     }],
     ['OS=="android"', {
-      'dependencies!': [
-        '../third_party/flac/flac.gyp:libflac',
-      ],
       'dependencies': [
         '../media/media.gyp:media',
         'content.gyp:content_jni_headers',
@@ -872,6 +867,11 @@
         'browser/geolocation/network_location_provider.h',
         'browser/geolocation/network_location_request.cc',
         'browser/geolocation/network_location_request.h',
+      ],
+    }, { # OS!="android"
+      'dependencies': [
+        '../third_party/flac/flac.gyp:libflac',
+        '../third_party/speex/speex.gyp:libspeex',
       ],
     }],
     ['OS=="mac"', {
