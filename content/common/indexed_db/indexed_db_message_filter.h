@@ -14,7 +14,7 @@ class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   IndexedDBMessageFilter();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  protected:

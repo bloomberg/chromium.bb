@@ -9,7 +9,7 @@
 
 #include "base/sys_byteorder.h"
 #include "content/common/p2p_messages.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
@@ -33,7 +33,7 @@ const uint16 kStunBindingResponse = 0x0102;
 const uint16 kStunBindingError = 0x0111;
 const uint32 kStunMagicCookie = 0x2112A442;
 
-class MockIPCSender : public IPC::Message::Sender {
+class MockIPCSender : public IPC::Sender {
  public:
   MockIPCSender();
   virtual ~MockIPCSender();

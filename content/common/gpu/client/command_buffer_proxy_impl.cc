@@ -530,7 +530,7 @@ bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
   }
 
   // Callee takes ownership of message, regardless of whether Send is
-  // successful. See IPC::Message::Sender.
+  // successful. See IPC::Sender.
   delete msg;
   return false;
 }

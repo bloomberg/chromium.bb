@@ -10,26 +10,26 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
 
 class GpuCommandBufferStub;
 
 class GpuVideoDecodeAccelerator
-    : public IPC::Channel::Listener,
-      public IPC::Message::Sender,
+    : public IPC::Listener,
+      public IPC::Sender,
       public media::VideoDecodeAccelerator::Client {
  public:
   // Each of the arguments to the constructor must outlive this object.
   // |stub->decoder()| will be made current around any operation that touches
   // the underlying VDA so that it can make GL calls safely.
-  GpuVideoDecodeAccelerator(IPC::Message::Sender* sender,
+  GpuVideoDecodeAccelerator(IPC::Sender* sender,
                             int32 host_route_id,
                             GpuCommandBufferStub* stub);
   virtual ~GpuVideoDecodeAccelerator();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
@@ -68,7 +68,7 @@ class GpuVideoDecodeAccelerator
   void OnDestroy();
 
   // Pointer to the IPC message sender.
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
 
   // Message to Send() when initialization is done.  Is only non-NULL during
   // initialization and is owned by the IPC channel underlying the

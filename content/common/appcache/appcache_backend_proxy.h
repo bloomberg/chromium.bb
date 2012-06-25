@@ -6,16 +6,15 @@
 #define CONTENT_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_
 #pragma once
 
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
 // Sends appcache related messages to the main process.
 class AppCacheBackendProxy : public appcache::AppCacheBackend {
  public:
-  explicit AppCacheBackendProxy(IPC::Message::Sender* sender)
-      : sender_(sender) {}
+  explicit AppCacheBackendProxy(IPC::Sender* sender) : sender_(sender) {}
 
-  IPC::Message::Sender* sender() const { return sender_; }
+  IPC::Sender* sender() const { return sender_; }
 
   // AppCacheBackend methods
   virtual void RegisterHost(int host_id) OVERRIDE;
@@ -44,7 +43,7 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
       std::vector<appcache::AppCacheResourceInfo>* resource_infos) OVERRIDE;
 
  private:
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
 };
 
 #endif  // CONTENT_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_

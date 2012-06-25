@@ -30,8 +30,7 @@ class WebFrame;
 }
 
 // The main thread of a child process derives from this class.
-class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
-                                   public IPC::Message::Sender {
+class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
  public:
   // Creates the thread.
   ChildThread();
@@ -39,14 +38,14 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   explicit ChildThread(const std::string& channel_name);
   virtual ~ChildThread();
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // See documentation on MessageRouter for AddRoute and RemoveRoute
-  void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
+  void AddRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
-  IPC::Channel::Listener* ResolveRoute(int32 routing_id);
+  IPC::Listener* ResolveRoute(int32 routing_id);
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -111,7 +110,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
  private:
   void Init();
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

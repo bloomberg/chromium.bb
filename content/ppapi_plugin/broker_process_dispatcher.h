@@ -22,7 +22,7 @@ class BrokerProcessDispatcher
                           PP_ConnectInstance_Func connect_instance);
   virtual ~BrokerProcessDispatcher();
 
-  // IPC::Channel::Listener overrides.
+  // IPC::Listener overrides.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void OnGetPermissionSettingsCompleted(

@@ -12,7 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/npobject_stub.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -36,17 +37,17 @@ class WebPluginDelegateImpl;
 
 // Converts the IPC messages from WebPluginDelegateProxy into calls to the
 // actual WebPluginDelegateImpl object.
-class WebPluginDelegateStub : public IPC::Channel::Listener,
-                              public IPC::Message::Sender,
+class WebPluginDelegateStub : public IPC::Listener,
+                              public IPC::Sender,
                               public base::RefCounted<WebPluginDelegateStub> {
  public:
   WebPluginDelegateStub(const std::string& mime_type, int instance_id,
                         PluginChannel* channel);
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   int instance_id() { return instance_id_; }

@@ -90,10 +90,9 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
 
 
 // Sets up the message sender override for the unit test
-class ResourceDispatcherTest : public testing::Test,
-                               public IPC::Message::Sender {
+class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
  public:
-  // Emulates IPC send operations (IPC::Message::Sender) by adding
+  // Emulates IPC send operations (IPC::Sender) by adding
   // pending messages to the queue.
   virtual bool Send(IPC::Message* msg) {
     message_queue_.push_back(IPC::Message(*msg));

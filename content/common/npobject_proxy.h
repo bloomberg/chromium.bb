@@ -12,7 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/npobject_base.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -27,8 +28,8 @@ struct NPObject;
 // channel (specifically, a NPChannelBase).  The NPObjectStub on the other
 // side translates the IPC messages into calls to the actual NPObject, and
 // returns the marshalled result.
-class NPObjectProxy : public IPC::Channel::Listener,
-                      public IPC::Message::Sender,
+class NPObjectProxy : public IPC::Listener,
+                      public IPC::Sender,
                       public NPObjectBase {
  public:
   virtual ~NPObjectProxy();
@@ -38,7 +39,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
                           gfx::NativeViewId containing_window,
                           const GURL& page_url);
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   int route_id() { return route_id_; }
   NPChannelBase* channel() { return channel_; }
@@ -93,7 +94,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
   // NPObjectBase implementation.
   virtual NPObject* GetUnderlyingNPObject() OVERRIDE;
 
-  virtual IPC::Channel::Listener* GetChannelListener() OVERRIDE;
+  virtual IPC::Listener* GetChannelListener() OVERRIDE;
 
  private:
   NPObjectProxy(NPChannelBase* channel,
@@ -101,7 +102,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
                 gfx::NativeViewId containing_window,
                 const GURL& page_url);
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

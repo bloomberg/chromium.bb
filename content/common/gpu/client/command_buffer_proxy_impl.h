@@ -22,8 +22,7 @@
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
 
 class GpuChannelHost;
 struct GPUCommandBufferConsoleMessage;
@@ -37,7 +36,7 @@ class SharedMemory;
 // CommandBufferStub.
 class CommandBufferProxyImpl
     : public CommandBufferProxy,
-      public IPC::Channel::Listener,
+      public IPC::Listener,
       public base::SupportsWeakPtr<CommandBufferProxyImpl> {
  public:
   typedef base::Callback<void(
@@ -56,7 +55,7 @@ class CommandBufferProxyImpl
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client);
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

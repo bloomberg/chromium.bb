@@ -16,7 +16,7 @@ const uint32 kStunMagicCookie = 0x2112A442;
 
 namespace content {
 
-P2PSocketHost::P2PSocketHost(IPC::Message::Sender* message_sender,
+P2PSocketHost::P2PSocketHost(IPC::Sender* message_sender,
                              int routing_id, int id)
     : message_sender_(message_sender),
       routing_id_(routing_id),
@@ -75,7 +75,7 @@ bool P2PSocketHost::IsRequestOrResponse(StunMessageType type) {
 
 // static
 P2PSocketHost* P2PSocketHost::Create(
-    IPC::Message::Sender* message_sender, int routing_id, int id,
+    IPC::Sender* message_sender, int routing_id, int id,
     P2PSocketType type) {
   switch (type) {
     case P2P_SOCKET_UDP:

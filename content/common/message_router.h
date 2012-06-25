@@ -7,7 +7,8 @@
 #pragma once
 
 #include "base/id_map.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 
 // The MessageRouter handles all incoming messages sent to it by routing them
 // to the correct listener.  Routing is based on the Message's routing ID.
@@ -20,15 +21,14 @@
 // Otherwise, the message is ignored if its routing ID is not equal to
 // MSG_ROUTING_CONTROL.
 //
-// The MessageRouter supports the IPC::Message::Sender interface for outgoing
-// messages, but does not define a meaningful implementation of it.  The
-// subclass of MessageRouter is intended to provide that if appropriate.
+// The MessageRouter supports the IPC::Sender interface for outgoing messages,
+// but does not define a meaningful implementation of it.  The subclass of
+// MessageRouter is intended to provide that if appropriate.
 //
 // The MessageRouter can be used as a concrete class provided its Send method
 // is not called and it does not receive any control messages.
 
-class MessageRouter : public IPC::Channel::Listener,
-                      public IPC::Message::Sender {
+class MessageRouter : public IPC::Listener, public IPC::Sender {
  public:
   MessageRouter();
   virtual ~MessageRouter();
@@ -36,7 +36,7 @@ class MessageRouter : public IPC::Channel::Listener,
   // Implemented by subclasses to handle control messages
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Like OnMessageReceived, except it only handles routed messages.  Returns
@@ -44,18 +44,18 @@ class MessageRouter : public IPC::Channel::Listener,
   // that route id.
   virtual bool RouteMessage(const IPC::Message& msg);
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Called to add/remove a listener for a particular message routing ID.
-  void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
+  void AddRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
-  IPC::Channel::Listener* ResolveRoute(int32 routing_id);
+  IPC::Listener* ResolveRoute(int32 routing_id);
 
  private:
   // A list of all listeners with assigned routing IDs.
-  IDMap<IPC::Channel::Listener> routes_;
+  IDMap<IPC::Listener> routes_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageRouter);
 };

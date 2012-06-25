@@ -16,6 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
+#include "ipc/ipc_listener.h"
 #include "content/public/common/child_process_host.h"
 
 class FilePath;
@@ -27,7 +28,7 @@ class ChildProcessHostDelegate;
 // messages between the host and the child process. Users are responsible
 // for the actual launching and terminating of the child processes.
 class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
-                                            public IPC::Channel::Listener {
+                                            public IPC::Listener {
  public:
   virtual ~ChildProcessHostImpl();
 
@@ -60,7 +61,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
 
   explicit ChildProcessHostImpl(ChildProcessHostDelegate* delegate);
 
-  // IPC::Channel::Listener methods:
+  // IPC::Listener methods:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

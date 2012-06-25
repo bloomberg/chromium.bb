@@ -55,7 +55,7 @@ class TapSuppressionController;
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
 class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
-                                            public IPC::Channel::Listener {
+                                            public IPC::Listener {
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
   // routing id is taken from the RenderProcessHost.
@@ -146,7 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Tells the renderer to die and then calls Destroy().
   virtual void Shutdown();
 
-  // IPC::Channel::Listener
+  // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Sends a message to the corresponding object in the renderer.

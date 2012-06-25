@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
+#include "ipc/ipc_sender.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/tcp_server_socket.h"
 
@@ -25,8 +26,7 @@ namespace content {
 
 class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
  public:
-  P2PSocketHostTcpServer(IPC::Message::Sender* message_sender,
-                         int routing_id, int id);
+  P2PSocketHostTcpServer(IPC::Sender* message_sender, int routing_id, int id);
   virtual ~P2PSocketHostTcpServer();
 
   // P2PSocketHost overrides.

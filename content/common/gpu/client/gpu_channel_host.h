@@ -47,7 +47,7 @@ struct GpuListenerInfo {
   GpuListenerInfo();
   ~GpuListenerInfo();
 
-  base::WeakPtr<IPC::Channel::Listener> listener;
+  base::WeakPtr<IPC::Listener> listener;
   scoped_refptr<base::MessageLoopProxy> loop;
 };
 
@@ -69,7 +69,7 @@ class CONTENT_EXPORT GpuChannelHostFactory {
 
 // Encapsulates an IPC channel between the client and one GPU process.
 // On the GPU process side there's a corresponding GpuChannel.
-class GpuChannelHost : public IPC::Message::Sender,
+class GpuChannelHost : public IPC::Sender,
                        public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
   enum State {
@@ -101,7 +101,7 @@ class GpuChannelHost : public IPC::Message::Sender,
 
   void OnChannelError();
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Create and connect to a command buffer in the GPU process.
@@ -133,7 +133,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 
   // Add a route for the current message loop.
-  void AddRoute(int route_id, base::WeakPtr<IPC::Channel::Listener> listener);
+  void AddRoute(int route_id, base::WeakPtr<IPC::Listener> listener);
   void RemoveRoute(int route_id);
 
   GpuChannelHostFactory* factory() const { return factory_; }
@@ -152,7 +152,7 @@ class GpuChannelHost : public IPC::Message::Sender,
     explicit MessageFilter(GpuChannelHost* parent);
 
     void AddRoute(int route_id,
-                  base::WeakPtr<IPC::Channel::Listener> listener,
+                  base::WeakPtr<IPC::Listener> listener,
                   scoped_refptr<base::MessageLoopProxy> loop);
     void RemoveRoute(int route_id);
 

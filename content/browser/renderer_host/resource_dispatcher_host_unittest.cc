@@ -173,7 +173,7 @@ class MockURLRequestContextSelector
 // messages to go to the same place, which is why this forwards.
 class ForwardingFilter : public ResourceMessageFilter {
  public:
-  explicit ForwardingFilter(IPC::Message::Sender* dest,
+  explicit ForwardingFilter(IPC::Sender* dest,
                             content::ResourceContext* resource_context)
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
@@ -196,7 +196,7 @@ class ForwardingFilter : public ResourceMessageFilter {
   virtual ~ForwardingFilter() {}
 
  private:
-  IPC::Message::Sender* dest_;
+  IPC::Sender* dest_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingFilter);
 };
@@ -421,7 +421,7 @@ class TestResourceDispatcherHostDelegate
 };
 
 class ResourceDispatcherHostTest : public testing::Test,
-                                   public IPC::Message::Sender {
+                                   public IPC::Sender {
  public:
   ResourceDispatcherHostTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -437,7 +437,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     filter_ = new ForwardingFilter(
         this, browser_context_->GetResourceContext());
   }
-  // IPC::Message::Sender implementation
+  // IPC::Sender implementation
   virtual bool Send(IPC::Message* msg) {
     accum_.AddMessage(*msg);
 

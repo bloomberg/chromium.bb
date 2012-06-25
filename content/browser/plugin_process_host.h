@@ -47,7 +47,7 @@ struct ChannelHandle;
 // the renderer and plugin processes.
 class CONTENT_EXPORT PluginProcessHost
     : public content::BrowserChildProcessHostDelegate,
-      public IPC::Message::Sender {
+      public IPC::Sender {
  public:
   class Client {
    public:
@@ -71,7 +71,7 @@ class CONTENT_EXPORT PluginProcessHost
   PluginProcessHost();
   virtual ~PluginProcessHost();
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Initialize the new plugin process, returning true on success. This must

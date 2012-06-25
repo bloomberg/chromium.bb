@@ -18,7 +18,7 @@ const int kPacketHeaderSize = sizeof(uint16);
 
 namespace content {
 
-P2PSocketHostTcp::P2PSocketHostTcp(IPC::Message::Sender* message_sender,
+P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender,
                                    int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
       connected_(false) {

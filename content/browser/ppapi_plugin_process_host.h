@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/pepper_message_filter.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 
 class BrowserChildProcessHostImpl;
 
@@ -33,7 +33,7 @@ class HostResolver;
 // Process host for PPAPI plugin and broker processes.
 // When used for the broker, interpret all references to "plugin" with "broker".
 class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
-                               public IPC::Message::Sender {
+                               public IPC::Sender {
  public:
   class Client {
    public:
@@ -72,7 +72,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   static PpapiPluginProcessHost* CreateBrokerHost(
       const content::PepperPluginInfo& info);
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Opens a new channel to the plugin. The client will be notified when the

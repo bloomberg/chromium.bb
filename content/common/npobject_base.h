@@ -9,7 +9,7 @@
 #define CONTENT_COMMON_NPOBJECT_BASE_H_
 #pragma once
 
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 struct NPObject;
@@ -22,7 +22,7 @@ class NPObjectBase {
   virtual NPObject* GetUnderlyingNPObject() = 0;
 
   // Returns the channel listener for this NPObjectBase instance.
-  virtual IPC::Channel::Listener* GetChannelListener() = 0;
+  virtual IPC::Listener* GetChannelListener() = 0;
 };
 
 #endif  // CONTENT_COMMON_NPOBJECT_BASE_H_

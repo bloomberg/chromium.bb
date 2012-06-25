@@ -30,7 +30,7 @@ P2PSocketHostUdp::PendingPacket::PendingPacket(
 P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 
-P2PSocketHostUdp::P2PSocketHostUdp(IPC::Message::Sender* message_sender,
+P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
                                    int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),

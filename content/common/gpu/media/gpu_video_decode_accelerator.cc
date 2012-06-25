@@ -45,7 +45,7 @@ static bool MakeDecoderContextCurrent(gpu::gles2::GLES2Decoder* decoder) {
 }
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
-    IPC::Message::Sender* sender,
+    IPC::Sender* sender,
     int32 host_route_id,
     GpuCommandBufferStub* stub)
     : sender_(sender),

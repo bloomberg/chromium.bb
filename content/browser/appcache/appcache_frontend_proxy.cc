@@ -6,7 +6,7 @@
 
 #include "content/common/appcache_messages.h"
 
-AppCacheFrontendProxy::AppCacheFrontendProxy(IPC::Message::Sender* sender)
+AppCacheFrontendProxy::AppCacheFrontendProxy(IPC::Sender* sender)
     : sender_(sender) {
 }
 

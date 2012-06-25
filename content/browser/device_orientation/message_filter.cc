@@ -29,7 +29,7 @@ class MessageFilter::ObserverDelegate
     // Will stop observing provider when destructed.
     ObserverDelegate(Provider* provider,
                      int render_view_id,
-                     IPC::Message::Sender* sender);
+                     IPC::Sender* sender);
 
     // From Provider::Observer.
     virtual void OnOrientationUpdate(const Orientation& orientation);
@@ -40,14 +40,14 @@ class MessageFilter::ObserverDelegate
 
   scoped_refptr<Provider> provider_;
   int render_view_id_;
-  IPC::Message::Sender* sender_;  // Weak pointer.
+  IPC::Sender* sender_;  // Weak pointer.
 
   DISALLOW_COPY_AND_ASSIGN(ObserverDelegate);
 };
 
 MessageFilter::ObserverDelegate::ObserverDelegate(Provider* provider,
                                                   int render_view_id,
-                                                  IPC::Message::Sender* sender)
+                                                  IPC::Sender* sender)
     : provider_(provider),
       render_view_id_(render_view_id),
       sender_(sender) {

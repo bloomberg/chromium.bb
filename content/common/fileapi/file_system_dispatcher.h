@@ -12,8 +12,7 @@
 #include "base/file_util_proxy.h"
 #include "base/id_map.h"
 #include "base/process.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -28,12 +27,12 @@ class GURL;
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
 // per child process.  Messages are dispatched on the main child thread.
-class FileSystemDispatcher : public IPC::Channel::Listener {
+class FileSystemDispatcher : public IPC::Listener {
  public:
   FileSystemDispatcher();
   virtual ~FileSystemDispatcher();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   bool OpenFileSystem(const GURL& origin_url,

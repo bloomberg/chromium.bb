@@ -65,8 +65,8 @@ NPObject* NPObjectStub::GetUnderlyingNPObject() {
   return npobject_;
 }
 
-IPC::Channel::Listener* NPObjectStub::GetChannelListener() {
-  return static_cast<IPC::Channel::Listener*>(this);
+IPC::Listener* NPObjectStub::GetChannelListener() {
+  return static_cast<IPC::Listener*>(this);
 }
 
 bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {

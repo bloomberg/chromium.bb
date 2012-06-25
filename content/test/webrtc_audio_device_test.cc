@@ -266,7 +266,7 @@ void WebRTCAudioDeviceTest::OnGetHardwareInputChannelLayout(
           media::AudioManagerBase::kDefaultDeviceId) : CHANNEL_LAYOUT_NONE;
 }
 
-// IPC::Channel::Listener implementation.
+// IPC::Listener implementation.
 bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
   if (render_thread_) {
     IPC::ChannelProxy::MessageFilter* filter =

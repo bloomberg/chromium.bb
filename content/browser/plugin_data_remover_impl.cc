@@ -59,7 +59,7 @@ void PluginDataRemover::GetSupportedPlugins(
 class PluginDataRemoverImpl::Context
     : public PluginProcessHost::Client,
       public PpapiPluginProcessHost::BrokerClient,
-      public IPC::Channel::Listener,
+      public IPC::Listener,
       public base::RefCountedThreadSafe<Context,
                                         BrowserThread::DeleteOnIOThread> {
  public:
@@ -172,7 +172,7 @@ class PluginDataRemoverImpl::Context
     Release();
   }
 
-  // IPC::Channel::Listener methods.
+  // IPC::Listener methods.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(Context, message)
       IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,

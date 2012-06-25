@@ -21,12 +21,12 @@ class SharedWorkerDevToolsAgent;
 
 // This class creates a WebSharedWorker, and translates incoming IPCs to the
 // appropriate WebSharedWorker APIs.
-class WebSharedWorkerStub : public IPC::Channel::Listener {
+class WebSharedWorkerStub : public IPC::Listener {
  public:
   WebSharedWorkerStub(const string16& name, int route_id,
                       const WorkerAppCacheInitInfo& appcache_init_info);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

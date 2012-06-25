@@ -51,8 +51,8 @@ NPObject* NPObjectProxy::GetUnderlyingNPObject() {
   return NULL;
 }
 
-IPC::Channel::Listener* NPObjectProxy::GetChannelListener() {
-  return static_cast<IPC::Channel::Listener*>(this);
+IPC::Listener* NPObjectProxy::GetChannelListener() {
+  return static_cast<IPC::Listener*>(this);
 }
 
 NPObjectProxy::NPObjectProxy(

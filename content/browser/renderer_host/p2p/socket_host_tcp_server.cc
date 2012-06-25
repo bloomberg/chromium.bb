@@ -21,7 +21,7 @@ const int kListenBacklog = 5;
 namespace content {
 
 P2PSocketHostTcpServer::P2PSocketHostTcpServer(
-    IPC::Message::Sender* message_sender,
+    IPC::Sender* message_sender,
     int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
       socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),

@@ -16,12 +16,12 @@
 // Windows can't load fonts into its kernel cache in sandboxed processes. So the
 // sandboxed process asks the browser process to do this for it.
 class FontCacheDispatcher : public IPC::ChannelProxy::MessageFilter,
-                            public IPC::Message::Sender {
+                            public IPC::Sender {
  public:
   FontCacheDispatcher();
   virtual ~FontCacheDispatcher();
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
  private:

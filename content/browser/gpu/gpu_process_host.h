@@ -19,7 +19,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/common/gpu_info.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GpuMainThread;
@@ -35,7 +35,7 @@ struct ChannelHandle;
 }
 
 class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
-                       public IPC::Message::Sender,
+                       public IPC::Sender,
                        public base::NonThreadSafe {
  public:
   enum GpuProcessKind {
@@ -72,7 +72,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   static GpuProcessHost* FromID(int host_id);
   int host_id() const { return host_id_; }
 
-  // IPC::Message::Sender implementation.
+  // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Tells the GPU process to create a new channel for communication with a

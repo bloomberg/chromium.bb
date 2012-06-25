@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "webkit/quota/quota_types.h"
 
 class GURL;
@@ -26,7 +26,7 @@ class WebStorageQuotaCallbacks;
 // Dispatches and sends quota related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
 // per child process.  Messages are dispatched on the main child thread.
-class QuotaDispatcher : public IPC::Channel::Listener {
+class QuotaDispatcher : public IPC::Listener {
  public:
   class Callback {
    public:
@@ -39,7 +39,7 @@ class QuotaDispatcher : public IPC::Channel::Listener {
   QuotaDispatcher();
   virtual ~QuotaDispatcher();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void QueryStorageUsageAndQuota(const GURL& gurl,

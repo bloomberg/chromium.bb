@@ -34,7 +34,7 @@ void OpenChannel(PluginProcessHost::Client* client) {
 // Mock up of the Client and the Listener classes that would supply the
 // communication channel with the plugin.
 class MockPluginProcessHostClient : public PluginProcessHost::Client,
-                                    public IPC::Channel::Listener {
+                                    public IPC::Listener {
  public:
   MockPluginProcessHostClient(content::ResourceContext* context)
       : context_(context),
@@ -74,7 +74,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     Fail();
   }
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     Fail();
     return false;

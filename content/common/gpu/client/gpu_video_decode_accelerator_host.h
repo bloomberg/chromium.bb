@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
 
 class GpuChannelHost;
@@ -17,7 +17,7 @@ class GpuChannelHost;
 // This class is used to talk to VideoDecodeAccelerator in the Gpu process
 // through IPC messages.
 class GpuVideoDecodeAcceleratorHost
-    : public IPC::Channel::Listener,
+    : public IPC::Listener,
       public media::VideoDecodeAccelerator,
       public base::NonThreadSafe,
       public base::SupportsWeakPtr<GpuVideoDecodeAcceleratorHost> {
@@ -27,7 +27,7 @@ class GpuVideoDecodeAcceleratorHost
                                 int32 decoder_route_id,
                                 media::VideoDecodeAccelerator::Client* client);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual void OnChannelError() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

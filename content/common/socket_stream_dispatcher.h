@@ -9,7 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ipc/ipc_channel.h"
+#include "base/compiler_specific.h"
+#include "ipc/ipc_listener.h"
 
 namespace WebKit {
 class WebSocketStreamHandle;
@@ -24,7 +25,7 @@ class WebSocketStreamHandleDelegate;
 // main browser process.  There is one instance per child process.  Messages
 // are dispatched on the main child thread.  The RenderThread class
 // creates an instance of SocketStreamDispatcher and delegates calls to it.
-class SocketStreamDispatcher : public IPC::Channel::Listener {
+class SocketStreamDispatcher : public IPC::Listener {
  public:
   SocketStreamDispatcher();
   virtual ~SocketStreamDispatcher() {}
@@ -33,7 +34,7 @@ class SocketStreamDispatcher : public IPC::Channel::Listener {
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:

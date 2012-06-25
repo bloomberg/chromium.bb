@@ -43,8 +43,7 @@ int GpuChannelManager::GenerateRouteID() {
   return ++last_id;
 }
 
-void GpuChannelManager::AddRoute(int32 routing_id,
-                                 IPC::Channel::Listener* listener) {
+void GpuChannelManager::AddRoute(int32 routing_id, IPC::Listener* listener) {
   gpu_child_thread_->AddRoute(routing_id, listener);
 }
 

@@ -21,8 +21,8 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_context.h"
@@ -77,8 +77,8 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
 
 class GpuCommandBufferStub
     : public GpuCommandBufferStubBase,
-      public IPC::Channel::Listener,
-      public IPC::Message::Sender,
+      public IPC::Listener,
+      public IPC::Sender,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
   class DestructionObserver {
@@ -106,10 +106,10 @@ class GpuCommandBufferStub
 
   virtual ~GpuCommandBufferStub();
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // GpuCommandBufferStubBase implementation:

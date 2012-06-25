@@ -191,7 +191,7 @@ void NPChannelBase::OnChannelConnected(int32 peer_pid) {
 }
 
 void NPChannelBase::AddRoute(int route_id,
-                             IPC::Channel::Listener* listener,
+                             IPC::Listener* listener,
                              NPObjectBase* npobject) {
   if (npobject) {
     npobject_listeners_[route_id] = npobject;

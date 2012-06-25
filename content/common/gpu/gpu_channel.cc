@@ -358,7 +358,7 @@ int GpuChannel::GenerateRouteID() {
   return ++last_id;
 }
 
-void GpuChannel::AddRoute(int32 route_id, IPC::Channel::Listener* listener) {
+void GpuChannel::AddRoute(int32 route_id, IPC::Listener* listener) {
   router_.AddRoute(route_id, listener);
 }
 

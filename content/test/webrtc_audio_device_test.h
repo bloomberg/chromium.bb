@@ -122,9 +122,7 @@ class AudioUtilInterface {
 // Implemented and defined in the cc file.
 class ReplaceContentClientRenderer;
 
-class WebRTCAudioDeviceTest
-    : public ::testing::Test,
-      public IPC::Channel::Listener {
+class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
  public:
   WebRTCAudioDeviceTest();
   virtual ~WebRTCAudioDeviceTest();
@@ -147,7 +145,7 @@ class WebRTCAudioDeviceTest
   void OnGetHardwareInputSampleRate(int* sample_rate);
   void OnGetHardwareInputChannelLayout(ChannelLayout* channels);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Posts a final task to the IO message loop and waits for completion.

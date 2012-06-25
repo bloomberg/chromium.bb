@@ -31,7 +31,7 @@ class PluginChannel : public NPChannelBase {
   // Send a message to all renderers that the process is going to shutdown.
   static void NotifyRenderersOfPendingShutdown();
 
-  // IPC::Channel::Listener:
+  // IPC::Listener:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

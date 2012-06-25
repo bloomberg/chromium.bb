@@ -17,7 +17,8 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 namespace content {
@@ -28,12 +29,12 @@ struct ResourceResponseHead;
 // This class serves as a communication interface between the
 // ResourceDispatcherHost in the browser process and the ResourceLoaderBridge in
 // the child process.  It can be used from any child process.
-class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
+class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
  public:
-  explicit ResourceDispatcher(IPC::Message::Sender* sender);
+  explicit ResourceDispatcher(IPC::Sender* sender);
   virtual ~ResourceDispatcher();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
@@ -55,7 +56,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
   // Cancels a request in the pending_requests_ list.
   void CancelPendingRequest(int routing_id, int request_id);
 
-  IPC::Message::Sender* message_sender() const {
+  IPC::Sender* message_sender() const {
     return message_sender_;
   }
 
@@ -162,7 +163,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
   // for use on deferred message queues that are no longer needed.
   static void ReleaseResourcesInMessageQueue(MessageQueue* queue);
 
-  IPC::Message::Sender* message_sender_;
+  IPC::Sender* message_sender_;
 
   // All pending requests issued to the host
   PendingRequestList pending_requests_;

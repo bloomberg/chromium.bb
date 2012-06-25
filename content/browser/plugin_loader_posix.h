@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/plugins/webplugininfo.h"
 
 namespace base {
@@ -48,7 +48,7 @@ class UtilityProcessHost;
 //    the completion callback is run.
 class CONTENT_EXPORT PluginLoaderPosix
     : public NON_EXPORTED_BASE(content::UtilityProcessHostClient),
-      public IPC::Message::Sender {
+      public IPC::Sender {
  public:
   PluginLoaderPosix();
 
@@ -61,7 +61,7 @@ class CONTENT_EXPORT PluginLoaderPosix
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // IPC::Message::Sender:
+  // IPC::Sender:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:

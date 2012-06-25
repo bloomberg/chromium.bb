@@ -39,8 +39,8 @@ struct RefCountedCounter;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
-class GpuChannel : public IPC::Channel::Listener,
-                   public IPC::Message::Sender,
+class GpuChannel : public IPC::Listener,
+                   public IPC::Sender,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
   // Takes ownership of the renderer process handle.
@@ -68,11 +68,11 @@ class GpuChannel : public IPC::Channel::Listener,
 
   base::ProcessId renderer_pid() const { return channel_->peer_pid(); }
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   virtual void AppendAllCommandBufferStubs(
@@ -103,7 +103,7 @@ class GpuChannel : public IPC::Channel::Listener,
   int GenerateRouteID();
 
   // Called to add/remove a listener for a particular message routing ID.
-  void AddRoute(int32 route_id, IPC::Channel::Listener* listener);
+  void AddRoute(int32 route_id, IPC::Listener* listener);
   void RemoveRoute(int32 route_id);
 
   gpu::RefCountedCounter* MessagesPendingCount() {

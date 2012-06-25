@@ -12,8 +12,8 @@
 #include "base/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_memory_manager.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -47,11 +47,11 @@ class SyncPointManager;
 // A GpuChannelManager can also be hosted in the browser process in single
 // process or in-process GPU modes. In this case there is no corresponding
 // GpuChildThread and this is the reason the GpuChildThread is referenced via
-// a pointer to IPC::Message::Sender, which can be implemented by other hosts
-// to send IPC messages to the browser process IO thread on the
-// GpuChannelManager's behalf.
-class GpuChannelManager : public IPC::Channel::Listener,
-                          public IPC::Message::Sender,
+// a pointer to IPC::Sender, which can be implemented by other hosts to send
+// IPC messages to the browser process IO thread on the GpuChannelManager's
+// behalf.
+class GpuChannelManager : public IPC::Listener,
+                          public IPC::Sender,
                           public GpuMemoryManagerClient {
  public:
   GpuChannelManager(ChildThread* gpu_child_thread,
@@ -78,7 +78,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
   base::WeakPtrFactory<GpuChannelManager> weak_factory_;
 
   int GenerateRouteID();
-  void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
+  void AddRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }

@@ -84,7 +84,7 @@ class ImageTransportSurface {
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
 
-class ImageTransportHelper : public IPC::Channel::Listener {
+class ImageTransportHelper : public IPC::Listener {
  public:
   // Takes weak pointers to objects that outlive the helper.
   ImageTransportHelper(ImageTransportSurface* surface,
@@ -96,7 +96,7 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   bool Initialize();
   void Destroy();
 
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Helper send functions. Caller fills in the surface specific params

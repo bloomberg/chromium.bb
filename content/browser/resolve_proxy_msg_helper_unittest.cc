@@ -27,8 +27,7 @@ class MockProxyConfigService : public net::ProxyConfigService {
   }
 };
 
-class ResolveProxyMsgHelperTest : public testing::Test,
-                                  public IPC::Channel::Listener {
+class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
  public:
   struct PendingResult {
     PendingResult(bool result,

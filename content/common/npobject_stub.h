@@ -15,7 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/npobject_base.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 
 class NPChannelBase;
@@ -26,8 +27,8 @@ struct NPVariant_Param;
 // This wraps an NPObject and converts IPC messages from NPObjectProxy to calls
 // to the object.  The results are marshalled back.  See npobject_proxy.h for
 // more information.
-class NPObjectStub : public IPC::Channel::Listener,
-                     public IPC::Message::Sender,
+class NPObjectStub : public IPC::Listener,
+                     public IPC::Sender,
                      public base::SupportsWeakPtr<NPObjectStub>,
                      public NPObjectBase {
  public:
@@ -45,15 +46,15 @@ class NPObjectStub : public IPC::Channel::Listener,
   // more than once, until control returns to the main loop.
   void DeleteSoon();
 
-  // IPC::Message::Sender implementation:
+  // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // NPObjectBase implementation.
   virtual NPObject* GetUnderlyingNPObject() OVERRIDE;
-  virtual IPC::Channel::Listener* GetChannelListener() OVERRIDE;
+  virtual IPC::Listener* GetChannelListener() OVERRIDE;
 
  private:
-  // IPC::Channel::Listener implementation:
+  // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

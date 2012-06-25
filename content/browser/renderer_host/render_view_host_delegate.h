@@ -72,7 +72,7 @@ typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
 //  may not be relevant to all users of RenderViewHost and we should consider
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
-class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
+class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Listener {
  public:
   // RendererManagerment -------------------------------------------------------
   // Functions for managing switching of Renderers. For WebContents, this is
@@ -108,7 +108,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual RenderViewHostDelegateView* GetDelegateView();
   virtual RendererManagement* GetRendererManagementDelegate();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   // This is used to give the delegate a chance to filter IPC messages.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
