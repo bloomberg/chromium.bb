@@ -1140,7 +1140,9 @@ void InstantLoader::CreatePreviewContents(TabContents* tab_contents) {
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   SetupPreviewContents(tab_contents);
 
-  preview_contents_->web_contents()->ShowContents();
+  // TODO(beng): investigate if we can avoid this and instead rely on the
+  //             visibility of the WebContentsView
+  preview_contents_->web_contents()->WasRestored();
 }
 
 void InstantLoader::LoadInstantURL(const TemplateURL* template_url,
@@ -1169,7 +1171,7 @@ void InstantLoader::LoadInstantURL(const TemplateURL* template_url,
           transition_type, false, std::string(), override_user_agent);
 
   RenderViewHost* host = preview_contents_->web_contents()->GetRenderViewHost();
-  preview_contents_->web_contents()->HideContents();
+  preview_contents_->web_contents()->WasHidden();
 
   // If user_text is empty, this must be a preload of the search homepage. In
   // that case, send down a SearchBoxResize message, which will switch the page

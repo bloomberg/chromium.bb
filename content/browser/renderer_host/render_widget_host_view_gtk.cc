@@ -681,7 +681,7 @@ RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewGtk::DidBecomeSelected() {
+void RenderWidgetHostViewGtk::WasRestored() {
   if (!is_hidden_)
     return;
 

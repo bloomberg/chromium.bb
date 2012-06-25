@@ -953,7 +953,7 @@ WebContents* Browser::AddRestoredTab(
     // layout with proper view dimensions. TabStripModel::AddTabContents()
     // contains similar logic.
     new_tab->GetView()->SizeContents(window_->GetRestoredBounds().size());
-    new_tab->HideContents();
+    new_tab->WasHidden();
   }
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
@@ -3572,16 +3572,18 @@ void Browser::OnStateChanged() {
 void Browser::ShowInstant(TabContents* preview_contents) {
   window_->ShowInstant(preview_contents);
 
-  GetActiveWebContents()->HideContents();
-  preview_contents->web_contents()->ShowContents();
+  // TODO(beng): investigate if we can avoid this and instead rely on the
+  //             visibility of the WebContentsView
+  GetActiveWebContents()->WasHidden();
+  preview_contents->web_contents()->WasRestored();
 }
 
 void Browser::HideInstant() {
   window_->HideInstant();
   if (GetActiveWebContents())
-    GetActiveWebContents()->ShowContents();
+    GetActiveWebContents()->WasRestored();
   if (instant_->GetPreviewContents())
-    instant_->GetPreviewContents()->web_contents()->HideContents();
+    instant_->GetPreviewContents()->web_contents()->WasHidden();
 }
 
 void Browser::CommitInstant(TabContents* preview_contents) {

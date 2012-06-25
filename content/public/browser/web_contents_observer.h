@@ -81,7 +81,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                            const string16& error_description) {}
   virtual void DidGetUserGesture() {}
   virtual void DidGetIgnoredUIEvent() {}
-  virtual void DidBecomeSelected() {}
 
   virtual void DidStartLoading() {}
   virtual void DidStopLoading() {}
@@ -98,6 +97,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    WindowOpenDisposition disposition,
                                    PageTransition transition,
                                    int64 source_frame_id) {}
+
+  virtual void WasRestored() {}
 
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) {}

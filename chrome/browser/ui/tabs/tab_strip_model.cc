@@ -728,7 +728,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
       // We need to hide the contents or else we get and execute paints for
       // background tabs. With enough background tabs they will steal the
       // backing store of the visible tab causing flashing. See bug 20831.
-      contents->web_contents()->HideContents();
+      contents->web_contents()->WasHidden();
     }
   }
 }

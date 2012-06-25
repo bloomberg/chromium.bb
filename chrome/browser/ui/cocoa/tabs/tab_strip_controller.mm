@@ -1262,7 +1262,7 @@ private:
   [self swapInTabAtIndex:modelIndex];
 
   if (newContents) {
-    newContents->web_contents()->DidBecomeSelected();
+    newContents->web_contents()->WasRestored();
     newContents->web_contents()->GetView()->RestoreFocus();
 
     if (newContents->find_tab_helper()->find_ui_active())

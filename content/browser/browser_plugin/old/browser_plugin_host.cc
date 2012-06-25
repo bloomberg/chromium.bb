@@ -223,9 +223,9 @@ void BrowserPluginHost::Observe(
           it != guests_.end(); ++it) {
         WebContentsImpl* web_contents = it->first;
         if (visible)
-          web_contents->ShowContents();
+          web_contents->WasRestored();
         else
-          web_contents->HideContents();
+          web_contents->WasHidden();
       }
       break;
     }

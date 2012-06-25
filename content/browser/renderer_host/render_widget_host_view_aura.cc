@@ -265,7 +265,7 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
   return host_;
 }
 
-void RenderWidgetHostViewAura::DidBecomeSelected() {
+void RenderWidgetHostViewAura::WasRestored() {
   host_->WasRestored();
   if (!current_surface_ && host_->is_accelerated_compositing_active() &&
       !released_front_lock_.get())

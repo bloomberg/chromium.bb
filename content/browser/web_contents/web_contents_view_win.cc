@@ -382,14 +382,14 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
 
   WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(lparam);
   if (window_pos->flags & SWP_HIDEWINDOW) {
-    web_contents_->HideContents();
+    web_contents_->WasHidden();
     return 0;
   }
 
   // The WebContents was shown by a means other than the user selecting a
   // Tab, e.g. the window was minimized then restored.
   if (window_pos->flags & SWP_SHOWWINDOW)
-    web_contents_->ShowContents();
+    web_contents_->WasRestored();
 
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv) {

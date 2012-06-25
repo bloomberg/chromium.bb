@@ -910,12 +910,16 @@ void WebContentsImpl::NotifyNavigationStateChanged(unsigned changed_flags) {
     delegate_->NavigationStateChanged(this, changed_flags);
 }
 
-void WebContentsImpl::DidBecomeSelected() {
+base::TimeTicks WebContentsImpl::GetLastSelectedTime() const {
+  return last_selected_time_;
+}
+
+void WebContentsImpl::WasRestored() {
   controller_.SetActive(true);
   RenderWidgetHostViewPort* rwhv =
       RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
   if (rwhv) {
-    rwhv->DidBecomeSelected();
+    rwhv->WasRestored();
 #if defined(OS_MACOSX)
     rwhv->SetActive(true);
 #endif
@@ -923,7 +927,7 @@ void WebContentsImpl::DidBecomeSelected() {
 
   last_selected_time_ = base::TimeTicks::Now();
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidBecomeSelected());
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, WasRestored());
 
   // The resize rect might have changed while this was inactive -- send the new
   // one to make sure it's up to date.
@@ -932,11 +936,12 @@ void WebContentsImpl::DidBecomeSelected() {
   if (rvh) {
     rvh->ResizeRectChanged(GetRootWindowResizerRect());
   }
-}
 
-
-base::TimeTicks WebContentsImpl::GetLastSelectedTime() const {
-  return last_selected_time_;
+  bool is_visible = true;
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+      content::Source<WebContents>(this),
+      content::Details<bool>(&is_visible));
 }
 
 void WebContentsImpl::WasHidden() {
@@ -945,7 +950,7 @@ void WebContentsImpl::WasHidden() {
     // open a tab in then background, then closes the tab before selecting it.
     // This is because closing the tab calls WebContentsImpl::Destroy(), which
     // removes the |GetRenderViewHost()|; then when we actually destroy the
-    // window, OnWindowPosChanged() notices and calls HideContents() (which
+    // window, OnWindowPosChanged() notices and calls WasHidden() (which
     // calls us).
     RenderWidgetHostViewPort* rwhv =
         RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
@@ -958,32 +963,6 @@ void WebContentsImpl::WasHidden() {
       content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<WebContents>(this),
       content::Details<bool>(&is_visible));
-}
-
-void WebContentsImpl::WasRestored() {
-  bool is_visible = true;
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      content::Source<WebContents>(this),
-      content::Details<bool>(&is_visible));
-}
-
-void WebContentsImpl::ShowContents() {
-  RenderWidgetHostViewPort* rwhv =
-      RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
-  if (rwhv)
-    rwhv->DidBecomeSelected();
-  WasRestored();
-}
-
-void WebContentsImpl::HideContents() {
-  // TODO(pkasting): http://b/1239839  Right now we purposefully don't call
-  // our superclass HideContents(), because some callers want to be very picky
-  // about the order in which these get called.  In addition to making the code
-  // here practically impossible to understand, this also means we end up
-  // calling WebContentsImpl::WasHidden() twice if callers call both versions of
-  // HideContents() on a WebContentsImpl.
-  WasHidden();
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnload() {

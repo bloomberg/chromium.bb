@@ -397,7 +397,7 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
 
-void RenderWidgetHostViewMac::DidBecomeSelected() {
+void RenderWidgetHostViewMac::WasRestored() {
   if (!is_hidden_)
     return;
 
@@ -577,7 +577,7 @@ bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
 void RenderWidgetHostViewMac::Show() {
   [cocoa_view_ setHidden:NO];
 
-  DidBecomeSelected();
+  WasRestored();
 }
 
 void RenderWidgetHostViewMac::Hide() {
@@ -1940,7 +1940,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       doubleValue];
   if (newBackingScaleFactor != oldBackingScaleFactor) {
     // Background tabs check if their scale factor changed when they become
-    // active, in DidBecomeSelected().
+    // active, in WasRestored().
 
     // Allocating a CGLayerRef with the current scale factor immediately from
     // this handler doesn't work. Schedule the backing store update on the
@@ -2871,7 +2871,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     if (newWindow) {
       // If we move into a new window, refresh the frame information. We
       // don't need to do it if it was the same window as it used to be in,
-      // since that case is covered by DidBecomeSelected. We only want to
+      // since that case is covered by WasRestored(). We only want to
       // do this for real browser views, not popups.
       if (newWindow != lastWindow_) {
         lastWindow_ = newWindow;

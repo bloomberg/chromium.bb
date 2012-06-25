@@ -192,12 +192,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual base::TerminationStatus GetCrashedStatus() const OVERRIDE;
   virtual bool IsBeingDestroyed() const OVERRIDE;
   virtual void NotifyNavigationStateChanged(unsigned changed_flags) OVERRIDE;
-  virtual void DidBecomeSelected() OVERRIDE;
   virtual base::TimeTicks GetLastSelectedTime() const OVERRIDE;
-  virtual void WasHidden() OVERRIDE;
   virtual void WasRestored() OVERRIDE;
-  virtual void ShowContents() OVERRIDE;
-  virtual void HideContents() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual content::WebContents* Clone() OVERRIDE;

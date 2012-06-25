@@ -118,7 +118,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // TODO(stuartmorgan): This is a temporary plugin-specific workaround for
   // <http://crbug.com/34266>. Once that is fixed, this (and the corresponding
   // message and renderer-side handling) can be removed in favor of using
-  // WasHidden/DidBecomeSelected.
+  // WasHidden/WasRestored.
   virtual void SetWindowVisibility(bool visible) = 0;
 
   // Informs the view that its containing window's frame changed.

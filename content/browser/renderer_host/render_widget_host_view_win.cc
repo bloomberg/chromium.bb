@@ -658,7 +658,7 @@ RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
 
-void RenderWidgetHostViewWin::DidBecomeSelected() {
+void RenderWidgetHostViewWin::WasRestored() {
   if (!is_hidden_)
     return;
 
@@ -941,7 +941,7 @@ void RenderWidgetHostViewWin::Show() {
   }
   ShowWindow(SW_SHOW);
 
-  DidBecomeSelected();
+  WasRestored();
 }
 
 void RenderWidgetHostViewWin::Hide() {

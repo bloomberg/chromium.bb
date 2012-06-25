@@ -79,7 +79,7 @@ string16 CoreTabHelper::GetStatusText() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
-void CoreTabHelper::DidBecomeSelected() {
+void CoreTabHelper::WasRestored() {
   WebCacheManager::GetInstance()->ObserveActivity(
       web_contents()->GetRenderProcessHost()->GetID());
 }

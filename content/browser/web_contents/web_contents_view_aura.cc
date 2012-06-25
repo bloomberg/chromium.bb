@@ -565,9 +565,9 @@ void WebContentsViewAura::OnWindowDestroyed() {
 
 void WebContentsViewAura::OnWindowVisibilityChanged(bool visible) {
   if (visible)
-    web_contents_->ShowContents();
+    web_contents_->WasRestored();
   else
-    web_contents_->HideContents();
+    web_contents_->WasHidden();
 }
 
 bool WebContentsViewAura::HasHitTestMask() const {

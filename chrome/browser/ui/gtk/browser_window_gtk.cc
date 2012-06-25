@@ -1345,7 +1345,6 @@ void BrowserWindowGtk::ActiveTabChanged(TabContents* old_contents,
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   contents_container_->SetTab(new_contents);
 
-  new_contents->web_contents()->DidBecomeSelected();
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
   if (!browser_->tab_strip_model()->closing_all()) {
@@ -1445,7 +1444,7 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
     // anything other than user selecting a Tab.
     // See TabContentsViewViews::OnWindowPosChanged for reference on how it
     // should be implemented.
-    devtools_contents->web_contents()->ShowContents();
+    devtools_contents->web_contents()->WasRestored();
   }
 
   bool should_show = old_devtools == NULL && devtools_contents != NULL;

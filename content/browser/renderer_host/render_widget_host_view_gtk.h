@@ -74,7 +74,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
       content::RenderWidgetHostView* reference_host_view) OVERRIDE;
-  virtual void DidBecomeSelected() OVERRIDE;
+  virtual void WasRestored() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;

@@ -463,7 +463,7 @@ void PrerenderContents::Observe(int type,
         // size, is also sets itself to be visible, which would then break the
         // visibility API.
         new_render_view_host->WasResized();
-        prerender_contents_->web_contents()->HideContents();
+        prerender_contents_->web_contents()->WasHidden();
       }
       break;
     }

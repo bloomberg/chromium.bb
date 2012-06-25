@@ -519,7 +519,7 @@ void Navigate(NavigateParams* params) {
       // By default, content believes it is not hidden.  When adding contents
       // in the background, tell it that it's hidden.
       if ((params->tabstrip_add_types & TabStripModel::ADD_ACTIVE) == 0) {
-        // TabStripModel::AddTabContents invokes HideContents if not foreground.
+        // TabStripModel::AddTabContents invokes WasHidden if not foreground.
         params->target_contents->web_contents()->WasHidden();
       }
     } else {

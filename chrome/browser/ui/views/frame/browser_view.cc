@@ -2409,11 +2409,6 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   }
 
   UpdateDevToolsForContents(new_contents);
-  // TODO(beng): This should be called automatically by ChangeWebContents, but I
-  //             am striving for parity now rather than cleanliness. This is
-  //             required to make features like Duplicate Tab, Undo Close Tab,
-  //             etc not result in sad tab.
-  new_contents->web_contents()->DidBecomeSelected();
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
       GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
