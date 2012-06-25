@@ -14,6 +14,25 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
 
+bool UseOmniboxViews() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  static bool kUseOmniboxViews = CommandLine::ForCurrentProcess()->
+                                     HasSwitch(switches::kEnableViewsTextfield);
+  return kUseOmniboxViews;
+#endif
+  return true;
+}
+
+OmniboxViewViews* GetOmniboxViewViews(OmniboxView* view) {
+  return UseOmniboxViews() ? static_cast<OmniboxViewViews*>(view) : NULL;
+}
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view) {
+  return UseOmniboxViews() ? NULL : static_cast<OmniboxViewWin*>(view);
+}
+#endif
+
 OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
                                Profile* profile,
@@ -22,8 +41,7 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                LocationBarView* location_bar,
                                views::View* popup_parent_view) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
+  if (!UseOmniboxViews())
     return new OmniboxViewWin(controller, toolbar_model, location_bar,
                               command_updater, popup_window_mode, location_bar,
                               popup_parent_view);

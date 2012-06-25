@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -2134,8 +2135,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   ignore_layout_ = true;
   LocationBarView* location_bar = GetLocationBarView();
 #if defined(OS_WIN) && !defined(USE_AURA)
-  OmniboxViewWin* omnibox_view =
-      static_cast<OmniboxViewWin*>(location_bar->GetLocationEntry());
+  OmniboxViewWin* omnibox_win =
+      GetOmniboxViewWin(location_bar->GetLocationEntry());
 #endif
 
   if (type == FOR_METRO || !fullscreen) {
@@ -2153,13 +2154,15 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
       focus_manager->ClearFocus();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-    // If we don't hide the edit and force it to not show until we come out of
-    // fullscreen, then if the user was on the New Tab Page, the edit contents
-    // will appear atop the web contents once we go into fullscreen mode.  This
-    // has something to do with how we move the main window while it's hidden;
-    // if we don't hide the main window below, we don't get this problem.
-    omnibox_view->set_force_hidden(true);
-    ShowWindow(omnibox_view->m_hWnd, SW_HIDE);
+    if (omnibox_win) {
+      // If we don't hide the edit and force it to not show until we come out of
+      // fullscreen, then if the user was on the New Tab Page, the edit contents
+      // will appear atop the web contents once we go into fullscreen mode. This
+      // has something to do with how we move the main window while it's hidden;
+      // if we don't hide the main window below, we don't get this problem.
+      omnibox_win->set_force_hidden(true);
+      ShowWindow(omnibox_win->m_hWnd, SW_HIDE);
+    }
 #endif
   }
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -2189,9 +2192,11 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     }
   } else {
 #if defined(OS_WIN) && !defined(USE_AURA)
-    // Show the edit again since we're no longer in fullscreen mode.
-    omnibox_view->set_force_hidden(false);
-    ShowWindow(omnibox_view->m_hWnd, SW_SHOW);
+    if (omnibox_win) {
+      // Show the edit again since we're no longer in fullscreen mode.
+      omnibox_win->set_force_hidden(false);
+      ShowWindow(omnibox_win->m_hWnd, SW_SHOW);
+    }
 #endif
   }
 

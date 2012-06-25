@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <map>
 
-#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -61,7 +60,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -87,27 +85,6 @@ WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
   const TabContents* tab_contents = delegate->GetTabContents();
   return tab_contents ? tab_contents->web_contents() : NULL;
 }
-
-bool UseOmniboxViews() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  static bool kUseOmniboxViews = CommandLine::ForCurrentProcess()->
-                                     HasSwitch(switches::kEnableViewsTextfield);
-  return kUseOmniboxViews;
-#endif
-  return true;
-}
-
-// Return |view| as an OmniboxViewViews, or NULL if it is of a different type.
-OmniboxViewViews* GetOmniboxViewViews(OmniboxView* view) {
-  return UseOmniboxViews() ? static_cast<OmniboxViewViews*>(view) : NULL;
-}
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-// Return |view| as an OmniboxViewWin, or NULL if it is of a different type.
-OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view) {
-  return UseOmniboxViews() ? NULL : static_cast<OmniboxViewWin*>(view);
-}
-#endif
 
 // Height of the location bar's round corner region.
 const int kBorderRoundCornerHeight = 5;
