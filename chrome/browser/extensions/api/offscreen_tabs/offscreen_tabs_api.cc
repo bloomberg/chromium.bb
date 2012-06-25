@@ -276,8 +276,7 @@ void OffscreenTab::Observe(int type,
   // event.
   Profile* profile = parent_tab_->tab_contents()->profile();
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      events::kOnOffscreenTabUpdated, json_args, profile, GURL(),
-      extensions::EventFilteringInfo());
+      events::kOnOffscreenTabUpdated, json_args, profile, GURL());
 }
 
 ParentTab::ParentTab() : tab_contents_(NULL) {}

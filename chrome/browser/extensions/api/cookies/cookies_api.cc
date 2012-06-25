@@ -115,7 +115,7 @@ void ExtensionCookiesEventRouter::DispatchEvent(Profile* profile,
                                                 GURL& cookie_domain) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, cookie_domain, EventFilteringInfo());
+        event_name, json_args, profile, cookie_domain);
   }
 }
 
