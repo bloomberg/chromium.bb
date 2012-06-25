@@ -12,6 +12,7 @@ wcap_decode_SOURCES =				\
 	tools_common.h				\
 	vpxenc.c				\
 	vpx_timer.h				\
+	vpx_config.h				\
 	y4minput.c				\
 	y4minput.h				\
 	wcap-decode.c				\
