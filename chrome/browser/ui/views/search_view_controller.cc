@@ -204,7 +204,6 @@ void SearchViewController::Update() {
       DestroyViews();
       break;
 
-    case chrome::search::Mode::MODE_NTP_LOADING:
     case chrome::search::Mode::MODE_NTP:
       if (animating_)
         DestroyViews();

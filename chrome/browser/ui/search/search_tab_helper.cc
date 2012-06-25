@@ -10,11 +10,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -34,9 +33,15 @@ SearchTabHelper::SearchTabHelper(
     bool is_search_enabled)
     : WebContentsObserver(contents->web_contents()),
       is_search_enabled_(is_search_enabled),
-      model_(new SearchModel(contents)),
-      ntp_load_state_(DEFAULT),
-      main_frame_id_(0) {
+      model_(new SearchModel(contents)) {
+  if (!is_search_enabled)
+    return;
+
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<content::NavigationController>(
+          &contents->web_contents()->GetController()));
 }
 
 SearchTabHelper::~SearchTabHelper() {
@@ -67,64 +72,26 @@ void SearchTabHelper::NavigateToPendingEntry(
   if (!is_search_enabled_)
     return;
 
-  registrar_.RemoveAll();
-  Mode::Type type = Mode::MODE_DEFAULT;
-  ntp_load_state_ = DEFAULT;
-  if (IsNTP(url)) {
-    type = Mode::MODE_NTP_LOADING;
-    ntp_load_state_ = WAITING_FOR_FRAME_ID;
-  } else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec())) {
-    type = Mode::MODE_SEARCH;
-  }
-  model_->SetMode(Mode(type, true));
-}
-
-void SearchTabHelper::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    bool is_main_frame,
-    const GURL& validated_url,
-    bool is_error_page,
-    content::RenderViewHost* render_view_host) {
-  if (ntp_load_state_ == WAITING_FOR_FRAME_ID && is_main_frame &&
-      IsNTP(validated_url)) {
-    content::NavigationEntry* pending_entry =
-        web_contents()->GetController().GetPendingEntry();
-    if (pending_entry && IsNTP(pending_entry->GetURL())) {
-      ntp_load_state_ = WAITING_FOR_FRAME_LOAD;
-      main_frame_id_ = frame_id;
-    }
-  }
-}
-
-void SearchTabHelper::DocumentLoadedInFrame(int64 frame_id) {
-  if (ntp_load_state_ == WAITING_FOR_FRAME_LOAD && main_frame_id_ == frame_id) {
-    ntp_load_state_ = WAITING_FOR_PAINT;
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-        content::Source<content::RenderWidgetHost>(GetRenderWidgetHost()));
-  }
+  UpdateModel(url);
 }
 
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-            type);
-  if (ntp_load_state_ == WAITING_FOR_PAINT) {
-    DCHECK_EQ(GetRenderWidgetHost(),
-              content::Source<content::RenderWidgetHost>(source).ptr());
-    ntp_load_state_ = DEFAULT;
-    model_->MaybeChangeMode(Mode::MODE_NTP_LOADING, Mode::MODE_NTP);
-    registrar_.RemoveAll();
-  }
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
+  content::LoadCommittedDetails* committed_details =
+      content::Details<content::LoadCommittedDetails>(details).ptr();
+  UpdateModel(committed_details->entry->GetURL());
 }
 
-content::RenderWidgetHost* SearchTabHelper::GetRenderWidgetHost() {
-  content::RenderWidgetHostView* rwhv =
-      web_contents()->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetRenderWidgetHost() : NULL;
+void SearchTabHelper::UpdateModel(const GURL& url) {
+  Mode::Type type = Mode::MODE_DEFAULT;
+  if (IsNTP(url))
+    type = Mode::MODE_NTP;
+  else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
+    type = Mode::MODE_SEARCH;
+  model_->SetMode(Mode(type, true));
 }
 
 }  // namespace search
