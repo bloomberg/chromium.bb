@@ -526,8 +526,6 @@ RenderViewImpl::RenderViewImpl(
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
-      context_has_swapbuffers_complete_callback_(false),
-      queried_for_swapbuffers_complete_callback_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
@@ -5187,23 +5185,13 @@ void RenderViewImpl::OnWasRestored(bool needs_repainting) {
 }
 
 bool RenderViewImpl::SupportsAsynchronousSwapBuffers() {
-  if (WebWidgetHandlesCompositorScheduling())
+  // Contexts using the command buffer support asynchronous swapbuffers.
+  // See RenderViewImpl::createGraphicsContext3D().
+  if (WebWidgetHandlesCompositorScheduling() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL))
     return false;
 
-  if (queried_for_swapbuffers_complete_callback_)
-    return context_has_swapbuffers_complete_callback_;
-
-  queried_for_swapbuffers_complete_callback_ = true;
-
-  WebKit::WebGraphicsContext3D* context = webview()->graphicsContext3D();
-  if (context && context->makeContextCurrent()) {
-    std::string extensions(context->getRequestableExtensionsCHROMIUM().utf8());
-    context_has_swapbuffers_complete_callback_ =
-        extensions.find("GL_CHROMIUM_swapbuffers_complete_callback")
-            != std::string::npos;
-  }
-
-  return context_has_swapbuffers_complete_callback_;
+  return true;
 }
 
 void RenderViewImpl::OnSetFocus(bool enable) {

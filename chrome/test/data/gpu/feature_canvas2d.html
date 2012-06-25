@@ -27,7 +27,7 @@ function runTest() {
 function draw() {
   frameCount++;
   context.fillRect(0, 0, 100, frameCount);
-  if (frameCount == 3) {
+  if (frameCount == 6) {
     endTest();
   } else {
     window.webkitRequestAnimationFrame(draw);

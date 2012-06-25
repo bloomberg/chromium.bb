@@ -1268,13 +1268,6 @@ class RenderViewImpl : public RenderWidget,
   std::set<gfx::PluginWindowHandle> fake_plugin_window_handles_;
 #endif
 
-  // When this view is composited, the context used for compositing may or may
-  // not support the GL_CHROMIUM_swapbuffers_complete_callback extension. Since
-  // querying for the existence of this extension is expensive we cache the
-  // result. These are used to implement SupportsAsynchronousSwapBuffers().
-  bool context_has_swapbuffers_complete_callback_;
-  bool queried_for_swapbuffers_complete_callback_;
-
   // Helper objects ------------------------------------------------------------
 
   RendererWebCookieJarImpl cookie_jar_;
