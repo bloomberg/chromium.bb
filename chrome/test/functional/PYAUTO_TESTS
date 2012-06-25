@@ -95,6 +95,15 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/134555
+      '-fullscreen_mouselock.FullscreenMouselockTest.testFullScreenMouseLockHooks',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockExitWhenAlertDialogShow',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockInBrowserFS',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockLostOnReload',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockRequest',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testNoTabFSExitWhenJSExitMouseLock',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForAllowMouseLock',
       # crbug.com/128563
       '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/131874
