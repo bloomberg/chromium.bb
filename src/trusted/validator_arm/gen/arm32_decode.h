@@ -183,7 +183,6 @@ class Arm32DecoderState : DecoderState {
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
-  const MoveToStatusRegister MoveToStatusRegister_instance_;
   const PackSatRev PackSatRev_instance_;
   const Roadblock Roadblock_instance_;
   const StoreBasedMemoryDoubleRtBits0To3 StoreBasedMemoryDoubleRtBits0To3_instance_;
@@ -196,6 +195,8 @@ class Arm32DecoderState : DecoderState {
   const StrRegisterDouble StrRegisterDouble_instance_;
   const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
+  const Unary1RegisterSet Unary1RegisterSet_instance_;
+  const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
   const VectorLoad VectorLoad_instance_;

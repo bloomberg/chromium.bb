@@ -44,7 +44,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
-  , MoveToStatusRegister_instance_()
   , PackSatRev_instance_()
   , Roadblock_instance_()
   , StoreBasedMemoryDoubleRtBits0To3_instance_()
@@ -57,6 +56,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StrRegisterDouble_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
+  , Unary1RegisterSet_instance_()
+  , Unary1RegisterUse_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
   , VectorLoad_instance_()
@@ -616,7 +617,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc(
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
       (insn.Bits() & 0x00030000) == 0x00000000 /* op1(19:16) == xx00 */)
-    return MoveToStatusRegister_instance_;
+    return Unary1RegisterUse_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
@@ -634,7 +635,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc(
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
       (insn.Bits() & 0x00200000) == 0x00000000 /* op(22:21) == x0 */)
-    return DataProc_instance_;
+    return Unary1RegisterSet_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000010 /* op2(6:4) == 001 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)
@@ -642,7 +643,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc(
 
   if ((insn.Bits() & 0x00000070) == 0x00000010 /* op2(6:4) == 001 */ &&
       (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */)
-    return DataProc_instance_;
+    return Defs12To15RdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000020 /* op2(6:4) == 010 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)

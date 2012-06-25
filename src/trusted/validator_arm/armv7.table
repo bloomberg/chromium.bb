@@ -58,6 +58,7 @@
 #   'tt'   - Bits defining the shift type (for register operations).
 #   'u'    - Bit(20) defining whether register flags is updated.
 #   'w'    - Bit(21) defining writes flag.
+#   'r'    - Bit(22) defining if SPSR register is read.
 #   'd'    - Bit(23) Direction (add vs subtract) of offset.
 #   'p'    - Bit(24) defining if pre-indexing should be used.
 #
@@ -105,6 +106,7 @@
 # the baseline class tester.
 # #############################################################
 
+class BreakPointAndConstantPoolHead : Immediate16Use
 class ForbiddenCondNop : UnsafeCondNop
 class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Load2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
@@ -302,7 +304,7 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | 0111x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Rsc_Rule_147_A1_P294
-                           cccc0000111unnnnddddssss0tt1mmmm
+                           cccc0000111unnnnddddssss0tt1mmmm RegsNotPc
 | 10001      -        = Binary3RegisterShiftedTest
                            => DontCareInstRnRsRmNotPc
                            Tst_Rule_232_A1_P458
@@ -729,19 +731,43 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- misc (See Section A5.2.12)
 | op2(6:4) op(22:21) op1(19:16)
-| 000      x0        xxxx       =DataProc      # MRS
-| "        01        xx00       =MoveToStatusRegister  # MSR(register)
-| "        01        xx01       =Forbidden     # MSR(register), ring0 version
-| "        "         xx1x       =Forbidden     # MSR(register), ring0 version
-| "        11        -          =Forbidden     # MSR(register), ring0 version
-| 001      01        -          =BxBlx(v4T)    # BX
-| "        11        -          =DataProc(v6)  # CLZ
-| 010      01        -          =Forbidden     # BXJ
-| 011      01        -          =BxBlx(v5T)    # BLX(register)
+| 000      x0        xxxx       = Unary1RegisterSet
+                                  Mrs_Rule_102_A1_P206_Or_B6_10
+                                  cccc00010r001111dddd000000000000
+| "        01        xx00       = Unary1RegisterUse
+                                  Msr_Rule_104_A1_P210
+                                  cccc00010010mm00111100000000nnnn
+| "        01        xx01       = ForbiddenCondNop => Forbidden
+                                  Msr_Rule_B6_1_7_P14
+                                  cccc00010010mm01111100000000nnnn
+| "        "         xx1x       = ForbiddenCondNop => Forbidden
+                                  Msr_Rule_B6_1_7_P14
+                                  cccc00010010mm1m111100000000nnnn
+| "        11        -          = ForbiddenCondNop => Forbidden
+                                  Msr_Rule_B6_1_7_P14
+                                  cccc00010110mmmm111100000000nnnn
+| 001      01        -          = BranchToRegister => BxBlx
+                                  Bx_Rule_25_A1_P62
+                                  cccc000100101111111111110001mmmm (v4T)
+| "        11        -          = Unary2RegisterOpNotRmIsPc => Defs12To15RdRnNotPc
+                                  Clz_Rule_31_A1_P72
+                                  cccc000101101111dddd11110001mmmm (v6)
+| 010      01        -          = ForbiddenCondNop => Forbidden
+                                  Bxj_Rule_26_A1_P64
+                                  cccc000100101111111111110010mmmm
+| 011      01        -          = BranchToRegister => BxBlx
+                                  Blx_Rule_24_A1_P60
+                                  cccc000100101111111111110011mmmm
+                                  RegsNotPc (v5T)
 | 101      -         -          ->sat_add_sub
-| 111      01        -          =Breakpoint(v5T)  # BKPT
-| 111      11        -          =Forbidden     # SMC
-| else:                         =Undefined     # Note on page A5-18
+| 111      01        -          = BreakPointAndConstantPoolHead
+                                  => Breakpoint
+                                  Bkpt_Rule_22_A1_P56
+                                  cccc00010010iiiiiiiiiiii0111iiii (v5T)
+| 111      11        -          = ForbiddenCondNop => Forbidden
+                                  Smc_Rule_B6_1_9_P18
+                                  cccc000101100000000000000111mmmm
+| else:                         = Undefined     # Note on page A5-18
 +--
 
 +-- load_store_word_byte (See Section A5.3)

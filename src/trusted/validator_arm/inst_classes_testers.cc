@@ -99,6 +99,87 @@ bool CondVfpOpTester::ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// Unary1RegisterSetTester
+Unary1RegisterSetTester::Unary1RegisterSetTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Unary1RegisterSetTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Unary1RegisterSet expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check that registers are correctly defined.
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder.read_spsr.IsDefined(inst), inst.Bit(22));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.read_spsr.IsDefined(inst))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
+
+// Unary1RegisterUseTester
+Unary1RegisterUseTester::Unary1RegisterUseTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Unary1RegisterUseTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Unary1RegisterUse expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check that registers are correctly defined.
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.mask.value(inst), inst.Bits(19, 18));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  switch (expected_decoder.mask.value(inst)) {
+    case 0:
+    case 1:
+      EXPECT_FALSE(decoder.defs(inst).Contains(kConditions));
+      break;
+    case 2:
+    case 3:
+      EXPECT_TRUE(decoder.defs(inst).Contains(kConditions));
+      break;
+
+    default:
+      // This should NOT happen.
+      EXPECT_FALSE(true);
+      break;
+  }
+
+  return true;
+}
+
 // MoveImmediate12ToApsrTester
 MoveImmediate12ToApsrTester::MoveImmediate12ToApsrTester(
     const NamedClassDecoder& decoder)
@@ -132,6 +213,81 @@ ApplySanityChecks(Instruction inst,
             ((static_cast<uint32_t>(
                 expected_decoder.UpdatesConditions(inst)) << 1) |
              static_cast<uint32_t>(expected_decoder.UpdatesApsrGe(inst))));
+
+  return true;
+}
+
+// Immediate16UseTester
+Immediate16UseTester::Immediate16UseTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Immediate16UseTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Immediate16Use expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check if immediate values are defined correctly.
+  EXPECT_EQ(expected_decoder.imm4.value(inst), inst.Bits(3, 0));
+  EXPECT_EQ(expected_decoder.imm12.value(inst), inst.Bits(19, 8));
+  EXPECT_EQ(expected_decoder.value(inst),
+            ((inst.Bits(19, 8) << 4) | inst.Bits(3, 0)));
+
+  return true;
+}
+
+// BranchToRegisterTester
+BranchToRegisterTester::BranchToRegisterTester(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool BranchToRegisterTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::BranchToRegister expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check if mask and immediate values are correctly defined.
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.link_register.IsUpdated(inst), inst.Bit(5));
+
+  return true;
+}
+
+// BranchToRegisterTesterRegsNotPc
+BranchToRegisterTesterRegsNotPc::BranchToRegisterTesterRegsNotPc(
+const NamedClassDecoder& decoder)
+    : BranchToRegisterTester(decoder) {}
+
+bool BranchToRegisterTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::BranchToRegister expected_decoder;
+
+  NC_PRECOND(BranchToRegisterTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
 
   return true;
 }
@@ -462,6 +618,24 @@ ApplySanityChecks(Instruction inst,
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// Unary2RegisterOpNotRmIsPcTester
+Unary2RegisterOpNotRmIsPcTester::Unary2RegisterOpNotRmIsPcTester(
+    const NamedClassDecoder& decoder)
+    : Unary2RegisterOpTester(decoder) {}
+
+bool Unary2RegisterOpNotRmIsPcTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Unary2RegisterOp expected_decoder;
+
+  NC_PRECOND(Unary2RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
 
   return true;
 }

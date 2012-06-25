@@ -1229,23 +1229,15 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
 // Hence the cryptic name.
 class BxBlx : public OldClassDecoder {
  public:
+  static const RegMBits0To3Interface m;
+  static const UpdatesLinkRegisterBit5Interface link_register;
+
   inline BxBlx() {}
   virtual ~BxBlx() {}
 
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return MAY_BE_SAFE;
-  }
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register branch_target_register(Instruction i) const;
-  // Defines flag that indicates that Link register is used as well.
-  inline bool UsesLinkRegister(const Instruction& i) const {
-    return i.Bit(5);
-  }
-  // Contains branch target address and instruction set selection bit.
-  inline Register Rm(const Instruction& i) const {
-    return i.Reg(3, 0);
-  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(BxBlx);
@@ -1280,6 +1272,60 @@ class Branch : public OldClassDecoder {
 // well as the actual class decoders. Hence, they do not need to be
 // duplicated in files baseline_classes.{h,cc}.
 //-------------------------------------------------------------------
+
+// Models a store into Rd(15, 12).
+// MRS<c> <Rd>, <spec_reg>
+// +--------+----------+--+------------+--------+-----------------------+
+// |31302928|2726252423|22|212019181716|15141312|111 9 8 7 6 5 4 3 2 1 0|
+// +--------+----------+--+------------+--------+-----------------------+
+// |  cond  |          | R|            |   Rd   |                       |
+// +--------+----------+--+------------+--------+-----------------------+
+// If Rd is R15, the instruction is unpredictable.
+// If R=1, then UNPREDICTABLE if mode is User or System.
+class Unary1RegisterSet : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegDBits12To15Interface d;
+  static const ReadSpsrBit22Interface read_spsr;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Unary1RegisterSet() {}
+  virtual ~Unary1RegisterSet() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterSet);
+};
+
+// Models a move of Rn to the APSR register.
+// MSR<c> <spec_reg>, <Rn>
+// +--------+---------------+----+----------------------------+--------+
+// |31302928|272625423222120|1918|1716151413121110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+---------------+----+----------------------------+--------+
+// |  cond  |               |mask|                            |   Rn   |
+// +--------+---------------+----+----------------------------+--------+
+// If mask<1>=1, then update conditions flags(NZCVQ) in ASPR
+// If mask<0>=1, then update GE(bits(19:16)) in ASPR.
+// If mask=0, then UNPREDICTABLE.
+// If Rn=15, then UNPREDICTABLE.
+class Unary1RegisterUse : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegNBits0To3Interface n;
+  static const Imm2Bits18To19Interface mask;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Unary1RegisterUse() {}
+  virtual ~Unary1RegisterUse() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterUse);
+};
 
 // Models a 1-register unary operation with two immediate 5 values
 // defining a bit range.

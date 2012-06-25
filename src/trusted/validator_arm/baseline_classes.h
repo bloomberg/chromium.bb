@@ -148,6 +148,71 @@ class MoveImmediate12ToApsr : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(MoveImmediate12ToApsr);
 };
 
+// Models the use of a 16-bit immediate constant
+// Op #<imm16>
+// +--------+----------------+------------------------+--------+-------+
+// |31302928|2726252423222120|19181716151413121110 9 8| 7 6 5 4|3 2 1 0|
+// +--------+----------------+------------------------+--------+-------+
+// |  cond  |                |         imm12          |        |  imm4 |
+// +--------+----------------+------------------------+--------+-------+
+class Immediate16Use : public ClassDecoder {
+ public:
+  static const Imm4Bits0To3Interface imm4;
+  static const Imm12Bits8To19Interface imm12;
+  static const ConditionBits28To31Interface cond;
+  static uint32_t value(const Instruction& i) {
+    return (imm12.value(i) << 4) | imm4.value(i);
+  }
+
+  // Methods for class
+  inline Immediate16Use() {}
+  virtual ~Immediate16Use() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Immediate16Use);
+};
+
+// Defines a break point, which is also used to act as a constant pool header
+// if the constant is 0x7777.
+class BreakPointAndConstantPoolHead : public Immediate16Use {
+ public:
+  inline BreakPointAndConstantPoolHead() {}
+  virtual ~BreakPointAndConstantPoolHead() {}
+  virtual bool is_literal_pool_head(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BreakPointAndConstantPoolHead);
+};
+
+// Models a branch to address in Rm.
+// Op<c> <Rm>
+// +--------+---------------------------------------------+--+--+--------+
+// |31302928|2726252423222212019181716151413121110 9 8 7 6| 5| 4| 3 2 1 0|
+// +--------+---------------------------------------------+--+--+--------+
+// |  cond  |                                             | L|  |   Rm   |
+// +--------+---------------------------------------------+--+--+--------+
+// If L=1 then updates LR register.
+// If L=1 and Rm=Pc, then UNPREDICTABLE.
+class BranchToRegister : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m;
+  static const UpdatesLinkRegisterBit5Interface link_register;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline BranchToRegister() {}
+  virtual ~BranchToRegister() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual Register branch_target_register(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BranchToRegister);
+};
+
 // Models a 1-register assignment of a 16-bit immediate.
 // Op(S)<c> Rd, #const
 // +--------+--------------+--+--------+--------+------------------------+
@@ -367,6 +432,18 @@ class Unary2RegisterOp : public ClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOp);
+};
+
+// A Unary2RegisterOp with the additional constraint that if Rm=R15,
+// the instruction is unpredictable.
+class Unary2RegisterOpNotRmIsPc : public Unary2RegisterOp {
+ public:
+  inline Unary2RegisterOpNotRmIsPc() {}
+  virtual ~Unary2RegisterOpNotRmIsPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPc);
 };
 
 // Models a 3-register binary operation of the form:

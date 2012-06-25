@@ -748,15 +748,22 @@ RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
 
 // Control flow
 
+SafetyLevel BxBlx::safety(Instruction i) const {
+  if (link_register.IsUpdated(i) && m.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  return MAY_BE_SAFE;
+}
+
 RegisterList BxBlx::defs(const Instruction i) const {
   return RegisterList(kRegisterPc).
-      Add(UsesLinkRegister(i) ? kRegisterLink : kRegisterNone);
+      Add(link_register.IsUpdated(i) ? kRegisterLink : kRegisterNone);
 }
 
 Register BxBlx::branch_target_register(const Instruction i) const {
-  return Rm(i);
+  return m.reg(i);
 }
-
 
 RegisterList Branch::defs(const Instruction i) const {
   return RegisterList(kRegisterPc).
@@ -767,6 +774,42 @@ int32_t Branch::branch_target_offset(const Instruction i) const {
   // Sign extend and shift left 2:
   int32_t offset = (int32_t)(i.Bits(23, 0) << 8) >> 6;
   return offset + 8;  // because r15 reads as 8 bytes ahead
+}
+
+// Unary1RegisterSet
+SafetyLevel Unary1RegisterSet::safety(const Instruction i) const {
+  if (read_spsr.IsDefined(i)) {
+    return UNPREDICTABLE;
+  }
+
+  if (d.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterSet::defs(const Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
+// Unary1RegisterUse
+SafetyLevel Unary1RegisterUse::safety(const Instruction i) const {
+  if (mask.value(i) == 0) {
+    return UNPREDICTABLE;
+  }
+
+  if (n.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterUse::defs(const Instruction i) const {
+  return RegisterList((mask.value(i) < 2) ? kRegisterNone : kConditions);
 }
 
 // Unary1RegisterBitRange

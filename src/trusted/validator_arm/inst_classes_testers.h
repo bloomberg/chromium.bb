@@ -65,6 +65,45 @@ class CondVfpOpTester : public Arm32DecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(CondVfpOpTester);
 };
 
+// Implements a decoder tester for decoder Unary1RegisterSet
+// MRS<c> <Rd>, <spec_reg>
+// +--------+------------------------+--------+-----------------------+
+// |31302928|272625242322212019181716|15141312|111 9 8 7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+-----------------------+
+// |  cond  |                        |   Rd   |                       |
+// +--------+------------------------+--------+-----------------------+
+// If Rd is R15, the instruction is unpredictable.
+class Unary1RegisterSetTester : public Arm32DecoderTester {
+ public:
+  explicit Unary1RegisterSetTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterSetTester);
+};
+
+// Implements a decoder tester for decoder Unary1RegisterUse
+// MSR<c> <spec_reg>, <Rn>
+// +--------+---------------+----+----------------------------+--------+
+// |31302928|272625423222120|1918|1716151413121110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+---------------+----+----------------------------+--------+
+// |  cond  |               |mask|                            |   Rn   |
+// +--------+---------------+----+----------------------------+--------+
+// If mask<1>=1, then update conditions flags(NZCVQ) in ASPR
+// If mask<0>=1, then update GE(bits(19:16)) in ASPR.
+// If mask=0, then UNPREDICTABLE.
+// If Rn=15, then UNPREDICTABLE.
+class Unary1RegisterUseTester : public Arm32DecoderTester {
+ public:
+  explicit Unary1RegisterUseTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterUseTester);
+};
+
 // Implements a decoder tester for decoder MoveImmediate12ToApsr.
 // MSR<c> <spec_reg>, #<const>
 // +--------+----------------+----+------------+------------------------+
@@ -86,6 +125,52 @@ class MoveImmediate12ToApsrTester : public Arm32DecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(MoveImmediate12ToApsrTester);
+};
+
+// Implements a decoder tester for decoder Immediate16Use.
+// Op #<imm16>
+// +--------+----------------+------------------------+--------+-------+
+// |31302928|2726252423222120|19181716151413121110 9 8| 7 6 5 4|3 2 1 0|
+// +--------+----------------+------------------------+--------+-------+
+// |  cond  |                |         imm12          |        |  imm4 |
+// +--------+----------------+------------------------+--------+-------+
+class Immediate16UseTester : public Arm32DecoderTester {
+ public:
+  explicit Immediate16UseTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Immediate16UseTester);
+};
+
+// Implements a decoder tester for decoder BranchToRegister.
+// Op<c> <Rm>
+// +--------+---------------------------------------------+--+--+--------+
+// |31302928|2726252423222212019181716151413121110 9 8 7 6| 5| 4| 3 2 1 0|
+// +--------+---------------------------------------------+--+--+--------+
+// |  cond  |                                             | L|  |   Rm   |
+// +--------+---------------------------------------------+--+--+--------+
+class BranchToRegisterTester : public Arm32DecoderTester {
+ public:
+  explicit BranchToRegisterTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BranchToRegisterTester);
+};
+
+// implements a decoder tester for decoder BranchToRegister with a
+// constraint that if Rm is R15, the instruction is unpredictable.
+class BranchToRegisterTesterRegsNotPc : public BranchToRegisterTester {
+ public:
+  explicit BranchToRegisterTesterRegsNotPc(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BranchToRegisterTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Unary1RegisterImmediateOp.
@@ -253,6 +338,20 @@ class Unary2RegisterOpTester : public Arm32DecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpTester);
+};
+
+// Implements a decoder tester for decoder Unary2RegisterOp
+// where register Rm is not PC.
+class Unary2RegisterOpNotRmIsPcTester : public Unary2RegisterOpTester {
+ public:
+  explicit Unary2RegisterOpNotRmIsPcTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcTester);
 };
 
 // Implements a decoder tester for decoder Unary2RegisterOp, and

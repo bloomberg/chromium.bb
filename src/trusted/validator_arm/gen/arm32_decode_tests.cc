@@ -969,11 +969,11 @@ class Binary4RegisterShiftedOpTester_Rsb_Rule_144_A1_P288_RegsNotPc
   {}
 };
 
-class Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_
-    : public Binary4RegisterShiftedOpTester {
+class Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_RegsNotPc
+    : public Binary4RegisterShiftedOpTesterRegsNotPc {
  public:
-  Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_()
-    : Binary4RegisterShiftedOpTester(
+  Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_RegsNotPc()
+    : Binary4RegisterShiftedOpTesterRegsNotPc(
       state_.Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294_instance_)
   {}
 };
@@ -1020,6 +1020,33 @@ class BinaryRegisterImmediateTestTester_Teq_Rule_227_A1_P448_
   BinaryRegisterImmediateTestTester_Teq_Rule_227_A1_P448_()
     : BinaryRegisterImmediateTestTester(
       state_.BinaryRegisterImmediateTest_Teq_Rule_227_A1_P448_instance_)
+  {}
+};
+
+class BranchToRegisterTester_Blx_Rule_24_A1_P60_RegsNotPc
+    : public BranchToRegisterTesterRegsNotPc {
+ public:
+  BranchToRegisterTester_Blx_Rule_24_A1_P60_RegsNotPc()
+    : BranchToRegisterTesterRegsNotPc(
+      state_.BranchToRegister_Blx_Rule_24_A1_P60_instance_)
+  {}
+};
+
+class BranchToRegisterTester_Bx_Rule_25_A1_P62_
+    : public BranchToRegisterTester {
+ public:
+  BranchToRegisterTester_Bx_Rule_25_A1_P62_()
+    : BranchToRegisterTester(
+      state_.BranchToRegister_Bx_Rule_25_A1_P62_instance_)
+  {}
+};
+
+class BreakPointAndConstantPoolHeadTester_Bkpt_Rule_22_A1_P56_
+    : public Immediate16UseTester {
+ public:
+  BreakPointAndConstantPoolHeadTester_Bkpt_Rule_22_A1_P56_()
+    : Immediate16UseTester(
+      state_.BreakPointAndConstantPoolHead_Bkpt_Rule_22_A1_P56_instance_)
   {}
 };
 
@@ -1113,6 +1140,15 @@ class CondVfpOpTester_Vsub_Rule_402_A2_P790_
   {}
 };
 
+class ForbiddenCondNopTester_Bxj_Rule_26_A1_P64_
+    : public UnsafeCondNopTester {
+ public:
+  ForbiddenCondNopTester_Bxj_Rule_26_A1_P64_()
+    : UnsafeCondNopTester(
+      state_.ForbiddenCondNop_Bxj_Rule_26_A1_P64_instance_)
+  {}
+};
+
 class ForbiddenCondNopTester_Msr_Rule_B6_1_6_A1_PB6_12_
     : public UnsafeCondNopTester {
  public:
@@ -1122,12 +1158,30 @@ class ForbiddenCondNopTester_Msr_Rule_B6_1_6_A1_PB6_12_
   {}
 };
 
+class ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14_
+    : public UnsafeCondNopTester {
+ public:
+  ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14_()
+    : UnsafeCondNopTester(
+      state_.ForbiddenCondNop_Msr_Rule_B6_1_7_P14_instance_)
+  {}
+};
+
 class ForbiddenCondNopTester_Sev_Rule_158_A1_P316_
     : public UnsafeCondNopTester {
  public:
   ForbiddenCondNopTester_Sev_Rule_158_A1_P316_()
     : UnsafeCondNopTester(
       state_.ForbiddenCondNop_Sev_Rule_158_A1_P316_instance_)
+  {}
+};
+
+class ForbiddenCondNopTester_Smc_Rule_B6_1_9_P18_
+    : public UnsafeCondNopTester {
+ public:
+  ForbiddenCondNopTester_Smc_Rule_B6_1_9_P18_()
+    : UnsafeCondNopTester(
+      state_.ForbiddenCondNop_Smc_Rule_B6_1_9_P18_instance_)
   {}
 };
 
@@ -1536,6 +1590,24 @@ class Unary1RegisterImmediateOpTester_Mvn_Rule_106_A1_P214_NotRdIsPcAndS
   {}
 };
 
+class Unary1RegisterSetTester_Mrs_Rule_102_A1_P206_Or_B6_10_
+    : public Unary1RegisterSetTester {
+ public:
+  Unary1RegisterSetTester_Mrs_Rule_102_A1_P206_Or_B6_10_()
+    : Unary1RegisterSetTester(
+      state_.Unary1RegisterSet_Mrs_Rule_102_A1_P206_Or_B6_10_instance_)
+  {}
+};
+
+class Unary1RegisterUseTester_Msr_Rule_104_A1_P210_
+    : public Unary1RegisterUseTester {
+ public:
+  Unary1RegisterUseTester_Msr_Rule_104_A1_P210_()
+    : Unary1RegisterUseTester(
+      state_.Unary1RegisterUse_Msr_Rule_104_A1_P210_instance_)
+  {}
+};
+
 class Unary2RegisterImmedShiftedOpTester_Asr_Rule_14_A1_P40_
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -1596,6 +1668,15 @@ class Unary2RegisterOpTester_Rrx_Rule_141_A1_P282_
   Unary2RegisterOpTester_Rrx_Rule_141_A1_P282_()
     : Unary2RegisterOpTester(
       state_.Unary2RegisterOp_Rrx_Rule_141_A1_P282_instance_)
+  {}
+};
+
+class Unary2RegisterOpNotRmIsPcTester_Clz_Rule_31_A1_P72_
+    : public Unary2RegisterOpNotRmIsPcTester {
+ public:
+  Unary2RegisterOpNotRmIsPcTester_Clz_Rule_31_A1_P72_()
+    : Unary2RegisterOpNotRmIsPcTester(
+      state_.Unary2RegisterOpNotRmIsPc_Clz_Rule_31_A1_P72_instance_)
   {}
 };
 
@@ -2473,8 +2554,8 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294__cccc0000111unnnnddddssss0tt1mmmm_Test) {
-  Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_ baseline_tester;
+       Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_RegsNotPc_cccc0000111unnnnddddssss0tt1mmmm_Test) {
+  Binary4RegisterShiftedOpTester_Rsc_Rule_147_A1_P294_RegsNotPc baseline_tester;
   NamedDefs12To15RdRnRsRmNotPc_Rsc_Rule_147_A1_P294 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0000111unnnnddddssss0tt1mmmm");
@@ -2518,6 +2599,30 @@ TEST_F(Arm32DecoderStateTests,
   NamedDontCareInst_Teq_Rule_227_A1_P448 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00110011nnnn0000iiiiiiiiiiii");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       BranchToRegisterTester_Blx_Rule_24_A1_P60_RegsNotPc_cccc000100101111111111110011mmmm_Test) {
+  BranchToRegisterTester_Blx_Rule_24_A1_P60_RegsNotPc baseline_tester;
+  NamedBxBlx_Blx_Rule_24_A1_P60 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000100101111111111110011mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       BranchToRegisterTester_Bx_Rule_25_A1_P62__cccc000100101111111111110001mmmm_Test) {
+  BranchToRegisterTester_Bx_Rule_25_A1_P62_ baseline_tester;
+  NamedBxBlx_Bx_Rule_25_A1_P62 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000100101111111111110001mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       BreakPointAndConstantPoolHeadTester_Bkpt_Rule_22_A1_P56__cccc00010010iiiiiiiiiiii0111iiii_Test) {
+  BreakPointAndConstantPoolHeadTester_Bkpt_Rule_22_A1_P56_ baseline_tester;
+  NamedBreakpoint_Bkpt_Rule_22_A1_P56 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010iiiiiiiiiiii0111iiii");
 }
 
 TEST_F(Arm32DecoderStateTests,
@@ -2601,6 +2706,14 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondNopTester_Bxj_Rule_26_A1_P64__cccc000100101111111111110010mmmm_Test) {
+  ForbiddenCondNopTester_Bxj_Rule_26_A1_P64_ baseline_tester;
+  NamedForbidden_Bxj_Rule_26_A1_P64 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000100101111111111110010mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
        ForbiddenCondNopTester_Msr_Rule_B6_1_6_A1_PB6_12__cccc00110010ii011111iiiiiiiiiiii_Test) {
   ForbiddenCondNopTester_Msr_Rule_B6_1_6_A1_PB6_12_ baseline_tester;
   NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12 actual;
@@ -2625,11 +2738,43 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14__cccc00010010mm01111100000000nnnn_Test) {
+  ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14_ baseline_tester;
+  NamedForbidden_Msr_Rule_B6_1_7_P14 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010mm01111100000000nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14__cccc00010010mm1m111100000000nnnn_Test) {
+  ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14_ baseline_tester;
+  NamedForbidden_Msr_Rule_B6_1_7_P14 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010010mm1m111100000000nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14__cccc00010110mmmm111100000000nnnn_Test) {
+  ForbiddenCondNopTester_Msr_Rule_B6_1_7_P14_ baseline_tester;
+  NamedForbidden_Msr_Rule_B6_1_7_P14 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010110mmmm111100000000nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
        ForbiddenCondNopTester_Sev_Rule_158_A1_P316__cccc0011001000001111000000000100_Test) {
   ForbiddenCondNopTester_Sev_Rule_158_A1_P316_ baseline_tester;
   NamedForbidden_Sev_Rule_158_A1_P316 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0011001000001111000000000100");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondNopTester_Smc_Rule_B6_1_9_P18__cccc000101100000000000000111mmmm_Test) {
+  ForbiddenCondNopTester_Smc_Rule_B6_1_9_P18_ baseline_tester;
+  NamedForbidden_Smc_Rule_B6_1_9_P18 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000101100000000000000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
@@ -2975,6 +3120,18 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
+       Unary1RegisterSetTester_Mrs_Rule_102_A1_P206_Or_B6_10__cccc00010r001111dddd000000000000_Test) {
+  Unary1RegisterSetTester_Mrs_Rule_102_A1_P206_Or_B6_10_ tester;
+  tester.Test("cccc00010r001111dddd000000000000");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Unary1RegisterUseTester_Msr_Rule_104_A1_P210__cccc00010010mm00111100000000nnnn_Test) {
+  Unary1RegisterUseTester_Msr_Rule_104_A1_P210_ tester;
+  tester.Test("cccc00010010mm00111100000000nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Asr_Rule_14_A1_P40__cccc0001101u0000ddddiiiii100mmmm_Test) {
   Unary2RegisterImmedShiftedOpTester_Asr_Rule_14_A1_P40_ baseline_tester;
   NamedDefs12To15_Asr_Rule_14_A1_P40 actual;
@@ -3028,6 +3185,14 @@ TEST_F(Arm32DecoderStateTests,
   NamedDefs12To15_Rrx_Rule_141_A1_P282 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001101udddd000000000110mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Unary2RegisterOpNotRmIsPcTester_Clz_Rule_31_A1_P72__cccc000101101111dddd11110001mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcTester_Clz_Rule_31_A1_P72_ baseline_tester;
+  NamedDefs12To15RdRnNotPc_Clz_Rule_31_A1_P72 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc000101101111dddd11110001mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,

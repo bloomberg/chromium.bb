@@ -55,6 +55,42 @@ RegisterList MoveImmediate12ToApsr::defs(const Instruction i) const {
   return regs;
 }
 
+// Immediate16Use
+SafetyLevel Immediate16Use::safety(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList Immediate16Use::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
+// BreakPointAndConstantPoolHead
+bool BreakPointAndConstantPoolHead::
+is_literal_pool_head(const Instruction i) const {
+  return i.GetCondition() == Instruction::AL &&
+      value(i) == 0x7777;
+}
+
+// BranchToRegister
+SafetyLevel BranchToRegister::safety(const Instruction i) const {
+  if (link_register.IsUpdated(i) && m.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  return MAY_BE_SAFE;
+}
+
+RegisterList BranchToRegister::defs(const Instruction i) const {
+  return RegisterList(kRegisterPc).
+      Add(link_register.IsUpdated(i) ? kRegisterLink : kRegisterNone);
+}
+
+Register BranchToRegister::branch_target_register(const Instruction i) const {
+  return m.reg(i);
+}
+
 // Unary1RegisterImmediateOp
 SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
   if (d.reg(i).Equals(kRegisterPc)) return UNPREDICTABLE;
@@ -140,6 +176,13 @@ SafetyLevel Unary2RegisterOp::safety(const Instruction i) const {
 
 RegisterList Unary2RegisterOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+}
+
+// Unary2RegsiterOpNotRmIsPc
+SafetyLevel Unary2RegisterOpNotRmIsPc::safety(const Instruction i) const {
+  if (m.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+  return Unary2RegisterOp::safety(i);
 }
 
 // Binary3RegisterOp

@@ -324,6 +324,17 @@ class Imm4Bits8To11Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits8To11Interface);
 };
 
+// Interface class to pull out an immediate value in bits 8 through 19
+class Imm12Bits8To19Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(19, 8);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits8To19Interface);
+};
+
 // Interface class to pull out an immediate value in bits 16 through 20.
 class Imm5Bits16To20Interface {
  public:
@@ -357,6 +368,18 @@ class Imm2Bits18To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits18To19Interface);
 };
 
+// Interface class to pull out bit 5 on branch instructions,
+// to indicate whether the link register is also updated.
+class UpdatesLinkRegisterBit5Interface {
+ public:
+  static inline bool IsUpdated(const Instruction i) {
+    return i.Bit(5);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesLinkRegisterBit5Interface);
+};
+
 // Interface class to pull out S (update) bit 20, which
 // defines if the condition bits in APSR are updated by the instruction.
 class UpdatesConditionsBit20Interface {
@@ -386,6 +409,19 @@ class WritesBit21Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(WritesBit21Interface);
+};
+
+// Interface class to pull out R (read SPSR) bit 22. which (for at
+// least MRS) defines if one should use the SPSR register instead of
+// the APSR/CPSR.
+class ReadSpsrBit22Interface {
+ public:
+  static inline bool IsDefined(const Instruction& i) {
+    return i.Bit(22);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ReadSpsrBit22Interface);
 };
 
 // Interface to pull out U (direction) bit 23, which defines if
