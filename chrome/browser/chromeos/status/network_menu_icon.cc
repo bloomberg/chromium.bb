@@ -160,9 +160,9 @@ const gfx::ImageSkia GenerateFadedImage(gfx::ImageSkia source,
     ui::ScaleFactor scale_factor = image_rep.scale_factor();
     gfx::ImageSkiaRep empty_image_rep =
         empty_image.GetRepresentation(scale_factor);
+    SkBitmap empty_bitmap = empty_image_rep.sk_bitmap();
     if (empty_image_rep.is_null() ||
         empty_image_rep.scale_factor() != scale_factor) {
-      SkBitmap empty_bitmap;
       empty_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                              image_rep.pixel_width(),
                              image_rep.pixel_height());
@@ -172,7 +172,7 @@ const gfx::ImageSkia GenerateFadedImage(gfx::ImageSkia source,
                                                       scale_factor));
     }
     SkBitmap faded_bitmap = SkBitmapOperations::CreateBlendedBitmap(
-        empty_image_rep.sk_bitmap(), image_rep.sk_bitmap(), alpha);
+        empty_bitmap, image_rep.sk_bitmap(), alpha);
     faded_image.AddRepresentation(gfx::ImageSkiaRep(faded_bitmap,
                                   scale_factor));
   }
