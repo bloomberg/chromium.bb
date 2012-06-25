@@ -296,8 +296,7 @@ void Network::SetState(ConnectionState new_state) {
   if (!IsConnectingState(new_state))
     set_connection_started(false);
   if (new_state == STATE_FAILURE) {
-    if (old_state != STATE_UNKNOWN &&
-        old_state != STATE_IDLE) {
+    if (old_state != STATE_UNKNOWN && old_state != STATE_IDLE) {
       // New failure, the user needs to be notified.
       // Transition STATE_IDLE -> STATE_FAILURE sometimes happens on resume
       // but is not an actual failure as network device is not ready yet.
@@ -307,13 +306,20 @@ void Network::SetState(ConnectionState new_state) {
       if (error_ == ERROR_NO_ERROR)
         error_ = ERROR_UNKNOWN;
     }
-  } else {
+  } else if (new_state != STATE_UNKNOWN) {
+    notify_failure_ = false;
     // State changed, so refresh IP address.
     // Note: blocking DBus call. TODO(stevenjb): refactor this.
     InitIPAddress();
   }
   VLOG(1) << name() << ".State [" << service_path() << "]: " << GetStateString()
           << " (was: " << ConnectionStateString(old_state) << ")";
+}
+
+void Network::SetError(ConnectionError error) {
+  error_ = error;
+  if (error == ERROR_NO_ERROR)
+    notify_failure_ = false;
 }
 
 void Network::SetName(const std::string& name) {

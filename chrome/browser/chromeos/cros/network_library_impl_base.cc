@@ -885,9 +885,9 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
     // TODO(stevenjb): Remove if chromium-os:13203 gets fixed.
     network->SetState(STATE_FAILURE);
     if (status == CONNECT_BAD_PASSPHRASE) {
-      network->set_error(ERROR_BAD_PASSPHRASE);
+      network->SetError(ERROR_BAD_PASSPHRASE);
     } else {
-      network->set_error(ERROR_CONNECT_FAILED);
+      network->SetError(ERROR_CONNECT_FAILED);
     }
     NotifyNetworkManagerChanged(true);  // Forced update.
     NotifyNetworkChanged(network);

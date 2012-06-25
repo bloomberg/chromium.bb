@@ -709,7 +709,7 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
     case PROPERTY_INDEX_ERROR: {
       std::string error_string;
       if (value.GetAsString(&error_string)) {
-        network->set_error(ParseError(error_string));
+        network->SetError(ParseError(error_string));
         return true;
       }
       break;

@@ -454,6 +454,9 @@ class Network {
   // Set the state and update flags if necessary.
   void SetState(ConnectionState state);
 
+  // Set the error state and update notify_failure_
+  void SetError(ConnectionError error);
+
   // Parse name/value pairs from libcros.
   virtual void ParseInfo(const base::DictionaryValue& info);
 
@@ -536,7 +539,6 @@ class Network {
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_connection_started(bool started) { connection_started_ = started; }
   void set_is_active(bool is_active) { is_active_ = is_active; }
-  void set_error(ConnectionError error) { error_ = error; }
   void set_added(bool added) { added_ = added; }
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
   void set_save_credentials(bool save_credentials) {
