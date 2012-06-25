@@ -705,6 +705,10 @@ RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {
   return source_web_contents_->GetRenderViewHost();
 }
 
+WebContents* RenderViewContextMenu::GetWebContents() const {
+  return source_web_contents_;
+}
+
 Profile* RenderViewContextMenu::GetProfile() const {
   return profile_;
 }

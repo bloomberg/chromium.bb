@@ -674,9 +674,7 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   report_error_url +=
       GetLanguageCode(g_browser_process->GetApplicationLocale());
   // Open that URL in a new tab so that the user can tell us more.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
   if (!browser) {
     NOTREACHED();
     return;

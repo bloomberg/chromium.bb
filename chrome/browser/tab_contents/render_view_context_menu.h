@@ -119,9 +119,9 @@ class RenderViewContextMenuProxy {
                               bool hidden,
                               const string16& title) = 0;
 
-  // Retrieve the RenderViewHost (or Profile) instance associated with a context
-  // menu, respectively.
+  // Retrieve the given associated objects with a context menu.
   virtual content::RenderViewHost* GetRenderViewHost() const = 0;
+  virtual content::WebContents* GetWebContents() const = 0;
   virtual Profile* GetProfile() const = 0;
 };
 
@@ -165,6 +165,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
                               bool hidden,
                               const string16& title) OVERRIDE;
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual Profile* GetProfile() const OVERRIDE;
 
  protected:

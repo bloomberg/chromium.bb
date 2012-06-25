@@ -232,7 +232,9 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
       browser::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
                                  gfx::Point(rect.CenterPoint().x(), rect.y()),
-                                 new SpellingBubbleModel(proxy_->GetProfile()));
+                                 new SpellingBubbleModel(
+                                     proxy_->GetProfile(),
+                                     proxy_->GetWebContents()));
     } else {
       Profile* profile = proxy_->GetProfile();
       if (profile)

@@ -12,11 +12,15 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 // A class that implements a bubble menu shown when we confirm a user allows
 // integrating the spelling service of Google to Chrome.
 class SpellingBubbleModel : public ConfirmBubbleModel {
  public:
-  explicit SpellingBubbleModel(Profile* profile);
+  SpellingBubbleModel(Profile* profile, content::WebContents* web_contents);
   virtual ~SpellingBubbleModel();
 
   // ConfirmBubbleModel implementation.
@@ -31,6 +35,7 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
 
  private:
   Profile* profile_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellingBubbleModel);
 };

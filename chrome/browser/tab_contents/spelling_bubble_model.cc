@@ -7,11 +7,9 @@
 #include "base/logging.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,9 +18,11 @@
 
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
-SpellingBubbleModel::SpellingBubbleModel(Profile* profile)
-    : profile_(profile) {
+SpellingBubbleModel::SpellingBubbleModel(Profile* profile,
+                                         WebContents* web_contents)
+    : profile_(profile), web_contents_(web_contents) {
 }
 
 SpellingBubbleModel::~SpellingBubbleModel() {
@@ -61,9 +61,8 @@ string16 SpellingBubbleModel::GetLinkText() const {
 }
 
 void SpellingBubbleModel::LinkClicked() {
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   OpenURLParams params(
       GURL(chrome::kPrivacyLearnMoreURL), Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
+  web_contents_->OpenURL(params);
 }
