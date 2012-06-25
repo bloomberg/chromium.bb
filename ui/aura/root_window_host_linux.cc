@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "grit/ui_resources_standard.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/dispatcher_linux.h"
@@ -400,18 +399,12 @@ class RootWindowHostLinux::ImageCursors {
   void LoadImageCursor(int id, int resource_id, int hot_x, int hot_y) {
     const gfx::ImageSkia* image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-    float actual_scale = 0;
-    const SkBitmap& bitmap = image->GetBitmapForScale(scale_factor_,
-                                                      scale_factor_,
-                                                      &actual_scale);
-    // We never use scaled cursor, but the following DCHECK fails
-    // because the method above computes the actual scale from the image
-    // size instead of obtaining from the resource data, and the some
-    // of cursors are indeed not 2x size of the 2x images.
-    // TODO(oshima): Fix this and enable the following DCHECK.
-    // DCHECK_EQ(actual_scale, scale_factor_);
-    XcursorImage* x_image = ui::SkBitmapToXcursorImage(
-        &bitmap, gfx::Point(hot_x * actual_scale, hot_y * actual_scale));
+    const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
+        ui::GetScaleFactorFromScale(scale_factor_));
+    DCHECK_EQ(scale_factor_, image_rep.GetScale());
+    gfx::Point hot(hot_x * scale_factor_, hot_y * scale_factor_);
+    XcursorImage* x_image =
+        ui::SkBitmapToXcursorImage(&image_rep.sk_bitmap(), hot);
     cursors_[id] = ui::CreateReffedCustomXCursor(x_image);
     // |bitmap| is owned by the resource bundle. So we do not need to free it.
   }
@@ -422,10 +415,10 @@ class RootWindowHostLinux::ImageCursors {
   void LoadAnimatedCursor(int id, int resource_id, int hot_x, int hot_y) {
     const gfx::ImageSkia* image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-    float actual_scale = 0;
-    const SkBitmap& bitmap = image->GetBitmapForScale(scale_factor_,
-                                                      scale_factor_,
-                                                      &actual_scale);
+    const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
+        ui::GetScaleFactorFromScale(scale_factor_));
+    DCHECK_EQ(scale_factor_, image_rep.GetScale());
+    const SkBitmap bitmap = image_rep.sk_bitmap();
     DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
     int frame_width = bitmap.height();
     int frame_height = frame_width;
@@ -446,8 +439,8 @@ class RootWindowHostLinux::ImageCursors {
                pixels + i * frame_width + j * total_width,
                frame_width * 4);
       }
-      x_image->xhot = hot_x * actual_scale;
-      x_image->yhot = hot_y * actual_scale;
+      x_image->xhot = hot_x * scale_factor_;
+      x_image->yhot = hot_y * scale_factor_;
       x_image->delay = kAnimatedCursorFrameDelayMs;
       x_images->images[i] = x_image;
     }

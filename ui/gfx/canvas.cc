@@ -474,8 +474,12 @@ const SkBitmap& Canvas::GetBitmapToPaint(const gfx::ImageSkia& image,
   float scale_y = SkScalarToFloat(SkScalarAbs(m.getScaleY())) *
       user_additional_scale_y;
 
-  const SkBitmap& bitmap = image.GetBitmapForScale(scale_x, scale_y,
-                                                   bitmap_scale_factor);
+  ui::ScaleFactor request_scale_factor =
+      ui::GetScaleFactorFromScale((scale_x + scale_y) / 2);
+  const gfx::ImageSkiaRep& image_rep =
+      image.GetRepresentation(request_scale_factor);
+  const SkBitmap& bitmap = image_rep.sk_bitmap();
+  *bitmap_scale_factor = image_rep.GetScale();
   if (!bitmap.isNull() &&
       (scale_x < *bitmap_scale_factor || scale_y < *bitmap_scale_factor))
     const_cast<SkBitmap&>(bitmap).buildMipMap();

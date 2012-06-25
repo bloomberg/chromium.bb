@@ -219,15 +219,18 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that all images were loaded.
-  const std::vector<SkBitmap> bitmaps = image_.ToImageSkia()->bitmaps();
-  ASSERT_EQ(2u, bitmaps.size());
-  const SkBitmap* bmp1 = &bitmaps[0];
-  const SkBitmap* bmp2 = &bitmaps[1];
-  if (bmp1->width() > bmp2->width()) {
-    std::swap(bmp1, bmp2);
+  std::vector<gfx::ImageSkiaRep> image_reps =
+      image_.ToImageSkia()->image_reps();
+  ASSERT_EQ(2u, image_reps.size());
+  const gfx::ImageSkiaRep* img_rep1 = &image_reps[0];
+  const gfx::ImageSkiaRep* img_rep2 = &image_reps[1];
+  if (img_rep1->pixel_width() > img_rep2->pixel_width()) {
+    std::swap(img_rep1, img_rep2);
   }
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_BITTY, bmp1->width());
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, bmp2->width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_BITTY,
+            img_rep1->pixel_width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+            img_rep2->pixel_width());
 }
 
 // Tests IsComponentExtensionResource function.

@@ -198,9 +198,11 @@ bool WebAppShortcutCreator::UpdateIcon(const FilePath& app_path) const {
 
   scoped_nsobject<IconFamily> icon_family([[IconFamily alloc] init]);
   bool image_added = false;
-  const std::vector<SkBitmap> bitmaps = info_.favicon.ToImageSkia()->bitmaps();
-  for (size_t i = 0; i < bitmaps.size(); ++i) {
-    NSBitmapImageRep* image_rep = SkBitmapToImageRep(bitmaps[i]);
+  std::vector<gfx::ImageSkiaRep> image_reps =
+      info_.favicon.ToImageSkia()->image_reps();
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    NSBitmapImageRep* image_rep = SkBitmapToImageRep(
+        image_reps[i].sk_bitmap());
     if (!image_rep)
       continue;
 

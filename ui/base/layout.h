@@ -6,6 +6,8 @@
 #define UI_BASE_LAYOUT_H_
 #pragma once
 
+#include <vector>
+
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -41,6 +43,27 @@ enum ScaleFactor {
 
 // Returns the float scale value for |scale_factor|.
 UI_EXPORT float GetScaleFactorScale(ScaleFactor scale_factor);
+
+// Returns the ScaleFactor which most closely matches |scale|.
+// Converting from float to ScaleFactor is inefficient and should be done as
+// little as possible.
+UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
+
+#if defined(OS_MACOSX)
+
+// Returns a vector with the scale factors which are supported by this
+// platform.
+// Only required on Mac so far.
+UI_EXPORT std::vector<ScaleFactor> GetSupportedScaleFactors();
+
+namespace test {
+
+UI_EXPORT void SetSupportedScaleFactors(
+    const std::vector<ScaleFactor>& scale_factors);
+
+}  // namespace test
+
+#endif
 
 }  // namespace ui
 

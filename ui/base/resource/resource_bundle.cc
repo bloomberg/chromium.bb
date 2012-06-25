@@ -45,6 +45,20 @@ const int kMediumFontSizeDelta = 3;
 const int kLargeFontSizeDelta = 8;
 #endif
 
+// Returns the actual scale factor of |bitmap| given the image representations
+// which have already been added to |image|.
+// TODO(pkotwicz): Remove this once we are no longer loading 1x resources
+// as part of 2x data packs.
+ui::ScaleFactor GetActualScaleFactor(const gfx::ImageSkia& image,
+                                     const SkBitmap& bitmap,
+                                     ui::ScaleFactor data_pack_scale_factor) {
+  if (image.empty())
+    return data_pack_scale_factor;
+
+  return ui::GetScaleFactorFromScale(
+      static_cast<float>(bitmap.width()) / image.width());
+}
+
 // If 2x resource is missing from |image| or is the incorrect size,
 // logs the resource id and creates a 2x version of the resource.
 // Blends the created resource with red to make it distinguishable from
@@ -54,16 +68,15 @@ void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
   if (command_line->HasSwitch(
           switches::kHighlightMissing2xResources) &&
       command_line->HasSwitch(switches::kLoad2xResources) &&
-      !image.HasBitmapForScale(2.0f)) {
-    float bitmap_scale;
-    SkBitmap bitmap = image.GetBitmapForScale(2.0f, &bitmap_scale);
+      !image.HasRepresentation(ui::SCALE_FACTOR_200P)) {
+    gfx::ImageSkiaRep image_rep = image.GetRepresentation(SCALE_FACTOR_200P);
 
-    if (bitmap_scale == 1.0f)
+    if (image_rep.scale_factor() == ui::SCALE_FACTOR_100P)
       LOG(INFO) << "Missing 2x resource with id " << idr;
     else
       LOG(INFO) << "Incorrectly sized 2x resource with id " << idr;
 
-    SkBitmap bitmap2x = skia::ImageOperations::Resize(bitmap,
+    SkBitmap bitmap2x = skia::ImageOperations::Resize(image_rep.sk_bitmap(),
         skia::ImageOperations::RESIZE_LANCZOS3,
         image.width() * 2, image.height() * 2);
 
@@ -75,7 +88,7 @@ void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
     mask.eraseColor(SK_ColorRED);
     SkBitmap result = SkBitmapOperations::CreateBlendedBitmap(bitmap2x, mask,
                                                               0.2);
-    image.AddBitmapForScale(result, 2.0f);
+    image.AddRepresentation(gfx::ImageSkiaRep(result, SCALE_FACTOR_200P));
   }
 }
 
@@ -283,11 +296,14 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     for (size_t i = 0; i < data_packs_.size(); ++i) {
       scoped_ptr<SkBitmap> bitmap(LoadBitmap(*data_packs_[i], resource_id));
       if (bitmap.get()) {
-        if (gfx::Screen::IsDIPEnabled())
-          image_skia.AddBitmapForScale(*bitmap,
-              ui::GetScaleFactorScale(data_packs_[i]->GetScaleFactor()));
-        else
-          image_skia.AddBitmapForScale(*bitmap, 1.0f);
+        ui::ScaleFactor scale_factor;
+        if (gfx::Screen::IsDIPEnabled()) {
+          scale_factor = GetActualScaleFactor(image_skia, *bitmap,
+              data_packs_[i]->GetScaleFactor());
+        } else {
+          scale_factor = ui::SCALE_FACTOR_100P;
+        }
+        image_skia.AddRepresentation(gfx::ImageSkiaRep(*bitmap, scale_factor));
       }
     }
 

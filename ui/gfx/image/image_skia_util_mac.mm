@@ -4,6 +4,9 @@
 
 #include "ui/gfx/image/image_skia_util_mac.h"
 
+#include <cmath>
+#include <limits>
+
 #import <AppKit/AppKit.h>
 
 #include "base/mac/mac_util.h"
@@ -12,6 +15,31 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace {
+
+// Returns NSImageRep whose pixel size most closely matches |desired_size|.
+NSImageRep* GetNSImageRepWithPixelSize(NSImage* image,
+                                       NSSize desired_size) {
+  float smallest_diff = std::numeric_limits<float>::max();
+  NSImageRep* closest_match = nil;
+  for (NSImageRep* image_rep in [image representations]) {
+    float diff = std::abs(desired_size.width - [image_rep pixelsWide]) +
+        std::abs(desired_size.height - [image_rep pixelsHigh]);
+    if (diff < smallest_diff) {
+      smallest_diff = diff;
+      closest_match = image_rep;
+    }
+  }
+  return closest_match;
+}
+
+// Returns true if NSImage has no representations
+bool IsNSImageEmpty(NSImage* image) {
+  return ([image representations].count == 0);
+}
+
+}  // namespace
 
 namespace gfx {
 
@@ -23,19 +51,30 @@ gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
                                            NSSize desired_size) {
   // Resize and convert to ImageSkia simultaneously to save on computation.
   // TODO(pkotwicz): Separate resizing NSImage and converting to ImageSkia.
-  float resize_scale_x = desired_size.width / [image size].width;
-  float resize_scale_y = desired_size.height / [image size].height;
+  // Convert to ImageSkia by finding the most appropriate NSImageRep for
+  // each supported scale factor and resizing if necessary.
+
+  if (IsNSImageEmpty(image))
+    return gfx::ImageSkia();
+
+  std::vector<ui::ScaleFactor> supported_scale_factors =
+      ui::GetSupportedScaleFactors();
 
   gfx::ImageSkia image_skia;
-  for (NSImageRep* image_rep in [image representations]) {
-    NSSize image_rep_size = NSMakeSize([image_rep pixelsWide] * resize_scale_x,
-        [image_rep pixelsHigh] * resize_scale_y);
-    SkBitmap bitmap(gfx::NSImageRepToSkBitmap(image_rep, image_rep_size,
-        false));
-    if (!bitmap.isNull() && !bitmap.empty()) {
-      float scale_factor = image_rep_size.width / desired_size.width;
-      image_skia.AddBitmapForScale(bitmap, scale_factor);
-    }
+  for (size_t i = 0; i < supported_scale_factors.size(); ++i) {
+    float scale = ui::GetScaleFactorScale(supported_scale_factors[i]);
+    NSSize desired_size_for_scale = NSMakeSize(desired_size.width * scale,
+                                               desired_size.height * scale);
+    NSImageRep* ns_image_rep = GetNSImageRepWithPixelSize(image,
+        desired_size_for_scale);
+
+    SkBitmap bitmap(gfx::NSImageRepToSkBitmap(ns_image_rep,
+        desired_size_for_scale, false));
+    if (bitmap.isNull() || bitmap.empty())
+      continue;
+
+    image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap,
+        supported_scale_factors[i]));
   }
   return image_skia;
 }
@@ -52,10 +91,11 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);
 
-  const std::vector<SkBitmap> bitmaps = image_skia.bitmaps();
-  for (std::vector<SkBitmap>::const_iterator it = bitmaps.begin();
-       it != bitmaps.end(); ++it) {
-    [image addRepresentation:gfx::SkBitmapToNSBitmapImageRep(*it)];
+  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
+  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
+       it != image_reps.end(); ++it) {
+    [image addRepresentation:
+        gfx::SkBitmapToNSBitmapImageRep(it->sk_bitmap())];
   }
 
   [image setSize:NSMakeSize(image_skia.width(), image_skia.height())];

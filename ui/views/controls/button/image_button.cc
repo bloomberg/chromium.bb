@@ -75,8 +75,8 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
 
-  float current_device_scale = GetCurrentDeviceScale();
-  gfx::ImageSkia img = GetImageToPaint(current_device_scale);
+  ui::ScaleFactor current_device_scale_factor = GetCurrentDeviceScaleFactor();
+  gfx::ImageSkia img = GetImageToPaint(current_device_scale_factor);
 
   if (!img.isNull()) {
     int x = 0, y = 0;
@@ -91,8 +91,10 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
     else if (v_alignment_ == ALIGN_BOTTOM)
       y = height() - img.height();
 
-    if (!background_image_.result_.HasBitmapForScale(current_device_scale))
-      UpdateButtonBackground(current_device_scale);
+    if (!background_image_.result_.HasRepresentation(
+        current_device_scale_factor)) {
+      UpdateButtonBackground(current_device_scale_factor);
+    }
     if (!background_image_.result_.empty())
       canvas->DrawImageInt(background_image_.result_, x, y);
 
@@ -107,26 +109,27 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, protected:
 
-float ImageButton::GetCurrentDeviceScale() {
+ui::ScaleFactor ImageButton::GetCurrentDeviceScaleFactor() {
   gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
       GetWidget() ? GetWidget()->GetNativeView() : NULL);
-  return display.device_scale_factor();
+  return ui::GetScaleFactorFromScale(display.device_scale_factor());
 }
 
-gfx::ImageSkia ImageButton::GetImageToPaint(float scale) {
+gfx::ImageSkia ImageButton::GetImageToPaint(ui::ScaleFactor scale_factor) {
   gfx::ImageSkia img;
 
   if (!images_[BS_HOT].isNull() && hover_animation_->is_animating()) {
-    float normal_bitmap_scale;
-    float hot_bitmap_scale;
-    SkBitmap normal_bitmap = images_[BS_NORMAL].GetBitmapForScale(
-        scale, &normal_bitmap_scale);
-    SkBitmap hot_bitmap = images_[BS_HOT].GetBitmapForScale(scale,
-        &hot_bitmap_scale);
-    DCHECK_EQ(normal_bitmap_scale, hot_bitmap_scale);
+    gfx::ImageSkiaRep normal_image_rep = images_[BS_NORMAL].GetRepresentation(
+        scale_factor);
+    gfx::ImageSkiaRep hot_image_rep = images_[BS_HOT].GetRepresentation(
+        scale_factor);
+    DCHECK_EQ(normal_image_rep.scale_factor(), hot_image_rep.scale_factor());
     SkBitmap blended_bitmap = SkBitmapOperations::CreateBlendedBitmap(
-        normal_bitmap, hot_bitmap, hover_animation_->GetCurrentValue());
-    img = gfx::ImageSkia(blended_bitmap, normal_bitmap_scale);
+        normal_image_rep.sk_bitmap(),
+        hot_image_rep.sk_bitmap(),
+        hover_animation_->GetCurrentValue());
+    img = gfx::ImageSkia(gfx::ImageSkiaRep(blended_bitmap,
+                                           normal_image_rep.scale_factor()));
   } else {
     img = images_[state_];
   }
@@ -134,21 +137,22 @@ gfx::ImageSkia ImageButton::GetImageToPaint(float scale) {
   return !img.isNull() ? img : images_[BS_NORMAL];
 }
 
-void ImageButton::UpdateButtonBackground(float scale) {
-  float bitmap_scale;
-  float mask_scale;
-  SkBitmap bitmap = background_image_.src_image_.GetBitmapForScale(
-      scale, &bitmap_scale);
-  SkBitmap mask_bitmap = background_image_.src_mask_.GetBitmapForScale(
-      scale, &mask_scale);
-  if (bitmap.isNull() || mask_bitmap.isNull() ||
-      background_image_.result_.HasBitmapForScale(bitmap_scale)) {
+void ImageButton::UpdateButtonBackground(ui::ScaleFactor scale_factor) {
+  gfx::ImageSkiaRep image_rep =
+      background_image_.src_image_.GetRepresentation(scale_factor);
+  gfx::ImageSkiaRep mask_image_rep =
+      background_image_.src_mask_.GetRepresentation(scale_factor);
+  if (image_rep.is_null() || mask_image_rep.is_null() ||
+      background_image_.result_.HasRepresentation(image_rep.scale_factor())) {
     return;
   }
-  DCHECK_EQ(bitmap_scale, mask_scale);
+  DCHECK_EQ(image_rep.scale_factor(), mask_image_rep.scale_factor());
   SkBitmap result = SkBitmapOperations::CreateButtonBackground(
-      background_image_.src_color_, bitmap, mask_bitmap);
-  background_image_.result_.AddBitmapForScale(result, bitmap_scale);
+      background_image_.src_color_,
+      image_rep.sk_bitmap(),
+      mask_image_rep.sk_bitmap());
+  background_image_.result_.AddRepresentation(gfx::ImageSkiaRep(
+      result, image_rep.scale_factor()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

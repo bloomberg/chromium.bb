@@ -38,6 +38,7 @@ class ImageMacTest;
 
 namespace gfx {
 class ImageSkia;
+class ImageSkiaRep;
 
 #if defined(TOOLKIT_GTK)
 class CairoCachedSurface;
@@ -66,8 +67,13 @@ class UI_EXPORT Image {
   // representation.
   explicit Image(const ImageSkia& image);
 
+  // Creates a new image by copying the image rep for use as the default
+  // representation.
+  explicit Image(const ImageSkiaRep& image_rep);
+
   // Creates a new image by copying the bitmap for use as the default
   // representation.
+  // TODO(pkotwicz): Get rid of this constructor.
   explicit Image(const SkBitmap& bitmap);
 
 #if defined(TOOLKIT_GTK)

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/layout.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -24,10 +25,10 @@ typedef ViewsTestBase ImageButtonTest;
 TEST_F(ImageButtonTest, Basics) {
   ImageButton button(NULL);
 
-  float kRequestedScale = 1.0f;
+  ui::ScaleFactor kRequestedScaleFactor = ui::SCALE_FACTOR_100P;
 
   // Our image to paint starts empty.
-  EXPECT_TRUE(button.GetImageToPaint(kRequestedScale).empty());
+  EXPECT_TRUE(button.GetImageToPaint(kRequestedScaleFactor).empty());
 
   // Without a theme, buttons are 16x14 by default.
   EXPECT_EQ("16x14", button.GetPreferredSize().ToString());
@@ -41,9 +42,9 @@ TEST_F(ImageButtonTest, Basics) {
   button.SetImage(CustomButton::BS_NORMAL, &normal_image);
 
   // Image uses normal image for painting.
-  EXPECT_FALSE(button.GetImageToPaint(kRequestedScale).empty());
-  EXPECT_EQ(10, button.GetImageToPaint(kRequestedScale).width());
-  EXPECT_EQ(20, button.GetImageToPaint(kRequestedScale).height());
+  EXPECT_FALSE(button.GetImageToPaint(kRequestedScaleFactor).empty());
+  EXPECT_EQ(10, button.GetImageToPaint(kRequestedScaleFactor).width());
+  EXPECT_EQ(20, button.GetImageToPaint(kRequestedScaleFactor).height());
 
   // Preferred size is the normal button size.
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
@@ -57,9 +58,9 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
 
   // We're still painting the normal image.
-  EXPECT_FALSE(button.GetImageToPaint(kRequestedScale).empty());
-  EXPECT_EQ(10, button.GetImageToPaint(kRequestedScale).width());
-  EXPECT_EQ(20, button.GetImageToPaint(kRequestedScale).height());
+  EXPECT_FALSE(button.GetImageToPaint(kRequestedScaleFactor).empty());
+  EXPECT_EQ(10, button.GetImageToPaint(kRequestedScaleFactor).width());
+  EXPECT_EQ(20, button.GetImageToPaint(kRequestedScaleFactor).height());
 
   // Set an overlay image.
   gfx::ImageSkia overlay_image = CreateTestImage(12, 22);
@@ -72,9 +73,9 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
 
   // We're still painting the normal image.
-  EXPECT_FALSE(button.GetImageToPaint(kRequestedScale).empty());
-  EXPECT_EQ(10, button.GetImageToPaint(kRequestedScale).width());
-  EXPECT_EQ(20, button.GetImageToPaint(kRequestedScale).height());
+  EXPECT_FALSE(button.GetImageToPaint(kRequestedScaleFactor).empty());
+  EXPECT_EQ(10, button.GetImageToPaint(kRequestedScaleFactor).width());
+  EXPECT_EQ(20, button.GetImageToPaint(kRequestedScaleFactor).height());
 
   // Reset the overlay image.
   button.SetOverlayImage(NULL);

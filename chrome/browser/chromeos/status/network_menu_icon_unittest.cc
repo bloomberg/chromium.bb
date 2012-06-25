@@ -18,11 +18,18 @@ namespace {
 bool CompareTwoImages(const gfx::ImageSkia& image_a,
                       const gfx::ImageSkia& image_b,
                       int log_level) {
-  float actual_scale_factor;
-  SkBitmap a = image_a.GetBitmapForScale(1.0f, 1.0f, &actual_scale_factor);
-  DCHECK_EQ(1.0f, actual_scale_factor);
-  SkBitmap b = image_b.GetBitmapForScale(1.0f, 1.0f, &actual_scale_factor);
-  DCHECK_EQ(1.0f, actual_scale_factor);
+  CHECK(!image_a.isNull());
+  CHECK(!image_b.isNull());
+
+  gfx::ImageSkiaRep image_rep_a =
+      image_a.GetRepresentation(ui::SCALE_FACTOR_100P);
+  CHECK_EQ(ui::SCALE_FACTOR_100P, image_rep_a.scale_factor());
+  gfx::ImageSkiaRep image_rep_b =
+      image_b.GetRepresentation(ui::SCALE_FACTOR_100P);
+  CHECK_EQ(ui::SCALE_FACTOR_100P, image_rep_b.scale_factor());
+
+  SkBitmap a = image_rep_a.sk_bitmap();
+  SkBitmap b = image_rep_b.sk_bitmap();
 
   CHECK(!a.empty());
   CHECK(!b.empty());

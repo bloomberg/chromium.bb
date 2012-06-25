@@ -54,6 +54,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
@@ -85,31 +86,29 @@ const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 class NetworkInfoDictionary {
  public:
   // Initializes the dictionary with default values.
-  explicit NetworkInfoDictionary(float bitmapScale);
+  explicit NetworkInfoDictionary(float icon_scale);
 
   // Copies in service path, connect{ing|ed|able} flags and connection type from
   // the provided network object. Also chooses an appropriate icon based on the
   // network type.
   NetworkInfoDictionary(const chromeos::Network* network,
-                        float bitmapScape);
+                        float icon_scale);
 
   // Initializes a remembered network entry, pulling information from the passed
   // network object and the corresponding remembered network object. |network|
   // may be NULL.
   NetworkInfoDictionary(const chromeos::Network* network,
                         const chromeos::Network* remembered,
-                        float bitmapScale);
+                        float icon_scale);
 
   // Setters for filling in information.
   void set_service_path(const std::string& service_path) {
     service_path_ = service_path;
   }
   void set_icon(const gfx::ImageSkia& icon) {
-    float actualScale;
-    SkBitmap bitmap = icon.GetBitmapForScale(bitmap_scale_factor_,
-                                             bitmap_scale_factor_,
-                                             &actualScale);
-    icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(bitmap);
+    gfx::ImageSkiaRep image_rep = icon.GetRepresentation(icon_scale_factor_);
+    icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(
+        image_rep.sk_bitmap());
   }
   void set_name(const std::string& name) {
     name_ = name;
@@ -160,13 +159,14 @@ class NetworkInfoDictionary {
   chromeos::ActivationState activation_state_;
   bool needs_new_plan_;
   bool policy_managed_;
-  float bitmap_scale_factor_;
+  ui::ScaleFactor icon_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkInfoDictionary);
 };
 
-NetworkInfoDictionary::NetworkInfoDictionary(float bitmapScale)
-  : bitmap_scale_factor_(bitmapScale) {
+NetworkInfoDictionary::NetworkInfoDictionary(
+    float icon_scale)
+  : icon_scale_factor_(ui::GetScaleFactorFromScale(icon_scale)) {
   set_connecting(false);
   set_connected(false);
   set_connectable(false);
@@ -178,8 +178,8 @@ NetworkInfoDictionary::NetworkInfoDictionary(float bitmapScale)
 }
 
 NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network,
-                                             float bitmapScale)
-  : bitmap_scale_factor_(bitmapScale) {
+                                             float icon_scale)
+  : icon_scale_factor_(ui::GetScaleFactorFromScale(icon_scale)) {
   set_service_path(network->service_path());
   set_icon(chromeos::NetworkMenuIcon::GetImage(network,
       chromeos::NetworkMenuIcon::COLOR_DARK));
@@ -197,8 +197,8 @@ NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network,
 NetworkInfoDictionary::NetworkInfoDictionary(
     const chromeos::Network* network,
     const chromeos::Network* remembered,
-    float bitmapScale)
-  : bitmap_scale_factor_(bitmapScale) {
+    float icon_scale)
+  : icon_scale_factor_(ui::GetScaleFactorFromScale(icon_scale)) {
   set_service_path(remembered->service_path());
   set_icon(chromeos::NetworkMenuIcon::GetImage(
       network ? network : remembered, chromeos::NetworkMenuIcon::COLOR_DARK));

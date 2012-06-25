@@ -154,24 +154,27 @@ const gfx::ImageSkia GenerateFadedImage(gfx::ImageSkia source,
                                         gfx::ImageSkia empty_image,
                                         double alpha) {
   gfx::ImageSkia faded_image;
-  const std::vector<SkBitmap>& bitmaps = source.bitmaps();
-  for (size_t i = 0; i < bitmaps.size(); ++i) {
-    SkBitmap bitmap = bitmaps[i];
-    float bitmap_scale = source.GetScaleAtIndex(i);
-    float empty_bitmap_scale;
-    SkBitmap empty_bitmap = empty_image.GetBitmapForScale(bitmap_scale,
-        &empty_bitmap_scale);
-    if (empty_bitmap.isNull() || empty_bitmap_scale != bitmap_scale) {
+  std::vector<gfx::ImageSkiaRep> image_reps = source.image_reps();
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    gfx::ImageSkiaRep image_rep = image_reps[i];
+    ui::ScaleFactor scale_factor = image_rep.scale_factor();
+    gfx::ImageSkiaRep empty_image_rep =
+        empty_image.GetRepresentation(scale_factor);
+    if (empty_image_rep.is_null() ||
+        empty_image_rep.scale_factor() != scale_factor) {
+      SkBitmap empty_bitmap;
       empty_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                             bitmap.width(),
-                             bitmap.height());
+                             image_rep.pixel_width(),
+                             image_rep.pixel_height());
       empty_bitmap.allocPixels();
       empty_bitmap.eraseARGB(0, 0, 0, 0);
-      empty_image.AddBitmapForScale(empty_bitmap, bitmap_scale);
+      empty_image.AddRepresentation(gfx::ImageSkiaRep(empty_bitmap,
+                                                      scale_factor));
     }
     SkBitmap faded_bitmap = SkBitmapOperations::CreateBlendedBitmap(
-        empty_bitmap, bitmap, alpha);
-    faded_image.AddBitmapForScale(faded_bitmap, bitmap_scale);
+        empty_image_rep.sk_bitmap(), image_rep.sk_bitmap(), alpha);
+    faded_image.AddRepresentation(gfx::ImageSkiaRep(faded_bitmap,
+                                  scale_factor));
   }
   return faded_image;
 }
@@ -756,12 +759,11 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
   gfx::ImageSkia badged;
   int dip_width = icon.width();
   int dip_height = icon.height();
-  std::vector<SkBitmap> bitmaps = icon.bitmaps();
-  for (std::vector<SkBitmap> ::const_iterator it = bitmaps.begin();
-       it != bitmaps.end(); ++it) {
-    gfx::Canvas canvas(*it, false);
-    int px_width = it->width();
-    float dip_scale = (float) px_width / (float) dip_width;
+  std::vector<gfx::ImageSkiaRep> image_reps = icon.image_reps();
+  for (std::vector<gfx::ImageSkiaRep>::iterator it = image_reps.begin();
+       it != image_reps.end(); ++it) {
+    float dip_scale = it->GetScale();
+    gfx::Canvas canvas(it->sk_bitmap(), false);
     // TODO(kevers): This looks ugly, but gfx::Canvas::Scale is restricted to
     // integer scale factors.  Consider adding a method to gfx::Canvas for
     // float scale factors.
@@ -781,7 +783,8 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
       canvas.DrawImageInt(*bottom_right_badge,
                           dip_width - bottom_right_badge->width(),
                           dip_height - bottom_right_badge->height());
-    badged.AddBitmapForScale(canvas.ExtractBitmap(), dip_scale);
+    badged.AddRepresentation(gfx::ImageSkiaRep(canvas.ExtractBitmap(),
+                                               it->scale_factor()));
   }
   return badged;
 }

@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -314,15 +315,14 @@ base::RefCountedMemory* ReadFileData(const FilePath& path) {
 gfx::Image* CreateHSLShiftedImage(const gfx::Image& image,
                                   const color_utils::HSL& hsl_shift) {
   const gfx::ImageSkia* src_image = image.ToImageSkia();
-  const std::vector<SkBitmap> src_bitmaps = src_image->bitmaps();
+  std::vector<gfx::ImageSkiaRep> src_image_reps = src_image->image_reps();
   gfx::ImageSkia dst_image;
-  for (size_t i = 0; i < src_bitmaps.size(); ++i) {
-    const SkBitmap& bitmap = src_bitmaps[i];
-    float scale_factor =
-        static_cast<float>(bitmap.width()) / src_image->width();
-    dst_image.AddBitmapForScale(
-        SkBitmapOperations::CreateHSLShiftedBitmap(bitmap, hsl_shift),
-        scale_factor);
+  for (size_t i = 0; i < src_image_reps.size(); ++i) {
+    const gfx::ImageSkiaRep& image_rep = src_image_reps[i];
+    SkBitmap dst_bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
+        image_rep.sk_bitmap(), hsl_shift);
+    dst_image.AddRepresentation(gfx::ImageSkiaRep(dst_bitmap,
+        image_rep.scale_factor()));
   }
   return new gfx::Image(dst_image);
 }
@@ -998,28 +998,37 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
     ImageCache::const_iterator it = bitmaps->find(prs_base_id);
     if (it != bitmaps->end()) {
       const gfx::ImageSkia* image_to_tint = (it->second)->ToImageSkia();
-      const std::vector<SkBitmap> bitmaps_to_tint = image_to_tint->bitmaps();
+      const std::vector<gfx::ImageSkiaRep> image_reps_to_tint =
+          image_to_tint->image_reps();
       gfx::ImageSkia tinted_image;
-      for (size_t j = 0; j < bitmaps_to_tint.size(); ++j) {
+      for (size_t j = 0; j < image_reps_to_tint.size(); ++j) {
+        gfx::ImageSkiaRep image_rep_to_tint =  image_reps_to_tint[j];
         SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-            bitmaps_to_tint[j], GetTintInternal(
+            image_rep_to_tint.sk_bitmap(), GetTintInternal(
                 ThemeService::TINT_BACKGROUND_TAB));
+        gfx::Size bg_tint_dip_size(image_rep_to_tint.GetWidth(),
+                                   image_rep_to_tint.GetHeight());
         int vertical_offset = bitmaps->count(prs_id)
                               ? kRestoredTabVerticalOffset : 0;
-        SkBitmap bg_tab = SkBitmapOperations::CreateTiledBitmap(
-            bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height());
+        gfx::Canvas canvas(gfx::Size(bg_tint.width(), bg_tint.height()),
+                           false);
+        SkScalar image_rep_to_tint_scale =
+            SkFloatToScalar(image_rep_to_tint.GetScale());
+        canvas.sk_canvas()->scale(image_rep_to_tint_scale,
+                                  image_rep_to_tint_scale);
+        canvas.TileImageInt(bg_tint, 0, vertical_offset,
+            bg_tint_dip_size.width(), bg_tint_dip_size.height());
 
         // If they've provided a custom image, overlay it.
         ImageCache::const_iterator overlay_it = bitmaps->find(prs_id);
         if (overlay_it != bitmaps->end()) {
-          const SkBitmap* overlay = overlay_it->second->ToSkBitmap();
-          SkCanvas canvas(bg_tab);
-          for (int x = 0; x < bg_tab.width(); x += overlay->width())
-            canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+          const gfx::ImageSkia* overlay = overlay_it->second->ToImageSkia();
+          canvas.TileImageInt(*overlay, 0, 0, bg_tint_dip_size.width(),
+                              overlay->height());
         }
-        float scale_factor =
-            static_cast<float>(bg_tab.width()) / image_to_tint->width();
-        tinted_image.AddBitmapForScale(bg_tab, scale_factor);
+        SkBitmap bg_tab = canvas.ExtractBitmap();
+        tinted_image.AddRepresentation(gfx::ImageSkiaRep(bg_tab,
+            image_rep_to_tint.scale_factor()));
       }
 
       temp_output[prs_id] = new gfx::Image(tinted_image);

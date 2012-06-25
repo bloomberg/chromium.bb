@@ -4,6 +4,9 @@
 
 #include "ui/base/layout.h"
 
+#include <cmath>
+#include <limits>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -68,8 +71,21 @@ bool UseTouchOptimizedUI() {
 }
 
 const float kScaleFactorScales[] = {1.0, 2.0};
+const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
 
+#if defined(OS_MACOSX)
+std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
+  static std::vector<ui::ScaleFactor>* supported_scale_factors =
+      new std::vector<ui::ScaleFactor>();
+  if (supported_scale_factors->empty()) {
+      supported_scale_factors->push_back(ui::SCALE_FACTOR_100P);
+      supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+  }
+  return *supported_scale_factors;
 }
+#endif  // OS_MACOSX
+
+}  // namespace
 
 namespace ui {
 
@@ -90,8 +106,42 @@ DisplayLayout GetDisplayLayout() {
 #endif
 }
 
+ScaleFactor GetScaleFactorFromScale(float scale) {
+  size_t closest_match = 0;
+  float smallest_diff =  std::numeric_limits<float>::max();
+  for (size_t i = 0; i < kScaleFactorScalesLength; ++i) {
+    float diff = std::abs(kScaleFactorScales[i] - scale);
+    if (diff < smallest_diff) {
+      closest_match = i;
+      smallest_diff = diff;
+    }
+  }
+  return static_cast<ui::ScaleFactor>(closest_match);
+}
+
 float GetScaleFactorScale(ScaleFactor scale_factor) {
   return kScaleFactorScales[scale_factor];
 }
+
+#if defined(OS_MACOSX)
+std::vector<ScaleFactor> GetSupportedScaleFactors() {
+  return GetSupportedScaleFactorsInternal();
+}
+
+namespace test {
+
+void SetSupportedScaleFactors(
+    const std::vector<ui::ScaleFactor>& scale_factors) {
+  std::vector<ui::ScaleFactor>& supported_scale_factors =
+      GetSupportedScaleFactorsInternal();
+  supported_scale_factors.clear();
+
+  for (size_t i = 0; i < scale_factors.size(); ++i)
+    supported_scale_factors.push_back(scale_factors[i]);
+}
+
+}  // namespace test
+
+#endif  // OS_MACOSX
 
 }  // namespace ui

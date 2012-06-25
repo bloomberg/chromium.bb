@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -16,6 +15,16 @@ namespace {
 
 class ImageMacTest : public testing::Test {
  public:
+  ImageMacTest() {
+  }
+
+  ~ImageMacTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    gfx::test::SetSupportedScaleFactorsTo1xAnd2x();
+  }
+
   void BitmapImageRep(int width, int height,
                       NSBitmapImageRep** image_rep) {
     *image_rep = [[[NSBitmapImageRep alloc]
@@ -32,35 +41,11 @@ class ImageMacTest : public testing::Test {
                     bitsPerPixel:0]
                  autorelease];
   }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImageMacTest);
 };
 
 namespace gt = gfx::test;
-
-TEST_F(ImageMacTest, NSImageWithResizedNSImageRepToImageSkia) {
-  const int kWidth1x = 10;
-  const int kHeight1x = 12;
-  const int kWidth2x = 20;
-  const int kHeight2x = 24;
-
-  NSBitmapImageRep* image_rep;
-  BitmapImageRep(kWidth2x, kHeight2x, &image_rep);
-
-  scoped_nsobject<NSImage> ns_image(
-      [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
-  [ns_image addRepresentation:image_rep];
-
-  [image_rep setSize:NSMakeSize(kWidth1x, kHeight1x)];
-
-  gfx::Image image(ns_image.release());
-  const gfx::ImageSkia* image_skia = image.ToImageSkia();
-
-  float scale_factor;
-  const SkBitmap& bitmap = image_skia->GetBitmapForScale(2.0f, 2.0f,
-                                                         &scale_factor);
-  EXPECT_EQ(2.0f, scale_factor);
-  EXPECT_EQ(kWidth2x, bitmap.width());
-  EXPECT_EQ(kHeight2x, bitmap.height());
-}
 
 TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
   const int kWidth1x = 10;
@@ -68,36 +53,91 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
   const int kWidth2x = 20;
   const int kHeight2x = 24;
 
-  NSBitmapImageRep* image_rep_1;
-  BitmapImageRep(kWidth1x, kHeight1x, &image_rep_1);
-  NSBitmapImageRep* image_rep_2;
-  BitmapImageRep(kWidth2x, kHeight2x, &image_rep_2);
+  NSBitmapImageRep* ns_image_rep1;
+  BitmapImageRep(kWidth1x, kHeight1x, &ns_image_rep1);
+  NSBitmapImageRep* ns_image_rep2;
+  BitmapImageRep(kWidth2x, kHeight2x, &ns_image_rep2);
   scoped_nsobject<NSImage> ns_image(
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
-  [ns_image addRepresentation:image_rep_1];
-  [ns_image addRepresentation:image_rep_2];
+  [ns_image addRepresentation:ns_image_rep1];
+  [ns_image addRepresentation:ns_image_rep2];
 
   gfx::Image image(ns_image.release());
 
   EXPECT_EQ(1u, image.RepresentationCount());
 
   const gfx::ImageSkia* image_skia = image.ToImageSkia();
-  EXPECT_EQ(2u, image_skia->bitmaps().size());
+  EXPECT_EQ(2u, image_skia->image_reps().size());
 
-  float scale_factor;
-  const SkBitmap& bitmap1x = image_skia->GetBitmapForScale(1.0f, 1.0f,
-                                                           &scale_factor);
-  EXPECT_TRUE(!bitmap1x.isNull());
-  EXPECT_EQ(1.0f, scale_factor);
-  EXPECT_EQ(kWidth1x, bitmap1x.width());
-  EXPECT_EQ(kHeight1x, bitmap1x.height());
+  EXPECT_EQ(kWidth1x, image_skia->width());
+  EXPECT_EQ(kHeight1x, image_skia->height());
 
-  const SkBitmap& bitmap2x = image_skia->GetBitmapForScale(2.0f, 2.0f,
-                                                           &scale_factor);
-  EXPECT_TRUE(!bitmap2x.isNull());
-  EXPECT_EQ(2.0f, scale_factor);
-  EXPECT_EQ(kWidth2x, bitmap2x.width());
-  EXPECT_EQ(kHeight2x, bitmap2x.height());
+  const gfx::ImageSkiaRep& image_rep1x =
+      image_skia->GetRepresentation(ui::SCALE_FACTOR_100P);
+  EXPECT_TRUE(!image_rep1x.is_null());
+  EXPECT_EQ(kWidth1x, image_rep1x.GetWidth());
+  EXPECT_EQ(kHeight1x, image_rep1x.GetHeight());
+  EXPECT_EQ(kWidth1x, image_rep1x.pixel_width());
+  EXPECT_EQ(kHeight1x, image_rep1x.pixel_height());
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep1x.scale_factor());
+
+  const gfx::ImageSkiaRep& image_rep2x =
+      image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_TRUE(!image_rep2x.is_null());
+  EXPECT_EQ(kWidth1x, image_rep2x.GetWidth());
+  EXPECT_EQ(kHeight1x, image_rep2x.GetHeight());
+  EXPECT_EQ(kWidth2x, image_rep2x.pixel_width());
+  EXPECT_EQ(kHeight2x, image_rep2x.pixel_height());
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep2x.scale_factor());
+
+  // ToImageSkia should create a second representation.
+  EXPECT_EQ(2u, image.RepresentationCount());
+}
+
+// Test that convertng to an ImageSkia from an NSImage with scale factors
+// other than 1x and 2x results in an ImageSkia with scale factors 1x and
+// 2x;
+TEST_F(ImageMacTest, UnalignedMultiResolutionNSImageToImageSkia) {
+  const int kWidth1x = 10;
+  const int kHeight1x= 12;
+  const int kWidth2x = 20;
+  const int kHeight2x = 24;
+  const int kWidth4x = 40;
+  const int kHeight4x = 48;
+
+  NSBitmapImageRep* ns_image_rep4;
+  BitmapImageRep(kWidth4x, kHeight4x, &ns_image_rep4);
+  scoped_nsobject<NSImage> ns_image(
+      [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
+  [ns_image addRepresentation:ns_image_rep4];
+
+  gfx::Image image(ns_image.release());
+
+  EXPECT_EQ(1u, image.RepresentationCount());
+
+  const gfx::ImageSkia* image_skia = image.ToImageSkia();
+  EXPECT_EQ(2u, image_skia->image_reps().size());
+
+  EXPECT_EQ(kWidth1x, image_skia->width());
+  EXPECT_EQ(kHeight1x, image_skia->height());
+
+  const gfx::ImageSkiaRep& image_rep1x =
+      image_skia->GetRepresentation(ui::SCALE_FACTOR_100P);
+  EXPECT_TRUE(!image_rep1x.is_null());
+  EXPECT_EQ(kWidth1x, image_rep1x.GetWidth());
+  EXPECT_EQ(kHeight1x, image_rep1x.GetHeight());
+  EXPECT_EQ(kWidth1x, image_rep1x.pixel_width());
+  EXPECT_EQ(kHeight1x, image_rep1x.pixel_height());
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep1x.scale_factor());
+
+  const gfx::ImageSkiaRep& image_rep2x =
+      image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_TRUE(!image_rep2x.is_null());
+  EXPECT_EQ(kWidth1x, image_rep2x.GetWidth());
+  EXPECT_EQ(kHeight1x, image_rep2x.GetHeight());
+  EXPECT_EQ(kWidth2x, image_rep2x.pixel_width());
+  EXPECT_EQ(kHeight2x, image_rep2x.pixel_height());
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep2x.scale_factor());
 
   // ToImageSkia should create a second representation.
   EXPECT_EQ(2u, image.RepresentationCount());
@@ -110,13 +150,15 @@ TEST_F(ImageMacTest, MultiResolutionImageSkiaToNSImage) {
   const int kHeight2x = 24;
 
   gfx::ImageSkia image_skia;
-  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth1x, kHeight1x), 1.0f);
-  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth2x, kHeight2x), 2.0f);
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(
+      gt::CreateBitmap(kWidth1x, kHeight1x), ui::SCALE_FACTOR_100P));
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(
+      gt::CreateBitmap(kWidth2x, kHeight2x), ui::SCALE_FACTOR_200P));
 
   gfx::Image image(image_skia);
 
   EXPECT_EQ(1u, image.RepresentationCount());
-  EXPECT_EQ(2u, image.ToImageSkia()->bitmaps().size());
+  EXPECT_EQ(2u, image.ToImageSkia()->image_reps().size());
 
   NSImage* ns_image = image;
   EXPECT_TRUE(ns_image);
@@ -126,19 +168,19 @@ TEST_F(ImageMacTest, MultiResolutionImageSkiaToNSImage) {
   EXPECT_EQ([ns_image size].height, kHeight1x);
 
   EXPECT_EQ(2u, [[image representations] count]);
-  NSImageRep* image_rep_1 = [[image representations] objectAtIndex:0];
-  NSImageRep* image_rep_2 = [[image representations] objectAtIndex:1];
+  NSImageRep* ns_image_rep1 = [[image representations] objectAtIndex:0];
+  NSImageRep* ns_image_rep2 = [[image representations] objectAtIndex:1];
 
-  if ([image_rep_1 size].width == kWidth1x) {
-    EXPECT_EQ([image_rep_1 size].width, kWidth1x);
-    EXPECT_EQ([image_rep_1 size].height, kHeight1x);
-    EXPECT_EQ([image_rep_2 size].width, kWidth2x);
-    EXPECT_EQ([image_rep_2 size].height, kHeight2x);
+  if ([ns_image_rep1 size].width == kWidth1x) {
+    EXPECT_EQ([ns_image_rep1 size].width, kWidth1x);
+    EXPECT_EQ([ns_image_rep1 size].height, kHeight1x);
+    EXPECT_EQ([ns_image_rep2 size].width, kWidth2x);
+    EXPECT_EQ([ns_image_rep2 size].height, kHeight2x);
   } else {
-    EXPECT_EQ([image_rep_1 size].width, kWidth2x);
-    EXPECT_EQ([image_rep_1 size].height, kHeight2x);
-    EXPECT_EQ([image_rep_2 size].width, kWidth1x);
-    EXPECT_EQ([image_rep_2 size].height, kHeight1x);
+    EXPECT_EQ([ns_image_rep1 size].width, kWidth2x);
+    EXPECT_EQ([ns_image_rep1 size].height, kHeight2x);
+    EXPECT_EQ([ns_image_rep2 size].width, kWidth1x);
+    EXPECT_EQ([ns_image_rep2 size].height, kHeight1x);
   }
 
   // Cast to NSImage* should create a second representation.

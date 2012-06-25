@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "webkit/glue/image_decoder.h"
 
 using content::BrowserThread;
@@ -308,8 +309,9 @@ void ImageLoadingTracker::OnImageLoaded(
       gfx::ImageSkia image_skia;
       for (std::vector<SkBitmap>::const_iterator it = info->bitmaps.begin();
            it != info->bitmaps.end(); ++it) {
-        // TODO(pkotwicz): Do something better but ONLY when ENABLE_DIP.
-        image_skia.AddBitmapForScale(*it, 1.0f);
+        // TODO(pkotwicz): Do something better but ONLY when DIP is enabled.
+        image_skia.AddRepresentation(
+            gfx::ImageSkiaRep(*it, ui::SCALE_FACTOR_100P));
       }
       image = gfx::Image(image_skia);
     }

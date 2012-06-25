@@ -226,6 +226,13 @@ Image::Image(const ImageSkia& image)
   AddRepresentation(rep);
 }
 
+Image::Image(const ImageSkiaRep& image_skia_rep)
+    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
+  internal::ImageRepSkia* rep =
+      new internal::ImageRepSkia(new ImageSkia(image_skia_rep));
+  AddRepresentation(rep);
+}
+
 Image::Image(const SkBitmap& bitmap)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep =

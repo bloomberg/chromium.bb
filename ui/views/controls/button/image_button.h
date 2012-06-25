@@ -63,18 +63,18 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   }
 
  protected:
-  // Returns the current device scale of the view.
+  // Returns the current device scale factor of the view.
   // TODO(pkotwicz): Remove this once scale factor can be queried from canvas.
-  float GetCurrentDeviceScale();
+  ui::ScaleFactor GetCurrentDeviceScaleFactor();
 
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
-  // |scale| is the scale at which the view is painted and the scale
-  // which should be used when mutating ImageSkias.
-  virtual gfx::ImageSkia GetImageToPaint(float scale);
+  // |scale_factor| is the scale factor at which the view is painted and the
+  // scale factor which should be used when mutating ImageSkias.
+  virtual gfx::ImageSkia GetImageToPaint(ui::ScaleFactor scale_factor);
 
-  // Updates button background for |scale|.
-  void UpdateButtonBackground(float scale);
+  // Updates button background for |scale_factor|.
+  void UpdateButtonBackground(ui::ScaleFactor scale_factor);
 
   // The images used to render the different states of this button.
   gfx::ImageSkia images_[BS_COUNT];

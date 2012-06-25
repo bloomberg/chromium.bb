@@ -36,8 +36,9 @@ BackingStoreAura::~BackingStoreAura() {
 
 void BackingStoreAura::SkiaShowRect(const gfx::Point& point,
                                     gfx::Canvas* canvas) {
-  canvas->DrawImageInt(gfx::ImageSkia(bitmap_, device_scale_factor_),
-                       point.x(), point.y());
+  gfx::ImageSkia image = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap_,
+      ui::GetScaleFactorFromScale(device_scale_factor_)));
+  canvas->DrawImageInt(image, point.x(), point.y());
 }
 
 void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {

@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 namespace gfx {
 
@@ -23,13 +23,14 @@ class ImageSkiaStorage;
 // Image height and width are in DIP (Device Indepent Pixel) coordinates.
 //
 // ImageSkia should be used whenever possible instead of SkBitmap.
-// Functions that mutate the image should operate on the SkBitmap returned
-// from ImageSkia::GetBitmapForScale, not on ImageSkia.
+// Functions that mutate the image should operate on the gfx::ImageSkiaRep
+// returned from ImageSkia::GetRepresentation, not on ImageSkia.
 //
 // ImageSkia is cheap to copy and intentionally supports copy semantics.
-// TODO(pkotwicz): Change API to take in ui::DISPLAY_LAYOUT instead of floats.
 class UI_EXPORT ImageSkia {
  public:
+  typedef std::vector<ImageSkiaRep> ImageSkiaReps;
+
   // Creates instance with no bitmaps.
   ImageSkia();
 
@@ -39,9 +40,7 @@ class UI_EXPORT ImageSkia {
   // done.
   ImageSkia(const SkBitmap& bitmap);
 
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on |dip_scale_factor|.
-  ImageSkia(const SkBitmap& bitmap, float dip_scale_factor);
+  ImageSkia(const gfx::ImageSkiaRep& image_rep);
 
   // Copies a reference to |other|'s storage.
   ImageSkia(const ImageSkia& other);
@@ -56,43 +55,37 @@ class UI_EXPORT ImageSkia {
   // done.
   ImageSkia& operator=(const SkBitmap& other);
 
-  // Converts to SkBitmap.
+  // Converts from gfx::ImageSkiaRep.
+  // Adds ref to passed in image rep.
+  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
+  // done.
+  ImageSkia& operator=(const gfx::ImageSkiaRep& other);
+
+  // Converts to gfx::ImageSkiaRep and SkBitmap.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
   // done.
   operator SkBitmap&() const;
+  operator gfx::ImageSkiaRep&() const;
 
   ~ImageSkia();
 
-  // Adds |bitmap| for |dip_scale_factor| to bitmaps contained by this object.
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on |dip_scale_factor|.
-  void AddBitmapForScale(const SkBitmap& bitmap, float dip_scale_factor);
+  // Adds |image_rep| to the image reps contained by this object.
+  void AddRepresentation(const gfx::ImageSkiaRep& image_rep);
 
-  // Removes component bitmap of |dip_scale_factor| if present.
-  void RemoveBitmapForScale(float dip_scale_factor);
+  // Removes the image rep of |scale_factor| if present.
+  void RemoveRepresentation(ui::ScaleFactor scale_factor);
 
-  // Returns true if the object owns a bitmap whose density matches
-  // |dip_scale_factor| exactly.
-  bool HasBitmapForScale(float dip_scale_factor);
+  // Returns true if the object owns a image rep whose density matches
+  // |scale_factor| exactly.
+  bool HasRepresentation(ui::ScaleFactor scale_factor);
 
-  // Returns the bitmap whose density best matches |scale_factor|.
-  // Returns a null bitmap if the object contains no bitmaps.
-  // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
-  const SkBitmap& GetBitmapForScale(float scale_factor,
-                                    float* bitmap_scale_factor) const;
+  // Returns the image rep whose density best matches
+  // |scale_factor|.
+  // Returns a null image rep if the object contains no image reps.
+  const gfx::ImageSkiaRep& GetRepresentation(
+      ui::ScaleFactor scale_factor) const;
 
-  // Returns the bitmap whose density best matches |x_scale_factor| and
-  // |y_scale_factor|.
-  // Returns a null bitmap if the object contains no bitmaps.
-  // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
-  const SkBitmap& GetBitmapForScale(float x_scale_factor,
-                                    float y_scale_factor,
-                                    float* bitmap_scale_factor) const;
-
-  // Returns the scale of the bitmap at |index|.
-  float GetScaleAtIndex(size_t index) const;
-
-  // Returns true if object is null or |size_| is empty.
+  // Returns true if object is null or its size is empty.
   bool empty() const;
 
   // Returns true if this is a null object.
@@ -104,7 +97,7 @@ class UI_EXPORT ImageSkia {
   int height() const;
 
   // Wrapper function for SkBitmap::extractBitmap.
-  // Operates on each stored bitmap.
+  // Operates on each stored image rep.
   bool extractSubset(ImageSkia* dst, const SkIRect& subset) const;
 
   // Returns pointer to an SkBitmap contained by this object.
@@ -112,32 +105,22 @@ class UI_EXPORT ImageSkia {
   // done.
   const SkBitmap* bitmap() const;
 
-  // Returns a vector with the SkBitmaps contained in this object.
-  const std::vector<SkBitmap> bitmaps() const;
+  // Returns a vector with the image reps contained in this object.
+  std::vector<gfx::ImageSkiaRep> image_reps() const;
 
  private:
   // Initialize ImageSkiaStorage with passed in parameters.
-  // If |bitmap.isNull()|, ImageStorage is set to NULL.
-  // Scale factor is set based on default scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  void Init(const SkBitmap& bitmap);
+  // If the image rep's bitmap is empty, ImageStorage is set to NULL.
+  void Init(const gfx::ImageSkiaRep& image_rep);
 
-  // Initialize ImageSkiaStorage with passed in parameters.
-  // If |bitmap.isNull()|, ImageStorage is set to NULL.
-  void Init(const SkBitmap& bitmap, float scale_factor);
+  // A null image rep to return as not to return a temporary.
+  static gfx::ImageSkiaRep& NullImageRep();
 
-  // Returns the index of the bitmap whose density best matches
-  // |x_scale_factor| and |y_scale_factor|.
-  // Returns -1 if the object contains no bitmaps.
-  // |bitmap_scale_factor| is set to the scale factor of the bitmap
-  // at the returned index.
-  int GetBitmapIndexForScale(float x_scale_factor,
-                             float y_scale_factor,
-                             float* bitmap_scale_factor) const;
-
-  // A null bitmap to return as not to return a temporary.
-  static SkBitmap* null_bitmap_;
+  // Returns the iterator of the image rep whose density best matches
+  // |scale_factor|.
+  // ImageSkiaStorage cannot be NULL when this function is called.
+  ImageSkiaReps::iterator FindRepresentation(
+      ui::ScaleFactor scale_factor) const;
 
   // A refptr so that ImageRepSkia can be copied cheaply.
   scoped_refptr<internal::ImageSkiaStorage> storage_;

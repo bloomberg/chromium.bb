@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -257,25 +256,32 @@ TEST_F(ImageTest, MultiResolutionImage) {
   const int kHeight2x = 24;
 
   gfx::ImageSkia image_skia;
-  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth1x, kHeight1x), 1.0f);
-  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth2x, kHeight2x), 2.0f);
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(
+      gt::CreateBitmap(kWidth1x, kHeight1x),
+      ui::SCALE_FACTOR_100P));
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(
+      gt::CreateBitmap(kWidth2x, kHeight2x),
+      ui::SCALE_FACTOR_200P));
 
-  EXPECT_EQ(2u, image_skia.bitmaps().size());
+  EXPECT_EQ(2u, image_skia.image_reps().size());
 
-  float scale_factor;
-  const SkBitmap& bitmap1x = image_skia.GetBitmapForScale(1.0f, 1.0f,
-                                                          &scale_factor);
-  EXPECT_TRUE(!bitmap1x.isNull());
-  EXPECT_EQ(1.0f, scale_factor);
-  EXPECT_EQ(kWidth1x, bitmap1x.width());
-  EXPECT_EQ(kHeight1x, bitmap1x.height());
+  const gfx::ImageSkiaRep& image_rep1x =
+      image_skia.GetRepresentation(ui::SCALE_FACTOR_100P);
+  EXPECT_TRUE(!image_rep1x.is_null());
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep1x.scale_factor());
+  EXPECT_EQ(kWidth1x, image_rep1x.GetWidth());
+  EXPECT_EQ(kHeight1x, image_rep1x.GetHeight());
+  EXPECT_EQ(kWidth1x, image_rep1x.pixel_width());
+  EXPECT_EQ(kHeight1x, image_rep1x.pixel_height());
 
-  const SkBitmap& bitmap2x = image_skia.GetBitmapForScale(2.0f, 2.0f,
-                                                          &scale_factor);
-  EXPECT_TRUE(!bitmap2x.isNull());
-  EXPECT_EQ(2.0f, scale_factor);
-  EXPECT_EQ(kWidth2x, bitmap2x.width());
-  EXPECT_EQ(kHeight2x, bitmap2x.height());
+  const gfx::ImageSkiaRep& image_rep2x =
+      image_skia.GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_TRUE(!image_rep2x.is_null());
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep2x.scale_factor());
+  EXPECT_EQ(kWidth1x, image_rep2x.GetWidth());
+  EXPECT_EQ(kHeight1x, image_rep2x.GetHeight());
+  EXPECT_EQ(kWidth2x, image_rep2x.pixel_width());
+  EXPECT_EQ(kHeight2x, image_rep2x.pixel_height());
 
   // Check that the image has a single representation.
   gfx::Image image(image_skia);
@@ -288,14 +294,15 @@ TEST_F(ImageTest, RemoveFromMultiResolutionImage) {
 
   gfx::ImageSkia image_skia;
 
-  image_skia.AddBitmapForScale(gt::CreateBitmap(kWidth2x, kHeight2x), 2.0f);
-  EXPECT_EQ(1u, image_skia.bitmaps().size());
+  image_skia.AddRepresentation(gfx::ImageSkiaRep(
+      gt::CreateBitmap(kWidth2x, kHeight2x), ui::SCALE_FACTOR_200P));
+  EXPECT_EQ(1u, image_skia.image_reps().size());
 
-  image_skia.RemoveBitmapForScale(1.0f);
-  EXPECT_EQ(1u, image_skia.bitmaps().size());
+  image_skia.RemoveRepresentation(ui::SCALE_FACTOR_100P);
+  EXPECT_EQ(1u, image_skia.image_reps().size());
 
-  image_skia.RemoveBitmapForScale(2.0f);
-  EXPECT_EQ(0u, image_skia.bitmaps().size());
+  image_skia.RemoveRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_EQ(0u, image_skia.image_reps().size());
 }
 
 // Tests that gfx::Image does indeed take ownership of the SkBitmap it is
@@ -303,9 +310,9 @@ TEST_F(ImageTest, RemoveFromMultiResolutionImage) {
 TEST_F(ImageTest, OwnershipTest) {
   gfx::Image image;
   {
-    SkBitmap bitmap = gt::CreateBitmap(10, 10);
+    SkBitmap bitmap(gt::CreateBitmap(10, 10));
     EXPECT_TRUE(!bitmap.isNull());
-    image = gfx::Image(bitmap);
+    image = gfx::Image(gfx::ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
   }
   EXPECT_TRUE(!image.ToSkBitmap()->isNull());
 }
