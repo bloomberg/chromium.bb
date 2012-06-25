@@ -15,11 +15,6 @@
         'variables': {
           'win_target': 'x64',
          },
-        # TODO(pasko): eliminate flag modification based on OS.
-        # See http://code.google.com/p/nativeclient/issues/detail?id=2718
-        'cflags!': [
-          '/O1',
-        ],
       }],
     ],
   },
