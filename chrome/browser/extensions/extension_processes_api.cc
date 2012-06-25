@@ -489,7 +489,7 @@ void ExtensionProcessesEventRouter::DispatchEvent(
     const std::string& json_args) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, NULL, GURL());
+        event_name, json_args, NULL, GURL(), EventFilteringInfo());
   }
 }
 

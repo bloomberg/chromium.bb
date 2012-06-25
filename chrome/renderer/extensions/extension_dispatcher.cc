@@ -233,7 +233,8 @@ ExtensionDispatcher::ExtensionDispatcher()
       webrequest_adblock_plus_(false),
       webrequest_other_(false),
       source_map_(&ResourceBundle::GetSharedInstance()),
-      chrome_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      chrome_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN),
+      event_filter_(new extensions::EventFilter) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -490,7 +491,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
 void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                                  ChromeV8Context* context) {
   module_system->RegisterNativeHandler("event_bindings",
-      scoped_ptr<NativeHandler>(EventBindings::Get(this)));
+      scoped_ptr<NativeHandler>(EventBindings::Get(this, event_filter_.get())));
   module_system->RegisterNativeHandler("miscellaneous_bindings",
       scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this)));
   module_system->RegisterNativeHandler("apiDefinitions",

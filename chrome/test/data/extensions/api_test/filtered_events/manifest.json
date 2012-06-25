@@ -1,0 +1,11 @@
+{
+   "name": "filtered events apitest",
+   "description": "filtered events extension",
+   "version": "0.1",
+   "manifest_version": 2,
+   "background": {
+     "scripts": ["background.js"],
+     "persistent": false
+   },
+   "permissions": [ "webNavigation", "tabs" ]
+}

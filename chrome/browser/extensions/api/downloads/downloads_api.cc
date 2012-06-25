@@ -1101,5 +1101,6 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
       event_name,
       json_args,
       profile_,
-      GURL());
+      GURL(),
+      extensions::EventFilteringInfo());
 }

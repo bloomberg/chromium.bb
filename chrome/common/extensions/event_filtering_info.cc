@@ -31,4 +31,18 @@ std::string EventFilteringInfo::AsJSONString() const {
   return result;
 }
 
+scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
+  if (IsEmpty())
+    return scoped_ptr<base::Value>(base::Value::CreateNullValue());
+
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  if (has_url_)
+    result->SetString("url", url_.spec());
+  return result.PassAs<base::Value>();
+}
+
+bool EventFilteringInfo::IsEmpty() const {
+  return !has_url_;
+}
+
 }  // namespace extensions

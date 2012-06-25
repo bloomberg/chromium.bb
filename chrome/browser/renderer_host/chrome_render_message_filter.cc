@@ -93,6 +93,10 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnExtensionAddLazyListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
                         OnExtensionRemoveLazyListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddFilteredListener,
+                        OnExtensionAddFilteredListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveFilteredListener,
+                        OnExtensionRemoveFilteredListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
@@ -143,6 +147,8 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_AddLazyListener::ID:
     case ExtensionHostMsg_RemoveLazyListener::ID:
+    case ExtensionHostMsg_AddFilteredListener::ID:
+    case ExtensionHostMsg_RemoveFilteredListener::ID:
     case ExtensionHostMsg_CloseChannel::ID:
     case ExtensionHostMsg_ShouldUnloadAck::ID:
     case ExtensionHostMsg_UnloadAck::ID:
@@ -376,6 +382,34 @@ void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
   if (profile_->GetExtensionEventRouter())
     profile_->GetExtensionEventRouter()->RemoveLazyEventListener(
         event_name, extension_id);
+}
+
+void ChromeRenderMessageFilter::OnExtensionAddFilteredListener(
+    const std::string& extension_id,
+    const std::string& event_name,
+    const base::DictionaryValue& filter,
+    bool lazy) {
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (!process || !profile_->GetExtensionEventRouter())
+    return;
+
+  profile_->GetExtensionEventRouter()->AddFilteredEventListener(
+      event_name, process, extension_id, filter, lazy);
+}
+
+void ChromeRenderMessageFilter::OnExtensionRemoveFilteredListener(
+    const std::string& extension_id,
+    const std::string& event_name,
+    const base::DictionaryValue& filter,
+    bool lazy) {
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id_);
+  if (!process || !profile_->GetExtensionEventRouter())
+    return;
+
+  profile_->GetExtensionEventRouter()->RemoveFilteredEventListener(
+      event_name, process, extension_id, filter, lazy);
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id,
