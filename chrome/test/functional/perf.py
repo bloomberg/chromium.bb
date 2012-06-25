@@ -1964,7 +1964,7 @@ class BasePageCyclerTest(BasePerfTest):
         msg=('num_times != num_pages * iterations: %s != %s * %s, times=%s' %
              (num_times, num_pages, iterations, times)))
     for i, page in enumerate(pages):
-      yield page, itertools.islice(times, i, None, num_pages)
+      yield page, list(itertools.islice(times, i, None, num_pages))
 
   def CheckPageTimes(self, pages, times, iterations):
     """Assert that all the times are greater than zero."""
