@@ -24,7 +24,6 @@ include_rules = [
   "+skia/include",
   "+sync/api",  # Sync API files.
   "+sync/protocol",  # Sync protobuf files.
-  "+third_party/cros",
   "+third_party/cros_system_api",
   "+webkit/database",
   "+webkit/dom_storage",  # Defines an ENABLE_NEW_DOM_STORAGE_BACKEND flag.
