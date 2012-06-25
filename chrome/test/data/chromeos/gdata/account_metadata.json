@@ -238,6 +238,35 @@
                 "target": "document"
             }
         ],
+        "docs$largestChangestamp": {
+            "value": "654321"
+        },
+        "docs$maxUploadSize": [
+            {
+                "$t": "2097152",
+                "kind": "document"
+            },
+            {
+                "$t": "20971520",
+                "kind": "spreadsheet"
+            },
+            {
+                "$t": "52428800",
+                "kind": "presentation"
+            },
+            {
+                "$t": "2097152",
+                "kind": "drawing"
+            },
+            {
+                "$t": "10737418240",
+                "kind": "pdf"
+            },
+            {
+                "$t": "10737418240",
+                "kind": "file"
+            }
+        ],
         "docs$installedApp": [
             {
                 "docs$installedAppIcon": [
@@ -285,7 +314,7 @@
                 "docs$installedAppSupportsCreate": "true",
                 "link": [
                     {
-                        "href": "https://chrome.google.com/webstore/detail/11111111",
+                        "href": "https://chrome.google.com/webstore/detail/abcdefabcdef",
                         "rel": "http://schemas.google.com/docs/2007#product",
                         "type": "text/html"
                     }
@@ -311,40 +340,11 @@
                 "docs$installedAppSupportsCreate": "false",
                 "link": [
                     {
-                        "href": "https://chrome.google.com/webstore/detail/22222222",
+                        "href": "https://chrome.google.com/webstore/detail/deadbeefdeadbeef",
                         "rel": "http://schemas.google.com/docs/2007#product",
                         "type": "text/html"
                     }
                 ]
-            }
-        ],
-        "docs$largestChangestamp": {
-            "value": "654321"
-        },
-        "docs$maxUploadSize": [
-            {
-                "$t": "2097152",
-                "kind": "document"
-            },
-            {
-                "$t": "20971520",
-                "kind": "spreadsheet"
-            },
-            {
-                "$t": "52428800",
-                "kind": "presentation"
-            },
-            {
-                "$t": "2097152",
-                "kind": "drawing"
-            },
-            {
-                "$t": "10737418240",
-                "kind": "pdf"
-            },
-            {
-                "$t": "10737418240",
-                "kind": "file"
             }
         ],
         "docs$quotaBytesUsedInTrash": {

@@ -179,6 +179,12 @@ class DocumentsServiceInterface {
   // Resumes uploading of a document/file on the calling thread.
   virtual void ResumeUpload(const ResumeUploadParams& params,
                             const ResumeUploadCallback& callback) = 0;
+
+  // Authorizes a Drive app with the id |app_id| to open the given document.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  virtual void AuthorizeApp(const GURL& resource_url,
+                            const std::string& app_id,
+                            const GetDataCallback& callback) = 0;
 };
 
 // This class provides documents feed service calls.
@@ -240,7 +246,9 @@ class DocumentsService : public DocumentsServiceInterface {
                               const InitiateUploadCallback& callback) OVERRIDE;
   virtual void ResumeUpload(const ResumeUploadParams& params,
                             const ResumeUploadCallback& callback) OVERRIDE;
-
+  virtual void AuthorizeApp(const GURL& resource_url,
+                            const std::string& app_id,
+                            const GetDataCallback& callback) OVERRIDE;
  private:
   Profile* profile_;
 

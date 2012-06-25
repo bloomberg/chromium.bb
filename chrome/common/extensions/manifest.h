@@ -70,7 +70,7 @@ class Manifest {
   bool Equals(const Manifest* other) const;
 
   // Gets the underlying DictionaryValue representing the manifest.
-  // Note: only know this when you KNOW you don't need the validation.
+  // Note: only use this when you KNOW you don't need the validation.
   const base::DictionaryValue* value() const { return value_.get(); }
 
  private:

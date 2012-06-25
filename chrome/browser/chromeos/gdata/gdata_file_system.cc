@@ -818,7 +818,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (root_->origin() == INITIALIZING) {
-    // If root feed is not initialized but the initilization process has
+    // If root feed is not initialized but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
     AddObserver(new InitialLoadObserver(
@@ -903,8 +903,20 @@ void GDataFileSystem::OnGetAccountMetadata(
   }
 
   scoped_ptr<AccountMetadataFeed> account_metadata;
-  if (feed_data.get())
+  if (feed_data.get()) {
     account_metadata = AccountMetadataFeed::CreateFrom(*feed_data);
+#ifndef NDEBUG
+    // Save account metadata feed for analysis.
+    const FilePath path =
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
+            kAccountMetadataFile);
+    PostBlockingPoolSequencedTask(
+        FROM_HERE,
+        sequence_token_,
+        base::Bind(&SaveFeedOnBlockingPoolForDebugging,
+                   path, base::Passed(&feed_data)));
+#endif
+  }
 
   if (!account_metadata.get()) {
     LoadFeedFromServer(initial_origin,

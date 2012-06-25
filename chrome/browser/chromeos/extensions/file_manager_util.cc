@@ -469,23 +469,6 @@ void OpenApplication() {
   OpenFileBrowser(FilePath(), REUSE_NEVER, std::string());
 }
 
-class StandaloneExecutor : public FileTaskExecutor {
- public:
-  StandaloneExecutor(Profile * profile,
-                     const GURL& source_url,
-                     const std::string& extension_id,
-                     const std::string& action_id)
-    : FileTaskExecutor(profile, source_url, extension_id, action_id)
-  {}
-
- protected :
-  // FileTaskExecutor overrides.
-  virtual Browser* browser() {
-    return browser::FindOrCreateTabbedBrowser(profile());
-  }
-  virtual void Done(bool) {}
-};
-
 bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
   GURL url;
   if (!ConvertFileToFileSystemUrl(profile, path,
@@ -527,7 +510,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
 
     std::vector<GURL> urls;
     urls.push_back(url);
-    scoped_refptr<StandaloneExecutor> executor = new StandaloneExecutor(
+    scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(
         profile, source_url, extension_id, action_id);
     executor->Execute(urls);
     return true;

@@ -75,6 +75,7 @@ const char kHrefField[] = "href";
 const char kIDField[] = "id.$t";
 const char kInstalledAppField[] = "docs$installedApp";
 const char kInstalledAppNameField[] = "docs$installedAppName";
+const char kInstalledAppIdField[] = "docs$installedAppId";
 const char kInstalledAppIconField[] = "docs$installedAppIcon";
 const char kInstalledAppIconCategoryField[] = "docs$installedAppIconCategory";
 const char kInstalledAppIconSizeField[] = "docs$installedAppIconSize";
@@ -951,6 +952,8 @@ void InstalledApp::RegisterJSONConverter(
     base::JSONValueConverter<InstalledApp>* converter) {
   converter->RegisterRepeatedMessage(kInstalledAppIconField,
                                      &InstalledApp::app_icons_);
+  converter->RegisterStringField(kInstalledAppIdField,
+                                 &InstalledApp::app_id_);
   converter->RegisterStringField(kInstalledAppNameField,
                                  &InstalledApp::app_name_);
   converter->RegisterStringField(kInstalledAppObjectTypeField,

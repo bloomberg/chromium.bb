@@ -76,6 +76,10 @@ class MockDocumentsService : public DocumentsServiceInterface {
                     const InitiateUploadCallback& callback));
   MOCK_METHOD2(ResumeUpload, void(const ResumeUploadParams& upload_file_info,
                                   const ResumeUploadCallback& callback));
+  MOCK_METHOD3(AuthorizeApp, void(const GURL& resource_url,
+                                  const std::string& app_ids,
+                                  const GetDataCallback& callback));
+
 
   // Helper stub methods for functions which take callbacks, so that
   // the callbacks get called with testable results.

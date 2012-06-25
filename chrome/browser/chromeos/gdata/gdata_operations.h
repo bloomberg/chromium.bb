@@ -192,7 +192,7 @@ class GetDataOperation : public UrlFetchOperationBase {
   virtual ~GetDataOperation();
 
   // Parse GData JSON response.
-  static base::Value* ParseResponse(const std::string& data);
+  virtual base::Value* ParseResponse(const std::string& data);
 
  protected:
   // Overridden from UrlFetchOperationBase.
@@ -415,6 +415,40 @@ class RenameResourceOperation : public EntryActionOperation {
   FilePath::StringType new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
+};
+
+//=========================== AuthorizeAppOperation ==========================
+
+// This class performs the operation for renaming a document/file/directory.
+class AuthorizeAppsOperation : public GetDataOperation {
+ public:
+  AuthorizeAppsOperation(GDataOperationRegistry* registry,
+                          Profile* profile,
+                          const GetDataCallback& callback,
+                          const GURL& document_url,
+                          const std::string& app_ids);
+  virtual ~AuthorizeAppsOperation();
+ protected:
+  // Overridden from EntryActionOperation.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+
+  // Overridden from UrlFetchOperationBase.
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+
+  // Must override GetDataOperation's ParseResponse because the response is XML
+  // not JSON.
+  virtual base::Value* ParseResponse(const std::string& data) OVERRIDE;
+ private:
+  std::string app_id_;
+  GURL document_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(AuthorizeAppsOperation);
 };
 
 //======================= AddResourceToDirectoryOperation ======================

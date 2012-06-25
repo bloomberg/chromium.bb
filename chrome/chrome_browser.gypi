@@ -515,6 +515,8 @@
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',
         'browser/chromeos/external_protocol_dialog.h',
+        'browser/chromeos/gdata/drive_task_executor.cc',
+        'browser/chromeos/gdata/drive_task_executor.h',
         'browser/chromeos/gdata/drive_webapps_registry.cc',
         'browser/chromeos/gdata/drive_webapps_registry.h',
         'browser/chromeos/gdata/gdata_auth_service.cc',

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/file_path.h"
@@ -19,13 +20,16 @@ namespace gdata {
 // Data structure that defines WebApp
 struct DriveWebAppInfo {
   DriveWebAppInfo(const std::string& app_id,
+                  const std::string& web_store_id,
                   const string16& app_name,
                   const string16& object_type,
                   bool is_primary_selector);
   ~DriveWebAppInfo();
 
-  // WebApp id;
+  // Drive app id
   std::string app_id;
+  // Web store id/extension id;
+  std::string web_store_id;
   // WebApp name.
   string16 app_name;
   // Object (file) type description handled by this app.
@@ -46,6 +50,11 @@ class DriveWebAppsRegistry  {
                          const std::string& mime_type,
                          ScopedVector<DriveWebAppInfo>* apps);
 
+  // Returns a set of filename extensions registered for the given
+  // |web_store_id|.
+  std::set<std::string> GetExtensionsForWebStoreApp(
+      const std::string& web_store_id);
+
   // Updates the list of drive-enabled WebApps with freshly fetched account
   // metadata feed.
   void UpdateFromFeed(AccountMetadataFeed* metadata);
@@ -56,12 +65,15 @@ class DriveWebAppsRegistry  {
   struct WebAppFileSelector {
     WebAppFileSelector(const GURL& product_link,
                        const string16& object_type,
+                       const std::string& app_id,
                        bool is_primary_selector);
     ~WebAppFileSelector();
     // WebApp product link.
     GURL product_link;
     // Object (file) type description.
     string16 object_type;
+    // Drive app id
+    std::string app_id;
     // True if the selector is the default one. The default selector should
     // trigger on file double-click events. Non-default selectors only show up
     // in "Open with..." pop-up menu.
@@ -76,10 +88,11 @@ class DriveWebAppsRegistry  {
   typedef std::map<const WebAppFileSelector*,
                    DriveWebAppInfo*> SelectorWebAppList;
 
-  // Helper function for loading webapp file |selectors| into corresponding
-  // |map|.
+  // Helper function for loading web application file |selectors| into
+  // corresponding |map|.
   static void AddAppSelectorList(const GURL& product_link,
                                  const string16& object_type,
+                                 const std::string& app_id,
                                  bool is_primary_selector,
                                  const ScopedVector<std::string>& selectors,
                                  WebAppFileSelectorMap* map);
@@ -89,9 +102,13 @@ class DriveWebAppsRegistry  {
                               const WebAppFileSelectorMap& map,
                               SelectorWebAppList* apps);
 
+  // Map of web store product URL to application name.
+  std::map<GURL, string16> url_to_name_map_;
 
-  std::map<GURL, string16> webapp_map_;
+  // Map of filename extension to application info.
   WebAppFileSelectorMap webapp_extension_map_;
+
+  // Map of mimetype to application info.
   WebAppFileSelectorMap webapp_mimetypes_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveWebAppsRegistry);

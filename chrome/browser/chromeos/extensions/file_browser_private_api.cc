@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_split.h"
@@ -69,10 +70,17 @@ using gdata::GDataOperationRegistry;
 
 namespace {
 
+// Default icon path for drive docs.
+const char kDefaultDriveIcon[] = "images/filetype_generic.png";
+
 // Error messages.
 const char kFileError[] = "File error %d";
 const char kInvalidFileUrl[] = "Invalid file URL";
 const char kVolumeDevicePathNotFound[] = "Device path not found";
+
+// Typedef for holding a map from app_id to DriveWebAppInfo so
+// we can look up information on the apps.
+typedef std::map<std::string, gdata::DriveWebAppInfo*> WebAppInfoMap;
 
 // Unescape rules used for parsing query parameters.
 const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
@@ -235,6 +243,90 @@ FilePath GetVirtualPathFromURL(const GURL& file_url) {
     return FilePath();
   }
   return virtual_path;
+}
+
+// Look up apps in the registry, and collect applications that match the file
+// paths given. Returns the intersection of all available application ids in
+// |available_apps| and a map of application ID to the Drive web application
+// info collected in |app_info| so details can be collected later. The caller
+// takes ownership of the pointers in |app_info|.
+void IntersectAvailableDriveTasks(
+    gdata::DriveWebAppsRegistry* registry,
+    const std::vector<FilePath>& file_paths,
+    WebAppInfoMap* app_info,
+    std::set<std::string>* available_apps) {
+  for (std::vector<FilePath>::const_iterator iter = file_paths.begin();
+      iter != file_paths.end(); ++iter) {
+    if (iter->empty())
+      continue;
+    ScopedVector<gdata::DriveWebAppInfo> info;
+    registry->GetWebAppsForFile(*iter, std::string(""), &info);
+    std::vector<gdata::DriveWebAppInfo*> info_ptrs;
+    info.release(&info_ptrs); // so they don't go away prematurely.
+    std::set<std::string> apps_for_this_file;
+    for (std::vector<gdata::DriveWebAppInfo*>::iterator
+        apps = info_ptrs.begin(); apps != info_ptrs.end(); ++apps) {
+      std::pair<WebAppInfoMap::iterator, bool> insert_result =
+          app_info->insert(std::make_pair((*apps)->app_id, *apps));
+     apps_for_this_file.insert((*apps)->app_id);
+     // If we failed to insert an app_id because there was a duplicate, then we
+     // must delete it (since we own it).
+     if (!insert_result.second)
+       delete *apps;
+    }
+    if (iter == file_paths.begin()) {
+      *available_apps = apps_for_this_file;
+    } else {
+      std::set<std::string> intersection;
+      std::set_intersection(available_apps->begin(),
+                            available_apps->end(),
+                            apps_for_this_file.begin(),
+                            apps_for_this_file.end(),
+                            std::inserter(intersection,
+                                          intersection.begin()));
+      *available_apps = intersection;
+    }
+  }
+}
+
+// Takes a map of app_id to application information in |app_info|, and the set
+// of |available_apps| and adds Drive tasks to the |result_list| for each of the
+// |available_apps|.
+void CreateDriveTasks(
+    gdata::DriveWebAppsRegistry* registry,
+    const WebAppInfoMap& app_info,
+    const std::set<std::string>& available_apps,
+    ListValue* result_list) {
+  // OK, now we traverse the intersection of available applications for this
+  // list of files, adding a task for each one that is found.
+  for (std::set<std::string>::iterator app_iter = available_apps.begin();
+       app_iter != available_apps.end(); ++app_iter) {
+    WebAppInfoMap::const_iterator info_iter = app_info.find(*app_iter);
+    DCHECK(info_iter != app_info.end());
+    gdata::DriveWebAppInfo* info = info_iter->second;
+    DictionaryValue* task = new DictionaryValue;
+    // TODO(gspencer): For now, the action id is always "open-with", but we
+    // could add any actions that the drive app supports.
+    std::string task_id =
+        file_handler_util::MakeDriveTaskID(*app_iter, "open-with");
+    task->SetString("taskId", task_id);
+    task->SetString("title", info->app_name);
+
+    // Create the list of extensions as patterns registered for this
+    // application. (Extensions here refers to filename suffixes (extensions),
+    // not Chrome or Drive extensions.)
+    ListValue* pattern_list = new ListValue;
+    std::set<std::string> extensions =
+        registry->GetExtensionsForWebStoreApp(*app_iter);
+    for (std::set<std::string>::iterator ext_iter = extensions.begin();
+         ext_iter != extensions.end(); ++ext_iter) {
+      pattern_list->Append(new StringValue("filesystem:*." + *ext_iter));
+    }
+    task->Set("patterns", pattern_list);
+    // TODO(gspencer): When app URLs are available, supply the right URL.
+    task->SetString("iconUrl", kDefaultDriveIcon);
+    result_list->Append(task);
+  }
 }
 
 }  // namespace
@@ -488,6 +580,54 @@ bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
   return true;
 }
 
+// Find special tasks here for Drive (Blox) apps. Iterate through matching drive
+// apps and add them, with generated task ids. Extension ids will be the app_ids
+// from drive. We'll know that they are drive apps because the extension id will
+// begin with kDriveTaskExtensionPrefix.
+bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
+    const std::vector<GURL>& file_urls,
+    ListValue* result_list) {
+
+  // Crack all the urls into file paths.
+  std::vector<FilePath> file_paths;
+  for (std::vector<GURL>::const_iterator iter = file_urls.begin();
+       iter != file_urls.end(); ++iter) {
+    FilePath raw_path;
+    fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
+    if (fileapi::CrackFileSystemURL(*iter, NULL, &type, &raw_path) &&
+        type == fileapi::kFileSystemTypeExternal) {
+      file_paths.push_back(raw_path);
+    }
+  }
+
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if incognito window / guest login. We return true
+  // in this case because there might be other extension tasks, even if we don't
+  // have any to add.
+  if (!system_service || !system_service->webapps_registry())
+    return true;
+
+
+  gdata::DriveWebAppsRegistry* registry = system_service->webapps_registry();
+
+  // Map of app_id to DriveWebAppInfo so we can look up the apps we've found
+  // after taking the intersection of available apps.
+  std::map<std::string, gdata::DriveWebAppInfo*> app_info;
+  // Set of application IDs. This will end up with the intersection of the
+  // application IDs that apply to the paths in |file_paths|.
+  std::set<std::string> available_apps;
+
+  IntersectAvailableDriveTasks(registry, file_paths,
+                               &app_info, &available_apps);
+  CreateDriveTasks(registry, app_info, available_apps, result_list);
+
+  // We own the pointers in |app_info|, so we need to delete them.
+  STLDeleteContainerPairSecondPointers(app_info.begin(), app_info.end());
+  return true;
+}
+
+
 bool GetFileTasksFileBrowserFunction::RunImpl() {
   ListValue* files_list = NULL;
   if (!args_->GetList(0, &files_list))
@@ -517,7 +657,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     const std::string extension_id = handler->extension_id();
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
-    DictionaryValue* task = new DictionaryValue();
+    DictionaryValue* task = new DictionaryValue;
     task->SetString("taskId",
         file_handler_util::MakeTaskID(extension_id, handler->id()));
     task->SetString("title", handler->title());
@@ -533,40 +673,20 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     result_list->Append(task);
   }
 
+  // Take the union of Drive and extension tasks: Because any extension tasks we
+  // found must apply to all of the files (intersection), and because the same
+  // is true of the drive apps, we simply take the union of two lists by adding
+  // the drive tasks to the extension task list. We know there aren't duplicates
+  // because they're entirely different kinds of tasks, but there could be both
+  // kinds of tasks for a file type (an image file, for instance).
+  if (!FindDriveAppTasks(file_urls, result_list))
+    return false;
+
   // TODO(zelidrag, serya): Add intent content tasks to result_list once we
   // implement that API.
   SendResponse(true);
   return true;
 }
-
-class ExecuteTasksFileBrowserFunction::Executor : public FileTaskExecutor {
- public:
-  Executor(Profile* profile,
-           const GURL& source_url,
-           const std::string& extension_id,
-           const std::string& action_id,
-           ExecuteTasksFileBrowserFunction* function)
-    : FileTaskExecutor(profile, source_url, extension_id, action_id),
-      function_(function) {
-  }
-
-  virtual ~Executor() OVERRIDE {
-    if (function_)
-      function_->OnTaskExecuted(false);
-  }
-
- protected:
-  // FileTaskExecutor overrides.
-  virtual Browser* browser() { return function_->GetCurrentBrowser(); }
-  virtual void Done(bool success) {
-    function_->OnTaskExecuted(success);
-    // Let's make sure |function_| gets notified only once.
-    function_ = NULL;
-  }
-
- private:
-  scoped_refptr<ExecuteTasksFileBrowserFunction> function_;
-};
 
 ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {}
 
@@ -607,10 +727,15 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
     file_urls.push_back(GURL(origin_file_url));
   }
 
-  scoped_refptr<Executor> executor =
-      new Executor(profile(), source_url(), extension_id, action_id, this);
+  scoped_refptr<FileTaskExecutor> executor(
+      FileTaskExecutor::Create(profile(),
+                               source_url(),
+                               extension_id,
+                               action_id));
 
-  if (!executor->Execute(file_urls))
+  if (!executor->ExecuteAndNotify(
+      file_urls,
+      base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this)))
     return false;
 
   result_.reset(new base::FundamentalValue(true));

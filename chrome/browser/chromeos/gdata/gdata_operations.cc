@@ -484,7 +484,6 @@ void GetDataOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   }
 }
 
-// static
 base::Value* GetDataOperation::ParseResponse(const std::string& data) {
   int error_code = -1;
   std::string error_message;
@@ -807,6 +806,93 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   DVLOG(1) << "RenameResourceOperation data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
+}
+
+//=========================== AuthorizeAppOperation ==========================
+
+AuthorizeAppsOperation::AuthorizeAppsOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const GetDataCallback& callback,
+    const GURL& document_url,
+    const std::string& app_id)
+    : GetDataOperation(registry, profile, callback),
+      app_id_(app_id),
+      document_url_(document_url) {
+}
+
+AuthorizeAppsOperation::~AuthorizeAppsOperation() {}
+
+URLFetcher::RequestType AuthorizeAppsOperation::GetRequestType() const {
+  return URLFetcher::PUT;
+}
+
+std::vector<std::string>
+AuthorizeAppsOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kIfMatchAllHeader);
+  return headers;
+}
+
+bool AuthorizeAppsOperation::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
+  std::string data;
+  source->GetResponseAsString(&data);
+  return GetDataOperation::ProcessURLFetchResults(source);
+}
+
+bool AuthorizeAppsOperation::GetContentData(std::string* upload_content_type,
+                                            std::string* upload_content) {
+  upload_content_type->assign("application/atom+xml");
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StartElement("entry");
+  xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
+  xml_writer.AddAttribute("xmlns:docs", "http://schemas.google.com/docs/2007");
+  xml_writer.WriteElement("docs:authorizedApp", app_id_);
+
+  xml_writer.EndElement();  // Ends "entry" element.
+  xml_writer.StopWriting();
+  upload_content->assign(xml_writer.GetWrittenString());
+  DVLOG(1) << "AuthorizeAppOperation data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
+base::Value* AuthorizeAppsOperation::ParseResponse(const std::string& data) {
+  // Parse entry XML.
+  XmlReader xml_reader;
+  scoped_ptr<DocumentEntry> entry;
+  if (xml_reader.Load(data)) {
+    while (xml_reader.Read()) {
+      if (xml_reader.NodeName() == DocumentEntry::GetEntryNodeName()) {
+        entry.reset(DocumentEntry::CreateFromXml(&xml_reader));
+        break;
+      }
+    }
+  }
+
+  // From the response, we create a list of the links returned, since those
+  // are the only things we are interested in.
+  scoped_ptr<base::ListValue> link_list(new ListValue);
+  const ScopedVector<Link>& feed_links = entry->links();
+  for (ScopedVector<Link>::const_iterator iter = feed_links.begin();
+       iter != feed_links.end(); ++iter) {
+    if ((*iter)->type() == Link::OPEN_WITH) {
+      base::DictionaryValue* link = new DictionaryValue;
+      link->SetString(std::string("href"), (*iter)->href().spec());
+      link->SetString(std::string("mime_type"), (*iter)->mime_type());
+      link->SetString(std::string("title"), (*iter)->title());
+      link->SetString(std::string("app_id"), (*iter)->app_id());
+      link_list->Append(link);
+    }
+  }
+
+  return link_list.release();
+}
+
+GURL AuthorizeAppsOperation::GetURL() const {
+  return document_url_;
 }
 
 //======================= AddResourceToDirectoryOperation ======================

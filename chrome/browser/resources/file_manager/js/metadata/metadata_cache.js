@@ -620,7 +620,7 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
 /**
  * Provider of gdata metadata.
  * This provider returns the following objects:
- *     gdata: { pinned, hosted, present, dirty, editUrl, contentUrl }
+ *     gdata: { pinned, hosted, present, dirty, editUrl, contentUrl, driveApps }
  *     thumbnail: { url, transform }
  *     streaming: { url }
  * @constructor
@@ -732,7 +732,8 @@ GDataProvider.prototype.convert_ = function(data) {
     availableOffline: GDataProvider.isAvailableOffline(data),
     availableWhenMetered: GDataProvider.isAvailableWhenMetered(data),
     contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
-    editUrl: data.editUrl || ''
+    editUrl: data.editUrl || '',
+    driveApps: data.driveApps || []
   };
 
   if (!data.isPresent) {

@@ -261,4 +261,15 @@ void DocumentsService::ResumeUpload(const ResumeUploadParams& params,
                                 params));
 }
 
+
+void DocumentsService::AuthorizeApp(const GURL& resource_url,
+                                    const std::string& app_ids,
+                                    const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  runner_->StartOperationWithRetry(
+      new AuthorizeAppsOperation(operation_registry(), profile_, callback,
+                                 resource_url, app_ids));
+}
+
 }  // namespace gdata

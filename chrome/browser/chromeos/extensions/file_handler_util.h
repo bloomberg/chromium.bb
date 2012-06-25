@@ -27,9 +27,13 @@ int GetReadWritePermissions();
 // Gets read-only file access permission flags.
 int GetReadOnlyPermissions();
 
-// Generates file task id for the file actin specified by the extension.
+// Generates file task id for the file action specified by the extension.
 std::string MakeTaskID(const std::string& extension_id,
                        const std::string& action_id);
+
+// Make a task id specific to drive apps instead of extensions.
+std::string MakeDriveTaskID(const std::string& app_id,
+                            const std::string& action_id);
 
 // Extracts action and extension id bound to the file task.
 bool CrackTaskID(const std::string& task_id,
@@ -64,88 +68,45 @@ bool GetDefaultTask(Profile* profile,
                     const GURL& url,
                     const FileBrowserHandler** handler);
 
+// Used for returning success or failure from task executions.
+typedef base::Callback<void(bool)> FileTaskFinishedCallback;
+
 // Helper class for executing file browser file action.
 class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
  public:
+  static const char kDriveTaskExtensionPrefix[];
+  static const size_t kDriveTaskExtensionPrefixLength;
 
-  FileTaskExecutor(Profile* profile,
-                   const GURL source_url,
-                   const std::string& extension_id,
-                   const std::string& action_id);
-
+  // Creates the appropriate FileTaskExecutor for the given |extension_id|.
+  static FileTaskExecutor* Create(Profile* profile,
+                                  const GURL source_url,
+                                  const std::string& extension_id,
+                                  const std::string& action_id);
   virtual ~FileTaskExecutor();
 
+  // Same as ExecuteAndNotify, but no notification is performed.
+  virtual bool Execute(const std::vector<GURL>& file_urls);
+
   // Initiates execution of file handler task for each element of |file_urls|.
-  // Return |false| if the execution cannot be initiated.
-  // Otherwise returns |true| and then eventually calls |Done|.
-  bool Execute(const std::vector<GURL>& file_urls);
+  // Return |false| if the execution cannot be initiated. Otherwise returns
+  // |true| and then eventually calls |done| when all the files have
+  // been handled. If there is an error during processing the list of files, the
+  // caller will be informed of the failure via |done|, and the rest of
+  // the files will not be processed.
+  virtual bool ExecuteAndNotify(const std::vector<GURL>& file_urls,
+                                const FileTaskFinishedCallback& done) = 0;
 
  protected:
-   virtual Browser* browser() = 0;
-   virtual void Done(bool success) = 0;
+  explicit FileTaskExecutor(Profile* profile);
 
-   Profile* profile() { return profile_; }
+  // Returns the profile that this task was created with.
+  Profile* profile() { return profile_; }
 
+  // Returns a browser to use for the current browser.
+  Browser* GetBrowser() const;
  private:
-  struct FileDefinition {
-    FileDefinition();
-    ~FileDefinition();
-
-    GURL target_file_url;
-    FilePath virtual_path;
-    FilePath absolute_path;
-    bool is_directory;
-  };
-
-  typedef std::vector<FileDefinition> FileDefinitionList;
-  class ExecuteTasksFileSystemCallbackDispatcher;
-  void RequestFileEntryOnFileThread(
-      const GURL& handler_base_url,
-      const scoped_refptr<const extensions::Extension>& handler,
-      int handler_pid,
-      const std::vector<GURL>& file_urls);
-
-  void ExecuteFailedOnUIThread();
-  void ExecuteFileActionsOnUIThread(const std::string& file_system_name,
-                                    const GURL& file_system_root,
-                                    const FileDefinitionList& file_list,
-                                    int handler_pid);
-  void SetupPermissionsAndDispatchEvent(const std::string& file_system_name,
-                                        const GURL& file_system_root,
-                                        const FileDefinitionList& file_list,
-                                        int handler_pid_in,
-                                        ExtensionHost* host);
-
-  // Populates |handler_host_permissions| with file path-permissions pairs that
-  // will be given to the handler extension host process.
-  void InitHandlerHostFileAccessPermissions(
-      const FileDefinitionList& file_list,
-      const extensions::Extension* handler_extension,
-      const std::string& action_id,
-      const base::Closure& callback);
-
-  // Invoked upon completion of InitHandlerHostFileAccessPermissions initiated
-  // by ExecuteFileActionsOnUIThread.
-  void OnInitAccessForExecuteFileActionsOnUIThread(
-      const std::string& file_system_name,
-      const GURL& file_system_root,
-      const FileDefinitionList& file_list,
-      int handler_pid);
-
-  // Registers file permissions from |handler_host_permissions_| with
-  // ChildProcessSecurityPolicy for process with id |handler_pid|.
-  void SetupHandlerHostFileAccessPermissions(int handler_pid);
-
-  // Helper function to get the extension pointer.
-  const extensions::Extension* GetExtension();
 
   Profile* profile_;
-  const GURL source_url_;
-  const std::string extension_id_;
-  const std::string action_id_;
-
-  // (File path, permission for file path) pairs for the handler.
-  std::vector<std::pair<FilePath, int> > handler_host_permissions_;
 };
 
 }  // namespace file_handler_util

@@ -331,7 +331,7 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
     EXPECT_EQ("Drive App 1", UTF16ToUTF8(first_app->app_name()));
     EXPECT_EQ("Drive App Object 1", UTF16ToUTF8(first_app->object_type()));
     EXPECT_TRUE(first_app->supports_create());
-    EXPECT_EQ("https://chrome.google.com/webstore/detail/11111111",
+    EXPECT_EQ("https://chrome.google.com/webstore/detail/abcdefabcdef",
               first_app->GetProductUrl().spec());
     IF_EXPECT_EQ(2U, first_app->primary_mimetypes()->size()) {
       EXPECT_EQ("application/test_type_1",
@@ -375,7 +375,7 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   IF_EXPECT_TRUE(second_app) {
     EXPECT_EQ("Drive App 2", UTF16ToUTF8(second_app->app_name()));
     EXPECT_EQ("Drive App Object 2", UTF16ToUTF8(second_app->object_type()));
-    EXPECT_EQ("https://chrome.google.com/webstore/detail/22222222",
+    EXPECT_EQ("https://chrome.google.com/webstore/detail/deadbeefdeadbeef",
               second_app->GetProductUrl().spec());
     EXPECT_FALSE(second_app->supports_create());
     EXPECT_EQ(2U, second_app->primary_mimetypes()->size());

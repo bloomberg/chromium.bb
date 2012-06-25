@@ -97,6 +97,8 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  bool FindDriveAppTasks(const std::vector<GURL>& file_urls,
+                         ListValue* result_list);
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileTasks");
 };
 
@@ -113,7 +115,6 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  class Executor;
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };
