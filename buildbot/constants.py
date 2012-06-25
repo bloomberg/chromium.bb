@@ -14,8 +14,6 @@ CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 
-REPO_URL = 'http://git.chromium.org/git/external/repo'
-
 GERRIT_PORT = '29418'
 GERRIT_INT_PORT = '29419'
 
@@ -26,10 +24,13 @@ GIT_HOST = 'git.chromium.org'
 GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
 GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
 GERRIT_HTTP_URL = 'https://%s' % GERRIT_HOST
-GIT_HTTP_URL = 'http://%s/git' % GIT_HOST
+GIT_HTTP_URL = 'https://%s/git' % GIT_HOST
+
+REPO_PROJECT = 'external/repo'
+REPO_URL = '%s/%s' % (GIT_HTTP_URL, REPO_PROJECT)
 
 CHROMITE_PROJECT = 'chromiumos/chromite'
-CHROMITE_URL = GIT_HTTP_URL + '/%s' % CHROMITE_PROJECT
+CHROMITE_URL = '%s/%s' % (GIT_HTTP_URL, CHROMITE_PROJECT)
 
 MANIFEST_URL = GIT_HTTP_URL + '/chromiumos/manifest'
 MANIFEST_INT_URL = GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
