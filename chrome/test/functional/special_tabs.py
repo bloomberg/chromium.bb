@@ -60,8 +60,9 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://plugins': { 'title': 'Plug-ins' },
     'chrome://settings': { 'title': 'Settings' },
     'chrome://settings/autofill': { 'title': 'Settings - Autofill settings' },
-    'chrome://settings/clearBrowserData':
-      { 'title': 'Settings - Clear browsing data' },
+    # Broken by r143885. crbug.com/134473
+    # 'chrome://settings/clearBrowserData':
+    #  { 'title': 'Settings - Clear browsing data' },
     'chrome://settings/content': { 'title': 'Settings - Content settings' },
     'chrome://settings/languages':
       { 'title': 'Settings - Languages' },
