@@ -577,7 +577,7 @@ void NetworkStats::RecordPacketLossSeriesHistograms(
 
   // Build "NetConnectivity2.Send6.SeriesAcked.<port>.<load_size>" histogram
   // name. Total number of histograms are 5*2.
-  std::string packet_loss_histogram_name = base::StringPrintf(
+  std::string series_acked_histogram_name = base::StringPrintf(
       "NetConnectivity2.Send6.SeriesAcked.%d.%s",
       kPorts[histogram_port_],
       load_size_string);
@@ -593,14 +593,14 @@ void NetworkStats::RecordPacketLossSeriesHistograms(
   size_t histogram_count = has_proxy_server_ ? 1 : 2;
   for (size_t i = 0; i < histogram_count; i++) {
     // For packet loss test, just record packet loss data.
-    base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-        packet_loss_histogram_name,
+    base::Histogram* series_acked_histogram = base::LinearHistogram::FactoryGet(
+        series_acked_histogram_name,
         1,
         2 << kMaximumCorrelationPackets,
         (2 << kMaximumCorrelationPackets) + 1,
         base::Histogram::kUmaTargetedHistogramFlag);
-    histogram->Add(packets_received_mask_);
-    packet_loss_histogram_name.append(".NoProxy");
+    series_acked_histogram->Add(packets_received_mask_);
+    series_acked_histogram_name.append(".NoProxy");
 
     base::Histogram* packets_sent_histogram =
         base::Histogram::FactoryGet(
