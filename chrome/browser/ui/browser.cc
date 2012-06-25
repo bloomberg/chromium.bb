@@ -1648,9 +1648,6 @@ void Browser::RegisterPrefs(PrefService* prefs) {
 
 // static
 void Browser::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kHomePage,
-                            std::string(),
-                            PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHomePageChanged,
                              false,
                              PrefService::UNSYNCABLE_PREF);
@@ -1761,37 +1758,14 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
 
   // We need to register the type of these preferences in order to query
   // them even though they're only typically controlled via policy.
-  prefs->RegisterBooleanPref(prefs::kDisable3DAPIs,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated,
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableReferrers,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
                              true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableMemoryInfo,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-
-  // Initialize the disk cache prefs.
-  prefs->RegisterFilePathPref(prefs::kDiskCacheDir,
-                              FilePath(),
-                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDiskCacheSize,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kMediaCacheSize,
-                             0,
                              PrefService::UNSYNCABLE_PREF);
 }
 

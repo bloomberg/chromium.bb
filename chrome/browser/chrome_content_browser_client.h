@@ -18,12 +18,16 @@ namespace content {
 class QuotaPermissionContext;
 }
 
+class PrefService;
+
 namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   ChromeContentBrowserClient();
   virtual ~ChromeContentBrowserClient();
+
+  static void RegisterUserPrefs(PrefService* prefs);
 
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;

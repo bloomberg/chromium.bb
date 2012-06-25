@@ -218,6 +218,20 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kRestoreSessionStateDialogShown,
                              false,
                              PrefService::SYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kHomePage,
+                            std::string(),
+                            PrefService::SYNCABLE_PREF);
+
+  // Initialize the cache prefs.
+  prefs->RegisterFilePathPref(prefs::kDiskCacheDir,
+                              FilePath(),
+                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kDiskCacheSize,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kMediaCacheSize,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 
   // Deprecated. Kept around for migration.
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,

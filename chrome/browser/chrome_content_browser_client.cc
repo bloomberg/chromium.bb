@@ -338,6 +338,19 @@ ChromeContentBrowserClient::ChromeContentBrowserClient() {
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
 }
 
+// static
+void ChromeContentBrowserClient::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kDisable3DAPIs,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableMemoryInfo,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+}
+
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   ChromeBrowserMainParts* main_parts;
