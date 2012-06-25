@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/tests/test_case.h"
 
 class TestFlashFile: public TestCase {
@@ -26,9 +25,7 @@ class TestFlashFile: public TestCase {
 
   // Gets the number of files and directories under the module-local root
   // directory.
-  std::string GetItemCountUnderModuleLocalRoot(int32_t* item_count);
-
-  const PPB_Flash_File_ModuleLocal* module_local_interface_;
+  std::string GetItemCountUnderModuleLocalRoot(size_t* item_count);
 };
 
 #endif  // PPAPI_TESTS_TEST_FLASH_FILE_H_

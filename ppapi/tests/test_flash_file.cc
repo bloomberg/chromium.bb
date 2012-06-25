@@ -5,6 +5,7 @@
 #include "ppapi/tests/test_flash_file.h"
 
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/private/flash_file.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
 
@@ -14,6 +15,8 @@
 #include <errno.h>
 #include <unistd.h>
 #endif
+
+using pp::flash::FileModuleLocal;
 
 namespace {
 
@@ -76,17 +79,14 @@ bool ReadFile(PP_FileHandle file_handle, std::string* contents) {
 REGISTER_TEST_CASE(FlashFile);
 
 TestFlashFile::TestFlashFile(TestingInstance* instance)
-    : TestCase(instance), module_local_interface_(NULL) {
+    : TestCase(instance) {
 }
 
 TestFlashFile::~TestFlashFile() {
 }
 
 bool TestFlashFile::Init() {
-  module_local_interface_ = static_cast<const PPB_Flash_File_ModuleLocal*>(
-      pp::Module::Get()->GetBrowserInterface(
-          PPB_FLASH_FILE_MODULELOCAL_INTERFACE));
-  return !!module_local_interface_;
+  return FileModuleLocal::IsAvailable();
 }
 
 void TestFlashFile::RunTests(const std::string& filter) {
@@ -94,16 +94,16 @@ void TestFlashFile::RunTests(const std::string& filter) {
 }
 
 std::string TestFlashFile::TestCreateTemporaryFile() {
-  // Make sure that the root directory exists.
-  module_local_interface_->CreateDir(instance_->pp_instance(), "");
+  ASSERT_TRUE(FileModuleLocal::IsCreateTemporaryFileAvailable());
 
-  int32_t before_create = 0;
+  // Make sure that the root directory exists.
+  FileModuleLocal::CreateDir(instance_, std::string());
+
+  size_t before_create = 0;
   ASSERT_SUBTEST_SUCCESS(GetItemCountUnderModuleLocalRoot(&before_create));
 
-  PP_FileHandle file_handle = PP_kInvalidFileHandle;
-  int32_t result = module_local_interface_->CreateTemporaryFile(
-      instance_->pp_instance(), &file_handle);
-  ASSERT_EQ(result, PP_OK);
+  PP_FileHandle file_handle = FileModuleLocal::CreateTemporaryFile(instance_);
+  ASSERT_NE(PP_kInvalidFileHandle, file_handle);
 
   std::string contents = "This is a temp file.";
   ASSERT_TRUE(WriteFile(file_handle, contents));
@@ -113,7 +113,7 @@ std::string TestFlashFile::TestCreateTemporaryFile() {
 
   CloseFileHandle(file_handle);
 
-  int32_t after_close = 0;
+  size_t after_close = 0;
   ASSERT_SUBTEST_SUCCESS(GetItemCountUnderModuleLocalRoot(&after_close));
   ASSERT_EQ(before_create, after_close);
 
@@ -121,13 +121,9 @@ std::string TestFlashFile::TestCreateTemporaryFile() {
 }
 
 std::string TestFlashFile::GetItemCountUnderModuleLocalRoot(
-    int32_t* item_count) {
-  PP_DirContents_Dev* contents = NULL;
-  int32_t result = module_local_interface_->GetDirContents(
-      instance_->pp_instance(), "", &contents);
-  ASSERT_EQ(result, PP_OK);
-
-  *item_count = contents->count;
-  module_local_interface_->FreeDirContents(instance_->pp_instance(), contents);
+    size_t* item_count) {
+  std::vector<PP_DirEntry_Dev> contents;
+  ASSERT_TRUE(FileModuleLocal::GetDirContents(instance_, "", &contents));
+  *item_count = contents.size();
   PASS();
 }
