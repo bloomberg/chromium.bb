@@ -112,7 +112,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       int route_id,
       const GURL& url,
       const content::Referrer& referrer,
-      const gfx::Size& size);
+      gfx::Size size);
 
   // Adds a prerender for |url| if valid. As the prerender request is coming
   // from a source without a RenderViewHost (i.e., the omnibox) we don't have a
@@ -121,7 +121,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // tab at the time the prerender is generated from the omnibox.
   bool AddPrerenderFromOmnibox(
       const GURL& url,
-      content::SessionStorageNamespace* session_storage_namespace);
+      content::SessionStorageNamespace* session_storage_namespace,
+      gfx::Size size);
 
   // Request cancelation of a previously added prerender. If the |active_count_|
   // of the prerender is one, it will be canceled.  Otherwise, |active_count_|
@@ -321,7 +322,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       int child_id,
       const GURL& url,
       const content::Referrer& referrer,
-      const gfx::Size& size,
+      gfx::Size size,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Retrieves the PrerenderContents object for the specified URL, if it

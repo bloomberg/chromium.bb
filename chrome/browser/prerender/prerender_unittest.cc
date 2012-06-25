@@ -677,7 +677,8 @@ TEST_F(PrerenderTest, CancelOmniboxRemovesOmniboxTest) {
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
           url, ORIGIN_OMNIBOX, FINAL_STATUS_CANCELLED);
-  EXPECT_TRUE(prerender_manager()->AddPrerenderFromOmnibox(url, NULL));
+  EXPECT_TRUE(prerender_manager()->AddPrerenderFromOmnibox(
+      url, NULL, gfx::Size()));
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   prerender_manager()->CancelOmniboxPrerenders();
   const DummyPrerenderContents* null = NULL;
@@ -699,7 +700,7 @@ TEST_F(PrerenderTest, CancelOmniboxDoesNotRemoveLinkTest) {
 TEST_F(PrerenderTest, OmniboxNotAllowedWhenDisabled) {
   prerender_manager()->set_enabled(false);
   EXPECT_FALSE(prerender_manager()->AddPrerenderFromOmnibox(
-      GURL("http://www.example.com"), NULL));
+      GURL("http://www.example.com"), NULL, gfx::Size()));
 }
 
 TEST_F(PrerenderTest, LinkRelNotAllowedWhenDisabled) {

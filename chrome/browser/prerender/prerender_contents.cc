@@ -16,8 +16,6 @@
 #include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
@@ -277,6 +275,7 @@ void PrerenderContents::StartPrerendering(
     content::SessionStorageNamespace* session_storage_namespace,
     bool is_control_group) {
   DCHECK(profile_ != NULL);
+  DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
   DCHECK(prerender_contents_.get() == NULL);
   DCHECK_EQ(-1, creator_child_id_);
@@ -284,29 +283,7 @@ void PrerenderContents::StartPrerendering(
   DCHECK_EQ(1U, alias_urls_.size());
 
   creator_child_id_ = creator_child_id;
-
   size_ = size;
-  if (size_.IsEmpty()) {
-    size_ = prerender_manager_->config().default_tab_bounds.size();
-#if !defined(OS_ANDROID)
-    // Try to get the active tab of the active browser and use that for tab
-    // bounds. If the browser has never been active, we will fail to get a size
-    // but we shouldn't be prerendering in that case anyway.
-    //
-    // This code is unneeded on Android as we do not have a Browser object so we
-    // can't get the size, and |default_tab_bounds| will be set to the right
-    // value.
-    if (Browser* active_browser =
-            browser::FindLastActiveWithProfile(profile_)) {
-      if (WebContents* active_web_contents = active_browser->GetWebContentsAt(
-              active_browser->active_index())) {
-        gfx::Rect container_bounds;
-        active_web_contents->GetView()->GetContainerBounds(&container_bounds);
-        size_ = container_bounds.size();
-      }
-    }
-#endif  // !defined(OS_ANDROID)
-  }
 
   InformRenderProcessAboutPrerender(prerender_url_, true,
                                     creator_child_id_);

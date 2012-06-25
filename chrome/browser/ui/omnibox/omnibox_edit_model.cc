@@ -49,6 +49,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -1090,12 +1091,16 @@ void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {
     return;
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
-  if (prerender_manager) {
-    content::RenderViewHost* current_host =
-        tab->web_contents()->GetRenderViewHost();
-    prerender_manager->AddPrerenderFromOmnibox(
-        match.destination_url, current_host->GetSessionStorageNamespace());
-  }
+  if (!prerender_manager)
+    return;
+
+  content::RenderViewHost* current_host =
+      tab->web_contents()->GetRenderViewHost();
+  gfx::Rect container_bounds;
+  tab->web_contents()->GetView()->GetContainerBounds(&container_bounds);
+  prerender_manager->AddPrerenderFromOmnibox(
+      match.destination_url, current_host->GetSessionStorageNamespace(),
+      container_bounds.size());
 }
 
 void OmniboxEditModel::DoPreconnect(const AutocompleteMatch& match) {

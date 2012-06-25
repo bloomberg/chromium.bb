@@ -49,6 +49,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -221,7 +222,7 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(
     int route_id,
     const GURL& url,
     const content::Referrer& referrer,
-    const gfx::Size& size) {
+    gfx::Size size) {
 #if defined(OS_ANDROID)
   // TODO(jcivelli): http://crbug.com/113322 We should have an option to disable
   //                link-prerender and enable omnibox-prerender only.
@@ -238,15 +239,25 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(
   }
 
   // Unit tests pass in a process_id == -1.
-  RenderViewHost* source_render_view_host = NULL;
   SessionStorageNamespace* session_storage_namespace = NULL;
   if (process_id != -1) {
-    source_render_view_host =
+    RenderViewHost* source_render_view_host =
         RenderViewHost::FromID(process_id, route_id);
     if (!source_render_view_host || !source_render_view_host->GetView())
       return false;
     session_storage_namespace =
         source_render_view_host->GetSessionStorageNamespace();
+
+    if (size.IsEmpty()) {
+      // Use the size of the tab requesting the prerendering.
+      WebContents* web_contents =
+          WebContents::FromRenderViewHost(source_render_view_host);
+      if (web_contents && web_contents->GetView()) {
+        gfx::Rect container_bounds;
+        web_contents->GetView()->GetContainerBounds(&container_bounds);
+        size = container_bounds.size();
+      }
+    }
   }
 
   return AddPrerender(ORIGIN_LINK_REL_PRERENDER,
@@ -257,11 +268,12 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(
 
 bool PrerenderManager::AddPrerenderFromOmnibox(
     const GURL& url,
-    SessionStorageNamespace* session_storage_namespace) {
+    SessionStorageNamespace* session_storage_namespace,
+    gfx::Size size) {
   if (!IsOmniboxEnabled(profile_))
     return false;
   return AddPrerender(ORIGIN_OMNIBOX, -1, url,
-                      content::Referrer(), gfx::Size(),
+                      content::Referrer(), size,
                       session_storage_namespace);
 }
 
@@ -809,7 +821,7 @@ bool PrerenderManager::AddPrerender(
     int process_id,
     const GURL& url_arg,
     const content::Referrer& referrer,
-    const gfx::Size& size,
+    gfx::Size size,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK(CalledOnValidThread());
 
@@ -885,6 +897,9 @@ bool PrerenderManager::AddPrerender(
   prerender_list_.push_back(data);
 
   last_prerender_start_time_ = GetCurrentTimeTicks();
+
+  if (size.IsEmpty())
+    size = config_.default_tab_bounds.size();
 
   data.contents_->StartPrerendering(process_id, size, session_storage_namespace,
                                     control_group_behavior);
