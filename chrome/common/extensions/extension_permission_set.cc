@@ -44,6 +44,7 @@ bool RcdBetterThan(std::string a, std::string b) {
 // permissions section of the manifest.
 const char* kNonPermissionModuleNames[] = {
   "app",
+  "appWindow",
   "browserAction",
   "devtools",
   "events",
@@ -208,7 +209,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
     // Register extension permissions.
     { kActiveTab, "activeTab" },
     { kAlarms, "alarms" },
-    { kAppWindow, "appWindow" },
     { kBookmark, "bookmarks", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       ExtensionPermissionMessage::kBookmarks },

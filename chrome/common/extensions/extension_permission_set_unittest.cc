@@ -576,7 +576,6 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kActiveTab);
   skip.insert(ExtensionAPIPermission::kAlarms);
   skip.insert(ExtensionAPIPermission::kAppNotifications);
-  skip.insert(ExtensionAPIPermission::kAppWindow);
   skip.insert(ExtensionAPIPermission::kBrowsingData);
   skip.insert(ExtensionAPIPermission::kContextMenus);
   skip.insert(ExtensionAPIPermission::kDeclarative);
