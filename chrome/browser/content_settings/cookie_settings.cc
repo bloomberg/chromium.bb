@@ -200,8 +200,8 @@ ContentSetting CookieSettings::GetCookieSetting(
 
   // If no explicit exception has been made and third-party cookies are blocked
   // by default, apply that rule.
-  if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-      info.secondary_pattern == ContentSettingsPattern::Wildcard() &&
+  if (info.primary_pattern.MatchesAllHosts() &&
+      info.secondary_pattern.MatchesAllHosts() &&
       ShouldBlockThirdPartyCookies() &&
       !first_party_url.SchemeIs(chrome::kExtensionScheme)) {
     bool not_strict = CommandLine::ForCurrentProcess()->HasSwitch(

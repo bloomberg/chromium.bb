@@ -478,6 +478,10 @@ bool ContentSettingsPattern::Matches(
   return true;
 }
 
+bool ContentSettingsPattern::MatchesAllHosts() const {
+  return parts_.has_domain_wildcard && parts_.host.empty();
+}
+
 const std::string ContentSettingsPattern::ToString() const {
   if (IsValid())
     return content_settings::PatternParser::ToString(parts_);

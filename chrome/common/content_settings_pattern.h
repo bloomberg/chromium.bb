@@ -177,6 +177,9 @@ class ContentSettingsPattern {
   // True if |url| matches this pattern.
   bool Matches(const GURL& url) const;
 
+  // True if this pattern matches all hosts (i.e. it has a host wildcard).
+  bool MatchesAllHosts() const;
+
   // Returns a std::string representation of this pattern.
   const std::string ToString() const;
 
