@@ -498,8 +498,13 @@ util.readFileBytes = function(file, begin, end, callback, onError) {
   fileReader.onloadend = function() {
     callback(file, new ByteReader(fileReader.result));
   };
-  fileReader.readAsArrayBuffer(file.webkitSlice(begin, end));
+  fileReader.readAsArrayBuffer(file.slice(begin, end));
 };
+
+// This code might run in the test harness on older versions of Chrome where
+// Blob.slice is still called Blob.webkitSlice.
+if (!Blob.prototype.slice)
+  Blob.prototype.slice = Blob.prototype.webkitSlice;
 
 /**
  * Write a blob to a file.

@@ -190,7 +190,7 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
 
     offset += size;
   }
-}
+};
 
 MpegParser.prototype.requestRead = function(
     file, filePos, size, name, onError, onSuccess) {
@@ -202,8 +202,8 @@ MpegParser.prototype.requestRead = function(
         reader.result, file, filePos, size, name, onError, onSuccess);
   };
   this.vlog("reading @" + filePos + ":" + size);
-  reader.readAsArrayBuffer(file.webkitSlice(filePos, filePos + size));
-}
+  reader.readAsArrayBuffer(file.slice(filePos, filePos + size));
+};
 
 MpegParser.prototype.processTopLevelAtom = function(
     buf, file, filePos, size, name, onError, onSuccess) {

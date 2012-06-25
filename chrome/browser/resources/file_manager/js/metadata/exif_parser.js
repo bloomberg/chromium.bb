@@ -43,7 +43,7 @@ ExifParser.prototype.requestSlice = function (
   reader.onload = function() { self.parseSlice(
       file, callback, errorCallback, metadata, filePos, reader.result);
   };
-  reader.readAsArrayBuffer(file.webkitSlice(filePos, filePos + opt_length));
+  reader.readAsArrayBuffer(file.slice(filePos, filePos + opt_length));
 };
 
 ExifParser.prototype.parseSlice = function(
