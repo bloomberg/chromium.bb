@@ -173,10 +173,6 @@ const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
 // background page.
 const char kRegisteredEvents[] = "events";
 
-// A dictionary of event names to lists of filters that this extension has
-// registered from its lazy background page.
-const char kFilteredEvents[] = "filtered_events";
-
 // Persisted value for omnibox.setDefaultSuggestion.
 const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
 
@@ -964,59 +960,6 @@ std::set<std::string> ExtensionPrefs::GetRegisteredEvents(
       events.insert(event);
   }
   return events;
-}
-
-void ExtensionPrefs::AddFilterToEvent(const std::string& event_name,
-                                      const std::string& extension_id,
-                                      const DictionaryValue* filter) {
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  DictionaryValue* extension_dict = update.Get();
-  DictionaryValue* filtered_events = NULL;
-  if (!extension_dict->GetDictionary(kFilteredEvents, &filtered_events)) {
-    filtered_events = new DictionaryValue;
-    extension_dict->Set(kFilteredEvents, filtered_events);
-  }
-  ListValue* filter_list = NULL;
-  if (!filtered_events->GetList(event_name, &filter_list)) {
-    filter_list = new ListValue;
-    filtered_events->Set(event_name, filter_list);
-  }
-
-  filter_list->Append(filter->DeepCopy());
-}
-
-void ExtensionPrefs::RemoveFilterFromEvent(const std::string& event_name,
-                                           const std::string& extension_id,
-                                           const DictionaryValue* filter) {
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  DictionaryValue* extension_dict = update.Get();
-  DictionaryValue* filtered_events = NULL;
-
-  if (!extension_dict->GetDictionary(kFilteredEvents, &filtered_events))
-    return;
-  ListValue* filter_list = NULL;
-  if (!filtered_events->GetList(event_name, &filter_list))
-    return;
-
-  for (size_t i = 0; i < filter_list->GetSize(); i++) {
-    DictionaryValue* filter;
-    CHECK(filter_list->GetDictionary(i, &filter));
-    if (filter->Equals(filter)) {
-      filter_list->Remove(i, NULL);
-      break;
-    }
-  }
-}
-
-const DictionaryValue* ExtensionPrefs::GetFilteredEvents(
-    const std::string& extension_id) const {
-  const DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return NULL;
-  DictionaryValue* result = NULL;
-  if (!extension->GetDictionary(kFilteredEvents, &result))
-    return NULL;
-  return result;
 }
 
 void ExtensionPrefs::SetRegisteredEvents(

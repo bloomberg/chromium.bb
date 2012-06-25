@@ -258,8 +258,6 @@
         'browser/extensions/default_apps.h',
         'browser/extensions/default_apps_trial.cc',
         'browser/extensions/default_apps_trial.h',
-        'browser/extensions/event_listener_map.cc',
-        'browser/extensions/event_listener_map.h',
         'browser/extensions/extension_activity_log.cc',
         'browser/extensions/extension_activity_log.h',
         'browser/extensions/extension_browser_event_router.cc',

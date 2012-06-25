@@ -937,8 +937,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 
     ExtensionEventRouter::DispatchEvent(
         (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,
-        json_args, GURL(), ExtensionEventRouter::USER_GESTURE_UNKNOWN,
-        EventFilteringInfo());
+        json_args, GURL(), ExtensionEventRouter::USER_GESTURE_UNKNOWN);
     if ((*it)->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       (*it)->blocked_requests.insert(request->identifier());

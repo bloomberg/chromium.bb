@@ -367,22 +367,6 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
                      std::string /* extension_id */,
                      std::string /* name */)
 
-// Notify the browser that the given extension added a listener to instances of
-// the named event that satisfy the filter.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddFilteredListener,
-                     std::string /* extension_id */,
-                     std::string /* name */,
-                     DictionaryValue /* filter */,
-                     bool /* lazy */)
-
-// Notify the browser that the given extension is no longer interested in
-// instances of the named event that satisfy the filter.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveFilteredListener,
-                     std::string /* extension_id */,
-                     std::string /* name */,
-                     DictionaryValue /* filter */,
-                     bool /* lazy */)
-
 // Notify the browser that an event has finished being dispatched.
 IPC_MESSAGE_ROUTED0(ExtensionHostMsg_EventAck)
 

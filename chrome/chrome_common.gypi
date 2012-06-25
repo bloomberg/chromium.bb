@@ -185,8 +185,6 @@
         'common/extensions/url_pattern_set.h',
         'common/extensions/user_script.cc',
         'common/extensions/user_script.h',
-        'common/extensions/value_counter.cc',
-        'common/extensions/value_counter.h',
         'common/extensions/api/extension_api.cc',
         'common/extensions/api/extension_api.h',
         'common/external_ipc_fuzzer.h',

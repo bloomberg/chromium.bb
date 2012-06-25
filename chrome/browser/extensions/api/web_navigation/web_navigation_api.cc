@@ -20,7 +20,6 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/web_navigation.h"
-#include "chrome/common/extensions/event_filtering_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/navigation_details.h"
@@ -75,18 +74,11 @@ double MilliSecondsFromTime(const base::Time& time) {
 // Dispatches events to the extension message service.
 void DispatchEvent(BrowserContext* browser_context,
                    const char* event_name,
-                   const ListValue& args,
-                   const GURL& url) {
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-
-  extensions::EventFilteringInfo info;
-  info.SetURL(url);
-
+                   const std::string& json_args) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, GURL(), info);
+        event_name, json_args, profile, GURL());
   }
 }
 
@@ -103,10 +95,11 @@ void DispatchOnBeforeNavigate(WebContents* web_contents,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnBeforeNavigate,
-                args,
-                validated_url);
+                json_args);
 }
 
 // Constructs and dispatches an onCommitted or onReferenceFragmentUpdated
@@ -138,7 +131,9 @@ void DispatchOnCommitted(const char* event_name,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), event_name, args, url);
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
+  DispatchEvent(web_contents->GetBrowserContext(), event_name, json_args);
 }
 
 // Constructs and dispatches an onDOMContentLoaded event.
@@ -155,10 +150,11 @@ void DispatchOnDOMContentLoaded(WebContents* web_contents,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnDOMContentLoaded,
-                args,
-                url);
+                json_args);
 }
 
 // Constructs and dispatches an onCompleted event.
@@ -175,8 +171,10 @@ void DispatchOnCompleted(WebContents* web_contents,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), keys::kOnCompleted, args,
-                url);
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
+  DispatchEvent(web_contents->GetBrowserContext(),
+                keys::kOnCompleted, json_args);
 }
 
 // Constructs and dispatches an onCreatedNavigationTarget event.
@@ -206,8 +204,10 @@ void DispatchOnCreatedNavigationTarget(
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
-  DispatchEvent(browser_context, keys::kOnCreatedNavigationTarget, args,
-                target_url);
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
+  DispatchEvent(
+      browser_context, keys::kOnCreatedNavigationTarget, json_args);
 }
 
 // Constructs and dispatches an onErrorOccurred event.
@@ -225,8 +225,11 @@ void DispatchOnErrorOccurred(WebContents* web_contents,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), keys::kOnErrorOccurred,
-                args, url);
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
+  DispatchEvent(web_contents->GetBrowserContext(),
+                keys::kOnErrorOccurred,
+                json_args);
 }
 
 }  // namespace

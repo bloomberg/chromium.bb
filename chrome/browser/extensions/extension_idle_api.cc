@@ -145,7 +145,7 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   base::JSONWriter::Write(&args, &json_args);
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      keys::kOnStateChanged, json_args, profile, GURL(), EventFilteringInfo());
+      keys::kOnStateChanged, json_args, profile, GURL());
 }
 
 bool ExtensionIdleQueryStateFunction::RunImpl() {

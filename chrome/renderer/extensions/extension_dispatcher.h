@@ -13,7 +13,6 @@
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "chrome/common/extensions/event_filter.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
@@ -28,10 +27,6 @@ class ModuleSystem;
 class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
-
-namespace extensions {
-class FilteredEventRouter;
-}
 
 namespace WebKit {
 class WebFrame;
@@ -262,10 +257,6 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // The current channel. From VersionInfo::GetChannel().
   // TODO(aa): Remove when we can restrict non-permission APIs to dev-only.
   int chrome_channel_;
-
-  // Routes events to the appropriate listener taking into consideration event
-  // filters.
-  scoped_ptr<extensions::EventFilter> event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

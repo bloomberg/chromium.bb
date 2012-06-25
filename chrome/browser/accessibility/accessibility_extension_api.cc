@@ -164,7 +164,7 @@ void ExtensionAccessibilityEventRouter::DispatchEvent(
     const std::string& json_args) {
   if (enabled_ && profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
+        event_name, json_args, NULL, GURL());
   }
 }
 
