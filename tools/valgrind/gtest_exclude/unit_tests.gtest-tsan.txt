@@ -4,3 +4,6 @@ ProfileManagerTest.CreateAndUseTwoProfiles
 
 # Crashing - http://crbug.com/84536
 HttpBridgeTest.*
+
+# Takes too long and may cause TSAN bots to time out. http://crbug.com/134400
+Convolver.SIMDVerification
