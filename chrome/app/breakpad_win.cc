@@ -614,6 +614,14 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
     return false;
   }
 
+  // Only show this for the browser process. See crbug.com/132119.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  if (!process_type.empty()) {
+    return false;
+  }
+
   DWORD len = ::GetEnvironmentVariableW(
       ASCIIToWide(env_vars::kRestartInfo).c_str(), NULL, 0);
   if (!len)
