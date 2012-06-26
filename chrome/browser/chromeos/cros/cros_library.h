@@ -68,10 +68,6 @@ class CrosLibrary {
   // TODO(hashimoto): Remove this method.
   bool libcros_loaded() { return !use_stub_impl_; }
 
-  // Returns an unlocalized string describing the last load error (if any).
-  // TODO(hashimoto): Remove this method.
-  std::string load_error_string() { return std::string(); }
-
  private:
   friend struct base::DefaultLazyInstanceTraits<chromeos::CrosLibrary>;
   friend class CrosLibrary::TestApi;
