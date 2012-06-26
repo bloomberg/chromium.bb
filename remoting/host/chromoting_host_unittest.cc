@@ -169,7 +169,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
-  void SimulateClientConnection(int connection_index, bool authenticate) {
+  void SimulateClientConnection(int connection_index, bool reject) {
     scoped_ptr<protocol::ConnectionToClient> connection =
         ((connection_index == 0) ? owned_connection_ : owned_connection2_).
         PassAs<protocol::ConnectionToClient>();
@@ -182,10 +182,11 @@ class ChromotingHostTest : public testing::Test {
     context_.network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
                               host_, client));
-    if (authenticate) {
-      context_.network_message_loop()->PostTask(
-          FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
-                                base::Unretained(client), connection_ptr));
+    context_.network_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
+                              base::Unretained(client), connection_ptr));
+
+    if (!reject) {
       context_.network_message_loop()->PostTask(
           FROM_HERE,
           base::Bind(&ClientSession::OnConnectionChannelsConnected,
@@ -202,6 +203,11 @@ class ChromotingHostTest : public testing::Test {
   // Helper method to remove a client connection from ChromotingHost.
   void RemoveClientSession() {
     client_->OnConnectionClosed(connection_, protocol::OK);
+  }
+
+  // Notify |host_| that the authenticating client has been rejected.
+  void RejectAuthenticatingClient() {
+    host_->RejectAuthenticatingClient();
   }
 
   // Notify |host_| that |client_| has closed.
@@ -320,6 +326,32 @@ TEST_F(ChromotingHostTest, Connect) {
       .After(stop);
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected);
 
+  SimulateClientConnection(0, false);
+  message_loop_.Run();
+}
+
+TEST_F(ChromotingHostTest, RejectAuthenticatingClient) {
+  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  EXPECT_CALL(*disconnect_window_, Hide());
+  EXPECT_CALL(*continue_window_, Hide());
+
+  host_->Start();
+
+  {
+    InSequence s;
+    EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid_))
+        .WillOnce(InvokeWithoutArgs(
+        this, &ChromotingHostTest::RejectAuthenticatingClient));
+    EXPECT_CALL(*connection_, Disconnect())
+        .WillOnce(
+            InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
+        .RetiresOnSaturation();
+    EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_));
+    EXPECT_CALL(*event_executor_, OnSessionFinished())
+        .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+    EXPECT_CALL(host_status_observer_, OnShutdown());
+  }
+
   SimulateClientConnection(0, true);
   message_loop_.Run();
 }
@@ -356,7 +388,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
   EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
       .After(stop1);
 
-  SimulateClientConnection(0, true);
+  SimulateClientConnection(0, false);
   message_loop_.Run();
 
   Expectation status_authenticated2 =
@@ -388,7 +420,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
       .After(stop2);
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected2);
 
-  SimulateClientConnection(1, true);
+  SimulateClientConnection(1, false);
   message_loop_.Run();
 }
 
@@ -414,7 +446,7 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
           InvokeWithoutArgs(
               CreateFunctor(
                   this,
-                  &ChromotingHostTest::SimulateClientConnection, 1, true)),
+                  &ChromotingHostTest::SimulateClientConnection, 1, false)),
           RunDoneTask()))
       .RetiresOnSaturation();
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
@@ -456,7 +488,7 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
   EXPECT_CALL(host_status_observer_, OnShutdown())
       .After(status_disconnected2);
 
-  SimulateClientConnection(0, true);
+  SimulateClientConnection(0, false);
   message_loop_.Run();
 }
 

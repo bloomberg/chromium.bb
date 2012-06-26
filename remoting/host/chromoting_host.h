@@ -90,7 +90,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void AddStatusObserver(HostStatusObserver* observer);
   void RemoveStatusObserver(HostStatusObserver* observer);
 
-  // This method may be called only form
+  // This method may be called only from
   // HostStatusObserver::OnClientAuthenticated() to reject the new
   // client.
   void RejectAuthenticatingClient();
