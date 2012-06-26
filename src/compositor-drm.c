@@ -98,6 +98,9 @@ struct drm_output {
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
 
+	int vblank_pending;
+	int page_flip_pending;
+
 	struct gbm_surface *surface;
 	struct gbm_bo *cursor_bo[2];
 	int current_cursor;
@@ -117,6 +120,8 @@ struct drm_sprite {
 	uint32_t pending_fb_id;
 	struct weston_surface *surface;
 	struct weston_surface *pending_surface;
+
+	struct drm_output *output;
 
 	struct drm_compositor *compositor;
 
@@ -358,6 +363,8 @@ drm_output_repaint(struct weston_output *output_base,
 		return;
 	}
 
+	output->page_flip_pending = 1;
+
 	/*
 	 * Now, update all the sprite surfaces
 	 */
@@ -391,6 +398,9 @@ drm_output_repaint(struct weston_output *output_base,
 			weston_log("vblank event request failed: %d: %s\n",
 				ret, strerror(errno));
 		}
+
+		s->output = output;
+		output->vblank_pending = 1;
 	}
 
 	return;
@@ -402,6 +412,10 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 {
 	struct drm_sprite *s = (struct drm_sprite *)data;
 	struct drm_compositor *c = s->compositor;
+	struct drm_output *output = s->output;
+	uint32_t msecs;
+
+	output->vblank_pending = 0;
 
 	if (s->surface) {
 		weston_buffer_post_release(s->surface->buffer);
@@ -420,6 +434,11 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 		s->fb_id = s->pending_fb_id;
 		s->pending_fb_id = 0;
 	}
+
+	if (!output->page_flip_pending) {
+		msecs = sec * 1000 + usec / 1000;
+		weston_output_finish_frame(&output->base, msecs);
+	}
 }
 
 static void
@@ -428,6 +447,8 @@ page_flip_handler(int fd, unsigned int frame,
 {
 	struct drm_output *output = (struct drm_output *) data;
 	uint32_t msecs;
+
+	output->page_flip_pending = 0;
 
 	if (output->current) {
 		if (output->current->is_client_buffer)
@@ -440,8 +461,10 @@ page_flip_handler(int fd, unsigned int frame,
 	output->current = output->next;
 	output->next = NULL;
 
-	msecs = sec * 1000 + usec / 1000;
-	weston_output_finish_frame(&output->base, msecs);
+	if (!output->vblank_pending) {
+		msecs = sec * 1000 + usec / 1000;
+		weston_output_finish_frame(&output->base, msecs);
+	}
 }
 
 static int
