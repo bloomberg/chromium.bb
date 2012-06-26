@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
@@ -96,11 +97,21 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   friend class GoogleURLTrackerInfoBarDelegate;
   friend class GoogleURLTrackerTest;
 
-  typedef std::map<const InfoBarTabHelper*,
-                   GoogleURLTrackerInfoBarDelegate*> InfoBarMap;
+  struct MapEntry {
+    MapEntry();  // Required by STL.
+    MapEntry(GoogleURLTrackerInfoBarDelegate* infobar,
+             const content::NotificationSource& navigation_controller_source,
+             const content::NotificationSource& tab_contents_source);
+    ~MapEntry();
+
+    GoogleURLTrackerInfoBarDelegate* infobar;
+    content::NotificationSource navigation_controller_source;
+    content::NotificationSource tab_contents_source;
+  };
+
+  typedef std::map<const InfoBarTabHelper*, MapEntry> InfoBarMap;
   typedef GoogleURLTrackerInfoBarDelegate* (*InfoBarCreator)(
       InfoBarTabHelper* infobar_helper,
-      const GURL& search_url,
       GoogleURLTracker* google_url_tracker,
       const GURL& new_google_url);
 
@@ -148,29 +159,35 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // TabContents, respectively, for this load; |infobar_helper| is the
   // InfoBarTabHelper of the associated tab; and |search_url| is the actual
   // search performed by the user, which if necessary we'll re-do on a new
-  // domain later.  This function creates a (still-invisible) InfoBarDelegate
-  // for the associated tab and begins listening for the "load committed"
-  // notification that will tell us it's safe to show the infobar.
+  // domain later.  If there is already a visible GoogleURLTracker infobar for
+  // this tab, this function resets its associated navigation entry to point at
+  // the new pending entry.  Otherwise this function creates a (still-invisible)
+  // InfoBarDelegate for the associated tab.
   void OnNavigationPending(
       const content::NotificationSource& navigation_controller_source,
       const content::NotificationSource& tab_contents_source,
       InfoBarTabHelper* infobar_helper,
-      const GURL& search_url);
+      int pending_id);
 
   // Called by Observe() once a load we're watching commits, or the associated
-  // tab is closed.  The first three args are the same as for
-  // OnNavigationPending(); |navigated| is true when this call is due to a
-  // successful navigation (indicating that we should show our infobar) as
-  // opposed to tab closue (which means we should delete the infobar).
-  void OnNavigationCommittedOrTabClosed(
-      const content::NotificationSource& navigation_controller_source,
-      const content::NotificationSource& tab_contents_source,
-      const InfoBarTabHelper* infobar_helper,
-      bool navigated);
+  // tab is closed.  |infobar_helper| is the same as for OnNavigationPending();
+  // |search_url| is valid when this call is due to a successful navigation
+  // (indicating that we should show or update the relevant infobar) as opposed
+  // to tab closure (which means we should delete the infobar).
+  void OnNavigationCommittedOrTabClosed(const InfoBarTabHelper* infobar_helper,
+                                        const GURL& search_url);
 
   // Closes all open infobars.  If |redo_searches| is true, this also triggers
   // each tab to re-perform the user's search, but on the new Google TLD.
   void CloseAllInfoBars(bool redo_searches);
+
+  // Unregisters any listeners for the notification sources in |map_entry|.
+  // This also sanity-DCHECKs that these are registered (or not) in the specific
+  // cases we expect.  (|must_be_listening_for_commit| is used purely for this
+  // sanity-checking.)
+  void UnregisterForEntrySpecificNotifications(
+      const MapEntry& map_entry,
+      bool must_be_listening_for_commit);
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
@@ -195,6 +212,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.
+  bool search_committed_;  // True when we're expecting a notification of a new
+                           // pending search navigation.
   InfoBarMap infobar_map_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
@@ -206,7 +225,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   GoogleURLTrackerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                                  const GURL& search_url,
                                   GoogleURLTracker* google_url_tracker,
                                   const GURL& new_google_url);
 
@@ -215,6 +233,8 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
 
   // Allows GoogleURLTracker to change the Google base URL after the infobar has
   // been instantiated.  This should only be called with an URL with the same
@@ -222,18 +242,22 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // correct.
   void SetGoogleURL(const GURL& new_google_url);
 
+  bool showing() const { return showing_; }
+  void set_pending_id(int pending_id) { pending_id_ = pending_id; }
+
   // These are virtual so test code can override them in a subclass.
-  virtual void Show();
+  virtual void Show(const GURL& search_url);
   virtual void Close(bool redo_search);
 
  protected:
   virtual ~GoogleURLTrackerInfoBarDelegate();
 
   InfoBarTabHelper* map_key_;  // What |google_url_tracker_| uses to track us.
-  const GURL search_url_;
+  GURL search_url_;
   GoogleURLTracker* google_url_tracker_;
   GURL new_google_url_;
   bool showing_;  // True if this delegate has been added to a TabContents.
+  int pending_id_;
 
  private:
   // ConfirmInfoBarDelegate:
