@@ -6,6 +6,7 @@
   <script type="text/javascript" src="message_handling.js"></script>
   <script type="text/javascript" src="getusermedia.js"></script>
   <script type="text/javascript" src="roap_call.js"></script>
+  <script type="text/javascript" src="video_detector.js"></script>
 </head>
 <body>
   <table border="0">
@@ -18,6 +19,7 @@
           autoplay="autoplay"></video></td>
       <td><video width="320" height="240" id="remote_view"
           autoplay="autoplay"></video></td>
+      <td><canvas id="frame_buffer" style="visibility:hidden"></canvas></td>
     </tr>
   </table>
 </body>
