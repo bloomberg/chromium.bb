@@ -670,33 +670,6 @@ TEST_F(PrerenderTest, CancelAllTest) {
   EXPECT_EQ(null, prerender_manager()->FindEntry(url));
 }
 
-// Make sure canceling for omnibox works as expected.
-TEST_F(PrerenderTest, CancelOmniboxRemovesOmniboxTest) {
-  // Check canceling removes the Omnibox url.
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OMNIBOX, FINAL_STATUS_CANCELLED);
-  EXPECT_TRUE(prerender_manager()->AddPrerenderFromOmnibox(
-      url, NULL, gfx::Size()));
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  prerender_manager()->CancelOmniboxPrerenders();
-  const DummyPrerenderContents* null = NULL;
-  EXPECT_EQ(null, prerender_manager()->FindEntry(url));
-}
-
-TEST_F(PrerenderTest, CancelOmniboxDoesNotRemoveLinkTest) {
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_LINK_REL_PRERENDER, FINAL_STATUS_MANAGER_SHUTDOWN);
-  EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  prerender_manager()->CancelOmniboxPrerenders();
-  const DummyPrerenderContents* null = NULL;
-  EXPECT_NE(null, prerender_manager()->FindEntry(url));
-}
-
 TEST_F(PrerenderTest, OmniboxNotAllowedWhenDisabled) {
   prerender_manager()->set_enabled(false);
   EXPECT_FALSE(prerender_manager()->AddPrerenderFromOmnibox(

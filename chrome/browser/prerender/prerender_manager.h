@@ -138,9 +138,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Cancels all active prerenders.
   void CancelAllPrerenders();
 
-  // Cancels all active prerenders with the ORIGIN_OMNIBOX origin.
-  void CancelOmniboxPrerenders();
-
   // If |url| matches a valid prerendered page, try to swap it into
   // |web_contents| and merge browsing histories. Returns |true| if a
   // prerendered page is swapped in, |false| otherwise.

@@ -307,16 +307,6 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
       prerender::IsOmniboxEnabled(profile_));
 
   const GURL& opened_url = match.destination_url;
-
-  // If the Omnibox triggered a prerender but the URL doesn't match the one the
-  // user is navigating to, cancel the prerender.
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(profile_);
-  // |prerender_manager| can be NULL in incognito mode or if prerendering is
-  // otherwise disabled.
-  if (prerender_manager && !prerender_manager->IsPrerendering(opened_url))
-    prerender_manager->CancelOmniboxPrerenders();
-
   const string16 lower_user_text(base::i18n::ToLower(log.text));
 
   // Traverse transitional matches for those that have a user_text that is a

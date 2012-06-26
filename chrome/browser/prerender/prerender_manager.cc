@@ -307,16 +307,6 @@ void PrerenderManager::CancelAllPrerenders() {
   }
 }
 
-void PrerenderManager::CancelOmniboxPrerenders() {
-  DCHECK(CalledOnValidThread());
-  for (PrerenderContentsDataList::iterator it = prerender_list_.begin();
-       it != prerender_list_.end(); ) {
-    PrerenderContentsDataList::iterator cur = it++;
-    if (cur->contents_->origin() == ORIGIN_OMNIBOX)
-      cur->contents_->Destroy(FINAL_STATUS_CANCELLED);
-  }
-}
-
 bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
                                                const GURL& url) {
   DCHECK(CalledOnValidThread());
