@@ -114,7 +114,7 @@ _BANNED_CPP_FUNCTIONS = (
     (
       'FRIEND_TEST(',
       (
-       'Chromium code should not use gtest\'s FRIEND_TEST() macro. Include'
+       'Chromium code should not use gtest\'s FRIEND_TEST() macro. Include',
        'base/gtest_prod_util.h and use FRIEND_TEST_ALL_PREFIXES() instead.',
       ),
       False,
@@ -122,18 +122,63 @@ _BANNED_CPP_FUNCTIONS = (
     (
       'ScopedAllowIO',
       (
-       'New code should not use ScopedAllowIO. Post a task to the blocking pool'
-       'or the FILE thread instead.',
+       'New code should not use ScopedAllowIO. Post a task to the blocking',
+       'pool or the FILE thread instead.',
       ),
-      False,
+      True,
     ),
     (
       'FilePathWatcher::Delegate',
       (
-       'New code should not use FilePathWatcher::Delegate. Use the callback'
+       'New code should not use FilePathWatcher::Delegate. Use the callback',
        'interface instead.',
       ),
       False,
+    ),
+    (
+      'browser::FindLastActiveWithProfile',
+      (
+       'This function is deprecated and we\'re working on removing it. Pass',
+       'more context to get a Browser*, like a WebContents, window, or session',
+       'id. Talk to ben@ or jam@ for more information.',
+      ),
+      True,
+    ),
+    (
+      'browser::FindBrowserWithProfile',
+      (
+       'This function is deprecated and we\'re working on removing it. Pass',
+       'more context to get a Browser*, like a WebContents, window, or session',
+       'id. Talk to ben@ or jam@ for more information.',
+      ),
+      True,
+    ),
+    (
+      'browser::FindAnyBrowser',
+      (
+       'This function is deprecated and we\'re working on removing it. Pass',
+       'more context to get a Browser*, like a WebContents, window, or session',
+       'id. Talk to ben@ or jam@ for more information.',
+      ),
+      True,
+    ),
+    (
+      'browser::FindOrCreateTabbedBrowser',
+      (
+       'This function is deprecated and we\'re working on removing it. Pass',
+       'more context to get a Browser*, like a WebContents, window, or session',
+       'id. Talk to ben@ or jam@ for more information.',
+      ),
+      True,
+    ),
+    (
+      'browser::FindTabbedBrowser',
+      (
+       'This function is deprecated and we\'re working on removing it. Pass',
+       'more context to get a Browser*, like a WebContents, window, or session',
+       'id. Talk to ben@ or jam@ for more information.',
+      ),
+      True,
     ),
 )
 
