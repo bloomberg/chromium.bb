@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/layout/grid_layout.h"
+
+#include "base/compiler_specific.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
-using views::ColumnSet;
-using views::GridLayout;
-using views::View;
+namespace views {
 
-static void ExpectViewBoundsEquals(int x, int y, int w, int h,
-                                   const View* view) {
+void ExpectViewBoundsEquals(int x, int y, int w, int h,
+                            const View* view) {
   EXPECT_EQ(x, view->x());
   EXPECT_EQ(y, view->y());
   EXPECT_EQ(w, view->width());
@@ -24,7 +24,7 @@ class SettableSizeView : public View {
     pref_ = pref;
   }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return pref_;
   }
 
@@ -39,11 +39,11 @@ class FlexibleView : public View {
     circumference_ = circumference;
   }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(0, circumference_ / 2);
   }
 
-  virtual int GetHeightForWidth(int width) {
+  virtual int GetHeightForWidth(int width) OVERRIDE {
     return std::max(0, circumference_ / 2 - width);
   }
 
@@ -53,15 +53,15 @@ class FlexibleView : public View {
 
 class GridLayoutTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     layout = new GridLayout(&host);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     delete layout;
   }
 
-  virtual void RemoveAll() {
+  void RemoveAll() {
     for (int i = host.child_count() - 1; i >= 0; i--)
       host.RemoveChildView(host.child_at(i));
   }
@@ -83,14 +83,13 @@ class GridLayoutAlignmentTest : public testing::Test {
          v1(gfx::Size(10, 20)),
        layout(new GridLayout(&host)) {}
 
-  virtual void SetUp() {
-  }
+  virtual void SetUp() OVERRIDE {}
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     delete layout;
   }
 
-  virtual void RemoveAll() {
+  void RemoveAll() {
     for (int i = host.child_count() - 1; i >= 0; i--)
       host.RemoveChildView(host.child_at(i));
   }
@@ -238,7 +237,7 @@ TEST_F(GridLayoutTest, ColSpan3) {
 
 
 TEST_F(GridLayoutTest, ColSpan4) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
   set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                  GridLayout::USE_PREF, 0, 0);
@@ -374,7 +373,7 @@ TEST_F(GridLayoutTest, Insets) {
 TEST_F(GridLayoutTest, FixedSize) {
   layout->SetInsets(2, 2, 2, 2);
 
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
   int column_count = 4;
   int title_width = 100;
@@ -383,10 +382,10 @@ TEST_F(GridLayoutTest, FixedSize) {
   int pref_height = 20;
 
   for (int i = 0; i < column_count; ++i) {
-    set->AddColumn(views::GridLayout::CENTER,
-                   views::GridLayout::CENTER,
+    set->AddColumn(GridLayout::CENTER,
+                   GridLayout::CENTER,
                    0,
-                   views::GridLayout::FIXED,
+                   GridLayout::FIXED,
                    title_width,
                    title_width);
   }
@@ -417,12 +416,12 @@ TEST_F(GridLayoutTest, FixedSize) {
 }
 
 TEST_F(GridLayoutTest, RowSpanWithPaddingRow) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
-  set->AddColumn(views::GridLayout::CENTER,
-                 views::GridLayout::CENTER,
+  set->AddColumn(GridLayout::CENTER,
+                 GridLayout::CENTER,
                  0,
-                 views::GridLayout::FIXED,
+                 GridLayout::FIXED,
                  10,
                  10);
 
@@ -432,18 +431,18 @@ TEST_F(GridLayoutTest, RowSpanWithPaddingRow) {
 }
 
 TEST_F(GridLayoutTest, RowSpan) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
-  set->AddColumn(views::GridLayout::LEADING,
-                 views::GridLayout::LEADING,
+  set->AddColumn(GridLayout::LEADING,
+                 GridLayout::LEADING,
                  0,
-                 views::GridLayout::USE_PREF,
+                 GridLayout::USE_PREF,
                  0,
                  0);
-  set->AddColumn(views::GridLayout::LEADING,
-                 views::GridLayout::LEADING,
+  set->AddColumn(GridLayout::LEADING,
+                 GridLayout::LEADING,
                  0,
-                 views::GridLayout::USE_PREF,
+                 GridLayout::USE_PREF,
                  0,
                  0);
 
@@ -451,7 +450,7 @@ TEST_F(GridLayoutTest, RowSpan) {
   layout->AddView(new SettableSizeView(gfx::Size(20, 10)));
   layout->AddView(new SettableSizeView(gfx::Size(20, 40)), 1, 2);
   layout->StartRow(1, 0);
-  views::View* s3 = new SettableSizeView(gfx::Size(20, 10));
+  View* s3 = new SettableSizeView(gfx::Size(20, 10));
   layout->AddView(s3);
 
   GetPreferredSize();
@@ -463,7 +462,7 @@ TEST_F(GridLayoutTest, RowSpan) {
 }
 
 TEST_F(GridLayoutTest, RowSpan2) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
   set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                  0, GridLayout::USE_PREF, 0, 0);
@@ -472,7 +471,7 @@ TEST_F(GridLayoutTest, RowSpan2) {
 
   layout->StartRow(0, 0);
   layout->AddView(new SettableSizeView(gfx::Size(20, 20)));
-  views::View* s3 = new SettableSizeView(gfx::Size(64, 64));
+  View* s3 = new SettableSizeView(gfx::Size(64, 64));
   layout->AddView(s3, 1, 3);
 
   layout->AddPaddingRow(0, 10);
@@ -489,7 +488,7 @@ TEST_F(GridLayoutTest, RowSpan2) {
 }
 
 TEST_F(GridLayoutTest, FixedViewWidth) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
   set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                  0, GridLayout::USE_PREF, 0, 0);
@@ -510,7 +509,7 @@ TEST_F(GridLayoutTest, FixedViewWidth) {
 }
 
 TEST_F(GridLayoutTest, FixedViewHeight) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
   set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                  0, GridLayout::USE_PREF, 0, 0);
@@ -533,12 +532,12 @@ TEST_F(GridLayoutTest, FixedViewHeight) {
 // Make sure that for views that span columns the underlying columns are resized
 // based on the resize percent of the column.
 TEST_F(GridLayoutTest, ColumnSpanResizing) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
 
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 2, views::GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 4, views::GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
+                 2, GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
+                 4, GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   // span_view spans two columns and is twice as big the views added below.
@@ -570,17 +569,17 @@ TEST_F(GridLayoutTest, ColumnSpanResizing) {
 // there is additional space in the case we have column sets of different
 // preferred sizes.
 TEST_F(GridLayoutTest, ColumnResizingOnGetPreferredSize) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 1, views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* set = layout->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
+                 1, GridLayout::USE_PREF, 0, 0);
 
   set = layout->AddColumnSet(1);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 1, views::GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
+                 1, GridLayout::USE_PREF, 0, 0);
 
   set = layout->AddColumnSet(2);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 1, views::GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
+                 1, GridLayout::USE_PREF, 0, 0);
 
   // Make a row containing a flexible view that trades width for height.
   layout->StartRow(0, 0);
@@ -607,7 +606,7 @@ TEST_F(GridLayoutTest, ColumnResizingOnGetPreferredSize) {
 
 TEST_F(GridLayoutTest, MinimumPreferredSize) {
   SettableSizeView v1(gfx::Size(10, 20));
-  views::ColumnSet* set = layout->AddColumnSet(0);
+  ColumnSet* set = layout->AddColumnSet(0);
   set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                  0, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
@@ -622,3 +621,5 @@ TEST_F(GridLayoutTest, MinimumPreferredSize) {
 
   RemoveAll();
 }
+
+}  // namespace views
