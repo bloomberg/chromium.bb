@@ -58,7 +58,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     for (FileSystemMap::iterator iter = filesystem_permissions_.begin();
          iter != filesystem_permissions_.end();
          ++iter) {
-      isolated_context->RevokeIsolatedFileSystem(iter->first);
+      isolated_context->RemoveReference(iter->first);
     }
     UMA_HISTOGRAM_COUNTS("ChildProcessSecurityPolicy.PerChildFilePermissions",
                          file_permissions_.size());
@@ -97,6 +97,9 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // Grant certain permissions to a file.
   void GrantPermissionsForFileSystem(const std::string& filesystem_id,
                                      int permissions) {
+    if (filesystem_permissions_.find(filesystem_id) ==
+        filesystem_permissions_.end())
+      fileapi::IsolatedContext::GetInstance()->AddReference(filesystem_id);
     filesystem_permissions_[filesystem_id] = permissions;
   }
 
