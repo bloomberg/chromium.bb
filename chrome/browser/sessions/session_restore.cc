@@ -743,8 +743,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
 #endif
     StartTabCreation();
 
-    Browser* current_browser =
-        browser_ ? browser_ : browser::FindLastActiveWithProfile(profile_);
     // After the for loop this contains the last TABBED_BROWSER. Is null if no
     // tabbed browsers exist.
     Browser* last_browser = NULL;
@@ -764,10 +762,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
       if (!has_tabbed_browser && (*i)->type == Browser::TYPE_TABBED)
         has_tabbed_browser = true;
       if (i == windows->begin() && (*i)->type == Browser::TYPE_TABBED &&
-          current_browser && current_browser->is_type_tabbed() &&
-          !current_browser->profile()->IsOffTheRecord()) {
+          browser_ && browser_->is_type_tabbed() &&
+          !browser_->profile()->IsOffTheRecord()) {
         // The first set of tabs is added to the existing browser.
-        browser = current_browser;
+        browser = browser_;
       } else {
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
