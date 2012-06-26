@@ -46,6 +46,12 @@ class SuggestedTextView;
 class TabContents;
 class TemplateURLService;
 
+namespace chrome {
+namespace search {
+class SearchModel;
+}
+}
+
 namespace views {
 class BubbleDelegateView;
 class Widget;
@@ -138,6 +144,7 @@ class LocationBarView : public LocationBar,
                   CommandUpdater* command_updater,
                   ToolbarModel* model,
                   Delegate* delegate,
+                  chrome::search::SearchModel* search_model,
                   Mode mode);
 
   virtual ~LocationBarView();
@@ -243,6 +250,10 @@ class LocationBarView : public LocationBar,
   }
 
   views::View* location_entry_view() const { return location_entry_view_; }
+
+  chrome::search::SearchModel* search_model() const {
+    return search_model_;
+  }
 
   // Overridden from OmniboxEditController:
   virtual void OnAutocompleteAccept(const GURL& url,
@@ -399,6 +410,10 @@ class LocationBarView : public LocationBar,
 
   // Our delegate.
   Delegate* delegate_;
+
+  // Weak, owned by browser.
+  // This is null if there is no browser instance.
+  chrome::search::SearchModel* search_model_;
 
   // This is the string of text from the autocompletion session that the user
   // entered or selected.

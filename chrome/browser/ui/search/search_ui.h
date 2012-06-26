@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
+class Font;
 class Rect;
 class Size;
 }
@@ -19,11 +20,17 @@ namespace search {
 // Background color of the NTP.
 extern const SkColor kNTPBackgroundColor;
 
+// Color for the placeholder text on NTP.
+extern const SkColor kNTPPlaceholderTextColor;
+
 // Color for the separator between results and the page.
 extern const SkColor kResultsSeparatorColor;
 
 // Background color for search results.
 extern const SkColor kSearchBackgroundColor;
+
+// Font size use in the omnibox for non-NTP pages.
+extern const int kOmniboxFontSize;
 
 // Y-coordinate of the omnibox when over the page.
 extern const int kOmniboxYPosition;
@@ -34,6 +41,12 @@ extern const int kSearchResultsHeight;
 // Get location of NTP omnibox in |web_contents_size|.  A height of 0 is
 // returned, it is platform-specific.
 gfx::Rect GetNTPOmniboxBounds(const gfx::Size& web_contents_size);
+
+// Returns the derived |font| for NTP omnibox use.
+gfx::Font GetNTPOmniboxFont(const gfx::Font& font);
+
+// Returns the height of NTP given the |font| to be used.
+int GetNTPOmniboxHeight(const gfx::Font& font);
 
 }  // namespace search
 }  // namespace chrome

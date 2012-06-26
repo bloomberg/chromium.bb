@@ -223,6 +223,7 @@ void ToolbarView::Init(views::View* location_bar_parent,
       browser_->command_updater(),
       model_,
       this,
+      browser_->search_model(),
       (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
   // TODO(sky): if we want this to work on windows we need to make sure the

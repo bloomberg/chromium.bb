@@ -10045,6 +10045,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Add more apps
       </message>
 
+      <message name="IDS_NTP_OMNIBOX_PLACEHOLDER" desc="Placeholder text shown in the NTP omnibox.">
+        Search or type a web address
+      </message>
+
       <!-- App Notifications -->
       <message name="IDS_APP_NOTIFICATION_NEED_SIGNIN" desc="Displayed when an app wants to send server push notifictions to Chrome, but the user isn't signed in to the browser (which is required for the feature to work).">
         <ph name="APP_NAME">$1<ex>Google News</ex></ph> would like to send notifications, but you need to be signed in to Chrome.

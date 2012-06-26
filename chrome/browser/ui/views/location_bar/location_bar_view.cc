@@ -28,6 +28,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -99,6 +102,9 @@ const int kDesktopEdgeItemPadding = kDesktopItemPadding;
 const int kTouchItemPadding = 8;
 const int kTouchEdgeItemPadding = kTouchItemPadding;
 
+// Extra padding for the height of the omnibox in search mode.
+const int kSearchEditHeightPadding = 2;
+
 }  // namespace
 
 // static
@@ -127,11 +133,13 @@ LocationBarView::LocationBarView(Profile* profile,
                                  CommandUpdater* command_updater,
                                  ToolbarModel* model,
                                  Delegate* delegate,
+                                 chrome::search::SearchModel* search_model,
                                  Mode mode)
     : profile_(profile),
       command_updater_(command_updater),
       model_(model),
       delegate_(delegate),
+      search_model_(search_model),
       disposition_(CURRENT_TAB),
       transition_(content::PageTransitionFromInt(
           content::PAGE_TRANSITION_TYPED |
@@ -502,8 +510,13 @@ bool LocationBarView::IsLocationEntryFocusableInRootView() const {
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
+  if (search_model_ && search_model_->mode().is_ntp())
+    return gfx::Size(0, chrome::search::GetNTPOmniboxHeight(
+        location_entry_->GetFont()));
+  int delta = chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
+      kSearchEditHeightPadding : 0;
   return gfx::Size(0, GetThemeProvider()->GetImageSkiaNamed(mode_ == POPUP ?
-      IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG_C)->height());
+      IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG_C)->height() + delta);
 }
 
 void LocationBarView::Layout() {
