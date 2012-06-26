@@ -11,7 +11,7 @@
   <property environment="env"/>
   <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
-  <property name="src" location="."/>
+  <property name="src" location="src"/>
   <property name="build" location="build"/>
   <property name="dist"  location="dist"/>
   <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>

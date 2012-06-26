@@ -13,20 +13,21 @@
   <property environment="env"/>
   <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
   <property name="toolchain.dir" location="${env.ANDROID_TOOLCHAIN}"/>
-  <property name="source.dir" location="java"/>
-  <property name="target" value="android-14"/>
+  <property name="source.dir" location="src"/>
+  <property name="target" value="android-${env.ANDROID_SDK_VERSION}"/>
   <property name="target.abi" value="${APP_ABI}"/>
   <property name="out.dir" location="${PRODUCT_DIR}/content_shell"/>
-  <property name="resource.absolute.dir" value="res"/>
+  <property name="resource.absolute.dir" value="../res"/>
   <property name="gen.absolute.dir" value="${out.dir}/gen"/>
   <property name="jar.libs.dir" value="${out.dir}/java/libs"/>
   <path id="native.libs.gdbserver">
     <fileset file="${toolchain.dir}/../../gdbserver"/>
   </path>
   <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
+  <property name="asset.absolute.dir" location="${out.dir}/assets" />
   <!-- If your app crashes when referencing java from a different .jar
        (e.g.  java.lang.NoClassDefFoundError:
-       org.chromium.content.browser.CommandLine), And if
+       org.chromium.content.common.CommandLine), And if
        chromium_content.jar is in fact in your java/libs directory (as
        placed by a gyp 'cp'), the following line will make sure it
        gets added to the classes.dex file. -->
@@ -46,7 +47,7 @@
       </else>
     </if>
   </target>
-  
+
   <target name="-post-compile">
     <!-- copy gdbserver to main libs directory if building debug.
       TODO(jrg): for now, Chrome on Android always builds native code

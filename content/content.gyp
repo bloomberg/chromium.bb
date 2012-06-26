@@ -230,11 +230,11 @@
          'target_name': 'common_aidl',
          'type': 'none',
          'variables': {
-           'aidl_interface_file': '../content/public/android/java/org/chromium/content/common/common.aidl',
+           'aidl_interface_file': '../content/public/android/java/src/org/chromium/content/common/common.aidl',
          },
          'sources': [
-           '../content/public/android/java/org/chromium/content/common/ISandboxedProcessCallback.aidl',
-           '../content/public/android/java/org/chromium/content/common/ISandboxedProcessService.aidl',
+           '../content/public/android/java/src/org/chromium/content/common/ISandboxedProcessCallback.aidl',
+           '../content/public/android/java/src/org/chromium/content/common/ISandboxedProcessService.aidl',
          ],
          'includes': [ '../build/java_aidl.gypi' ],
        },

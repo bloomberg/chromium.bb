@@ -8,7 +8,7 @@
   <!-- TODO(jrg): The apk-runner's version is hardcoded to SDK version 14. These
     two should be unified. -->
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
-  <property name="src" location="."/>
+  <property name="src" location="src"/>
   <property name="dist" location="dist"/>
   <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
   <!-- TODO(jrg): establish a standard for the intermediate java

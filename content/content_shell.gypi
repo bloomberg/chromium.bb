@@ -472,8 +472,8 @@
           'type': 'none',
           'variables': {
             'java_sources': [
-              'shell/android/java/org/chromium/content_shell/ShellManager.java',
-              'shell/android/java/org/chromium/content_shell/ShellView.java',
+              'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
+              'shell/android/java/src/org/chromium/content_shell/ShellView.java',
             ],
             'jni_headers': [
               '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_manager_jni.h',
@@ -549,7 +549,7 @@
             {
               'action_name': 'content_shell_apk',
               'inputs': [
-                '<(DEPTH)/content/shell/android/content_shell_apk.xml',
+                '<(DEPTH)/content/shell/android/java/content_shell_apk.xml',
                 '<(DEPTH)/content/shell/android/AndroidManifest.xml',
                 '<!@(find shell/android/java -name "*.java")',
                 '<!@(find shell/android/res -name "*")',
@@ -571,7 +571,7 @@
                 '-DPRODUCT_DIR=<(ant_build_out)',
                 '-DAPP_ABI=<(android_app_abi)',
                 '-buildfile',
-                '<(DEPTH)/content/shell/android/content_shell_apk.xml',
+                '<(DEPTH)/content/shell/android/java/content_shell_apk.xml',
               ]
             }
           ],
