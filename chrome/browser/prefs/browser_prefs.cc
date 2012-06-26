@@ -58,7 +58,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
-#include "chrome/browser/ui/network_profile_bubble_prefs.h"
+#include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
@@ -254,7 +254,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(OS_WIN)
-  browser::RegisterNetworkProfileBubblePrefs(user_prefs);
+  NetworkProfileBubble::RegisterPrefs(user_prefs);
 #endif
 }
 
