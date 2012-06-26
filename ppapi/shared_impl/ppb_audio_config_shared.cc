@@ -74,14 +74,14 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
     return recommendation;
   }
 
-  // Otherwise, recommend a conservative 30ms buffer based on sample rate.
-  const uint32_t kDefault30msAt44100kHz = 1323;
-  const uint32_t kDefault30msAt48000kHz = 1440;
+  // Otherwise, recommend a conservative 50ms buffer based on sample rate.
+  const uint32_t kDefault50msAt44100kHz = 2205;
+  const uint32_t kDefault50msAt48000kHz = 2400;
   switch (sample_rate) {
     case PP_AUDIOSAMPLERATE_44100:
-      return kDefault30msAt44100kHz;
+      return kDefault50msAt44100kHz;
     case PP_AUDIOSAMPLERATE_48000:
-      return kDefault30msAt48000kHz;
+      return kDefault50msAt48000kHz;
     case PP_AUDIOSAMPLERATE_NONE:
       return 0;
   }
