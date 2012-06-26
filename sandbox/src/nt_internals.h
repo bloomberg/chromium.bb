@@ -263,7 +263,7 @@ typedef NTSTATUS (WINAPI *NtOpenProcessFunction) (
   IN POBJECT_ATTRIBUTES ObjectAttributes,
   IN PCLIENT_ID ClientId);
 
-typedef enum _THREAD_INFORMATION_CLASS {
+typedef enum _NT_THREAD_INFORMATION_CLASS {
   ThreadBasicInformation,
   ThreadTimes,
   ThreadPriority,
@@ -282,11 +282,11 @@ typedef enum _THREAD_INFORMATION_CLASS {
   ThreadSetTlsArrayAddress,
   ThreadIsIoPending,
   ThreadHideFromDebugger
-} THREAD_INFORMATION_CLASS, *PTHREAD_INFORMATION_CLASS;
+} NT_THREAD_INFORMATION_CLASS, *PNT_THREAD_INFORMATION_CLASS;
 
 typedef NTSTATUS (WINAPI *NtSetInformationThreadFunction) (
   IN HANDLE ThreadHandle,
-  IN THREAD_INFORMATION_CLASS ThreadInformationClass,
+  IN NT_THREAD_INFORMATION_CLASS ThreadInformationClass,
   IN PVOID ThreadInformation,
   IN ULONG ThreadInformationLength);
 

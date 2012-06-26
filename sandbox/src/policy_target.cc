@@ -72,7 +72,7 @@ bool QueryBroker(int ipc_id, CountedParameterSetBase* params) {
 // called before the actual call to LowerToken.
 NTSTATUS WINAPI TargetNtSetInformationThread(
     NtSetInformationThreadFunction orig_SetInformationThread, HANDLE thread,
-    THREAD_INFORMATION_CLASS thread_info_class, PVOID thread_information,
+    NT_THREAD_INFORMATION_CLASS thread_info_class, PVOID thread_information,
     ULONG thread_information_bytes) {
   do {
     if (SandboxFactory::GetTargetServices()->GetState()->RevertedToSelf())

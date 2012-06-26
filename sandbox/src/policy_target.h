@@ -22,7 +22,7 @@ extern "C" {
 // It should never be called directly.
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtSetInformationThread(
     NtSetInformationThreadFunction orig_SetInformationThread, HANDLE thread,
-    THREAD_INFORMATION_CLASS thread_info_class, PVOID thread_information,
+    NT_THREAD_INFORMATION_CLASS thread_info_class, PVOID thread_information,
     ULONG thread_information_bytes);
 
 // Interception of NtOpenThreadToken on the child process.
