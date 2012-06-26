@@ -595,55 +595,64 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- extra_load_store (See Section A5.2.8)
 | op2(6:5) op1(24:20) Rn(19:16)
-| 01       xx0x0      -         = Store3RegisterOp => StrRegister
+| 01       xx0x0      -         = Store3RegisterOp => StoreBasedOffsetMemory
                                   Strh_Rule_208_A1_P412
                                   cccc000pd0w0nnnntttt00001011mmmm
-| "        xx0x1      -         = Load3RegisterOp => LdrRegister
+| "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
                                   Ldrh_Rule_76_A1_P156
                                   cccc000pd0w1nnnntttt00001011mmmm
-| "        xx1x0      -         = Store2RegisterImm8Op => StrImmediate
+| "        xx1x0      -         = Store2RegisterImm8Op
+                                  => StoreBasedImmedMemory
                                   Strh_Rule_207_A1_P410
                                   cccc000pd1w0nnnnttttiiii1011iiii
-| "        xx1x1      ~1111     = Load2RegisterImm8Op => LdrImmediate
+| "        xx1x1      ~1111     = Load2RegisterImm8Op 
+                                  => LoadBasedImmedMemory
                                   Ldrh_Rule_74_A1_P152
                                   cccc000pd1w1nnnnttttiiii1011iiii NotRnIsPc
-| "        "          1111      = Load2RegisterImm8Op => LdrImmediate
+| "        "          1111      = Load2RegisterImm8Op
+                                  => LoadBasedImmedMemory
                                   Ldrh_Rule_75_A1_P154
                                   cccc0001d1011111ttttiiii1011iiii
-| 10       xx0x0      -         = Load3RegisterDoubleOp => LdrRegisterDouble
+| 10       xx0x0      -         = Load3RegisterDoubleOp
+                                  => LoadBasedOffsetMemoryDouble
                                   Ldrd_Rule_68_A1_P140
                                   cccc000pd0w0nnnntttt00001101mmmm (v5TE)
-| "        xx0x1      -         = Load3RegisterOp => LdrRegister 
+| "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
                                   Ldrsb_Rule_80_A1_P164
                                   cccc000pd0w1nnnntttt00001101mmmm
 | "        xx1x0      ~1111     = Load2RegisterImm8DoubleOp
-                                  => LdrImmediateDouble
+                                  => LoadBasedImmedMemoryDouble
                                   Ldrd_Rule_66_A1_P136
                                   cccc000pd1w0nnnnttttiiii1101iiii NotRnIsPc (v5TE)
 | "        "          1111      = Load2RegisterImm8DoubleOp
-                                  => LdrImmediateDouble
+                                  => LoadBasedImmedMemoryDouble 
                                   Ldrd_Rule_67_A1_P138
                                   cccc0001d1001111ttttiiii1101iiii (v5TE)
-| "        xx1x1      ~1111     = Load2RegisterImm8Op => LdrImmediate
+| "        xx1x1      ~1111     = Load2RegisterImm8Op
+                                  => LoadBasedImmedMemory
                                   Ldrsb_Rule_78_A1_P160
                                   cccc000pd1w1nnnnttttiiii1101iiii NotRnIsPc
-| "        "          1111      = Load2RegisterImm8Op => LdrImmediate
+| "        "          1111      = Load2RegisterImm8Op
+                                  => LoadBasedImmedMemory
                                   ldrsb_Rule_79_A1_162
                                   cccc0001d1011111ttttiiii1101iiii
-| 11       xx0x0      -         = Store3RegisterDoubleOp => StrRegisterDouble
+| 11       xx0x0      -         = Store3RegisterDoubleOp
+                                  => StoreBasedOffsetMemoryDouble
                                   Strd_Rule_201_A1_P398
                                   cccc000pd0w0nnnntttt00001111mmmm
-| "        xx0x1      -         = Load3RegisterOp => LdrRegister
+| "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
                                   Ldrsh_Rule_84_A1_P172
                                   cccc000pd0w1nnnntttt00001111mmmm
 | "        xx1x0      -         = Store2RegisterImm8DoubleOp
-                                  => StrImmediateDouble
+                                  => StoreBasedImmedMemoryDouble
                                   Strd_Rule_200_A1_P396
                                   cccc000pd1w0nnnnttttiiii1111iiii
-| "        xx1x1      ~1111     = Load2RegisterImm8Op => LdrImmediate
+| "        xx1x1      ~1111     = Load2RegisterImm8Op
+                                  => LoadBasedImmedMemory
                                   Ldrsh_Rule_82_A1_P168
                                   cccc000pd1w1nnnnttttiiii1111iiii NotRnIsPc
-| "        "          1111      = Load2RegisterImm8Op => LdrImmediate
+| "        "          1111      = Load2RegisterImm8Op
+                                  => LoadBasedImmedMemory
                                   Ldrsh_Rule_83_A1_P170
                                   cccc0001d1011111ttttiiii1111iiii
 +--
@@ -773,12 +782,14 @@ class Store3RegisterOp : LoadStore3RegisterOp
 +-- load_store_word_byte (See Section A5.3)
 | A(25) op1(24:20) B(4) Rn(19:16)
 # Following 2 rows implement op1 = xx0x0 & ~0x010
-| 0     1x0x0      -    -        = Store2RegisterImm12Op => StrImmediate
+| 0     1x0x0      -    -        = Store2RegisterImm12Op
+                                   => StoreBasedImmedMemory
                                    Str_Rule_194_A1_P384
                                    cccc010pd0w0nnnnttttiiiiiiiiiiii
 | "     0x000      "    "        "
 # Following 2 rows implement op1 = xx0x0 & ~0x010
-| 1     1x0x0      0    -        = Store3RegisterImm5Op => StrRegister
+| 1     1x0x0      0    -        = Store3RegisterImm5Op 
+                                   => StoreBasedOffsetMemory
                                    Str_Rule_195_A1_P386
                                    cccc011pd0w0nnnnttttiiiiitt0mmmm
 | "     0x000      "    "        "
@@ -787,17 +798,19 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | 0     0x010      -    -        = Forbidden
 | 1     0x010      0    -        "
 # Following 2 rows implement op1 = xx0x1 & ~0x011
-| 0     1x0x1      -    ~1111    = Load2RegisterImm12Op => LdrImmediate
+| 0     1x0x1      -    ~1111    = Load2RegisterImm12Op
+                                   => LoadBasedImmedMemory
                                    Ldr_Rule_58_A1_P120
                                    cccc010pd0w1nnnnttttiiiiiiiiiiii NotRnIsPc
 | "     0x001      "    "        "
 # Following 2 rows implement op1 = xx0x1 & ~0x011
-| "     1x0x1      "    1111     = Load2RegisterImm12Op => LdrImmediate
+| "     1x0x1      "    1111     = Load2RegisterImm12Op
+                                   => LoadBasedImmedMemory
                                    Ldr_Rule_59_A1_P122
                                    cccc0101d0011111ttttiiiiiiiiiiii
 | "     0x001      "    "        "
 # Following 2 rows implement op1 = xx0x1 & ~0x011
-| 1     1x0x1      0    -        = Load3RegisterImm5Op => LdrRegister
+| 1     1x0x1      0    -        = Load3RegisterImm5Op => LoadBasedOffsetMemory
                                    Ldr_Rule_60_A1_P124
                                    cccc011pd0w1nnnnttttiiiiitt0mmmm
 | "     xx001      "    "        "
@@ -806,12 +819,14 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | 0     0x011      -    -        = Forbidden
 | 1     0x011      0    -        "
 # Following 2 rows implement op1 = xx1x0 & ~0x110
-| 0     1x1x0      -    -        = Store2RegisterImm12Op => StrImmediate
+| 0     1x1x0      -    -        = Store2RegisterImm12Op
+                                   => StoreBasedImmedMemory
                                    Strb_Rule_197_A1_P390
                                    cccc010pd1w0nnnnttttiiiiiiiiiiii
 | "     0x100      "    "        "
 # Following 2 rows implement op1 = xx1x0 & ~0x110
-| 1     1x1x0      0    -        = Store3RegisterImm5Op => StrRegister
+| 1     1x1x0      0    -        = Store3RegisterImm5Op
+                                   => StoreBasedOffsetMemory
                                    Strb_Rule_198_A1_P392
                                    cccc011pd1w0nnnnttttiiiiitt0mmmm
 | "     0x100      "    "        "
@@ -820,17 +835,19 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | 0     0x110      -    -        = Forbidden       # STRBT A8-394
 | 1     0x110      0    -        "
 # Following 2 rows implement op1 = xx1x1 & ~0x111
-| 0     1x1x1      -    ~1111    = Load2RegisterImm12Op => LdrImmediate
+| 0     1x1x1      -    ~1111    = Load2RegisterImm12Op
+                                   => LoadBasedImmedMemory
                                    Ldrb_Rule_62_A1_P128
                                    cccc010pd1w1nnnnttttiiiiiiiiiiii NotRnIsPc
 | "     0x101      "    "        "
 # Following 2 rows implement op1 = xx1x1 & ~0x111
-| "     1x1x1      "    1111     = Load2RegisterImm12Op => LdrImmediate
+| "     1x1x1      "    1111     = Load2RegisterImm12Op
+                                   => LoadBasedImmedMemory
                                    Ldrb_Rule_63_A1_P130
                                    cccc0101d1011111ttttiiiiiiiiiiii
 | "     0x101      "    "        "
 # Following 2 rows implement op1 = xx1x1 & ~0x111
-| 1     1x1x1      0    -        = Load3RegisterImm5Op => LdrRegister
+| 1     1x1x1      0    -        = Load3RegisterImm5Op => LoadBasedOffsetMemory
                                    Ldrb_Rule_64_A1_P132
                                    cccc011pd1w1nnnnttttiiiiitt0mmmm
 | "     0x101      "    "        "

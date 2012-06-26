@@ -2796,7 +2796,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Ldr_Rule_58_A1_P120_NotRnIsPc_cccc010pd0w1nnnnttttiiiiiiiiiiii_Test) {
   Load2RegisterImm12OpTester_Ldr_Rule_58_A1_P120_NotRnIsPc baseline_tester;
-  NamedLdrImmediate_Ldr_Rule_58_A1_P120 actual;
+  NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc010pd0w1nnnnttttiiiiiiiiiiii");
 }
@@ -2804,7 +2804,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Ldr_Rule_59_A1_P122__cccc0101d0011111ttttiiiiiiiiiiii_Test) {
   Load2RegisterImm12OpTester_Ldr_Rule_59_A1_P122_ baseline_tester;
-  NamedLdrImmediate_Ldr_Rule_59_A1_P122 actual;
+  NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0101d0011111ttttiiiiiiiiiiii");
 }
@@ -2812,7 +2812,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Ldrb_Rule_62_A1_P128_NotRnIsPc_cccc010pd1w1nnnnttttiiiiiiiiiiii_Test) {
   Load2RegisterImm12OpTester_Ldrb_Rule_62_A1_P128_NotRnIsPc baseline_tester;
-  NamedLdrImmediate_Ldrb_Rule_62_A1_P128 actual;
+  NamedLoadBasedImmedMemory_Ldrb_Rule_62_A1_P128 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc010pd1w1nnnnttttiiiiiiiiiiii");
 }
@@ -2820,7 +2820,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Ldrb_Rule_63_A1_P130__cccc0101d1011111ttttiiiiiiiiiiii_Test) {
   Load2RegisterImm12OpTester_Ldrb_Rule_63_A1_P130_ baseline_tester;
-  NamedLdrImmediate_Ldrb_Rule_63_A1_P130 actual;
+  NamedLoadBasedImmedMemory_Ldrb_Rule_63_A1_P130 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0101d1011111ttttiiiiiiiiiiii");
 }
@@ -2828,7 +2828,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8DoubleOpTester_Ldrd_Rule_66_A1_P136_NotRnIsPc_cccc000pd1w0nnnnttttiiii1101iiii_Test) {
   Load2RegisterImm8DoubleOpTester_Ldrd_Rule_66_A1_P136_NotRnIsPc baseline_tester;
-  NamedLdrImmediateDouble_Ldrd_Rule_66_A1_P136 actual;
+  NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd1w0nnnnttttiiii1101iiii");
 }
@@ -2836,7 +2836,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8DoubleOpTester_Ldrd_Rule_67_A1_P138__cccc0001d1001111ttttiiii1101iiii_Test) {
   Load2RegisterImm8DoubleOpTester_Ldrd_Rule_67_A1_P138_ baseline_tester;
-  NamedLdrImmediateDouble_Ldrd_Rule_67_A1_P138 actual;
+  NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001d1001111ttttiiii1101iiii");
 }
@@ -2844,7 +2844,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Ldrh_Rule_74_A1_P152_NotRnIsPc_cccc000pd1w1nnnnttttiiii1011iiii_Test) {
   Load2RegisterImm8OpTester_Ldrh_Rule_74_A1_P152_NotRnIsPc baseline_tester;
-  NamedLdrImmediate_Ldrh_Rule_74_A1_P152 actual;
+  NamedLoadBasedImmedMemory_Ldrh_Rule_74_A1_P152 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd1w1nnnnttttiiii1011iiii");
 }
@@ -2852,7 +2852,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Ldrh_Rule_75_A1_P154__cccc0001d1011111ttttiiii1011iiii_Test) {
   Load2RegisterImm8OpTester_Ldrh_Rule_75_A1_P154_ baseline_tester;
-  NamedLdrImmediate_Ldrh_Rule_75_A1_P154 actual;
+  NamedLoadBasedImmedMemory_Ldrh_Rule_75_A1_P154 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001d1011111ttttiiii1011iiii");
 }
@@ -2860,7 +2860,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Ldrsb_Rule_78_A1_P160_NotRnIsPc_cccc000pd1w1nnnnttttiiii1101iiii_Test) {
   Load2RegisterImm8OpTester_Ldrsb_Rule_78_A1_P160_NotRnIsPc baseline_tester;
-  NamedLdrImmediate_Ldrsb_Rule_78_A1_P160 actual;
+  NamedLoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd1w1nnnnttttiiii1101iiii");
 }
@@ -2868,7 +2868,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Ldrsh_Rule_82_A1_P168_NotRnIsPc_cccc000pd1w1nnnnttttiiii1111iiii_Test) {
   Load2RegisterImm8OpTester_Ldrsh_Rule_82_A1_P168_NotRnIsPc baseline_tester;
-  NamedLdrImmediate_Ldrsh_Rule_82_A1_P168 actual;
+  NamedLoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd1w1nnnnttttiiii1111iiii");
 }
@@ -2876,7 +2876,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_Ldrsh_Rule_83_A1_P170__cccc0001d1011111ttttiiii1111iiii_Test) {
   Load2RegisterImm8OpTester_Ldrsh_Rule_83_A1_P170_ baseline_tester;
-  NamedLdrImmediate_Ldrsh_Rule_83_A1_P170 actual;
+  NamedLoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001d1011111ttttiiii1111iiii");
 }
@@ -2884,7 +2884,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm8OpTester_ldrsb_Rule_79_A1_162__cccc0001d1011111ttttiiii1101iiii_Test) {
   Load2RegisterImm8OpTester_ldrsb_Rule_79_A1_162_ baseline_tester;
-  NamedLdrImmediate_ldrsb_Rule_79_A1_162 actual;
+  NamedLoadBasedImmedMemory_ldrsb_Rule_79_A1_162 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001d1011111ttttiiii1101iiii");
 }
@@ -2892,7 +2892,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterDoubleOpTester_Ldrd_Rule_68_A1_P140__cccc000pd0w0nnnntttt00001101mmmm_Test) {
   Load3RegisterDoubleOpTester_Ldrd_Rule_68_A1_P140_ baseline_tester;
-  NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140 actual;
+  NamedLoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd0w0nnnntttt00001101mmmm");
 }
@@ -2900,7 +2900,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterImm5OpTester_Ldr_Rule_60_A1_P124__cccc011pd0w1nnnnttttiiiiitt0mmmm_Test) {
   Load3RegisterImm5OpTester_Ldr_Rule_60_A1_P124_ baseline_tester;
-  NamedLdrRegister_Ldr_Rule_60_A1_P124 actual;
+  NamedLoadBasedOffsetMemory_Ldr_Rule_60_A1_P124 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011pd0w1nnnnttttiiiiitt0mmmm");
 }
@@ -2908,7 +2908,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterImm5OpTester_Ldrb_Rule_64_A1_P132__cccc011pd1w1nnnnttttiiiiitt0mmmm_Test) {
   Load3RegisterImm5OpTester_Ldrb_Rule_64_A1_P132_ baseline_tester;
-  NamedLdrRegister_Ldrb_Rule_64_A1_P132 actual;
+  NamedLoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011pd1w1nnnnttttiiiiitt0mmmm");
 }
@@ -2916,7 +2916,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterOpTester_Ldrh_Rule_76_A1_P156__cccc000pd0w1nnnntttt00001011mmmm_Test) {
   Load3RegisterOpTester_Ldrh_Rule_76_A1_P156_ baseline_tester;
-  NamedLdrRegister_Ldrh_Rule_76_A1_P156 actual;
+  NamedLoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd0w1nnnntttt00001011mmmm");
 }
@@ -2924,7 +2924,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterOpTester_Ldrsb_Rule_80_A1_P164__cccc000pd0w1nnnntttt00001101mmmm_Test) {
   Load3RegisterOpTester_Ldrsb_Rule_80_A1_P164_ baseline_tester;
-  NamedLdrRegister_Ldrsb_Rule_80_A1_P164 actual;
+  NamedLoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd0w1nnnntttt00001101mmmm");
 }
@@ -2932,7 +2932,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterOpTester_Ldrsh_Rule_84_A1_P172__cccc000pd0w1nnnntttt00001111mmmm_Test) {
   Load3RegisterOpTester_Ldrsh_Rule_84_A1_P172_ baseline_tester;
-  NamedLdrRegister_Ldrsh_Rule_84_A1_P172 actual;
+  NamedLoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd0w1nnnntttt00001111mmmm");
 }
@@ -2988,7 +2988,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm12OpTester_Str_Rule_194_A1_P384__cccc010pd0w0nnnnttttiiiiiiiiiiii_Test) {
   Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_ baseline_tester;
-  NamedStrImmediate_Str_Rule_194_A1_P384 actual;
+  NamedStoreBasedImmedMemory_Str_Rule_194_A1_P384 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc010pd0w0nnnnttttiiiiiiiiiiii");
 }
@@ -2996,7 +2996,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm12OpTester_Strb_Rule_197_A1_P390__cccc010pd1w0nnnnttttiiiiiiiiiiii_Test) {
   Store2RegisterImm12OpTester_Strb_Rule_197_A1_P390_ baseline_tester;
-  NamedStrImmediate_Strb_Rule_197_A1_P390 actual;
+  NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc010pd1w0nnnnttttiiiiiiiiiiii");
 }
@@ -3004,7 +3004,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm8DoubleOpTester_Strd_Rule_200_A1_P396__cccc000pd1w0nnnnttttiiii1111iiii_Test) {
   Store2RegisterImm8DoubleOpTester_Strd_Rule_200_A1_P396_ baseline_tester;
-  NamedStrImmediateDouble_Strd_Rule_200_A1_P396 actual;
+  NamedStoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd1w0nnnnttttiiii1111iiii");
 }
@@ -3012,7 +3012,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm8OpTester_Strh_Rule_207_A1_P410__cccc000pd1w0nnnnttttiiii1011iiii_Test) {
   Store2RegisterImm8OpTester_Strh_Rule_207_A1_P410_ baseline_tester;
-  NamedStrImmediate_Strh_Rule_207_A1_P410 actual;
+  NamedStoreBasedImmedMemory_Strh_Rule_207_A1_P410 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd1w0nnnnttttiiii1011iiii");
 }
@@ -3020,7 +3020,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterDoubleOpTester_Strd_Rule_201_A1_P398__cccc000pd0w0nnnntttt00001111mmmm_Test) {
   Store3RegisterDoubleOpTester_Strd_Rule_201_A1_P398_ baseline_tester;
-  NamedStrRegisterDouble_Strd_Rule_201_A1_P398 actual;
+  NamedStoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd0w0nnnntttt00001111mmmm");
 }
@@ -3028,7 +3028,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterImm5OpTester_Str_Rule_195_A1_P386__cccc011pd0w0nnnnttttiiiiitt0mmmm_Test) {
   Store3RegisterImm5OpTester_Str_Rule_195_A1_P386_ baseline_tester;
-  NamedStrRegister_Str_Rule_195_A1_P386 actual;
+  NamedStoreBasedOffsetMemory_Str_Rule_195_A1_P386 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011pd0w0nnnnttttiiiiitt0mmmm");
 }
@@ -3036,7 +3036,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterImm5OpTester_Strb_Rule_198_A1_P392__cccc011pd1w0nnnnttttiiiiitt0mmmm_Test) {
   Store3RegisterImm5OpTester_Strb_Rule_198_A1_P392_ baseline_tester;
-  NamedStrRegister_Strb_Rule_198_A1_P392 actual;
+  NamedStoreBasedOffsetMemory_Strb_Rule_198_A1_P392 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011pd1w0nnnnttttiiiiitt0mmmm");
 }
@@ -3044,7 +3044,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterOpTester_Strh_Rule_208_A1_P412__cccc000pd0w0nnnntttt00001011mmmm_Test) {
   Store3RegisterOpTester_Strh_Rule_208_A1_P412_ baseline_tester;
-  NamedStrRegister_Strh_Rule_208_A1_P412 actual;
+  NamedStoreBasedOffsetMemory_Strh_Rule_208_A1_P412 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc000pd0w0nnnntttt00001011mmmm");
 }

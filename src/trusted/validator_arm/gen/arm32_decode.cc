@@ -33,12 +33,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DontCareInstRnRsRmNotPc_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
-  , LdrImmediate_instance_()
-  , LdrImmediateDouble_instance_()
-  , LdrRegister_instance_()
-  , LdrRegisterDouble_instance_()
+  , LoadBasedImmedMemory_instance_()
+  , LoadBasedImmedMemoryDouble_instance_()
   , LoadBasedMemory_instance_()
   , LoadBasedMemoryDouble_instance_()
+  , LoadBasedOffsetMemory_instance_()
+  , LoadBasedOffsetMemoryDouble_instance_()
   , LoadCoprocessor_instance_()
   , LoadMultiple_instance_()
   , MaskAddress_instance_()
@@ -46,14 +46,14 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MoveFromCoprocessor_instance_()
   , PackSatRev_instance_()
   , Roadblock_instance_()
+  , StoreBasedImmedMemory_instance_()
+  , StoreBasedImmedMemoryDouble_instance_()
   , StoreBasedMemoryDoubleRtBits0To3_instance_()
   , StoreBasedMemoryRtBits0To3_instance_()
+  , StoreBasedOffsetMemory_instance_()
+  , StoreBasedOffsetMemoryDouble_instance_()
   , StoreCoprocessor_instance_()
   , StoreImmediate_instance_()
-  , StrImmediate_instance_()
-  , StrImmediateDouble_instance_()
-  , StrRegister_instance_()
-  , StrRegisterDouble_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
   , Unary1RegisterSet_instance_()
@@ -426,43 +426,43 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store(
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
-    return StrRegister_instance_;
+    return StoreBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
-    return StrImmediate_instance_;
+    return StoreBasedImmedMemory_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
-    return LdrRegisterDouble_instance_;
+    return LoadBasedOffsetMemoryDouble_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
-    return LdrRegister_instance_;
+    return LoadBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
-    return LdrImmediateDouble_instance_;
+    return LoadBasedImmedMemoryDouble_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */)
-    return LdrImmediate_instance_;
+    return LoadBasedImmedMemory_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
-    return StrRegisterDouble_instance_;
+    return StoreBasedOffsetMemoryDouble_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
-    return StrImmediateDouble_instance_;
+    return StoreBasedImmedMemoryDouble_instance_;
 
   if ((insn.Bits() & 0x00000020) == 0x00000020 /* op2(6:5) == x1 */ &&
       (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
-    return LdrRegister_instance_;
+    return LoadBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x00000020) == 0x00000020 /* op2(6:5) == x1 */ &&
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */)
-    return LdrImmediate_instance_;
+    return LoadBasedImmedMemory_instance_;
 
   // Catch any attempt to fall though ...
   return not_implemented_;
@@ -503,19 +503,19 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */)
-    return StrImmediate_instance_;
+    return StoreBasedImmedMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01300000) == 0x00100000 /* op1(24:20) == 0xx01 */)
-    return LdrImmediate_instance_;
+    return LoadBasedImmedMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */)
-    return StrImmediate_instance_;
+    return StoreBasedImmedMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */)
-    return LdrImmediate_instance_;
+    return LoadBasedImmedMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */)
@@ -524,27 +524,27 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01700000) == 0x00500000 /* op1(24:20) == 0x101 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LdrRegister_instance_;
+    return LoadBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x00700000) == 0x00100000 /* op1(24:20) == xx001 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LdrRegister_instance_;
+    return LoadBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return StrRegister_instance_;
+    return StoreBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return StrRegister_instance_;
+    return StoreBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
-    return LdrRegister_instance_;
+    return LoadBasedOffsetMemory_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&

@@ -274,6 +274,201 @@ safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
+SafetyLevel LoadBasedMemoryWithWriteBack::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (t.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadBasedMemoryWithWriteBack::defs(const Instruction i) const {
+  return RegisterList(t.reg(i)).Add(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+}
+
+SafetyLevel LoadBasedOffsetMemory::safety(const Instruction i) const {
+  // If pre-indexing is set, the address of the load is computed as the sum
+  // of the two register parameters.  We have checked that the first register
+  // is within the sandbox, but this would allow adding an arbitrary value
+  // to it, so it is not safe. (NaCl constraint).
+  if (indexing.IsPreIndexing(i))
+    return FORBIDDEN;
+
+  // Arm restrictions for this instruction.
+  if (m.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+
+  return LoadBasedMemoryWithWriteBack::safety(i);
+}
+
+SafetyLevel LoadBasedOffsetMemoryDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Now apply non-double width restrictions for this instruction.
+  return LoadBasedOffsetMemory::safety(i);
+}
+
+RegisterList LoadBasedOffsetMemoryDouble::defs(Instruction i) const {
+  return LoadBasedOffsetMemory::defs(i).Add(t2.reg(i));
+}
+
+RegisterList LoadBasedImmedMemory::
+immediate_addressing_defs(const Instruction i) const {
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+}
+
+bool LoadBasedImmedMemory::offset_is_immediate(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
+}
+
+SafetyLevel LoadBasedImmedMemoryDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Now apply non-double width restrictions for this instruction.
+  return LoadBasedImmedMemory::safety(i);
+}
+
+RegisterList LoadBasedImmedMemoryDouble::defs(const Instruction i) const {
+  return LoadBasedImmedMemory::defs(i).Add(t2.reg(i));
+}
+
+SafetyLevel StoreBasedMemoryWithWriteBack::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (t.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc))) {
+    // NOTE: The manual states that that it is also unpredictable
+    // when HasWriteBack(i) and Rn=Rt. However, the compilers
+    // may not check for this. For the moment, we are changing
+    // the code to ignore this case for stores.
+    // TODO(karl): Should we not allow this?
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+RegisterList StoreBasedMemoryWithWriteBack::defs(const Instruction i) const {
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+}
+
+SafetyLevel StoreBasedOffsetMemory::safety(const Instruction i) const {
+  if (indexing.IsPreIndexing(i)) {
+    // If pre-indexing is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe. (NaCl constraint).
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (m.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc))) {
+    // NOTE: The manual states that that it is also unpredictable
+    // when HasWriteBack(i) and Rn=Rt. However, the compilers
+    // may not check for this. For the moment, we are changing
+    // the code to ignore this case for stores.
+    // TODO(karl): Should we not allow this?
+    return UNPREDICTABLE;
+  }
+
+  return StoreBasedMemoryWithWriteBack::safety(i);
+}
+
+SafetyLevel StoreBasedOffsetMemoryDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // NOTE: The manual states that that it is also unpredictable
+  // when HasWriteBack(i) and Rn=Rt or Rn=Rt2. However, the compilers
+  // may not check for this. For the moment, we are changing
+  // the code to ignore this case for stores.
+  // TODO(karl): Should we not allow this?
+  // if (HasWriteBack(i) &&
+  //     (n.reg(i).Equals(kRegisterPc))) {
+  //   return UNPREDICTABLE;
+  // }
+
+  // Now apply non-double width restrictions for this instruction.
+  return StoreBasedOffsetMemory::safety(i);
+}
+
+RegisterList StoreBasedImmedMemory::
+immediate_addressing_defs(const Instruction i) const {
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+}
+
+SafetyLevel StoreBasedImmedMemoryDouble::safety(const Instruction i) const {
+  // Arm double width restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // NOTE: The manual states that that it is also unpredictable
+  // when HasWriteBack(i) and Rn=Rt or Rn=Rt2. However, the compilers
+  // may not check for this. For the moment, we are changing
+  // the code to ignore this case for stores.
+  // TODO(karl): Should we not allow this?
+  // if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+  //   return UNPREDICTABLE;
+  // }
+
+  // Now apply non-double width restrictions for this instruction.
+  return StoreBasedImmedMemory::safety(i);
+}
+
 // **************************************************************
 //      O L D    C L A S S    D E C O D E R S
 // **************************************************************
@@ -363,272 +558,7 @@ Register StoreImmediate::base_address_register(const Instruction i) const {
   return Rn(i);
 }
 
-
-SafetyLevel StrImmediate::safety(const Instruction i) const {
-  // Arm restrictions for this instruction.
-  if (t.reg(i).Equals(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc))) {
-    // NOTE: The manual states that that it is also unpredictable
-    // when HasWriteBack(i) and Rn=Rt. However, the compilers
-    // may not check for this. For the moment, we are changing
-    // the code to ignore this case for stores.
-    // TODO(karl): Should we not allow this?
-    return UNPREDICTABLE;
-  }
-
-  // Don't let addressing writeback alter PC (NaCl constraint).
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-SafetyLevel StrImmediateDouble::safety(const Instruction i) const {
-  // Arm double width restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (t2.reg(i).Equals(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  // NOTE: The manual states that that it is also unpredictable
-  // when HasWriteBack(i) and Rn=Rt. However, the compilers
-  // may not check for this. For the moment, we are changing
-  // the code to ignore this case for stores.
-  // TODO(karl): Should we not allow this?
-  // if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
-  //   return UNPREDICTABLE;
-  // }
-
-  // Now apply non-double width restrictions for this instruction.
-  return StrImmediate::safety(i);
-}
-
-SafetyLevel StoreRegister::safety(const Instruction i) const {
-  if (PreindexingFlag(i)) {
-    // Computes base address by adding two registers -- cannot predict!
-    return FORBIDDEN;
-  }
-
-  // Don't let addressing writeback alter PC.
-  if (defs(i).Contains(kRegisterPc))
-    return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-RegisterList StoreRegister::defs(const Instruction i) const {
-  // Only one form of register-register store doesn't writeback its base:
-  //   str rT, [rN, rM]
-  // We ban this form.  Thus, every safe form alters its base address reg.
-  return RegisterList(base_address_register(i));
-}
-
-Register StoreRegister::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
-SafetyLevel StrRegister::safety(const Instruction i) const {
-  if (indexing.IsPreIndexing(i)) {
-    // If pre-indexing is set, the address of the load is computed as the sum
-    // of the two register parameters.  We have checked that the first register
-    // is within the sandbox, but this would allow adding an arbitrary value
-    // to it, so it is not safe. (NaCl constraint).
-    return FORBIDDEN;
-  }
-
-  // Arm restrictions for this instruction.
-  if (RegisterList(t.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc))) {
-    // NOTE: The manual states that that it is also unpredictable
-    // when HasWriteBack(i) and Rn=Rt. However, the compilers
-    // may not check for this. For the moment, we are changing
-    // the code to ignore this case for stores.
-    // TODO(karl): Should we not allow this?
-    return UNPREDICTABLE;
-  }
-
-  // Don't let addressing writeback alter PC (NaCl constraint).
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
 // Loads
-
-bool AbstractLoad::writeback(const Instruction i) const {
-  // Algorithm defined in pseudocode in ARM instruction set spec
-  // Valid for LDR, LDR[BH], LDRD
-  // Not valid for LDREX and kin
-  return !PreindexingFlag(i) | WritesFlag(i);
-}
-
-SafetyLevel AbstractLoad::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-RegisterList AbstractLoad::defs(const Instruction i) const {
-  return immediate_addressing_defs(i).Add(Rt(i));
-}
-
-SafetyLevel LoadRegister::safety(const Instruction i) const {
-  bool pre_index = PreindexingFlag(i);
-  if (pre_index) {
-    // If pre_index is set, the address of the load is computed as the sum
-    // of the two register parameters.  We have checked that the first register
-    // is within the sandbox, but this would allow adding an arbitrary value
-    // to it, so it is not safe.
-    return FORBIDDEN;
-  }
-
-  // Don't let addressing writeback alter PC.
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-RegisterList LoadRegister::defs(const Instruction i) const {
-  return RegisterList(t.reg(i)).Add(writeback(i) ? Rn(i) : kRegisterNone);
-}
-
-Register LoadRegister::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
-SafetyLevel LdrRegister::safety(const Instruction i) const {
-  if (indexing.IsPreIndexing(i)) {
-    // If pre-indexing is set, the address of the load is computed as the sum
-    // of the two register parameters.  We have checked that the first register
-    // is within the sandbox, but this would allow adding an arbitrary value
-    // to it, so it is not safe. (NaCl constraint).
-    return FORBIDDEN;
-  }
-
-  // Arm restrictions for this instruction.
-  if (RegisterList(t.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
-    return UNPREDICTABLE;
-  }
-
-  // Don't let addressing writeback alter PC (NaCl constraint).
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-RegisterList LoadImmediate::immediate_addressing_defs(const Instruction i)
-    const {
-  return RegisterList(writeback(i) ? Rn(i) : kRegisterNone);
-}
-
-Register LoadImmediate::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
-bool LoadImmediate::offset_is_immediate(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return true;
-}
-
-SafetyLevel LdrImmediate::safety(const Instruction i) const {
-  // Arm restrictions for this instruction.
-  if (t.reg(i).Equals(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
-    return UNPREDICTABLE;
-  }
-
-  // Don't let addressing writeback alter PC (NaCl constraint).
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
-}
-
-SafetyLevel LdrImmediateDouble::safety(Instruction i) const {
-  // Arm double width restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (t2.reg(i).Equals(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
-    return UNPREDICTABLE;
-  }
-
-  // Now apply non-double width restrictions for this instruction.
-  return LdrImmediate::safety(i);
-}
-
-RegisterList LdrImmediateDouble::defs(Instruction i) const {
-  return  LdrImmediate::defs(i).Add(t2.reg(i));
-}
-
-SafetyLevel LdrRegisterDouble::safety(const Instruction i) const {
-  // Arm double width restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
-    return UNPREDICTABLE;
-  }
-
-  // Now apply non-double width restrictions for this instruction.
-  return LdrRegister::safety(i);
-}
-
-RegisterList LdrRegisterDouble::defs(const Instruction i) const {
-  return LdrRegister::defs(i).Add(t2.reg(i));
-}
-
-SafetyLevel StrRegisterDouble::safety(const Instruction i) const {
-  // Arm double width restrictions for this instruction.
-  if (!t.IsEven(i)) {
-    return UNDEFINED;
-  }
-
-  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
-    return UNPREDICTABLE;
-  }
-
-  if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc))) {
-    // NOTE: The manual states that that it is also unpredictable
-    // when HasWriteBack(i) and Rn=Rt or Rn=Rt2. However, the compilers
-    // may not check for this. For the moment, we are changing
-    // the code to ignore this case for stores.
-    // TODO(karl): Should we not allow this?
-    return UNPREDICTABLE;
-  }
-
-  // Now apply non-double width restrictions for this instruction.
-  return StrRegister::safety(i);
-}
 
 SafetyLevel LoadMultiple::safety(const Instruction i) const {
   // Bottom 16 bits is a register list.
@@ -656,7 +586,6 @@ RegisterList LoadMultiple::immediate_addressing_defs(
 Register LoadMultiple::base_address_register(const Instruction i) const {
   return Rn(i);
 }
-
 
 // Vector load/stores
 

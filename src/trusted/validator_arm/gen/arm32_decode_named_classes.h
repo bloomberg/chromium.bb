@@ -2075,112 +2075,76 @@ class Forbidden_Wfi_Rule_412_A1_P810
   virtual ~Forbidden_Wfi_Rule_412_A1_P810() {}
 };
 
-class LdrImmediate_Ldr_Rule_58_A1_P120
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldr_Rule_58_A1_P120
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldr_Rule_58_A1_P120() {}
+  virtual ~LoadBasedImmedMemory_Ldr_Rule_58_A1_P120() {}
 };
 
-class LdrImmediate_Ldr_Rule_59_A1_P122
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldr_Rule_59_A1_P122
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldr_Rule_59_A1_P122() {}
+  virtual ~LoadBasedImmedMemory_Ldr_Rule_59_A1_P122() {}
 };
 
-class LdrImmediate_Ldrb_Rule_62_A1_P128
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrb_Rule_62_A1_P128
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrb_Rule_62_A1_P128() {}
+  virtual ~LoadBasedImmedMemory_Ldrb_Rule_62_A1_P128() {}
 };
 
-class LdrImmediate_Ldrb_Rule_63_A1_P130
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrb_Rule_63_A1_P130
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrb_Rule_63_A1_P130() {}
+  virtual ~LoadBasedImmedMemory_Ldrb_Rule_63_A1_P130() {}
 };
 
-class LdrImmediate_Ldrh_Rule_74_A1_P152
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrh_Rule_74_A1_P152
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrh_Rule_74_A1_P152() {}
+  virtual ~LoadBasedImmedMemory_Ldrh_Rule_74_A1_P152() {}
 };
 
-class LdrImmediate_Ldrh_Rule_75_A1_P154
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrh_Rule_75_A1_P154
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrh_Rule_75_A1_P154() {}
+  virtual ~LoadBasedImmedMemory_Ldrh_Rule_75_A1_P154() {}
 };
 
-class LdrImmediate_Ldrsb_Rule_78_A1_P160
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrsb_Rule_78_A1_P160() {}
+  virtual ~LoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160() {}
 };
 
-class LdrImmediate_Ldrsh_Rule_82_A1_P168
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrsh_Rule_82_A1_P168() {}
+  virtual ~LoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168() {}
 };
 
-class LdrImmediate_Ldrsh_Rule_83_A1_P170
-    : public LdrImmediate {
+class LoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_Ldrsh_Rule_83_A1_P170() {}
+  virtual ~LoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170() {}
 };
 
-class LdrImmediate_ldrsb_Rule_79_A1_162
-    : public LdrImmediate {
+class LoadBasedImmedMemory_ldrsb_Rule_79_A1_162
+    : public LoadBasedImmedMemory {
  public:
-  virtual ~LdrImmediate_ldrsb_Rule_79_A1_162() {}
+  virtual ~LoadBasedImmedMemory_ldrsb_Rule_79_A1_162() {}
 };
 
-class LdrImmediateDouble_Ldrd_Rule_66_A1_P136
-    : public LdrImmediateDouble {
+class LoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136
+    : public LoadBasedImmedMemoryDouble {
  public:
-  virtual ~LdrImmediateDouble_Ldrd_Rule_66_A1_P136() {}
+  virtual ~LoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136() {}
 };
 
-class LdrImmediateDouble_Ldrd_Rule_67_A1_P138
-    : public LdrImmediateDouble {
+class LoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138
+    : public LoadBasedImmedMemoryDouble {
  public:
-  virtual ~LdrImmediateDouble_Ldrd_Rule_67_A1_P138() {}
-};
-
-class LdrRegister_Ldr_Rule_60_A1_P124
-    : public LdrRegister {
- public:
-  virtual ~LdrRegister_Ldr_Rule_60_A1_P124() {}
-};
-
-class LdrRegister_Ldrb_Rule_64_A1_P132
-    : public LdrRegister {
- public:
-  virtual ~LdrRegister_Ldrb_Rule_64_A1_P132() {}
-};
-
-class LdrRegister_Ldrh_Rule_76_A1_P156
-    : public LdrRegister {
- public:
-  virtual ~LdrRegister_Ldrh_Rule_76_A1_P156() {}
-};
-
-class LdrRegister_Ldrsb_Rule_80_A1_P164
-    : public LdrRegister {
- public:
-  virtual ~LdrRegister_Ldrsb_Rule_80_A1_P164() {}
-};
-
-class LdrRegister_Ldrsh_Rule_84_A1_P172
-    : public LdrRegister {
- public:
-  virtual ~LdrRegister_Ldrsh_Rule_84_A1_P172() {}
-};
-
-class LdrRegisterDouble_Ldrd_Rule_68_A1_P140
-    : public LdrRegisterDouble {
- public:
-  virtual ~LdrRegisterDouble_Ldrd_Rule_68_A1_P140() {}
+  virtual ~LoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138() {}
 };
 
 class LoadBasedMemory_Ldrex_Rule_69_A1_P142
@@ -2207,10 +2171,70 @@ class LoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146
   virtual ~LoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146() {}
 };
 
+class LoadBasedOffsetMemory_Ldr_Rule_60_A1_P124
+    : public LoadBasedOffsetMemory {
+ public:
+  virtual ~LoadBasedOffsetMemory_Ldr_Rule_60_A1_P124() {}
+};
+
+class LoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132
+    : public LoadBasedOffsetMemory {
+ public:
+  virtual ~LoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132() {}
+};
+
+class LoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156
+    : public LoadBasedOffsetMemory {
+ public:
+  virtual ~LoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156() {}
+};
+
+class LoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164
+    : public LoadBasedOffsetMemory {
+ public:
+  virtual ~LoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164() {}
+};
+
+class LoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172
+    : public LoadBasedOffsetMemory {
+ public:
+  virtual ~LoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172() {}
+};
+
+class LoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140
+    : public LoadBasedOffsetMemoryDouble {
+ public:
+  virtual ~LoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140() {}
+};
+
 class MaskAddress_Bic_Rule_19_A1_P50
     : public MaskAddress {
  public:
   virtual ~MaskAddress_Bic_Rule_19_A1_P50() {}
+};
+
+class StoreBasedImmedMemory_Str_Rule_194_A1_P384
+    : public StoreBasedImmedMemory {
+ public:
+  virtual ~StoreBasedImmedMemory_Str_Rule_194_A1_P384() {}
+};
+
+class StoreBasedImmedMemory_Strb_Rule_197_A1_P390
+    : public StoreBasedImmedMemory {
+ public:
+  virtual ~StoreBasedImmedMemory_Strb_Rule_197_A1_P390() {}
+};
+
+class StoreBasedImmedMemory_Strh_Rule_207_A1_P410
+    : public StoreBasedImmedMemory {
+ public:
+  virtual ~StoreBasedImmedMemory_Strh_Rule_207_A1_P410() {}
+};
+
+class StoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396
+    : public StoreBasedImmedMemoryDouble {
+ public:
+  virtual ~StoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396() {}
 };
 
 class StoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404
@@ -2237,52 +2261,28 @@ class StoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt
   virtual ~StoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt() {}
 };
 
-class StrImmediate_Str_Rule_194_A1_P384
-    : public StrImmediate {
+class StoreBasedOffsetMemory_Str_Rule_195_A1_P386
+    : public StoreBasedOffsetMemory {
  public:
-  virtual ~StrImmediate_Str_Rule_194_A1_P384() {}
+  virtual ~StoreBasedOffsetMemory_Str_Rule_195_A1_P386() {}
 };
 
-class StrImmediate_Strb_Rule_197_A1_P390
-    : public StrImmediate {
+class StoreBasedOffsetMemory_Strb_Rule_198_A1_P392
+    : public StoreBasedOffsetMemory {
  public:
-  virtual ~StrImmediate_Strb_Rule_197_A1_P390() {}
+  virtual ~StoreBasedOffsetMemory_Strb_Rule_198_A1_P392() {}
 };
 
-class StrImmediate_Strh_Rule_207_A1_P410
-    : public StrImmediate {
+class StoreBasedOffsetMemory_Strh_Rule_208_A1_P412
+    : public StoreBasedOffsetMemory {
  public:
-  virtual ~StrImmediate_Strh_Rule_207_A1_P410() {}
+  virtual ~StoreBasedOffsetMemory_Strh_Rule_208_A1_P412() {}
 };
 
-class StrImmediateDouble_Strd_Rule_200_A1_P396
-    : public StrImmediateDouble {
+class StoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398
+    : public StoreBasedOffsetMemoryDouble {
  public:
-  virtual ~StrImmediateDouble_Strd_Rule_200_A1_P396() {}
-};
-
-class StrRegister_Str_Rule_195_A1_P386
-    : public StrRegister {
- public:
-  virtual ~StrRegister_Str_Rule_195_A1_P386() {}
-};
-
-class StrRegister_Strb_Rule_198_A1_P392
-    : public StrRegister {
- public:
-  virtual ~StrRegister_Strb_Rule_198_A1_P392() {}
-};
-
-class StrRegister_Strh_Rule_208_A1_P412
-    : public StrRegister {
- public:
-  virtual ~StrRegister_Strh_Rule_208_A1_P412() {}
-};
-
-class StrRegisterDouble_Strd_Rule_201_A1_P398
-    : public StrRegisterDouble {
- public:
-  virtual ~StrRegisterDouble_Strd_Rule_201_A1_P398() {}
+  virtual ~StoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398() {}
 };
 
 class TestIfAddressMasked_Tst_Rule_230_A1_P454
@@ -6794,238 +6794,160 @@ class NamedForbidden_Wfi_Rule_412_A1_P810
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Wfi_Rule_412_A1_P810);
 };
 
-class NamedLdrImmediate_Ldr_Rule_58_A1_P120
+class NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldr_Rule_58_A1_P120()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldr_Rule_58_A1_P120")
+  inline NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldr_Rule_58_A1_P120")
   {}
-  virtual ~NamedLdrImmediate_Ldr_Rule_58_A1_P120() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldr_Rule_58_A1_P120 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldr_Rule_58_A1_P120);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldr_Rule_58_A1_P120 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldr_Rule_58_A1_P120);
 };
 
-class NamedLdrImmediate_Ldr_Rule_59_A1_P122
+class NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldr_Rule_59_A1_P122()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldr_Rule_59_A1_P122")
+  inline NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldr_Rule_59_A1_P122")
   {}
-  virtual ~NamedLdrImmediate_Ldr_Rule_59_A1_P122() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldr_Rule_59_A1_P122 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldr_Rule_59_A1_P122);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldr_Rule_59_A1_P122 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldr_Rule_59_A1_P122);
 };
 
-class NamedLdrImmediate_Ldrb_Rule_62_A1_P128
+class NamedLoadBasedImmedMemory_Ldrb_Rule_62_A1_P128
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrb_Rule_62_A1_P128()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrb_Rule_62_A1_P128")
+  inline NamedLoadBasedImmedMemory_Ldrb_Rule_62_A1_P128()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrb_Rule_62_A1_P128")
   {}
-  virtual ~NamedLdrImmediate_Ldrb_Rule_62_A1_P128() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrb_Rule_62_A1_P128() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrb_Rule_62_A1_P128 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrb_Rule_62_A1_P128);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrb_Rule_62_A1_P128 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrb_Rule_62_A1_P128);
 };
 
-class NamedLdrImmediate_Ldrb_Rule_63_A1_P130
+class NamedLoadBasedImmedMemory_Ldrb_Rule_63_A1_P130
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrb_Rule_63_A1_P130()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrb_Rule_63_A1_P130")
+  inline NamedLoadBasedImmedMemory_Ldrb_Rule_63_A1_P130()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrb_Rule_63_A1_P130")
   {}
-  virtual ~NamedLdrImmediate_Ldrb_Rule_63_A1_P130() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrb_Rule_63_A1_P130() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrb_Rule_63_A1_P130 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrb_Rule_63_A1_P130);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrb_Rule_63_A1_P130 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrb_Rule_63_A1_P130);
 };
 
-class NamedLdrImmediate_Ldrh_Rule_74_A1_P152
+class NamedLoadBasedImmedMemory_Ldrh_Rule_74_A1_P152
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrh_Rule_74_A1_P152()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrh_Rule_74_A1_P152")
+  inline NamedLoadBasedImmedMemory_Ldrh_Rule_74_A1_P152()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrh_Rule_74_A1_P152")
   {}
-  virtual ~NamedLdrImmediate_Ldrh_Rule_74_A1_P152() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrh_Rule_74_A1_P152() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrh_Rule_74_A1_P152 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrh_Rule_74_A1_P152);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrh_Rule_74_A1_P152 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrh_Rule_74_A1_P152);
 };
 
-class NamedLdrImmediate_Ldrh_Rule_75_A1_P154
+class NamedLoadBasedImmedMemory_Ldrh_Rule_75_A1_P154
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrh_Rule_75_A1_P154()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrh_Rule_75_A1_P154")
+  inline NamedLoadBasedImmedMemory_Ldrh_Rule_75_A1_P154()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrh_Rule_75_A1_P154")
   {}
-  virtual ~NamedLdrImmediate_Ldrh_Rule_75_A1_P154() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrh_Rule_75_A1_P154() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrh_Rule_75_A1_P154 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrh_Rule_75_A1_P154);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrh_Rule_75_A1_P154 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrh_Rule_75_A1_P154);
 };
 
-class NamedLdrImmediate_Ldrsb_Rule_78_A1_P160
+class NamedLoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrsb_Rule_78_A1_P160()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrsb_Rule_78_A1_P160")
+  inline NamedLoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrsb_Rule_78_A1_P160")
   {}
-  virtual ~NamedLdrImmediate_Ldrsb_Rule_78_A1_P160() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrsb_Rule_78_A1_P160 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrsb_Rule_78_A1_P160);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrsb_Rule_78_A1_P160);
 };
 
-class NamedLdrImmediate_Ldrsh_Rule_82_A1_P168
+class NamedLoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrsh_Rule_82_A1_P168()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrsh_Rule_82_A1_P168")
+  inline NamedLoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrsh_Rule_82_A1_P168")
   {}
-  virtual ~NamedLdrImmediate_Ldrsh_Rule_82_A1_P168() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrsh_Rule_82_A1_P168 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrsh_Rule_82_A1_P168);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrsh_Rule_82_A1_P168);
 };
 
-class NamedLdrImmediate_Ldrsh_Rule_83_A1_P170
+class NamedLoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_Ldrsh_Rule_83_A1_P170()
-    : NamedClassDecoder(decoder_, "LdrImmediate Ldrsh_Rule_83_A1_P170")
+  inline NamedLoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory Ldrsh_Rule_83_A1_P170")
   {}
-  virtual ~NamedLdrImmediate_Ldrsh_Rule_83_A1_P170() {}
+  virtual ~NamedLoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_Ldrsh_Rule_83_A1_P170 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_Ldrsh_Rule_83_A1_P170);
+  nacl_arm_dec::LoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_Ldrsh_Rule_83_A1_P170);
 };
 
-class NamedLdrImmediate_ldrsb_Rule_79_A1_162
+class NamedLoadBasedImmedMemory_ldrsb_Rule_79_A1_162
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediate_ldrsb_Rule_79_A1_162()
-    : NamedClassDecoder(decoder_, "LdrImmediate ldrsb_Rule_79_A1_162")
+  inline NamedLoadBasedImmedMemory_ldrsb_Rule_79_A1_162()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemory ldrsb_Rule_79_A1_162")
   {}
-  virtual ~NamedLdrImmediate_ldrsb_Rule_79_A1_162() {}
+  virtual ~NamedLoadBasedImmedMemory_ldrsb_Rule_79_A1_162() {}
 
  private:
-  nacl_arm_dec::LdrImmediate_ldrsb_Rule_79_A1_162 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediate_ldrsb_Rule_79_A1_162);
+  nacl_arm_dec::LoadBasedImmedMemory_ldrsb_Rule_79_A1_162 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemory_ldrsb_Rule_79_A1_162);
 };
 
-class NamedLdrImmediateDouble_Ldrd_Rule_66_A1_P136
+class NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediateDouble_Ldrd_Rule_66_A1_P136()
-    : NamedClassDecoder(decoder_, "LdrImmediateDouble Ldrd_Rule_66_A1_P136")
+  inline NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemoryDouble Ldrd_Rule_66_A1_P136")
   {}
-  virtual ~NamedLdrImmediateDouble_Ldrd_Rule_66_A1_P136() {}
+  virtual ~NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136() {}
 
  private:
-  nacl_arm_dec::LdrImmediateDouble_Ldrd_Rule_66_A1_P136 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediateDouble_Ldrd_Rule_66_A1_P136);
+  nacl_arm_dec::LoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_66_A1_P136);
 };
 
-class NamedLdrImmediateDouble_Ldrd_Rule_67_A1_P138
+class NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138
     : public NamedClassDecoder {
  public:
-  inline NamedLdrImmediateDouble_Ldrd_Rule_67_A1_P138()
-    : NamedClassDecoder(decoder_, "LdrImmediateDouble Ldrd_Rule_67_A1_P138")
+  inline NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138()
+    : NamedClassDecoder(decoder_, "LoadBasedImmedMemoryDouble Ldrd_Rule_67_A1_P138")
   {}
-  virtual ~NamedLdrImmediateDouble_Ldrd_Rule_67_A1_P138() {}
+  virtual ~NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138() {}
 
  private:
-  nacl_arm_dec::LdrImmediateDouble_Ldrd_Rule_67_A1_P138 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrImmediateDouble_Ldrd_Rule_67_A1_P138);
-};
-
-class NamedLdrRegister_Ldr_Rule_60_A1_P124
-    : public NamedClassDecoder {
- public:
-  inline NamedLdrRegister_Ldr_Rule_60_A1_P124()
-    : NamedClassDecoder(decoder_, "LdrRegister Ldr_Rule_60_A1_P124")
-  {}
-  virtual ~NamedLdrRegister_Ldr_Rule_60_A1_P124() {}
-
- private:
-  nacl_arm_dec::LdrRegister_Ldr_Rule_60_A1_P124 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldr_Rule_60_A1_P124);
-};
-
-class NamedLdrRegister_Ldrb_Rule_64_A1_P132
-    : public NamedClassDecoder {
- public:
-  inline NamedLdrRegister_Ldrb_Rule_64_A1_P132()
-    : NamedClassDecoder(decoder_, "LdrRegister Ldrb_Rule_64_A1_P132")
-  {}
-  virtual ~NamedLdrRegister_Ldrb_Rule_64_A1_P132() {}
-
- private:
-  nacl_arm_dec::LdrRegister_Ldrb_Rule_64_A1_P132 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldrb_Rule_64_A1_P132);
-};
-
-class NamedLdrRegister_Ldrh_Rule_76_A1_P156
-    : public NamedClassDecoder {
- public:
-  inline NamedLdrRegister_Ldrh_Rule_76_A1_P156()
-    : NamedClassDecoder(decoder_, "LdrRegister Ldrh_Rule_76_A1_P156")
-  {}
-  virtual ~NamedLdrRegister_Ldrh_Rule_76_A1_P156() {}
-
- private:
-  nacl_arm_dec::LdrRegister_Ldrh_Rule_76_A1_P156 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldrh_Rule_76_A1_P156);
-};
-
-class NamedLdrRegister_Ldrsb_Rule_80_A1_P164
-    : public NamedClassDecoder {
- public:
-  inline NamedLdrRegister_Ldrsb_Rule_80_A1_P164()
-    : NamedClassDecoder(decoder_, "LdrRegister Ldrsb_Rule_80_A1_P164")
-  {}
-  virtual ~NamedLdrRegister_Ldrsb_Rule_80_A1_P164() {}
-
- private:
-  nacl_arm_dec::LdrRegister_Ldrsb_Rule_80_A1_P164 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldrsb_Rule_80_A1_P164);
-};
-
-class NamedLdrRegister_Ldrsh_Rule_84_A1_P172
-    : public NamedClassDecoder {
- public:
-  inline NamedLdrRegister_Ldrsh_Rule_84_A1_P172()
-    : NamedClassDecoder(decoder_, "LdrRegister Ldrsh_Rule_84_A1_P172")
-  {}
-  virtual ~NamedLdrRegister_Ldrsh_Rule_84_A1_P172() {}
-
- private:
-  nacl_arm_dec::LdrRegister_Ldrsh_Rule_84_A1_P172 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldrsh_Rule_84_A1_P172);
-};
-
-class NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140
-    : public NamedClassDecoder {
- public:
-  inline NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140()
-    : NamedClassDecoder(decoder_, "LdrRegisterDouble Ldrd_Rule_68_A1_P140")
-  {}
-  virtual ~NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140() {}
-
- private:
-  nacl_arm_dec::LdrRegisterDouble_Ldrd_Rule_68_A1_P140 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140);
+  nacl_arm_dec::LoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedImmedMemoryDouble_Ldrd_Rule_67_A1_P138);
 };
 
 class NamedLoadBasedMemory_Ldrex_Rule_69_A1_P142
@@ -7080,6 +7002,84 @@ class NamedLoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146);
 };
 
+class NamedLoadBasedOffsetMemory_Ldr_Rule_60_A1_P124
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedOffsetMemory_Ldr_Rule_60_A1_P124()
+    : NamedClassDecoder(decoder_, "LoadBasedOffsetMemory Ldr_Rule_60_A1_P124")
+  {}
+  virtual ~NamedLoadBasedOffsetMemory_Ldr_Rule_60_A1_P124() {}
+
+ private:
+  nacl_arm_dec::LoadBasedOffsetMemory_Ldr_Rule_60_A1_P124 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedOffsetMemory_Ldr_Rule_60_A1_P124);
+};
+
+class NamedLoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132()
+    : NamedClassDecoder(decoder_, "LoadBasedOffsetMemory Ldrb_Rule_64_A1_P132")
+  {}
+  virtual ~NamedLoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132() {}
+
+ private:
+  nacl_arm_dec::LoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedOffsetMemory_Ldrb_Rule_64_A1_P132);
+};
+
+class NamedLoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156()
+    : NamedClassDecoder(decoder_, "LoadBasedOffsetMemory Ldrh_Rule_76_A1_P156")
+  {}
+  virtual ~NamedLoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156() {}
+
+ private:
+  nacl_arm_dec::LoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedOffsetMemory_Ldrh_Rule_76_A1_P156);
+};
+
+class NamedLoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164()
+    : NamedClassDecoder(decoder_, "LoadBasedOffsetMemory Ldrsb_Rule_80_A1_P164")
+  {}
+  virtual ~NamedLoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164() {}
+
+ private:
+  nacl_arm_dec::LoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedOffsetMemory_Ldrsb_Rule_80_A1_P164);
+};
+
+class NamedLoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172()
+    : NamedClassDecoder(decoder_, "LoadBasedOffsetMemory Ldrsh_Rule_84_A1_P172")
+  {}
+  virtual ~NamedLoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172() {}
+
+ private:
+  nacl_arm_dec::LoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedOffsetMemory_Ldrsh_Rule_84_A1_P172);
+};
+
+class NamedLoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140()
+    : NamedClassDecoder(decoder_, "LoadBasedOffsetMemoryDouble Ldrd_Rule_68_A1_P140")
+  {}
+  virtual ~NamedLoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140() {}
+
+ private:
+  nacl_arm_dec::LoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedOffsetMemoryDouble_Ldrd_Rule_68_A1_P140);
+};
+
 class NamedMaskAddress_Bic_Rule_19_A1_P50
     : public NamedClassDecoder {
  public:
@@ -7091,6 +7091,58 @@ class NamedMaskAddress_Bic_Rule_19_A1_P50
  private:
   nacl_arm_dec::MaskAddress_Bic_Rule_19_A1_P50 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMaskAddress_Bic_Rule_19_A1_P50);
+};
+
+class NamedStoreBasedImmedMemory_Str_Rule_194_A1_P384
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedImmedMemory_Str_Rule_194_A1_P384()
+    : NamedClassDecoder(decoder_, "StoreBasedImmedMemory Str_Rule_194_A1_P384")
+  {}
+  virtual ~NamedStoreBasedImmedMemory_Str_Rule_194_A1_P384() {}
+
+ private:
+  nacl_arm_dec::StoreBasedImmedMemory_Str_Rule_194_A1_P384 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedImmedMemory_Str_Rule_194_A1_P384);
+};
+
+class NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390()
+    : NamedClassDecoder(decoder_, "StoreBasedImmedMemory Strb_Rule_197_A1_P390")
+  {}
+  virtual ~NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390() {}
+
+ private:
+  nacl_arm_dec::StoreBasedImmedMemory_Strb_Rule_197_A1_P390 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390);
+};
+
+class NamedStoreBasedImmedMemory_Strh_Rule_207_A1_P410
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedImmedMemory_Strh_Rule_207_A1_P410()
+    : NamedClassDecoder(decoder_, "StoreBasedImmedMemory Strh_Rule_207_A1_P410")
+  {}
+  virtual ~NamedStoreBasedImmedMemory_Strh_Rule_207_A1_P410() {}
+
+ private:
+  nacl_arm_dec::StoreBasedImmedMemory_Strh_Rule_207_A1_P410 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedImmedMemory_Strh_Rule_207_A1_P410);
+};
+
+class NamedStoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396()
+    : NamedClassDecoder(decoder_, "StoreBasedImmedMemoryDouble Strd_Rule_200_A1_P396")
+  {}
+  virtual ~NamedStoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396() {}
+
+ private:
+  nacl_arm_dec::StoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedImmedMemoryDouble_Strd_Rule_200_A1_P396);
 };
 
 class NamedStoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404
@@ -7145,108 +7197,56 @@ class NamedStoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt);
 };
 
-class NamedStrImmediate_Str_Rule_194_A1_P384
+class NamedStoreBasedOffsetMemory_Str_Rule_195_A1_P386
     : public NamedClassDecoder {
  public:
-  inline NamedStrImmediate_Str_Rule_194_A1_P384()
-    : NamedClassDecoder(decoder_, "StrImmediate Str_Rule_194_A1_P384")
+  inline NamedStoreBasedOffsetMemory_Str_Rule_195_A1_P386()
+    : NamedClassDecoder(decoder_, "StoreBasedOffsetMemory Str_Rule_195_A1_P386")
   {}
-  virtual ~NamedStrImmediate_Str_Rule_194_A1_P384() {}
+  virtual ~NamedStoreBasedOffsetMemory_Str_Rule_195_A1_P386() {}
 
  private:
-  nacl_arm_dec::StrImmediate_Str_Rule_194_A1_P384 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrImmediate_Str_Rule_194_A1_P384);
+  nacl_arm_dec::StoreBasedOffsetMemory_Str_Rule_195_A1_P386 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedOffsetMemory_Str_Rule_195_A1_P386);
 };
 
-class NamedStrImmediate_Strb_Rule_197_A1_P390
+class NamedStoreBasedOffsetMemory_Strb_Rule_198_A1_P392
     : public NamedClassDecoder {
  public:
-  inline NamedStrImmediate_Strb_Rule_197_A1_P390()
-    : NamedClassDecoder(decoder_, "StrImmediate Strb_Rule_197_A1_P390")
+  inline NamedStoreBasedOffsetMemory_Strb_Rule_198_A1_P392()
+    : NamedClassDecoder(decoder_, "StoreBasedOffsetMemory Strb_Rule_198_A1_P392")
   {}
-  virtual ~NamedStrImmediate_Strb_Rule_197_A1_P390() {}
+  virtual ~NamedStoreBasedOffsetMemory_Strb_Rule_198_A1_P392() {}
 
  private:
-  nacl_arm_dec::StrImmediate_Strb_Rule_197_A1_P390 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrImmediate_Strb_Rule_197_A1_P390);
+  nacl_arm_dec::StoreBasedOffsetMemory_Strb_Rule_198_A1_P392 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedOffsetMemory_Strb_Rule_198_A1_P392);
 };
 
-class NamedStrImmediate_Strh_Rule_207_A1_P410
+class NamedStoreBasedOffsetMemory_Strh_Rule_208_A1_P412
     : public NamedClassDecoder {
  public:
-  inline NamedStrImmediate_Strh_Rule_207_A1_P410()
-    : NamedClassDecoder(decoder_, "StrImmediate Strh_Rule_207_A1_P410")
+  inline NamedStoreBasedOffsetMemory_Strh_Rule_208_A1_P412()
+    : NamedClassDecoder(decoder_, "StoreBasedOffsetMemory Strh_Rule_208_A1_P412")
   {}
-  virtual ~NamedStrImmediate_Strh_Rule_207_A1_P410() {}
+  virtual ~NamedStoreBasedOffsetMemory_Strh_Rule_208_A1_P412() {}
 
  private:
-  nacl_arm_dec::StrImmediate_Strh_Rule_207_A1_P410 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrImmediate_Strh_Rule_207_A1_P410);
+  nacl_arm_dec::StoreBasedOffsetMemory_Strh_Rule_208_A1_P412 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedOffsetMemory_Strh_Rule_208_A1_P412);
 };
 
-class NamedStrImmediateDouble_Strd_Rule_200_A1_P396
+class NamedStoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398
     : public NamedClassDecoder {
  public:
-  inline NamedStrImmediateDouble_Strd_Rule_200_A1_P396()
-    : NamedClassDecoder(decoder_, "StrImmediateDouble Strd_Rule_200_A1_P396")
+  inline NamedStoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398()
+    : NamedClassDecoder(decoder_, "StoreBasedOffsetMemoryDouble Strd_Rule_201_A1_P398")
   {}
-  virtual ~NamedStrImmediateDouble_Strd_Rule_200_A1_P396() {}
+  virtual ~NamedStoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398() {}
 
  private:
-  nacl_arm_dec::StrImmediateDouble_Strd_Rule_200_A1_P396 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrImmediateDouble_Strd_Rule_200_A1_P396);
-};
-
-class NamedStrRegister_Str_Rule_195_A1_P386
-    : public NamedClassDecoder {
- public:
-  inline NamedStrRegister_Str_Rule_195_A1_P386()
-    : NamedClassDecoder(decoder_, "StrRegister Str_Rule_195_A1_P386")
-  {}
-  virtual ~NamedStrRegister_Str_Rule_195_A1_P386() {}
-
- private:
-  nacl_arm_dec::StrRegister_Str_Rule_195_A1_P386 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrRegister_Str_Rule_195_A1_P386);
-};
-
-class NamedStrRegister_Strb_Rule_198_A1_P392
-    : public NamedClassDecoder {
- public:
-  inline NamedStrRegister_Strb_Rule_198_A1_P392()
-    : NamedClassDecoder(decoder_, "StrRegister Strb_Rule_198_A1_P392")
-  {}
-  virtual ~NamedStrRegister_Strb_Rule_198_A1_P392() {}
-
- private:
-  nacl_arm_dec::StrRegister_Strb_Rule_198_A1_P392 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrRegister_Strb_Rule_198_A1_P392);
-};
-
-class NamedStrRegister_Strh_Rule_208_A1_P412
-    : public NamedClassDecoder {
- public:
-  inline NamedStrRegister_Strh_Rule_208_A1_P412()
-    : NamedClassDecoder(decoder_, "StrRegister Strh_Rule_208_A1_P412")
-  {}
-  virtual ~NamedStrRegister_Strh_Rule_208_A1_P412() {}
-
- private:
-  nacl_arm_dec::StrRegister_Strh_Rule_208_A1_P412 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrRegister_Strh_Rule_208_A1_P412);
-};
-
-class NamedStrRegisterDouble_Strd_Rule_201_A1_P398
-    : public NamedClassDecoder {
- public:
-  inline NamedStrRegisterDouble_Strd_Rule_201_A1_P398()
-    : NamedClassDecoder(decoder_, "StrRegisterDouble Strd_Rule_201_A1_P398")
-  {}
-  virtual ~NamedStrRegisterDouble_Strd_Rule_201_A1_P398() {}
-
- private:
-  nacl_arm_dec::StrRegisterDouble_Strd_Rule_201_A1_P398 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrRegisterDouble_Strd_Rule_201_A1_P398);
+  nacl_arm_dec::StoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedOffsetMemoryDouble_Strd_Rule_201_A1_P398);
 };
 
 class NamedTestIfAddressMasked_Tst_Rule_230_A1_P454
