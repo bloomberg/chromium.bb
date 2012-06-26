@@ -530,6 +530,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (c->sprites_are_broken)
 		return -1;
 
+	if (es->output_mask != (1u << output_base->id))
+		return -1;
+
 	if (surface_is_primary(ec, es))
 		return -1;
 
