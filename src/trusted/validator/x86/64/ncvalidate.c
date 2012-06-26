@@ -138,9 +138,12 @@ static NaClValidationStatus ApplyValidatorCodeReplacement_x86_64(
 static int CopyCodeIter(uint8_t *dst, uint8_t *src,
                         NaClPcAddress vbase, size_t size,
                         NaClCopyInstructionFunc copy_func) {
-  NaClSegment segment_old, segment_new;
-  NaClInstIter *iter_old, *iter_new;
-  NaClInstState *istate_old, *istate_new;
+  NaClSegment segment_old;
+  NaClSegment segment_new;
+  NaClInstIter *iter_old;
+  NaClInstIter *iter_new;
+  NaClInstState *istate_old;
+  NaClInstState *istate_new;
   int still_good = 1;
 
   NaClSegmentInitialize(dst, vbase, size, &segment_old);

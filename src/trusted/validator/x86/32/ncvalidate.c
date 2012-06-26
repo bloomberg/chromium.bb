@@ -108,13 +108,13 @@ static NaClValidationStatus ApplyValidatorCodeReplacement_x86_32(
 /* Copy a single instruction, avoiding the possibility of other threads
  * executing a partially changed instruction.
  */
-static Bool CopyInstruction(NCDecoderStatePair* tthis,
+static Bool CopyInstruction(NCDecoderStatePair *self,
                             NCDecoderInst *dinst_old,
                             NCDecoderInst *dinst_new) {
   NCRemainingMemory* mem_old = &dinst_old->dstate->memory;
   NCRemainingMemory* mem_new = &dinst_new->dstate->memory;
 
-  return tthis->copy_func(mem_old->mpc, mem_new->mpc, mem_old->read_length);
+  return self->copy_func(mem_old->mpc, mem_new->mpc, mem_old->read_length);
 }
 
 /* Copies code from src to dest in a thread safe way, returns 1 on success,
