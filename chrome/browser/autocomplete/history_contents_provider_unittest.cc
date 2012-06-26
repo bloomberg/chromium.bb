@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/history_contents_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -36,7 +37,7 @@ struct TestEntry {
 };
 
 class HistoryContentsProviderTest : public testing::Test,
-                                    public ACProviderListener {
+                                    public AutocompleteProviderListener {
  public:
   HistoryContentsProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -96,8 +97,8 @@ class HistoryContentsProviderTest : public testing::Test,
     profile_.reset(NULL);
   }
 
-  // ACProviderListener
-  virtual void OnProviderUpdate(bool updated_matches) {
+  // AutocompleteProviderListener:
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE {
     // We must quit the message loop (if running) to return control to the test.
     // Note, calling Quit() directly will checkfail if the loop isn't running,
     // so we post a task, which is safe for either case.

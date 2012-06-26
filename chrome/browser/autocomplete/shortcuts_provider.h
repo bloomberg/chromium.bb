@@ -10,9 +10,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/history_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
@@ -25,7 +23,7 @@ class ShortcutsProvider
     : public AutocompleteProvider,
       public history::ShortcutsBackend::ShortcutsBackendObserver {
  public:
-  ShortcutsProvider(ACProviderListener* listener, Profile* profile);
+  ShortcutsProvider(AutocompleteProviderListener* listener, Profile* profile);
 
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.

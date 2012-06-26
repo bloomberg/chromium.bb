@@ -95,7 +95,8 @@ const int SearchProvider::kKeywordProviderURLFetcherID = 2;
 // static
 bool SearchProvider::query_suggest_immediately_ = false;
 
-SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
+SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
+                               Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
       providers_(TemplateURLServiceFactory::GetForProfile(profile)),
       suggest_results_pending_(0),

@@ -42,7 +42,8 @@ class KeywordProvider::ScopedEndExtensionKeywordMode {
   KeywordProvider* provider_;
 };
 
-KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
+KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
+                                 Profile* profile)
     : AutocompleteProvider(listener, profile, "Keyword"),
       model_(NULL),
       current_input_id_(0) {
@@ -59,7 +60,7 @@ KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
                  content::Source<Profile>(profile));
 }
 
-KeywordProvider::KeywordProvider(ACProviderListener* listener,
+KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
                                  TemplateURLService* model)
     : AutocompleteProvider(listener, NULL, "Keyword"),
       model_(model),

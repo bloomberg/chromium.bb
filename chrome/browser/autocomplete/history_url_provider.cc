@@ -237,7 +237,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
 HistoryURLProviderParams::~HistoryURLProviderParams() {
 }
 
-HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
+HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
                                        Profile* profile)
     : HistoryProvider(listener, profile, "HistoryURL"),
       params_(NULL) {

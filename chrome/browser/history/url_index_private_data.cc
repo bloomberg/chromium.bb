@@ -18,7 +18,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/in_memory_url_index.h"

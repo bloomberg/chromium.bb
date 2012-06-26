@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/i18n/number_formatting.h"
 #include "base/format_macros.h"
+#include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -27,11 +27,9 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -40,12 +38,10 @@
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon_ip.h"
-#include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -523,99 +519,6 @@ void AutocompleteInput::Clear() {
   desired_tld_.clear();
   prevent_inline_autocomplete_ = false;
   prefer_keyword_ = false;
-}
-
-// AutocompleteProvider -------------------------------------------------------
-
-// static
-const size_t AutocompleteProvider::kMaxMatches = 3;
-
-AutocompleteProvider::ACProviderListener::~ACProviderListener() {
-}
-
-AutocompleteProvider::AutocompleteProvider(ACProviderListener* listener,
-                                           Profile* profile,
-                                           const char* name)
-    : profile_(profile),
-      listener_(listener),
-      done_(true),
-      name_(name) {
-}
-
-void AutocompleteProvider::Stop() {
-  done_ = true;
-}
-
-metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
-    AsOmniboxEventProviderType() const {
-  if (name_ == "HistoryURL")
-    return metrics::OmniboxEventProto::HISTORY_URL;
-  if (name_ == "HistoryContents")
-    return metrics::OmniboxEventProto::HISTORY_CONTENTS;
-  if (name_ == "HistoryQuickProvider")
-    return metrics::OmniboxEventProto::HISTORY_QUICK;
-  if (name_ == "Search")
-    return metrics::OmniboxEventProto::SEARCH;
-  if (name_ == "Keyword")
-    return metrics::OmniboxEventProto::KEYWORD;
-  if (name_ == "Builtin")
-    return metrics::OmniboxEventProto::BUILTIN;
-  if (name_ == "ShortcutsProvider")
-    return metrics::OmniboxEventProto::SHORTCUTS;
-  if (name_ == "ExtensionApps")
-    return metrics::OmniboxEventProto::EXTENSION_APPS;
-
-  NOTREACHED();
-  return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;
-}
-
-void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
-  DLOG(WARNING) << "The AutocompleteProvider '" << name()
-                << "' has not implemented DeleteMatch.";
-}
-
-void AutocompleteProvider::AddProviderInfo(
-    ProvidersInfo* provider_info) const {
-}
-
-string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
-                                                   bool check_accept_lang,
-                                                   bool trim_http) const {
-  std::string languages = (check_accept_lang && profile_) ?
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
-  return net::FormatUrl(
-      url,
-      languages,
-      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
-      net::UnescapeRule::SPACES, NULL, NULL, NULL);
-}
-
-AutocompleteProvider::~AutocompleteProvider() {
-  Stop();
-}
-
-// static
-bool AutocompleteProvider::HasHTTPScheme(const string16& input) {
-  std::string utf8_input(UTF16ToUTF8(input));
-  url_parse::Component scheme;
-  if (url_util::FindAndCompareScheme(utf8_input, chrome::kViewSourceScheme,
-                                     &scheme))
-    utf8_input.erase(0, scheme.end() + 1);
-  return url_util::FindAndCompareScheme(utf8_input, chrome::kHttpScheme, NULL);
-}
-
-void AutocompleteProvider::UpdateStarredStateOfMatches() {
-  if (matches_.empty())
-    return;
-
-  if (!profile_)
-    return;
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
-  if (!bookmark_model || !bookmark_model->IsLoaded())
-    return;
-
-  for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
-    i->starred = bookmark_model->IsBookmarked(GURL(i->destination_url));
 }
 
 // AutocompleteResult ---------------------------------------------------------

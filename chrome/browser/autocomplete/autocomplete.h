@@ -8,14 +8,14 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/autocomplete_types.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "googleurl/src/gurl.h"
@@ -199,10 +199,6 @@ struct ProviderInfo;
 class SearchProvider;
 class TemplateURL;
 
-typedef std::vector<AutocompleteMatch> ACMatches;
-typedef std::vector<AutocompleteProvider*> ACProviders;
-typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
-
 // AutocompleteInput ----------------------------------------------------------
 
 // The user input for an autocomplete query.  Allows copying.
@@ -350,133 +346,6 @@ class AutocompleteInput {
   MatchesRequested matches_requested_;
 };
 
-// AutocompleteProvider -------------------------------------------------------
-
-// A single result provider for the autocomplete system.  Given user input, the
-// provider decides what (if any) matches to return, their relevance, and their
-// classifications.
-class AutocompleteProvider
-    : public base::RefCountedThreadSafe<AutocompleteProvider> {
- public:
-  class ACProviderListener {
-   public:
-    // Called by a provider as a notification that something has changed.
-    // |updated_matches| should be true iff the matches have changed in some
-    // way (they may not have changed if, for example, the provider did an
-    // asynchronous query to get more matches, came up with none, and is now
-    // giving up).
-    //
-    // NOTE: Providers MUST only call this method while processing asynchronous
-    // queries.  Do not call this for a synchronous query.
-    //
-    // NOTE: There's no parameter to tell the listener _which_ provider is
-    // calling it.  Because the AutocompleteController (the typical listener)
-    // doesn't cache the providers' individual matches locally, it has to get
-    // them all again when this is called anyway, so such a parameter wouldn't
-    // actually be useful.
-    virtual void OnProviderUpdate(bool updated_matches) = 0;
-
-   protected:
-    virtual ~ACProviderListener();
-  };
-
-  AutocompleteProvider(ACProviderListener* listener,
-                       Profile* profile,
-                       const char* name);
-
-  // Called to start an autocomplete query.  The provider is responsible for
-  // tracking its matches for this query and whether it is done processing the
-  // query.  When new matches are available or the provider finishes, it
-  // calls the controller's OnProviderUpdate() method.  The controller can then
-  // get the new matches using the provider's accessors.
-  // Exception: Matches available immediately after starting the query (that
-  // is, synchronously) do not cause any notifications to be sent.  The
-  // controller is expected to check for these without prompting (since
-  // otherwise, starting each provider running would result in a flurry of
-  // notifications).
-  //
-  // Once Stop() has been called, no more notifications should be sent.
-  //
-  // |minimal_changes| is an optimization that lets the provider do less work
-  // when the |input|'s text hasn't changed.  See the body of
-  // OmniboxPopupModel::StartAutocomplete().
-  virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) = 0;
-
-  // Called when a provider must not make any more callbacks for the current
-  // query. This will be called regardless of whether the provider is already
-  // done.
-  virtual void Stop();
-
-  // Returns the set of matches for the current query.
-  const ACMatches& matches() const { return matches_; }
-
-  // Returns whether the provider is done processing the query.
-  bool done() const { return done_; }
-
-  // Returns the name of this provider.
-  const std::string& name() const { return name_; }
-  // Returns the enum equivalent to the name of this provider.
-  metrics::OmniboxEventProto_ProviderType AsOmniboxEventProviderType() const;
-
-  // Called to delete a match and the backing data that produced it.  This
-  // match should not appear again in this or future queries.  This can only be
-  // called for matches the provider marks as deletable.  This should only be
-  // called when no query is running.
-  // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
-  virtual void DeleteMatch(const AutocompleteMatch& match);
-
-  // Called when an omnibox event log entry is generated.  This gives
-  // a provider the opportunity to add diagnostic information to the
-  // logs.  A provider is expected to append a single entry of whatever
-  // information it wants to |provider_info|.
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const;
-
-  // A convenience function to call net::FormatUrl() with the current set of
-  // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
-  // with an empty list.
-  string16 StringForURLDisplay(const GURL& url,
-                               bool check_accept_lang,
-                               bool trim_http) const;
-
-#ifdef UNIT_TEST
-  void set_listener(ACProviderListener* listener) { listener_ = listener; }
-#endif
-  // A suggested upper bound for how many matches a provider should return.
-  // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once
-  // we have good relevance heuristics; the controller should handle all
-  // culling.
-  static const size_t kMaxMatches;
-
- protected:
-  friend class base::RefCountedThreadSafe<AutocompleteProvider>;
-
-  virtual ~AutocompleteProvider();
-
-  // Returns whether |input| begins "http:" or "view-source:http:".
-  static bool HasHTTPScheme(const string16& input);
-
-  // Updates the starred state of each of the matches in matches_ from the
-  // profile's bookmark bar model.
-  void UpdateStarredStateOfMatches();
-
-  // The profile associated with the AutocompleteProvider.  Reference is not
-  // owned by us.
-  Profile* profile_;
-
-  ACProviderListener* listener_;
-  ACMatches matches_;
-  bool done_;
-
-  // The name of this provider.  Used for logging.
-  std::string name_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
-};
-
-typedef AutocompleteProvider::ACProviderListener ACProviderListener;
-
 // AutocompleteResult ---------------------------------------------------------
 
 // All matches from all providers for a particular query.  This also tracks
@@ -568,7 +437,7 @@ class AutocompleteResult {
   // end() if there is no default match.
   const_iterator default_match() const { return default_match_; }
 
-  GURL alternate_nav_url() const { return alternate_nav_url_; }
+  const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.
   void Reset();
@@ -624,7 +493,7 @@ class AutocompleteResult {
 
 // The coordinator for autocomplete queries, responsible for combining the
 // matches from a series of providers into one AutocompleteResult.
-class AutocompleteController : public ACProviderListener {
+class AutocompleteController : public AutocompleteProviderListener {
  public:
   // Used to indicate an index that is not selected in a call to Update().
   static const int kNoItemSelected;
@@ -712,14 +581,13 @@ class AutocompleteController : public ACProviderListener {
   SearchProvider* search_provider() const { return search_provider_; }
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
 
-  // Getters
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
   bool done() const { return done_; }
   const ACProviders* providers() const { return &providers_; }
 
-  // From AutocompleteProvider::Listener
-  virtual void OnProviderUpdate(bool updated_matches);
+  // AutocompleteProviderListener:
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
   // Called when an omnibox event log entry is generated.
   // Populates provider_info with diagnostic information about the status

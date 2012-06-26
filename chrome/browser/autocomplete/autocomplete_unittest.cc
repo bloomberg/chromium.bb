@@ -11,6 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -50,7 +52,7 @@ class TestProvider : public AutocompleteProvider {
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes);
 
-  void set_listener(ACProviderListener* listener) {
+  void set_listener(AutocompleteProviderListener* listener) {
     listener_ = listener;
   }
 

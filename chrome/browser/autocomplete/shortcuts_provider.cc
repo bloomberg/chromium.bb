@@ -17,18 +17,15 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_parse.h"
-#include "googleurl/src/url_util.h"
-#include "net/base/escape.h"
-#include "net/base/net_util.h"
 
 namespace {
 
@@ -48,7 +45,7 @@ class RemoveMatchPredicate {
 
 }  // namespace
 
-ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
+ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile, "ShortcutsProvider"),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),

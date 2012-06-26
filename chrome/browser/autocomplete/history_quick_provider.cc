@@ -42,8 +42,9 @@ using history::ScoredHistoryMatches;
 
 bool HistoryQuickProvider::disabled_ = false;
 
-HistoryQuickProvider::HistoryQuickProvider(ACProviderListener* listener,
-                                           Profile* profile)
+HistoryQuickProvider::HistoryQuickProvider(
+    AutocompleteProviderListener* listener,
+    Profile* profile)
     : HistoryProvider(listener, profile, "HistoryQuickProvider"),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       reorder_for_inlining_(false) {

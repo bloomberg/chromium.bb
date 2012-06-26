@@ -18,6 +18,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/shortcuts_backend.h"
@@ -118,12 +120,12 @@ struct TestShortcutInfo {
 }  // namespace
 
 class ShortcutsProviderTest : public testing::Test,
-                              public ACProviderListener {
+                              public AutocompleteProviderListener {
  public:
   ShortcutsProviderTest();
 
-  // ACProviderListener
-  virtual void OnProviderUpdate(bool updated_matches);
+  // AutocompleteProviderListener:
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
   class SetShouldContain

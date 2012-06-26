@@ -16,12 +16,12 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 
 class BuiltinProvider : public AutocompleteProvider {
  public:
-  BuiltinProvider(ACProviderListener* listener, Profile* profile);
+  BuiltinProvider(AutocompleteProviderListener* listener, Profile* profile);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,

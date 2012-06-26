@@ -7,7 +7,10 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+
+class AutocompleteInput;
+struct AutocompleteMatch;
 
 // This class is a base class for the history autocomplete providers and
 // provides functions useful to all derived classes.
@@ -16,7 +19,7 @@ class HistoryProvider : public AutocompleteProvider {
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
  protected:
-  HistoryProvider(ACProviderListener* listener,
+  HistoryProvider(AutocompleteProviderListener* listener,
                   Profile* profile,
                   const char* name);
   virtual ~HistoryProvider();

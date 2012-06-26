@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/history/history_types.h"
@@ -26,10 +27,11 @@ struct ScoredHistoryMatch;
 // history.
 class HistoryQuickProvider : public HistoryProvider {
  public:
-  HistoryQuickProvider(ACProviderListener* listener, Profile* profile);
+  HistoryQuickProvider(AutocompleteProviderListener* listener,
+                       Profile* profile);
 
-  // AutocompleteProvider. |minimal_changes| is ignored since there
-  // is no asynch completion performed.
+  // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
+  // completion performed.
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 

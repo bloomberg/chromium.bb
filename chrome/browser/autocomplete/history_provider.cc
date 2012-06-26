@@ -17,7 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
 
-HistoryProvider::HistoryProvider(ACProviderListener* listener,
+HistoryProvider::HistoryProvider(AutocompleteProviderListener* listener,
                                  Profile* profile,
                                  const char* name)
     : AutocompleteProvider(listener, profile, name),

@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/autocomplete/builtin_provider.h"
+
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/builtin_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "googleurl/src/gurl.h"
@@ -20,8 +23,8 @@ class BuiltinProviderTest : public testing::Test {
     const ResultType output[3];
   };
 
-  BuiltinProviderTest() : builtin_provider_(NULL) { }
-  virtual ~BuiltinProviderTest() { }
+  BuiltinProviderTest() : builtin_provider_(NULL) {}
+  virtual ~BuiltinProviderTest() {}
 
   virtual void SetUp();
   virtual void TearDown();

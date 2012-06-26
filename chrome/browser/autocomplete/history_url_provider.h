@@ -11,19 +11,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/cancellation_flag.h"
-#include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 
 class MessageLoop;
 class Profile;
 
 namespace history {
-
 class HistoryBackend;
 class URLDatabase;
-
-}  // namespace history
+}
 
 // How history autocomplete works
 // ==============================
@@ -49,7 +48,7 @@ class URLDatabase;
 //                                /
 //   HistoryService::QueryComplete
 //     [params_ destroyed]
-//     -> AutocompleteProvider::Listener::OnProviderUpdate
+//     -> AutocompleteProviderListener::OnProviderUpdate
 //
 // The autocomplete controller calls us, and must be called back, on the main
 // thread.  When called, we run two autocomplete passes.  The first pass runs
@@ -138,10 +137,10 @@ struct HistoryURLProviderParams {
 // component of the history system.  See comments above.
 class HistoryURLProvider : public HistoryProvider {
  public:
-  HistoryURLProvider(ACProviderListener* listener, Profile* profile);
+  HistoryURLProvider(AutocompleteProviderListener* listener, Profile* profile);
 
 #ifdef UNIT_TEST
-  HistoryURLProvider(ACProviderListener* listener,
+  HistoryURLProvider(AutocompleteProviderListener* listener,
                      Profile* profile,
                      const std::string& languages)
     : HistoryProvider(listener, profile, "History"),

@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -53,7 +54,7 @@ class URLFetcher;
 class SearchProvider : public AutocompleteProvider,
                        public net::URLFetcherDelegate {
  public:
-  SearchProvider(ACProviderListener* listener, Profile* profile);
+  SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
 #if defined(UNIT_TEST)
   static void set_query_suggest_immediately(bool value) {

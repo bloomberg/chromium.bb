@@ -11,6 +11,8 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -37,7 +39,7 @@ using content::BrowserThread;
 //   is added to history.
 // . test_factory_ is set as the URLFetcherFactory.
 class SearchProviderTest : public testing::Test,
-                           public AutocompleteProvider::ACProviderListener {
+                           public AutocompleteProviderListener {
  public:
   SearchProviderTest()
       : default_t_url_(NULL),
@@ -68,9 +70,9 @@ class SearchProviderTest : public testing::Test,
   // it if found.  Returns whether |match| was set.
   bool FindMatchWithDestination(const GURL& url, AutocompleteMatch* match);
 
-  // ACProviderListener method. If we're waiting for the provider to finish,
-  // this exits the message loop.
-  virtual void OnProviderUpdate(bool updated_matches);
+  // AutocompleteProviderListener:
+  // If we're waiting for the provider to finish, this exits the message loop.
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
   // Runs a nested message loop until provider_ is done. The message loop is
   // exited by way of OnProviderUPdate.

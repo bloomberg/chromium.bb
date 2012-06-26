@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -27,7 +28,7 @@ namespace {
 // time it will take.
 const int kDaysToSearch = 30;
 
-}  // end namespace
+}  // namespace
 
 HistoryContentsProvider::MatchReference::MatchReference(
     const history::URLResult* result,
@@ -45,9 +46,10 @@ bool HistoryContentsProvider::MatchReference::CompareRelevance(
   return lhs.result->last_visit() > rhs.result->last_visit();
 }
 
-HistoryContentsProvider::HistoryContentsProvider(ACProviderListener* listener,
-                                                 Profile* profile,
-                                                 bool body_only)
+HistoryContentsProvider::HistoryContentsProvider(
+    AutocompleteProviderListener* listener,
+    Profile* profile,
+    bool body_only)
     : HistoryProvider(listener, profile, "HistoryContents"),
       star_title_count_(0),
       star_contents_count_(0),

@@ -19,6 +19,7 @@
 #include <string>
 
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -51,9 +52,10 @@ class TemplateURLService;
 class KeywordProvider : public AutocompleteProvider,
                         public content::NotificationObserver {
  public:
-  KeywordProvider(ACProviderListener* listener, Profile* profile);
+  KeywordProvider(AutocompleteProviderListener* listener, Profile* profile);
   // For testing.
-  KeywordProvider(ACProviderListener* listener, TemplateURLService* model);
+  KeywordProvider(AutocompleteProviderListener* listener,
+                  TemplateURLService* model);
 
   // Extracts the next whitespace-delimited token from input and returns it.
   // Sets |remaining_input| to everything after the first token (skipping over
@@ -89,7 +91,7 @@ class KeywordProvider : public AutocompleteProvider,
                                             const string16& keyword,
                                             const AutocompleteInput& input);
 
-  // AutocompleteProvider
+  // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
   virtual void Stop() OVERRIDE;

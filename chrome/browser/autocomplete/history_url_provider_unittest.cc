@@ -12,6 +12,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -125,7 +127,7 @@ struct TestURLInfo {
 };
 
 class HistoryURLProviderTest : public testing::Test,
-                               public ACProviderListener {
+                               public AutocompleteProviderListener {
  public:
   HistoryURLProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -138,8 +140,8 @@ class HistoryURLProviderTest : public testing::Test,
     HistoryQuickProvider::set_disabled(false);
   }
 
-  // ACProviderListener
-  virtual void OnProviderUpdate(bool updated_matches);
+  // AutocompleteProviderListener:
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
   // testing::Test

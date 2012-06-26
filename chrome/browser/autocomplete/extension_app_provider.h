@@ -23,6 +23,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -30,9 +31,10 @@
 class ExtensionAppProvider : public AutocompleteProvider,
                              public content::NotificationObserver {
  public:
-  ExtensionAppProvider(ACProviderListener* listener, Profile* profile);
+  ExtensionAppProvider(AutocompleteProviderListener* listener,
+                       Profile* profile);
 
-  // AutocompleteProvider implementation:
+  // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 

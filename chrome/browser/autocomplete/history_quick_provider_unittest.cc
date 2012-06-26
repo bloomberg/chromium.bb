@@ -77,14 +77,14 @@ struct TestURLInfo {
 };
 
 class HistoryQuickProviderTest : public testing::Test,
-                                 public ACProviderListener {
+                                 public AutocompleteProviderListener {
  public:
   HistoryQuickProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
 
-  // ACProviderListener
-  virtual void OnProviderUpdate(bool updated_matches);
+  // AutocompleteProviderListener:
+  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
   class SetShouldContain : public std::unary_function<const std::string&,

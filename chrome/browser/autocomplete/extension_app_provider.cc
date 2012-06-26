@@ -22,8 +22,9 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ExtensionAppProvider::ExtensionAppProvider(ACProviderListener* listener,
-                                           Profile* profile)
+ExtensionAppProvider::ExtensionAppProvider(
+    AutocompleteProviderListener* listener,
+    Profile* profile)
     : AutocompleteProvider(listener, profile, "ExtensionApps") {
   // Notifications of extensions loading and unloading always come from the
   // non-incognito profile, but we need to see them regardless, as the incognito
