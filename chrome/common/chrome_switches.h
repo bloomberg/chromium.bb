@@ -266,6 +266,8 @@ extern const char kPpapiFlashFieldTrial[];
 extern const char kPpapiFlashFieldTrialDisableByDefault[];
 extern const char kPpapiFlashFieldTrialEnableByDefault[];
 extern const char kPpapiFlashInProcess[];
+extern const char kPpapiFlashPath[];
+extern const char kPpapiFlashVersion[];
 extern const char kPrerenderFromOmnibox[];
 extern const char kPrerenderFromOmniboxSwitchValueAuto[];
 extern const char kPrerenderFromOmniboxSwitchValueDisabled[];
