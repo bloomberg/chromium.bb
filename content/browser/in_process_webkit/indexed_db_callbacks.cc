@@ -8,6 +8,7 @@
 #include "webkit/quota/quota_manager.h"
 
 using content::IndexedDBKey;
+using content::IndexedDBKeyPath;
 using content::SerializedScriptValue;
 
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(
@@ -122,4 +123,14 @@ void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
           thread_id(), response_id(), SerializedScriptValue(value)));
+}
+
+void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
+    const WebKit::WebSerializedScriptValue& value,
+    const WebKit::WebIDBKey& primaryKey,
+    const WebKit::WebIDBKeyPath& keyPath) {
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessSerializedScriptValueWithKey(
+          thread_id(), response_id(), SerializedScriptValue(value),
+          IndexedDBKey(primaryKey), IndexedDBKeyPath(keyPath)));
 }

@@ -221,6 +221,12 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                      int32 /* thread_id */,
                      int32 /* response_id */,
                      content::SerializedScriptValue /* value */)
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessSerializedScriptValueWithKey,
+                     int32 /* thread_id */,
+                     int32 /* response_id */,
+                     content::SerializedScriptValue /* value */,
+                     content::IndexedDBKey /* indexed_db_key */,
+                     content::IndexedDBKeyPath /* indexed_db_keypath */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessStringList,
                      int32 /* thread_id */,
                      int32 /* response_id */,

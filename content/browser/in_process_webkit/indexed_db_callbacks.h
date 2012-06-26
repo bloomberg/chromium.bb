@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,9 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
 
 // WebIDBCursor uses onSuccess(WebIDBCursor*) when a cursor has been opened,
 // onSuccessWithContinuation() when a continue() call has succeeded, or
-// onSuccess() without params to indicate it does not contain any data, i.e.,
-// there is no key within the key range, or it has reached the end.
+// onSuccess(SerializedScriptValue::nullValue()) to indicate it does
+// not contain any data, i.e., there is no key within the key range,
+// or it has reached the end.
 template <>
 class IndexedDBCallbacks<WebKit::WebIDBCursor>
     : public IndexedDBCallbacksBase {
@@ -165,6 +166,9 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
       : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id) { }
 
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
+  virtual void onSuccess(const WebKit::WebSerializedScriptValue& value,
+                         const WebKit::WebIDBKey& key,
+                         const WebKit::WebIDBKeyPath& keyPath);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
