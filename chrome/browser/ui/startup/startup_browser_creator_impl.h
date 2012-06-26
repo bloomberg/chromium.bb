@@ -21,6 +21,10 @@ class FilePath;
 class Profile;
 class StartupBrowserCreator;
 
+namespace content {
+class WebContents;
+}
+
 // Assists launching the application and appending the initial tabs for a
 // browser window.
 class StartupBrowserCreatorImpl {
@@ -72,8 +76,10 @@ class StartupBrowserCreatorImpl {
 
   // If IsAppLaunch is true, tries to open an application window.
   // If the app is specified to start in a tab, or IsAppLaunch is false,
-  // returns false to specify default processing.
-  bool OpenApplicationWindow(Profile* profile);
+  // returns false to specify default processing. |out_app_contents| is an
+  // optional argument to receive the created WebContents for the app.
+  bool OpenApplicationWindow(Profile* profile,
+                             content::WebContents** out_app_contents);
 
   // If IsAppLaunch is true and the user set a pref indicating that the app
   // should open in a tab, do so.

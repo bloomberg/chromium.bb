@@ -293,14 +293,11 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // not as chrome.
   // Special case is when app switches are passed but we do want to restore
   // session. In that case open app window + focus it after session is restored.
-  if (OpenApplicationWindow(profile) && !browser_defaults::kAppRestoreSession) {
+  content::WebContents* app_contents = NULL;
+  if (OpenApplicationWindow(profile, &app_contents) &&
+      !browser_defaults::kAppRestoreSession) {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   } else {
-    Browser* browser_to_focus = NULL;
-    // In case of app mode + session restore we want to focus that app.
-    if (browser_defaults::kAppRestoreSession)
-      browser_to_focus = BrowserList::GetLastActive();
-
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
 
@@ -314,8 +311,9 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // be an app tab.
     OpenApplicationTab(profile);
 
-    if (browser_to_focus)
-      browser_to_focus->GetActiveWebContents()->GetView()->SetInitialFocus();
+    // In case of app mode + session restore we want to focus that app.
+    if (browser_defaults::kAppRestoreSession && app_contents)
+      app_contents->GetView()->SetInitialFocus();
 
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
@@ -396,7 +394,13 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
   return (app_tab != NULL);
 }
 
-bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
+bool StartupBrowserCreatorImpl::OpenApplicationWindow(
+    Profile* profile,
+    content::WebContents** out_app_contents) {
+  // Set |out_app_contents| to NULL early on (just in case).
+  if (out_app_contents)
+    *out_app_contents = NULL;
+
   std::string url_string, app_id;
   if (!IsAppLaunch(&url_string, &app_id))
     return false;
@@ -419,9 +423,14 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
       return false;
 
     RecordCmdLineAppHistogram();
+
     WebContents* tab_in_app_window = application_launch::OpenApplication(
         profile, extension, launch_container, GURL(), NEW_WINDOW,
         &command_line_);
+
+    if (out_app_contents)
+      *out_app_contents = tab_in_app_window;
+
     // Platform apps fire off a launch event which may or may not open a window.
     return (tab_in_app_window != NULL || extension->is_platform_app());
   }
@@ -436,21 +445,25 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
 
   // Restrict allowed URLs for --app switch.
   if (!url.is_empty() && url.is_valid()) {
-    ChildProcessSecurityPolicy *policy =
+    ChildProcessSecurityPolicy* policy =
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-
       if (profile->GetExtensionService()->IsInstalledApp(url)) {
         RecordCmdLineAppHistogram();
       } else {
         AppLauncherHandler::RecordAppLaunchType(
             extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY);
       }
+
       WebContents* app_tab = application_launch::OpenAppShortcutWindow(
           profile,
           url,
           true);  // Update app info.
+
+      if (out_app_contents)
+        *out_app_contents = app_tab;
+
       return (app_tab != NULL);
     }
   }

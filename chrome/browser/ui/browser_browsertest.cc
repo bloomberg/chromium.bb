@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
       browser::startup::IS_FIRST_RUN :
       browser::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
-  ASSERT_TRUE(launch.OpenApplicationWindow(browser()->profile()));
+  ASSERT_TRUE(launch.OpenApplicationWindow(browser()->profile(), NULL));
 
   // Check that the new browser has an app name.
   // The launch should have created a new browser.
@@ -1425,11 +1425,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
 
 class ShowModalDialogTest : public BrowserTest {
  public:
-   ShowModalDialogTest() {}
+  ShowModalDialogTest() {}
 
-   virtual void SetUpCommandLine(CommandLine* command_line) {
-     command_line->AppendSwitch(switches::kDisablePopupBlocking);
-   }
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ShowModalDialogTest, BasicTest) {
@@ -1506,11 +1506,11 @@ IN_PROC_BROWSER_TEST_F(LaunchBrowserWithNonAsciiUserDatadir,
 // the last window closes.
 class RunInBackgroundTest : public BrowserTest {
  public:
-   RunInBackgroundTest() {}
+  RunInBackgroundTest() {}
 
-   virtual void SetUpCommandLine(CommandLine* command_line) {
-     command_line->AppendSwitch(switches::kKeepAliveForTest);
-   }
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kKeepAliveForTest);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
@@ -1536,12 +1536,12 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
 // the last window closes.
 class NoStartupWindowTest : public BrowserTest {
  public:
-   NoStartupWindowTest() {}
+  NoStartupWindowTest() {}
 
-   virtual void SetUpCommandLine(CommandLine* command_line) {
-     command_line->AppendSwitch(switches::kNoStartupWindow);
-     command_line->AppendSwitch(switches::kKeepAliveForTest);
-   }
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kNoStartupWindow);
+    command_line->AppendSwitch(switches::kKeepAliveForTest);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
@@ -1560,13 +1560,13 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 // need to access private type of Browser.
 class AppModeTest : public BrowserTest {
  public:
-   AppModeTest() {}
+  AppModeTest() {}
 
-   virtual void SetUpCommandLine(CommandLine* command_line) {
-     GURL url = ui_test_utils::GetTestUrl(
-        FilePath(), FilePath().AppendASCII("title1.html"));
-     command_line->AppendSwitchASCII(switches::kApp, url.spec());
-   }
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GURL url = ui_test_utils::GetTestUrl(
+       FilePath(), FilePath().AppendASCII("title1.html"));
+    command_line->AppendSwitchASCII(switches::kApp, url.spec());
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
