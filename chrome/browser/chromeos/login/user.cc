@@ -55,6 +55,10 @@ void User::SetImage(const UserImage& user_image, int image_index) {
   image_is_stub_ = false;
 }
 
+void User::SetImageURL(const GURL& image_url) {
+  user_image_.set_url(image_url);
+}
+
 void User::SetStubImage(int image_index) {
   user_image_.SetImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       kStubImageResourceID));

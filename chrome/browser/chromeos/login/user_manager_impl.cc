@@ -75,6 +75,7 @@ const char kStubUser[] = "stub-user@example.com";
 // Names of nodes with info about user image.
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
+const char kImageURLNodeName[] = "url";
 
 const char kWallpaperTypeNodeName[] = "type";
 const char kWallpaperIndexNodeName[] = "index";
@@ -608,14 +609,16 @@ std::string UserManagerImpl::GetUserDisplayEmail(
 void UserManagerImpl::SaveUserDefaultImageIndex(const std::string& username,
                                                 int image_index) {
   DCHECK(image_index >= 0 && image_index < kDefaultImagesCount);
-  SetUserImage(username, image_index, UserImage(GetDefaultImage(image_index)));
-  SaveImageToLocalState(username, "", image_index, false);
+  SetUserImage(username, image_index, GURL(),
+               UserImage(GetDefaultImage(image_index)));
+  SaveImageToLocalState(username, "", image_index, GURL(), false);
 }
 
 void UserManagerImpl::SaveUserImage(const std::string& username,
                                     const UserImage& user_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SaveUserImageInternal(username, User::kExternalImageIndex, user_image);
+  SaveUserImageInternal(username, User::kExternalImageIndex,
+                        GURL(), user_image);
 }
 
 void UserManagerImpl::SetLoggedInUserCustomWallpaperLayout(
@@ -664,12 +667,16 @@ void UserManagerImpl::SaveUserImageFromProfileImage(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!downloaded_profile_image_.empty()) {
     // Profile image has already been downloaded, so save it to file right now.
-    SaveUserImageInternal(username, User::kProfileImageIndex,
+    DCHECK(profile_image_url_.is_valid());
+    SaveUserImageInternal(username,
+                          User::kProfileImageIndex, profile_image_url_,
                           UserImage(downloaded_profile_image_));
   } else {
     // No profile image - use the stub image (gray avatar).
-    SetUserImage(username, User::kProfileImageIndex, UserImage(SkBitmap()));
-    SaveImageToLocalState(username, "", User::kProfileImageIndex, false);
+    SetUserImage(username, User::kProfileImageIndex,
+                 GURL(), UserImage(SkBitmap()));
+    SaveImageToLocalState(username, "", User::kProfileImageIndex,
+                          GURL(), false);
   }
 }
 
@@ -870,7 +877,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
               image_loader_->Start(
                   image_path, user_image_size, true,
                   base::Bind(&UserManagerImpl::SetUserImage,
-                             base::Unretained(this), email, image_index));
+                             base::Unretained(this),
+                             email, image_index, GURL()));
             }
           } else if (prefs_images->GetDictionaryWithoutPathExpansion(
                          email, &image_properties)) {
@@ -888,14 +896,19 @@ void UserManagerImpl::EnsureUsersLoaded() {
               // after user logs in).
               DCHECK(!image_path.empty() ||
                      image_index == User::kProfileImageIndex);
+              std::string image_url;
+              image_properties->GetString(kImageURLNodeName, &image_url);
+              GURL image_gurl(image_url);
               // Until image has been loaded, use the stub image (gray avatar).
               user->SetStubImage(image_index);
+              user->SetImageURL(image_gurl);
               if (!image_path.empty()) {
                 // Load user image asynchronously.
                 image_loader_->Start(
                     image_path, user_image_size, true,
                     base::Bind(&UserManagerImpl::SetUserImage,
-                               base::Unretained(this), email, image_index));
+                               base::Unretained(this),
+                               email, image_index, image_gurl));
               }
             } else {
               NOTREACHED();
@@ -1117,6 +1130,7 @@ void UserManagerImpl::SaveLoggedInUserWallpaperProperties(
 
 void UserManagerImpl::SetUserImage(const std::string& username,
                                    int image_index,
+                                   const GURL& image_url,
                                    const UserImage& user_image) {
   User* user = const_cast<User*>(FindUser(username));
   // User may have been removed by now.
@@ -1130,6 +1144,7 @@ void UserManagerImpl::SetUserImage(const std::string& username,
       user->SetImage(user_image, image_index);
     else
       user->SetStubImage(image_index);
+    user->SetImageURL(image_url);
     // For the logged-in user with a profile picture, initialize
     // |downloaded_profile_picture_|.
     if (user == logged_in_user_ && image_index == User::kProfileImageIndex)
@@ -1198,10 +1213,11 @@ void UserManagerImpl::SaveUserWallpaperProperties(const std::string& username,
 
 void UserManagerImpl::SaveUserImageInternal(const std::string& username,
                                             int image_index,
+                                            const GURL& image_url,
                                             const UserImage& user_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SetUserImage(username, image_index, user_image);
+  SetUserImage(username, image_index, image_url, user_image);
 
   // Ignore for ephemeral users.
   if (IsEphemeralUser(username))
@@ -1217,7 +1233,7 @@ void UserManagerImpl::SaveUserImageInternal(const std::string& username,
       FROM_HERE,
       base::Bind(&UserManagerImpl::SaveImageToFile,
                  base::Unretained(this),
-                 username, user_image, image_path, image_index));
+                 username, user_image, image_path, image_index, image_url));
 }
 
 void UserManagerImpl::SaveUserWallpaperInternal(const std::string& username,
@@ -1314,7 +1330,8 @@ void UserManagerImpl::GenerateUserWallpaperThumbnail(
 void UserManagerImpl::SaveImageToFile(const std::string& username,
                                       const UserImage& user_image,
                                       const FilePath& image_path,
-                                      int image_index) {
+                                      int image_index,
+                                      const GURL& image_url) {
   if (!SaveBitmapToFile(user_image, image_path))
     return;
 
@@ -1323,7 +1340,7 @@ void UserManagerImpl::SaveImageToFile(const std::string& username,
       FROM_HERE,
       base::Bind(&UserManagerImpl::SaveImageToLocalState,
                  base::Unretained(this),
-                 username, image_path.value(), image_index, true));
+                 username, image_path.value(), image_index, image_url, true));
 }
 
 void UserManagerImpl::SaveWallpaperToFile(const std::string& username,
@@ -1347,6 +1364,7 @@ void UserManagerImpl::SaveWallpaperToFile(const std::string& username,
 void UserManagerImpl::SaveImageToLocalState(const std::string& username,
                                             const std::string& image_path,
                                             int image_index,
+                                            const GURL& image_url,
                                             bool is_async) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1371,6 +1389,12 @@ void UserManagerImpl::SaveImageToLocalState(const std::string& username,
   image_properties->Set(kImagePathNodeName, new StringValue(image_path));
   image_properties->Set(kImageIndexNodeName,
                         new base::FundamentalValue(image_index));
+  if (!image_url.is_empty()) {
+    image_properties->Set(kImageURLNodeName,
+                          new StringValue(image_url.spec()));
+  } else {
+    image_properties->Remove(kImageURLNodeName, NULL);
+  }
   images_update->SetWithoutPathExpansion(username, image_properties);
   DVLOG(1) << "Saving path to user image in Local State.";
 
@@ -1416,6 +1440,7 @@ void UserManagerImpl::InitDownloadedProfileImage() {
     downloaded_profile_image_ = logged_in_user_->image();
     downloaded_profile_image_data_url_ =
         web_ui_util::GetImageDataUrl(gfx::ImageSkia(downloaded_profile_image_));
+    profile_image_url_ = logged_in_user_->image_url();
   }
 }
 
@@ -1457,17 +1482,18 @@ void UserManagerImpl::CheckOwnership() {
                  is_owner));
 }
 
+// ProfileDownloaderDelegate override.
 int UserManagerImpl::GetDesiredImageSideLength() const {
   return GetCurrentUserImageSize();
 }
 
-Profile* UserManagerImpl::GetBrowserProfile() {
-  return ProfileManager::GetDefaultProfile();
+// ProfileDownloaderDelegate override.
+std::string UserManagerImpl::GetCachedPictureURL() const {
+  return profile_image_url_.spec();
 }
 
-std::string UserManagerImpl::GetCachedPictureURL() const {
-  // Currently the profile picture URL is not cached on ChromeOS.
-  return std::string();
+Profile* UserManagerImpl::GetBrowserProfile() {
+  return ProfileManager::GetDefaultProfile();
 }
 
 void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
@@ -1513,6 +1539,7 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
 
     downloaded_profile_image_data_url_ = new_image_data_url;
     downloaded_profile_image_ = downloader->GetProfilePicture();
+    profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
     if (GetLoggedInUser().image_index() == User::kProfileImageIndex) {
       VLOG(1) << "Updating profile image for logged-in user";

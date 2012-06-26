@@ -74,6 +74,10 @@ class User {
     return user_image_.animated_image();
   }
 
+  // Returns the URL of user image, if there is any. Currently only the profile
+  // image has a URL, for other images empty URL is returned.
+  GURL image_url() const { return user_image_.url(); }
+
   // The thumbnail of user custom wallpaper.
   const SkBitmap& wallpaper_thumbnail() const { return wallpaper_thumbnail_; }
 
@@ -103,6 +107,8 @@ class User {
 
   // Setters are private so only UserManager can call them.
   void SetImage(const UserImage& user_image, int image_index);
+
+  void SetImageURL(const GURL& image_url);
 
   // Sets a stub image until the next |SetImage| call. |image_index| may be
   // one of |kExternalImageIndex| or |kProfileImageIndex|.

@@ -180,6 +180,7 @@ class UserManagerImpl : public UserManager,
   // If |image| is empty, sets a stub image for the user.
   void SetUserImage(const std::string& username,
                     int image_index,
+                    const GURL& image_url,
                     const UserImage& user_image);
 
   void GetUserWallpaperProperties(const std::string& username,
@@ -193,6 +194,7 @@ class UserManagerImpl : public UserManager,
   // and sends LOGIN_USER_IMAGE_CHANGED notification.
   void SaveUserImageInternal(const std::string& username,
                              int image_index,
+                             const GURL& image_url,
                              const UserImage& user_image);
 
   // Saves wallpaper to file, post task to generate thumbnail and updates local
@@ -228,7 +230,8 @@ class UserManagerImpl : public UserManager,
   void SaveImageToFile(const std::string& username,
                        const UserImage& user_image,
                        const FilePath& image_path,
-                       int image_index);
+                       int image_index,
+                       const GURL& image_url);
 
   // Saves wallpaper to file with specified path. Runs on FILE thread. Posts
   // task for saving wallpaper info to Local State on UI thread.
@@ -244,6 +247,7 @@ class UserManagerImpl : public UserManager,
   void SaveImageToLocalState(const std::string& username,
                              const std::string& image_path,
                              int image_index,
+                             const GURL& image_url,
                              bool is_async);
 
   // Stores layout and type preference in local state. Runs on UI thread.
@@ -354,6 +358,9 @@ class UserManagerImpl : public UserManager,
 
   // Data URL for |downloaded_profile_image_|.
   std::string downloaded_profile_image_data_url_;
+
+  // Original URL of |downloaded_profile_image_|, from which it was downloaded.
+  GURL profile_image_url_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

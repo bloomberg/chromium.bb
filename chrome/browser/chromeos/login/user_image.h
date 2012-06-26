@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -45,12 +46,17 @@ class UserImage {
   bool has_animated_image() const { return has_animated_image_; }
   const RawImage& animated_image() const { return animated_image_; }
 
+  // URL from which this image was originally downloaded, if any.
+  void set_url(const GURL& url) { url_ = url; }
+  GURL url() const { return url_; }
+
  private:
   gfx::ImageSkia image_;
   bool has_raw_image_;
   RawImage raw_image_;
   bool has_animated_image_;
   RawImage animated_image_;
+  GURL url_;
 };
 
 }  // namespace chromeos
