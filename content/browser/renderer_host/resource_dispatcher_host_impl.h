@@ -86,6 +86,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const DownloadSaveInfo& save_info,
       const DownloadStartedCallback& started_callback) OVERRIDE;
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) OVERRIDE;
+  virtual void BlockRequestsForRoute(int child_id, int route_id) OVERRIDE;
+  virtual void ResumeBlockedRequestsForRoute(
+      int child_id, int route_id) OVERRIDE;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -175,15 +178,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   net::URLRequest* GetURLRequest(const GlobalRequestID& request_id);
 
   void RemovePendingRequest(int child_id, int request_id);
-
-  // Causes all new requests for the route identified by
-  // |child_id| and |route_id| to be blocked (not being
-  // started) until ResumeBlockedRequestsForRoute or
-  // CancelBlockedRequestsForRoute is called.
-  void BlockRequestsForRoute(int child_id, int route_id);
-
-  // Resumes any blocked request for the specified route id.
-  void ResumeBlockedRequestsForRoute(int child_id, int route_id);
 
   // Cancels any blocked request for the specified route id.
   void CancelBlockedRequestsForRoute(int child_id, int route_id);

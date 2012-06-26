@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -22,25 +22,39 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/renderer_preferences.h"
 
+using content::BrowserThread;
 using content::ConsoleMessageLevel;
+using content::RenderViewHost;
+using content::ResourceDispatcherHost;
 using content::SiteInstance;
 using content::WebContents;
 
 namespace {
-static const int kDefaultWidth = 512;
-static const int kDefaultHeight = 384;
+const int kDefaultWidth = 512;
+const int kDefaultHeight = 384;
+
+void SuspendRenderViewHost(RenderViewHost* rvh) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&ResourceDispatcherHost::BlockRequestsForRoute,
+          base::Unretained(ResourceDispatcherHost::Get()),
+          rvh->GetProcess()->GetID(), rvh->GetRoutingID()));
+}
+
 }  // namespace
 
 ShellWindow::CreateParams::CreateParams()
@@ -82,9 +96,25 @@ ShellWindow::ShellWindow(Profile* profile,
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
+  // Block the created RVH from loading anything until the background page
+  // has had a chance to do any initialization it wants.
+  SuspendRenderViewHost(web_contents_->GetRenderViewHost());
+
+  // TODO(jeremya): there's a bug where navigating a web contents to an
+  // extension URL causes it to create a new RVH and discard the old (perfectly
+  // usable) one. To work around this, we watch for a RVH_CHANGED message from
+  // the web contents (which will be sent during LoadURL) and suspend resource
+  // requests on the new RVH to ensure that we block the new RVH from loading
+  // anything. It should be okay to remove the NOTIFICATION_RVH_CHANGED
+  // registration once http://crbug.com/123007 is fixed.
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                 content::Source<content::NavigationController>(
+                     &web_contents_->GetController()));
   web_contents_->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
+  registrar_.RemoveAll();
+
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   // Close when the browser is exiting.
@@ -284,6 +314,15 @@ void ShellWindow::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
+      // TODO(jeremya): once http://crbug.com/123007 is fixed, we'll no longer
+      // need to suspend resource requests here (the call in the constructor
+      // should be enough).
+      content::Details<std::pair<RenderViewHost*, RenderViewHost*> >
+          host_details(details);
+      SuspendRenderViewHost(host_details->second);
+      break;
+    }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const extensions::Extension* unloaded_extension =
           content::Details<extensions::UnloadedExtensionInfo>(
