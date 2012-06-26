@@ -80,7 +80,7 @@ sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
 #elif defined(OS_WIN)
   return sync_pb::SessionHeader_DeviceType_TYPE_WIN;
 #elif defined(OS_ANDROID)
-  return internal::IsTabletUi() ?
+  return csync::internal::IsTabletUi() ?
       sync_pb::SessionHeader_DeviceType_TYPE_TABLET :
       sync_pb::SessionHeader_DeviceType_TYPE_PHONE;
 #else
