@@ -222,6 +222,35 @@ XmlElement* ContentDescription::ToXml() const {
 }
 
 // static
+// Adds the channel configs corresponding to |tag_name|,
+// found in |element|, to |configs|.
+bool ContentDescription::ParseChannelConfigs(
+    const XmlElement* const element,
+    const char tag_name[],
+    bool codec_required,
+    bool optional,
+    std::vector<ChannelConfig>* const configs) {
+
+  QName tag(kChromotingXmlNamespace, tag_name);
+  const XmlElement* child = element->FirstNamed(tag);
+  while (child) {
+    ChannelConfig channel_config;
+    if (!ParseChannelConfig(child, codec_required, &channel_config))
+      return false;
+    configs->push_back(channel_config);
+    child = child->NextNamed(tag);
+  }
+  if (optional && configs->empty()) {
+      // If there's no mention of the tag, implicitly assume
+      // TRANSPORT_NONE for the channel.
+      configs->push_back(ChannelConfig(ChannelConfig::TRANSPORT_NONE,
+                                       kDefaultStreamVersion,
+                                       ChannelConfig::CODEC_VERBATIM));
+  }
+  return true;
+}
+
+// static
 ContentDescription* ContentDescription::ParseXml(
     const XmlElement* element) {
   if (element->Name() == QName(kChromotingXmlNamespace, kDescriptionTag)) {
@@ -229,56 +258,21 @@ ContentDescription* ContentDescription::ParseXml(
         CandidateSessionConfig::CreateEmpty());
     const XmlElement* child = NULL;
 
-    // <control> tags.
-    QName control_tag(kChromotingXmlNamespace, kControlTag);
-    child = element->FirstNamed(control_tag);
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, false, &channel_config))
-        return NULL;
-      config->mutable_control_configs()->push_back(channel_config);
-      child = child->NextNamed(control_tag);
+    if (!ParseChannelConfigs(element, kControlTag, false, false,
+                             config->mutable_control_configs())) {
+      return NULL;
     }
-
-    // <event> tags.
-    QName event_tag(kChromotingXmlNamespace, kEventTag);
-    child = element->FirstNamed(event_tag);
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, false, &channel_config))
-        return NULL;
-      config->mutable_event_configs()->push_back(channel_config);
-      child = child->NextNamed(event_tag);
+    if (!ParseChannelConfigs(element, kEventTag, false, false,
+                             config->mutable_event_configs())) {
+      return NULL;
     }
-
-    // <video> tags.
-    QName video_tag(kChromotingXmlNamespace, kVideoTag);
-    child = element->FirstNamed(video_tag);
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, true, &channel_config))
-        return NULL;
-      config->mutable_video_configs()->push_back(channel_config);
-      child = child->NextNamed(video_tag);
+    if (!ParseChannelConfigs(element, kVideoTag, true, false,
+                             config->mutable_video_configs())) {
+      return NULL;
     }
-
-    // <audio> tags.
-    QName audio_tag(kChromotingXmlNamespace, kAudioTag);
-    child = element->FirstNamed(audio_tag);
-    if (!child) {
-      // If there's no mention of audio, implicitly assume
-      // TRANSPORT_NONE for the audio_channel.
-      ChannelConfig no_audio(ChannelConfig::TRANSPORT_NONE,
-                             kDefaultStreamVersion,
-                             ChannelConfig::CODEC_VERBATIM);
-      config->mutable_audio_configs()->push_back(no_audio);
-    }
-    while (child) {
-      ChannelConfig channel_config;
-      if (!ParseChannelConfig(child, true, &channel_config))
-        return NULL;
-      config->mutable_audio_configs()->push_back(channel_config);
-      child = child->NextNamed(audio_tag);
+    if (!ParseChannelConfigs(element, kAudioTag, true, true,
+                             config->mutable_audio_configs())) {
+      return NULL;
     }
 
     scoped_ptr<XmlElement> authenticator_message;

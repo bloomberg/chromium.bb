@@ -49,6 +49,12 @@ class ContentDescription : public cricket::ContentDescription {
  private:
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
   scoped_ptr<const buzz::XmlElement> authenticator_message_;
+
+  static bool ParseChannelConfigs(const buzz::XmlElement* const element,
+                                  const char tag_name[],
+                                  bool codec_required,
+                                  bool optional,
+                                  std::vector<ChannelConfig>* const configs);
 };
 
 }  // namespace protocol
