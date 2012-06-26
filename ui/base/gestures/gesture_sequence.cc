@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_configuration.h"
+#include "ui/base/gestures/gesture_util.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -219,6 +220,7 @@ GestureSequence::~GestureSequence() {
 GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::TouchStatus status) {
+  StopLongPressTimerIfRequired(event);
   last_touch_location_ = event.GetLocation();
   if (status != ui::TOUCH_STATUS_UNKNOWN)
     return NULL;  // The event was consumed by a touch sequence.
@@ -914,6 +916,18 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
   AppendSwipeGesture(point, sign_x, sign_y, gestures);
 
   return true;
+}
+
+void GestureSequence::StopLongPressTimerIfRequired(const TouchEvent& event) {
+  if (!long_press_timer_->IsRunning() ||
+      event.GetEventType() != ui::ET_TOUCH_MOVED)
+    return;
+
+  // Since long press timer has been started, there should be a non-NULL point.
+  const GesturePoint* point = GetPointByPointId(0);
+  if (!ui::gestures::IsInsideManhattanSquare(point->first_touch_position(),
+      event.GetLocation()))
+    long_press_timer_->Stop();
 }
 
 }  // namespace ui

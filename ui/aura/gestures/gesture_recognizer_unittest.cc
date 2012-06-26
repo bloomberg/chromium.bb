@@ -323,6 +323,10 @@ class TimerTestGestureSequence : public ui::GestureSequence {
         long_press_timer())->ForceTimeout();
   }
 
+  bool IsTimerRunning() {
+    return long_press_timer()->IsRunning();
+  }
+
   base::OneShotTimer<ui::GestureSequence>* CreateTimer() {
     return new TestOneShotGestureSequenceTimer();
   }
@@ -2147,6 +2151,42 @@ TEST_F(GestureRecognizerTest, FlushAllOnHide) {
             root_window()->gesture_recognizer()->GetTouchLockedTarget(&press1));
   EXPECT_EQ(NULL,
             root_window()->gesture_recognizer()->GetTouchLockedTarget(&press2));
+}
+
+TEST_F(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(root_window()));
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, 100, 100);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+  delegate->set_window(window.get());
+
+  TimerTestGestureRecognizer* gesture_recognizer =
+      new TimerTestGestureRecognizer(root_window());
+  TimerTestGestureSequence* gesture_sequence =
+      static_cast<TimerTestGestureSequence*>(
+          gesture_recognizer->GetGestureSequenceForTesting(window.get()));
+
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  delegate->Reset();
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                   kTouchId, GetTime());
+  root_window()->DispatchTouchEvent(&press);
+  // Scroll around, to cancel the long press
+  SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
+
+  delegate->Reset();
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(gesture_sequence->IsTimerRunning());
+
+  delegate->Reset();
+  delegate->ReceivedAckPreventDefaulted();
+  EXPECT_FALSE(gesture_sequence->IsTimerRunning());
+  gesture_sequence->ForceTimeout();
+  EXPECT_FALSE(delegate->long_press());
 }
 
 }  // namespace test

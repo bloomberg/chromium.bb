@@ -8,18 +8,28 @@
 
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
+#include "base/timer.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/linear_animation.h"
+#include "ui/gfx/point.h"
 
 #include <map>
 
 namespace aura {
-class MouseEvent;
 class KeyEvent;
+class LocatedEvent;
+class MouseEvent;
 class Window;
 }
 
 namespace ash {
+
+namespace test {
+class SystemGestureEventFilterTest;
+}  // namespace test
+
 namespace internal {
 
 class SystemPinchHandler;
@@ -37,6 +47,41 @@ enum ScrollOrientation {
   SCROLL_ORIENTATION_UNSET = 0,
   SCROLL_ORIENTATION_HORIZONTAL,
   SCROLL_ORIENTATION_VERTICAL
+};
+
+// LongPressAffordanceAnimation displays an animated affordance that is shown
+// on a TAP_DOWN gesture. The animation completes on a LONG_PRESS gesture, or is
+// canceled and hidden if any other event is received before that.
+class LongPressAffordanceAnimation : public ui::AnimationDelegate,
+                                     public ui::LinearAnimation {
+ public:
+  LongPressAffordanceAnimation();
+  virtual ~LongPressAffordanceAnimation();
+
+  // Display or removes long press affordance according to the |event|.
+  void ProcessEvent(aura::Window* target, aura::LocatedEvent* event);
+
+ private:
+  friend class ash::test::SystemGestureEventFilterTest;
+
+  void StartAnimation();
+  void StopAnimation();
+
+  // Overridden from ui::LinearAnimation.
+  virtual void AnimateToState(double state) OVERRIDE;
+
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+
+  class LongPressAffordanceView;
+  scoped_ptr<LongPressAffordanceView> view_;
+  gfx::Point tap_down_location_;
+  aura::Window* tap_down_target_;
+  base::OneShotTimer<LongPressAffordanceAnimation> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceAnimation);
 };
 
 // An event filter which handles system level gesture events.
@@ -63,6 +108,8 @@ class SystemGestureEventFilter : public aura::EventFilter,
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
+  friend class ash::test::SystemGestureEventFilterTest;
+
   // Removes system-gesture handlers for a window.
   void ClearGestureHandlerForWindow(aura::Window* window);
 
@@ -96,7 +143,6 @@ class SystemGestureEventFilter : public aura::EventFilter,
   // A device swipe gesture is in progress.
   bool is_scrubbing_;
 
-  class LongPressAffordanceAnimation;
   scoped_ptr<LongPressAffordanceAnimation> long_press_affordance_;
 
   TouchUMA touch_uma_;

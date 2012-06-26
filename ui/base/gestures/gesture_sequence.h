@@ -165,6 +165,8 @@ class UI_EXPORT GestureSequence {
                   const GesturePoint& point,
                   Gestures* gestures);
 
+  void StopLongPressTimerIfRequired(const TouchEvent& event);
+
   // Current state of gesture recognizer.
   GestureState state_;
 

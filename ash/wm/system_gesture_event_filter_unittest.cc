@@ -4,6 +4,7 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
+#include "base/timer.h"
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -95,7 +96,34 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate,
 
 } // namespace
 
-typedef test::AshTestBase SystemGestureEventFilterTest;
+class SystemGestureEventFilterTest : public AshTestBase {
+ public:
+  SystemGestureEventFilterTest() : AshTestBase() {}
+  virtual ~SystemGestureEventFilterTest() {}
+
+  internal::LongPressAffordanceAnimation* GetLongPressAffordance() {
+    Shell::TestApi shell_test(Shell::GetInstance());
+    return shell_test.system_gesture_event_filter()->
+        long_press_affordance_.get();
+  }
+
+  base::OneShotTimer<internal::LongPressAffordanceAnimation>*
+      GetLongPressAffordanceTimer() {
+    return &GetLongPressAffordance()->timer_;
+  }
+
+  aura::Window* GetLongPressAffordanceTarget() {
+    return GetLongPressAffordance()->tap_down_target_;
+  }
+
+  views::View* GetLongPressAffordanceView() {
+    return reinterpret_cast<views::View*>(
+        GetLongPressAffordance()->view_.get());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilterTest);
+};
 
 // Ensure that events targeted at the root window are consumed by the
 // system event handler.
@@ -339,6 +367,57 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
     TestLauncherDelegate::instance()->OnWillRemoveWindow(window1.get());
     TestLauncherDelegate::instance()->OnWillRemoveWindow(window2.get());
   }
+}
+
+TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window0(
+      aura::test::CreateTestWindowWithDelegate(
+          &delegate, 9, gfx::Rect(0, 0, 100, 100), root_window));
+  scoped_ptr<aura::Window> window1(
+      aura::test::CreateTestWindowWithDelegate(
+          &delegate, 10, gfx::Rect(0, 0, 100, 50), window0.get()));
+  scoped_ptr<aura::Window> window2(
+      aura::test::CreateTestWindowWithDelegate(
+          &delegate, 11, gfx::Rect(0, 50, 100, 50), window0.get()));
+
+  const int kTouchId = 5;
+
+  // Capture first window.
+  window1->SetCapture();
+  EXPECT_TRUE(window1->HasCapture());
+
+  // Send touch event to first window.
+  aura::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), kTouchId,
+      base::Time::NowFromSystemTime() - base::Time());
+  root_window->DispatchTouchEvent(&press);
+  EXPECT_TRUE(window1->HasCapture());
+
+  base::OneShotTimer<internal::LongPressAffordanceAnimation>* timer =
+      GetLongPressAffordanceTimer();
+  EXPECT_TRUE(timer->IsRunning());
+  EXPECT_EQ(window1.get(), GetLongPressAffordanceTarget());
+
+  // Force timeout so that the affordance animation can start.
+  timer->user_task().Run();
+  timer->Stop();
+  EXPECT_TRUE(GetLongPressAffordance()->is_animating());
+
+  // Change capture.
+  window2->SetCapture();
+  EXPECT_TRUE(window2->HasCapture());
+
+  EXPECT_TRUE(GetLongPressAffordance()->is_animating());
+  EXPECT_EQ(window1.get(), GetLongPressAffordanceTarget());
+
+  // Animate to completion.
+  GetLongPressAffordance()->End();
+
+  // Check if state has reset.
+  EXPECT_EQ(NULL, GetLongPressAffordanceTarget());
+  EXPECT_EQ(NULL, GetLongPressAffordanceView());
 }
 
 }  // namespace test

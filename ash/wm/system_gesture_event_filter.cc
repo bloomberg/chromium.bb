@@ -18,17 +18,14 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
-#include "base/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/animation/animation.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/gestures/gesture_configuration.h"
+#include "ui/base/gestures/gesture_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
@@ -87,13 +84,19 @@ Widget* CreateAffordanceWidget() {
   return widget;
 }
 
+}  // namespace
+
+namespace ash {
+namespace internal {
+
 // View of the LongPressAffordanceAnimation. Draws the actual contents and
 // updates as the animation proceeds. It also maintains the views::Widget that
 // the animation is shown in.
 // Currently the affordance is to simply show an empty circle and fill it up as
 // the animation proceeds.
 // TODO(varunjain): Change the look of this affordance when we get official UX.
-class LongPressAffordanceView : public views::View {
+class LongPressAffordanceAnimation::LongPressAffordanceView
+    : public views::View {
  public:
   explicit LongPressAffordanceView(const gfx::Point& event_location)
       : views::View(),
@@ -112,7 +115,6 @@ class LongPressAffordanceView : public views::View {
   }
 
   virtual ~LongPressAffordanceView() {
-    widget_->Hide();
   }
 
   void UpdateWithAnimation(ui::Animation* animation) {
@@ -148,100 +150,94 @@ class LongPressAffordanceView : public views::View {
     canvas->DrawPath(path, paint);
   }
 
-  scoped_ptr<Widget> widget_;
+  scoped_ptr<views::Widget> widget_;
   int current_angle_;
 
   DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceView);
 };
 
-}  // namespace
+LongPressAffordanceAnimation::LongPressAffordanceAnimation()
+    : ui::LinearAnimation(kAffordanceFrameRateHz, this),
+      view_(NULL),
+      tap_down_target_(NULL) {
+  int duration =
+      ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
+      ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
+  SetDuration(duration);
+}
 
-namespace ash {
-namespace internal {
+LongPressAffordanceAnimation::~LongPressAffordanceAnimation() {}
 
-// LongPressAffordanceAnimation displays an animated affordance that is shown
-// on a TAP_DOWN gesture. The animation completes on a LONG_PRESS gesture, or is
-// canceled and hidden if any other event is received before that.
-class SystemGestureEventFilter::LongPressAffordanceAnimation
-    : public ui::AnimationDelegate,
-      public ui::LinearAnimation {
- public:
-  LongPressAffordanceAnimation()
-      : ui::LinearAnimation(kAffordanceFrameRateHz, this),
-        view_(NULL) {
-    int duration =
-        ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
-        ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
-    SetDuration(duration);
-  }
-
-  void ProcessEvent(aura::Window* target, aura::LocatedEvent* event) {
-    gfx::Point event_location;
-    int64 timer_start_time_ms =
-        ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
-    switch (event->type()) {
-      case ui::ET_GESTURE_TAP_DOWN:
-        // Start animation.
-        tap_down_location_ = event->root_location();
-        timer_.Start(FROM_HERE,
-                     base::TimeDelta::FromMilliseconds(timer_start_time_ms),
-                     this,
-                     &LongPressAffordanceAnimation::StartAnimation);
-        break;
-      case ui::ET_TOUCH_MOVED:
-        // We do not want to stop the animation on every TOUCH_MOVED. Instead,
-        // we will rely on SCROLL_BEGIN to break the animation when the user
-        // moves their finger.
-        break;
-      case ui::ET_GESTURE_LONG_PRESS:
-        if (is_animating())
-          End();
-        // fall through to default to reset the view.
-      default:
-        // On all other touch and gesture events, we hide the animation.
+void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
+                                                aura::LocatedEvent* event) {
+  // Once we have a target, we are only interested in events on that target.
+  if (tap_down_target_ && tap_down_target_ != target)
+    return;
+  int64 timer_start_time_ms =
+      ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      // Start animation.
+      tap_down_location_ = event->root_location();
+      tap_down_target_ = target;
+      timer_.Start(FROM_HERE,
+                    base::TimeDelta::FromMilliseconds(timer_start_time_ms),
+                    this,
+                    &LongPressAffordanceAnimation::StartAnimation);
+      break;
+    case ui::ET_TOUCH_MOVED:
+      // If animation is running, We want it to be robust to small finger
+      // movements. So we stop the animation only when the finger moves a
+      // certain distance.
+      if (is_animating() && !ui::gestures::IsInsideManhattanSquare(
+          event->root_location(), tap_down_location_))
         StopAnimation();
-        break;
-    }
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      if (is_animating())
+        End();
+      // fall through to default to reset the view and tap down target.
+    default:
+      // On all other touch and gesture events, we hide the animation.
+      StopAnimation();
+      break;
   }
+}
 
- private:
-  void StartAnimation() {
-    view_.reset(new LongPressAffordanceView(tap_down_location_));
-    Start();
-  }
+void LongPressAffordanceAnimation::StartAnimation() {
+  view_.reset(new LongPressAffordanceView(tap_down_location_));
+  Start();
+}
 
-  void StopAnimation() {
-    if (timer_.IsRunning())
-      timer_.Stop();
-    if (is_animating())
-      Stop();
-    view_.reset();
-  }
+void LongPressAffordanceAnimation::StopAnimation() {
+  if (timer_.IsRunning())
+    timer_.Stop();
+  if (is_animating())
+    Stop();
+  view_.reset();
+  tap_down_target_ = NULL;
+}
 
-  // Overridden from ui::LinearAnimation.
-  virtual void AnimateToState(double state) OVERRIDE {
-    DCHECK(view_.get());
-    view_->UpdateWithAnimation(this);
-  }
+void LongPressAffordanceAnimation::AnimateToState(double state) {
+  DCHECK(view_.get());
+  view_->UpdateWithAnimation(this);
+}
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
-    view_.reset();
-  }
+void LongPressAffordanceAnimation::AnimationEnded(
+    const ui::Animation* animation) {
+  view_.reset();
+  tap_down_target_ = NULL;
+}
 
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-  }
+void LongPressAffordanceAnimation::AnimationProgressed(
+    const ui::Animation* animation) {
+}
 
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
-    view_.reset();
-  }
-
-  scoped_ptr<LongPressAffordanceView> view_;
-  gfx::Point tap_down_location_;
-  base::OneShotTimer<LongPressAffordanceAnimation> timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceAnimation);
-};
+void LongPressAffordanceAnimation::AnimationCanceled(
+    const ui::Animation* animation) {
+  view_.reset();
+  tap_down_target_ = NULL;
+}
 
 class SystemPinchHandler {
  public:
