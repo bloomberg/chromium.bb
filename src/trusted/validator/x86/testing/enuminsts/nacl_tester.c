@@ -55,6 +55,13 @@ struct {
 
 static Bool IsInstLegal(const NaClEnumerator *enumerator) {
   UNREFERENCED_PARAMETER(enumerator);
+#if 0
+  /* This forces an incorrect legality report for 00 24 c2, useful for */
+  /* testing that related problems are being reported.                 */
+  if (enumerator->_itext[0] == 0 &&
+      enumerator->_itext[1] == 0x24 &&
+      enumerator->_itext[2] == 0xc2) return 0;
+#endif
   return !nacl_decoder._ignore_instruction &&
       NaClInstDecodesCorrectly(nacl_decoder._inst);
 }
@@ -262,6 +269,13 @@ static void PrintInst(const NaClEnumerator* enumerator) {
 /* Returns the number of bytes in the disassembled instruction. */
 static size_t InstLength(const NaClEnumerator* enumerator) {
   UNREFERENCED_PARAMETER(enumerator);
+#if 0
+  /* This forces an incorrect length report for 00 24 c2, useful for */
+  /* testing that length problems are being reported.                */
+  if (enumerator->_itext[0] == 0 &&
+      enumerator->_itext[1] == 0x24 &&
+      enumerator->_itext[2] == 0xc2) return 4;
+#endif
   return (size_t) NaClInstLength(nacl_decoder._inst);
 }
 

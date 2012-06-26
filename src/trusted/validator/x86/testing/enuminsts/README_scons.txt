@@ -19,39 +19,18 @@ The binaries are available in (for example)
     scons-out/opt-linux-x86-32/staging/enuminst
 
 Some suggestions on running enuminst:
-  enuminst --legal=nacl --legal=ragel
-    Compare lengths of instructions that decode for both nacl and R-DFA.
-    As of June 2012 there were about 4953178 instructions for which the
-    decoders disagreed on length in the 64-bit case, and none for 32-bit.
-    Note that, as enuminst is not careful about how it
-    enumerates instructions, there are a huge number of duplicates in
-    this count.
+  enuminst --legalnacl --legal=nacl --legal=ragel
+    Compare lengths of instructions that decode for nacl.
+    Filters out most NaCl illegal instructions.
 
   enuminst --illegal=nacl --legal=ragel --print=ragel
-    Identifies instructions decoded by R-DFA but not by nacl
-    As of June 2012 there were about 1300 of these for 64-bit.
+    Identifies instructions legal for R-DFA but not nacl.
 
-  enuminst --legal=nacl --illegal=ragel --print=nacl
-    Identifies instructions decoded by nacl but not by R-DFA
-    As of June 2012 there were about 6000000 of these for 64-bit.
+  enuminst --nacllegal --legal=nacl --illegal=ragel --print=nacl
+    Identifies instructions legal for nacl but not R-DFA.
 
 The NaCl validator supports a partial-validation mode, which for a
 a single instruction determines if it could or could not appear in
 a legal Native Client module. Instructions such as "ret" can never
 appear in a valid NaCl module, and are rejected. Instructions such
 as "jmp *%eax" can appear, so  they are accepted.
-
-When R-DFA supports a partial-validation mode, checking if a single
-instruction might be legal (ignoring inter-instruction rules) these
-tests should be useful:
-
-  enuminst --nacllegal --legal=nacl --illegal=ragel --print=ragel
-      Prints instructions accepted by NaCl but not R-DFA
-
-  enuminst --nacllegal --legal=ragel --illegal=nacl print=nacl
-      Prints instructions legal for R-DFA but not NaCl.
-      Currently, no problems!
-
-  enuminst --nacl --ragel
-      Compares instruction length only.
-

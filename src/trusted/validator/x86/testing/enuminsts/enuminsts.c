@@ -764,7 +764,6 @@ static void TryOneInstruction(ComparedInstruction *cinst,
 
     /* Print the instruction if print specified. */
     if (PrintInst(cinst)) break;
-
     /* no error */
     if (gVerbose) {
       PrintDisassembledInstructionVariants(cinst);

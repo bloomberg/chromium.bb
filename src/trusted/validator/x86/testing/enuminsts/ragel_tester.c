@@ -37,19 +37,20 @@ static void RagelSetup() {
 
 struct RagelDecodeState {
   const uint8_t *inst_offset;
-  int ia32_mode;
   uint8_t inst_num_bytes;
+  uint8_t valid_state;  /* indicates if this struct describes an instruction */
+  const char *inst_name;
   int inst_is_legal;
 };
 struct RagelDecodeState RState;
 
-void RagelPrintInstBytes() {
+void RagelPrintInst() {
   int i;
 
   for (i = 0; i < RState.inst_num_bytes; i++) {
     printf("%02x ", RState.inst_offset[i]);
   }
-  printf("\n");
+  printf(": %s\n", RState.inst_name);
 }
 
 void RagelDecodeError (const uint8_t *ptr, void *userdata) {
@@ -57,7 +58,7 @@ void RagelDecodeError (const uint8_t *ptr, void *userdata) {
   UNREFERENCED_PARAMETER(userdata);
   return;
   printf("DFA error in decoder: ");
-  RagelPrintInstBytes();
+  RagelPrintInst();
 }
 
 void RagelValidateError (const uint8_t *ptr, void *userdata) {
@@ -65,28 +66,42 @@ void RagelValidateError (const uint8_t *ptr, void *userdata) {
   UNREFERENCED_PARAMETER(userdata);
   return;
   printf("DFA error in validator\n");
-  RagelPrintInstBytes();
+  RagelPrintInst();
 }
 
 void RagelInstruction(const uint8_t *begin, const uint8_t *end,
                       struct instruction *instruction, void *userdata) {
+  struct RagelDecodeState *rstate = (struct RagelDecodeState *)userdata;
   UNREFERENCED_PARAMETER(instruction);
-  UNREFERENCED_PARAMETER(userdata);
+  /* Only look at the first instruction. */
+  if (rstate->valid_state) return;
   if (end > begin) {
-    RState.inst_num_bytes = (uint8_t)(end - begin);
+    rstate->inst_num_bytes = (uint8_t)(end - begin);
+    rstate->inst_name = instruction->name;
   } else {
-    RState.inst_num_bytes = 0;
+    rstate->inst_num_bytes = 0;
   }
+  rstate->valid_state = 1;
 }
 
-/* Defines the function to parse the first instruction. */
+static void InitializeRagelDecodeState(struct RagelDecodeState *rs,
+                                       const uint8_t *itext) {
+  rs->valid_state = 0;
+  rs->inst_offset = itext;
+  rs->inst_num_bytes = 0;
+  rs->inst_is_legal = 0;
+  rs->inst_name = "undefined";
+}
+
+/* Defines the function to parse the first instruction. Note RState.ready */
+/* mechanism forces parsing of at most one instruction. */
 static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   int res;
+  struct RagelDecodeState tempstate;
+
   UNREFERENCED_PARAMETER(pc_address);
-  RState.inst_offset = enumerator->_itext;
-  RState.ia32_mode = 0;
-  RState.inst_num_bytes = 0;
-  RState.inst_is_legal = 0;
+  InitializeRagelDecodeState(&tempstate, enumerator->_itext);
+  InitializeRagelDecodeState(&RState, enumerator->_itext);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 64
 #define DecodeChunkArch DecodeChunkAMD64
@@ -95,16 +110,25 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
 #else
 #error("Unsupported architecture")
 #endif
-  res = DecodeChunkArch(enumerator->_itext, enumerator->_num_bytes,
+  /* Since DecodeChunkArch looks at multiple instructions and we only */
+  /* care about the first instruction, ignore the return code here. */
+  (void)DecodeChunkArch(enumerator->_itext, enumerator->_num_bytes,
+                        RagelInstruction, RagelDecodeError, &tempstate);
+
+  /* Decode again, this time specifying length of first instruction. */
+  res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
                         RagelInstruction, RagelDecodeError, &RState);
 #undef DecodeChunkArch
-  if (res != 0) return;
-
-  /*
-  res = ValidateChunkAMD64(enumerator->_itext, enumerator->_num_bytes,
-                           RagelValidateError, &RState);
-  */
-  if (res == 0) RState.inst_is_legal = 1;
+#define RAGEL_LEGAL_READY 0
+#if RAGEL_LEGAL_READY
+  if (res) {
+    res = ValidateChunkAMD64(enumerator->_itext, enumerator->_num_bytes,
+                             RagelValidateError, &RState);
+  }
+  RState.inst_is_legal = res;
+#else
+  RState.inst_is_legal = (RState.inst_num_bytes != 0);
+#endif
 }
 
 /* Returns true if the instruction parsed a legal instruction. */
@@ -117,7 +141,7 @@ static Bool RIsInstLegal(const NaClEnumerator* enumerator) {
 static void RPrintInst(const NaClEnumerator* enumerator) {
   UNREFERENCED_PARAMETER(enumerator);
   printf("Ragel: ");
-  RagelPrintInstBytes();
+  RagelPrintInst();
 }
 
 static size_t RInstLength(const NaClEnumerator* enumerator) {
