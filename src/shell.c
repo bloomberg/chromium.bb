@@ -3258,7 +3258,7 @@ workspace_up_binding(struct wl_seat *seat, uint32_t time,
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
 
-	if (!shell->locked)
+	if (shell->locked)
 		return;
 	if (new_index != 0)
 		new_index--;
@@ -3273,7 +3273,7 @@ workspace_down_binding(struct wl_seat *seat, uint32_t time,
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
 
-	if (!shell->locked)
+	if (shell->locked)
 		return;
 	if (new_index < shell->workspaces.num - 1)
 		new_index++;
@@ -3288,7 +3288,7 @@ workspace_f_binding(struct wl_seat *seat, uint32_t time,
 	struct desktop_shell *shell = data;
 	unsigned int new_index;
 
-	if (!shell->locked)
+	if (shell->locked)
 		return;
 	new_index = key - KEY_F1;
 	if (new_index >= shell->workspaces.num)
