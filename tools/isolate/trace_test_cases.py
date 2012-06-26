@@ -96,12 +96,10 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
 
 
 def trace_test_cases(
-    executable, root_dir, cwd_dir, variables, whitelist, blacklist, jobs,
-    index, shards, output_file):
+    executable, root_dir, cwd_dir, variables, test_cases, jobs, output_file):
   """Traces test cases one by one."""
-  test_cases = get_test_cases(executable, whitelist, blacklist, index, shards)
   if not test_cases:
-    return
+    return 0
 
   # Resolve any symlink.
   root_dir = os.path.realpath(root_dir)
@@ -223,29 +221,9 @@ def main():
       '-o', '--out',
       help='output file, defaults to <executable>.test_cases')
   parser.add_option(
-      '-w', '--whitelist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to run, wildcard-style, defaults to '
-           'all test')
-  parser.add_option(
-      '-b', '--blacklist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to skip, wildcard-style, defaults to '
-           'no test')
-  parser.add_option(
       '-j', '--jobs',
       type='int',
       help='number of parallel jobs')
-  parser.add_option(
-      '-i', '--index',
-      type='int',
-      help='Shard index to run')
-  parser.add_option(
-      '-s', '--shards',
-      type='int',
-      help='Total number of shards to calculate from the --index to run')
   parser.add_option(
       '-t', '--timeout',
       default=120,
@@ -256,6 +234,31 @@ def main():
       action='count',
       default=0,
       help='Use multiple times to increase verbosity')
+  group = optparse.OptionGroup(parser, 'Which test cases to run')
+  group.add_option(
+      '-w', '--whitelist',
+      default=[],
+      action='append',
+      help='filter to apply to test cases to run, wildcard-style, defaults to '
+           'all test')
+  group.add_option(
+      '-b', '--blacklist',
+      default=[],
+      action='append',
+      help='filter to apply to test cases to skip, wildcard-style, defaults to '
+           'no test')
+  group.add_option(
+      '-i', '--index',
+      type='int',
+      help='Shard index to run')
+  group.add_option(
+      '-s', '--shards',
+      type='int',
+      help='Total number of shards to calculate from the --index to run')
+  group.add_option(
+      '-T', '--test-case-file',
+      help='File containing the exact list of test cases to run')
+  parser.add_option_group(group)
   options, args = parser.parse_args()
 
   levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
@@ -277,17 +280,28 @@ def main():
     executable = os.path.abspath(os.path.join(options.root_dir, executable))
   if not options.out:
     options.out = '%s.test_cases' % executable
+
+  # First, grab the test cases.
+  if options.test_case_file:
+    with open(options.test_case_file, 'r') as f:
+      test_cases = filter(None, f.read().splitlines())
+  else:
+    test_cases = get_test_cases(
+        executable,
+        options.whitelist,
+        options.blacklist,
+        options.index,
+        options.shards)
+
+  # Then run them.
   return trace_test_cases(
       executable,
       options.root_dir,
       options.cwd,
       dict(options.variables),
-      options.whitelist,
-      options.blacklist,
+      test_cases,
       options.jobs,
       # TODO(maruel): options.timeout,
-      options.index,
-      options.shards,
       options.out)
 
 
