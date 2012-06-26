@@ -19,13 +19,26 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using content::RenderViewHost;
 
 const int kContentBorder = 4;
 const int kHorizontalSpacing = 4;
+
+namespace {
+
+GdkPixbuf* GetImage(int resource_id) {
+  if (!resource_id)
+    return NULL;
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+    resource_id, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf();
+}
+
+}  // namespace
 
 PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
     const gfx::Rect& anchor_rect,
@@ -50,12 +63,17 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
                      gtk_util::IndentWidget(learn_more_link),
                      FALSE, FALSE, 0);
 
-  // The second contains the password in a text field and an accept button.
+  // The second contains the password in a text field, a regenerate button, and
+  // an accept button.
   GtkWidget* password_line = gtk_hbox_new(FALSE, kHorizontalSpacing);
   text_field_ = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(text_field_),
                      password_generator_->Generate().c_str());
   gtk_entry_set_max_length(GTK_ENTRY(text_field_), 15);
+  gtk_entry_set_icon_from_pixbuf(
+      GTK_ENTRY(text_field_), GTK_ENTRY_ICON_SECONDARY, GetImage(IDR_RELOAD));
+  gtk_entry_set_icon_tooltip_text(
+      GTK_ENTRY(text_field_), GTK_ENTRY_ICON_SECONDARY, "Regenerate");
   GtkWidget* accept_button = gtk_button_new_with_label("Try It");
   gtk_box_pack_start(GTK_BOX(password_line), text_field_, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(password_line), accept_button, TRUE, TRUE, 0);
@@ -81,6 +99,8 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
                    G_CALLBACK(&OnDestroyThunk), this);
   g_signal_connect(accept_button, "clicked",
                    G_CALLBACK(&OnAcceptClickedThunk), this);
+  g_signal_connect(text_field_, "icon-press",
+                   G_CALLBACK(&OnRegenerateClickedThunk), this);
   g_signal_connect(learn_more_link, "clicked",
                    G_CALLBACK(OnLearnMoreLinkClickedThunk), this);
 }
@@ -100,6 +120,14 @@ void PasswordGenerationBubbleGtk::OnAcceptClicked(GtkWidget* widget) {
       UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(text_field_)))));
   tab_->password_manager()->SetFormHasGeneratedPassword(form_);
   bubble_->Close();
+}
+
+void PasswordGenerationBubbleGtk::OnRegenerateClicked(
+    GtkWidget* widget,
+    GtkEntryIconPosition icon_pos,
+    GdkEvent* event) {
+  gtk_entry_set_text(GTK_ENTRY(text_field_),
+                     password_generator_->Generate().c_str());
 }
 
 void PasswordGenerationBubbleGtk::OnLearnMoreLinkClicked(GtkButton* button) {

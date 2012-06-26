@@ -35,6 +35,8 @@ class PasswordGenerationBubbleGtk {
  private:
   CHROMEGTK_CALLBACK_0(PasswordGenerationBubbleGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(PasswordGenerationBubbleGtk, void, OnAcceptClicked);
+  CHROMEGTK_CALLBACK_2(PasswordGenerationBubbleGtk, void, OnRegenerateClicked,
+                       GtkEntryIconPosition, GdkEvent*);
   CHROMEG_CALLBACK_0(
       PasswordGenerationBubbleGtk, void, OnLearnMoreLinkClicked, GtkButton*);
 
