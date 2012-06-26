@@ -1,6 +1,7 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
+ * found in the LICENSE file.
+ */
 
 tree {
   display: block;
@@ -23,7 +24,7 @@ tree {
 
 @media (pointer:coarse) {
   .tree-item > .tree-row {
-    padding: 4px 3px;
+    line-height: 40px;
   }
 }
 
@@ -40,6 +41,12 @@ tree {
   top: 2px;
   vertical-align: top;
   width: 16px;
+}
+
+@media (pointer:coarse) {
+  .expand-icon {
+    vertical-align: text-top;
+  }
 }
 
 html[dir=rtl] .expand-icon {
