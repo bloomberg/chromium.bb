@@ -3,7 +3,6 @@ include_rules = [
   "+chrome/app",
   "+chrome/app/locales",
   "+chrome/installer",
-  "+chrome/personalization",
   "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",

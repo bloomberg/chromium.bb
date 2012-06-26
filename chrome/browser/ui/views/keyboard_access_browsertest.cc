@@ -5,7 +5,6 @@
 // This functionality currently works on Windows and on Linux when
 // toolkit_views is defined (i.e. for Chrome OS). It's not needed
 // on the Mac, and it's not yet implemented on Linux.
-#if defined(TOOLKIT_VIEWS)
 
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -265,5 +264,3 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
 }
 
 }  // namespace
-
-#endif  // defined(TOOLKIT_VIEWS)
