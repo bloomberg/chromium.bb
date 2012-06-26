@@ -4046,6 +4046,11 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     else
       state = BookmarkBar::HIDDEN;
   }
+
+  // Only allow the bookmark bar to be shown in default mode.
+  if (!search_model_->mode().is_default())
+    state = BookmarkBar::HIDDEN;
+
   if (state == bookmark_bar_state_)
     return;
 
