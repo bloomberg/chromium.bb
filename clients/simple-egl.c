@@ -28,6 +28,8 @@
 #include <assert.h>
 #include <signal.h>
 
+#include <linux/input.h>
+
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
@@ -380,6 +382,11 @@ pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 		      uint32_t serial, uint32_t time, uint32_t button,
 		      uint32_t state)
 {
+	struct display *display = data;
+
+	if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED)
+		wl_shell_surface_move(display->window->shell_surface,
+				      display->seat, serial);
 }
 
 static void
