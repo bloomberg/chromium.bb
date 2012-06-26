@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"

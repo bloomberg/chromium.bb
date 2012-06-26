@@ -578,8 +578,9 @@ enum {
                                                   image:iconImage];
   } else {
     SkBitmap bitmap = windowShim_->panel()->GetCurrentPageIcon();
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     NSImage* iconImage = bitmap.isNull() ?
-        gfx::GetCachedImageWithName(@"nav.pdf") :
+        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) :
         gfx::SkBitmapToNSImageWithColorSpace(bitmap,
                                              base::mac::GetSystemColorSpace());
     NSImageView* iconView =

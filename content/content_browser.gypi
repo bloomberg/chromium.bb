@@ -17,6 +17,7 @@
     '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '../ui/ui.gyp:ui_resources',
+    '../ui/ui.gyp:ui_resources_standard',
     '../webkit/support/webkit_support.gyp:dom_storage',
     '../webkit/support/webkit_support.gyp:webkit_resources',
     '../webkit/support/webkit_support.gyp:webkit_strings',

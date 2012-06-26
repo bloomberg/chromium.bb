@@ -44,6 +44,7 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_H" file="close_bar_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_P" file="close_bar_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON" file="default_favicon.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
 
       <!-- Remaining images only used by Aura. -->

@@ -22,11 +22,13 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "grit/ui_resources_standard.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -455,7 +457,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     return dragImage_;
 
   // Default to returning a generic image.
-  return gfx::GetCachedImageWithName(@"nav.pdf");
+  return content::GetContentClient()->GetNativeImageNamed(IDR_DEFAULT_FAVICON);
 }
 
 @end  // @implementation WebDragSource (Private)

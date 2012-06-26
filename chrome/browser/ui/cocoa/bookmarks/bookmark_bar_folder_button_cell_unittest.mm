@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "grit/ui_resources_standard.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
 namespace {
@@ -31,8 +33,9 @@ TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
   ASSERT_TRUE(view.get());
   ASSERT_TRUE(folder_view.get());
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_nsobject<NSImage> image(
-      [gfx::GetCachedImageWithName(@"nav.pdf") retain]);
+      [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
   ASSERT_TRUE(image.get());
 
   scoped_nsobject<BookmarkButtonCell> cell(

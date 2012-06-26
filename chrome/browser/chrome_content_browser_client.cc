@@ -95,7 +95,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
-#include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 

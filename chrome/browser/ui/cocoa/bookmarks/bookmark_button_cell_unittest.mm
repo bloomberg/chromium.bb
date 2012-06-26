@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,10 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "grit/ui_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
@@ -63,8 +65,9 @@ TEST_F(BookmarkButtonCellTest, IconOnlySqueeze) {
   [view setCell:cell.get()];
   [[test_window() contentView] addSubview:view];
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_nsobject<NSImage> image(
-      [gfx::GetCachedImageWithName(@"nav.pdf") retain]);
+      [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
   EXPECT_TRUE(image.get());
 
   NSRect r = NSMakeRect(0, 0, 100, 100);

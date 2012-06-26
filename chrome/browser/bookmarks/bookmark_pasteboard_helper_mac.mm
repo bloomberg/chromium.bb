@@ -13,6 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#include "grit/ui_resources_standard.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -348,8 +350,10 @@ bool PasteboardContainsBookmarks(PasteboardType type) {
 
 NSImage* DragImageForBookmark(NSImage* favicon, const string16& title) {
   // If no favicon, use a default.
-  if (!favicon)
-    favicon = gfx::GetCachedImageWithName(@"nav.pdf");
+  if (!favicon) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON);
+  }
 
   // If no title, just use icon.
   if (title.empty())

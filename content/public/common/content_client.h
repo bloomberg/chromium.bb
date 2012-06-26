@@ -23,6 +23,10 @@ namespace IPC {
 class Message;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace sandbox {
 class TargetPolicy;
 }
@@ -115,6 +119,9 @@ class CONTENT_EXPORT ContentClient {
   virtual base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const;
+
+  // Returns a native image given its id.
+  virtual gfx::Image& GetNativeImageNamed(int resource_id) const;
 
 #if defined(OS_WIN)
   // Allows the embedder to sandbox a plugin, and apply a custom policy.

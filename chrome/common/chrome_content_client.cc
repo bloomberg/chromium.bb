@@ -423,6 +423,10 @@ base::StringPiece ChromeContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
+gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+}
+
 #if defined(OS_WIN)
 bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
                                         sandbox::TargetPolicy* policy) {

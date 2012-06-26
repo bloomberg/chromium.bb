@@ -368,8 +368,9 @@ private:
     // (see |-addSubviewToPermanentList:|) will be wiped out.
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     defaultFavicon_.reset(
-        [gfx::GetCachedImageWithName(@"nav.pdf") retain]);
+        [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
     [self setLeftIndentForControls:[[self class] defaultLeftIndentForControls]];
     [self setRightIndentForControls:0];

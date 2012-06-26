@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -309,8 +310,10 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
       favicon = image.ToNSImage();
   }
   // If we do not have a loaded favicon, use the default site image instead.
-  if (!favicon)
-    favicon = gfx::GetCachedImageWithName(@"nav.pdf");
+  if (!favicon) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON);
+  }
   [item setImage:favicon];
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "ui/gfx/image/image.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 
@@ -64,6 +65,11 @@ base::StringPiece ContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
   return base::StringPiece();
+}
+
+gfx::Image& ContentClient::GetNativeImageNamed(int resource_id) const {
+  CR_DEFINE_STATIC_LOCAL(gfx::Image, kEmptyImage, ());
+  return kEmptyImage;
 }
 
 #if defined(OS_WIN)

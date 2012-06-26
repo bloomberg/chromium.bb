@@ -29,7 +29,6 @@
       <include name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="default_100_percent/content_bottom_right_corner.png" type="BINDATA" />
       <include name="IDR_CONTENT_LEFT_SIDE" file="default_100_percent/content_left_side.png" type="BINDATA" />
       <include name="IDR_CONTENT_RIGHT_SIDE" file="default_100_percent/content_right_side.png" type="BINDATA" />
-      <include name="IDR_DEFAULT_FAVICON" file="default_100_percent/default_favicon.png" type="BINDATA" />
       <include name="IDR_DEFAULT_LARGE_FAVICON" file="default_100_percent/default_large_favicon.png" type="BINDATA" />
       <include name="IDR_FOLDER_CLOSED" file="default_100_percent/folder_closed.png" type="BINDATA" />
       <include name="IDR_FOLDER_CLOSED_RTL" file="default_100_percent/folder_closed_rtl.png" type="BINDATA" />

@@ -288,7 +288,6 @@
                 'app/theme/menu_hierarchy_arrow.pdf',
                 'app/theme/menu_overflow_down.pdf',
                 'app/theme/menu_overflow_up.pdf',
-                'app/theme/nav.pdf',
                 'app/theme/omnibox_extension_app.pdf',
                 'app/theme/omnibox_http.pdf',
                 'app/theme/omnibox_https_invalid.pdf',
