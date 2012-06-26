@@ -206,7 +206,12 @@ if sys.platform == 'win32':
     # Windows used to have an option to turn on case sensitivity on non Win32
     # subsystem but that's out of scope here and isn't supported anymore.
     # Go figure why GetShortPathName() is needed.
-    path = GetLongPathName(GetShortPathName(path))
+    try:
+      path = GetLongPathName(GetShortPathName(path))
+    except OSError:
+      # This is wrong to silently eat the exception but there's nothing that can
+      # be done about it.
+      logging.info('No access to %s' % path)
     if path.startswith('\\\\?\\'):
       path = path[4:]
     # Always upper case the first letter since GetLongPathName() will return the
