@@ -12,11 +12,13 @@
 #include "base/path_service.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/system/sysinfo_provider.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -58,12 +60,21 @@ class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
 
   void SyslogsComplete(chromeos::system::LogDictionaryType* sys_info,
                        std::string* ignored_content);
+  void SysInfoComplete(chromeos::system::SysInfoResponse* response);
+  void RequestComplete();
+  void WaitForData();
 
-  CancelableRequestConsumer consumer_;
+  CancelableRequestConsumer logs_consumer_;
+  CancelableRequestConsumer sys_info_consumer_;
 
   // Stored data from StartDataRequest()
   std::string path_;
   int request_id_;
+
+  int pending_requests_;
+  chromeos::system::LogDictionaryType* logs_;
+  chromeos::system::SysInfoResponse* sys_info_;
+  scoped_ptr<chromeos::system::SysInfoProvider> sys_info_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUIHTMLSource);
 };
@@ -90,7 +101,8 @@ class SystemInfoHandler : public WebUIMessageHandler,
 
 SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
     : DataSource(chrome::kChromeUISystemInfoHost, MessageLoop::current()),
-      request_id_(0) {
+      request_id_(0), logs_(NULL), sys_info_(NULL),
+      sys_info_provider_(chromeos::system::SysInfoProvider::Create()) {
 }
 
 void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
@@ -98,6 +110,7 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
                                               int request_id) {
   path_ = path;
   request_id_ = request_id;
+  pending_requests_ = 0;
 
   chromeos::system::SyslogsProvider* provider =
       chromeos::system::SyslogsProvider::GetInstance();
@@ -105,16 +118,35 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
     provider->RequestSyslogs(
         false,  // don't compress.
         chromeos::system::SyslogsProvider::SYSLOGS_SYSINFO,
-        &consumer_,
+        &logs_consumer_,
         base::Bind(&SystemInfoUIHTMLSource::SyslogsComplete,
                    base::Unretained(this)));
+    pending_requests_++;
   }
+
+  sys_info_provider_->Fetch(&sys_info_consumer_,
+                            base::Bind(
+                                &SystemInfoUIHTMLSource::SysInfoComplete,
+                                base::Unretained(this)));
+  pending_requests_++;
 }
 
 void SystemInfoUIHTMLSource::SyslogsComplete(
     chromeos::system::LogDictionaryType* sys_info,
     std::string* ignored_content) {
-  DCHECK(!ignored_content);
+  logs_ = sys_info;
+  RequestComplete();
+}
+
+void SystemInfoUIHTMLSource::SysInfoComplete(
+    chromeos::system::SysInfoResponse* sys_info) {
+  sys_info_ = sys_info;
+  RequestComplete();
+}
+
+void SystemInfoUIHTMLSource::RequestComplete() {
+  if (--pending_requests_)
+    return;
 
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
@@ -132,18 +164,35 @@ void SystemInfoUIHTMLSource::SyslogsComplete(
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
   SetFontAndTextDirection(&strings);
 
-  if (sys_info) {
-     ListValue* details = new ListValue();
-     strings.Set("details", details);
-     chromeos::system::LogDictionaryType::iterator it;
-     for (it = sys_info->begin(); it != sys_info->end(); ++it) {
-       DictionaryValue* val = new DictionaryValue;
-       val->SetString("stat_name", it->first);
-       val->SetString("stat_value", it->second);
-       details->Append(val);
-     }
-     strings.SetString("anchor", path_);
-     delete sys_info;
+  if (logs_ || sys_info_) {
+    ListValue* details = new ListValue();
+    strings.Set("details", details);
+    if (logs_) {
+      chromeos::system::LogDictionaryType::iterator it;
+      for (it = logs_->begin(); it != logs_->end(); ++it) {
+        DictionaryValue* val = new DictionaryValue;
+        val->SetString("stat_name", it->first);
+        val->SetString("stat_value", it->second);
+        details->Append(val);
+      }
+      delete logs_;
+    }
+    if (sys_info_) {
+      chromeos::system::SysInfoResponse::iterator it;
+      for (it = sys_info_->begin(); it != sys_info_->end(); ++it) {
+        DictionaryValue* val = new DictionaryValue;
+        // Prefix stats coming from debugd with 'debugd-' for now. The code that
+        // displays stats can only handle one stat with a given name, so this
+        // prevents names from overlapping. Once the duplicates have been
+        // removed from userfeedback's list by
+        // <https://gerrit.chromium.org/gerrit/25106>, the prefix can go away.
+        val->SetString("stat_name", "debugd-" + it->first);
+        val->SetString("stat_value", it->second);
+        details->Append(val);
+      }
+      delete sys_info_;
+    }
+    strings.SetString("anchor", path_);
   }
   static const base::StringPiece systeminfo_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

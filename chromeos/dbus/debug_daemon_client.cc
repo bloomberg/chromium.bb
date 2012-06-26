@@ -182,6 +182,67 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void GetRoutes(bool numeric, bool ipv6,
+                         const GetRoutesCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetRoutes);
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter sub_writer(NULL);
+    writer.OpenArray("{sv}", &sub_writer);
+    dbus::MessageWriter elem_writer(NULL);
+    sub_writer.OpenDictEntry(&elem_writer);
+    elem_writer.AppendString("numeric");
+    elem_writer.AppendVariantOfBool(numeric);
+    sub_writer.CloseContainer(&elem_writer);
+    sub_writer.OpenDictEntry(&elem_writer);
+    elem_writer.AppendString("v6");
+    elem_writer.AppendVariantOfBool(ipv6);
+    sub_writer.CloseContainer(&elem_writer);
+    writer.CloseContainer(&sub_writer);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetRoutes,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback)
+      OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetNetworkStatus);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetNetworkStatus,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  virtual void GetModemStatus(const GetModemStatusCallback& callback)
+      OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetModemStatus);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetModemStatus,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  virtual void GetAllLogs(const GetAllLogsCallback& callback)
+      OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 "GetAllLogs");
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetAllLogs,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void StartSystemTracing() OVERRIDE {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
@@ -279,6 +340,63 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
   }
 
+  void OnGetRoutes(const GetRoutesCallback& callback,
+                   dbus::Response* response) {
+    std::vector<std::string> routes;
+    if (response) {
+      dbus::MessageReader reader(response);
+      if (reader.PopArrayOfStrings(&routes)) {
+        callback.Run(true, routes);
+      } else {
+        LOG(ERROR) << "Got non-array response from GetRoutes";
+        callback.Run(false, routes);
+      }
+    } else {
+      callback.Run(false, routes);
+    }
+  }
+
+  void OnGetNetworkStatus(const GetNetworkStatusCallback& callback,
+                          dbus::Response* response) {
+    std::string status;
+    if (response && dbus::MessageReader(response).PopString(&status))
+      callback.Run(true, status);
+    else
+      callback.Run(false, "");
+  }
+
+  void OnGetModemStatus(const GetModemStatusCallback& callback,
+                          dbus::Response* response) {
+    std::string status;
+    if (response && dbus::MessageReader(response).PopString(&status))
+      callback.Run(true, status);
+    else
+      callback.Run(false, "");
+  }
+
+  void OnGetAllLogs(const GetAllLogsCallback& callback,
+                    dbus::Response* response) {
+    std::map<std::string, std::string> logs;
+    bool broken = false; // did we see a broken (k,v) pair?
+    dbus::MessageReader sub_reader(NULL);
+    if (!response || !dbus::MessageReader(response).PopArray(&sub_reader)) {
+      callback.Run(false, logs);
+      return;
+    }
+    while (sub_reader.HasMoreData()) {
+      dbus::MessageReader sub_sub_reader(NULL);
+      std::string key, value;
+      if (!sub_reader.PopDictEntry(&sub_sub_reader)
+          || !sub_sub_reader.PopString(&key)
+          || !sub_sub_reader.PopString(&value)) {
+        broken = true;
+        break;
+      }
+      logs[key] = value;
+    }
+    callback.Run(!sub_reader.HasMoreData() && !broken, logs);
+  }
+
   // Called when a response for StartSystemTracing() is received.
   void OnStartSystemTracing(dbus::Response* response) {
     if (!response) {
@@ -351,6 +469,23 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
     std::string no_data;
     callback.Run(base::RefCountedString::TakeString(&no_data));
     return true;
+  }
+  virtual void GetRoutes(bool numeric, bool ipv6,
+                         const GetRoutesCallback& callback) OVERRIDE {
+    std::vector<std::string> empty;
+    callback.Run(false, empty);
+  }
+  virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback)
+      OVERRIDE {
+    callback.Run(false, "");
+  }
+  virtual void GetModemStatus(const GetNetworkStatusCallback& callback)
+      OVERRIDE {
+    callback.Run(false, "");
+  }
+  virtual void GetAllLogs(const GetAllLogsCallback& callback) OVERRIDE {
+    std::map<std::string, std::string> empty;
+    callback.Run(false, empty);
   }
 };
 

@@ -11,6 +11,8 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
+#include <map>
+
 namespace dbus {
 class Bus;
 }  // namespace dbus
@@ -40,6 +42,27 @@ class CHROMEOS_EXPORT DebugDaemonClient {
   // following: "wifi", "ethernet", "cellular" or "none".
   virtual void SetDebugMode(const std::string& subsystem,
                             const SetDebugModeCallback& callback) = 0;
+
+  typedef base::Callback<void(bool succeeded,
+                              const std::vector<std::string>& routes)>
+      GetRoutesCallback;
+  virtual void GetRoutes(bool numeric, bool ipv6,
+                         const GetRoutesCallback& callback) = 0;
+
+  typedef base::Callback<void(bool succeeded, const std::string& status)>
+      GetNetworkStatusCallback;
+
+  virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback) = 0;
+
+  typedef base::Callback<void(bool succeeded, const std::string& status)>
+      GetModemStatusCallback;
+
+  virtual void GetModemStatus(const GetModemStatusCallback& callback) = 0;
+
+  typedef base::Callback<void(bool succeeded,
+                              const std::map<std::string, std::string>& logs)>
+      GetAllLogsCallback;
+  virtual void GetAllLogs(const GetAllLogsCallback& callback) = 0;
 
   // Requests to start system/kernel tracing.
   virtual void StartSystemTracing() = 0;

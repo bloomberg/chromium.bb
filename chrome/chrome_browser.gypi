@@ -873,6 +873,8 @@
         'browser/chromeos/system/screen_locker_settings.h',
         'browser/chromeos/system/statistics_provider.cc',
         'browser/chromeos/system/statistics_provider.h',
+        'browser/chromeos/system/sysinfo_provider.cc',
+        'browser/chromeos/system/sysinfo_provider.h',
         'browser/chromeos/system/syslogs_provider.cc',
         'browser/chromeos/system/syslogs_provider.h',
         'browser/chromeos/system/timezone_settings.cc',
