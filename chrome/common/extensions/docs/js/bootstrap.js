@@ -17,12 +17,25 @@ var fileXHREnabled = function() {
   return true;
 }();
 
-var officialURL = 'http://code.google.com/chrome/extensions/';
+var officialURL = (function() {
+  var candidates = [
+    'http://code.google.com/chrome/extensions/',
+    'http://developer.chrome.com/',
+
+    // TODO(aa): Remove this one once developer.chrome.com is live.
+    'http://chrome-apps-doc.appspot.com/'
+  ];
+  for (var i = 0, url; url = candidates[i]; i++) {
+    if (location.href.indexOf(candidates[i]) == 0)
+      return candidates[i];
+  }
+  return '';
+})();
 
 function getCurrentBranch() {
   var branchNames = ['beta', 'dev', 'trunk'];
 
-  if (location.href.indexOf(officialURL) != 0)
+  if (!officialURL)
     return '';
 
   var branch = location.href.substring(
