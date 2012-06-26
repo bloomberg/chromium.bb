@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/input.h>
+#include <assert.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -520,8 +521,13 @@ drm_disable_unused_sprites(struct weston_output *output_base)
 			weston_log("failed to disable plane: %d: %s\n",
 				ret, strerror(errno));
 		drmModeRmFB(c->drm.fd, s->fb_id);
-		s->surface = NULL;
-		s->pending_surface = NULL;
+
+		if (s->surface) {
+			s->surface = NULL;
+			wl_list_remove(&s->destroy_listener.link);
+		}
+
+		assert(!s->pending_surface);
 		s->fb_id = 0;
 		s->pending_fb_id = 0;
 	}
