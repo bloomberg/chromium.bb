@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,50 +57,6 @@ class PageUsageData {
     return score_;
   }
 
-  void SetThumbnailMissing() {
-    thumbnail_set_ = true;
-  }
-
-  void SetThumbnail(SkBitmap* img);
-
-  bool HasThumbnail() const {
-    return thumbnail_set_;
-  }
-
-  const SkBitmap* GetThumbnail() const {
-    return thumbnail_;
-  }
-
-  bool thumbnail_pending() const {
-    return thumbnail_pending_;
-  }
-
-  void set_thumbnail_pending(bool pending) {
-    thumbnail_pending_ = pending;
-  }
-
-  void SetFaviconMissing() {
-    favicon_set_ = true;
-  }
-
-  void SetFavicon(SkBitmap* img);
-
-  bool HasFavicon() const {
-    return favicon_set_;
-  }
-
-  bool favicon_pending() const {
-    return favicon_pending_;
-  }
-
-  void set_favicon_pending(bool pending) {
-    favicon_pending_ = pending;
-  }
-
-  const SkBitmap* GetFavicon() const {
-    return favicon_;
-  }
-
   // Sort predicate to sort instances by score (high to low)
   static bool Predicate(const PageUsageData* dud1,
                         const PageUsageData* dud2);
@@ -109,16 +65,6 @@ class PageUsageData {
   history::URLID id_;
   GURL url_;
   string16 title_;
-
-  SkBitmap* thumbnail_;
-  bool thumbnail_set_;
-  // Whether we have an outstanding request for the thumbnail.
-  bool thumbnail_pending_;
-
-  SkBitmap* favicon_;
-  bool favicon_set_;
-  // Whether we have an outstanding request for the favicon.
-  bool favicon_pending_;
 
   double score_;
 };
