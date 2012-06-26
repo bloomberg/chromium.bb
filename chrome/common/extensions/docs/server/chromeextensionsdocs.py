@@ -202,11 +202,6 @@ class MainPage(webapp.RequestHandler):
         not self.initDocFamily()):
       return
 
-    # Force apps to always be trunk because that's the only place we have apps
-    # content right now. TODO(aa): Remove this.
-    if self.docFamily == 'apps':
-      self.channel = Channel.TRUNK
-
     cacheKey = str((self.channel.name, self.docFamily, self.path))
     result = memcache.get(cacheKey)
     if result is None:
