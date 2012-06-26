@@ -30,6 +30,9 @@ class DesktopWin {
   // failed for any reason.
   bool SetThreadDesktop() const;
 
+  // Returns the desktop by its name or NULL if an error occurs.
+  static scoped_ptr<DesktopWin> GetDesktop(const wchar_t* desktop_name);
+
   // Returns the desktop currently receiving user input or NULL if an error
   // occurs.
   static scoped_ptr<DesktopWin> GetInputDesktop();

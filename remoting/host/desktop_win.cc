@@ -65,6 +65,21 @@ bool DesktopWin::SetThreadDesktop() const {
   return true;
 }
 
+scoped_ptr<DesktopWin> DesktopWin::GetDesktop(const wchar_t* desktop_name) {
+  ACCESS_MASK desired_access =
+      DESKTOP_CREATEMENU | DESKTOP_CREATEWINDOW | DESKTOP_ENUMERATE |
+      DESKTOP_HOOKCONTROL | DESKTOP_WRITEOBJECTS | DESKTOP_READOBJECTS |
+      DESKTOP_SWITCHDESKTOP | GENERIC_WRITE;
+  HDESK desktop = OpenDesktop(desktop_name, 0, FALSE, desired_access);
+  if (desktop == NULL) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to open the desktop '" << desktop_name << "'";
+    return scoped_ptr<DesktopWin>();
+  }
+
+  return scoped_ptr<DesktopWin>(new DesktopWin(desktop, true));
+}
+
 scoped_ptr<DesktopWin> DesktopWin::GetInputDesktop() {
   HDESK desktop = OpenInputDesktop(
                       0, FALSE, GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE);

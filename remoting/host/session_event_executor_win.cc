@@ -10,12 +10,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/win/windows_version.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/proto/event.pb.h"
-
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_win.h"
+#include "remoting/host/scoped_thread_desktop_win.h"
 
 namespace {
 
@@ -35,6 +36,33 @@ bool areCtrlAndAltPressed(const std::set<uint32>& pressed_keys) {
     pressed_keys.count(kUsbRightAlt);
   return ctrl_keys != 0 && alt_keys != 0 &&
     (ctrl_keys + alt_keys == pressed_keys.size());
+}
+
+// Emulates Secure Attention Sequence (Ctrl+Alt+Del) by switching to
+// the Winlogon desktop and injecting Ctrl+Alt+Del as a hot key.
+// N.B. Windows XP/W2K3 only.
+void emulateSecureAttentionSequence() {
+  const wchar_t kWinlogonDesktopName[] = L"Winlogon";
+  const wchar_t kSasWindowClassName[] = L"SAS window class";
+  const wchar_t kSasWindowTitle[] = L"SAS window";
+
+  scoped_ptr<remoting::DesktopWin> winlogon_desktop(
+      remoting::DesktopWin::GetDesktop(kWinlogonDesktopName));
+  if (!winlogon_desktop.get())
+    return;
+
+  remoting::ScopedThreadDesktopWin desktop;
+  if (!desktop.SetThreadDesktop(winlogon_desktop.Pass()))
+    return;
+
+  HWND window = FindWindow(kSasWindowClassName, kSasWindowTitle);
+  if (!window)
+    return;
+
+  PostMessage(window,
+              WM_HOTKEY,
+              0,
+              MAKELONG(MOD_ALT | MOD_CONTROL, VK_DELETE));
 }
 
 } // namespace
@@ -132,8 +160,12 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
       if (event.usb_keycode() == kUsbDelete &&
           areCtrlAndAltPressed(pressed_keys_)) {
         VLOG(3) << "Sending Secure Attention Sequence to console";
-        if (chromoting_channel_.get())
+
+        if (base::win::GetVersion() == base::win::VERSION_XP) {
+          emulateSecureAttentionSequence();
+        } else if (chromoting_channel_.get()) {
           chromoting_channel_->Send(new ChromotingHostMsg_SendSasToConsole());
+        }
       }
 
       pressed_keys_.insert(event.usb_keycode());
