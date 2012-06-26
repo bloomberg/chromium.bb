@@ -505,9 +505,6 @@
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
-          'defines': [
-            'REGISTER_CONTENT_UNITESTS_JNI',
-          ],
         }],
       ],
     },
