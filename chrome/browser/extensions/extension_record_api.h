@@ -142,8 +142,8 @@ class ReplayURLsFunction : public RunPageCyclerFunction {
   // Return error list, statistical results, and runtime.
   virtual void Finish() OVERRIDE;
 
-  // These three data are additional information added to the sub-browser
-  // commandline.
+  // These data are additional information added to the sub-browser
+  // commandline or used to repeatedly run the sub-browser.
   FilePath extension_path_;
   FilePath stats_file_path_;
 

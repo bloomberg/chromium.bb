@@ -21,7 +21,6 @@ var pageCyclerUI = new (function () {
   this.replayTab = $("#replay-tab");
   this.replayTabLabel = $("#replay-tab-label");
   this.replayURLs = $("#replay-urls");
-  this.replayRepeatCount = $("#replay-repeat-count");
   this.replayCache = $("#replay-cache-dir");
   this.replayButton = $("#replay-test");
   this.replayErrorDiv = $("#replay-errors-display");
@@ -63,13 +62,6 @@ var pageCyclerUI = new (function () {
 
     this.cacheDir = $("#capture-cache-dir").value;
     this.urlList = $("#capture-urls").value.split("\n");
-    this.repeatCount = parseInt($("#capture-repeat-count").value);
-
-    // Check local errors
-    if (isNaN(this.repeatCount))
-      errors.push("Enter a number for repeat count");
-    else if (this.repeatCount < 1 || this.repeatCount > 100)
-      errors.push("Repeat count must be between 1 and 100");
 
     if (errors.length > 0) {
       this.captureErrorList.innerText = errors.join("\n");
@@ -79,7 +71,7 @@ var pageCyclerUI = new (function () {
       this.captureErrorDiv.className = "error-list-hide";
       this.captureButton.disabled = true;
       chrome.experimental.record.captureURLs(this.urlList, this.cacheDir,
-        this.repeatCount, this.onCaptureDone.bind(this));
+          this.onCaptureDone.bind(this));
     }
   }
 
@@ -97,18 +89,23 @@ var pageCyclerUI = new (function () {
       this.replayButton.disabled = false;
       this.replayURLs.innerText = this.urlList.join("\n");
       this.replayCache.innerText = this.cacheDir;
-      this.replayRepeatCount.innerText = this.repeatCount;
     }
   }
 
   this.replayTest = function() {
     var extensionPath = $("#extension-dir").value;
+    var repeatCount = parseInt($('#repeat-count').value);
     var errors = [];
 
+    // Check local errors
+    if (isNaN(repeatCount))
+      errors.push("Enter a number for repeat count");
+    else if (repeatCount < 1 || repeatCount > 100)
+      errors.push("Repeat count must be between 1 and 100");
     this.replayButton.disabled = true;
 
     chrome.experimental.record.replayURLs(this.urlList, this.cacheDir,
-      this.repeatCount, {"extensionPath": extensionPath
+      repeatCount, {"extensionPath": extensionPath
       }, this.onReplayDone.bind(this));
   }
 

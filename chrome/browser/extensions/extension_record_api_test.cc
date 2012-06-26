@@ -38,7 +38,7 @@ const std::string kTestStatistics = "Sample Stat 1\nSample Stat 2\n";
 // a hole for filling in the user data dir.
 const char kCaptureArgs1[] =
     "[[\"URL 1\", \"URL 2(bad)\", \"URL 3\", \"URL 4(bad)\"]"
-    ", \"%s\", 2]";
+    ", \"%s\"]";
 
 // Standard playback parameters, with the same mix of good and bad URLs
 // as the capture parameters, a hole for filling in the user data dir, and

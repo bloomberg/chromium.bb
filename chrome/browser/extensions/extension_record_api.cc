@@ -107,19 +107,22 @@ void RunPageCyclerFunction::RunTestBrowser() {
 
   // Set up Capture- or Replay-specific commandline switches.
   AddSwitches(&line);
-  LOG(ERROR) << "Test browser commandline: " << line.GetCommandLineString();
+
+  FilePath error_file_path = url_path.DirName()
+      .Append(url_path.BaseName().value() +
+      FilePath::StringType(kURLErrorsSuffix));
+
+  LOG(ERROR) << "Test browser commandline: " << line.GetCommandLineString() <<
+      " will be repeated " << repeat_count_ << " times....";
 
   // Run the test browser (or a mockup, depending on |process_strategy_|.
-  process_strategy_->RunProcess(line);
+  while (repeat_count_-- && !file_util::PathExists(error_file_path))
+    process_strategy_->RunProcess(line);
 
   // Read URL errors file if there is one, and save errors in |errors_|.
   // Odd extension handling needed because temp files have lots of "."s in
   // their names, and we need to cleanly add kURLErrorsSuffix as a final
   // extension.
-  FilePath error_file_path = url_path.DirName()
-      .Append(url_path.BaseName().value() +
-      FilePath::StringType(kURLErrorsSuffix));
-
   if (file_util::PathExists(error_file_path)) {
     std::string error_content;
     file_util::ReadFileToString(error_file_path, &error_content);
@@ -148,8 +151,7 @@ CaptureURLsFunction::CaptureURLsFunction()
 CaptureURLsFunction::CaptureURLsFunction(ProcessStrategy* strategy)
     : RunPageCyclerFunction(strategy) {}
 
-// Fetch data for possible optional switches for a repeat count and an
-// extension to load.
+// Fetch data for possible optional switch for an extension to load.
 bool CaptureURLsFunction::ParseJSParameters() {
   scoped_ptr<record::CaptureURLs::Params> params(
       record::CaptureURLs::Params::Create(*args_));
@@ -157,7 +159,6 @@ bool CaptureURLsFunction::ParseJSParameters() {
 
   url_contents_ = JoinString(params->urls, '\n');
   user_data_dir_ = FilePath::FromUTF8Unsafe(params->cache_directory_path);
-  repeat_count_ = params->repeat_count;
 
   return true;
 }
