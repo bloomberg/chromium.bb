@@ -1028,10 +1028,13 @@ void LoginUtilsImpl::FetchPolicyToken(Profile* offrecord_profile,
   // Fetch dm service token now, if it hasn't been fetched yet.
   if (!policy_oauth_fetcher_.get() || policy_oauth_fetcher_->failed()) {
     // Get the default system profile to use with the policy fetching. If there
-    // is no |authenticator_|, manually load default system profile. Otherwise,
-    // just use |authenticator_|'s profile.
+    // is no |authenticator_| profile, manually load default system profile.
+    // Otherwise, just use |authenticator_|'s profile.
     Profile* profile = NULL;
-    if (!authenticator_) {
+    if (authenticator_)
+      profile = authenticator_->authentication_profile();
+
+    if (!profile) {
       FilePath user_data_dir;
       PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
       ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1039,9 +1042,8 @@ void LoginUtilsImpl::FetchPolicyToken(Profile* offrecord_profile,
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       profile = profile_manager->GetProfile(user_data_dir)->
           GetOffTheRecordProfile();
-    } else {
-      profile = authenticator_->authentication_profile();
     }
+
     // Trigger oauth token fetch for user policy.
     policy_oauth_fetcher_.reset(new PolicyOAuthFetcher(profile, token, secret));
     policy_oauth_fetcher_->Start();
