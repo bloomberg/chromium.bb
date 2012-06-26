@@ -1,0 +1,160 @@
+<meta name="doc-family" content="apps">
+<div id="pageData-name" class="pageData">Create Your First App</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
+<p>
+This tutorial walks you through creating your first packaged app.
+Packaged apps are structured similarly to extensions.
+You need to produce a zip file of all your assets for your applications
+that you will then upload to the Chrome Web Store.
+</p>
+
+<p class="note">
+<b>API Samples: </b>
+Want to play with the code?
+Check out the
+<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/hello-world">hello-world</a>
+sample.
+</p>
+
+<p>
+The packaged app zip file contains these components:
+</p>
+
+<ul>
+  <li>The <strong>manifest</strong> tells Chrome about your app, what it is,
+    how to launch it and the extra permissions that you require.</li>
+  <li>The <strong>background script</strong> is used to create the event page
+    responsible for managing the app life cycle.</li>
+  <li>All code must be included in the package. This includes HTML, JS, CSS
+    and Native Client modules.</li>
+  <li>The <code>icons</code> are required for the launcher and visibility in the user's system.</li>
+
+<h2 id="one">Step 1: Create the manifest</h2>
+
+<p>
+First ceate your <code>manifest.json</code> file
+(<a href="manifest.html">Manifest Files</a>
+describes this manifest in detail):
+</p>
+
+<pre>
+{
+  "name": "Hello World!",
+  "description": "My first packaged app.",
+  "manifest_version": 2,
+  "version": "0.1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": ["experimental", "appWindow"],
+  "icons": { "16": "icon-16.png", "128": "icon-128.png" }
+}
+</pre>
+
+<p class="note">
+<b>Important:</b>
+Packaged apps <b>must</b> use
+<a href="manifestVersion.html">manifest version 2</a>.
+</p>
+
+<h2 id="two">Step 2: Create the background script</h2>
+
+<p>
+Next create a new file called <code>background.js</code>
+with the following content:
+</p>
+
+<pre>
+chrome.experimental.app.onLaunched.addListener(function() {
+  chrome.appWindow.create('window.html', {
+    'width': 400,
+    'height': 500
+  });
+});
+</pre>
+
+<p>
+In the above sample code,
+the 'width' and 'height' control the size of the app window.
+Your background script may contain additional listeners,
+windows, post messages, and launch data,
+all of which are used by the event page to manage the app.
+</p>
+
+<h2 id="three">Step 3: Create a window page</h2>
+
+<p>
+Create your <code>window.html</code> file:
+</p>
+
+<pre>
+&lt;!DOCTYPE html>
+&lt;html>
+  &lt;head>
+  &lt;/head>
+  &lt;body>
+    &lt;div>Hello, world!&lt;/div>
+  &lt;/body>
+&lt;/html>
+</pre>
+
+<h2 id="four">Step 4: Create the icons</h2>
+
+<p>
+Copy these icons to your app folder:
+</p>
+
+<ul>
+  <li><a href="images/icon-16.png">icon-16.png</a></li>
+  <li><a href="images/icon-128.png">icon-128.png</a></li>
+</ul>
+
+<h2 id="five">Step 5: Launch your app</h2>
+
+<h3>Enable flags</h3>
+
+<p>
+You should enable experimental APIs:
+</p>
+
+<ul>
+  <li>Go to <b>chrome://flags</b>.</li>
+  <li>Find "Experimental Extension APIs",
+    and click its "Enable" link.</li>
+  <li>Restart Chrome.</li>
+
+<h3>Load your app</h3>
+
+<p>
+To load your app,
+bring up the apps and extensions management page
+by clicking the wrench icon
+<img src="../images/toolsmenu.gif" width="29" height="29" alt=""
+        style="margin-top:0" />
+and choosing <b>Tools > Extensions</b>.
+</p>
+
+<p>
+Make sure the <b>Developer mode</b>
+checkbox has been selected.
+</p>
+
+<p>
+Click the <b>Load unpacked extension</b> button,
+navigate to your app's folder
+and click <b>OK</b>.
+</p>
+
+<h3>Open new tab and launch</h3>
+
+<p>
+Once you've loaded your app,
+open a New Tab page
+and click on your new app icon.
+</p>
+
+<p class="backtotop"><a href="#top">Back to top</a></p>
+
