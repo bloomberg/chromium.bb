@@ -4,7 +4,7 @@
 
 // File-level comment to appease parser. Eventually this will not be necessary.
 
-namespace experimental.socket {
+[nodoc] namespace experimental.socket {
   enum SocketType {
     tcp,
     udp

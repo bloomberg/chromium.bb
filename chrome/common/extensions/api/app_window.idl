@@ -4,7 +4,7 @@
 
 // File-level comment to appease parser. Eventually this will not be necessary.
 
-namespace appWindow {
+[nodoc] namespace appWindow {
   dictionary CreateWindowOptions {
     // Width of the window.
     long? width;

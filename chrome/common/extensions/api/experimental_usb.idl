@@ -5,7 +5,7 @@
 // TODO(gdk): The string-style enumerations are temporary, and will be removed
 // once full enumeration support is added.
 
-namespace experimental.usb {
+[nodoc] namespace experimental.usb {
 
   // A Device encapsulates everything that is needed to communicate with a USB
   // device. They are returned by findDevice calls and have all of their

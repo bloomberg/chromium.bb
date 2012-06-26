@@ -5,7 +5,7 @@
 // Bluetooth API.
 // TODO(bryeung): mark this API as ChromeOS only (see crbug.com/119398).
 
-namespace experimental.bluetooth {
+[nodoc] namespace experimental.bluetooth {
   dictionary Device {
     // The address of the device, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
@@ -142,7 +142,6 @@ namespace experimental.bluetooth {
     static void getAddress(AddressCallback callback);
 
     // Get a list of bluetooth devices.
-    // NOTE: This API is likely to change.  Please see crbug.com/134545
     // |options|  : Controls which devices are returned.
     // |callback| : Called with an array of Device objects.
     static void getDevices(GetDevicesOptions options,
