@@ -314,3 +314,9 @@ html[dir=rtl] .header form {
 html[dir=rtl] .summary button {
   background-position: left center;
 }
+
+@media (pointer:coarse) {
+  menu > button {
+    line-height: 40px;
+  }
+}
