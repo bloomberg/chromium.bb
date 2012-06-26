@@ -2940,7 +2940,6 @@
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_web_dialog_delegate.cc',
         'browser/ui/webui/test_web_dialog_delegate.h',
-        'browser/ui/webui/web_dialog_controller_browsertest.cc',
         'browser/ui/webui/web_ui_browsertest.cc',
         'browser/ui/webui/web_ui_browsertest.h',
         'browser/ui/webui/web_ui_test_handler.cc',

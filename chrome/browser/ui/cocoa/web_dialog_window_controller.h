@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-class Browser;
 class TabContents;
 class WebDialogWindowDelegateBridge;
 
@@ -32,15 +31,13 @@ class BrowserContext;
 }
 
 // Creates and shows an WebDialogWindowController with the given
-// delegate and profile whose lifetime is controlled by the given
-// browser.  The window is automatically destroyed when it, or its
-// controlling browser is closed.  Returns the created window.
+// delegate and profile. The window is automatically destroyed when it, or its
+// profile is closed. Returns the created window.
 //
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
 + (NSWindow*)showWebDialog:(ui::WebDialogDelegate*)delegate
-                   context:(content::BrowserContext*)context
-                   browser:(Browser*)browser;
+                   context:(content::BrowserContext*)context;
 
 @end
 
@@ -49,8 +46,7 @@ class BrowserContext;
 // This is the designated initializer.  However, this is exposed only
 // for testing; use showWebDialog instead.
 - (id)initWithDelegate:(ui::WebDialogDelegate*)delegate
-               context:(content::BrowserContext*)context
-               browser:(Browser*)browser;
+               context:(content::BrowserContext*)context;
 
 // Loads the HTML content from the delegate; this is not a lightweight
 // process which is why it is not part of the constructor.  Must be

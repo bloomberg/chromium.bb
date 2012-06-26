@@ -9,13 +9,10 @@
 #include "base/property_bag.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
@@ -39,7 +36,6 @@ public:
   // All parameters must be non-NULL/non-nil.
   WebDialogWindowDelegateBridge(WebDialogWindowController* controller,
                                 content::BrowserContext* context,
-                                Browser* browser,
                                 WebDialogDelegate* delegate);
 
   virtual ~WebDialogWindowDelegateBridge();
@@ -79,7 +75,6 @@ public:
 private:
   WebDialogWindowController* controller_;  // weak
   WebDialogDelegate* delegate_;  // weak, owned by controller_
-  WebDialogController* dialog_controller_;
 
   // Calls delegate_'s OnDialogClosed() exactly once, nulling it out afterwards
   // so that no other WebDialogDelegate calls are sent to it. Returns whether or
@@ -103,12 +98,8 @@ namespace browser {
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 content::BrowserContext* context,
                                 WebDialogDelegate* delegate) {
-  // TODO(mazda): Remove the dependency on Browser.
-  Browser* browser =
-      browser::FindLastActiveWithProfile(Profile::FromBrowserContext(context));
   return [WebDialogWindowController showWebDialog:delegate
-                                          context:context
-                                          browser:browser];
+                                          context:context];
 }
 
 }  // namespace browser
@@ -116,12 +107,10 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
 WebDialogWindowDelegateBridge::WebDialogWindowDelegateBridge(
     WebDialogWindowController* controller,
     content::BrowserContext* context,
-    Browser* browser,
     WebDialogDelegate* delegate)
     : WebDialogWebContentsDelegate(context),
       controller_(controller),
-      delegate_(delegate),
-      dialog_controller_(new WebDialogController(this, context, browser)) {
+      delegate_(delegate) {
   DCHECK(controller_);
   DCHECK(delegate_);
 }
@@ -130,7 +119,6 @@ WebDialogWindowDelegateBridge::~WebDialogWindowDelegateBridge() {}
 
 void WebDialogWindowDelegateBridge::WindowControllerClosed() {
   Detach();
-  delete dialog_controller_;
   controller_ = nil;
   DelegateOnDialogClosed("");
 }
@@ -304,20 +292,17 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 // in once we implement modal dialogs.
 
 + (NSWindow*)showWebDialog:(WebDialogDelegate*)delegate
-                   context:(content::BrowserContext*)context
-                   browser:(Browser*)browser {
+                   context:(content::BrowserContext*)context {
   WebDialogWindowController* webDialogWindowController =
     [[WebDialogWindowController alloc] initWithDelegate:delegate
-                                                context:context
-                                                browser:browser];
+                                                context:context];
   [webDialogWindowController loadDialogContents];
   [webDialogWindowController showWindow:nil];
   return [webDialogWindowController window];
 }
 
 - (id)initWithDelegate:(WebDialogDelegate*)delegate
-               context:(content::BrowserContext*)context
-               browser:(Browser*)browser {
+               context:(content::BrowserContext*)context {
   DCHECK(delegate);
   DCHECK(context);
 
@@ -345,7 +330,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
   [window setMinSize:dialogRect.size];
   [window center];
   delegate_.reset(
-      new WebDialogWindowDelegateBridge(self, context, browser, delegate));
+      new WebDialogWindowDelegateBridge(self, context, delegate));
   return self;
 }
 

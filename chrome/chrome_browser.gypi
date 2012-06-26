@@ -4110,8 +4110,6 @@
         'browser/ui/webui/tracing_ui.h',
         'browser/ui/webui/uber/uber_ui.cc',
         'browser/ui/webui/uber/uber_ui.h',
-        'browser/ui/webui/web_dialog_controller.cc',
-        'browser/ui/webui/web_dialog_controller.h',
         'browser/ui/webui/web_dialog_web_contents_delegate.cc',
         'browser/ui/webui/web_dialog_web_contents_delegate.h',
         'browser/ui/webui/web_ui_util.cc',
