@@ -174,7 +174,7 @@ class SSLConfigServiceManagerPref
   BooleanPrefMember rev_checking_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
-  BooleanPrefMember domain_bound_certs_enabled_;
+  BooleanPrefMember channel_id_enabled_;
   BooleanPrefMember ssl_record_splitting_disabled_;
 
   // The cached list of disabled SSL cipher suites.
@@ -194,8 +194,7 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                              local_state, this);
   ssl_version_min_.Init(prefs::kSSLVersionMin, local_state, this);
   ssl_version_max_.Init(prefs::kSSLVersionMax, local_state, this);
-  domain_bound_certs_enabled_.Init(prefs::kEnableOriginBoundCerts,
-                                   local_state, this);
+  channel_id_enabled_.Init(prefs::kEnableOriginBoundCerts, local_state, this);
   ssl_record_splitting_disabled_.Init(prefs::kDisableSSLRecordSplitting,
                                       local_state, this);
   pref_change_registrar_.Init(local_state);
@@ -219,7 +218,7 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kSSLVersionMin, version_min_str);
   prefs->RegisterStringPref(prefs::kSSLVersionMax, version_max_str);
   prefs->RegisterBooleanPref(prefs::kEnableOriginBoundCerts,
-                             default_config.domain_bound_certs_enabled);
+                             default_config.channel_id_enabled);
   prefs->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
                              !default_config.false_start_enabled);
   prefs->RegisterListPref(prefs::kCipherSuiteBlacklist);
@@ -280,7 +279,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->version_max = std::min(supported_version_max, version_max);
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
-  config->domain_bound_certs_enabled = domain_bound_certs_enabled_.GetValue();
+  config->channel_id_enabled = channel_id_enabled_.GetValue();
   // disabling False Start also happens to disable record splitting.
   config->false_start_enabled = !ssl_record_splitting_disabled_.GetValue();
   SSLConfigServicePref::SetSSLConfigFlags(config);

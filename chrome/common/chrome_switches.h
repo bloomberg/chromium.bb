@@ -163,6 +163,7 @@ extern const char kEnableNaClIPCProxy[];
 extern const char kEnableNpn[];
 extern const char kDisableSyncTabs[];
 extern const char kEnableNpnHttpOnly[];
+extern const char kEnableOriginBoundCerts[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];

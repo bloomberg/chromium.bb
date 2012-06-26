@@ -300,9 +300,6 @@ const char kEnablePeerConnection[]          = "enable-peer-connection";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enables TLS domain bound certificate extension.
-const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
-
 // Enables partial swaps in the WK compositor on platforms that support it.
 const char kEnablePartialSwap[]             = "enable-partial-swap";
 

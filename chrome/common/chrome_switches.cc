@@ -570,6 +570,10 @@ const char kEnableNpn[]                     = "enable-npn";
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 
+// Enables TLS Channel ID extension.  (The switch is still called
+// "enable-origin-bound-certs" for backwards compatability.)
+const char kEnableOriginBoundCerts[]        = "enable-origin-bound-certs";
+
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 

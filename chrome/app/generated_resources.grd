@@ -9786,22 +9786,22 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
         Last accessed:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT" desc="The text shown when there is a server bound cert in the Cookies table">
-        Domain Bound Certificate
+      <message name="IDS_COOKIES_SERVER_BOUND_CERT" desc="The text shown when there is a channel id in the Cookies table">
+        Channel ID
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERTS" desc="Label for the folder under which a list of server bound certs (name of an internet standard) are displayed">
-        Domain Bound Certificates
+      <message name="IDS_COOKIES_SERVER_BOUND_CERTS" desc="Label for the folder under which a list of TLS Channel IDs (name of an internet standard) are displayed">
+        Channel IDs
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_ORIGIN_LABEL" desc="The server bound certificate label for the server domain">
+      <message name="IDS_COOKIES_SERVER_BOUND_CERT_ORIGIN_LABEL" desc="The channel id label for the server domain">
         Domain:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_TYPE_LABEL" desc="The server bound certificate Type label">
+      <message name="IDS_COOKIES_SERVER_BOUND_CERT_TYPE_LABEL" desc="The channel id Type label">
         Certificate Type:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_CREATED_LABEL" desc="The server bound certificate Created label">
+      <message name="IDS_COOKIES_SERVER_BOUND_CERT_CREATED_LABEL" desc="The channel id Created label">
         Created:
       </message>
-      <message name="IDS_COOKIES_SERVER_BOUND_CERT_EXPIRES_LABEL" desc="The server bound certificate Expires label">
+      <message name="IDS_COOKIES_SERVER_BOUND_CERT_EXPIRES_LABEL" desc="The channel id Expires label">
         Expires:
       </message>
       <message name="IDS_CLIENT_CERT_RSA_SIGN" translateable="false" desc="">
