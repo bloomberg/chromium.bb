@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/reload_button.h"
@@ -28,6 +29,12 @@ class Browser;
 class LocationBarContainer;
 class WrenchMenu;
 
+namespace chrome {
+namespace search {
+class SearchModel;
+}
+}
+
 namespace views {
 class MenuListener;
 }
@@ -37,6 +44,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
+                    public chrome::search::SearchModelObserver,
                     public content::NotificationObserver,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener {
@@ -79,6 +87,11 @@ class ToolbarView : public views::AccessiblePaneView,
 
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
+  // Layout toolbar for the various modes when --enable-instant-extended-api
+  // is specified. Depending on the toolbar mode, this can result in
+  // some toolbar children views change in visibility.
+  void LayoutForSearch();
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
@@ -111,6 +124,9 @@ class ToolbarView : public views::AccessiblePaneView,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
+
+  // Overridden from chrome::search::SearchModelObserver:
+  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
@@ -191,6 +207,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // unacknowledged background pages in the system.
   gfx::ImageSkia GetBackgroundPageBadge();
 
+  // Layout the location bar for the Extended Instant NTP.
+  void LayoutLocationBarNTP();
+
   // Sets the bounds of the LocationBarContainer. |bounds| is in the coordinates
   // of |this|.
   void SetLocationBarContainerBounds(const gfx::Rect& bounds);
@@ -200,6 +219,10 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
+
+  // Caches the search_model from browser.
+  // TODO(alicet): Replace this, and |model_| with accessors.
+  chrome::search::SearchModel* search_model_;
 
   // Controls
   views::ImageButton* back_;

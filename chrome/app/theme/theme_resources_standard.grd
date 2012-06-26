@@ -322,6 +322,7 @@
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="ash/browser_reload_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="ash/browser_reload_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="ash/browser_reload_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_D" file="ash/browser_reload_disabled.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="reload.png" />

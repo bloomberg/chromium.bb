@@ -55,6 +55,10 @@ gfx::Rect LocationBarContainer::GetTargetBounds() {
   return animator_.GetTargetBounds(this);
 }
 
+std::string LocationBarContainer::GetClassName() const {
+  return "browser/ui/views/location_bar/LocationBarContainer";
+}
+
 gfx::Size LocationBarContainer::GetPreferredSize() {
   return location_bar_view_->GetPreferredSize();
 }

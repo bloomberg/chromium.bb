@@ -50,6 +50,7 @@ class LocationBarContainer : public views::View,
   gfx::Rect GetTargetBounds();
 
   // views::View overrides:
+  virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
       const views::KeyEvent& event) OVERRIDE;
