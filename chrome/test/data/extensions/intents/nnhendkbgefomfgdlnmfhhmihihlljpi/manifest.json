@@ -1,0 +1,14 @@
+{
+  "name": "Dummy Share (inline)",
+  "version": "1.0.0.0",
+  "intents": {
+    "http://webintents.org/share": [
+      {
+        "type" : ["text/*"],
+        "href" : "share.html",
+        "title" : "Dummy share (inline)!",
+        "disposition": "inline"
+      }
+    ]
+  }
+}

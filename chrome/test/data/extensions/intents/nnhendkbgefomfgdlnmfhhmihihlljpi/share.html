@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        var data = intent.data instanceof Array ?
+            intent.data[0] :
+            intent.data;
+        document.getElementById("output").textContent = data;
+      });
+    </script>
+  </head>
+  <body>
+    <p>Here is your text!</p>
+    <div id="output"></div>
+  </body>
+</html>
