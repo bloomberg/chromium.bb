@@ -578,10 +578,8 @@ gfx::Image GtkThemeService::GetFolderIcon(bool native) {
       // This seems to leak.
       GdkPixbuf* pixbuf = gtk_widget_render_icon(
           icon_widget_, GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU, NULL);
-      if (pixbuf) {
+      if (pixbuf)
         default_folder_icon_.Get() = gfx::Image(pixbuf);
-        g_object_unref(pixbuf);
-      }
     }
     if (!default_folder_icon_.Get().IsEmpty())
       return default_folder_icon_.Get();
@@ -601,10 +599,8 @@ gfx::Image GtkThemeService::GetDefaultFavicon(bool native) {
       // This seems to leak.
       GdkPixbuf* pixbuf = gtk_widget_render_icon(
           icon_widget_, GTK_STOCK_FILE, GTK_ICON_SIZE_MENU, NULL);
-      if (pixbuf) {
+      if (pixbuf)
         default_bookmark_icon_.Get() = gfx::Image(pixbuf);
-        g_object_unref(pixbuf);
-      }
     }
     if (!default_bookmark_icon_.Get().IsEmpty())
       return default_bookmark_icon_.Get();
