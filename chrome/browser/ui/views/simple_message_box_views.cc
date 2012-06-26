@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/generated_resources.h"
@@ -25,16 +26,20 @@ namespace browser {
 
 namespace {
 
+// Multiple SimpleMessageBoxViews can show up at the same time. Each of these
+// start a nested message-loop. However, these SimpleMessageBoxViews can be
+// deleted in any order. This creates problems if a box in an inner-loop gets
+// destroyed before a box in an outer-loop. So to avoid this, ref-counting is
+// used so that the SimpleMessageBoxViews gets deleted at the right time.
 class SimpleMessageBoxViews : public views::DialogDelegate,
-                              public MessageLoop::Dispatcher {
+                              public MessageLoop::Dispatcher,
+                              public base::RefCounted<SimpleMessageBoxViews> {
  public:
   SimpleMessageBoxViews(const string16& title,
                         const string16& message,
                         MessageBoxType type);
 
   MessageBoxResult result() const { return result_; }
-
-  virtual ~SimpleMessageBoxViews();
 
   // Overridden from views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
@@ -54,6 +59,9 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
+  friend class base::RefCounted<SimpleMessageBoxViews>;
+  virtual ~SimpleMessageBoxViews();
+
   const string16 window_title_;
   const MessageBoxType type_;
   MessageBoxResult result_;
@@ -78,12 +86,7 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const string16& title,
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))),
       should_show_dialog_(true) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SimpleMessageBoxViews, private:
-
-SimpleMessageBoxViews::~SimpleMessageBoxViews() {
+  AddRef();
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
@@ -119,7 +122,7 @@ string16 SimpleMessageBoxViews::GetWindowTitle() const {
 }
 
 void SimpleMessageBoxViews::DeleteDelegate() {
-  delete this;
+  Release();
 }
 
 ui::ModalType SimpleMessageBoxViews::GetModalType() const {
@@ -148,14 +151,20 @@ bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
   return should_show_dialog_;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// SimpleMessageBoxViews, private:
+
+SimpleMessageBoxViews::~SimpleMessageBoxViews() {
+}
+
 }  // namespace
 
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
                                 const string16& message,
                                 MessageBoxType type) {
-  SimpleMessageBoxViews* dialog =
-      new SimpleMessageBoxViews(title, message, type);
+  scoped_refptr<SimpleMessageBoxViews> dialog(
+      new SimpleMessageBoxViews(title, message, type));
 
   views::Widget::CreateWindowWithParent(dialog, parent)->Show();
 

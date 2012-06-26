@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ class View;
 class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
   virtual DialogDelegate* AsDialogDelegate() OVERRIDE;
+
+  virtual ~DialogDelegate();
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: If an OK button is provided, you should provide a
