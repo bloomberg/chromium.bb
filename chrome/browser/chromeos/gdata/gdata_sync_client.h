@@ -42,7 +42,6 @@ namespace gdata {
 // edited) files to gdata. Will work on this once downloading is done.
 // crosbug.com/27836.
 //
-
 // The interface class is defined to make GDataSyncClient mockable.
 class GDataSyncClientInterface {
  public:
@@ -60,6 +59,20 @@ class GDataSyncClient
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver {
  public:
+  // Types of sync tasks.
+  enum SyncType {
+    FETCH,  // Fetch a file from the gdata server.
+    UPLOAD,  // Upload a file to the gdata server.
+  };
+
+  // The struct is used to queue tasks for fetching and uploding.
+  struct SyncTask {
+    SyncTask(SyncType in_sync_type, const std::string& in_resource_id);
+
+    SyncType sync_type;
+    std::string resource_id;
+  };
+
   // |profile| is used to access user preferences.
   // |file_system| is used access the
   // cache (ex. store a file to the cache when the file is downloaded).
@@ -82,39 +95,39 @@ class GDataSyncClient
   virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE;
 
   // Starts processing the pinned-but-not-filed files. Kicks off retrieval of
-  // the resource IDs of these files, and then starts the fetch loop.
+  // the resource IDs of these files, and then starts the sync loop.
   void StartProcessingPinnedButNotFetchedFiles();
 
-  // Returns the contents of |queue_|. Used only for testing.
-  const std::deque<std::string>& GetResourceIdsForTesting() const {
-    return queue_;
-  }
+  // Returns the resource IDs in |queue_| for the given sync type. Used only
+  // for testing.
+  std::vector<std::string> GetResourceIdsForTesting(SyncType sync_type) const;
 
   // Adds the resource ID to the queue. Used only for testing.
-  void AddResourceIdForTesting(const std::string& resource_id) {
-    queue_.push_back(resource_id);
+  void AddResourceIdForTesting(SyncType sync_type,
+                               const std::string& resource_id) {
+    queue_.push_back(SyncTask(sync_type, resource_id));
   }
 
-  // Starts the fetch loop if it's not running.
-  void StartFetchLoop();
+  // Starts the sync loop if it's not running.
+  void StartSyncLoop();
 
  private:
   friend class GDataSyncClientTest;
 
-  // Runs the fetch loop that fetches files in |queue_|. One file is fetched
-  // at a time, rather than in parallel. The loop ends when the queue becomes
-  // empty.
-  void DoFetchLoop();
+  // Runs the sync loop that fetches/uploads files in |queue_|. One file is
+  // fetched/uploaded at a time, rather than in parallel. The loop ends when
+  // the queue becomes empty.
+  void DoSyncLoop();
 
-  // Returns true if we should stop the fetch loop.
-  bool ShouldStopFetchLoop();
+  // Returns true if we should stop the sync loop.
+  bool ShouldStopSyncLoop();
 
   // Called when the resource IDs of pinned-but-not-fetched files are obtained.
   void OnGetResourceIdsOfPinnedButNotFetchedFiles(
       const std::vector<std::string>& resource_ids);
 
   // Called when the file for |resource_id| is fetched.
-  // Calls DoFetchLoop() to go back to the fetch loop.
+  // Calls DoSyncLoop() to go back to the sync loop.
   void OnFetchFileComplete(const std::string& resource_id,
                            base::PlatformFileError error,
                            const FilePath& local_path,
@@ -134,13 +147,13 @@ class GDataSyncClient
   GDataCache* cache_;  // Owned by GDataSystemService.
   scoped_ptr<PrefChangeRegistrar> registrar_;
 
-  // The queue of resource IDs used to fetch pinned-but-not-fetched files in
-  // the background thread. Note that this class does not use a lock to
-  // protect |queue_| as all methods touching |queue_| run on the UI thread.
-  std::deque<std::string> queue_;
+  // The queue of tasks used to fetch/upload files in the background
+  // thread. Note that this class does not use a lock to protect |queue_| as
+  // all methods touching |queue_| run on the UI thread.
+  std::deque<SyncTask> queue_;
 
-  // True if the fetch loop is running.
-  bool fetch_loop_is_running_;
+  // True if the sync loop is running.
+  bool sync_loop_is_running_;
 
   base::WeakPtrFactory<GDataSyncClient> weak_ptr_factory_;
 

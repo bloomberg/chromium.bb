@@ -194,6 +194,17 @@ class GDataSyncClientTest : public testing::Test {
             REGULAR_FILE));
   }
 
+  // Returns the resource IDs in the queue to be fetched.
+  std::vector<std::string> GetResourceIdsToBeFetched() {
+    return sync_client_->GetResourceIdsForTesting(
+        GDataSyncClient::FETCH);
+  }
+
+  // Adds a resource ID of a file to fetch.
+  void AddResourceIdToFetch(const std::string& resource_id) {
+    sync_client_->AddResourceIdForTesting(GDataSyncClient::FETCH, resource_id);
+  }
+
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -210,7 +221,7 @@ class GDataSyncClientTest : public testing::Test {
 
 TEST_F(GDataSyncClientTest, StartInitialScan) {
   SetUpTestFiles();
-  // Connect to no network, so the fetch loop won't spin.
+  // Connect to no network, so the sync loop won't spin.
   ConnectToNone();
 
   // Kick off the cache initialization and wait until it's done. This will
@@ -225,8 +236,8 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   message_loop_.RunAllPending();
 
   // Check the contents of the queue.
-  std::deque<std::string> resource_ids =
-      sync_client_->GetResourceIdsForTesting();
+  std::vector<std::string> resource_ids =
+      GetResourceIdsToBeFetched();
   ASSERT_EQ(3U, resource_ids.size());
   // Since these are the list of file names read from the disk, the order is
   // not guaranteed, hence sort it.
@@ -237,16 +248,16 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   // resource_id_fetched is not collected in the queue.
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop) {
+TEST_F(GDataSyncClientTest, StartSyncLoop) {
   SetUpTestFiles();
   ConnectToWifi();
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will be fetched by GetFileByResourceId(), once
-  // StartFetchLoop() starts.
+  // StartSyncLoop() starts.
   EXPECT_CALL(*mock_file_system_,
               GetFileByResourceId("resource_id_not_fetched_foo", _, _))
       .WillOnce(MockGetFileByResourceId(
@@ -269,50 +280,50 @@ TEST_F(GDataSyncClientTest, StartFetchLoop) {
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
 
-  sync_client_->StartFetchLoop();
+  sync_client_->StartSyncLoop();
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop_Offline) {
+TEST_F(GDataSyncClientTest, StartSyncLoop_Offline) {
   SetUpTestFiles();
   ConnectToNone();
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will not be fetched by GetFileByResourceId(), as
   // network is not connected.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
-  sync_client_->StartFetchLoop();
+  sync_client_->StartSyncLoop();
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarDisabled) {
+TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarDisabled) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will not be fetched by GetFileByResourceId(), as
   // fetching over cellular network is disabled by default.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
-  // Then connect to cellular. This will kick off StartFetchLoop().
+  // Then connect to cellular. This will kick off StartSyncLoop().
   ConnectToCellular();
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
+TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabled) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
   // Enable fetching over cellular network.
   profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will be fetched by GetFileByResourceId(), as fetching
   // over cellular network is explicitly enabled.
@@ -320,36 +331,36 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
 
-  // Then connect to cellular. This will kick off StartFetchLoop().
+  // Then connect to cellular. This will kick off StartSyncLoop().
   ConnectToCellular();
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop_WimaxDisabled) {
+TEST_F(GDataSyncClientTest, StartSyncLoop_WimaxDisabled) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will not be fetched by GetFileByResourceId(), as
   // fetching over wimax network is disabled by default.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
-  // Then connect to wimax. This will kick off StartFetchLoop().
+  // Then connect to wimax. This will kick off StartSyncLoop().
   ConnectToWimax();
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabledWithWimax) {
+TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
   // Enable fetching over cellular network. This includes wimax.
   profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will be fetched by GetFileByResourceId(), as fetching
   // over cellular network, which includes wimax, is explicitly enabled.
@@ -357,26 +368,26 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabledWithWimax) {
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
 
-  // Then connect to wimax. This will kick off StartFetchLoop().
+  // Then connect to wimax. This will kick off StartSyncLoop().
   ConnectToWimax();
 }
 
-TEST_F(GDataSyncClientTest, StartFetchLoop_GDataDisabled) {
+TEST_F(GDataSyncClientTest, StartSyncLoop_GDataDisabled) {
   SetUpTestFiles();
   ConnectToWifi();
 
   // Disable the GData feature.
   profile_->GetPrefs()->SetBoolean(prefs::kDisableGData, true);
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
 
   // The three files will not be fetched by GetFileByResourceId(), as the
   // GData feature is disabled.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
-  sync_client_->StartFetchLoop();
+  sync_client_->StartSyncLoop();
 }
 
 TEST_F(GDataSyncClientTest, OnCachePinned) {
@@ -384,7 +395,7 @@ TEST_F(GDataSyncClientTest, OnCachePinned) {
   ConnectToWifi();
 
   // This file will be fetched by GetFileByResourceId() as OnFilePinned()
-  // will kick off the fetch loop.
+  // will kick off the sync loop.
   EXPECT_CALL(*mock_file_system_,
               GetFileByResourceId("resource_id_not_fetched_foo", _, _))
       .WillOnce(MockGetFileByResourceId(
@@ -399,28 +410,27 @@ TEST_F(GDataSyncClientTest, OnCachePinned) {
 TEST_F(GDataSyncClientTest, OnCacheUnpinned) {
   SetUpTestFiles();
 
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
-  sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
-  ASSERT_EQ(3U, sync_client_->GetResourceIdsForTesting().size());
+  AddResourceIdToFetch("resource_id_not_fetched_foo");
+  AddResourceIdToFetch("resource_id_not_fetched_bar");
+  AddResourceIdToFetch("resource_id_not_fetched_baz");
+  ASSERT_EQ(3U, GetResourceIdsToBeFetched().size());
 
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_bar", "md5");
   // "bar" should be gone.
-  std::deque<std::string> resource_ids =
-      sync_client_->GetResourceIdsForTesting();
+  std::vector<std::string> resource_ids = GetResourceIdsToBeFetched();
   ASSERT_EQ(2U, resource_ids.size());
   EXPECT_EQ("resource_id_not_fetched_foo", resource_ids[0]);
   EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
 
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_foo", "md5");
   // "foo" should be gone.
-  resource_ids = sync_client_->GetResourceIdsForTesting();
+  resource_ids = GetResourceIdsToBeFetched();
   ASSERT_EQ(1U, resource_ids.size());
   EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
 
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_baz", "md5");
   // "baz" should be gone.
-  resource_ids = sync_client_->GetResourceIdsForTesting();
+  resource_ids = GetResourceIdsToBeFetched();
   ASSERT_TRUE(resource_ids.empty());
 }
 

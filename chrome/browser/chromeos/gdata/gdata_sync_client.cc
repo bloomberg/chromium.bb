@@ -26,6 +26,12 @@ using content::BrowserThread;
 
 namespace gdata {
 
+GDataSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
+                                    const std::string& in_resource_id)
+    : sync_type(in_sync_type),
+      resource_id(in_resource_id) {
+}
+
 GDataSyncClient::GDataSyncClient(Profile* profile,
                                  GDataFileSystemInterface* file_system,
                                  GDataCache* cache)
@@ -33,7 +39,7 @@ GDataSyncClient::GDataSyncClient(Profile* profile,
       file_system_(file_system),
       cache_(cache),
       registrar_(new PrefChangeRegistrar),
-      fetch_loop_is_running_(false),
+      sync_loop_is_running_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -73,22 +79,35 @@ void GDataSyncClient::StartProcessingPinnedButNotFetchedFiles() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataSyncClient::StartFetchLoop() {
-  if (!fetch_loop_is_running_)
-    DoFetchLoop();
+std::vector<std::string> GDataSyncClient::GetResourceIdsForTesting(
+    SyncType sync_type) const {
+  std::vector<std::string> resource_ids;
+  for (size_t i = 0; i < queue_.size(); ++i) {
+    const SyncTask& sync_task = queue_[i];
+    if (sync_task.sync_type == sync_type)
+      resource_ids.push_back(sync_task.resource_id);
+  }
+  return resource_ids;
 }
 
-void GDataSyncClient::DoFetchLoop() {
+void GDataSyncClient::StartSyncLoop() {
+  if (!sync_loop_is_running_)
+    DoSyncLoop();
+}
+
+void GDataSyncClient::DoSyncLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (queue_.empty() || ShouldStopFetchLoop()) {
-    // Note that |queue_| is not cleared so the fetch loop can resume.
-    fetch_loop_is_running_ = false;
+  if (queue_.empty() || ShouldStopSyncLoop()) {
+    // Note that |queue_| is not cleared so the sync loop can resume.
+    sync_loop_is_running_ = false;
     return;
   }
-  fetch_loop_is_running_ = true;
+  sync_loop_is_running_ = true;
 
-  const std::string resource_id = queue_.front();
+  const SyncTask& sync_task = queue_.front();
+  DCHECK_EQ(FETCH, sync_task.sync_type);
+  const std::string resource_id = sync_task.resource_id;
   queue_.pop_front();
 
   DVLOG(1) << "Fetching " << resource_id;
@@ -100,7 +119,7 @@ void GDataSyncClient::DoFetchLoop() {
       GetDownloadDataCallback());
 }
 
-bool GDataSyncClient::ShouldStopFetchLoop() {
+bool GDataSyncClient::ShouldStopSyncLoop() {
   // Should stop if the gdata feature was disabled while running the fetch
   // loop.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
@@ -143,8 +162,8 @@ void GDataSyncClient::OnCachePinned(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Add it to the queue, kick off the loop.
-  queue_.push_back(resource_id);
-  StartFetchLoop();
+  queue_.push_back(SyncTask(FETCH, resource_id));
+  StartSyncLoop();
 }
 
 void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
@@ -153,10 +172,14 @@ void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
 
   // Remove the resource_id if it's in the queue. This can happen if the user
   // cancels pinning before the file is fetched.
-  std::deque<std::string>::iterator iter =
-      std::find(queue_.begin(), queue_.end(), resource_id);
-  if (iter != queue_.end())
-    queue_.erase(iter);
+  for (std::deque<SyncTask>::iterator iter = queue_.begin();
+       iter != queue_.end(); ++iter) {
+    const SyncTask& sync_task = *iter;
+    if (sync_task.sync_type == FETCH && sync_task.resource_id == resource_id) {
+      queue_.erase(iter);
+      break;
+    }
+  }
 }
 
 void GDataSyncClient::OnCacheCommitted(const std::string& resource_id) {
@@ -173,10 +196,10 @@ void GDataSyncClient::OnGetResourceIdsOfPinnedButNotFetchedFiles(
   for (size_t i = 0; i < resource_ids.size(); ++i) {
     const std::string& resource_id = resource_ids[i];
     DVLOG(1) << "Queuing " << resource_id;
-    queue_.push_back(resource_id);
+    queue_.push_back(SyncTask(FETCH, resource_id));
   }
 
-  StartFetchLoop();
+  StartSyncLoop();
 }
 
 void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
@@ -194,19 +217,19 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
   }
 
   // Continue the loop.
-  DoFetchLoop();
+  DoSyncLoop();
 }
 
 void GDataSyncClient::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* network_library) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Resume the fetch loop if the network is back online. Note that we don't
+  // Resume the sync loop if the network is back online. Note that we don't
   // need to check the type of the network as it will be checked in
-  // ShouldStopFetchLoop() as soon as the loop is resumed.
+  // ShouldStopSyncLoop() as soon as the loop is resumed.
   const chromeos::Network* active_network = network_library->active_network();
   if (active_network && active_network->online())
-    StartFetchLoop();
+    StartSyncLoop();
 }
 
 void GDataSyncClient::Observe(int type,
@@ -214,10 +237,10 @@ void GDataSyncClient::Observe(int type,
                               const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Resume the fetch loop if gdata preferences are changed. Note that we
+  // Resume the sync loop if gdata preferences are changed. Note that we
   // don't need to check the new values here as these will be checked in
-  // ShouldStopFetchLoop() as soon as the loop is resumed.
-  StartFetchLoop();
+  // ShouldStopSyncLoop() as soon as the loop is resumed.
+  StartSyncLoop();
 }
 
 }  // namespace gdata
