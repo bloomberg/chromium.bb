@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -426,8 +425,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // Load the new tab page appropriate for this build
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
-                             IDR_NEW_TAB_SEARCH_HTML : IDR_NEW_TAB_4_HTML,
+      GetRawDataResource(IDR_NEW_TAB_4_HTML,
                          ui::SCALE_FACTOR_NONE));
   jstemplate_builder::UseVersion2 version2;
   std::string full_html =
@@ -554,9 +552,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
-              IDR_NEW_TAB_SEARCH_THEME_CSS : IDR_NEW_TAB_4_THEME_CSS,
-          ui::SCALE_FACTOR_NONE));
+          IDR_NEW_TAB_4_THEME_CSS, ui::SCALE_FACTOR_NONE));
 
   // Create the string from our template and the replacements.
   std::string css_string;
