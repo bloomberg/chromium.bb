@@ -288,6 +288,9 @@ class GDataFileSystemInterface {
   // uploading an updated version. Used for uploading dirty files. The file
   // should already be present in the cache.
   //
+  // TODO(satorux): As of now, the function only handles files with the dirty
+  // bit committed. We should eliminate the restriction. crbug.com/134558.
+  //
   // Can be called from UI/IO thread. |callback| and is run on the calling
   // thread.
   virtual void UpdateFileByResourceId(
@@ -353,11 +356,18 @@ class GDataFileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
-  // Creates a new file from |entry| under |virtual_dir_path|. Stored its
-  // content from |file_content_path| into the cache.
+  // Adds a file entry from |entry| under |virtual_dir_path|, and modifies
+  // the cache state.
+  //
+  // When uploading a new file, adds a new file entry, and store its content
+  // from |file_content_path| into the cache.
+  //
+  // When uploading an existing file, replaces the file entry with a new one,
+  // and clears the dirty bit in the cache.
   //
   // |callback| will be called on the UI thread upon completion of operation.
-  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
+  virtual void AddUploadedFile(UploadMode upload_mode,
+                               const FilePath& virtual_dir_path,
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
                                GDataCache::FileOperationType cache_operation,
@@ -440,7 +450,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
+  virtual void AddUploadedFile(UploadMode upload_mode,
+                               const FilePath& virtual_dir_path,
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
                                GDataCache::FileOperationType cache_operation,
@@ -1151,7 +1162,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const std::string& md5,
                                const GetCacheStateCallback& callback);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
-  void AddUploadedFileOnUIThread(const FilePath& virtual_dir_path,
+  void AddUploadedFileOnUIThread(UploadMode upload_mode,
+                                 const FilePath& virtual_dir_path,
                                  DocumentEntry* entry,
                                  const FilePath& file_content_path,
                                  GDataCache::FileOperationType cache_operation,

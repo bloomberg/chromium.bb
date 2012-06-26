@@ -3396,7 +3396,8 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
           GDataCache::CACHE_TYPE_PINNED);
 
   // First store a file to cache. A cache file will be created at:
-  const FilePath cache_file_path =
+  // GCache/v1/persistent/<kResourceId>.<kMd5>
+  const FilePath original_cache_file_path =
       GDataCache::GetCacheRootPath(profile_.get())
       .AppendASCII("persistent")
       .AppendASCII(kResourceId + "." + kMd5);
@@ -3407,7 +3408,41 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                    GDataCache::CACHE_STATE_PRESENT |
                    GDataCache::CACHE_STATE_PINNED,
                    GDataCache::CACHE_TYPE_PERSISTENT);
-  ASSERT_TRUE(file_util::PathExists(cache_file_path));
+  ASSERT_TRUE(file_util::PathExists(original_cache_file_path));
+
+  // Add the dirty bit. The cache file will be renamed to
+  // GCache/v1/persistent/<kResourceId>.local
+  TestMarkDirty(kResourceId,
+                kMd5,
+                base::PLATFORM_FILE_OK,
+                GDataCache::CACHE_STATE_PRESENT |
+                GDataCache::CACHE_STATE_PINNED |
+                GDataCache::CACHE_STATE_DIRTY,
+                GDataCache::CACHE_TYPE_PERSISTENT);
+  const FilePath dirty_cache_file_path =
+      GDataCache::GetCacheRootPath(profile_.get())
+      .AppendASCII("persistent")
+      .AppendASCII(kResourceId + ".local");
+  ASSERT_FALSE(file_util::PathExists(original_cache_file_path));
+  ASSERT_TRUE(file_util::PathExists(dirty_cache_file_path));
+
+  // Commit the dirty bit. The cache file name remains the same
+  // but a symlink will be created at:
+  // GCache/v1/outgoing/<kResourceId>
+  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(kResourceId)).Times(1);
+  TestCommitDirty(kResourceId,
+                  kMd5,
+                  base::PLATFORM_FILE_OK,
+                  GDataCache::CACHE_STATE_PRESENT |
+                  GDataCache::CACHE_STATE_PINNED |
+                  GDataCache::CACHE_STATE_DIRTY,
+                  GDataCache::CACHE_TYPE_PERSISTENT);
+  const FilePath outgoing_symlink_path =
+      GDataCache::GetCacheRootPath(profile_.get())
+      .AppendASCII("outgoing")
+      .AppendASCII(kResourceId);
+  ASSERT_TRUE(file_util::PathExists(dirty_cache_file_path));
+  ASSERT_TRUE(file_util::PathExists(outgoing_symlink_path));
 
   // Create a DocumentEntry, which is needed to mock
   // GDataUploaderInterface::UploadExistingFile().
@@ -3436,14 +3471,14 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_CALL(*mock_uploader_, UploadExistingFile(
       GURL("https://file_link_resumable_edit_media/"),
       kFilePath,
-      cache_file_path,
+      dirty_cache_file_path,
       892721,  // The size is written in the root_feed.json.
       "audio/mpeg",
       _))  // callback
       .WillOnce(MockUploadExistingFile(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("drive/File1"),
-          cache_file_path,
+          dirty_cache_file_path,
           document_entry));
 
   // We'll notify the directory change to the observer upon completion.
@@ -3473,6 +3508,9 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // existing file, rather than adding a new file. The number of files
   // increases if we don't handle the file update right).
   EXPECT_EQ(num_files_in_root, root_directory->child_files().size());
+  // After the file is updated, the dirty bit is cleared, hence the symlink
+  // should be gone.
+  ASSERT_FALSE(file_util::PathExists(outgoing_symlink_path));
 }
 
 TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {

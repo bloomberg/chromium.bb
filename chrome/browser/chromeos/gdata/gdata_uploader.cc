@@ -429,6 +429,7 @@ void GDataUploader::MoveFileToCache(UploadFileInfo* upload_file_info) {
 
   DVLOG(1) << "MoveFileToCache " << upload_file_info->file_path.value();
   file_system_->AddUploadedFile(
+      UPLOAD_NEW_FILE,
       upload_file_info->gdata_path.DirName(),
       upload_file_info->entry.get(),
       upload_file_info->file_path,

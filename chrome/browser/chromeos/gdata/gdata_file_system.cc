@@ -231,8 +231,8 @@ void RunFileOperationCallbackHelper(
     callback.Run(*error);
 }
 
-// Callback for StoreToCache invoked by AddUploadedFileOnUIThread.
-void OnStoreToCacheForAddUploadedFile(
+// Callback for cache file operations invoked by AddUploadedFileOnUIThread.
+void OnCacheUpdatedForAddUploadedFile(
     const base::Closure& callback,
     base::PlatformFileError /* error */,
     const std::string& /* resource_id */,
@@ -1168,7 +1168,8 @@ void GDataFileSystem::OnTransferCompleted(
     // argument evaluation, base::Passed() may invalidate the scoped pointer
     // |upload_file_info| before it can be dereferenced to access its members.
     const UploadFileInfo* upload_file_info_ptr = upload_file_info.get();
-    AddUploadedFile(upload_file_info_ptr->gdata_path.DirName(),
+    AddUploadedFile(UPLOAD_NEW_FILE,
+                    upload_file_info_ptr->gdata_path.DirName(),
                     upload_file_info_ptr->entry.get(),
                     upload_file_info_ptr->file_path,
                     GDataCache::FILE_OPERATION_COPY,
@@ -2246,6 +2247,14 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
   }
   GDataFile* file = entry->AsGDataFile();
 
+  // TODO(satorux): Uploading of empty files are currently not supported.
+  // crbug.com/134552
+  if (file->file_info().size == 0) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_FAILED);
+    return;
+  }
+
   uploader_->UploadExistingFile(
       file->upload_url(),
       file->GetFilePath(),
@@ -2272,7 +2281,8 @@ void GDataFileSystem::OnUpdatedFileUploaded(
 
   // See comments in OnTransferCompleted() for why we copy this pointer.
   const UploadFileInfo* upload_file_info_ptr = upload_file_info.get();
-  AddUploadedFile(upload_file_info_ptr->gdata_path.DirName(),
+  AddUploadedFile(UPLOAD_EXISTING_FILE,
+                  upload_file_info_ptr->gdata_path.DirName(),
                   upload_file_info_ptr->entry.get(),
                   upload_file_info_ptr->file_path,
                   GDataCache::FILE_OPERATION_MOVE,
@@ -3430,6 +3440,7 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
 }
 
 void GDataFileSystem::AddUploadedFile(
+    UploadMode upload_mode,
     const FilePath& virtual_dir_path,
     DocumentEntry* entry,
     const FilePath& file_content_path,
@@ -3443,6 +3454,7 @@ void GDataFileSystem::AddUploadedFile(
       FROM_HERE,
       base::Bind(&GDataFileSystem::AddUploadedFileOnUIThread,
                  ui_weak_ptr_,
+                 upload_mode,
                  virtual_dir_path,
                  entry,
                  file_content_path,
@@ -3451,6 +3463,7 @@ void GDataFileSystem::AddUploadedFile(
 }
 
 void GDataFileSystem::AddUploadedFileOnUIThread(
+    UploadMode upload_mode,
     const FilePath& virtual_dir_path,
     DocumentEntry* entry,
     const FilePath& file_content_path,
@@ -3484,14 +3497,18 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
     return;
   }
 
-  // Remove an existing entry if present. This is needed when uploading a
-  // file to update an existing file, rather than adding a new file.
-  GDataEntry* existing_entry = root_->GetEntryByResourceId(
-      new_entry->resource_id());
-  if (existing_entry &&
-      // This should always match, but just in case.
-      existing_entry->parent() == parent_dir) {
-    parent_dir->RemoveEntry(existing_entry);
+  if (upload_mode == UPLOAD_EXISTING_FILE) {
+    // Remove an existing entry, which should be present.
+    GDataEntry* existing_entry = root_->GetEntryByResourceId(
+        new_entry->resource_id());
+    if (existing_entry &&
+        // This should always match, but just in case.
+        existing_entry->parent() == parent_dir) {
+      parent_dir->RemoveEntry(existing_entry);
+    } else {
+      LOG(ERROR) << "Entry for the existing file not found: "
+                 << new_entry->resource_id();
+    }
   }
 
   GDataFile* file = new_entry->AsGDataFile();
@@ -3502,9 +3519,23 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
 
   NotifyDirectoryChanged(virtual_dir_path);
 
-  cache_->StoreOnUIThread(resource_id, md5, file_content_path, cache_operation,
-                          base::Bind(&OnStoreToCacheForAddUploadedFile,
-                                     callback));
+  if (upload_mode == UPLOAD_NEW_FILE) {
+    // Add the file to the cache if we have uploaded a new file.
+    cache_->StoreOnUIThread(resource_id,
+                            md5,
+                            file_content_path,
+                            cache_operation,
+                            base::Bind(&OnCacheUpdatedForAddUploadedFile,
+                                       callback));
+  } else if (upload_mode == UPLOAD_EXISTING_FILE) {
+    // Clear the dirty bit if we have updated an existing file.
+    cache_->ClearDirtyOnUIThread(resource_id,
+                                 md5,
+                                 base::Bind(&OnCacheUpdatedForAddUploadedFile,
+                                            callback));
+  } else {
+    NOTREACHED() << "Unexpected upload mode: " << upload_mode;
+  }
 }
 
 void GDataFileSystem::Observe(int type,
