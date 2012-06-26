@@ -26,6 +26,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
@@ -139,13 +140,26 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
+
   // These two resources should be loaded only if suggestions NTP is enabled.
-  html_source->AddResource("suggestions_page.css", "text/css",
-      NewTabUI::IsSuggestionsPageEnabled() ? IDR_SUGGESTIONS_PAGE_CSS : 0);
-  if (NewTabUI::IsSuggestionsPageEnabled()) {
-    html_source->AddResource("suggestions_page.js", "application/javascript",
-        IDR_SUGGESTIONS_PAGE_JS);
+  const bool kSuggestEnabled = NewTabUI::IsSuggestionsPageEnabled();
+  const bool kInstantEnabled =
+      chrome::search::IsInstantExtendedAPIEnabled(GetProfile());
+  html_source->AddResource("suggestions_page.css",
+                           "text/css",
+                           kSuggestEnabled ?
+                               kInstantEnabled ?
+                                   IDR_SUGGESTIONS_PAGE_SEARCH_CSS :
+                                   IDR_SUGGESTIONS_PAGE_CSS :
+                               0);
+  if (kSuggestEnabled) {
+    html_source->AddResource("suggestions_page.js",
+                             "application/javascript",
+                             kInstantEnabled ?
+                                 IDR_SUGGESTIONS_PAGE_SEARCH_JS :
+                                 IDR_SUGGESTIONS_PAGE_JS);
   }
+
   // ChromeURLDataManager assumes the ownership of the html_source and in some
   // tests immediately deletes it, so html_source should not be accessed after
   // this call.

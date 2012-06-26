@@ -89,6 +89,8 @@
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_SEARCH_HTML" file="resources\ntp_search\new_tab.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_SEARCH_THEME_CSS" file="resources\ntp_search\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
@@ -138,6 +140,8 @@
       <include name="IDR_SUGGESTIONS_INTERNALS_JS" file="resources\suggestions_internals\suggestions_internals.js" type="BINDATA" />
       <include name="IDR_SUGGESTIONS_PAGE_CSS" file="resources\ntp4\suggestions_page.css" type="BINDATA" />
       <include name="IDR_SUGGESTIONS_PAGE_JS" file="resources\ntp4\suggestions_page.js" type="BINDATA" />
+      <include name="IDR_SUGGESTIONS_PAGE_SEARCH_CSS" file="resources\ntp_search\suggestions_page.css" type="BINDATA" />
+      <include name="IDR_SUGGESTIONS_PAGE_SEARCH_JS" file="resources\ntp_search\suggestions_page.js" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRACING_HTML" file="..\..\third_party\trace-viewer\src\about_tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
