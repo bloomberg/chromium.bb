@@ -1191,43 +1191,6 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_TRUE(delegate->scroll_end());
 }
 
-// Check that unprocessed gesture events generate appropriate synthetic mouse
-// events.
-TEST_F(GestureRecognizerTest, GestureTapSyntheticMouse) {
-  scoped_ptr<GestureEventSynthDelegate> delegate(
-      new GestureEventSynthDelegate());
-  scoped_ptr<Window> window(CreateTestWindowWithDelegate(delegate.get(), -1234,
-        gfx::Rect(0, 0, 123, 45), NULL));
-
-  const int kTouchId = 4;
-
-  // This press is required for the GestureRecognizer to associate a target
-  // with kTouchId
-  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
-                   kTouchId, GetTime());
-  root_window()->DispatchTouchEvent(&press);
-
-  delegate->Reset();
-  GestureEvent tap(ui::ET_GESTURE_TAP, 20, 20, 0,
-      base::Time::Now(), 0, 6, 1 << kTouchId);
-  root_window()->DispatchGestureEvent(&tap);
-  EXPECT_TRUE(delegate->mouse_enter());
-  EXPECT_TRUE(delegate->mouse_press());
-  EXPECT_TRUE(delegate->mouse_release());
-  EXPECT_FALSE(delegate->mouse_exit());
-  EXPECT_FALSE(delegate->double_click());
-
-  delegate->Reset();
-  GestureEvent tap2(ui::ET_GESTURE_DOUBLE_TAP, 20, 20, 0,
-      base::Time::Now(), 0, 0, 1 << kTouchId);
-  root_window()->DispatchGestureEvent(&tap2);
-  EXPECT_FALSE(delegate->mouse_enter());
-  EXPECT_TRUE(delegate->mouse_press());
-  EXPECT_TRUE(delegate->mouse_release());
-  EXPECT_FALSE(delegate->mouse_exit());
-  EXPECT_TRUE(delegate->double_click());
-}
-
 TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   scoped_ptr<QueueTouchEventDelegate> queued_delegate(
       new QueueTouchEventDelegate(root_window()));

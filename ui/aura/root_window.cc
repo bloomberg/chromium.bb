@@ -41,19 +41,6 @@ namespace aura {
 
 namespace {
 
-// These are the mouse events generated when a gesture goes unprocessed.
-const ui::EventType kScrollBeginTypes[] = {
-  ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_DRAGGED, ui::ET_UNKNOWN };
-
-const ui::EventType kScrollEndTypes[] = {
-  ui::ET_MOUSE_DRAGGED, ui::ET_MOUSE_RELEASED, ui::ET_UNKNOWN };
-
-const ui::EventType kScrollUpdateTypes[] = {
-  ui::ET_MOUSE_DRAGGED, ui::ET_UNKNOWN };
-
-const ui::EventType kTapTypes[] = {
-  ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_RELEASED, ui::ET_UNKNOWN };
-
 const int kCompositorLockTimeoutMs = 67;
 
 // Returns true if |target| has a non-client (frame) component at |location|,
@@ -780,67 +767,6 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
 
   if (target->delegate())
     status = target->delegate()->OnGestureEvent(event);
-  if (status == ui::GESTURE_STATUS_UNKNOWN &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAuraDisableMouseEventsFromTouch)) {
-    // The gesture was unprocessed. Generate corresponding mouse events here
-    // (e.g. tap to click).
-    const ui::EventType* types = NULL;
-    bool generate_move = false;
-    switch (event->type()) {
-      case ui::ET_GESTURE_TAP:
-      case ui::ET_GESTURE_DOUBLE_TAP:  // Double click is special cased below.
-        generate_move = true;
-        types = kTapTypes;
-        break;
-
-      case ui::ET_GESTURE_SCROLL_BEGIN:
-        generate_move = true;
-        types = kScrollBeginTypes;
-        break;
-
-      case ui::ET_GESTURE_SCROLL_UPDATE:
-        types = kScrollUpdateTypes;
-        break;
-
-      case ui::ET_GESTURE_SCROLL_END:
-        types = kScrollEndTypes;
-        break;
-
-      default:
-        break;
-    }
-    if (types) {
-      gfx::Point point_in_root(event->location());
-      Window::ConvertPointToWindow(target, this, &point_in_root);
-      // Move the mouse to the new location.
-      if (generate_move && point_in_root != last_mouse_location_) {
-        MouseEvent synth(ui::ET_MOUSE_MOVED, point_in_root,
-                         event->root_location(),
-                         event->flags() | ui::EF_IS_SYNTHESIZED |
-                         ui::EF_FROM_TOUCH);
-        if (DispatchMouseEventToTarget(&synth, target))
-          status = ui::GESTURE_STATUS_SYNTH_MOUSE;
-      }
-      for (const ui::EventType* type = types; *type != ui::ET_UNKNOWN;
-           ++type) {
-        int flags = event->flags() | ui::EF_IS_SYNTHESIZED | ui::EF_FROM_TOUCH;
-        if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
-            *type == ui::ET_MOUSE_PRESSED)
-          flags |= ui::EF_IS_DOUBLE_CLICK;
-
-        // It is necessary to set this explicitly when using XI2.2. When using
-        // XI < 2.2, this is always set anyway.
-        flags |= ui::EF_LEFT_MOUSE_BUTTON;
-
-        // DispatchMouseEventToTarget() expects coordinates in root, it'll
-        // convert back to |target|.
-        MouseEvent synth(*type, point_in_root, event->root_location(), flags);
-        if (DispatchMouseEventToTarget(&synth, target))
-          status = ui::GESTURE_STATUS_SYNTH_MOUSE;
-      }
-    }
-  }
 
   return status;
 }

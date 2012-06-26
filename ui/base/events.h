@@ -124,9 +124,6 @@ enum GestureStatus {
                                // indicate that the Gesture event was not
                                // handled.
   GESTURE_STATUS_CONSUMED,     // The Gesture event got consumed.
-  GESTURE_STATUS_SYNTH_MOUSE   // The Gesture event was not processed, but a
-                               // synthetic mouse event generated from the
-                               // unused Gesture event was handled.
 };
 
 // Get the EventType from a native event.

@@ -223,8 +223,6 @@ class GestureTrackingView : public views::View {
 // Verifies a capture isn't set on touch press and that the view that gets
 // the press gets the release.
 TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAuraDisableMouseEventsFromTouch);
   // Create two views (both sized the same). |child| is configured not to
   // consume the gesture event.
   GestureTrackingView* view = new GestureTrackingView();
@@ -266,8 +264,6 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 }
 
 TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAuraDisableMouseEventsFromTouch);
   GestureTrackingView* view = new GestureTrackingView();
   scoped_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
