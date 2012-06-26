@@ -171,10 +171,8 @@ def process_input(filepath, prevdict, level, read_only):
       out['sha-1'] = prevdict['sha-1']
 
   if level >= WITH_HASH and not out.get('sha-1'):
-    h = hashlib.sha1()
     with open(filepath, 'rb') as f:
-      h.update(f.read())
-    out['sha-1'] = h.hexdigest()
+      out['sha-1'] = hashlib.sha1(f.read()).hexdigest()
   return out
 
 
@@ -563,6 +561,16 @@ def CMDhashtable(args):
         outfile, infile, run_test_from_archive.HARDLINK)
 
   complete_state.save_files()
+
+  # Also archive the .result file.
+  with open(complete_state.result_file, 'rb') as f:
+    result_hash = hashlib.sha1(f.read()).hexdigest()
+  logging.info(
+      '%s -> %s' % (os.path.basename(complete_state.result_file), result_hash))
+  run_test_from_archive.link_file(
+      os.path.join(options.outdir, result_hash),
+      complete_state.result_file,
+      run_test_from_archive.HARDLINK)
   return 0
 
 

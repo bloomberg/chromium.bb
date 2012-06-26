@@ -354,6 +354,7 @@ class Isolate_hashtable(IsolateModeBase):
   def _expected_hash_tree(self):
     """Verifies the files written in the temporary directory."""
     expected = [v['sha-1'] for v in self._gen_files(False).itervalues()]
+    expected.append(calc_sha1(self.result))
     self.assertEquals(sorted(expected), self._result_tree())
 
   def test_fail(self):
@@ -680,6 +681,7 @@ class IsolateNoOutdir(IsolateBase):
           'hashtable',
           calc_sha1(
               os.path.join(ROOT_DIR, 'data', 'isolate', 'touch_root.py'))),
+      os.path.join('hashtable', calc_sha1(os.path.join(self.result))),
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
       os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
