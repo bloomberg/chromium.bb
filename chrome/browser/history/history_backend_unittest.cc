@@ -1551,4 +1551,25 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   EXPECT_EQ(0, s1.ColumnInt(0));
 }
 
+TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
+    ASSERT_TRUE(backend_.get());
+
+    GURL url("http://www.google.com");
+    string16 title(UTF8ToUTF16("Bookmark title"));
+    backend_->AddPageNoVisitForBookmark(url, title);
+
+    URLRow row;
+    backend_->GetURL(url, &row);
+    EXPECT_EQ(url, row.url());
+    EXPECT_EQ(title, row.title());
+    EXPECT_EQ(0, row.visit_count());
+
+    backend_->DeleteURL(url);
+    backend_->AddPageNoVisitForBookmark(url, string16());
+    backend_->GetURL(url, &row);
+    EXPECT_EQ(url, row.url());
+    EXPECT_EQ(UTF8ToUTF16(url.spec()), row.title());
+    EXPECT_EQ(0, row.visit_count());
+}
+
 }  // namespace history

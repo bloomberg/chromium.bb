@@ -139,7 +139,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void AddPage(scoped_refptr<HistoryAddPageArgs> request);
   virtual void SetPageTitle(const GURL& url, const string16& title);
-  void AddPageNoVisitForBookmark(const GURL& url);
+  void AddPageNoVisitForBookmark(const GURL& url, const string16& title);
 
   // Updates the database backend with a page's ending time stamp information.
   // The page can be identified by the combination of the pointer to

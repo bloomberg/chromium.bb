@@ -220,7 +220,7 @@ class HistoryService : public CancelableRequestProvider,
   // Adds an entry for the specified url without creating a visit. This should
   // only be used when bookmarking a page, otherwise the row leaks in the
   // history db (it never gets cleaned).
-  void AddPageNoVisitForBookmark(const GURL& url);
+  void AddPageNoVisitForBookmark(const GURL& url, const string16& title);
 
   // Sets the title for the given page. The page should be in history. If it
   // is not, this operation is ignored. This call will not update the full

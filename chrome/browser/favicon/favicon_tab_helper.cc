@@ -97,7 +97,7 @@ void FaviconTabHelper::SaveFavicon() {
       GetOriginalProfile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   if (!history)
     return;
-  history->AddPageNoVisitForBookmark(entry->GetURL());
+  history->AddPageNoVisitForBookmark(entry->GetURL(), entry->GetTitle());
 
   FaviconService* service = profile_->
       GetOriginalProfile()->GetFaviconService(Profile::IMPLICIT_ACCESS);

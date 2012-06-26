@@ -403,12 +403,13 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
                         add_page_args.Clone()));
 }
 
-void HistoryService::AddPageNoVisitForBookmark(const GURL& url) {
+void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
+                                               const string16& title) {
   if (!CanAddURL(url))
     return;
 
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::AddPageNoVisitForBookmark, url);
+                    &HistoryBackend::AddPageNoVisitForBookmark, url, title);
 }
 
 void HistoryService::SetPageTitle(const GURL& url,
