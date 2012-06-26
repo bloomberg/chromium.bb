@@ -576,12 +576,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     bool use_new_window = disposition == NEW_WINDOW;
 
-    // The browser should not be specified; the browser to use is
-    // dictated by the WindowOpenDisposition.
-    DCHECK(browser_ == NULL);
-    Browser* browser = use_new_window ?
-        Browser::Create(profile_) :
-        browser::FindLastActiveWithProfile(profile_);
+    Browser* browser = use_new_window ? Browser::Create(profile_) : browser_;
 
     RecordAppLaunchForTab(browser, tab, selected_index);
 
@@ -1077,12 +1072,13 @@ void SessionRestore::RestoreForeignSessionWindows(
 
 // static
 void SessionRestore::RestoreForeignSessionTab(
-    Profile* profile,
+    content::WebContents* source_web_contents,
     const SessionTab& tab,
     WindowOpenDisposition disposition) {
+  Browser* browser = browser::FindBrowserWithWebContents(source_web_contents);
+  Profile* profile = browser->profile();
   std::vector<GURL> gurls;
-  SessionRestoreImpl restorer(profile,
-      static_cast<Browser*>(NULL), true, false, false, gurls);
+  SessionRestoreImpl restorer(profile, browser, true, false, false, gurls);
   restorer.RestoreForeignTab(tab, disposition);
 }
 

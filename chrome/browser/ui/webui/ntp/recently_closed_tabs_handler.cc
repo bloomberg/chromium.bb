@@ -92,9 +92,8 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   session_tab.current_navigation_index = tab_entry->current_navigation_index;
   session_tab.navigations = tab_entry->navigations;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  SessionRestore::RestoreForeignSessionTab(profile, session_tab,
-                                           NEW_FOREGROUND_TAB);
+  SessionRestore::RestoreForeignSessionTab(web_ui()->GetWebContents(),
+                                           session_tab, NEW_FOREGROUND_TAB);
 #else
   TabRestoreServiceDelegate* delegate =
       TabRestoreServiceDelegate::FindDelegateForWebContents(

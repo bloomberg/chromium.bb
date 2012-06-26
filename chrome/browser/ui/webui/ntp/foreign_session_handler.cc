@@ -230,7 +230,6 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
   if (!associator)
     return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
   if (tab_id != kInvalidId) {
     // We don't actually care about |window_num|, this is just a sanity check.
     DCHECK_LT(kInvalidId, window_num);
@@ -241,7 +240,8 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
     }
     WindowOpenDisposition disposition =
         web_ui_util::GetDispositionFromClick(args, 3);
-    SessionRestore::RestoreForeignSessionTab(profile, *tab, disposition);
+    SessionRestore::RestoreForeignSessionTab(
+        web_ui()->GetWebContents(), *tab, disposition);
   } else {
     std::vector<const SessionWindow*> windows;
     // Note: we don't own the ForeignSessions themselves.
@@ -256,7 +256,8 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
         ((window_num == kInvalidId) ?
         std::vector<const SessionWindow*>::const_iterator(windows.end()) :
         iter_begin + 1);
-    SessionRestore::RestoreForeignSessionWindows(profile, iter_begin, iter_end);
+    SessionRestore::RestoreForeignSessionWindows(
+        Profile::FromWebUI(web_ui()), iter_begin, iter_end);
   }
 }
 
@@ -330,7 +331,7 @@ bool ForeignSessionHandler::SessionWindowToValue(
       modification_time = std::max(modification_time,
                                    window.tabs[i]->timestamp);
       tab_values->Append(tab_value.release());
-    }
+  }
   }
   if (tab_values->GetSize() == 0)
     return false;

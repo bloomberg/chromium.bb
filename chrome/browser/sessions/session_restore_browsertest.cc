@@ -372,8 +372,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
 #endif  // !OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
-  Profile* profile = browser()->profile();
-
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
   TabNavigation nav1(0, url1, content::Referrer(), ASCIIToUTF16("one"),
@@ -396,7 +394,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    SessionRestore::RestoreForeignSessionTab(profile, tab, CURRENT_TAB);
+    SessionRestore::RestoreForeignSessionTab(
+        browser()->GetActiveWebContents(), tab, CURRENT_TAB);
     observer.Wait();
   }
   ASSERT_EQ(1, browser()->tab_count());
@@ -408,7 +407,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    SessionRestore::RestoreForeignSessionTab(profile, tab, NEW_BACKGROUND_TAB);
+    SessionRestore::RestoreForeignSessionTab(
+        browser()->GetActiveWebContents(), tab, NEW_BACKGROUND_TAB);
     observer.Wait();
   }
   ASSERT_EQ(2, browser()->tab_count());
@@ -418,7 +418,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
 
   // Restore in a new window.
   ui_test_utils::BrowserAddedObserver browser_observer;
-  SessionRestore::RestoreForeignSessionTab(profile, tab, NEW_WINDOW);
+  SessionRestore::RestoreForeignSessionTab(
+      browser()->GetActiveWebContents(), tab, NEW_WINDOW);
   Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
 
   ASSERT_EQ(1, new_browser->tab_count());
