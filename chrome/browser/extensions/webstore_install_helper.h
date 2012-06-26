@@ -59,6 +59,9 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
         const std::string& id,
         InstallHelperResultCode result_code,
         const std::string& error_message) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Only one of |icon_data| (based64-encoded icon data) or |icon_url| can be

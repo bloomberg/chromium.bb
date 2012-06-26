@@ -49,8 +49,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // been closed but not yet destroyed are excluded).
   static void ForEach(RenderViewVisitor* visitor);
 
-  virtual ~RenderView() {}
-
   // Get the routing ID of the view.
   virtual int GetRoutingID() const = 0;
 
@@ -128,6 +126,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy) = 0;
+
+ protected:
+  virtual ~RenderView() {}
 };
 
 }  // namespace content

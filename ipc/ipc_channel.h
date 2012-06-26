@@ -50,7 +50,7 @@ class IPC_EXPORT Channel : public Sender {
   // IPC::Listener used to be IPC::Channel::Listener which prevented forward
   // declarations. To keep existing code compiling, we provide this
   // backwards-compatible definition. New code should use IPC::Listener.
-  // TODO(brettw) converto users of this and delete.
+  // TODO(brettw) convert users of this and delete.
   typedef IPC::Listener Listener;
 
   // Flags to test modes

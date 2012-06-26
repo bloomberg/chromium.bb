@@ -51,6 +51,9 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
     virtual void OnBundleInstallApproved() {}
     virtual void OnBundleInstallCanceled(bool user_initiated) {}
     virtual void OnBundleInstallCompleted() {}
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Represents an individual member of the bundle.

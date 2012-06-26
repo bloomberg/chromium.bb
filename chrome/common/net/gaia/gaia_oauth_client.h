@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,6 @@ class GaiaOAuthClient {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() { }
-
     // Invoked on a successful response to the GetTokensFromAuthCode request.
     virtual void OnGetTokensResponse(const std::string& refresh_token,
                                      const std::string& access_token,
@@ -45,6 +43,9 @@ class GaiaOAuthClient {
     // response. This is invoked when the maximum number of retries have been
     // exhausted. If max_retries is -1, this is never invoked.
     virtual void OnNetworkError(int response_code) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
   GaiaOAuthClient(const std::string& gaia_url,
                   net::URLRequestContextGetter* context_getter);

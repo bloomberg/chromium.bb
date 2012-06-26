@@ -41,7 +41,6 @@ class CloudPrintURLFetcher
 
   class Delegate {
    public:
-    virtual ~Delegate() { }
     // Override this to handle the raw response as it is available. No response
     // error checking is done before this method is called. If the delegate
     // returns CONTINUE_PROCESSING, we will then check for network
@@ -90,6 +89,9 @@ class CloudPrintURLFetcher
     // Authentication information may change between retries.
     // CloudPrintURLFetcher will request auth info before sending any request.
     virtual std::string GetAuthHeader() = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
   CloudPrintURLFetcher();
 

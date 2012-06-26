@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,11 @@ class GoogleServiceAuthError;
 // OAuth2AccessTokenFetcher can return results.
 class OAuth2AccessTokenConsumer {
  public:
-  virtual ~OAuth2AccessTokenConsumer() {}
-
   virtual void OnGetTokenSuccess(const std::string& access_token) {}
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) {}
+
+ protected:
+  virtual ~OAuth2AccessTokenConsumer() {}
 };
 
 #endif  // CHROME_COMMON_NET_GAIA_OAUTH2_ACCESS_TOKEN_CONSUMER_H_

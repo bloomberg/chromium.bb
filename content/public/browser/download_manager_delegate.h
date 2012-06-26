@@ -36,8 +36,6 @@ typedef base::Callback<void(const FilePath&,
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {
  public:
-  virtual ~DownloadManagerDelegate();
-
   // Lets the delegate know that the download manager is shutting down.
   virtual void Shutdown() {}
 
@@ -133,6 +131,9 @@ class CONTENT_EXPORT DownloadManagerDelegate {
                               bool can_save_as_complete,
                               const SavePackagePathPickedCallback& callback) {
   }
+
+ protected:
+  virtual ~DownloadManagerDelegate();
 };
 
 }  // namespace content

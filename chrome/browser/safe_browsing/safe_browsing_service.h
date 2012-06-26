@@ -139,11 +139,11 @@ class SafeBrowsingService
 
   class Client {
    public:
-    virtual ~Client() {}
-
     void OnSafeBrowsingResult(const SafeBrowsingCheck& check);
 
    protected:
+    virtual ~Client() {}
+
     // Called when the result of checking a browse URL is known.
     virtual void OnBrowseUrlCheckResult(const GURL& url,
                                         UrlCheckResult result) {}

@@ -60,6 +60,9 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
     // Called when SSLErrorHandler decides to continue the request despite the
     // SSL error.
     virtual void ContinueSSLRequest(const content::GlobalRequestID& id) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   virtual SSLCertErrorHandler* AsSSLCertErrorHandler();

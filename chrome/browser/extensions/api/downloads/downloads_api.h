@@ -66,6 +66,8 @@ class DownloadsFunctionInterface {
   };
 
  protected:
+  virtual ~DownloadsFunctionInterface() {}
+
   // Return true if args_ is well-formed, otherwise set error_ and return false.
   virtual bool ParseArgs() = 0;
 

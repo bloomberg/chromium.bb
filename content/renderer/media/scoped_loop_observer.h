@@ -24,9 +24,10 @@ class ScopedLoopObserver
     : public MessageLoop::DestructionObserver {
  public:
   explicit ScopedLoopObserver(MessageLoop* message_loop);
-  virtual ~ScopedLoopObserver();
 
  protected:
+  virtual ~ScopedLoopObserver();
+
   // Accessor to the loop that's used by the derived class.
   base::MessageLoopProxy* message_loop() { return loop_; }
 

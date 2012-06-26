@@ -17,8 +17,6 @@ namespace content {
 // Objects interested in receiving profiler data derive from ProfilerSubscriber.
 class CONTENT_EXPORT ProfilerSubscriber {
  public:
-  virtual ~ProfilerSubscriber() {}
-
   // Send number of pending processes to subscriber. |end| is set to true if it
   // is the last time. This is called on the UI thread.
   virtual void OnPendingProcesses(int sequence_number,
@@ -31,6 +29,9 @@ class CONTENT_EXPORT ProfilerSubscriber {
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
       ProcessType process_type) = 0;
+
+ protected:
+  virtual ~ProfilerSubscriber() {}
 };
 
 }  // namespace content

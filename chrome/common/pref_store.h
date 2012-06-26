@@ -27,12 +27,13 @@ class PrefStore : public base::RefCounted<PrefStore> {
   // Observer interface for monitoring PrefStore.
   class Observer {
    public:
-    virtual ~Observer() {}
-
     // Called when the value for the given |key| in the store changes.
     virtual void OnPrefValueChanged(const std::string& key) = 0;
     // Notification about the PrefStore being fully initialized.
     virtual void OnInitializationCompleted(bool succeeded) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Return values for GetValue().

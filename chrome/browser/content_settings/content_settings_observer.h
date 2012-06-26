@@ -19,6 +19,9 @@ class Observer {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       std::string resource_identifier) = 0;
+
+ protected:
+  virtual ~Observer() {}
 };
 
 }  // namespace content_settings

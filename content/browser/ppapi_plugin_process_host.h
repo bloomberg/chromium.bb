@@ -52,15 +52,23 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
     // Returns true if the current connection is off-the-record.
     virtual bool OffTheRecord() = 0;
+
+   protected:
+    virtual ~Client() {}
   };
 
   class PluginClient : public Client {
    public:
     // Returns the resource context for the renderer requesting the channel.
     virtual content::ResourceContext* GetResourceContext() = 0;
+
+   protected:
+    virtual ~PluginClient() {}
   };
 
   class BrokerClient : public Client {
+   protected:
+    virtual ~BrokerClient() {}
   };
 
   virtual ~PpapiPluginProcessHost();

@@ -76,8 +76,8 @@ class AuthenticatorFactory;
 // client side and one for the host side.
 class SessionManager : public base::NonThreadSafe {
  public:
-  SessionManager() { }
-  virtual ~SessionManager() { }
+  SessionManager() {}
+  virtual ~SessionManager() {}
 
   enum IncomingSessionResponse {
     // Accept the session.
@@ -97,8 +97,7 @@ class SessionManager : public base::NonThreadSafe {
 
   class Listener {
    public:
-    Listener() { }
-    ~Listener() { }
+    Listener() {}
 
     // Called when the session manager is ready to create outgoing
     // sessions. May be called from Init() or after Init()
@@ -115,6 +114,9 @@ class SessionManager : public base::NonThreadSafe {
     // The callback must take ownership of the |session| if it ACCEPTs it.
     virtual void OnIncomingSession(Session* session,
                                    IncomingSessionResponse* response) = 0;
+
+   protected:
+    ~Listener() {}
   };
 
   // Initializes the session client. Caller retains ownership of the

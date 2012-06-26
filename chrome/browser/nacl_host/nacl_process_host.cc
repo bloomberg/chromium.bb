@@ -330,8 +330,8 @@ scoped_ptr<CommandLine> NaClProcessHost::GetCommandForLaunchWithGdb(
   return scoped_ptr<CommandLine>(cmd_line);
 }
 #elif defined(OS_LINUX)
-namespace {
-class NaClGdbWatchDelegate : public MessageLoopForIO::Watcher {
+class NaClProcessHost::NaClGdbWatchDelegate
+    : public MessageLoopForIO::Watcher {
  public:
   // fd_write_ is used by nacl-gdb via /proc/browser_PID/fd/fd_write_
   NaClGdbWatchDelegate(int fd_read, int fd_write,
@@ -356,13 +356,13 @@ class NaClGdbWatchDelegate : public MessageLoopForIO::Watcher {
   base::Closure reply_;
 };
 
-void NaClGdbWatchDelegate::OnFileCanReadWithoutBlocking(int fd) {
+void NaClProcessHost::NaClGdbWatchDelegate::OnFileCanReadWithoutBlocking(
+    int fd) {
   char buf;
   if (HANDLE_EINTR(read(fd_read_, &buf, 1)) != 1 || buf != '\0')
     LOG(ERROR) << "Failed to sync with nacl-gdb";
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, reply_);
 }
-}  // namespace
 
 bool NaClProcessHost::LaunchNaClGdb(base::ProcessId pid) {
   CommandLine::StringType nacl_gdb =

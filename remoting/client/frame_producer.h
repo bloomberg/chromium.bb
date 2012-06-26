@@ -19,7 +19,6 @@ namespace remoting {
 class FrameProducer {
  public:
   FrameProducer() {}
-  virtual ~FrameProducer() {}
 
   // Adds an image buffer to the pool of pending buffers for subsequent drawing.
   // Once drawing is completed the buffer will be returned to the consumer via
@@ -42,6 +41,9 @@ class FrameProducer {
   // Implementations must cope with empty |view_size| or |clip_area|.
   virtual void SetOutputSizeAndClip(const SkISize& view_size,
                                     const SkIRect& clip_area) = 0;
+
+ protected:
+  virtual ~FrameProducer() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameProducer);

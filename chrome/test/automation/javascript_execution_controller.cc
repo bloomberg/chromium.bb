@@ -16,8 +16,6 @@ int JavaScriptExecutionController::timeout_ms_ = -1;
 
 JavaScriptExecutionController::JavaScriptExecutionController() {}
 
-JavaScriptExecutionController::~JavaScriptExecutionController() {}
-
 bool JavaScriptExecutionController::ExecuteJavaScript(
     const std::string& script) {
   scoped_ptr<Value> return_value;
@@ -29,6 +27,8 @@ bool JavaScriptExecutionController::ExecuteAsyncJavaScript(
   scoped_ptr<Value> return_value;
   return ExecuteAndParseHelper(WrapAsyncJavaScript(script), &return_value);
 }
+
+JavaScriptExecutionController::~JavaScriptExecutionController() {}
 
 void JavaScriptExecutionController::Remove(int handle) {
   handle_to_object_.erase(handle);

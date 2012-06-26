@@ -15,7 +15,7 @@ namespace content {
 
 class CONTENT_EXPORT PepperFlashSettingsHelperImpl
     : public PepperFlashSettingsHelper,
-      public PpapiPluginProcessHost::BrokerClient {
+      NON_EXPORTED_BASE(public PpapiPluginProcessHost::BrokerClient) {
  public:
   PepperFlashSettingsHelperImpl();
 

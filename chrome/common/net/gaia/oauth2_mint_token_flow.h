@@ -88,11 +88,12 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
 
   class Delegate {
    public:
-    Delegate() {}
-    virtual ~Delegate() {}
     virtual void OnMintTokenSuccess(const std::string& access_token) {}
     virtual void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice)  {}
     virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) {}
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // An interceptor for tests.

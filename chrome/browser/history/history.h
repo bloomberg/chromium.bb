@@ -253,8 +253,6 @@ class HistoryService : public CancelableRequestProvider,
   // should handle this appropriately.
   class URLEnumerator {
    public:
-    virtual ~URLEnumerator() {}
-
     // Indicates that a URL is available. There will be exactly one call for
     // every URL in history.
     virtual void OnURL(const GURL& url) = 0;
@@ -263,6 +261,9 @@ class HistoryService : public CancelableRequestProvider,
     // more callbacks made. This call is guaranteed to occur, even if there are
     // no URLs. If all URLs were iterated, success will be true.
     virtual void OnComplete(bool success) = 0;
+
+   protected:
+    virtual ~URLEnumerator() {}
   };
 
   // Enumerate all URLs in history. The given iterator will be owned by the

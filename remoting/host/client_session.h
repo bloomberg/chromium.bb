@@ -36,8 +36,6 @@ class ClientSession : public protocol::HostEventStub,
   // Callback interface for passing events to the ChromotingHost.
   class EventHandler {
    public:
-    virtual ~EventHandler() {}
-
     // Called after authentication has finished successfully.
     virtual void OnSessionAuthenticated(ClientSession* client) = 0;
 
@@ -63,6 +61,9 @@ class ClientSession : public protocol::HostEventStub,
         ClientSession* client,
         const std::string& channel_name,
         const protocol::TransportRoute& route) = 0;
+
+   protected:
+    virtual ~EventHandler() {}
   };
 
   ClientSession(EventHandler* event_handler,

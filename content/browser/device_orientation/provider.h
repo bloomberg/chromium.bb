@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,9 @@ class CONTENT_EXPORT Provider : public base::RefCountedThreadSafe<Provider> {
     // An Observer must not synchronously call Provider::RemoveObserver
     // or Provider::AddObserver when this is called.
     virtual void OnOrientationUpdate(const Orientation& orientation) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Returns a pointer to the singleton instance of this class.

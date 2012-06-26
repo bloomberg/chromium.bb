@@ -9,9 +9,6 @@
 
 namespace content {
 
-DownloadManagerDelegate::~DownloadManagerDelegate() {
-}
-
 DownloadId DownloadManagerDelegate::GetNextId() {
   return DownloadId::Invalid();
 }
@@ -49,5 +46,7 @@ bool DownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
 bool DownloadManagerDelegate::GenerateFileHash() {
   return false;
 }
+
+DownloadManagerDelegate::~DownloadManagerDelegate() {}
 
 }  // namespace content

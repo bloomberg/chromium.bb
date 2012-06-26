@@ -83,10 +83,11 @@ class GpuCommandBufferStub
  public:
   class DestructionObserver {
    public:
-    ~DestructionObserver() {}
-
     // Called in Destroy(), before the context/surface are released.
     virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) = 0;
+
+   protected:
+    virtual ~DestructionObserver() {}
   };
 
   GpuCommandBufferStub(

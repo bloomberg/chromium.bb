@@ -125,7 +125,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 #elif defined(OS_LINUX)
   bool wait_for_nacl_gdb_;
   MessageLoopForIO::FileDescriptorWatcher nacl_gdb_watcher_;
-  scoped_ptr<MessageLoopForIO::Watcher> nacl_gdb_watcher_delegate_;
+
+  class NaClGdbWatchDelegate;
+  scoped_ptr<NaClGdbWatchDelegate> nacl_gdb_watcher_delegate_;
 #endif
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.

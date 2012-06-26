@@ -38,8 +38,6 @@ class PolicyService {
  public:
   class Observer {
    public:
-    virtual ~Observer() {}
-
     // Invoked whenever policies for the |domain|, |component_id| namespace are
     // modified. This is only invoked for changes that happen after AddObserver
     // is called. |previous| contains the values of the policies before the
@@ -53,6 +51,9 @@ class PolicyService {
     // IsInitializationComplete() is false, then this will be invoked once all
     // the policy providers are ready.
     virtual void OnPolicyServiceInitialized() {}
+
+   protected:
+    virtual ~Observer() {}
   };
 
   virtual ~PolicyService() {}

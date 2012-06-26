@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,12 +42,13 @@ class ImportantFileWriter : public base::NonThreadSafe {
   // to also batch data serializations.
   class DataSerializer {
    public:
-    virtual ~DataSerializer() {}
-
     // Should put serialized string in |data| and return true on successful
     // serialization. Will be called on the same thread on which
     // ImportantFileWriter has been created.
     virtual bool SerializeData(std::string* data) = 0;
+
+   protected:
+    virtual ~DataSerializer() {}
   };
 
   // Initialize the writer.

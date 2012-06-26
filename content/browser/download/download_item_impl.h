@@ -37,7 +37,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   class CONTENT_EXPORT Delegate {
    public:
     Delegate();
-    virtual ~Delegate();
 
     // Used for catching use-after-free errors.
     void Attach();
@@ -74,6 +73,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
     // Assert consistent state for delgate object at various transitions.
     virtual void AssertStateConsistent(DownloadItem* download) const = 0;
+
+   protected:
+    virtual ~Delegate();
 
    private:
     // For "Outlives attached DownloadItemImpl" invariant assertion.

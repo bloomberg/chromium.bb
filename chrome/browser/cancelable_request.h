@@ -122,7 +122,6 @@ class CancelableRequestProvider {
   typedef int Handle;
 
   CancelableRequestProvider();
-  virtual ~CancelableRequestProvider();
 
   // Called by the enduser of the request to cancel it. This MUST be called on
   // the same thread that originally issued the request (which is also the same
@@ -131,6 +130,8 @@ class CancelableRequestProvider {
   void CancelRequest(Handle handle);
 
  protected:
+  virtual ~CancelableRequestProvider();
+
   // Adds a new request and initializes it. This is called by a derived class
   // to add a new request. The request's Init() will be called (which is why
   // the consumer is required. The handle to the new request is returned.

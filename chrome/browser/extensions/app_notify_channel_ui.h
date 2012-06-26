@@ -33,6 +33,9 @@ class AppNotifyChannelUI {
    public:
     // A callback for whether the user successfully set up sync or not.
     virtual void OnSyncSetupResult(bool enabled) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Shows a prompt for sync setup - |delegate| will be called back later when

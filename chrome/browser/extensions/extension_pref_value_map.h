@@ -59,8 +59,6 @@ class ExtensionPrefValueMap : public ProfileKeyedService {
   // Observer interface for monitoring ExtensionPrefValueMap.
   class Observer {
    public:
-    virtual ~Observer() {}
-
     // Called when the value for the given |key| set by one of the extensions
     // changes. This does not necessarily mean that the effective value has
     // changed.
@@ -70,6 +68,9 @@ class ExtensionPrefValueMap : public ProfileKeyedService {
     // Called when the ExtensionPrefValueMap is being destroyed. When called,
     // observers must unsubscribe.
     virtual void OnExtensionPrefValueMapDestruction() = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   ExtensionPrefValueMap();

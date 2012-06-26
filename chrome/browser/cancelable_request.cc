@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,17 +6,6 @@
 
 CancelableRequestProvider::CancelableRequestProvider()
     : next_handle_(1) {
-}
-
-CancelableRequestProvider::~CancelableRequestProvider() {
-  // There may be requests whose result callback has not been run yet. We need
-  // to cancel them otherwise they may try and call us back after we've been
-  // deleted, or do other bad things. This can occur on shutdown (or browser
-  // context destruction) when a request is scheduled, completed (but not
-  // dispatched), then the BrowserContext is deleted.
-  base::AutoLock lock(pending_request_lock_);
-  while (!pending_requests_.empty())
-    CancelRequestLocked(pending_requests_.begin());
 }
 
 CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
@@ -42,6 +31,17 @@ CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
 void CancelableRequestProvider::CancelRequest(Handle handle) {
   base::AutoLock lock(pending_request_lock_);
   CancelRequestLocked(pending_requests_.find(handle));
+}
+
+CancelableRequestProvider::~CancelableRequestProvider() {
+  // There may be requests whose result callback has not been run yet. We need
+  // to cancel them otherwise they may try and call us back after we've been
+  // deleted, or do other bad things. This can occur on shutdown (or browser
+  // context destruction) when a request is scheduled, completed (but not
+  // dispatched), then the BrowserContext is deleted.
+  base::AutoLock lock(pending_request_lock_);
+  while (!pending_requests_.empty())
+    CancelRequestLocked(pending_requests_.begin());
 }
 
 void CancelableRequestProvider::CancelRequestLocked(

@@ -58,10 +58,12 @@ using WebKit::WGC3Dsizeiptr;
 // context...
 class WebGraphicsContext3DSwapBuffersClient {
  public:
-  virtual ~WebGraphicsContext3DSwapBuffersClient() { }
   virtual void OnViewContextSwapBuffersPosted() = 0;
   virtual void OnViewContextSwapBuffersComplete() = 0;
   virtual void OnViewContextSwapBuffersAborted() = 0;
+
+ protected:
+  virtual ~WebGraphicsContext3DSwapBuffersClient() {}
 };
 
 class WebGraphicsContext3DErrorMessageCallback;

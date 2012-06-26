@@ -59,7 +59,6 @@ class GLES2Decoder;
 class ImageTransportSurface {
  public:
   ImageTransportSurface();
-  virtual ~ImageTransportSurface();
 
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
@@ -79,6 +78,9 @@ class ImageTransportSurface {
   void GetRegionsToCopy(const gfx::Rect& previous_damage_rect,
                         const gfx::Rect& new_damage_rect,
                         std::vector<gfx::Rect>* regions);
+
+ protected:
+  virtual ~ImageTransportSurface();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);

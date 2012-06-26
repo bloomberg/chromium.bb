@@ -45,6 +45,9 @@ class WebstoreInstaller : public content::NotificationObserver,
     virtual void OnExtensionInstallSuccess(const std::string& id) = 0;
     virtual void OnExtensionInstallFailure(const std::string& id,
                                            const std::string& error) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Contains information about what parts of the extension install process can
