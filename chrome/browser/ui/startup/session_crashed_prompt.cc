@@ -25,8 +25,7 @@ namespace {
 // A delegate for the InfoBar shown when the previous session has crashed.
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SessionCrashedInfoBarDelegate(Profile* profile,
-                                InfoBarTabHelper* infobar_helper);
+  explicit SessionCrashedInfoBarDelegate(InfoBarTabHelper* infobar_helper);
 
  private:
   virtual ~SessionCrashedInfoBarDelegate();
@@ -38,17 +37,12 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
-  // The Profile that we restore sessions from.
-  Profile* profile_;
-
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
-    Profile* profile,
     InfoBarTabHelper* infobar_helper)
-    : ConfirmInfoBarDelegate(infobar_helper),
-      profile_(profile) {
+    : ConfirmInfoBarDelegate(infobar_helper) {
 }
 
 SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
@@ -75,16 +69,17 @@ string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
 
 bool SessionCrashedInfoBarDelegate::Accept() {
   uint32 behavior = 0;
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  if (browser && browser->tab_count() == 1
-      && browser->GetWebContentsAt(0)->GetURL() ==
+  Browser* browser =
+      browser::FindBrowserWithWebContents(owner()->web_contents());
+  if (browser && browser->tab_count() == 1 &&
+      browser->GetWebContentsAt(0)->GetURL() ==
       GURL(chrome::kChromeUINewTabURL)) {
     // There is only one tab and its the new tab page, make session restore
     // clobber it.
     behavior = SessionRestore::CLOBBER_CURRENT_TAB;
   }
   SessionRestore::RestoreSession(
-      profile_, browser, behavior, std::vector<GURL>());
+      browser->profile(), browser, behavior, std::vector<GURL>());
   return true;
 }
 
@@ -110,8 +105,7 @@ void ShowSessionCrashedPrompt(Browser* browser) {
     return;
 
   tab->infobar_tab_helper()->AddInfoBar(
-      new SessionCrashedInfoBarDelegate(browser->profile(),
-                                        tab->infobar_tab_helper()));
+      new SessionCrashedInfoBarDelegate(tab->infobar_tab_helper()));
 }
 
 }  // namespace browser
