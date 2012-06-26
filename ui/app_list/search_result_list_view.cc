@@ -134,8 +134,9 @@ void SearchResultListView::ButtonPressed(views::Button* sender,
   if (delegate_) {
     const SearchResult* result =
         static_cast<SearchResultView*>(sender)->result();
-    DCHECK(result);
-    delegate_->OpenResult(*result, event.flags());
+
+    if (result)
+      delegate_->OpenResult(*result, event.flags());
   }
 }
 
