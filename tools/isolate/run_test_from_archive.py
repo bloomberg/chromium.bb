@@ -269,6 +269,21 @@ class Cache(object):
     json.dump(self.state, open(self.state_file, 'wb'))
 
 
+class Profiler(object):
+  def __init__(self, name):
+    self.name = name
+    self.start_time = None
+
+  def __enter__(self):
+    self.start_time = time.time()
+    return self
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    time_taken = time.time() - self.start_time
+    logging.debug('Profiling: Section %s took %i seconds',
+                  self.name, time_taken)
+
+
 def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
@@ -284,17 +299,18 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
   outdir = tempfile.mkdtemp(prefix='run_tha_test', dir=base_temp_dir)
 
   try:
-    for filepath, properties in manifest['files'].iteritems():
-      infile = properties['sha-1']
-      outfile = os.path.join(outdir, filepath)
-      cache.retrieve(infile)
-      outfiledir = os.path.dirname(outfile)
-      if not os.path.isdir(outfiledir):
-        os.makedirs(outfiledir)
-      link_file(outfile, cache.path(infile), HARDLINK)
-      if 'mode' in properties:
-        # It's not set on Windows.
-        os.chmod(outfile, properties['mode'])
+    with Profiler('GetFiles') as _prof:
+      for filepath, properties in manifest['files'].iteritems():
+        infile = properties['sha-1']
+        outfile = os.path.join(outdir, filepath)
+        cache.retrieve(infile)
+        outfiledir = os.path.dirname(outfile)
+        if not os.path.isdir(outfiledir):
+          os.makedirs(outfiledir)
+        link_file(outfile, cache.path(infile), HARDLINK)
+        if 'mode' in properties:
+          # It's not set on Windows.
+          os.chmod(outfile, properties['mode'])
 
     cwd = os.path.join(outdir, manifest['relative_cwd'])
     if not os.path.isdir(cwd):
@@ -307,16 +323,18 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
     cmd = fix_python_path(cmd)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     try:
-      return subprocess.call(cmd, cwd=cwd)
+      with Profiler('RunTest') as _prof:
+        return subprocess.call(cmd, cwd=cwd)
     except OSError:
       print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
       raise
   finally:
     # Save first, in case an exception occur in the following lines, then clean
     # up.
-    cache.save()
-    rmtree(outdir)
-    cache.trim()
+    with Profiler('Cleanup') as _prof:
+      cache.save()
+      rmtree(outdir)
+      cache.trim()
 
 
 def main():
