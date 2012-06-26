@@ -5504,7 +5504,13 @@
    fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager18GetLastUsedProfileERK8FilePath
 }
-
+{
+   bug_134717
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2ui15InputMethodIBus13CreateContextEv
+   fun:_ZN2ui15InputMethodIBus4InitEb
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 

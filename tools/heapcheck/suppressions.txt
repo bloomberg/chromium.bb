@@ -1472,3 +1472,9 @@
    fun:gfx::RenderText::IndexOfAdjacentGrapheme
    fun:gfx::RenderTextTest_GraphemePositions_Test::TestBody
 }
+{
+   bug_134717
+   Heapcheck:Leak
+   fun:ui::InputMethodIBus::CreateContext
+   fun:ui::InputMethodIBus::Init
+}
