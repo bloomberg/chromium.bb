@@ -316,7 +316,7 @@ void TrayIME::OnIMERefresh(bool show_message) {
   if (detailed_)
     detailed_->Update(list, property_list);
 
-  if (show_message && !message_shown_) {
+  if (list.size() > 1 && show_message && !message_shown_) {
     if (!notification_) {
       ShowNotificationView();
       message_shown_ = true;
