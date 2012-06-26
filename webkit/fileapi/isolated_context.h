@@ -36,6 +36,8 @@ class FILEAPI_EXPORT IsolatedContext {
   // key and the ID for the newly created filesystem to the renderer for
   // the sake of security.
   //
+  // Note that all the given paths in |fileset| must be absolute paths.
+  //
   // The renderer will be sending filesystem requests with a virtual path like
   // '/<filesystem_id>/<relative_path_from_the_basename_of_dropped_path>'
   // for which we could crack in the browser by calling CrackIsolatedPath to
@@ -48,9 +50,6 @@ class FILEAPI_EXPORT IsolatedContext {
   // internal mapping.  Similarly if a dropped entry is a directory and its
   // path is like '/a/b/dir' a virtual path like '/<fsid>/dir/foo' can be
   // cracked into '/a/b/dir/foo'.
-  //
-  // This may return an empty string (thus invalid as an ID) if the given
-  // file set contains non absolute paths.
   std::string RegisterIsolatedFileSystem(const std::set<FilePath>& fileset);
 
   // Revokes filesystem specified by the given filesystem_id.
