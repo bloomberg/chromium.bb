@@ -120,6 +120,14 @@ class MetricsService
   // that session end was successful.
   void RecordCompletedSessionEnd();
 
+#if defined(OS_ANDROID)
+  // Called when the application is going into background mode.
+  void OnAppEnterBackground();
+
+  // Called when the application is coming out of background mode.
+  void OnAppEnterForeground();
+#endif
+
   // Saves in the preferences if the crash report registration was successful.
   // This count is eventually send via UMA logs.
   void RecordBreakpadRegistration(bool success);

@@ -735,6 +735,39 @@ void MetricsService::RecordCompletedSessionEnd() {
   RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
 }
 
+#if defined(OS_ANDROID)
+void MetricsService::OnAppEnterBackground() {
+  scheduler_->Stop();
+
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
+
+  // At this point, there's no way of knowing when the process will be
+  // killed, so this has to be treated similar to a shutdown, closing and
+  // persisting all logs. Unlinke a shutdown, the state is primed to be ready
+  // to continue logging and uploading if the process does return.
+  if (recording_active() && state_ >= INITIAL_LOG_READY) {
+    PushPendingLogsToPersistentStorage();
+    if (state_ == SENDING_CURRENT_LOGS)
+      state_ = SENDING_OLD_LOGS;
+    // Persisting logs stops recording, so start recording a new log immediately
+    // to capture any background work that might be done before the process is
+    // killed.
+    StartRecording();
+  }
+
+  // Start writing right away (write happens on a different thread).
+  pref->CommitPendingWrite();
+}
+
+void MetricsService::OnAppEnterForeground() {
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
+
+  StartSchedulerIfNecessary();
+}
+#endif
+
 void MetricsService::RecordBreakpadRegistration(bool success) {
   if (!success)
     IncrementPrefValue(prefs::kStabilityBreakpadRegistrationFail);
