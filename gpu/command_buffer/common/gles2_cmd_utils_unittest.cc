@@ -181,17 +181,6 @@ TEST_F(GLES2UtilTest, RenderbufferBytesPerPixel) {
    EXPECT_EQ(0u, GLES2Util::RenderbufferBytesPerPixel(-1));
 }
 
-TEST_F(GLES2UtilTest, SwizzleLocation) {
-  GLint power = 1;
-  for (GLint p = 0; p < 5; ++p, power *= 10) {
-    GLint limit = power * 20 + 1;
-    for (GLint ii = -limit; ii < limit; ii += power) {
-      GLint s = GLES2Util::SwizzleLocation(ii);
-      EXPECT_EQ(ii, GLES2Util::UnswizzleLocation(s));
-    }
-  }
-}
-
 }  // namespace gles2
 }  // namespace gpu
 

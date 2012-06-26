@@ -1162,6 +1162,17 @@ void GLES2Implementation::BindAttribLocation(
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
+void GLES2Implementation::BindUniformLocationCHROMIUM(
+  GLuint program, GLint location, const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glBindUniformLocationCHROMIUM("
+      << program << ", " << location << ", " << name << ")");
+  SetBucketAsString(kResultBucketId, name);
+  helper_->BindUniformLocationCHROMIUMBucket(
+      program, location, kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+}
+
 void GLES2Implementation::GetVertexAttribPointerv(
     GLuint index, GLenum pname, void** ptr) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -2091,7 +2102,6 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
         str += std::string(str.empty() ? "" : " ") +
             "GL_CHROMIUM_map_sub "
             "GL_CHROMIUM_flipy "
-            "GL_CHROMIUM_consistent_uniform_locations "
             "GL_EXT_unpack_subimage";
         break;
       default:
@@ -3276,96 +3286,6 @@ void GLES2Implementation::GenMailboxCHROMIUM(
   GetBucketContents(kResultBucketId, &result);
 
   std::copy(result.begin(), result.end(), mailbox);
-}
-
-namespace {
-
-class GLUniformDefinitionComparer {
- public:
-  explicit GLUniformDefinitionComparer(
-      const GLUniformDefinitionCHROMIUM* uniforms)
-      : uniforms_(uniforms) {
-  }
-
-  bool operator()(const GLint lhs, const GLint rhs) const {
-    return strcmp(uniforms_[lhs].name, uniforms_[rhs].name) < 0;
-  }
-
- private:
-  const GLUniformDefinitionCHROMIUM* uniforms_;
-};
-
-
-
-}  // anonymous namespace.
-
-void GLES2Implementation::GetUniformLocationsCHROMIUM(
-    GLuint program,
-    const GLUniformDefinitionCHROMIUM* uniforms,
-    GLsizei count,
-    GLsizei max_locations,
-    GLint* locations) {
-  (void)program;  // To keep the compiler happy as it's unused in release.
-
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glGenUniformLocationsCHROMIUM("
-      << static_cast<const void*>(uniforms) << ", "  << count << ", "
-      << max_locations << ", " << static_cast<const void*>(locations) << ")");
-
-  if (count <= 0) {
-    SetGLError(GL_INVALID_VALUE, "glGetUniformLocationsCHROMIUM", "count <= 0");
-    return;
-  }
-
-  for (GLsizei ii = 0; ii < count; ++ii) {
-    const GLUniformDefinitionCHROMIUM& def = uniforms[ii];
-    if (def.size <= 0) {
-      SetGLError(
-          GL_INVALID_VALUE, "glGetUniformLocationsCHROMIUM", "size <= 0");
-      return;
-    }
-  }
-
-  scoped_array<GLint> indices(new GLint[count]);
-  for (GLint ii = 0; ii < count; ++ii) {
-    indices[ii] = ii;
-  }
-
-  std::sort(&indices[0], &indices[count],
-            GLUniformDefinitionComparer(uniforms));
-
-  scoped_array<GLint> reverse_map(new GLint[count]);
-
-  for (GLint ii = 0; ii < count; ++ii) {
-    reverse_map[indices[ii]] = ii;
-  }
-
-  for (GLsizei ii = 0; ii < count; ++ii) {
-    const GLUniformDefinitionCHROMIUM& def = uniforms[ii];
-    GLint base_location = reverse_map[ii];
-    for (GLsizei jj = 0; jj < def.size; ++jj) {
-      if (max_locations <= 0) {
-        return;
-      }
-      GLint location = GLES2Util::SwizzleLocation(
-          GLES2Util::MakeFakeLocation(base_location, jj));
-      *locations++ = location;
-      #if defined(GPU_CLIENT_DEBUG)
-        std::string name(def.name);
-        if (jj > 0) {
-          char buf[20];
-          sprintf(buf, "%d", jj);
-          name = name + "[" + buf + "]";
-        }
-        GPU_DCHECK_EQ(
-            location,
-            share_group_->program_info_manager()->GetUniformLocation(
-                this, program, name.c_str()));
-      #endif
-      --max_locations;
-
-    }
-  }
 }
 
 }  // namespace gles2

@@ -875,6 +875,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   }
 
   void DoBindAttribLocation(GLuint client_id, GLuint index, const char* name);
+  void DoBindUniformLocationCHROMIUM(
+      GLuint client_id, GLint location, const char* name);
 
   error::Error GetAttribLocationHelper(
     GLuint client_id, uint32 location_shm_id, uint32 location_shm_offset,
@@ -4023,6 +4025,84 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
   return error::kNoError;
 }
 
+void GLES2DecoderImpl::DoBindUniformLocationCHROMIUM(
+    GLuint program, GLint location, const char* name) {
+  if (!StringIsValidForGLES(name)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glBindUniformLocationCHROMIUM", "Invalid character");
+    return;
+  }
+  if (ProgramManager::IsInvalidPrefix(name, strlen(name))) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glBindUniformLocationCHROMIUM", "reserved prefix");
+    return;
+  }
+  if (location < 0 || static_cast<uint32>(location) >=
+      (group_->max_fragment_uniform_vectors() +
+       group_->max_vertex_uniform_vectors()) * 4) {
+    SetGLError(GL_INVALID_VALUE,
+               "glBindUniformLocationCHROMIUM", "location out of range");
+    return;
+  }
+  ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
+      program, "glBindUniformLocationCHROMIUM");
+  if (!info) {
+    return;
+  }
+  if (!info->SetUniformLocationBinding(name, location)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glBindUniformLocationCHROMIUM", "location out of range");
+  }
+}
+
+error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUM(
+    uint32 immediate_data_size, const gles2::BindUniformLocationCHROMIUM& c) {
+  GLuint program = static_cast<GLuint>(c.program);
+  GLint location = static_cast<GLint>(c.location);
+  uint32 name_size = c.data_size;
+  const char* name = GetSharedMemoryAs<const char*>(
+      c.name_shm_id, c.name_shm_offset, name_size);
+  if (name == NULL) {
+    return error::kOutOfBounds;
+  }
+  String name_str(name, name_size);
+  DoBindUniformLocationCHROMIUM(program, location, name_str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUMImmediate(
+    uint32 immediate_data_size,
+    const gles2::BindUniformLocationCHROMIUMImmediate& c) {
+  GLuint program = static_cast<GLuint>(c.program);
+  GLint location = static_cast<GLint>(c.location);
+  uint32 name_size = c.data_size;
+  const char* name = GetImmediateDataAs<const char*>(
+      c, name_size, immediate_data_size);
+  if (name == NULL) {
+    return error::kOutOfBounds;
+  }
+  String name_str(name, name_size);
+  DoBindUniformLocationCHROMIUM(program, location, name_str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBindUniformLocationCHROMIUMBucket(
+    uint32 immediate_data_size,
+    const gles2::BindUniformLocationCHROMIUMBucket& c) {
+  GLuint program = static_cast<GLuint>(c.program);
+  GLint location = static_cast<GLint>(c.location);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  DoBindUniformLocationCHROMIUM(program, location, name_str.c_str());
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const gles2::DeleteShader& c) {
   GLuint client_id = c.shader;
@@ -6566,8 +6646,7 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
   if (*location != -1) {
     return error::kGenericError;
   }
-  *location = GLES2Util::SwizzleLocation(
-      info->GetUniformFakeLocation(name_str));
+  *location = info->GetUniformFakeLocation(name_str);
   return error::kNoError;
 }
 
@@ -7875,7 +7954,7 @@ bool GLES2DecoderImpl::GetUniformSetup(
 error::Error GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   GLuint program = c.program;
-  GLint fake_location = GLES2Util::UnswizzleLocation(c.location);
+  GLint fake_location = c.location;
   GLuint service_id;
   GLenum result_type;
   GLint real_location = -1;
@@ -7894,7 +7973,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
 error::Error GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   GLuint program = c.program;
-  GLint fake_location = GLES2Util::UnswizzleLocation(c.location);
+  GLint fake_location = c.location;
   GLuint service_id;
   GLint real_location = -1;
   Error error;

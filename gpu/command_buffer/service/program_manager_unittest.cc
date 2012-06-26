@@ -179,6 +179,9 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const GLint kUniform1RealLocation = 11;
   static const GLint kUniform2RealLocation = 22;
   static const GLint kUniform3RealLocation = 33;
+  static const GLint kUniform1DesiredLocation = -1;
+  static const GLint kUniform2DesiredLocation = -1;
+  static const GLint kUniform3DesiredLocation = -1;
   static const GLenum kUniform1Type = GL_FLOAT_VEC4;
   static const GLenum kUniform2Type = GL_INT_VEC2;
   static const GLenum kUniform3Type = GL_FLOAT_VEC3;
@@ -300,6 +303,9 @@ const GLint ProgramManagerWithShaderTest::kUniform3FakeLocation;
 const GLint ProgramManagerWithShaderTest::kUniform1RealLocation;
 const GLint ProgramManagerWithShaderTest::kUniform2RealLocation;
 const GLint ProgramManagerWithShaderTest::kUniform3RealLocation;
+const GLint ProgramManagerWithShaderTest::kUniform1DesiredLocation;
+const GLint ProgramManagerWithShaderTest::kUniform2DesiredLocation;
+const GLint ProgramManagerWithShaderTest::kUniform3DesiredLocation;
 const GLenum ProgramManagerWithShaderTest::kUniform1Type;
 const GLenum ProgramManagerWithShaderTest::kUniform2Type;
 const GLenum ProgramManagerWithShaderTest::kUniform3Type;
@@ -317,6 +323,7 @@ ProgramManagerWithShaderTest::UniformInfo
     kUniform1Type,
     kUniform1FakeLocation,
     kUniform1RealLocation,
+    kUniform1DesiredLocation,
     kUniform1Name,
   },
   { kUniform2Name,
@@ -324,6 +331,7 @@ ProgramManagerWithShaderTest::UniformInfo
     kUniform2Type,
     kUniform2FakeLocation,
     kUniform2RealLocation,
+    kUniform2DesiredLocation,
     kUniform2Name,
   },
   { kUniform3BadName,
@@ -331,6 +339,7 @@ ProgramManagerWithShaderTest::UniformInfo
     kUniform3Type,
     kUniform3FakeLocation,
     kUniform3RealLocation,
+    kUniform3DesiredLocation,
     kUniform3GoodName,
   },
 };
@@ -483,12 +492,12 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformFakeLocation) {
   EXPECT_EQ(kUniform3FakeLocation,
             program_info->GetUniformFakeLocation(kUniform3GoodName));
   // Check that we can get the locations of the array elements > 1
-  EXPECT_EQ(GLES2Util::MakeFakeLocation(kUniform2FakeLocation, 1),
+  EXPECT_EQ(ProgramManager::MakeFakeLocation(kUniform2FakeLocation, 1),
             program_info->GetUniformFakeLocation("uniform2[1]"));
-  EXPECT_EQ(GLES2Util::MakeFakeLocation(kUniform2FakeLocation, 2),
+  EXPECT_EQ(ProgramManager::MakeFakeLocation(kUniform2FakeLocation, 2),
             program_info->GetUniformFakeLocation("uniform2[2]"));
   EXPECT_EQ(-1, program_info->GetUniformFakeLocation("uniform2[3]"));
-  EXPECT_EQ(GLES2Util::MakeFakeLocation(kUniform3FakeLocation, 1),
+  EXPECT_EQ(ProgramManager::MakeFakeLocation(kUniform3FakeLocation, 1),
             program_info->GetUniformFakeLocation("uniform3[1]"));
   EXPECT_EQ(-1, program_info->GetUniformFakeLocation("uniform3[2]"));
 }
@@ -533,6 +542,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
       kUniform1Type,
       kUniform1FakeLocation,
       kUniform1RealLocation,
+      kUniform1DesiredLocation,
       kUniform1Name,
     },
     { kUniform2Name,
@@ -540,6 +550,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
       kUniform2Type,
       kUniform2FakeLocation,
       kUniform2RealLocation,
+      kUniform2DesiredLocation,
       kUniform2Name,
     },
     { kUniform3BadName,
@@ -547,6 +558,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
       kUniform3Type,
       kUniform3FakeLocation,
       kUniform3RealLocation,
+      kUniform3DesiredLocation,
       kUniform3GoodName,
     },
   };
@@ -635,6 +647,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
       kUniform1Type,
       kUniform1FakeLocation,
       kUniform1RealLocation,
+      kUniform1DesiredLocation,
       kUniform1Name,
     },
     { kUniform2Name,
@@ -642,6 +655,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
       kUniform2BadType,
       kUniform2FakeLocation,
       kUniform2RealLocation,
+      kUniform2DesiredLocation,
       kUniform2Name,
     },
     { kUniform3BadName,
@@ -649,6 +663,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
       kUniform3Type,
       kUniform3FakeLocation,
       kUniform3RealLocation,
+      kUniform3DesiredLocation,
       kUniform3GoodName,
     },
   };
@@ -835,8 +850,8 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
         input->location_offset, sizeof(int32) * input->size);
     ASSERT_TRUE(locations != NULL);
     for (int32 jj = 0; jj < input->size; ++jj) {
-      EXPECT_EQ(GLES2Util::SwizzleLocation(
-          GLES2Util::MakeFakeLocation(expected.fake_location, jj)),
+      EXPECT_EQ(
+          ProgramManager::MakeFakeLocation(expected.fake_location, jj),
           locations[jj]);
     }
     const char* name_buf = bucket.GetDataAs<const char*>(
@@ -958,6 +973,7 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
         kUniform1Type,
         kUniform1FakeLocation,
         kUniform1RealLocation,
+        kUniform1DesiredLocation,
         kUniform1Name,
       },
       { kUniform2Name,
@@ -965,6 +981,7 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
         kSamplerTypes[ii],
         kUniform2FakeLocation,
         kUniform2RealLocation,
+        kUniform2DesiredLocation,
         kUniform2Name,
       },
       { kUniform3BadName,
@@ -972,6 +989,7 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
         kUniform3Type,
         kUniform3FakeLocation,
         kUniform3RealLocation,
+        kUniform3DesiredLocation,
         kUniform3GoodName,
       },
     };
@@ -985,73 +1003,80 @@ TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
   }
 }
 
-TEST_F(ProgramManagerWithShaderTest, UniformsAreSorted) {
+TEST_F(ProgramManagerWithShaderTest, BindUniformLocation) {
   const GLuint kVShaderClientId = 2001;
   const GLuint kFShaderClientId = 2002;
   const GLuint kVShaderServiceId = 3001;
   const GLuint kFShaderServiceId = 3002;
+
+  const GLint kUniform1DesiredLocation = 10;
+  const GLint kUniform2DesiredLocation = -1;
+  const GLint kUniform3DesiredLocation = 5;
+
   ShaderManager::ShaderInfo* vshader = shader_manager_.CreateShaderInfo(
       kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
   ASSERT_TRUE(vshader != NULL);
-  vshader->SetStatus(true, "", NULL);
+  vshader->SetStatus(true, NULL, NULL);
   ShaderManager::ShaderInfo* fshader = shader_manager_.CreateShaderInfo(
       kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
   ASSERT_TRUE(fshader != NULL);
-  fshader->SetStatus(true, "", NULL);
-  static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
-    { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
-    { kAttrib2Name, kAttrib2Size, kAttrib2Type, kAttrib2Location, },
-    { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
-  };
-  static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
-    { kUniform2Name,
-      kUniform2Size,
-      kUniform2Type,
-      kUniform2FakeLocation,
-      kUniform2RealLocation,
-      kUniform2Name,
-    },
-    { kUniform3GoodName,
-      kUniform3Size,
-      kUniform3Type,
-      kUniform3FakeLocation,
-      kUniform3RealLocation,
-      kUniform3GoodName,
-    },
-    { kUniform1Name,
-      kUniform1Size,
-      kUniform1Type,
-      kUniform1FakeLocation,
-      kUniform1RealLocation,
-      kUniform1Name,
-    },
-  };
-  const size_t kNumAttribs= arraysize(kAttribs);
-  const size_t kNumUniforms = arraysize(kUniforms);
+  fshader->SetStatus(true, NULL, NULL);
   static const GLuint kClientProgramId = 1234;
   static const GLuint kServiceProgramId = 5679;
-  SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
-              kServiceProgramId);
   ProgramManager::ProgramInfo* program_info = manager_.CreateProgramInfo(
       kClientProgramId, kServiceProgramId);
   ASSERT_TRUE(program_info != NULL);
   EXPECT_TRUE(program_info->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program_info->AttachShader(&shader_manager_, fshader));
+  EXPECT_TRUE(program_info->SetUniformLocationBinding(
+      kUniform1Name, kUniform1DesiredLocation));
+  EXPECT_TRUE(program_info->SetUniformLocationBinding(
+      kUniform3BadName, kUniform3DesiredLocation));
+
+  static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
+    { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
+    { kAttrib2Name, kAttrib2Size, kAttrib2Type, kAttrib2Location, },
+    { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
+  };
+  ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
+    { kUniform1Name,
+      kUniform1Size,
+      kUniform1Type,
+      kUniform1FakeLocation,
+      kUniform1RealLocation,
+      kUniform1DesiredLocation,
+      kUniform1Name,
+    },
+    { kUniform2Name,
+      kUniform2Size,
+      kUniform2Type,
+      kUniform2FakeLocation,
+      kUniform2RealLocation,
+      kUniform2DesiredLocation,
+      kUniform2Name,
+    },
+    { kUniform3BadName,
+      kUniform3Size,
+      kUniform3Type,
+      kUniform3FakeLocation,
+      kUniform3RealLocation,
+      kUniform3DesiredLocation,
+      kUniform3GoodName,
+    },
+  };
+
+  const size_t kNumAttribs = arraysize(kAttribs);
+  const size_t kNumUniforms = arraysize(kUniforms);
+  SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
+              kServiceProgramId);
   program_info->Link();
-  // Check Uniforms
-  const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
-        program_info->GetUniformInfo(0);
-  ASSERT_TRUE(uniform_info != NULL);
-  EXPECT_STREQ(kUniform1Name, uniform_info->name.c_str());
-  EXPECT_EQ(0, uniform_info->fake_location_base);
-  uniform_info = program_info->GetUniformInfo(1);
-  ASSERT_TRUE(uniform_info != NULL);
-  EXPECT_STREQ(kUniform2Name, uniform_info->name.c_str());
-  EXPECT_EQ(1, uniform_info->fake_location_base);
-  uniform_info = program_info->GetUniformInfo(2);
-  ASSERT_TRUE(uniform_info != NULL);
-  EXPECT_STREQ(kUniform3GoodName, uniform_info->name.c_str());
-  EXPECT_EQ(2, uniform_info->fake_location_base);
+
+  EXPECT_EQ(kUniform1DesiredLocation,
+            program_info->GetUniformFakeLocation(kUniform1Name));
+  EXPECT_EQ(kUniform3DesiredLocation,
+            program_info->GetUniformFakeLocation(kUniform3BadName));
+  EXPECT_EQ(kUniform3DesiredLocation,
+            program_info->GetUniformFakeLocation(kUniform3GoodName));
 }
 
 }  // namespace gles2

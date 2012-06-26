@@ -434,6 +434,9 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLint kUniform2FakeLocation = 1;               // hardcoded
   static const GLint kUniform2ElementFakeLocation = 0x10001;  // to match
   static const GLint kUniform3FakeLocation = 2;               // ProgramManager.
+  static const GLint kUniform1DesiredLocation = -1;
+  static const GLint kUniform2DesiredLocation = -1;
+  static const GLint kUniform3DesiredLocation = -1;
   static const GLenum kUniform1Type = GL_SAMPLER_2D;
   static const GLenum kUniform2Type = GL_INT_VEC2;
   static const GLenum kUniform3Type = GL_FLOAT_VEC3;

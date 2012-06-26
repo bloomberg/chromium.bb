@@ -232,9 +232,9 @@
       'sources': [
         '<@(gles2_c_lib_source_files)',
         'command_buffer/tests/occlusion_query_unittests.cc',
+        'command_buffer/tests/gl_bind_uniform_location_unittest.cc',
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
-        'command_buffer/tests/gl_consistent_uniform_locations_unittest.cc',
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
         'command_buffer/tests/gl_tests_main.cc',

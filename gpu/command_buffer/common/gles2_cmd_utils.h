@@ -146,10 +146,6 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static std::string GetStringBool(uint32 value);
   static std::string GetStringError(uint32 value);
 
-  static int32 SwizzleLocation(int32 unswizzled_location);
-  static int32 UnswizzleLocation(int32 swizzled_location);
-  static int32 MakeFakeLocation(int32 index, int32 element);
-
   #include "../common/gles2_cmd_utils_autogen.h"
 
  private:

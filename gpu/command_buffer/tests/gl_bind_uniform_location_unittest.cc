@@ -14,7 +14,7 @@
 
 namespace gpu {
 
-class ConsistenUniformLocationsTest : public testing::Test {
+class BindUniformLocationTest : public testing::Test {
  protected:
   static const GLsizei kResolution = 4;
   virtual void SetUp() {
@@ -28,18 +28,9 @@ class ConsistenUniformLocationsTest : public testing::Test {
   GLManager gl_;
 };
 
-namespace {
-
-struct FormatType {
-  GLenum format;
-  GLenum type;
-};
-
-}  // anonymous namespace
-
-TEST_F(ConsistenUniformLocationsTest, Basic) {
+TEST_F(BindUniformLocationTest, Basic) {
   ASSERT_TRUE(
-      GLTestHelper::HasExtension("GL_CHROMIUM_consistent_uniform_locations"));
+      GLTestHelper::HasExtension("GL_CHROMIUM_bind_uniform_location"));
 
   static const char* v_shader_str = SHADER(
       attribute vec4 a_position;
@@ -59,23 +50,29 @@ TEST_F(ConsistenUniformLocationsTest, Basic) {
       }
   );
 
-  static const GLUniformDefinitionCHROMIUM defs[] = {
-    { GL_FLOAT_VEC4, 1, "u_colorC", },
-    { GL_FLOAT_VEC4, 2, "u_colorB", },
-    { GL_FLOAT_VEC4, 1, "u_colorA", },
-  };
+  GLint color_a_location = 3;
+  GLint color_b_location = 10;
+  GLint color_c_location = 5;
 
-  GLuint program = GLTestHelper::LoadProgram(v_shader_str, f_shader_str);
+  GLuint vertex_shader = GLTestHelper::LoadShader(
+      GL_VERTEX_SHADER, v_shader_str);
+  GLuint fragment_shader = GLTestHelper::LoadShader(
+      GL_FRAGMENT_SHADER, f_shader_str);
 
-  GLint locations[4];
+  GLuint program = glCreateProgram();
 
-  glGetUniformLocationsCHROMIUM(
-      program, defs, arraysize(defs), arraysize(locations), locations);
+  glBindUniformLocationCHROMIUM(program, color_a_location, "u_colorA");
+  glBindUniformLocationCHROMIUM(program, color_b_location, "u_colorB[0]");
+  glBindUniformLocationCHROMIUM(program, color_c_location, "u_colorC");
 
-  GLint u_colorCLocation = locations[0];
-  GLint u_colorB0Location = locations[1];
-  GLint u_colorB1Location = locations[2];
-  GLint u_colorALocation = locations[3];
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
+  // Link the program
+  glLinkProgram(program);
+  // Check the link status
+  GLint linked = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &linked);
+  EXPECT_EQ(1, linked);
 
   GLint position_loc = glGetAttribLocation(program, "a_position");
 
@@ -83,10 +80,13 @@ TEST_F(ConsistenUniformLocationsTest, Basic) {
 
   glUseProgram(program);
 
-  glUniform4f(u_colorALocation, 0.25f, 0.0f, 0.0f, 0.0f);
-  glUniform4f(u_colorB0Location, 0.0f, 0.50f, 0.0f, 0.0f);
-  glUniform4f(u_colorB1Location, 0.0f, 0.0f, 0.75f, 0.0f);
-  glUniform4f(u_colorCLocation, 0.0f, 0.0f, 0.0f, 1.0f);
+  static const float color_b[] = {
+    0.0f, 0.50f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.75f, 0.0f,
+  };
+  glUniform4f(color_a_location, 0.25f, 0.0f, 0.0f, 0.0f);
+  glUniform4fv(color_b_location, 2, color_b);
+  glUniform4f(color_c_location, 0.0f, 0.0f, 0.0f, 1.0f);
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
 

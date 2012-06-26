@@ -227,6 +227,9 @@
   OP(ProduceTextureCHROMIUMImmediate)                          /* 470 */ \
   OP(ConsumeTextureCHROMIUM)                                   /* 471 */ \
   OP(ConsumeTextureCHROMIUMImmediate)                          /* 472 */ \
+  OP(BindUniformLocationCHROMIUM)                              /* 473 */ \
+  OP(BindUniformLocationCHROMIUMImmediate)                     /* 474 */ \
+  OP(BindUniformLocationCHROMIUMBucket)                        /* 475 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

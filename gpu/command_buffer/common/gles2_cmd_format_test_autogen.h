@@ -3996,5 +3996,74 @@ TEST_F(GLES2FormatTest, ConsumeTextureCHROMIUMImmediate) {
   // TODO(gman): Check that data was inserted;
 }
 
+TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUM) {
+  BindUniformLocationCHROMIUM& cmd =
+      *GetBufferAs<BindUniformLocationCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLint>(12),
+      static_cast<uint32>(13),
+      static_cast<uint32>(14),
+      static_cast<uint32>(15));
+  EXPECT_EQ(static_cast<uint32>(BindUniformLocationCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.location);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.name_shm_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.name_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(15), cmd.data_size);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+
+TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUMImmediate) {
+  BindUniformLocationCHROMIUMImmediate& cmd =
+      *GetBufferAs<BindUniformLocationCHROMIUMImmediate>();
+  static const char* const test_str = "test string";
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLint>(12),
+      test_str,
+      strlen(test_str));
+  EXPECT_EQ(static_cast<uint32>(BindUniformLocationCHROMIUMImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) +
+            RoundSizeToMultipleOfEntries(strlen(test_str)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +
+                RoundSizeToMultipleOfEntries(strlen(test_str)));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.location);
+  EXPECT_EQ(static_cast<uint32>(strlen(test_str)), cmd.data_size);
+  EXPECT_EQ(0, memcmp(test_str, ImmediateDataAddress(&cmd), strlen(test_str)));
+  CheckBytesWritten(
+      next_cmd,
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(strlen(test_str)),
+      sizeof(cmd) + strlen(test_str));
+}
+
+TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUMBucket) {
+  BindUniformLocationCHROMIUMBucket& cmd =
+      *GetBufferAs<BindUniformLocationCHROMIUMBucket>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLint>(12),
+      static_cast<uint32>(13));
+  EXPECT_EQ(static_cast<uint32>(BindUniformLocationCHROMIUMBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.location);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.name_bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

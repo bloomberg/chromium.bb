@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/program_manager.h"
 
-#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -21,7 +20,9 @@
 namespace gpu {
 namespace gles2 {
 
-static int ShaderTypeToIndex(GLenum shader_type) {
+namespace {
+
+int ShaderTypeToIndex(GLenum shader_type) {
   switch (shader_type) {
     case GL_VERTEX_SHADER:
       return 0;
@@ -31,6 +32,51 @@ static int ShaderTypeToIndex(GLenum shader_type) {
       NOTREACHED();
       return 0;
   }
+}
+
+// Given a name like "foo.bar[123].moo[456]" sets new_name to "foo.bar[123].moo"
+// and sets element_index to 456. returns false if element expression was not a
+// whole decimal number. For example: "foo[1b2]"
+bool GetUniformNameSansElement(
+    const std::string name, int* element_index, std::string* new_name) {
+  DCHECK(element_index);
+  DCHECK(new_name);
+  if (name.size() < 3 || name[name.size() - 1] != ']') {
+    *element_index = 0;
+    *new_name = name;
+    return true;
+  }
+
+  // Look for an array specification.
+  size_t open_pos = name.find_last_of('[');
+  if (open_pos == std::string::npos ||
+      open_pos >= name.size() - 2) {
+    return false;
+  }
+
+  GLint index = 0;
+  size_t last = name.size() - 1;
+  for (size_t pos = open_pos + 1; pos < last; ++pos) {
+    int8 digit = name[pos] - '0';
+    if (digit < 0 || digit > 9) {
+      return false;
+    }
+    index = index * 10 + digit;
+  }
+
+  if (index < 0) {
+    return false;
+  }
+
+  *element_index = index;
+  *new_name = name.substr(0, open_pos);
+  return true;
+}
+
+}  // anonymous namespace.
+
+ProgramManager::ProgramInfo::UniformInfo::UniformInfo()
+    : size(0) {
 }
 
 ProgramManager::ProgramInfo::UniformInfo::UniformInfo(
@@ -63,13 +109,15 @@ ProgramManager::ProgramInfo::ProgramInfo(
       deleted_(false),
       valid_(false),
       link_status_(false),
-      uniforms_cleared_(false) {
+      uniforms_cleared_(false),
+      num_uniforms_(0) {
   manager_->StartTracking(this);
 }
 
 void ProgramManager::ProgramInfo::Reset() {
   valid_ = false;
   link_status_ = false;
+  num_uniforms_ = 0;
   max_uniform_name_length_ = 0;
   max_attrib_name_length_ = 0;
   attrib_infos_.clear();
@@ -102,6 +150,9 @@ void ProgramManager::ProgramInfo::ClearUniforms(
   uniforms_cleared_ = true;
   for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& uniform_info = uniform_infos_[ii];
+    if (!uniform_info.IsValid()) {
+      continue;
+    }
     GLint location = uniform_info.element_locations[0];
     GLsizei size = uniform_info.size;
     uint32 unit_size =  GLES2Util::GetGLDataTypeSizeForUniforms(
@@ -167,11 +218,15 @@ void ProgramManager::ProgramInfo::ClearUniforms(
 namespace {
 
 struct UniformData {
+  UniformData() : size(-1), type(GL_NONE), added(false) {
+  }
   std::string queried_name;
   std::string corrected_name;
   std::string original_name;
   GLsizei size;
   GLenum type;
+  GLint location;
+  bool added;
 };
 
 struct UniformDataComparer {
@@ -235,7 +290,7 @@ void ProgramManager::ProgramInfo::Update() {
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   name_buffer.reset(new char[max_len]);
 
-  // Read all the names first and sort them so we get a consistent list
+  // Reads all the names.
   std::vector<UniformData> uniform_data_;
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
     GLsizei length = 0;
@@ -254,28 +309,50 @@ void ProgramManager::ProgramInfo::Update() {
     }
   }
 
-  std::sort(uniform_data_.begin(), uniform_data_.end(), UniformDataComparer());
+  // NOTE: We don't care if 2 uniforms are bound to the same location.
+  // One of them will take preference. The spec allows this, same as
+  // BindAttribLocation.
+  //
+  // The reason we don't check is if we were to fail we'd have to
+  // restore the previous program but since we've already linked successfully
+  // at this point the previous program is gone.
 
+  // Assigns the uniforms with bindings.
+  size_t next_available_index = 0;
+  for (size_t ii = 0; ii < uniform_data_.size(); ++ii) {
+    UniformData& data = uniform_data_[ii];
+    data.location = glGetUniformLocation(
+        service_id_, data.queried_name.c_str());
+    // remove "[0]"
+    std::string short_name;
+    int element_index = 0;
+    bool good ALLOW_UNUSED = GetUniformNameSansElement(
+        data.queried_name, &element_index, &short_name);\
+    DCHECK(good);
+    LocationMap::const_iterator it = bind_uniform_location_map_.find(
+        short_name);
+    if (it != bind_uniform_location_map_.end()) {
+      data.added = AddUniformInfo(
+          data.size, data.type, data.location, it->second, data.corrected_name,
+          data.original_name, &next_available_index);
+    }
+  }
+
+  // Assigns the uniforms that were not bound.
   for (size_t ii = 0; ii < uniform_data_.size(); ++ii) {
     const UniformData& data = uniform_data_[ii];
-    GLint location = glGetUniformLocation(
-        service_id_, data.queried_name.c_str());
-    const UniformInfo* info = AddUniformInfo(
-        data.size, data.type, location, data.corrected_name,
-        data.original_name);
-    if (info->IsSampler()) {
-      sampler_indices_.push_back(info->fake_location_base);
+    if (!data.added) {
+      AddUniformInfo(
+          data.size, data.type, data.location, -1, data.corrected_name,
+          data.original_name, &next_available_index);
     }
-    max_uniform_name_length_ =
-        std::max(max_uniform_name_length_,
-                 static_cast<GLsizei>(info->name.size()));
   }
+
   valid_ = true;
 }
 
 void ProgramManager::ProgramInfo::ExecuteBindAttribLocationCalls() {
-  for (std::map<std::string, GLint>::const_iterator it =
-           bind_attrib_location_map_.begin();
+  for (LocationMap::const_iterator it = bind_attrib_location_map_.begin();
        it != bind_attrib_location_map_.end(); ++it) {
     const std::string* mapped_name = GetAttribMappedName(it->first);
     if (mapped_name && *mapped_name != it->first)
@@ -318,6 +395,9 @@ GLint ProgramManager::ProgramInfo::GetUniformFakeLocation(
     const std::string& name) const {
   for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
+    if (!info.IsValid()) {
+      continue;
+    }
     if (info.name == name ||
         (info.is_array &&
          info.name.compare(0, info.name.size() - 3, name) == 0)) {
@@ -342,7 +422,8 @@ GLint ProgramManager::ProgramInfo::GetUniformFakeLocation(
           index = index * 10 + digit;
         }
         if (!bad && index >= 0 && index < info.size) {
-          return GLES2Util::MakeFakeLocation(info.fake_location_base, index);
+          return ProgramManager::MakeFakeLocation(
+              info.fake_location_base, index);
         }
       }
     }
@@ -374,6 +455,9 @@ const ProgramManager::ProgramInfo::UniformInfo*
   if (uniform_index >= 0 &&
       static_cast<size_t>(uniform_index) < uniform_infos_.size()) {
     const UniformInfo& uniform_info = uniform_infos_[uniform_index];
+    if (!uniform_info.IsValid()) {
+      return NULL;
+    }
     GLint element_index = GetArrayElementIndexFromFakeLocation(fake_location);
     if (element_index < uniform_info.size) {
       *real_location = uniform_info.element_locations[element_index];
@@ -396,6 +480,19 @@ const std::string* ProgramManager::ProgramInfo::GetAttribMappedName(
     }
   }
   return NULL;
+}
+
+bool ProgramManager::ProgramInfo::SetUniformLocationBinding(
+    const std::string& name, GLint location) {
+  std::string short_name;
+  int element_index = 0;
+  if (!GetUniformNameSansElement(name, &element_index, &short_name) ||
+      element_index != 0) {
+    return false;
+  }
+
+  bind_uniform_location_map_[short_name] = location;
+  return true;
 }
 
 // Note: This is only valid to call right after a program has been linked
@@ -435,15 +532,29 @@ void ProgramManager::ProgramInfo::GetCorrectedVariableInfo(
   *original_name = name;
 }
 
-const ProgramManager::ProgramInfo::UniformInfo*
-    ProgramManager::ProgramInfo::AddUniformInfo(
-        GLsizei size, GLenum type, GLint location,
-        const std::string& name, const std::string& original_name) {
+bool ProgramManager::ProgramInfo::AddUniformInfo(
+        GLsizei size, GLenum type, GLint location, GLint fake_base_location,
+        const std::string& name, const std::string& original_name,
+        size_t* next_available_index) {
+  DCHECK(next_available_index);
   const char* kArraySpec = "[0]";
-  int uniform_index = uniform_infos_.size();
-  uniform_infos_.push_back(
-      UniformInfo(size, type, uniform_index, original_name));
-  UniformInfo& info = uniform_infos_.back();
+  size_t uniform_index =
+      fake_base_location >= 0 ? fake_base_location : *next_available_index;
+  if (uniform_infos_.size() < uniform_index + 1) {
+    uniform_infos_.resize(uniform_index + 1);
+  }
+
+  // return if this location is already in use.
+  if (uniform_infos_[uniform_index].IsValid()) {
+    DCHECK_GE(fake_base_location, 0);
+    return false;
+  }
+
+  uniform_infos_[uniform_index] = UniformInfo(
+      size, type, uniform_index, original_name);
+  ++num_uniforms_;
+
+  UniformInfo& info = uniform_infos_[uniform_index];
   info.element_locations.resize(size);
   info.element_locations[0] = location;
   DCHECK_GE(size, 0);
@@ -476,7 +587,30 @@ const ProgramManager::ProgramInfo::UniformInfo*
       (info.name.size() > 3 &&
        info.name.rfind(kArraySpec) == info.name.size() - 3));
 
-  return &info;
+  if (info.IsSampler()) {
+    sampler_indices_.push_back(info.fake_location_base);
+  }
+  max_uniform_name_length_ =
+      std::max(max_uniform_name_length_,
+               static_cast<GLsizei>(info.name.size()));
+
+  while (*next_available_index < uniform_infos_.size() &&
+         uniform_infos_[*next_available_index].IsValid()) {
+    *next_available_index = *next_available_index + 1;
+  }
+
+  return true;
+}
+
+const ProgramManager::ProgramInfo::UniformInfo*
+    ProgramManager::ProgramInfo::GetUniformInfo(
+        GLint index) const {
+  if (static_cast<size_t>(index) >= uniform_infos_.size()) {
+    return NULL;
+  }
+
+  const UniformInfo& info = uniform_infos_[index];
+  return info.IsValid() ? &info : NULL;
 }
 
 bool ProgramManager::ProgramInfo::SetSamplers(
@@ -489,6 +623,9 @@ bool ProgramManager::ProgramInfo::SetSamplers(
   if (uniform_index >= 0 &&
       static_cast<size_t>(uniform_index) < uniform_infos_.size()) {
     UniformInfo& info = uniform_infos_[uniform_index];
+    if (!info.IsValid()) {
+      return false;
+    }
     GLint element_index = GetArrayElementIndexFromFakeLocation(fake_location);
     if (element_index < info.size) {
       count = std::min(info.size - element_index, count);
@@ -517,7 +654,7 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       *params = max_attrib_name_length_ + 1;
       break;
     case GL_ACTIVE_UNIFORMS:
-      *params = uniform_infos_.size();
+      *params = num_uniforms_;
       break;
     case GL_ACTIVE_UNIFORM_MAX_LENGTH:
       // Notice +1 to accomodate NULL terminator.
@@ -593,8 +730,7 @@ bool ProgramManager::ProgramInfo::CanLink() const {
 
 bool ProgramManager::ProgramInfo::DetectAttribLocationBindingConflicts() const {
   std::set<GLint> location_binding_used;
-  for (std::map<std::string, GLint>::const_iterator it =
-           bind_attrib_location_map_.begin();
+  for (LocationMap::const_iterator it = bind_attrib_location_map_.begin();
        it != bind_attrib_location_map_.end(); ++it) {
     // Find out if an attribute is declared in this program's shaders.
     bool active = false;
@@ -638,11 +774,13 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
 
   for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
-    num_locations += info.element_locations.size();
-    total_string_size += info.name.size();
+    if (info.IsValid()) {
+      num_locations += info.element_locations.size();
+      total_string_size += info.name.size();
+    }
   }
 
-  uint32 num_inputs = attrib_infos_.size() + uniform_infos_.size();
+  uint32 num_inputs = attrib_infos_.size() + num_uniforms_;
   uint32 input_size = num_inputs * sizeof(ProgramInput);
   uint32 location_size = num_locations * sizeof(int32);
   uint32 size = sizeof(ProgramInfoHeader) +
@@ -664,7 +802,7 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
 
   header->link_status = link_status_;
   header->num_attribs = attrib_infos_.size();
-  header->num_uniforms = uniform_infos_.size();
+  header->num_uniforms = num_uniforms_;
 
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttribInfo& info = attrib_infos_[ii];
@@ -681,19 +819,20 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
 
   for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
-    inputs->size = info.size;
-    inputs->type = info.type;
-    inputs->location_offset = ComputeOffset(header, locations);
-    inputs->name_offset = ComputeOffset(header, strings);
-    inputs->name_length = info.name.size();
-    DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
-    for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-      *locations++ = GLES2Util::SwizzleLocation(
-          GLES2Util::MakeFakeLocation(ii, jj));
+    if (info.IsValid()) {
+      inputs->size = info.size;
+      inputs->type = info.type;
+      inputs->location_offset = ComputeOffset(header, locations);
+      inputs->name_offset = ComputeOffset(header, strings);
+      inputs->name_length = info.name.size();
+      DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
+      for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
+        *locations++ = ProgramManager::MakeFakeLocation(ii, jj);
+      }
+      memcpy(strings, info.name.c_str(), info.name.size());
+      strings += info.name.size();
+      ++inputs;
     }
-    memcpy(strings, info.name.c_str(), info.name.size());
-    strings += info.name.size();
-    ++inputs;
   }
 
   DCHECK_EQ(ComputeOffset(header, strings), size);
@@ -821,6 +960,10 @@ void ProgramManager::ClearUniforms(ProgramManager::ProgramInfo* info) {
   if (!disable_workarounds_) {
     info->ClearUniforms(&zero_);
   }
+}
+
+int32 ProgramManager::MakeFakeLocation(int32 index, int32 element) {
+  return index + element * 0x10000;
 }
 
 }  // namespace gles2

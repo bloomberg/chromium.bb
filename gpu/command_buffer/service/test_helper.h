@@ -52,6 +52,7 @@ class TestHelper {
     GLenum type;
     GLint fake_location;
     GLint real_location;
+    GLint desired_location;
     const char* good_name;
   };
 

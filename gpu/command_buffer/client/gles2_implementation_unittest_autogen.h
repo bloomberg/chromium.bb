@@ -1696,5 +1696,6 @@ TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
   gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, &expected.data[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+// TODO: Implement unit test for BindUniformLocationCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 

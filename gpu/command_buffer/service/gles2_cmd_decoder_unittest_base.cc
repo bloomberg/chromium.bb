@@ -601,8 +601,8 @@ void GLES2DecoderTestBase::SetupShaderForUniform() {
     { "goo", 1, GL_FLOAT, 2, },
   };
   static UniformInfo uniforms[] = {
-    { "bar", 1, GL_INT, 0, 2, },
-    { "car", 4, GL_INT, 1, 1, },
+    { "bar", 1, GL_INT, 0, 2, -1, },
+    { "car", 4, GL_INT, 1, 1, -1, },
   };
   const GLuint kClientVertexShaderId = 5001;
   const GLuint kServiceVertexShaderId = 6001;
@@ -1073,6 +1073,9 @@ const GLint GLES2DecoderTestBase::kUniform1FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform2FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform2ElementFakeLocation;
 const GLint GLES2DecoderTestBase::kUniform3FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform1DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform2DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform3DesiredLocation;
 const GLenum GLES2DecoderTestBase::kUniform1Type;
 const GLenum GLES2DecoderTestBase::kUniform2Type;
 const GLenum GLES2DecoderTestBase::kUniform3Type;
@@ -1098,11 +1101,14 @@ void GLES2DecoderTestBase::SetupDefaultProgram() {
     };
     static UniformInfo uniforms[] = {
       { kUniform1Name, kUniform1Size, kUniform1Type,
-        kUniform1FakeLocation, kUniform1RealLocation },
+        kUniform1FakeLocation, kUniform1RealLocation,
+        kUniform1DesiredLocation },
       { kUniform2Name, kUniform2Size, kUniform2Type,
-        kUniform2FakeLocation, kUniform2RealLocation },
+        kUniform2FakeLocation, kUniform2RealLocation,
+        kUniform2DesiredLocation },
       { kUniform3Name, kUniform3Size, kUniform3Type,
-        kUniform3FakeLocation, kUniform3RealLocation },
+        kUniform3FakeLocation, kUniform3RealLocation,
+        kUniform3DesiredLocation },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,
@@ -1129,11 +1135,14 @@ void GLES2DecoderTestBase::SetupCubemapProgram() {
     };
     static UniformInfo uniforms[] = {
       { kUniform1Name, kUniform1Size, kUniformCubemapType,
-        kUniform1FakeLocation, kUniform1RealLocation, },
+        kUniform1FakeLocation, kUniform1RealLocation,
+        kUniform1DesiredLocation, },
       { kUniform2Name, kUniform2Size, kUniform2Type,
-        kUniform2FakeLocation, kUniform2RealLocation, },
+        kUniform2FakeLocation, kUniform2RealLocation,
+        kUniform2DesiredLocation, },
       { kUniform3Name, kUniform3Size, kUniform3Type,
-        kUniform3FakeLocation, kUniform3RealLocation, },
+        kUniform3FakeLocation, kUniform3RealLocation,
+        kUniform3DesiredLocation, },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,
