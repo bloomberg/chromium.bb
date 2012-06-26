@@ -91,7 +91,9 @@ class DaemonControllerWin : public remoting::DaemonController {
   // Activates an unprivileged instance of the daemon controller and caches it.
   HRESULT ActivateController();
 
-  // Activates an elevated instance of the daemon controller and caches it.
+  // Activates an instance of the daemon controller and caches it. If COM
+  // Elevation is supported (Vista+) the activated instance is elevated,
+  // otherwise it is activated under credentials of the caller.
   HRESULT ActivateElevatedController();
 
   // Releases the cached instance of the controller.
@@ -193,7 +195,7 @@ DaemonControllerWin::~DaemonControllerWin() {
 }
 
 remoting::DaemonController::State DaemonControllerWin::GetState() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_XP) {
     return STATE_NOT_IMPLEMENTED;
   }
   // TODO(alexeypa): Make the thread alertable, so we can switch to APC
@@ -301,6 +303,11 @@ HRESULT DaemonControllerWin::ActivateController() {
 
 HRESULT DaemonControllerWin::ActivateElevatedController() {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  // The COM elevation is supported on Vista and above.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    return ActivateController();
+  }
 
   // Release an unprivileged instance of the daemon controller if any.
   if (!control_is_elevated_) {
