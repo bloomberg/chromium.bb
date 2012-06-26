@@ -30,6 +30,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace browser_sync {
 
@@ -320,16 +322,27 @@ bool ForeignSessionHandler::SessionWindowToValue(
     return false;
   }
   scoped_ptr<ListValue> tab_values(new ListValue());
+  // Calculate the last |modification_time| for all entries within a window.
+  base::Time modification_time = window.timestamp;
   for (size_t i = 0; i < window.tabs.size(); ++i) {
     scoped_ptr<DictionaryValue> tab_value(new DictionaryValue());
-    if (SessionTabToValue(*window.tabs[i], tab_value.get()))
+    if (SessionTabToValue(*window.tabs[i], tab_value.get())) {
+      modification_time = std::max(modification_time,
+                                   window.tabs[i]->timestamp);
       tab_values->Append(tab_value.release());
+    }
   }
   if (tab_values->GetSize() == 0)
     return false;
   dictionary->SetString("type", "window");
-  dictionary->SetDouble("timestamp",
-      static_cast<double>(window.timestamp.ToInternalValue()));
+  dictionary->SetDouble("timestamp", modification_time.ToInternalValue());
+  const base::TimeDelta last_synced = base::Time::Now() - modification_time;
+  // If clock skew leads to a future time, or we last synced less than a minute
+  // ago, output "Just now".
+  dictionary->SetString("userVisibleTimestamp",
+      last_synced < base::TimeDelta::FromMinutes(1) ?
+          l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW) :
+          TimeFormat::TimeElapsed(last_synced));
   dictionary->SetInteger("sessionId", window.window_id.id());
   dictionary->Set("tabs", tab_values.release());
   return true;
