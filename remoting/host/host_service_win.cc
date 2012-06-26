@@ -258,7 +258,7 @@ int HostService::RunInConsole() {
   HWND window = NULL;
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
-      WideToUTF16(kSessionNotificationWindowClass).c_str(),
+      kSessionNotificationWindowClass,
       &base::win::WrappedWindowProc<SessionChangeNotificationProc>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);
