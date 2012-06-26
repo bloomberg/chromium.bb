@@ -16,8 +16,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/scoped_native_library.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
@@ -587,7 +590,18 @@ int CALLBACK WinMain(HINSTANCE instance,
   InitCommonControlsEx(&info);
 
   // Mark the process as DPI-aware, so Windows won't scale coordinates in APIs.
-  SetProcessDPIAware();
+  // N.B. This API exists on Vista and above.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
+    base::ScopedNativeLibrary user32(path);
+    CHECK(user32.is_valid());
+
+    typedef BOOL (WINAPI * SetProcessDPIAwareFn)();
+    SetProcessDPIAwareFn set_process_dpi_aware =
+        static_cast<SetProcessDPIAwareFn>(
+            user32.GetFunctionPointer("SetProcessDPIAware"));
+    set_process_dpi_aware();
+  }
 
   // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
   // the command line from GetCommandLineW(), so we can safely pass NULL here.
