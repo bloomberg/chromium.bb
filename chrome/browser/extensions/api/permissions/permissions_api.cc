@@ -44,7 +44,7 @@ enum AutoConfirmForTest {
 AutoConfirmForTest auto_confirm_for_tests = DO_NOT_SKIP;
 bool ignore_user_gesture_for_tests = false;
 
-} // namespace
+}  // namespace
 
 bool ContainsPermissionsFunction::RunImpl() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
@@ -176,9 +176,9 @@ bool RequestPermissionsFunction::RunImpl() {
 
   // We don't need to prompt the user if the requested permissions are a subset
   // of the granted permissions set.
-  const ExtensionPermissionSet* granted =
+  scoped_refptr<const ExtensionPermissionSet> granted =
       prefs->GetGrantedPermissions(GetExtension()->id());
-  if (granted && granted->Contains(*requested_permissions_)) {
+  if (granted.get() && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(profile());
     perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
     result_.reset(Request::Result::Create(true));
@@ -188,7 +188,7 @@ bool RequestPermissionsFunction::RunImpl() {
 
   // Filter out the granted permissions so we only prompt for new ones.
   requested_permissions_ = ExtensionPermissionSet::CreateDifference(
-      requested_permissions_.get(), granted);
+      requested_permissions_.get(), granted.get());
 
   AddRef();  // Balanced in InstallUIProceed() / InstallUIAbort().
 
