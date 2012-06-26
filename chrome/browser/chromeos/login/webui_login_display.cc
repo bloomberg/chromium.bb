@@ -110,22 +110,26 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
       break;
   }
 
-  // Display a warning if Caps Lock is on and error is authentication-related.
-  input_method::InputMethodManager* ime_manager =
-      input_method::InputMethodManager::GetInstance();
-  if (ime_manager->GetXKeyboard()->CapsLockIsEnabled() &&
-      error_msg_id != IDS_LOGIN_ERROR_WHITELIST) {
-    // TODO(ivankr): use a format string instead of concatenation.
-    error_text += "\n" +
-        l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
-  }
+  // Only display hints about keyboard layout if the error is authentication-
+  // related.
+  if (error_msg_id != IDS_LOGIN_ERROR_WHITELIST &&
+      error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
+      error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED) {
+    // Display a warning if Caps Lock is on.
+    input_method::InputMethodManager* ime_manager =
+        input_method::InputMethodManager::GetInstance();
+    if (ime_manager->GetXKeyboard()->CapsLockIsEnabled()) {
+      // TODO(ivankr): use a format string instead of concatenation.
+      error_text += "\n" +
+          l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
+    }
 
-  // Display a hint to switch keyboards if there are other active input methods
-  // and error is authentication-related.
-  if (ime_manager->GetNumActiveInputMethods() > 1 &&
-      error_msg_id != IDS_LOGIN_ERROR_WHITELIST) {
-    error_text += "\n" +
-        l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+    // Display a hint to switch keyboards if there are other active input
+    // methods.
+    if (ime_manager->GetNumActiveInputMethods() > 1) {
+      error_text += "\n" +
+          l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+    }
   }
 
   std::string help_link;
