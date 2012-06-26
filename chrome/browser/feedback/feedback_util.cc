@@ -202,7 +202,8 @@ void FeedbackUtil::SendFeedback(Profile* profile,
       post_url, net::URLFetcher::POST,
       new FeedbackUtil::PostCleanup(profile, post_body, previous_delay));
   fetcher->SetRequestContext(profile->GetRequestContext());
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher->SetLoadFlags(
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);
   fetcher->Start();
 }
