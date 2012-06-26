@@ -574,8 +574,6 @@ void MetricsService::SetRecording(bool enabled) {
     registrar_.RemoveAll();
     PushPendingLogsToPersistentStorage();
     DCHECK(!log_manager_.has_staged_log());
-    if (state_ > INITIAL_LOG_READY && log_manager_.has_unsent_logs())
-      state_ = SENDING_OLD_LOGS;
   }
   recording_active_ = enabled;
 }
@@ -1075,10 +1073,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     return;  // We didn't and still don't have time to get plugin list etc.
 
   if (log_manager_.has_staged_log()) {
-    // We may race here, and send second copy of initial log later.
-    if (state_ == INITIAL_LOG_READY)
-      state_ = SENDING_OLD_LOGS;
-
+    // We may race here, and send second copy of the log later.
     MetricsLogManager::StoreType store_type;
     if (current_fetch_xml_.get() || current_fetch_proto_.get())
       store_type = MetricsLogManager::PROVISIONAL_STORE;
@@ -1089,6 +1084,11 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
   DCHECK(!log_manager_.has_staged_log());
   StopRecording();
   StoreUnsentLogs();
+
+  // If there was a staged and/or current log, then there is now at least one
+  // log waiting to be uploaded.
+  if (log_manager_.has_unsent_logs())
+    state_ = SENDING_OLD_LOGS;
 }
 
 //------------------------------------------------------------------------------
