@@ -71,9 +71,9 @@ bool SessionCrashedInfoBarDelegate::Accept() {
   uint32 behavior = 0;
   Browser* browser =
       browser::FindBrowserWithWebContents(owner()->web_contents());
-  if (browser && browser->tab_count() == 1 &&
+  if (browser->tab_count() == 1 &&
       browser->GetWebContentsAt(0)->GetURL() ==
-      GURL(chrome::kChromeUINewTabURL)) {
+          GURL(chrome::kChromeUINewTabURL)) {
     // There is only one tab and its the new tab page, make session restore
     // clobber it.
     behavior = SessionRestore::CLOBBER_CURRENT_TAB;
