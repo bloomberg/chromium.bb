@@ -1763,12 +1763,6 @@ handle_sgr(struct terminal *terminal, int code)
 static int
 handle_special_char(struct terminal *terminal, char c)
 {
-	union utf8_char *row;
-	struct attr *attr_row;
-	
-	row = terminal_get_row(terminal, terminal->row);
-	attr_row = terminal_get_attr_row(terminal, terminal->row);
-	
 	switch(c) {
 	case '\r':
 		terminal->column = 0;
@@ -1791,9 +1785,6 @@ handle_special_char(struct terminal *terminal, char c)
 		while (terminal->column < terminal->width) {
 			if (terminal->mode & MODE_IRM)
 				terminal_shift_line(terminal, +1);
-			row[terminal->column].byte[0] = ' ';
-			row[terminal->column].byte[1] = '\0';
-			attr_row[terminal->column] = terminal->curr_attr;
 			terminal->column++;
 			if (terminal->tab_ruler[terminal->column]) break;
 		}
