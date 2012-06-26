@@ -41,12 +41,6 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
   virtual void Reload() OVERRIDE;
 
- protected:
-  // For test use only.
-  void set_ownership_status(OwnershipService::Status status) {
-    ownership_status_ = status;
-  }
-
  private:
   // CrosSettingsProvider implementation:
   virtual void DoSet(const std::string& path,
@@ -130,6 +124,17 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
       SignedSettings::ReturnCode code,
       const enterprise_management::PolicyFetchResponse& policy);
 
+  // These setters are for test use only.
+  void set_ownership_status(OwnershipService::Status status) {
+    ownership_status_ = status;
+  }
+  void set_trusted_status(TrustedStatus status) {
+    trusted_status_ = status;
+  }
+  void set_retries_left(int retries) {
+    retries_left_ = retries;
+  }
+
   // Pending callbacks that need to be invoked after settings verification.
   std::vector<base::Closure> callbacks_;
 
@@ -155,6 +160,9 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   friend class DeviceSettingsProviderTest;
   FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest,
                            InitializationTestUnowned);
+  FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest,
+                           PolicyFailedPermanentlyNotification);
+  FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest, PolicyLoadNotification);
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProvider);
 };
 

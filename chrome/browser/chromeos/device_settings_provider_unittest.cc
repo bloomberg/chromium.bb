@@ -54,18 +54,15 @@ protected:
         .Times(AnyNumber());
 
     EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
-        .Times(AnyNumber())
         .WillRepeatedly(
             MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
                                                    policy_blob_));
     EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_,_))
-        .Times(AnyNumber())
         .WillRepeatedly(DoAll(
             SaveArg<0>(&policy_blob_),
             MockSignedSettingsHelperStorePolicy(SignedSettings::SUCCESS)));
 
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserOwner())
-        .Times(AnyNumber())
         .WillRepeatedly(Return(true));
 
     provider_.reset(
@@ -74,6 +71,8 @@ protected:
                        base::Unretained(this)),
             &signed_settings_helper_));
     provider_->set_ownership_status(OwnershipService::OWNERSHIP_TAKEN);
+    // To prevent flooding the logs.
+    provider_->set_retries_left(1);
     provider_->Reload();
   }
 
@@ -109,12 +108,11 @@ protected:
 
 TEST_F(DeviceSettingsProviderTest, InitializationTest) {
   // Verify that the policy blob has been correctly parsed and trusted.
+  // The trusted flag should be set before the call to PrepareTrustedValues.
   EXPECT_EQ(CrosSettingsProvider::TRUSTED,
             provider_->PrepareTrustedValues(
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
-  // The trusted flag should be established already prior to calling GetTrusted.
-  message_loop_.RunAllPending();
   const base::Value* value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(value);
   bool bool_value;
@@ -128,13 +126,11 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
 
   provider_->set_ownership_status(OwnershipService::OWNERSHIP_NONE);
   provider_->Reload();
-  // Verify that the cache policy blob is "trusted".
+  // The trusted flag should be set before the call to PrepareTrustedValues.
   EXPECT_EQ(CrosSettingsProvider::TRUSTED,
             provider_->PrepareTrustedValues(
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
-  // The trusted flag should be established already prior to calling GetTrusted.
-  message_loop_.RunAllPending();
   const base::Value* value = provider_->Get(kReleaseChannel);
   ASSERT_TRUE(value);
   std::string string_value;
@@ -182,7 +178,6 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSingature) {
   // No calls to the SignedSettingsHelper should occur in this case!
   Mock::VerifyAndClear(&signed_settings_helper_);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
-      .Times(AnyNumber())
       .WillRepeatedly(
           MockSignedSettingsHelperRetrievePolicy(
               SignedSettings::BAD_SIGNATURE,
@@ -193,15 +188,12 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSingature) {
             provider_->PrepareTrustedValues(
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
-  // The trusted flag should be established already prior to calling GetTrusted.
-  message_loop_.RunAllPending();
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailedPermanently) {
   // No calls to the SignedSettingsHelper should occur in this case!
   Mock::VerifyAndClear(&signed_settings_helper_);
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
-      .Times(AnyNumber())
       .WillRepeatedly(
           MockSignedSettingsHelperRetrievePolicy(
               SignedSettings::OPERATION_FAILED,
@@ -212,8 +204,6 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailedPermanently) {
             provider_->PrepareTrustedValues(
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
-  // The trusted flag should be established already prior to calling GetTrusted.
-  message_loop_.RunAllPending();
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailedOnce) {
@@ -235,8 +225,33 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalOperationFailedOnce) {
             provider_->PrepareTrustedValues(
                 base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
                            base::Unretained(this))));
-  // The trusted flag should be established already prior to calling GetTrusted.
-  message_loop_.RunAllPending();
+}
+
+TEST_F(DeviceSettingsProviderTest, PolicyFailedPermanentlyNotification) {
+  Mock::VerifyAndClear(&signed_settings_helper_);
+  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
+      .WillRepeatedly(
+          MockSignedSettingsHelperRetrievePolicy(
+              SignedSettings::OPERATION_FAILED,
+              policy_blob_));
+
+  provider_->set_trusted_status(CrosSettingsProvider::TEMPORARILY_UNTRUSTED);
+  EXPECT_CALL(*this, GetTrustedCallback());
+  EXPECT_EQ(CrosSettingsProvider::TEMPORARILY_UNTRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
+  provider_->Reload();
+}
+
+TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
+  provider_->set_trusted_status(CrosSettingsProvider::TEMPORARILY_UNTRUSTED);
+  EXPECT_CALL(*this, GetTrustedCallback());
+  EXPECT_EQ(CrosSettingsProvider::TEMPORARILY_UNTRUSTED,
+            provider_->PrepareTrustedValues(
+                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
+                           base::Unretained(this))));
+  provider_->Reload();
 }
 
 } // namespace chromeos
