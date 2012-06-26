@@ -122,7 +122,7 @@ const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
 
-const PPB_NaCl_Private* GetNaclInterface() {
+const PPB_NaCl_Private* GetNaClInterface() {
   pp::Module *module = pp::Module::Get();
   CHECK(module);
   return static_cast<const PPB_NaCl_Private*>(
@@ -622,8 +622,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
   }
 
   // Try to start the Chrome IPC-based proxy.
-  const PPB_NaCl_Private* ppb_nacl = GetNaclInterface();
-  if (ppb_nacl->StartPpapiProxy(pp_instance())) {
+  if (nacl_interface_->StartPpapiProxy(pp_instance())) {
     using_ipc_proxy_ = true;
     // We need to explicitly schedule this here. It is normally called in
     // response to starting the SRPC proxy.
@@ -890,11 +889,14 @@ Plugin::Plugin(PP_Instance pp_instance)
       ready_time_(0),
       nexe_size_(0),
       time_of_last_progress_event_(0),
-      using_ipc_proxy_(false) {
+      using_ipc_proxy_(false),
+      nacl_interface_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   callback_factory_.Initialize(this);
   nexe_downloader_.Initialize(this);
+  nacl_interface_ = GetNaClInterface();
+  CHECK(nacl_interface_ != NULL);
 }
 
 

@@ -25,6 +25,7 @@
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/private/var_private.h"
 // for pp::VarPrivate
 #include "ppapi/cpp/private/instance_private.h"
@@ -520,6 +521,8 @@ class Plugin : public pp::InstancePrivate {
 
   // Whether we are using IPC-based PPAPI proxy.
   bool using_ipc_proxy_;
+
+  const PPB_NaCl_Private* nacl_interface_;
 };
 
 }  // namespace plugin
