@@ -196,7 +196,16 @@ class BuilderStage(object):
     """
     pass
 
-  def _HandleExceptionAsWarning(self, exception):
+  def _HandleExceptionAsSuccess(self, _exception):
+    """Use instead of HandleStageException to ignore an exception."""
+    return results_lib.Results.SUCCESS, None
+
+  def _HandleExceptionAsWarning(self, _exception):
+    """Use instead of HandleStageException to treat an exception as a warning.
+
+    This is used by the ForgivingBuilderStage's to treat any exceptions as
+    warnings instead of stage failures.
+    """
     print '\n%s' % constants.STEP_WARNINGS
     description = traceback.format_exc()
     print >> sys.stderr, description

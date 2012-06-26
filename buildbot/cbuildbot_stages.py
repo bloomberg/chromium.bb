@@ -1040,8 +1040,21 @@ class PaladinHWTestStage(HWTestStage, BoardSpecificBuilderStage,
   This step differs from the HW Test stage as it has a lower threshold for
   timeouts and does not block changes from being committed.
   """
+  # TODO(sosa):  Major hack alert!!! Right now this step takes too long but we
+  # still want to schedule these hw test jobs to ensure the workflow is getting
+  # faster. However, as the script is a synchronous blocking call (waiting for
+  # the job to finish) and we only want this functionality temporarily, I'm just
+  # re-using the timeout logic to stop the call after 60 seconeds. This should
+  # be removed soon.
+
   # If the tests take longer than an hour and a half, abort.
-  INFRASTRUCTURE_TIMEOUT = 1800
+  INFRASTRUCTURE_TIMEOUT = 60
+
+  # Disable use of calling parents _HandleExceptionAsWarning class.
+  # pylint: disable=W0212
+  def _HandleExceptionAsWarning(self, exception):
+    """Override and treat timeout's as success."""
+    return self._HandleExceptionAsSuccess(exception)
 
 
 class SDKTestStage(bs.BuilderStage):
