@@ -26,8 +26,7 @@ SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
     ui::SimpleMenuModel::Delegate* delegate,
     int group)
     : proxy_(proxy),
-      submenu_model_(delegate),
-      check_spelling_while_typing_(false) {
+      submenu_model_(delegate) {
   DCHECK(proxy_);
 }
 
@@ -37,8 +36,6 @@ SpellCheckerSubMenuObserver::~SpellCheckerSubMenuObserver() {
 void SpellCheckerSubMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  check_spelling_while_typing_ = params.spellcheck_enabled;
 
   // Add an item that toggles the spelling panel.
   submenu_model_.AddCheckItem(
@@ -84,9 +81,8 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
   // Check box for 'Check Spelling while typing'.
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = proxy_->GetProfile();
-    if (!profile || !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck))
-      return false;
-    return check_spelling_while_typing_;
+    DCHECK(profile);
+    return profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
   }
 
   return false;
@@ -95,16 +91,8 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
 bool SpellCheckerSubMenuObserver::IsCommandIdEnabled(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
 
-  Profile* profile = proxy_->GetProfile();
-  if (!profile)
-    return false;
-
-  const PrefService* pref = profile->GetPrefs();
-
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
-      return pref->GetBoolean(prefs::kEnableSpellCheck);
-
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
     case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
@@ -118,9 +106,15 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
 
   content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
+  Profile* profile = proxy_->GetProfile();
+  DCHECK(profile);
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
-      rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
+      profile->GetPrefs()->SetBoolean(
+          prefs::kEnableSpellCheck,
+          !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+      if (rvh)
+        rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
       break;
 
     case IDC_SPELLPANEL_TOGGLE:
