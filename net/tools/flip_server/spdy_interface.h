@@ -68,6 +68,9 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len) OVERRIDE;
+  virtual void OnControlFrameCompressed(
+      const SpdyControlFrame& uncompressed_frame,
+      const SpdyControlFrame& compressed_frame) OVERRIDE {};
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value)  OVERRIDE {}
   virtual void OnSynStream(
