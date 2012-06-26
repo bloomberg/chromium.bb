@@ -80,6 +80,8 @@ class AppNonClientFrameViewAura::ControlView
     AddChildView(restore_button_);
   }
 
+  virtual ~ControlView() {}
+
   virtual void Layout() OVERRIDE {
     restore_button_->SetPosition(gfx::Point(kShadowStart, 0));
     close_button_->SetPosition(gfx::Point(kShadowStart +
@@ -123,8 +125,8 @@ class AppNonClientFrameViewAura::ControlView
     canvas->DrawImageInt(*shadow_, 0, kShadowHeightStretch);
   }
 
-  void ButtonPressed(views::Button* sender,
-                     const views::Event& event) OVERRIDE {
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
     if (sender == close_button_) {
       owner_->Close();
     } else if (sender == restore_button_) {
@@ -164,7 +166,7 @@ class AppNonClientFrameViewAura::Host : public views::MouseWatcherHost {
 
   virtual bool Contains(
       const gfx::Point& screen_point,
-      views::MouseWatcherHost::MouseEventType type) {
+      views::MouseWatcherHost::MouseEventType type) OVERRIDE {
     gfx::Rect top_margin = owner_->GetScreenBounds();
     top_margin.set_height(kTopMargin);
     gfx::Rect control_bounds = owner_->GetControlBounds();
@@ -173,6 +175,7 @@ class AppNonClientFrameViewAura::Host : public views::MouseWatcherHost {
         control_bounds.Contains(screen_point);
   }
 
+ private:
   AppNonClientFrameViewAura* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(Host);
@@ -243,6 +246,14 @@ void AppNonClientFrameViewAura::UpdateThrobber(bool running) {
 
 void AppNonClientFrameViewAura::OnMouseEntered(
     const views::MouseEvent& event) {
+  if (!control_view_) {
+    // This can only happen when the frame-view (|this|) is in the process of
+    // destroying itself, but the control-widget has already closed, and some
+    // mouse event (possibly queued in the event-stream) has arrived. In such
+    // cases, do not do anything.
+    return;
+  }
+
   if (!control_widget_) {
     control_widget_ = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
@@ -291,9 +302,12 @@ void AppNonClientFrameViewAura::MouseMovedOutOfHost() {
 void AppNonClientFrameViewAura::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(control_widget_, widget);
   control_widget_ = NULL;
+  control_view_ = NULL;
 }
 
 gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
+  if (!control_view_)
+    return gfx::Rect();
   gfx::Size preferred = control_view_->GetPreferredSize();
   gfx::Point location(width() - preferred.width(), 0);
   ConvertPointToWidget(this, &location);
