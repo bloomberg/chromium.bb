@@ -29,7 +29,7 @@ SUIDSandboxUITest.prototype = {
 //   can get clear information on where the sandbox is and isn't installed.
 GEN('#if defined(OS_LINUX)');
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
-GEN('     FLAKY_testSUIDSandboxEnabled');
+GEN('     testSUIDSandboxEnabled');
 GEN('#else');
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
 GEN('     DISABLED_testSUIDSandboxEnabled');
