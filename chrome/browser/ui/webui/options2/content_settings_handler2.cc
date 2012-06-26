@@ -855,10 +855,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   GetContentSettingsMap()->GetSettingsForOneType(type, "", &entries);
 
   ListValue exceptions;
-  if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    AddExceptionsGrantedByHostedApps(profile, HasProtectedStorage, &exceptions);
-  }
   for (size_t i = 0; i < entries.size(); ++i) {
     // Skip default settings from extensions and policy, and the default content
     // settings; all of them will affect the default setting UI.
