@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
@@ -44,6 +45,16 @@
 - (void)windowWillClose:(NSNotification*)notification {
   if (shellWindow_)
     shellWindow_->WindowWillClose();
+}
+
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  if (shellWindow_)
+    shellWindow_->WindowDidBecomeKey();
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  if (shellWindow_)
+    shellWindow_->WindowDidResignKey();
 }
 
 @end
@@ -267,6 +278,27 @@ bool ShellWindowCocoa::IsAlwaysOnTop() const {
 void ShellWindowCocoa::WindowWillClose() {
   [window_controller_ setShellWindow:NULL];
   OnNativeClose();
+}
+
+void ShellWindowCocoa::WindowDidBecomeKey() {
+  content::RenderWidgetHostView* rwhv =
+      web_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetActive(true);
+}
+
+void ShellWindowCocoa::WindowDidResignKey() {
+  // If our app is still active and we're still the key window, ignore this
+  // message, since it just means that a menu extra (on the "system status bar")
+  // was activated; we'll get another |-windowDidResignKey| if we ever really
+  // lose key window status.
+  if ([NSApp isActive] && ([NSApp keyWindow] == window()))
+    return;
+
+  content::RenderWidgetHostView* rwhv =
+      web_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetActive(false);
 }
 
 ShellWindowCocoa::~ShellWindowCocoa() {

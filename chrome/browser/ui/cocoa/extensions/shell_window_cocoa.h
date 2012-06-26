@@ -59,6 +59,12 @@ class ShellWindowCocoa : public ShellWindow {
   // Called when the window is about to be closed.
   void WindowWillClose();
 
+  // Called when the window is focused.
+  void WindowDidBecomeKey();
+
+  // Called when the window is defocused.
+  void WindowDidResignKey();
+
  protected:
   // ShellWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
