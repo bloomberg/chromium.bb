@@ -112,6 +112,16 @@ def is_same_filesystem(path1, path2):
 
   This is required to enable the use of hardlinks.
   """
+  assert os.path.isabs(path1), path1
+  assert os.path.isabs(path2), path2
+  if sys.platform == 'win32':
+    # If the drive letter mismatches, assume it's a separate partition.
+    # TODO(maruel): It should look at the underlying drive, a drive letter could
+    # be a mount point to a directory on another drive.
+    assert re.match(r'^[a-zA-Z]\:\\.*', path1), path1
+    assert re.match(r'^[a-zA-Z]\:\\.*', path2), path2
+    if path1[0].lower() != path2[0].lower():
+      return False
   return os.stat(path1).st_dev == os.stat(path2).st_dev
 
 
