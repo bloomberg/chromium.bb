@@ -6109,6 +6109,9 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write(_LICENSE)
     file.Write(_DO_NOT_EDIT_WARNING)
 
+    file.Write("#ifndef GL_GLEXT_PROTOTYPES\n")
+    file.Write("#define GL_GLEXT_PROTOTYPES\n")
+    file.Write("#endif\n")
     file.Write("#include <GLES2/gl2.h>\n")
     file.Write("#include <GLES2/gl2ext.h>\n")
     file.Write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")

@@ -6,6 +6,9 @@
 // gpu/command_buffer/build_gles2_cmd_buffer.py
 // DO NOT EDIT!
 
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+#endif
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
