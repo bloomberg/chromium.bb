@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/views/color_chooser/color_chooser_listener.h"
 
 using content::BrowserThread;
 
@@ -25,7 +26,7 @@ ColorChooserDialog::ExecuteOpenParams::ExecuteOpenParams(SkColor color,
       owner(owner) {
 }
 
-ColorChooserDialog::ColorChooserDialog(Listener* listener,
+ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener,
                                        SkColor initial_color,
                                        gfx::NativeWindow owning_window)
     : listener_(listener) {
@@ -72,8 +73,8 @@ void ColorChooserDialog::DidCloseDialog(bool chose_color,
   EndRun(run_state);
   CopyCustomColors(custom_colors_, g_custom_colors);
   if (chose_color)
-    listener_->DidChooseColor(color);
-  listener_->DidEnd();
+    listener_->OnColorChosen(color);
+  listener_->OnColorChooserDialogClosed();
 }
 
 void ColorChooserDialog::CopyCustomColors(COLORREF* src, COLORREF* dst) {

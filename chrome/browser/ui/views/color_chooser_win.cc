@@ -11,25 +11,30 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/views/color_chooser/color_chooser_listener.h"
 
 class ColorChooserWin : public content::ColorChooser,
-                        public ColorChooserDialog::Listener,
-                        public content::WebContentsObserver {
+                        public views::ColorChooserListener {
  public:
   ColorChooserWin(int identifier,
                   content::WebContents* tab,
                   SkColor initial_color);
   ~ColorChooserWin();
 
-  // content::ColorChooser:
+  // content::ColorChooser overrides:
   virtual void End() OVERRIDE {}
   virtual void SetSelectedColor(SkColor color) OVERRIDE {}
 
-  // ColorChooserDialog::Listener:
-  virtual void DidChooseColor(SkColor color);
-  virtual void DidEnd();
+  // views::ColorChooserListener overrides:
+  virtual void OnColorChosen(SkColor color);
+  virtual void OnColorChooserDialogClosed();
 
  private:
+  // The web contents invoking the color chooser.  No ownership. because it will
+  // outlive this class.
+  content::WebContents* tab_;
+
+  // The color chooser dialog which maintains the native color chooser UI.
   scoped_refptr<ColorChooserDialog> color_chooser_dialog_;
 };
 
@@ -43,9 +48,9 @@ ColorChooserWin::ColorChooserWin(int identifier,
                                  content::WebContents* tab,
                                  SkColor initial_color)
     : content::ColorChooser(identifier),
-      content::WebContentsObserver(tab) {
+      tab_(tab) {
   gfx::NativeWindow owning_window = platform_util::GetTopLevel(
-      web_contents()->GetRenderViewHost()->GetView()->GetNativeView());
+      tab_->GetRenderViewHost()->GetView()->GetNativeView());
   color_chooser_dialog_ = new ColorChooserDialog(this,
                                                  initial_color,
                                                  owning_window);
@@ -56,16 +61,16 @@ ColorChooserWin::~ColorChooserWin() {
   DCHECK(!color_chooser_dialog_);
 }
 
-void ColorChooserWin::DidChooseColor(SkColor color) {
-  if (web_contents())
-    web_contents()->DidChooseColorInColorChooser(identifier(), color);
+void ColorChooserWin::OnColorChosen(SkColor color) {
+  if (tab_)
+    tab_->DidChooseColorInColorChooser(identifier(), color);
 }
 
-void ColorChooserWin::DidEnd() {
+void ColorChooserWin::OnColorChooserDialogClosed() {
   if (color_chooser_dialog_.get()) {
     color_chooser_dialog_->ListenerDestroyed();
     color_chooser_dialog_ = NULL;
   }
-  if (web_contents())
-    web_contents()->DidEndColorChooser(identifier());
+  if (tab_)
+    tab_->DidEndColorChooser(identifier());
 }
