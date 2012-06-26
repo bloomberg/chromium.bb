@@ -12,6 +12,7 @@
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
 #include "testing/gmock_mutant.h"
@@ -169,7 +170,8 @@ class ChromotingHostTest : public testing::Test {
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
-  void SimulateClientConnection(int connection_index, bool reject) {
+  void SimulateClientConnection(int connection_index, bool authenticate,
+                                bool reject) {
     scoped_ptr<protocol::ConnectionToClient> connection =
         ((connection_index == 0) ? owned_connection_ : owned_connection2_).
         PassAs<protocol::ConnectionToClient>();
@@ -182,15 +184,22 @@ class ChromotingHostTest : public testing::Test {
     context_.network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
                               host_, client));
-    context_.network_message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
-                              base::Unretained(client), connection_ptr));
 
-    if (!reject) {
+    if (authenticate) {
       context_.network_message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&ClientSession::OnConnectionChannelsConnected,
-                     base::Unretained(client), connection_ptr));
+          FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
+                                base::Unretained(client), connection_ptr));
+      if (!reject) {
+        context_.network_message_loop()->PostTask(
+            FROM_HERE,
+            base::Bind(&ClientSession::OnConnectionChannelsConnected,
+                       base::Unretained(client), connection_ptr));
+      }
+    } else {
+      context_.network_message_loop()->PostTask(
+          FROM_HERE, base::Bind(&ClientSession::OnConnectionClosed,
+                                base::Unretained(client), connection_ptr,
+                                protocol::AUTHENTICATION_FAILED));
     }
 
     if (connection_index == 0) {
@@ -326,7 +335,7 @@ TEST_F(ChromotingHostTest, Connect) {
       .After(stop);
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected);
 
-  SimulateClientConnection(0, false);
+  SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
 
@@ -352,7 +361,25 @@ TEST_F(ChromotingHostTest, RejectAuthenticatingClient) {
     EXPECT_CALL(host_status_observer_, OnShutdown());
   }
 
-  SimulateClientConnection(0, true);
+  SimulateClientConnection(0, true, true);
+  message_loop_.Run();
+}
+
+TEST_F(ChromotingHostTest, AuthenticationFailed) {
+  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  EXPECT_CALL(*disconnect_window_, Hide());
+  EXPECT_CALL(*continue_window_, Hide());
+
+  host_->Start();
+
+  {
+    InSequence s;
+    EXPECT_CALL(host_status_observer_, OnAccessDenied(session_jid_))
+        .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
+    EXPECT_CALL(host_status_observer_, OnShutdown());
+  }
+
+  SimulateClientConnection(0, false, false);
   message_loop_.Run();
 }
 
@@ -388,7 +415,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
   EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid_))
       .After(stop1);
 
-  SimulateClientConnection(0, false);
+  SimulateClientConnection(0, true, false);
   message_loop_.Run();
 
   Expectation status_authenticated2 =
@@ -420,7 +447,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
       .After(stop2);
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(status_disconnected2);
 
-  SimulateClientConnection(1, false);
+  SimulateClientConnection(1, true, false);
   message_loop_.Run();
 }
 
@@ -446,7 +473,8 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
           InvokeWithoutArgs(
               CreateFunctor(
                   this,
-                  &ChromotingHostTest::SimulateClientConnection, 1, false)),
+                  &ChromotingHostTest::SimulateClientConnection, 1, true,
+                  false)),
           RunDoneTask()))
       .RetiresOnSaturation();
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
@@ -488,7 +516,7 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
   EXPECT_CALL(host_status_observer_, OnShutdown())
       .After(status_disconnected2);
 
-  SimulateClientConnection(0, false);
+  SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
 
