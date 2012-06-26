@@ -1188,8 +1188,11 @@ sprite_handle_buffer_destroy(struct wl_listener *listener, void *data)
 	struct drm_sprite *sprite =
 		container_of(listener, struct drm_sprite,
 			     destroy_listener);
+	struct drm_compositor *compositor = sprite->compositor;
 
 	sprite->surface = NULL;
+	drmModeRmFB(compositor->drm.fd, sprite->fb_id);
+	sprite->fb_id = 0;
 }
 
 static void
@@ -1198,8 +1201,11 @@ sprite_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
 	struct drm_sprite *sprite =
 		container_of(listener, struct drm_sprite,
 			     pending_destroy_listener);
+	struct drm_compositor *compositor = sprite->compositor;
 
 	sprite->pending_surface = NULL;
+	drmModeRmFB(compositor->drm.fd, sprite->pending_fb_id);
+	sprite->pending_fb_id = 0;
 }
 
 /* returns a value between 0-255 range, where higher is brighter */
