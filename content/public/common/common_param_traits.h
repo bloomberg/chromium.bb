@@ -17,17 +17,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/common/console_message_level.h"
-#include "content/public/common/page_transition_types.h"
-#include "content/public/common/security_style.h"
+#include "content/public/common/common_param_traits_macros.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_status.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/glue/resource_type.h"
 
 class SkBitmap;
 
@@ -56,14 +52,6 @@ namespace IPC {
 template <>
 struct CONTENT_EXPORT ParamTraits<GURL> {
   typedef GURL param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ResourceType::Type> {
-  typedef ResourceType::Type param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -230,29 +218,6 @@ struct CONTENT_EXPORT ParamTraits<SkBitmap> {
   // r->SetConfig() and r->SetPixels() are called.
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
 
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct SimilarTypeTraits<WebKit::WebReferrerPolicy> {
-  typedef int Type;
-};
-
-template <>
-struct SimilarTypeTraits<content::PageTransition> {
-  typedef int Type;
-};
-
-template <>
-struct SimilarTypeTraits<content::SecurityStyle> {
-  typedef int Type;
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<content::ConsoleMessageLevel> {
-  typedef content::ConsoleMessageLevel param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

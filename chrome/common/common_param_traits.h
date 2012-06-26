@@ -6,33 +6,9 @@
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
-#include <string>
+// This file provides declarations of IPC serialization macros that are used
+// in more than one IPC message file.
 
-#include "chrome/common/content_settings.h"
-#include "ipc/ipc_param_traits.h"
-
-class PickleIterator;
-
-namespace IPC {
-
-class Message;
-
-template <>
-struct ParamTraits<ContentSetting> {
-  typedef ContentSetting param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ContentSettingsType> {
-  typedef ContentSettingsType param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
+#include "chrome/common/common_param_traits_macros.h"
 
 #endif  // CHROME_COMMON_COMMON_PARAM_TRAITS_H_

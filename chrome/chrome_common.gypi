@@ -99,6 +99,7 @@
         'common/common_message_generator.h',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
+        'common/common_param_traits_macros.h',
         'common/content_settings.cc',
         'common/content_settings.h',
         'common/content_settings_helper.cc',

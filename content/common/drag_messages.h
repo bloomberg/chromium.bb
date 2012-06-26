@@ -15,7 +15,6 @@
 #define IPC_MESSAGE_START DragMsgStart
 
 IPC_ENUM_TRAITS(WebKit::WebDragOperation)
-IPC_ENUM_TRAITS(WebKit::WebReferrerPolicy)
 
 IPC_STRUCT_TRAITS_BEGIN(WebDropData::FileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)

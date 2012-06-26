@@ -339,6 +339,7 @@
     'common/zygote_commands_linux.h',
     'public/common/common_param_traits.cc',
     'public/common/common_param_traits.h',
+    'public/common/common_param_traits_macros.h',
     'public/common/content_client.cc',
     'public/common/content_client.h',
     'public/common/window_container_type.cc',
