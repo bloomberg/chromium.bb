@@ -277,7 +277,7 @@
                             {
                                 "href": "https://www.google.com/images/srpr/logo3w.png",
                                 "rel": "http://schemas.google.com/docs/2007#icon",
-                                "type": "application/vnd.google-apps.drive-sdk.11111111"
+                                "type": "image/png"
                             }
                         ]
                     }

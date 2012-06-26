@@ -244,13 +244,13 @@ class Content {
 // This stores a representation of an application icon as registered with the
 // installed applications section of the account metadata feed. There can be
 // multiple icons registered for each application, differing in size, category
-// and mime_type.
+// and MIME type.
 class AppIcon {
  public:
   enum IconCategory {
     UNKNOWN,         // Uninitialized state
-    DOCUMENT,        // Document icon for various mime types
-    APPLICATION,     // Application icon for various mime types
+    DOCUMENT,        // Document icon for various MIME types
+    APPLICATION,     // Application icon for various MIME types
     SHARED_DOCUMENT, // Icon for documents that are shared from other users.
   };
 
@@ -268,8 +268,12 @@ class AppIcon {
   // Size in pixels of one side of the icon (icons are always square).
   const int icon_side_length() const { return icon_side_length_; }
 
-  // Get a link stored in this application icon by mime type.
-  const Link* GetIconLinkForType(const std::string& mime_type) const;
+  // Get a list of links available for this AppIcon.
+  const ScopedVector<Link>& links() const { return links_; }
+
+  // Get the icon URL from the internal list of links.  Returns the first
+  // icon URL found in the list.
+  GURL GetIconURL() const;
 
  private:
   // Extracts the icon category from the given string. Returns false and does
@@ -556,6 +560,8 @@ class DocumentFeed : public FeedEntry {
 // Metadata representing installed Google Drive application.
 class InstalledApp {
  public:
+  typedef std::vector<std::pair<int, GURL> > IconList;
+
   InstalledApp();
   virtual ~InstalledApp();
 
@@ -607,10 +613,9 @@ class InstalledApp {
     return app_icons_;
   }
 
-  // Convenience function for getting the URL of the icon for a particular
-  // category and mime type. Returns an empty GURL if no such icon exists.
-  GURL GetAppIconByCategoryAndType(AppIcon::IconCategory category,
-                                   const std::string& mime_type) const;
+  // Convenience function for getting the icon URLs for a particular |category|
+  // of icon. Icons are returned in a sorted list, from smallest to largest.
+  IconList GetIconsForCategory(AppIcon::IconCategory category) const;
 
   // Retrieves product URL from the link collection.
   GURL GetProductUrl() const;

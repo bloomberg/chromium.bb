@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -67,11 +68,13 @@ using content::WebContents;
 using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
 using gdata::GDataOperationRegistry;
+using gdata::InstalledApp;
 
 namespace {
 
 // Default icon path for drive docs.
 const char kDefaultDriveIcon[] = "images/filetype_generic.png";
+const int kPreferredIconSize = 16;
 
 // Error messages.
 const char kFileError[] = "File error %d";
@@ -289,6 +292,24 @@ void IntersectAvailableDriveTasks(
   }
 }
 
+// Finds an icon in the list of icons. If unable to find an icon of the exact
+// size requested, returns one with the next larger size. If all icons are
+// smaller than the preferred size, we'll return the largest one available.
+// Icons must be sorted by the icon size, smallest to largest. If there are no
+// icons in the list, returns an empty URL.
+GURL FindPreferredIcon(const InstalledApp::IconList& icons,
+                       int preferred_size) {
+  GURL result;
+  if (icons.empty())
+    return result;
+  result = icons.rbegin()->second;
+  for (InstalledApp::IconList::const_reverse_iterator iter = icons.rbegin();
+       iter != icons.rend() && iter->first >= preferred_size; ++iter) {
+        result = iter->second;
+  }
+  return result;
+}
+
 // Takes a map of app_id to application information in |app_info|, and the set
 // of |available_apps| and adds Drive tasks to the |result_list| for each of the
 // |available_apps|.
@@ -323,8 +344,11 @@ void CreateDriveTasks(
       pattern_list->Append(new StringValue("filesystem:*." + *ext_iter));
     }
     task->Set("patterns", pattern_list);
-    // TODO(gspencer): When app URLs are available, supply the right URL.
-    task->SetString("iconUrl", kDefaultDriveIcon);
+    GURL best_icon = FindPreferredIcon(info->app_icons,
+                                       kPreferredIconSize);
+    if (!best_icon.is_empty()) {
+      task->SetString("iconUrl", best_icon.spec());
+    }
     result_list->Append(task);
   }
 }
@@ -1786,6 +1810,14 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
       DictionaryValue* app = new DictionaryValue();
       app->SetString("appId", webapp_info->app_id);
       app->SetString("appName", webapp_info->app_name);
+      GURL app_icon = FindPreferredIcon(webapp_info->app_icons,
+                                        kPreferredIconSize);
+      if (!app_icon.is_empty())
+        app->SetString("appIcon", app_icon.spec());
+      GURL doc_icon = FindPreferredIcon(webapp_info->document_icons,
+                                        kPreferredIconSize);
+      if (!doc_icon.is_empty())
+        app->SetString("docIcon", doc_icon.spec());
       app->SetString("objectType", webapp_info->object_type);
       app->SetBoolean("isPrimary", webapp_info->is_primary_selector);
       apps->Append(app);

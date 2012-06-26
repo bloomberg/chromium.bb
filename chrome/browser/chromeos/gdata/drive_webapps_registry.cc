@@ -33,16 +33,20 @@ std::string GetWebStoreIdFromUrl(const GURL& url) {
   return components[components.size() - 1];
 }
 
-}
+}  // namespace
 
 // DriveWebAppInfo struct implementation.
 
 DriveWebAppInfo::DriveWebAppInfo(const std::string& app_id,
+                                 const InstalledApp::IconList& app_icons,
+                                 const InstalledApp::IconList& document_icons,
                                  const std::string& web_store_id,
                                  const string16& app_name,
                                  const string16& object_type,
                                  bool is_primary_selector)
     : app_id(app_id),
+      app_icons(app_icons),
+      document_icons(document_icons),
       web_store_id(web_store_id),
       app_name(app_name),
       object_type(object_type),
@@ -56,10 +60,14 @@ DriveWebAppInfo::~DriveWebAppInfo() {
 
 DriveWebAppsRegistry::WebAppFileSelector::WebAppFileSelector(
     const GURL& product_link,
+    const InstalledApp::IconList& app_icons,
+    const InstalledApp::IconList& document_icons,
     const string16& object_type,
     const std::string& app_id,
     bool is_primary_selector)
     : product_link(product_link),
+      app_icons(app_icons),
+      document_icons(document_icons),
       object_type(object_type),
       app_id(app_id),
       is_primary_selector(is_primary_selector) {
@@ -67,7 +75,6 @@ DriveWebAppsRegistry::WebAppFileSelector::WebAppFileSelector(
 
 DriveWebAppsRegistry::WebAppFileSelector::~WebAppFileSelector() {
 }
-
 
 // DriveWebAppsRegistry implementation.
 
@@ -133,27 +140,40 @@ void DriveWebAppsRegistry::UpdateFromFeed(AccountMetadataFeed* metadata) {
     if (product_url.is_empty())
       continue;
 
+    InstalledApp::IconList app_icons =
+        app->GetIconsForCategory(AppIcon::APPLICATION);
+    InstalledApp::IconList document_icons =
+        app->GetIconsForCategory(AppIcon::DOCUMENT);
+
     url_to_name_map_.insert(
         std::make_pair(product_url, app->app_name()));
     AddAppSelectorList(product_url,
+                       app_icons,
+                       document_icons,
                        app->object_type(),
                        app->app_id(),
                        true,   // primary
                        app->primary_mimetypes(),
                        &webapp_mimetypes_map_);
     AddAppSelectorList(product_url,
+                       app_icons,
+                       document_icons,
                        app->object_type(),
                        app->app_id(),
                        false,   // primary
                        app->secondary_mimetypes(),
                        &webapp_mimetypes_map_);
     AddAppSelectorList(product_url,
+                       app_icons,
+                       document_icons,
                        app->object_type(),
                        app->app_id(),
                        true,   // primary
                        app->primary_extensions(),
                        &webapp_extension_map_);
     AddAppSelectorList(product_url,
+                       app_icons,
+                       document_icons,
                        app->object_type(),
                        app->app_id(),
                        false,   // primary
@@ -165,6 +185,8 @@ void DriveWebAppsRegistry::UpdateFromFeed(AccountMetadataFeed* metadata) {
 // static.
 void DriveWebAppsRegistry::AddAppSelectorList(
     const GURL& product_link,
+    const InstalledApp::IconList& app_icons,
+    const InstalledApp::IconList& document_icons,
     const string16& object_type,
     const std::string& app_id,
     bool is_primary_selector,
@@ -175,6 +197,8 @@ void DriveWebAppsRegistry::AddAppSelectorList(
     std::string* value = *it;
     map->insert(std::make_pair(
         *value, new WebAppFileSelector(product_link,
+                                       app_icons,
+                                       document_icons,
                                        object_type,
                                        app_id,
                                        is_primary_selector)));
@@ -205,6 +229,8 @@ void DriveWebAppsRegistry::FindWebAppsForSelector(
     apps->insert(std::make_pair(
         web_app,
         new DriveWebAppInfo(web_app->app_id,
+                            web_app->app_icons,
+                            web_app->document_icons,
                             web_store_id,
                             product_iter->second,   // app name.
                             web_app->object_type,

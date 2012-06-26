@@ -20,6 +20,8 @@ namespace gdata {
 // Data structure that defines WebApp
 struct DriveWebAppInfo {
   DriveWebAppInfo(const std::string& app_id,
+                  const InstalledApp::IconList& app_icons,
+                  const InstalledApp::IconList& document_icons,
                   const std::string& web_store_id,
                   const string16& app_name,
                   const string16& object_type,
@@ -28,6 +30,12 @@ struct DriveWebAppInfo {
 
   // Drive app id
   std::string app_id;
+  // Drive application icon URLs for this app, paired with their size (length of
+  // a side in pixels).
+  InstalledApp::IconList app_icons;
+  // Drive document icon URLs for this app, paired with their size (length of
+  // a side in pixels).
+  InstalledApp::IconList document_icons;
   // Web store id/extension id;
   std::string web_store_id;
   // WebApp name.
@@ -64,12 +72,20 @@ class DriveWebAppsRegistry  {
   // file extension or content mimetype.
   struct WebAppFileSelector {
     WebAppFileSelector(const GURL& product_link,
+                       const InstalledApp::IconList& app_icons,
+                       const InstalledApp::IconList& document_icons,
                        const string16& object_type,
                        const std::string& app_id,
                        bool is_primary_selector);
     ~WebAppFileSelector();
     // WebApp product link.
     GURL product_link;
+    // Drive application icon URLs for this app, paired with their size (length
+    // of a side in pixels).
+    InstalledApp::IconList app_icons;
+    // Drive document icon URLs for this app, paired with their size (length of
+    // a side in pixels).
+    InstalledApp::IconList document_icons;
     // Object (file) type description.
     string16 object_type;
     // Drive app id
@@ -80,7 +96,7 @@ class DriveWebAppsRegistry  {
     bool is_primary_selector;
   };
 
-  // Defines mapping between file content type selectors (extensions, mime
+  // Defines mapping between file content type selectors (extensions, MIME
   // types) and corresponding WebApp.
   typedef std::multimap<std::string, WebAppFileSelector*> WebAppFileSelectorMap;
 
@@ -91,6 +107,8 @@ class DriveWebAppsRegistry  {
   // Helper function for loading web application file |selectors| into
   // corresponding |map|.
   static void AddAppSelectorList(const GURL& product_link,
+                                 const InstalledApp::IconList& app_icons,
+                                 const InstalledApp::IconList& document_icons,
                                  const string16& object_type,
                                  const std::string& app_id,
                                  bool is_primary_selector,
@@ -108,7 +126,7 @@ class DriveWebAppsRegistry  {
   // Map of filename extension to application info.
   WebAppFileSelectorMap webapp_extension_map_;
 
-  // Map of mimetype to application info.
+  // Map of MIME type to application info.
   WebAppFileSelectorMap webapp_mimetypes_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveWebAppsRegistry);

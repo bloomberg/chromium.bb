@@ -67,6 +67,16 @@
             "type": "string",
             "description": "WebApp name."
           },
+          "appIcon": {
+            "type": "string",
+            "optional": true,
+            "description": "URL to the GData application icon for this application."
+          },
+          "docIcon": {
+            "type": "string",
+            "optional": true,
+            "description": "URL to the GData document icon for documents associated with this application."
+          },
           "objectType": {
             "type": "string",
             "description": "Object (file) type description."

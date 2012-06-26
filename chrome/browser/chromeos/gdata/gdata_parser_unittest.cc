@@ -352,23 +352,15 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
     IF_EXPECT_EQ(1U, first_app->app_icons()->size()) {
       EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()->at(0)->category());
       EXPECT_EQ(16, first_app->app_icons()->at(0)->icon_side_length());
-      const Link* icon_link =
-          first_app->app_icons()->at(0)->GetIconLinkForType(
-              "application/vnd.google-apps.drive-sdk.11111111");
-      IF_EXPECT_TRUE(icon_link) {
-        EXPECT_EQ("application/vnd.google-apps.drive-sdk.11111111",
-                  icon_link->mime_type());
-        EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
-                  icon_link->href().spec());
-      }
+      GURL icon_url = first_app->app_icons()->at(0)->GetIconURL();
       EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
-                first_app->GetAppIconByCategoryAndType(
-                    AppIcon::DOCUMENT,
-                    "application/vnd.google-apps.drive-sdk.11111111").spec());
-      EXPECT_TRUE(first_app->GetAppIconByCategoryAndType(
-                    AppIcon::DOCUMENT,
-                    "nonexistent/mime_type").is_empty());
-      EXPECT_FALSE(first_app->app_icons()->at(0)->GetIconLinkForType("foo"));
+                icon_url.spec());
+      InstalledApp::IconList icons =
+          first_app->GetIconsForCategory(AppIcon::DOCUMENT);
+      EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
+                icons[0].second.spec());
+      icons = first_app->GetIconsForCategory(AppIcon::SHARED_DOCUMENT);
+      EXPECT_TRUE(icons.empty());
     }
   }
 

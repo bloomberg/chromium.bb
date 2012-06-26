@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/json/json_value_converter.h"
@@ -241,6 +243,11 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
 bool GetBoolFromString(const base::StringPiece& value, bool* result) {
   *result = (value == "true");
   return true;
+}
+
+bool SortBySize(const InstalledApp::IconList::value_type& a,
+                const InstalledApp::IconList::value_type& b) {
+  return a.first < b.first;
 }
 
 }  // namespace
@@ -525,14 +532,12 @@ void AppIcon::RegisterJSONConverter(
   converter->RegisterRepeatedMessage(kLinkField, &AppIcon::links_);
 }
 
-const Link* AppIcon::GetIconLinkForType(const std::string& mime_type) const {
+GURL AppIcon::GetIconURL() const {
   for (size_t i = 0; i < links_.size(); ++i) {
-    if (links_[i]->type() == Link::ICON &&
-        links_[i]->mime_type() == mime_type) {
-      return links_[i];
-    }
+    if (links_[i]->type() == Link::ICON)
+      return links_[i]->href();
   }
-  return NULL;
+  return GURL();
 }
 
 // static
@@ -910,18 +915,24 @@ InstalledApp::InstalledApp() : supports_create_(false) {
 InstalledApp::~InstalledApp() {
 }
 
-GURL InstalledApp::GetAppIconByCategoryAndType(
-    AppIcon::IconCategory category,
-    const std::string& mime_type) const {
+InstalledApp::IconList InstalledApp::GetIconsForCategory(
+    AppIcon::IconCategory category) const {
+  IconList result;
+
   for (ScopedVector<AppIcon>::const_iterator icon_iter = app_icons_->begin();
        icon_iter != app_icons_.end(); ++icon_iter) {
-    if ((*icon_iter)->category() == category) {
-      const Link* icon_link = (*icon_iter)->GetIconLinkForType(mime_type);
-      if (icon_link)
-        return icon_link->href();
-    }
+    if ((*icon_iter)->category() != category)
+      continue;
+    GURL icon_url = (*icon_iter)->GetIconURL();
+    if (icon_url.is_empty())
+      continue;
+    result.push_back(std::make_pair((*icon_iter)->icon_side_length(),
+                                    icon_url));
   }
-  return GURL();
+
+  // Return a sorted list, smallest to largest.
+  std::sort(result.begin(), result.end(), SortBySize);
+  return result;
 }
 
 GURL InstalledApp::GetProductUrl() const {
