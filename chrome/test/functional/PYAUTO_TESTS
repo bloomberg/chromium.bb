@@ -95,8 +95,6 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
-      # crbug.com/128563
-      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/131874
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
       # crbug.com/133315
@@ -310,7 +308,7 @@
       # So one-click infobar tests do tno apply to chromeos.
       '-infobars.OneClickInfobarTest',
       # Multi-profile doesn't apply to chromeos yet.
-      '-bookmarks.BookmarksTest.testAddBookmarkInMultiProfile',  
+      '-bookmarks.BookmarksTest.testAddBookmarkInMultiProfile',
       '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfile',
       '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfile',
       '-bookmarks.BookmarksTest.testAddBookmarksInMultiProfileIncognito',
@@ -318,7 +316,7 @@
       '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfileIncognito',
       '-bookmarks.BookmarksTest.testSearchBookmarksInMultiProfile',
       '-multiprofile',
-      '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',      
+      '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
       # These require a custom setup on ChromeOS and have their own suite for
       # this platform.
       '-policy',
@@ -355,6 +353,8 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
+      # crbug.com/134593
+      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/129498
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
