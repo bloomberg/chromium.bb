@@ -11,11 +11,13 @@
     <output filename="component_extension_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
+    <structures>
+      <structure name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+    </structures>
     <includes>
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_RECENT" file="bookmark_manager/images/bookmark_manager_recent.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH_RTL" file="bookmark_manager/images/bookmark_manager_search_rtl.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="bookmark_manager/js/main.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_LIST_JS" file="bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />

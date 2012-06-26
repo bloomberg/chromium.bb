@@ -156,7 +156,7 @@
       <if expr="pp_ifdef('use_ash')">
         <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_COMMANDS_JS" file="resources\task_manager\commands.js" type="BINDATA" />
-        <!-- The following defines.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
+        <!-- The following defines.js uses flattenhtml feature to remove the platform-dependent code at compile-time. -->
         <include name="IDR_TASK_MANAGER_DEFINES_JS" file="resources\task_manager\defines.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_PRELOAD_JS" file="resources\task_manager\preload.js" type="BINDATA" />
