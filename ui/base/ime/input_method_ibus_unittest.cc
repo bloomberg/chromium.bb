@@ -8,12 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_ibus.h"
+#include "ui/base/ime/mock_ibus_client.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/rect.h"
 
@@ -34,61 +33,14 @@ uint32 GetOffsetInUTF16(const std::string& utf8_string, uint32 utf8_offset) {
 
 class TestableInputMethodIBus : public InputMethodIBus {
  public:
-  TestableInputMethodIBus(internal::InputMethodDelegate* delegate)
+  TestableInputMethodIBus(internal::InputMethodDelegate* delegate,
+                          scoped_ptr<internal::IBusClient> new_client)
       : InputMethodIBus(delegate) {
+    set_ibus_client(new_client.Pass());
   }
 
   // Change access rights.
   using InputMethodIBus::ExtractCompositionText;
-};
-
-class CreateInputContextSuccessHandler {
- public:
-  CreateInputContextSuccessHandler(const dbus::ObjectPath& object_path)
-      : object_path_(object_path) {
-  }
-
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback,
-           const chromeos::IBusClient::ErrorCallback& error_callback) {
-    EXPECT_EQ("chrome", client_name);
-    callback.Run(object_path_);
-  }
-
- private:
-  dbus::ObjectPath object_path_;
-};
-
-class CreateInputContextFailHandler {
- public:
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback,
-           const chromeos::IBusClient::ErrorCallback& error_callback) {
-    error_callback.Run();
-  }
-};
-
-class CreateInputContextNoResponseHandler {
- public:
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback,
-           const chromeos::IBusClient::ErrorCallback& error_callback) {
-  }
-};
-
-class CreateInputContextDelayFailHandler {
- public:
-  ~CreateInputContextDelayFailHandler() {
-    error_callback_.Run();
-  }
-
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback,
-           const chromeos::IBusClient::ErrorCallback& error_callback) {
-    error_callback_ = error_callback;
-  }
-
- chromeos::IBusClient::ErrorCallback error_callback_;
 };
 
 class InputMethodIBusTest : public internal::InputMethodDelegate,
@@ -108,16 +60,11 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     // function in TearDown function.
     // Current MockIBusInputContext is strongly depend on gmock, but gmock is
     // banned in ui/*. So just use stab implementation for testing.
-    mock_dbus_thread_manager_ =
-        new chromeos::MockDBusThreadManagerWithoutGMock();
-    chromeos::DBusThreadManager::InitializeForTesting(
-        mock_dbus_thread_manager_);
-
-    mock_ibus_client_ = mock_dbus_thread_manager_->mock_ibus_client();
-    mock_ibus_input_context_client_ =
-        mock_dbus_thread_manager_->mock_ibus_input_context_client();
-
-    ime_.reset(new TestableInputMethodIBus(this));
+    // TODO(nona): Introduce gmock-free MockIBusInputContext.
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+    scoped_ptr<internal::IBusClient> client(new internal::MockIBusClient);
+    ime_.reset(new TestableInputMethodIBus(this, client.Pass()));
     ime_->SetFocusedTextInputClient(this);
   }
 
@@ -190,6 +137,10 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE { return false; }
 
+  internal::MockIBusClient* GetClient() {
+    return static_cast<internal::MockIBusClient*>(ime_->ibus_client());
+  }
+
   bool HasNativeEvent() const {
     base::NativeEvent empty;
     std::memset(&empty, 0, sizeof(empty));
@@ -217,14 +168,6 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     caret_bounds_ = gfx::Rect();
   }
 
-  void SetCreateContextSuccessHandler() {
-    CreateInputContextSuccessHandler create_input_context_handler(
-        dbus::ObjectPath("InputContext_1"));
-    mock_ibus_client_->set_create_input_context_handler(base::Bind(
-        &CreateInputContextSuccessHandler::Run,
-        base::Unretained(&create_input_context_handler)));
-  }
-
   scoped_ptr<TestableInputMethodIBus> ime_;
 
   // Variables for remembering the parameters that are passed to
@@ -247,11 +190,6 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   TextInputType input_type_;
   bool can_compose_inline_;
   gfx::Rect caret_bounds_;
-
-  // Variables for mock dbus connections.
-  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
-  chromeos::MockIBusClient* mock_ibus_client_;
-  chromeos::MockIBusInputContextClient* mock_ibus_input_context_client_;
 };
 
 // Tests public APIs in ui::InputMethod first.
@@ -348,65 +286,57 @@ TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedWindow2) {
 // Start ibus-daemon first, then create ui::InputMethodIBus. Check if a new
 // input context is created.
 TEST_F(InputMethodIBusTest, InitiallyConnected) {
-  SetCreateContextSuccessHandler();
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->Init(true);
   // An input context should be created immediately since is_connected_ is true.
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->set_capabilities_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(1U, GetClient()->set_capabilities_call_count_);
   // However, since the current text input type is 'NONE' (the default), FocusIn
   // shouldn't be called.
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_in_call_count());
+  EXPECT_EQ(0U, GetClient()->focus_in_call_count_);
 }
 
 // Create ui::InputMethodIBus, then start ibus-daemon.
 TEST_F(InputMethodIBusTest, InitiallyDisconnected) {
-  SetCreateContextSuccessHandler();
   ime_->Init(true);
   // A context shouldn't be created since the daemon is not running.
-  EXPECT_EQ(0, mock_ibus_client_->create_input_context_call_count());
+  EXPECT_EQ(0U, GetClient()->create_context_call_count_);
   // Start the daemon.
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->OnConnected();
   // A context should be created upon the signal delivery.
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->set_capabilities_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_in_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(1U, GetClient()->set_capabilities_call_count_);
+  EXPECT_EQ(0U, GetClient()->focus_in_call_count_);
 }
 
 // Confirm that ui::InputMethodIBus does not crash on "disconnected" signal
 // delivery.
 TEST_F(InputMethodIBusTest, Disconnect) {
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  // Currently we can't shutdown IBusBus connection except in
-  // DBusThreadManager's shutting down. So set ibus_bus_ as NULL to emulate
-  // dynamical shutting down.
-  mock_dbus_thread_manager_->set_ibus_bus(NULL);
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  GetClient()->is_connected_ = false;
   ime_->OnDisconnected();
 }
 
 // Confirm that ui::InputMethodIBus re-creates an input context when ibus-daemon
 // restarts.
 TEST_F(InputMethodIBusTest, DisconnectThenReconnect) {
-  SetCreateContextSuccessHandler();
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->set_capabilities_call_count());
-  EXPECT_EQ(0,
-            mock_ibus_input_context_client_->reset_object_proxy_call_caount());
-  mock_dbus_thread_manager_->set_ibus_bus(NULL);
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(1U, GetClient()->set_capabilities_call_count_);
+  EXPECT_EQ(0U, GetClient()->destroy_proxy_call_count_);
+  GetClient()->is_connected_ = false;
   ime_->OnDisconnected();
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->OnConnected();
   // Check if the old context is deleted.
-  EXPECT_EQ(1,
-            mock_ibus_input_context_client_->reset_object_proxy_call_caount());
+  EXPECT_EQ(1U, GetClient()->destroy_proxy_call_count_);
   // Check if a new context is created.
-  EXPECT_EQ(2, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(2, mock_ibus_input_context_client_->set_capabilities_call_count());
+  EXPECT_EQ(2U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(2U, GetClient()->set_capabilities_call_count_);
 }
 
 // Confirm that ui::InputMethodIBus does not crash even if NULL context is
@@ -415,71 +345,60 @@ TEST_F(InputMethodIBusTest, DisconnectThenReconnect) {
 // it fails (unless ibus sends the "connected" signal to Chrome again). It might
 // be better to add some retry logic. Will revisit later.
 TEST_F(InputMethodIBusTest, CreateContextFail) {
-  CreateInputContextFailHandler create_input_context_handler;
-  mock_ibus_client_->set_create_input_context_handler(base::Bind(
-      &CreateInputContextFailHandler::Run,
-      base::Unretained(&create_input_context_handler)));
-
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
+  GetClient()->create_context_result_ =
+      internal::MockIBusClient::kCreateContextFail;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  // |set_capabilities_call_count()| should be zero since a context is not
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  // |set_capabilities_call_count_| should be zero since a context is not
   // created yet.
-  EXPECT_EQ(0, mock_ibus_input_context_client_->set_capabilities_call_count());
+  EXPECT_EQ(0U, GetClient()->set_capabilities_call_count_);
 }
 
 // Confirm that ui::InputMethodIBus does not crash even if ibus-daemon does not
 // respond.
 TEST_F(InputMethodIBusTest, CreateContextNoResp) {
-  CreateInputContextNoResponseHandler create_input_context_handler;
-  mock_ibus_client_->set_create_input_context_handler(base::Bind(
-      &CreateInputContextNoResponseHandler::Run,
-      base::Unretained(&create_input_context_handler)));
-
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
+  GetClient()->create_context_result_ =
+      internal::MockIBusClient::kCreateContextNoResponse;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->set_capabilities_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(0U, GetClient()->set_capabilities_call_count_);
 }
 
 // Confirm that ui::InputMethodIBus does not crash even if ibus-daemon responds
 // after ui::InputMethodIBus is deleted. See comments in ~MockIBusClient() as
 // well.
 TEST_F(InputMethodIBusTest, CreateContextDelayed) {
-  CreateInputContextDelayFailHandler create_input_context_handler;
-  mock_ibus_client_->set_create_input_context_handler(base::Bind(
-      &CreateInputContextDelayFailHandler::Run,
-      base::Unretained(&create_input_context_handler)));
-
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
+  GetClient()->create_context_result_ =
+      internal::MockIBusClient::kCreateContextDelayed;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->set_capabilities_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(0U, GetClient()->set_capabilities_call_count_);
   // After this line, the destructor for |ime_| will run first. Then, the
-  // destructor for the handler will run. In the latter function, a new input
-  // context will be created and passed to InitOrAbandonInputContext().
+  // destructor for the client will run. In the latter function, a new input
+  // context will be created and passed to StoreOrAbandonInputContext().
 }
 
 // Confirm that IBusClient::FocusIn is called on "connected" if input_type_ is
 // TEXT.
 TEST_F(InputMethodIBusTest, FocusIn_Text) {
-  SetCreateContextSuccessHandler();
   ime_->Init(true);
   // A context shouldn't be created since the daemon is not running.
-  EXPECT_EQ(0, mock_ibus_client_->create_input_context_call_count());
+  EXPECT_EQ(0U, GetClient()->create_context_call_count_);
   EXPECT_EQ(0U, on_input_method_changed_call_count_);
   // Click a text input form.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
   // Start the daemon.
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->OnConnected();
   // A context should be created upon the signal delivery.
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
   // Since a form has focus, IBusClient::FocusIn() should be called.
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(1,
-            mock_ibus_input_context_client_->set_cursor_location_call_count());
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(1U, GetClient()->set_cursor_location_call_count_);
   // ui::TextInputClient::OnInputMethodChanged() should be called when
   // ui::InputMethodIBus connects/disconnects to/from ibus-daemon and the
   // current text input type is not NONE.
@@ -489,87 +408,78 @@ TEST_F(InputMethodIBusTest, FocusIn_Text) {
 // Confirm that IBusClient::FocusIn is NOT called on "connected" if input_type_
 // is PASSWORD.
 TEST_F(InputMethodIBusTest, FocusIn_Password) {
-  SetCreateContextSuccessHandler();
   ime_->Init(true);
-  EXPECT_EQ(0, mock_ibus_client_->create_input_context_call_count());
+  EXPECT_EQ(0U, GetClient()->create_context_call_count_);
   EXPECT_EQ(0U, on_input_method_changed_call_count_);
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->OnConnected();
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
   // Since a form has focus, IBusClient::FocusIn() should NOT be called.
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_in_call_count());
+  EXPECT_EQ(0U, GetClient()->focus_in_call_count_);
   EXPECT_EQ(1U, on_input_method_changed_call_count_);
 }
 
 // Confirm that IBusClient::FocusOut is called as expected.
 TEST_F(InputMethodIBusTest, FocusOut_None) {
-  SetCreateContextSuccessHandler();
   input_type_ = TEXT_INPUT_TYPE_TEXT;
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_out_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(0U, GetClient()->focus_out_call_count_);
   input_type_ = TEXT_INPUT_TYPE_NONE;
   ime_->OnTextInputTypeChanged(this);
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_out_call_count());
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(1U, GetClient()->focus_out_call_count_);
 }
 
 // Confirm that IBusClient::FocusOut is called as expected.
 TEST_F(InputMethodIBusTest, FocusOut_Password) {
-  SetCreateContextSuccessHandler();
   input_type_ = TEXT_INPUT_TYPE_TEXT;
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_out_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(0U, GetClient()->focus_out_call_count_);
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
   ime_->OnTextInputTypeChanged(this);
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_out_call_count());
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(1U, GetClient()->focus_out_call_count_);
 }
 
 // Confirm that IBusClient::FocusOut is NOT called.
 TEST_F(InputMethodIBusTest, FocusOut_Url) {
-  SetCreateContextSuccessHandler();
   input_type_ = TEXT_INPUT_TYPE_TEXT;
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   ime_->Init(true);
-  EXPECT_EQ(1, mock_ibus_client_->create_input_context_call_count());
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_out_call_count());
+  EXPECT_EQ(1U, GetClient()->create_context_call_count_);
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(0U, GetClient()->focus_out_call_count_);
   input_type_ = TEXT_INPUT_TYPE_URL;
   ime_->OnTextInputTypeChanged(this);
-  EXPECT_EQ(1, mock_ibus_input_context_client_->focus_in_call_count());
-  EXPECT_EQ(0, mock_ibus_input_context_client_->focus_out_call_count());
+  EXPECT_EQ(1U, GetClient()->focus_in_call_count_);
+  EXPECT_EQ(0U, GetClient()->focus_out_call_count_);
 }
 
 // Test if the new |caret_bounds_| is correctly sent to ibus-daemon.
 TEST_F(InputMethodIBusTest, OnCaretBoundsChanged) {
-  SetCreateContextSuccessHandler();
-  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  GetClient()->is_connected_ = true;
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->Init(true);
-  EXPECT_EQ(0,
-            mock_ibus_input_context_client_->set_cursor_location_call_count());
+  EXPECT_EQ(0U, GetClient()->set_cursor_location_call_count_);
   caret_bounds_ = gfx::Rect(1, 2, 3, 4);
   ime_->OnCaretBoundsChanged(this);
-  EXPECT_EQ(1,
-            mock_ibus_input_context_client_->set_cursor_location_call_count());
+  EXPECT_EQ(1U, GetClient()->set_cursor_location_call_count_);
   caret_bounds_ = gfx::Rect(0, 2, 3, 4);
   ime_->OnCaretBoundsChanged(this);
-  EXPECT_EQ(2,
-            mock_ibus_input_context_client_->set_cursor_location_call_count());
+  EXPECT_EQ(2U, GetClient()->set_cursor_location_call_count_);
   caret_bounds_ = gfx::Rect(0, 2, 3, 4);  // unchanged
   ime_->OnCaretBoundsChanged(this);
   // Current InputMethodIBus implementation performs the IPC regardless of the
   // bounds are changed or not.
-  EXPECT_EQ(3,
-            mock_ibus_input_context_client_->set_cursor_location_call_count());
+  EXPECT_EQ(3U, GetClient()->set_cursor_location_call_count_);
 }
 
 TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {

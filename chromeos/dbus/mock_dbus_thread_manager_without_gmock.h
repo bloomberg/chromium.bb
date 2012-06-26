@@ -64,20 +64,14 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();
   }
-
   MockIBusInputContextClient* mock_ibus_input_context_client() {
     return mock_ibus_input_context_client_.get();
-  }
-
-  void set_ibus_bus(dbus::Bus* ibus_bus) {
-    ibus_bus_ = ibus_bus;
   }
 
  private:
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
 
-  dbus::Bus* ibus_bus_;
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManagerWithoutGMock);
 };
 

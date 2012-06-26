@@ -147,9 +147,9 @@ class IBusInputContextClientTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(client_->IsObjectProxyReady());
+    EXPECT_TRUE(client_->IsConnected());
     client_->ResetObjectProxy();
-    EXPECT_FALSE(client_->IsObjectProxyReady());
+    EXPECT_FALSE(client_->IsConnected());
   }
 
   // Handles FocusIn method call.
