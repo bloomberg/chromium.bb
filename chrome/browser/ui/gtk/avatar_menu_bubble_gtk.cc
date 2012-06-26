@@ -61,10 +61,6 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                             this);  // |delegate|
   g_signal_connect(contents_, "destroy",
                    G_CALLBACK(&OnDestroyThunk), this);
-
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 content::Source<ThemeService>(theme_service_));
-  theme_service_->InitThemesFor(this);
 }
 
 AvatarMenuBubbleGtk::~AvatarMenuBubbleGtk() {
@@ -107,15 +103,6 @@ void AvatarMenuBubbleGtk::EditProfile(size_t profile_index) {
     return;
   avatar_menu_model_->EditProfile(profile_index);
   CloseBubble();
-}
-
-void AvatarMenuBubbleGtk::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(new_profile_link_),
-      theme_service_->UsingNativeTheme());
 }
 
 void AvatarMenuBubbleGtk::OnSizeRequest(GtkWidget* widget,
@@ -162,8 +149,8 @@ void AvatarMenuBubbleGtk::InitContents() {
   gtk_box_pack_start(GTK_BOX(contents_), gtk_hseparator_new(), TRUE, TRUE, 0);
 
   // The new profile link.
-  new_profile_link_ = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_PROFILES_CREATE_NEW_PROFILE_LINK).c_str());
+  new_profile_link_ = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
   g_signal_connect(new_profile_link_, "clicked",
                    G_CALLBACK(OnNewProfileLinkClickedThunk), this);
 
