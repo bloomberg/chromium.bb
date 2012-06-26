@@ -269,10 +269,9 @@ class MetricsService
   void OnHistogramSynchronizationDone();
   void OnFinalLogInfoCollectionDone();
 
-  // Takes whatever log should be uploaded next (according to the state_)
-  // and makes it the staged log.  If there is already a staged log, this is a
-  // no-op.
-  void MakeStagedLog();
+  // Either closes the current log or creates and closes the initial log
+  // (depending on |state_|), and stages it for upload.
+  void StageNewLog();
 
   // Record stats, client ID, Session ID, etc. in a special "first" log.
   void PrepareInitialLog();

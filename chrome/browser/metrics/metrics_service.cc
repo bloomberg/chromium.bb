@@ -1100,14 +1100,28 @@ void MetricsService::StartSchedulerIfNecessary() {
 }
 
 void MetricsService::StartScheduledUpload() {
-  // If reporting has been turned off, the scheduler doesn't need to run.
-  if (!reporting_active() || !recording_active()) {
+  // If we're getting no notifications, then the log won't have much in it, and
+  // it's possible the computer is about to go to sleep, so don't upload and
+  // stop the scheduler.
+  // Similarly, if logs should no longer be uploaded, stop here.
+  // TODO(stuartmorgan): Call Stop() on the schedule when reporting and/or
+  // recording are turned off instead of letting it fire and then aborting.
+  if (idle_since_last_transmission_ ||
+      !recording_active() || !reporting_active()) {
     scheduler_->Stop();
     scheduler_->UploadCancelled();
     return;
   }
 
-  StartFinalLogInfoCollection();
+  // If there are unsent logs, send the next one. If not, start the asynchronous
+  // process of finalizing the current log for upload.
+  if (state_ == SENDING_OLD_LOGS) {
+    DCHECK(log_manager_.has_unsent_logs());
+    log_manager_.StageNextLogForUpload();
+    SendStagedLog();
+  } else {
+    StartFinalLogInfoCollection();
+  }
 }
 
 void MetricsService::StartFinalLogInfoCollection() {
@@ -1174,22 +1188,18 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   if (current_fetch_xml_.get() || current_fetch_proto_.get())
     return;
 
-  // If we're getting no notifications, then the log won't have much in it, and
-  // it's possible the computer is about to go to sleep, so don't upload and
-  // stop the scheduler.
-  // Similarly, if logs should no longer be uploaded, stop here.
-  if (idle_since_last_transmission_ ||
-      !recording_active() || !reporting_active()) {
+  // Abort if metrics were turned off during the final info gathering.
+  if (!recording_active() || !reporting_active()) {
     scheduler_->Stop();
     scheduler_->UploadCancelled();
     return;
   }
 
-  MakeStagedLog();
+  StageNewLog();
   SendStagedLog();
 }
 
-void MetricsService::MakeStagedLog() {
+void MetricsService::StageNewLog() {
   if (log_manager_.has_staged_log())
     return;
 
@@ -1200,9 +1210,6 @@ void MetricsService::MakeStagedLog() {
       return;
 
     case INIT_TASK_DONE:
-      // We need to wait for the initial log to be ready before sending
-      // anything, because the server will tell us whether it wants to hear
-      // from us.
       PrepareInitialLog();
       DCHECK_EQ(INIT_TASK_DONE, state_);
       log_manager_.LoadPersistedUnsentLogs();
@@ -1210,12 +1217,8 @@ void MetricsService::MakeStagedLog() {
       break;
 
     case SENDING_OLD_LOGS:
-      if (log_manager_.has_unsent_logs()) {
-        log_manager_.StageNextLogForUpload();
-        break;
-      }
-      state_ = SENDING_CURRENT_LOGS;
-      // Fall through.
+      NOTREACHED();  // Shouldn't be staging a new log during old log sending.
+      return;
 
     case SENDING_CURRENT_LOGS:
       StopRecording();
@@ -1391,12 +1394,15 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!log_manager_.has_staged_log()) {
     switch (state_) {
       case INITIAL_LOG_READY:
-        state_ = SENDING_OLD_LOGS;
+        state_ = log_manager_.has_unsent_logs() ? SENDING_OLD_LOGS
+                                                : SENDING_CURRENT_LOGS;
         break;
 
       case SENDING_OLD_LOGS:
         // Store the updated list to disk now that the removed log is uploaded.
         StoreUnsentLogs();
+        if (!log_manager_.has_unsent_logs())
+          state_ = SENDING_CURRENT_LOGS;
         break;
 
       case SENDING_CURRENT_LOGS:
