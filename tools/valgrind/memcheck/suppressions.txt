@@ -229,6 +229,18 @@
    fun:SECMOD_LoadModule
 }
 {
+   NSS leak - https://bugzilla.mozilla.org/show_bug.cgi?id=762351 - fixed in NSS 3.13.6/3.14
+   Memcheck:Leak
+   ...
+   fun:PKIX_PL_Malloc
+   ...
+   fun:PKIX_PL_OID_Create
+   ...
+   fun:cert_PKIXMakeOIDList
+   fun:cert_pkixSetParam
+   fun:CERT_PKIXVerifyCert
+}
+{
    libc_dynamiclinker_foo
    Memcheck:Uninitialized
    obj:/lib*/ld-2.*.so
@@ -955,15 +967,11 @@
    # See http://code.google.com/p/chromium/issues/detail?id=70062#c8
    bug_70062 (Intentional)
    Memcheck:Leak
-   fun:calloc
-   ...
-   fun:PR_NewLock
    ...
    fun:InitSessionCacheLocks
    fun:initSessionCacheLocksLazily
-   fun:PR_CallOnce
+   ...
    fun:ssl_InitSessionCacheLocks
-   fun:lock_cache
 }
 {
    # Intentionally leaking NSS to prevent shutdown crashes
@@ -1655,39 +1663,6 @@
    fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
 }
 {
-   bug_32623
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net15X509Certificate16CreateFromHandle*
-   fun:_ZN3net18SSLClientSocketNSS16UpdateServerCertEv
-   fun:_ZN3net18SSLClientSocketNSS17HandshakeCallbackEP10PRFileDescPv
-   ...
-   fun:ssl3_HandleHandshakeMessage
-   fun:ssl3_HandleHandshake
-   fun:ssl3_HandleRecord
-   fun:ssl3_GatherCompleteHandshake
-   fun:SSL_ForceHandshake
-   fun:_ZN3net18SSLClientSocketNSS11DoHandshakeEv
-   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
-}
-{
-   bug_32624_a
-   Memcheck:Leak
-   fun:malloc
-   fun:PR_Malloc
-   fun:PKIX_PL_Malloc
-   fun:PKIX_PL_Object_Alloc
-   ...
-   fun:PKIX_PL_OID_Create
-   ...
-   fun:cert_PKIXMakeOIDList
-   fun:cert_pkixSetParam
-   fun:CERT_PKIXVerifyCert
-   ...
-   fun:_ZNK3net15X509Certificate8VerifyEVEv
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-}
-{
    bug_32624_b
    Memcheck:Leak
    fun:malloc
@@ -1722,32 +1697,6 @@
    fun:PORT_Alloc_Util
    ...
    fun:PK11_InitPin
-}
-{
-   bug_32624_d
-   Memcheck:Leak
-   fun:malloc
-   fun:PR_Malloc
-   fun:PKIX_PL_Malloc
-   fun:PKIX_PL_NssContext_Create
-   fun:CERT_PKIXVerifyCert
-   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertE*
-   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net18CertVerifierWorker3RunEv
-}
-{
-   bug_32624_e
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorI14CERTValInParamE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseI14CERTValInParamSaIS0_EE11_M_allocateEj
-   fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE20_M_allocate_and_copyIPS0_EES4_jT_S5_
-   fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE7reserveEj
-   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertE*
-   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
    bug_32624_f
@@ -2032,26 +1981,6 @@
    fun:glGetString
    fun:_ZN18gpu_info_collector19CollectGraphicsInfoER7GPUInfo
    fun:_ZN9GpuThread18OnEstablishChannelEi
-}
-{
-   bug_53349
-   Memcheck:Unaddressable
-   fun:PL_HashTableLookupConst
-   fun:SECOID_FindOID_Util
-   fun:SECOID_FindOIDTag_Util
-   fun:SECOID_GetAlgorithmTag_Util
-   fun:seckey_ExtractPublicKey
-   fun:PKIX_PL_Cert_VerifySignature
-   fun:pkix_SignatureChecker_Check
-   fun:pkix_CheckChain
-   fun:pkix_Build_ValidateEntireChain
-   fun:pkix_BuildForwardDepthFirstSearch
-   fun:pkix_Build_InitiateBuildChain
-   fun:PKIX_BuildChain
-   fun:CERT_PKIXVerifyCert
-   ...
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
 }
 {
    bug_54308
@@ -4101,23 +4030,6 @@
    fun:_ZN7WebCoreL15fontConstructorERKNS_13QualifiedNameEPNS_8DocumentEb
    fun:_ZN7WebCore17SVGElementFactory16createSVGElementERKNS_13QualifiedNameEPNS_8DocumentEb
    fun:_ZN7WebCore8Document13createElementERKNS_13QualifiedNameEb
-}
-{
-   bug_101766
-   Memcheck:Leak
-   fun:malloc
-   fun:SecAsn1CoderCreate
-   fun:_ZN12OCSPResponseC2ERK9cssm_datad
-   fun:tpVerifyCertGroupWithOCSP
-   fun:_ZN14AppleTPSession15CertGroupVerifyEllRK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
-   fun:_Z*cssm_CertGroupVerifylllPK14cssm_certgroupPK22cssm_tp_verify_contextP29cssm_tp_verify_context_result
-   fun:CSSM_TP_CertGroupVerify
-   fun:_ZN8Security10CssmClient6TPImpl15certGroupVerifyERKNS_9CertGroupERKNS_15TPVerifyContextEPNS_14TPVerifyResultE
-   fun:_ZN8Security12KeychainCore5Trust8evaluateE*
-   fun:SecTrustEvaluate
-   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_6CRLSetEPNS_16CertVerifyResultE
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_6CRLSetEPNS_16CertVerifyResultE
-   fun:_ZN3net44X509CertificateTest_GoogleDigiNotarTest_Test8TestBodyEv
 }
 {
    bug_101781

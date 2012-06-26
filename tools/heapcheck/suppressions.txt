@@ -263,28 +263,21 @@
    ...
    fun:tracked_objects::ThreadData::TallyA*
 }
+{
+   NSS is initialized (LeakyLazyInstance) but intentionally never shut down
+   Heapcheck:Leak
+   ...
+   fun:InitSessionCacheLocks
+   fun:initSessionCacheLocksLazily
+   ...
+   fun:ssl_InitSessionCacheLocks
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
-{
-   bug_32623
-   Heapcheck:Leak
-   ...
-   fun:InitSessionCacheLocks
-   fun:initSessionCacheLocksLazily
-   ...
-   fun:lock_cache
-   fun:ssl_LookupSID
-   fun:ssl2_BeginClientHandshake
-   fun:ssl_Do1stHandshake
-   fun:SSL_ForceHandshake
-   fun:net::SSLClientSocketNSS::Core::DoHandshake
-   fun:net::SSLClientSocketNSS::Core::DoHandshakeLoop
-   fun:net::SSLClientSocketNSS::Core::Connect
-}
 {
    bug_17540
    Heapcheck:Leak
@@ -674,14 +667,6 @@
    fun:IPC::MessageWithTuple::Dispatch
    fun:ResourceDispatcherHost::OnMessageReceived
    fun:ResourceDispatcherHostTest::MakeTestRequest
-}
-{
-   Bug_70062
-   Heapcheck:Leak
-   fun:PR_NewLock
-   fun:InitSessionCacheLocks
-   fun:initSessionCacheLocksLazily
-   fun:PR_CallOnce
 }
 {
    bug_70327
