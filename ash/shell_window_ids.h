@@ -53,28 +53,33 @@ const int kShellWindowId_AppListContainer = 9;
 // The container for user-specific modal windows.
 const int kShellWindowId_SystemModalContainer = 10;
 
+// The container for input method components such like candidate windows.  They
+// are almost panels but have no activations/focus, and they should appear over
+// the AppList and SystemModal dialogs.
+const int kShellWindowId_InputMethodContainer = 11;
+
 // The container for the lock screen.
-const int kShellWindowId_LockScreenContainer = 11;
+const int kShellWindowId_LockScreenContainer = 12;
 
 // The container for the lock screen modal windows.
-const int kShellWindowId_LockSystemModalContainer = 12;
+const int kShellWindowId_LockSystemModalContainer = 13;
 
 // The container for the status area.
-const int kShellWindowId_StatusContainer = 13;
+const int kShellWindowId_StatusContainer = 14;
 
 // The container for menus.
-const int kShellWindowId_MenuContainer = 14;
+const int kShellWindowId_MenuContainer = 15;
 
 // The container for drag/drop images and tooltips.
-const int kShellWindowId_DragImageAndTooltipContainer = 15;
+const int kShellWindowId_DragImageAndTooltipContainer = 16;
 
 // The container for bubbles briefly overlaid onscreen to show settings changes
 // (volume, brightness, etc.).
-const int kShellWindowId_SettingBubbleContainer = 16;
+const int kShellWindowId_SettingBubbleContainer = 17;
 
 // The container for special components overlaid onscreen, such as the
 // region selector for partial screenshots.
-const int kShellWindowId_OverlayContainer = 17;
+const int kShellWindowId_OverlayContainer = 18;
 
 }  // namespace internal
 

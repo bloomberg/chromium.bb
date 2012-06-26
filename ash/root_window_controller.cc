@@ -105,6 +105,10 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       new internal::SystemModalContainerLayoutManager(modal_container));
   SetChildWindowVisibilityChangesAnimated(modal_container);
 
+  CreateContainer(internal::kShellWindowId_InputMethodContainer,
+                  "InputMethodContainer",
+                  non_lock_screen_containers);
+
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
   aura::Window* lock_container = CreateContainer(

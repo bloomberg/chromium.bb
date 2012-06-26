@@ -34,6 +34,8 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #endif  // USE_ASH
 
@@ -1591,7 +1593,13 @@ void CandidateWindowControllerImpl::CreateView() {
   // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Show the candidate window always on top
+#if defined(USE_ASH)
+  params.parent = ash::Shell::GetContainer(
+      ash::Shell::GetActiveRootWindow(),
+      ash::internal::kShellWindowId_InputMethodContainer);
+#else
   params.keep_on_top = true;
+#endif
   frame_->Init(params);
 #if defined(USE_ASH)
   ash::SetWindowVisibilityAnimationType(
