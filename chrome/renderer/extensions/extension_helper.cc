@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
@@ -112,6 +111,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
   chrome::ViewType view_type_;
   std::vector<content::RenderView*> views_;
 };
+
 }
 
 // static
@@ -339,9 +339,8 @@ void ExtensionHelper::OnExecuteCode(
   WebView* webview = render_view()->GetWebView();
   WebFrame* main_frame = webview->mainFrame();
   if (!main_frame) {
-    ListValue val;
     Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        routing_id(), params.request_id, false, -1, "", val));
+        routing_id(), params.request_id, false, -1, ""));
     return;
   }
 

@@ -620,15 +620,7 @@
             "name": "callback",
             "optional": true,
             "description": "Called after all the JavaScript has been executed.",
-            "parameters": [
-              {
-                "name": "result",
-                "optional": true,
-                "type": "array",
-                "items": {"type": "any", "minimum": 0},
-                "description": "The result of the script in every injected frame."
-              }
-            ]
+            "parameters": []
           }
         ]
       },

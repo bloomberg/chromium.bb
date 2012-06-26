@@ -408,12 +408,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
                             SubstitutionMap /* message bundle */)
 
 // Sent from the renderer to the browser to return the script running result.
-IPC_MESSAGE_ROUTED5(ExtensionHostMsg_ExecuteCodeFinished,
+IPC_MESSAGE_ROUTED4(ExtensionHostMsg_ExecuteCodeFinished,
                     int /* request id */,
                     bool /* whether the script ran successfully */,
                     int32 /* page_id the code executed on, if successful */,
-                    std::string /* error message, if unsuccessful */,
-                    ListValue /* result of the script */)
+                    std::string /* error message, if unsuccessful */)
 
 // Sent from the renderer to the browser to notify that content scripts are
 // running in the renderer that the IPC originated from.

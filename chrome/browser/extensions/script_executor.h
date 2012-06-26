@@ -11,10 +11,6 @@
 #include "base/callback_forward.h"
 #include "chrome/common/extensions/user_script.h"
 
-namespace base {
-  class ListValue;
-}
-
 namespace content {
 class WebContents;
 }
@@ -46,10 +42,9 @@ class ScriptExecutor {
     ISOLATED_WORLD,
   };
 
-  // Callback from ExecuteScript. The arguments are (success, page_id, error,
-  // result). page_id is only valid on success, error is only valid on !success.
-  typedef base::Callback<void(bool, int32, const std::string&,
-                              const base::ListValue&)>
+  // Callback from ExecuteScript. The arguments are (success, page_id, error).
+  // page_id is only valid on success, error is only valid on !success.
+  typedef base::Callback<void(bool, int32, const std::string&)>
       ExecuteScriptCallback;
 
   // Executes a script. The arguments match ExtensionMsg_ExecuteCode_Params in

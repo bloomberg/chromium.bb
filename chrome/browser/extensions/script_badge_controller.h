@@ -24,10 +24,6 @@ class ExtensionAction;
 class ExtensionService;
 class TabContents;
 
-namespace base {
-class ListValue;
-}
-
 namespace IPC {
 class Message;
 }
@@ -84,8 +80,7 @@ class ScriptBadgeController
                                const ExecuteScriptCallback& callback,
                                bool success,
                                int32 page_id,
-                               const std::string& error,
-                               const base::ListValue& script_result);
+                               const std::string& error);
 
   // Gets the ExtensionService for |tab_contents_|.
   ExtensionService* GetExtensionService();

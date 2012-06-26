@@ -78,9 +78,3 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptRunAt) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/run_at")) << message_;
 }
-
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptCallback) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartTestServer());
-  ASSERT_TRUE(RunExtensionTest("executescript/callback")) << message_;
-}

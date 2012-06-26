@@ -14,10 +14,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
-namespace base {
-class ListValue;
-}  // namespace base
-
 namespace extensions {
 
 namespace {
@@ -62,8 +58,7 @@ class Handler : public content::WebContentsObserver {
   }
 
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE {
-    base::ListValue val;
-    callback_.Run(false, -1, kRendererDestroyed, val);
+    callback_.Run(false, -1, kRendererDestroyed);
     delete this;
   }
 
@@ -71,9 +66,8 @@ class Handler : public content::WebContentsObserver {
   void OnExecuteCodeFinished(int request_id,
                              bool success,
                              int32 page_id,
-                             const std::string& error,
-                             const base::ListValue& script_result) {
-    callback_.Run(success, page_id, error, script_result);
+                             const std::string& error) {
+    callback_.Run(success, page_id, error);
     delete this;
   }
 
@@ -104,7 +98,7 @@ void ScriptExecutorImpl::ExecuteScript(
   params.is_javascript = (script_type == JAVASCRIPT);
   params.code = code;
   params.all_frames = (frame_scope == ALL_FRAMES);
-  params.run_at = static_cast<int>(run_at);
+  params.run_at = (int) run_at;
   params.in_main_world = (world_type == MAIN_WORLD);
 
   // Handler handles IPCs and deletes itself on completion.

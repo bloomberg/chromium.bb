@@ -5,7 +5,6 @@
 #include "chrome/renderer/extensions/user_script_scheduler.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -15,13 +14,10 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "v8/include/v8.h"
 
 namespace {
 // The length of time to wait after the DOM is complete to try and run user
@@ -32,7 +28,6 @@ const int kUserScriptIdleTimeoutMs = 200;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebString;
-using WebKit::WebVector;
 using WebKit::WebView;
 using extensions::Extension;
 
@@ -139,14 +134,12 @@ void UserScriptScheduler::ExecuteCodeImpl(
   content::RenderView* render_view =
       content::RenderView::FromWebView(frame_->view());
   ExtensionHelper* extension_helper = ExtensionHelper::Get(render_view);
-  base::ListValue execution_results;
 
   // Since extension info is sent separately from user script info, they can
   // be out of sync. We just ignore this situation.
   if (!extension) {
     render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        render_view->GetRoutingID(), params.request_id, true, -1, "",
-        execution_results));
+        render_view->GetRoutingID(), params.request_id, true, -1, ""));
     return;
   }
 
@@ -183,47 +176,21 @@ void UserScriptScheduler::ExecuteCodeImpl(
               -1,
               ExtensionErrorUtils::FormatErrorMessage(
                   extension_manifest_errors::kCannotAccessPage,
-                  frame->document().url().spec()),
-              execution_results));
+                  frame->document().url().spec())));
           return;
         }
       }
 
       WebScriptSource source(WebString::fromUTF8(params.code));
-      v8::HandleScope scope;
-      v8::Persistent<v8::Context> persistent_context = v8::Context::New();
-      v8::Local<v8::Context> context =
-          v8::Local<v8::Context>::New(persistent_context);
-      persistent_context.Dispose();
-      scoped_ptr<content::V8ValueConverter> v8_converter(
-          content::V8ValueConverter::create());
-      v8_converter->SetUndefinedAllowed(true);
-      v8::Handle<v8::Value> script_value;
       if (params.in_main_world) {
-        script_value = frame->executeScriptAndReturnValue(source);
+        frame->executeScript(source);
       } else {
-        WebKit::WebVector<v8::Local<v8::Value> > results;
         std::vector<WebScriptSource> sources;
         sources.push_back(source);
         frame->executeScriptInIsolatedWorld(
             extension_dispatcher_->user_script_slave()->
                 GetIsolatedWorldIdForExtension(extension, frame),
-            &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS,
-            &results);
-        // We only expect one value back since we only pushed one source
-        if (results.size() == 1 && !results[0].IsEmpty())
-          script_value = results[0];
-      }
-      if (!script_value.IsEmpty()) {
-        base::Value* base_val = NULL;
-        // Don't try and convert non-pure JS objects.
-        if (!script_value->IsObject() ||
-            script_value->ToObject()->InternalFieldCount() == 0)
-            base_val = v8_converter->FromV8Value(script_value, context);
-        if (!base_val)
-          base_val = base::Value::CreateNullValue();
-        execution_results.Append(base_val);
-        script_value.Clear();
+            &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
       }
     } else {
       frame->document().insertUserStyleSheet(
@@ -238,8 +205,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
       params.request_id,
       true,
       render_view->GetPageId(),
-      "",
-      execution_results));
+      ""));
 }
 
 bool UserScriptScheduler::GetAllChildFrames(
