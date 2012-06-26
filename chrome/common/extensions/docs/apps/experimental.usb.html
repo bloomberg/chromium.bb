@@ -18,7 +18,7 @@
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
   <meta name="description" content="Documentation for the chrome.experimental.usb module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.usb - Google Chrome Extensions - Google Code</title></head>
-  <body><link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+  <body><link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -52,14 +52,16 @@
     <!-- API HEADER -->
     <table id="header" width="100%" cellspacing="0" border="0">
       <tbody><tr>
-        <td valign="middle"><a href="http://code.google.com/"><img src="../images/code_labs_logo.gif" height="43" width="161" alt="Google Code Labs" style="border:0; margin:0;"></a></td>
+        <td valign="middle"><a href="http://code.google.com/"><img src="../images/chrome_logo.gif" alt="Google Code" style="border:0; margin:0;"></a></td>
         <td valign="middle" width="100%" style="padding-left:0.6em;">
           <form action="http://www.google.com/cse" id="cse" style="margin-top:0.5em">
             <div id="gsc-search-box">
               <input type="hidden" name="cx" value="002967670403910741006:61_cvzfqtno">
               <input type="hidden" name="ie" value="UTF-8">
-              <input type="text" name="q" value="" size="55">
-              <input class="gsc-search-button" type="submit" name="sa" value="Search">
+              <input id="gsc-search-input" type="text" name="q" value="" size="55">
+              <button class="gsc-search-button" type="submit" name="sa">
+                <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
+              </button>
               <br>
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
@@ -74,25 +76,22 @@
     <div id="codesiteContent" class="">
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
-        <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
+        <h1>Packaged Apps</h1>
         <ul id="home" class="gc-topnav-tabs">
           <li id="home_link">
-            <a href="index.html" title="Google Chrome Extensions home page">Home</a>
+            <a href="app_landing.html" title="Packaged Apps home page"><span>Home</span></a>
           </li>
           <li id="docs_link">
-            <a href="docs.html" title="Official Google Chrome Extensions documentation">Docs</a>
-          </li>
-          <li id="faq_link">
-            <a href="faq.html" title="Answers to frequently asked questions about Google Chrome Extensions">FAQ</a>
+            <a href="about_apps.html" title="Official Packaged apps documentation"><span>Docs</span></a>
           </li>
           <li id="samples_link">
-            <a href="samples.html" title="Sample extensions (with source code)">Samples</a>
+            <a href="app_samples.html" title="Sample apps (with source code)"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum">Group</a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
-            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow">Questions?</a>
+            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
@@ -100,84 +99,58 @@
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
         <ul>
-          <li><a href="getstarted.html">Getting Started</a></li>
-          <li><a href="overview.html">Overview</a></li>
-          <li><a href="whats_new.html">What's New?</a></li>
-          <li><h2><a href="devguide.html">Developer's Guide</a></h2>
+          <li><h2>Getting Started</h2>
             <ul>
-              <li>Browser UI
-                <ul>
-                  <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li><a href="contextMenus.html">Context Menus</a></li>
-                  <li><a href="notifications.html">Desktop Notifications</a></li>
-                  <li><a href="omnibox.html">Omnibox</a></li>
-                  <li><a href="options.html">Options Pages</a></li>
-                  <li><a href="override.html">Override Pages</a></li>
-                  <li><a href="pageAction.html">Page Actions</a></li>
-                </ul>
-              </li>
-              <li>Browser Interaction
-                <ul>
-                  <li><a href="bookmarks.html">Bookmarks</a></li>
-                  <li><a href="cookies.html">Cookies</a></li>
-                  <li><a href="devtools.html">Developer Tools</a></li>
-                  <li><a href="events.html">Events</a></li>
-                  <li><a href="history.html">History</a></li>
-                  <li><a href="management.html">Management</a></li>
-                  <li><a href="tabs.html">Tabs</a></li>
-                  <li><a href="windows.html">Windows</a></li>
-                </ul>
-              </li>
-              <li>Implementation
-                <ul>
-                  <li><a href="a11y.html">Accessibility</a></li>
-                  <li><a href="background_pages.html">Background Pages</a></li>
-                  <li><a href="content_scripts.html">Content Scripts</a></li>
-                  <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="i18n.html">Internationalization</a></li>
-                  <li><a href="messaging.html">Message Passing</a></li>
-                  <li><a href="permissions.html">Optional Permissions</a></li>
-                  <li><a href="npapi.html">NPAPI Plugins</a></li>
-                </ul>
-              </li>
-              <li>Finishing
-                <ul>
-                  <li><a href="hosting.html">Hosting</a></li>
-                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
-                </ul>
-              </li>
+              <li><a href="about_apps.html">What Are Packaged Apps?</a></li>
+              <li><a href="app_architecture.html">Understand the Architecture</a></li>
+              <li><a href="first_app.html">Create Your First App</a></li>
             </ul>
           </li>
-          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
-          <li><h2><a href="tutorials.html">Tutorials</a></h2>
+          <li><h2>Developing</h2>
             <ul>
-              <li><a href="tut_debugging.html">Debugging</a></li>
-              <li><a href="tut_analytics.html">Google Analytics</a></li>
-              <li><a href="tut_oauth.html">OAuth</a></li>
+              <li><a href="develop_apps.html">Before You Start</a></li>
+              <li>The Fundamentals
+                <ul>
+                  <li><a href="app_lifecycle.html">Manage App Lifecycle</a></li>
+                  <li><a href="app_storage.html">Manage Data</a></li>
+                  <li><a href="offline_apps.html">Offline First</a></li>
+                  <li><a href="app_external.html">Embed Content</a></li>
+                </ul>
+              </li>
+              <li>Security &amp; Privacy
+                <ul>
+                  <li><a href="app_security.html">About Security &amp; Privacy</a></li>
+                  <li><a href="app_identity.html">Identify User</a></li>
+                  <li><a href="app_permissions.html">Manage User Permissions</a></li>
+                  <li><a href="app_csp">Comply with CSP</a></li>
+                </ul>
+              </li>
+              <li>Advanced Technologies
+                <ul>
+                  <li><a href="app_network.html">Communicate across Network</a></li>
+                  <li><a href="app_hardware.html">Access Hardware Devices</a></li>
+                  <li><a href="app_intents.html">Connect Apps with Web Intents</a></li>
+                </ul>
+              </li>
+              <li><a href="app_frameworks.html">Recommended Frameworks</a></li>
+            </ul>
+          </li>
+          <li><h2>Deploying</h2>
+            <ul>
+              <li><a href="publish_app.html">Publish</a></li>
+              <li><a href="sell_app.html">Sell</a></li>
             </ul>
           </li>
           <li><h2>Reference</h2>
             <ul>
-              <li>Formats
-                <ul>
-                  <li><a href="manifest.html">Manifest Files</a></li>
-                  <li><a href="match_patterns.html">Match Patterns</a></li>
-                </ul>
-              </li>
-              <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li><a href="api_index.html">chrome.* APIs</a></li>
-              <li><a href="api_other.html">Other APIs</a></li>
+              <li><a href="manifest.html">Manifest Files</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="experimental.html">Experimental APIs</a></li>
+              <li><a href="api_other.html">Supported Libraries</a></li>
+              <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
           </li>
-          <li><h2><a href="samples.html">Samples</a></h2></li>
-          <div class="line"> </div>
-          <li><h2>More</h2>
-            <ul>
-              <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
-              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
-              <li><a href="themes.html">Themes</a></li>
-            </ul>
-          </li>
+          <li><h2><a href="app_samples.html">Samples</a></h2></li>
         </ul>
       </div>
       <script>
@@ -224,27 +197,27 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-experimental.usb.Device">Device</a>
+                <a href="#type-experimental.usb.Device">experimental.usb.Device</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.ControlTransferInfo">ControlTransferInfo</a>
+                <a href="#type-experimental.usb.ControlTransferInfo">experimental.usb.ControlTransferInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.GenericTransferInfo">GenericTransferInfo</a>
+                <a href="#type-experimental.usb.GenericTransferInfo">experimental.usb.GenericTransferInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.IsochronousTransferInfo">IsochronousTransferInfo</a>
+                <a href="#type-experimental.usb.IsochronousTransferInfo">experimental.usb.IsochronousTransferInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.UsbEvent">UsbEvent</a>
+                <a href="#type-experimental.usb.UsbEvent">experimental.usb.UsbEvent</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.DeviceOptions">DeviceOptions</a>
+                <a href="#type-experimental.usb.DeviceOptions">experimental.usb.DeviceOptions</a>
                 <ol>
                 </ol>
               </li>
@@ -366,19 +339,6 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
@@ -518,19 +478,6 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
@@ -684,46 +631,6 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The <em>callback</em> parameter should specify a function
-                    that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>experimental.usb.Device device</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>device</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
@@ -820,19 +727,6 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
@@ -929,19 +823,6 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div>  <!-- /apiItem -->

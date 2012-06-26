@@ -4,7 +4,7 @@
 
 // File-level comment to appease parser. Eventually this will not be necessary.
 
-[nodoc] namespace experimental.serial {
+namespace experimental.serial {
 
   callback GetPortsCallback = void (DOMString[] ports);
 

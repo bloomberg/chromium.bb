@@ -17,8 +17,8 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.appWindow module, which is part of the Google Chrome  extension APIs."><title>chrome.appWindow - Google Chrome Extensions - Google Code</title></head>
-  <body><link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+  <meta name="description" content="Documentation for the chrome.experimental.serial module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.serial - Google Chrome Extensions - Google Code</title></head>
+  <body><link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -52,14 +52,16 @@
     <!-- API HEADER -->
     <table id="header" width="100%" cellspacing="0" border="0">
       <tbody><tr>
-        <td valign="middle"><a href="http://code.google.com/"><img src="../images/code_labs_logo.gif" height="43" width="161" alt="Google Code Labs" style="border:0; margin:0;"></a></td>
+        <td valign="middle"><a href="http://code.google.com/"><img src="../images/chrome_logo.gif" alt="Google Code" style="border:0; margin:0;"></a></td>
         <td valign="middle" width="100%" style="padding-left:0.6em;">
           <form action="http://www.google.com/cse" id="cse" style="margin-top:0.5em">
             <div id="gsc-search-box">
               <input type="hidden" name="cx" value="002967670403910741006:61_cvzfqtno">
               <input type="hidden" name="ie" value="UTF-8">
-              <input type="text" name="q" value="" size="55">
-              <input class="gsc-search-button" type="submit" name="sa" value="Search">
+              <input id="gsc-search-input" type="text" name="q" value="" size="55">
+              <button class="gsc-search-button" type="submit" name="sa">
+                <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
+              </button>
               <br>
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
@@ -74,25 +76,22 @@
     <div id="codesiteContent" class="">
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
-        <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
+        <h1>Packaged Apps</h1>
         <ul id="home" class="gc-topnav-tabs">
           <li id="home_link">
-            <a href="index.html" title="Google Chrome Extensions home page">Home</a>
+            <a href="app_landing.html" title="Packaged Apps home page"><span>Home</span></a>
           </li>
           <li id="docs_link">
-            <a href="docs.html" title="Official Google Chrome Extensions documentation">Docs</a>
-          </li>
-          <li id="faq_link">
-            <a href="faq.html" title="Answers to frequently asked questions about Google Chrome Extensions">FAQ</a>
+            <a href="about_apps.html" title="Official Packaged apps documentation"><span>Docs</span></a>
           </li>
           <li id="samples_link">
-            <a href="samples.html" title="Sample extensions (with source code)">Samples</a>
+            <a href="app_samples.html" title="Sample apps (with source code)"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum">Group</a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
-            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow">Questions?</a>
+            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
@@ -100,84 +99,58 @@
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
         <ul>
-          <li><a href="getstarted.html">Getting Started</a></li>
-          <li><a href="overview.html">Overview</a></li>
-          <li><a href="whats_new.html">What's New?</a></li>
-          <li><h2><a href="devguide.html">Developer's Guide</a></h2>
+          <li><h2>Getting Started</h2>
             <ul>
-              <li>Browser UI
-                <ul>
-                  <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li><a href="contextMenus.html">Context Menus</a></li>
-                  <li><a href="notifications.html">Desktop Notifications</a></li>
-                  <li><a href="omnibox.html">Omnibox</a></li>
-                  <li><a href="options.html">Options Pages</a></li>
-                  <li><a href="override.html">Override Pages</a></li>
-                  <li><a href="pageAction.html">Page Actions</a></li>
-                </ul>
-              </li>
-              <li>Browser Interaction
-                <ul>
-                  <li><a href="bookmarks.html">Bookmarks</a></li>
-                  <li><a href="cookies.html">Cookies</a></li>
-                  <li><a href="devtools.html">Developer Tools</a></li>
-                  <li><a href="events.html">Events</a></li>
-                  <li><a href="history.html">History</a></li>
-                  <li><a href="management.html">Management</a></li>
-                  <li><a href="tabs.html">Tabs</a></li>
-                  <li><a href="windows.html">Windows</a></li>
-                </ul>
-              </li>
-              <li>Implementation
-                <ul>
-                  <li><a href="a11y.html">Accessibility</a></li>
-                  <li><a href="background_pages.html">Background Pages</a></li>
-                  <li><a href="content_scripts.html">Content Scripts</a></li>
-                  <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="i18n.html">Internationalization</a></li>
-                  <li><a href="messaging.html">Message Passing</a></li>
-                  <li><a href="permissions.html">Optional Permissions</a></li>
-                  <li><a href="npapi.html">NPAPI Plugins</a></li>
-                </ul>
-              </li>
-              <li>Finishing
-                <ul>
-                  <li><a href="hosting.html">Hosting</a></li>
-                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
-                </ul>
-              </li>
+              <li><a href="about_apps.html">What Are Packaged Apps?</a></li>
+              <li><a href="app_architecture.html">Understand the Architecture</a></li>
+              <li><a href="first_app.html">Create Your First App</a></li>
             </ul>
           </li>
-          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
-          <li><h2><a href="tutorials.html">Tutorials</a></h2>
+          <li><h2>Developing</h2>
             <ul>
-              <li><a href="tut_debugging.html">Debugging</a></li>
-              <li><a href="tut_analytics.html">Google Analytics</a></li>
-              <li><a href="tut_oauth.html">OAuth</a></li>
+              <li><a href="develop_apps.html">Before You Start</a></li>
+              <li>The Fundamentals
+                <ul>
+                  <li><a href="app_lifecycle.html">Manage App Lifecycle</a></li>
+                  <li><a href="app_storage.html">Manage Data</a></li>
+                  <li><a href="offline_apps.html">Offline First</a></li>
+                  <li><a href="app_external.html">Embed Content</a></li>
+                </ul>
+              </li>
+              <li>Security &amp; Privacy
+                <ul>
+                  <li><a href="app_security.html">About Security &amp; Privacy</a></li>
+                  <li><a href="app_identity.html">Identify User</a></li>
+                  <li><a href="app_permissions.html">Manage User Permissions</a></li>
+                  <li><a href="app_csp">Comply with CSP</a></li>
+                </ul>
+              </li>
+              <li>Advanced Technologies
+                <ul>
+                  <li><a href="app_network.html">Communicate across Network</a></li>
+                  <li><a href="app_hardware.html">Access Hardware Devices</a></li>
+                  <li><a href="app_intents.html">Connect Apps with Web Intents</a></li>
+                </ul>
+              </li>
+              <li><a href="app_frameworks.html">Recommended Frameworks</a></li>
+            </ul>
+          </li>
+          <li><h2>Deploying</h2>
+            <ul>
+              <li><a href="publish_app.html">Publish</a></li>
+              <li><a href="sell_app.html">Sell</a></li>
             </ul>
           </li>
           <li><h2>Reference</h2>
             <ul>
-              <li>Formats
-                <ul>
-                  <li><a href="manifest.html">Manifest Files</a></li>
-                  <li><a href="match_patterns.html">Match Patterns</a></li>
-                </ul>
-              </li>
-              <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li><a href="api_index.html">chrome.* APIs</a></li>
-              <li><a href="api_other.html">Other APIs</a></li>
+              <li><a href="manifest.html">Manifest Files</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="experimental.html">Experimental APIs</a></li>
+              <li><a href="api_other.html">Supported Libraries</a></li>
+              <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
           </li>
-          <li><h2><a href="samples.html">Samples</a></h2></li>
-          <div class="line"> </div>
-          <li><h2>More</h2>
-            <ul>
-              <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
-              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
-              <li><a href="themes.html">Themes</a></li>
-            </ul>
-          </li>
+          <li><h2><a href="app_samples.html">Samples</a></h2></li>
         </ul>
       </div>
       <script>
@@ -185,32 +158,30 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.appWindow</h1>
+        <h1 class="page_title">chrome.experimental.serial</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.appWindow</a>
+                <a href="#apiReference">API reference: chrome.experimental.serial</a>
                 <ol>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-create">create</a>
+                <a href="#method-close">close</a>
               </li><li>
-                <a href="#method-focus">focus</a>
+                <a href="#method-flush">flush</a>
               </li><li>
-                <a href="#method-maximize">maximize</a>
+                <a href="#method-getPorts">getPorts</a>
               </li><li>
-                <a href="#method-minimize">minimize</a>
+                <a href="#method-open">open</a>
               </li><li>
-                <a href="#method-moveTo">moveTo</a>
+                <a href="#method-read">read</a>
               </li><li>
-                <a href="#method-resizeTo">resizeTo</a>
-              </li><li>
-                <a href="#method-restore">restore</a>
+                <a href="#method-write">write</a>
               </li>
             </ol>
           </li>
@@ -218,7 +189,15 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-appWindow.CreateWindowOptions">CreateWindowOptions</a>
+                <a href="#type-experimental.serial.OpenInfo">experimental.serial.OpenInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-experimental.serial.ReadInfo">experimental.serial.ReadInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-experimental.serial.WriteInfo">experimental.serial.WriteInfo</a>
                 <ol>
                 </ol>
               </li>
@@ -230,23 +209,15 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
-        <p class="warning">
-          <!-- Standard content lead-in for APIs that are not yet available on
-          the stable channel. -->
-          <em>Warning:</em> This API is still under development. It is only
-          available for Chrome users on the
-          <span>
-            <strong>dev</strong>
-              <a href="http://www.chromium.org/getting-involved/dev-channel">early
-              release channel</a>.</span>
-          <a href="TODO">Learn more</a>.
+        <p id="classSummary">
+          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"></div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.appWindow</h2>
+        <h2>API reference: chrome.experimental.serial</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -255,38 +226,36 @@
             <h3>Methods</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-create"></a> <!-- method-anchor -->
-              <h4>create</h4>
+              <a name="method-close"></a> <!-- method-anchor -->
+              <h4>close</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.create</span>(<span class="null"><span>string</span>
-                      <var><span>url</span></var></span><span class="optional"><span>, </span><span>appWindow.CreateWindowOptions</span>
-                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>CreateWindowCallback</span></var></span>)</div>
+                  <span>chrome.experimental.serial.close</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>CloseCallback</span></var></span>)</div>
               <div class="description">
+                <p>Closes an open connection.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>url</var>
+            <var>connectionId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>The id of the opened connection.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -295,38 +264,11 @@
                   </div><div>
                     <div>
           <dt>
-            <var>options</var>
+            <var>CloseCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="appWindow.html#type-appWindow.CreateWindowOptions">appWindow.CreateWindowOptions</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>CreateWindowCallback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>function</span>
@@ -336,9 +278,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>Returns true if operation was successful.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -350,14 +290,14 @@
             <div>
               <div>
           <dt>
-            <var>view_id</var>
+            <var>result</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
@@ -383,111 +323,25 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>integer view_id</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>view_id</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-focus"></a> <!-- method-anchor -->
-              <h4>focus</h4>
+              <a name="method-flush"></a> <!-- method-anchor -->
+              <h4>flush</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.focus</span>()</div>
+                  <span>chrome.experimental.serial.flush</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>FlushCallback</span></var></span>)</div>
               <div class="description">
-                <!-- PARAMETERS -->
-                <dl>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-maximize"></a> <!-- method-anchor -->
-              <h4>maximize</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.maximize</span>()</div>
-              <div class="description">
-                <!-- PARAMETERS -->
-                <dl>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-minimize"></a> <!-- method-anchor -->
-              <h4>minimize</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.minimize</span>()</div>
-              <div class="description">
-                <!-- PARAMETERS -->
-                <dl>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-moveTo"></a> <!-- method-anchor -->
-              <h4>moveTo</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.moveTo</span>(<span class="null"><span>integer</span>
-                      <var><span>x</span></var></span><span class="null"><span>, </span><span>integer</span>
-                      <var><span>y</span></var></span>)</div>
-              <div class="description">
+                <p>Flushes all bytes in the given connection's input and output buffers.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>x</var>
+            <var>connectionId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -501,9 +355,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>The id of the connection.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -512,14 +364,40 @@
                   </div><div>
                     <div>
           <dt>
-            <var>y</var>
+            <var>FlushCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns true if operation was successful.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
@@ -534,6 +412,11 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
                   </div>
                 </dl>
                 <!-- RETURNS -->
@@ -543,28 +426,28 @@
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-resizeTo"></a> <!-- method-anchor -->
-              <h4>resizeTo</h4>
+              <a name="method-getPorts"></a> <!-- method-anchor -->
+              <h4>getPorts</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.resizeTo</span>(<span class="null"><span>integer</span>
-                      <var><span>width</span></var></span><span class="null"><span>, </span><span>integer</span>
-                      <var><span>height</span></var></span>)</div>
+                  <span>chrome.experimental.serial.getPorts</span>(<span class="null"><span>function</span>
+                      <var><span>GetPortsCallback</span></var></span>)</div>
               <div class="description">
+                <p>Returns names of valid ports on this machine, each of which is likely to be valid to pass as the port argument to open(). The list is regenerated each time this method is called, as port validity is dynamic.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>width</var>
+            <var>GetPortsCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>function</span>
                       </span>
                     </span>
                   )
@@ -574,6 +457,89 @@
           <dd class="todo">
             Undocumented.
           </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>ports</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-open"></a> <!-- method-anchor -->
+              <h4>open</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.open</span>(<span class="null"><span>string</span>
+                      <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>OpenCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Opens a connection to the given serial port.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>port</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The name of the serial port to open.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -582,14 +548,42 @@
                   </div><div>
                     <div>
           <dt>
-            <var>height</var>
+            <var>OpenCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>openInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.OpenInfo">experimental.serial.OpenInfo</a>
                       </span>
                     </span>
                   )
@@ -604,6 +598,11 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
                   </div>
                 </dl>
                 <!-- RETURNS -->
@@ -613,14 +612,226 @@
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-restore"></a> <!-- method-anchor -->
-              <h4>restore</h4>
+              <a name="method-read"></a> <!-- method-anchor -->
+              <h4>read</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.appWindow.restore</span>()</div>
+                  <span>chrome.experimental.serial.read</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>ReadCallback</span></var></span>)</div>
               <div class="description">
+                <p>Reads a byte from the given connection.</p>
                 <!-- PARAMETERS -->
+                <h4>Parameters</h4>
                 <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>ReadCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>readInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.ReadInfo">experimental.serial.ReadInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-write"></a> <!-- method-anchor -->
+              <h4>write</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.write</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>ArrayBuffer</span>
+                      <var><span>data</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>WriteCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Writes a string to the given connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The string to write.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>WriteCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>writeInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.WriteInfo">experimental.serial.WriteInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
                 </dl>
                 <!-- RETURNS -->
                 <dl>
@@ -638,8 +849,8 @@
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-appWindow.CreateWindowOptions"></a>
-              <h4>appWindow.CreateWindowOptions</h4>
+              <a name="type-experimental.serial.OpenInfo"></a>
+              <h4>experimental.serial.OpenInfo</h4>
               <div>
           <dt>
               <em>
@@ -664,36 +875,11 @@
               <div>
                 <div>
           <dt>
-            <var>frame</var>
+            <var>connectionId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Frame type: 'none' or 'chrome' (defaults to 'chrome')</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>height</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>integer</span>
@@ -703,24 +889,31 @@
                 </div>
               </em>
           </dt>
-          <dd>Height of the window.</dd>
+          <dd>The id of the opened connection.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
-              </div><div>
-                <div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.serial.ReadInfo"></a>
+              <h4>experimental.serial.ReadInfo</h4>
+              <div>
           <dt>
-            <var>left</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>object</span>
                       </span>
                     </span>
                   )
@@ -731,6 +924,27 @@
             Undocumented.
           </dd>
           <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bytesRead</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The number of bytes received, or a negative number if an error occurred.</dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
@@ -738,15 +952,45 @@
               </div><div>
                 <div>
           <dt>
-            <var>maxHeight</var>
+            <var>data</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The data received.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.serial.WriteInfo"></a>
+              <h4>experimental.serial.WriteInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
                       </span>
                     </span>
                   )
@@ -757,19 +1001,16 @@
             Undocumented.
           </dd>
           <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
+          <dd>
+            <dl>
+              <div>
                 <div>
           <dt>
-            <var>maxWidth</var>
+            <var>bytesWritten</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>integer</span>
@@ -779,135 +1020,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>minHeight</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>minWidth</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>top</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>type</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Window type: 'panel' or 'shell' (defaults to 'shell')</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>width</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Width of the window.</dd>
+          <dd>The number of bytes written.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

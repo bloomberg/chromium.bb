@@ -4,7 +4,7 @@
 
 // File-level comment to appease parser. Eventually this will not be necessary.
 
-[nodoc] namespace fileSystem {
+namespace fileSystem {
   dictionary ChooseFileOptions {
     // type can be 'openFile' or 'saveFile'. Default is 'openFile'.
     DOMString? type;
