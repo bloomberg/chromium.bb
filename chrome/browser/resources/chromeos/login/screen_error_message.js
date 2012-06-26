@@ -233,11 +233,8 @@ cr.define('login', function() {
         offlineMessage.classList.remove('hidden');
         offlineMessage.classList.remove('faded');
 
-        if (Oobe.getInstance().isNewOobe()) {
-          $('inner-container').style.height =
-              offlineMessage.offsetHeight + 'px';
-          $('inner-container').style.width = offlineMessage.offsetWidth + 'px';
-        }
+        if (Oobe.getInstance().isNewOobe())
+          Oobe.getInstance().updateInnerContainerSize_(offlineMessage);
 
         if (!currentScreen.classList.contains('faded')) {
           currentScreen.classList.add('faded');
@@ -273,11 +270,8 @@ cr.define('login', function() {
           currentScreen.classList.remove('hidden');
           currentScreen.classList.remove('faded');
 
-          if (Oobe.getInstance().isNewOobe()) {
-            $('inner-container').style.height =
-                currentScreen.offsetHeight + 'px';
-            $('inner-container').style.width = currentScreen.offsetWidth + 'px';
-          }
+          if (Oobe.getInstance().isNewOobe())
+            Oobe.getInstance().updateInnerContainerSize_(currentScreen);
 
           // Forces a reload for Gaia screen on hiding error message.
           if (currentScreen.id == 'gaia-signin')

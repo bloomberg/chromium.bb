@@ -178,9 +178,7 @@ cr.define('cr.ui.login', function() {
       }
 
       // Adjust inner container height based on new step's height.
-      $('inner-container').style.height = newStep.offsetHeight + 'px';
-      if (this.isNewOobe())
-        $('inner-container').style.width = newStep.offsetWidth + 'px';
+      this.updateInnerContainerSize_(newStep);
 
       if (this.currentStep_ != nextStepIndex &&
           !oldStep.classList.contains('hidden')) {
@@ -268,18 +266,41 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Updates inner container size based on the size of the current screen.
+     * Should be executed on screen change / screen size change.
+     * @param {!HTMLElement} screen Screen that is being shown.
+     */
+    updateInnerContainerSize_: function(screen) {
+      $('inner-container').style.height = screen.offsetHeight + 'px';
+      if (this.isNewOobe())
+        $('inner-container').style.width = screen.offsetWidth + 'px';
+    },
+
+    /**
      * Updates localized content of the screens like headers, buttons and links.
      * Should be executed on language change.
      */
     updateLocalizedContent_: function() {
-      $('button-strip').innerHTML = '';
+      if (!this.isNewOobe())
+        $('button-strip').innerHTML = '';
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
-        $('header-' + screenId).textContent = screen.header;
+        if (this.isNewOobe()) {
+          buttonStrip = $(screenId + '-controls');
+          if (buttonStrip)
+            buttonStrip.innerHTML = '';
+          // TODO(nkostylev): Update screen headers for new OOBE design.
+        } else {
+          $('header-' + screenId).textContent = screen.header;
+        }
         this.appendButtons_(screen.buttons, screenId);
         if (screen.updateLocalizedContent)
           screen.updateLocalizedContent();
       }
+
+      var currentScreenId = this.screens_[this.currentStep_];
+      var currentScreen = $(currentScreenId);
+      this.updateInnerContainerSize_(currentScreen);
 
       // This screen is a special case as it's not registered with the rest of
       // the screens.
