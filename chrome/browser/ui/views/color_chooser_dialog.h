@@ -7,10 +7,10 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/base_shell_dialog.h"
 #include "chrome/browser/ui/views/color_chooser_dialog.h"
 #include "chrome/browser/ui/views/base_shell_dialog_win.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/dialogs/base_shell_dialog.h"
 
 namespace views {
 class ColorChooserListener;
@@ -18,7 +18,7 @@ class ColorChooserListener;
 
 class ColorChooserDialog
     : public base::RefCountedThreadSafe<ColorChooserDialog>,
-      public BaseShellDialog,
+      public ui::BaseShellDialog,
       public BaseShellDialogImpl {
  public:
   ColorChooserDialog(views::ColorChooserListener* listener,

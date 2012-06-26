@@ -12,11 +12,14 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/base_shell_dialog.h"
+#include "ui/base/dialogs/base_shell_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace ui {
 struct SelectedFileInfo;
 }
 
@@ -29,7 +32,7 @@ extern std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
 // Shows a dialog box for selecting a file or a folder.
 class SelectFileDialog
     : public base::RefCountedThreadSafe<SelectFileDialog>,
-      public BaseShellDialog {
+      public ui::BaseShellDialog {
  public:
   enum Type {
     SELECT_NONE,
@@ -56,7 +59,7 @@ class SelectFileDialog
     //
     // If not overridden, calls FileSelected() with path from |file|.
     virtual void FileSelectedWithExtraInfo(
-        const content::SelectedFileInfo& file,
+        const ui::SelectedFileInfo& file,
         int index,
         void* params);
 
@@ -70,7 +73,7 @@ class SelectFileDialog
     //
     // If not overridden, calls MultiFilesSelected() with paths from |files|.
     virtual void MultiFilesSelectedWithExtraInfo(
-      const std::vector<content::SelectedFileInfo>& files,
+      const std::vector<ui::SelectedFileInfo>& files,
       void* params);
 
     // Notifies the Listener that the file/folder selection was aborted (via

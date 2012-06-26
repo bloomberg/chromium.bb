@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/selected_file_info.h"
+#include "ui/base/dialogs/selected_file_info.h"
 
 using content::BrowserThread;
 
@@ -162,7 +162,7 @@ void SelectFileDialogExtension::ExtensionTerminated(
 // static
 void SelectFileDialogExtension::OnFileSelected(
     int32 tab_id,
-    const content::SelectedFileInfo& file,
+    const ui::SelectedFileInfo& file,
     int index) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
@@ -177,7 +177,7 @@ void SelectFileDialogExtension::OnFileSelected(
 // static
 void SelectFileDialogExtension::OnMultiFilesSelected(
     int32 tab_id,
-    const std::vector<content::SelectedFileInfo>& files) {
+    const std::vector<ui::SelectedFileInfo>& files) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
   if (!dialog)

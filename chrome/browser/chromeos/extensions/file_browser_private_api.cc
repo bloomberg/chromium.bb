@@ -45,11 +45,11 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/selected_file_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/escape.h"
+#include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -809,7 +809,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::vector<content::SelectedFileInfo> selected_files;
+  std::vector<ui::SelectedFileInfo> selected_files;
 
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
   fileapi::ExternalFileSystemMountPointProvider* provider =
@@ -890,7 +890,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
       DVLOG(1) << "Selected: real path: " << real_path.value()
                << " display name: " << display_name;
       selected_files.push_back(
-          content::SelectedFileInfo(real_path, display_name));
+          ui::SelectedFileInfo(real_path, display_name));
     }
   }
 

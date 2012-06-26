@@ -2362,7 +2362,6 @@
         'browser/ui/auto_login_info_bar_delegate.h',
         'browser/ui/auto_login_prompter.cc',
         'browser/ui/auto_login_prompter.h',
-        'browser/ui/base_shell_dialog.h',
         'browser/ui/base_window.h',
         'browser/ui/blocked_content/blocked_content_container.cc',
         'browser/ui/blocked_content/blocked_content_container.h',
