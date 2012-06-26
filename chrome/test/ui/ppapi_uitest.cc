@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
@@ -26,11 +25,9 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/gpu/test_switches.h"
 #include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
-#include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using content::DomOperationNotificationDetails;
@@ -128,15 +125,6 @@ PPAPITestBase::PPAPITestBase() {
 }
 
 void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
-  // Do not use mesa if real GPU is required.
-  if (!command_line->HasSwitch(switches::kUseGpuInTests)) {
-#if !defined(OS_MACOSX)
-    CHECK(test_launcher_utils::OverrideGLImplementation(
-        command_line, gfx::kGLImplementationOSMesaName)) <<
-        "kUseGL must not be set by test framework code!";
-#endif
-  }
-
   // The test sends us the result via a cookie.
   command_line->AppendSwitch(switches::kEnableFileCookies);
 
@@ -555,10 +543,6 @@ TEST_PPAPI_OUT_OF_PROCESS(Instance_LeakedObjectDestructors);
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
 TEST_PPAPI_NACL_VIA_HTTP(Graphics2D)
-
-TEST_PPAPI_IN_PROCESS(Graphics3D)
-TEST_PPAPI_OUT_OF_PROCESS(Graphics3D)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics3D)
 
 TEST_PPAPI_IN_PROCESS(ImageData)
 TEST_PPAPI_OUT_OF_PROCESS(ImageData)
@@ -1035,9 +1019,6 @@ TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_RecommendSampleRate)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
-TEST_PPAPI_NACL_VIA_HTTP(AudioConfig_RecommendSampleRate)
-TEST_PPAPI_NACL_VIA_HTTP(AudioConfig_ValidConfigs)
-TEST_PPAPI_NACL_VIA_HTTP(AudioConfig_InvalidConfigs)
 
 // Only run audio output tests if we have an audio device available.
 // TODO(raymes): We should probably test scenarios where there is no audio
