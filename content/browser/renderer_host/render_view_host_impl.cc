@@ -52,11 +52,11 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/selected_file_info.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/dialogs/selected_file_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webdropdata.h"
@@ -773,11 +773,11 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::FilesSelectedInChooser(
-    const std::vector<SelectedFileInfo>& files,
+    const std::vector<ui::SelectedFileInfo>& files,
     int permissions) {
   // Grant the security access requested to the given files.
   for (size_t i = 0; i < files.size(); ++i) {
-    const SelectedFileInfo& file = files[i];
+    const ui::SelectedFileInfo& file = files[i];
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
         GetProcess()->GetID(), file.path, permissions);
   }

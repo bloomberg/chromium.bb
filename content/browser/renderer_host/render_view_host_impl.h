@@ -51,6 +51,7 @@ class PowerSaveBlocker;
 
 namespace ui {
 class Range;
+struct SelectedFileInfo;
 }
 
 namespace content {
@@ -61,7 +62,6 @@ class RenderWidgetHostDelegate;
 struct FileChooserParams;
 struct ContextMenuParams;
 struct Referrer;
-struct SelectedFileInfo;
 struct ShowDesktopNotificationHostMsgParams;
 
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
@@ -201,7 +201,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void FilesSelectedInChooser(
-      const std::vector<SelectedFileInfo>& files,
+      const std::vector<ui::SelectedFileInfo>& files,
       int permissions) OVERRIDE;
   virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;

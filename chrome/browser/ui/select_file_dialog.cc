@@ -13,8 +13,8 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/common/selected_file_info.h"
 #include "grit/generated_resources.h"
+#include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
@@ -24,14 +24,14 @@ SelectFileDialog::FileTypeInfo::FileTypeInfo() : include_all_files(false) {}
 SelectFileDialog::FileTypeInfo::~FileTypeInfo() {}
 
 void SelectFileDialog::Listener::FileSelectedWithExtraInfo(
-    const content::SelectedFileInfo& file,
+    const ui::SelectedFileInfo& file,
     int index,
     void* params) {
   FileSelected(file.path, index, params);
 }
 
 void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
-    const std::vector<content::SelectedFileInfo>& files,
+    const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
   std::vector<FilePath> file_paths;
   for (size_t i = 0; i < files.size(); ++i)

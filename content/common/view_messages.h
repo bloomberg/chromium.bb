@@ -20,7 +20,6 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/selected_file_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/webkit_param_traits.h"
 #include "content/public/common/window_container_type.h"
@@ -38,6 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/point.h"
@@ -352,7 +352,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
   IPC_STRUCT_TRAITS_MEMBER(time)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::SelectedFileInfo)
+IPC_STRUCT_TRAITS_BEGIN(ui::SelectedFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()
@@ -1098,7 +1098,7 @@ IPC_MESSAGE_ROUTED2(ViewMsg_DidChooseColorResponse, unsigned, SkColor)
 IPC_MESSAGE_ROUTED1(ViewMsg_DidEndColorChooser, unsigned)
 
 IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
-                    std::vector<content::SelectedFileInfo>)
+                    std::vector<ui::SelectedFileInfo>)
 
 // Provides the results of directory enumeration.
 IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
