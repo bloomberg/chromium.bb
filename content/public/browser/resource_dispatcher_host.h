@@ -53,14 +53,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) = 0;
 
-  // Causes all new requests for the route identified by |child_id| and
-  // |route_id| to be blocked (not being started) until
-  // ResumeBlockedRequestsForRoute is called.
-  virtual void BlockRequestsForRoute(int child_id, int route_id) = 0;
-
-  // Resumes any blocked request for the specified route id.
-  virtual void ResumeBlockedRequestsForRoute(int child_id, int route_id) = 0;
-
  protected:
   virtual ~ResourceDispatcherHost() {}
 };

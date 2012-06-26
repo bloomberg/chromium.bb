@@ -35,7 +35,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/process_type.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -102,8 +101,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
                         OnExtensionGenerateUniqueID)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UnloadAck, OnExtensionUnloadAck)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
-                        OnExtensionResumeRequests);
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
                         OnWriteTcmallocHeapProfile)
@@ -418,11 +415,6 @@ void ChromeRenderMessageFilter::OnExtensionUnloadAck(
 void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {
   static int next_unique_id = 1;
   *unique_id = next_unique_id++;
-}
-
-void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
-  content::ResourceDispatcherHost::Get()->ResumeBlockedRequestsForRoute(
-      render_process_id_, route_id);
 }
 
 #if defined(USE_TCMALLOC)

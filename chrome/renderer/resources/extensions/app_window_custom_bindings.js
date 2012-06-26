@@ -11,10 +11,10 @@ var GetView = appWindowNatives.GetView;
 
 chromeHidden.registerCustomHook('appWindow', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  apiFunctions.setCustomCallback('create', function(name, request, viewId) {
+  apiFunctions.setCustomCallback('create', function(name, request, view_id) {
     var view = null;
-    if (viewId)
-      view = GetView(viewId);
+    if (view_id)
+      view = GetView(view_id);
     if (request.callback) {
       request.callback(view);
       delete request.callback;
