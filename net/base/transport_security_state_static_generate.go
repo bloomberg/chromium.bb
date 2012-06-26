@@ -112,6 +112,10 @@ func process(jsonFileName, certsFileName string) error {
 		return err
 	}
 
+	if err := checkNoopEntries(preloaded.Entries); err != nil {
+		return err
+	}
+
 	outFile, err := os.OpenFile("transport_security_state_static.h", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -385,6 +389,22 @@ func checkCertsInPinsets(pinsets []pinset, pins []pin) error {
 	for pinName := range pinNames {
 		if _, ok := usedPinNames[pinName]; !ok {
 			return fmt.Errorf("unused pin: %s", pinName)
+		}
+	}
+
+	return nil
+}
+
+func checkNoopEntries(entries []hsts) error {
+	for _, e := range entries {
+		if len(e.Mode) == 0 && len(e.Pins) == 0 {
+			switch e.Name {
+			// This entry is deliberately used as an exclusion.
+			case "learn.doubleclick.net":
+				continue
+			default:
+				return errors.New("Entry for " + e.Name + " has no mode and no pins")
+			}
 		}
 	}
 
