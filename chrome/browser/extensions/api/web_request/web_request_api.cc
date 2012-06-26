@@ -950,10 +950,8 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   }
 
   if (num_handlers_blocking > 0) {
-    CHECK(blocked_requests_.find(request->identifier()) ==
-          blocked_requests_.end());
     blocked_requests_[request->identifier()].request = request;
-    blocked_requests_[request->identifier()].num_handlers_blocking =
+    blocked_requests_[request->identifier()].num_handlers_blocking +=
         num_handlers_blocking;
     blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
 
@@ -1408,6 +1406,10 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   if (!rules_registry_.get())
     return false;
 
+  // TODO(mpcomplete): Eventually we'll want to turn this on, but for now,
+  // we won't block startup for declarative webrequest. I want to measure
+  // its effect first.
+#if defined(BLOCK_STARTUP_ON_DECLARATIVE_RULES)
   if (!rules_registry_->IsReady()) {
     // The rules registry is still loading. Block this request until it
     // finishes.
@@ -1421,6 +1423,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
     return true;
   }
+#endif
 
   base::Time start = base::Time::Now();
 
