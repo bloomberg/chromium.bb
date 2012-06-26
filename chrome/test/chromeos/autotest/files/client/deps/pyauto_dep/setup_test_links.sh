@@ -12,7 +12,3 @@ ln -f -s /opt/google/chrome/chrome $(dirname $0)/chrome
 [ -L $(dirname $0)/resources ] || ln -f -s /opt/google/chrome/resources \
     $(dirname $0)/resources
 ln -f -s /opt/google/chrome/*.pak $(dirname $0)/
-
-mkdir -p $(dirname $0)/chromeos
-ln -f -s /opt/google/chrome/chromeos/libcros.so \
-    $(dirname $0)/chromeos/libcros.so
