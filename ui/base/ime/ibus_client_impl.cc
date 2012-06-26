@@ -29,7 +29,7 @@ const uint32 kIBusCapabilityFocus = 8U;
 chromeos::IBusInputContextClient* GetInputContextClient() {
   chromeos::IBusInputContextClient* client =
       chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
-  DCHECK(client->IsConnected());
+  DCHECK(client->IsObjectProxyReady());
   return client;
 }
 
@@ -64,9 +64,11 @@ bool IBusClientImpl::IsConnected() {
 }
 
 bool IBusClientImpl::IsContextReady() {
-  return IsConnected() &&
-      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient()
-          ->IsConnected();
+  if (!IsConnected())
+    return false;
+  chromeos::IBusInputContextClient* input_context =
+      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
+  return input_context && input_context->IsObjectProxyReady();
 }
 
 void IBusClientImpl::CreateContext(PendingCreateICRequest* request) {

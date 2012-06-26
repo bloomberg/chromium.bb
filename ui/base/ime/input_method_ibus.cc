@@ -225,7 +225,8 @@ InputMethodIBus::InputMethodIBus(
 
 InputMethodIBus::~InputMethodIBus() {
   AbandonAllPendingKeyEvents();
-  DestroyContext();
+  if (ibus_client_->IsContextReady())
+    DestroyContext();
 }
 
 void InputMethodIBus::set_ibus_client(
@@ -425,7 +426,13 @@ void InputMethodIBus::DestroyContext() {
     // |pending_create_ic_request_| will be deleted in CreateInputContextDone().
     pending_create_ic_request_->Abandon();
     pending_create_ic_request_ = NULL;
-  } else if (ibus_client_->IsContextReady()) {
+    return;
+  }
+  const chromeos::IBusInputContextClient* input_context =
+      chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
+  if (input_context && input_context->IsObjectProxyReady()) {
+    // We can't use IsContextReady here because we want to destroy object proxy
+    // regardless of connection. The IsContextReady contains connection check.
     ResetInputContext();
     DCHECK(!ibus_client_->IsContextReady());
   }

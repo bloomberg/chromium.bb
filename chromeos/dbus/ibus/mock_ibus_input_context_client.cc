@@ -6,19 +6,36 @@
 
 namespace chromeos {
 
-MockIBusInputContextClient::MockIBusInputContextClient() {}
+MockIBusInputContextClient::MockIBusInputContextClient()
+    : initialize_call_count_(0),
+      is_initialized_(false),
+      reset_object_proxy_call_caount_(0),
+      set_capabilities_call_count_(0),
+      focus_in_call_count_(0),
+      focus_out_call_count_(0),
+      reset_call_count_(0),
+      set_cursor_location_call_count_(0),
+      process_key_event_call_count_(0) {
+}
 
 MockIBusInputContextClient::~MockIBusInputContextClient() {}
 
 void MockIBusInputContextClient::Initialize(
     dbus::Bus* bus, const dbus::ObjectPath& object_path) {
+  initialize_call_count_++;
+  is_initialized_ = true;
 }
 
 void MockIBusInputContextClient::ResetObjectProxy() {
+  reset_object_proxy_call_caount_++;
+  is_initialized_ = false;
 }
 
-bool MockIBusInputContextClient::IsConnected() const {
+bool MockIBusInputContextClient::IsObjectProxyReady() const {
+  if (is_initialized_)
     return true;
+  else
+    return false;
 }
 
 void MockIBusInputContextClient::SetCommitTextHandler(
@@ -57,19 +74,24 @@ void MockIBusInputContextClient::UnsetHidePreeditTextHandler() {
 }
 
 void MockIBusInputContextClient::SetCapabilities(uint32 capabilities) {
+  set_capabilities_call_count_++;
 }
 
 void MockIBusInputContextClient::FocusIn() {
+  focus_in_call_count_++;
 }
 
 void MockIBusInputContextClient::FocusOut() {
+  focus_out_call_count_++;
 }
 
 void MockIBusInputContextClient::Reset() {
+  reset_call_count_++;
 }
 
 void MockIBusInputContextClient::SetCursorLocation(
     int32 x, int32 y, int32 w, int32 h) {
+  set_cursor_location_call_count_++;
 }
 
 void MockIBusInputContextClient::ProcessKeyEvent(
@@ -77,6 +99,7 @@ void MockIBusInputContextClient::ProcessKeyEvent(
     uint32 keycode,
     uint32 state,
     const ProcessKeyEventCallback& callback) {
+  process_key_event_call_count_++;
 }
 
 }  // namespace chromeos
