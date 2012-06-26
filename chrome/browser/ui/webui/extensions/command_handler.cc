@@ -51,16 +51,35 @@ void CommandHandler::RegisterMessages() {
       base::Unretained(this)));
 }
 
-void CommandHandler::HandleRequestExtensionsData(const ListValue* args) {
+void CommandHandler::UpdateCommandDataOnPage() {
   DictionaryValue results;
   GetAllCommands(&results);
   web_ui()->CallJavascriptFunction(
       "ExtensionCommandsOverlay.returnExtensionsData", results);
 }
 
+void CommandHandler::HandleRequestExtensionsData(const ListValue* args) {
+  UpdateCommandDataOnPage();
+}
+
 void CommandHandler::HandleSetExtensionCommandShortcut(
     const base::ListValue* args) {
-  // TODO(finnur): Implement.
+  std::string extension_id;
+  std::string command_name;
+  std::string keystroke;
+  if (!args->GetString(0, &extension_id) ||
+      !args->GetString(1, &command_name) ||
+      !args->GetString(2, &keystroke)) {
+    NOTREACHED();
+    return;
+  }
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  CommandService* command_service =
+      CommandServiceFactory::GetForProfile(profile);
+  command_service->UpdateKeybindingPrefs(extension_id, command_name, keystroke);
+
+  UpdateCommandDataOnPage();
 }
 
 void CommandHandler::HandleSetShortcutHandlingSuspended(const ListValue* args) {
@@ -91,38 +110,37 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
     // Add the keybindings to a list structure.
     scoped_ptr<ListValue> extensions_list(new ListValue());
 
-    const extensions::Command* browser_action =
-        command_service->GetBrowserActionCommand((*extension)->id(),
-                                                 CommandService::ALL);
-    if (browser_action) {
-      extensions_list->Append(browser_action->ToValue(
-          (*extension),
-          command_service->IsKeybindingActive(browser_action->accelerator(),
-                                              (*extension)->id(),
-                                              browser_action->command_name())));
+    bool active = false;
+
+    extensions::Command browser_action;
+    if (command_service->GetBrowserActionCommand((*extension)->id(),
+                                                 CommandService::ALL,
+                                                 &browser_action,
+                                                 &active)) {
+      extensions_list->Append(browser_action.ToValue((*extension), active));
     }
 
-    const extensions::Command* page_action =
-        command_service->GetPageActionCommand((*extension)->id(),
-                                              CommandService::ALL);
-    if (page_action) {
-      extensions_list->Append(page_action->ToValue(
-          (*extension),
-          command_service->IsKeybindingActive(page_action->accelerator(),
-                                              (*extension)->id(),
-                                              page_action->command_name())));
+    extensions::Command page_action;
+    if (command_service->GetPageActionCommand((*extension)->id(),
+                                              CommandService::ALL,
+                                              &page_action,
+                                              &active)) {
+      extensions_list->Append(page_action.ToValue((*extension), active));
     }
 
-    extensions::CommandMap named_commands =
-        command_service->GetNamedCommands((*extension)->id(),
-                                          CommandService::ALL);
-    extensions::CommandMap::const_iterator iter = named_commands.begin();
-    for (; iter != named_commands.end(); ++iter) {
-      extensions_list->Append(iter->second.ToValue(
-          (*extension),
-          command_service->IsKeybindingActive(iter->second.accelerator(),
-                                              (*extension)->id(),
-                                              iter->second.command_name())));
+    extensions::CommandMap named_commands;
+    if (command_service->GetNamedCommands((*extension)->id(),
+                                          CommandService::ALL,
+                                          &named_commands)) {
+      for (extensions::CommandMap::const_iterator iter = named_commands.begin();
+           iter != named_commands.end(); ++iter) {
+        ui::Accelerator shortcut_assigned =
+            command_service->FindShortcutForCommand(
+                (*extension)->id(), iter->second.command_name());
+        active = (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN);
+
+        extensions_list->Append(iter->second.ToValue((*extension), active));
+      }
     }
 
     if (!extensions_list->empty()) {

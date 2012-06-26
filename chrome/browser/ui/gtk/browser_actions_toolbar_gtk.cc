@@ -386,16 +386,17 @@ class BrowserActionButton : public content::NotificationObserver,
     extensions::CommandService* command_service =
         extensions::CommandServiceFactory::GetForProfile(
             toolbar_->browser()->profile());
-    const extensions::Command* command =
-        command_service->GetBrowserActionCommand(extension_->id(),
-        extensions::CommandService::ACTIVE_ONLY);
-    if (command) {
+    extensions::Command command;
+    if (command_service->GetBrowserActionCommand(extension_->id(),
+        extensions::CommandService::ACTIVE_ONLY,
+        &command,
+        NULL)) {
       // Found the browser action shortcut command, register it.
       keybinding_.reset(new ui::AcceleratorGtk(
-          command->accelerator().key_code(),
-          command->accelerator().IsShiftDown(),
-          command->accelerator().IsCtrlDown(),
-          command->accelerator().IsAltDown()));
+          command.accelerator().key_code(),
+          command.accelerator().IsShiftDown(),
+          command.accelerator().IsCtrlDown(),
+          command.accelerator().IsAltDown()));
 
       gfx::NativeWindow window =
           toolbar_->browser()->window()->GetNativeWindow();

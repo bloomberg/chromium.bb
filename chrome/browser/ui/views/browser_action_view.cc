@@ -84,13 +84,14 @@ void BrowserActionButton::ViewHierarchyChanged(
     extensions::CommandService* command_service =
         extensions::CommandServiceFactory::GetForProfile(
             panel_->browser()->profile());
-    const extensions::Command* browser_action_command =
-        command_service->GetBrowserActionCommand(
+    extensions::Command browser_action_command;
+    if (command_service->GetBrowserActionCommand(
             extension_->id(),
-            extensions::CommandService::ACTIVE_ONLY);
-    if (browser_action_command) {
+            extensions::CommandService::ACTIVE_ONLY,
+            &browser_action_command,
+            NULL)) {
       keybinding_.reset(new ui::Accelerator(
-          browser_action_command->accelerator()));
+          browser_action_command.accelerator()));
       panel_->GetFocusManager()->RegisterAccelerator(
           *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
     }

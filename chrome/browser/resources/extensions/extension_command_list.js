@@ -34,11 +34,11 @@ cr.define('options', function() {
   function keystrokeToString(event) {
     var output = '';
     if (event.ctrlKey)
-      output = 'Ctrl + ';
+      output = 'Ctrl+';
     if (!event.ctrlKey && event.altKey)
-      output += 'Alt + ';
+      output += 'Alt+';
     if (event.shiftKey)
-      output += 'Shift + ';
+      output += 'Shift+';
     if (validChar(event.keyCode))
       output += String.fromCharCode('A'.charCodeAt(0) + event.keyCode - 65);
     return output;
@@ -111,6 +111,7 @@ cr.define('options', function() {
       var template = $('template-collection-extension-commands').querySelector(
           '.extension-command-list-command-item-wrapper');
       var node = template.cloneNode(true);
+      node.id = 'command-' + command.extension_id + '-' + command.command_name;
 
       var description = node.querySelector('.command-description');
       description.textContent = command.description;
@@ -239,8 +240,17 @@ cr.define('options', function() {
       event.target.classList.add('contains-chars');
 
       if (validChar(event.keyCode)) {
+        var node = event.target;
+        while (node && !node.id)
+          node = node.parentElement;
+        // The id is set to namespacePrefix-extensionId-commandName. We don't
+        // care about the namespacePrefix (but we care about the other two).
+        var id = node.id.substring(8, 40);
+        var command_name = node.id.substring(41);
+
         this.oldValue_ = keystroke;  // Forget what the old value was.
-        chrome.send('setExtensionCommandShortcut', ['id', keystroke]);
+        chrome.send('setExtensionCommandShortcut',
+                    [id, command_name, keystroke]);
         this.endCapture_(event);
       }
 

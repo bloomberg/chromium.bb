@@ -73,12 +73,13 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(
           browser_->profile());
-  const extensions::Command* page_action_command =
-      command_service->GetPageActionCommand(
+  extensions::Command page_action_command;
+  if (command_service->GetPageActionCommand(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY);
-  if (page_action_command) {
-    keybinding_.reset(new ui::Accelerator(page_action_command->accelerator()));
+          extensions::CommandService::ACTIVE_ONLY,
+          &page_action_command,
+          NULL)) {
+    keybinding_.reset(new ui::Accelerator(page_action_command.accelerator()));
     owner_->GetFocusManager()->RegisterAccelerator(
         *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
   }

@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "grit/generated_resources.h"
@@ -17,17 +18,12 @@ namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 
-namespace extensions {
+namespace {
 
-Command::Command() {}
-
-Command::~Command() {}
-
-ui::Accelerator Command::ParseImpl(
-    const std::string& shortcut,
-    const std::string& platform_key,
-    int index,
-    string16* error) {
+ui::Accelerator ParseImpl(const std::string& accelerator,
+                          const std::string& platform_key,
+                          int index,
+                          string16* error) {
   if (platform_key != values::kKeybindingPlatformWin &&
       platform_key != values::kKeybindingPlatformMac &&
       platform_key != values::kKeybindingPlatformChromeOs &&
@@ -41,13 +37,13 @@ ui::Accelerator Command::ParseImpl(
   }
 
   std::vector<std::string> tokens;
-  base::SplitString(shortcut, '+', &tokens);
+  base::SplitString(accelerator, '+', &tokens);
   if (tokens.size() < 2 || tokens.size() > 3) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
         base::IntToString(index),
         platform_key,
-        shortcut);
+        accelerator);
     return ui::Accelerator();
   }
 
@@ -85,7 +81,7 @@ ui::Accelerator Command::ParseImpl(
           errors::kInvalidKeyBinding,
           base::IntToString(index),
           platform_key,
-          shortcut);
+          accelerator);
       return ui::Accelerator();
     }
   }
@@ -102,12 +98,29 @@ ui::Accelerator Command::ParseImpl(
         errors::kInvalidKeyBinding,
         base::IntToString(index),
         platform_key,
-        shortcut);
+        accelerator);
     return ui::Accelerator();
   }
 
   return ui::Accelerator(key, modifiers);
 }
+
+}  // namespace
+
+namespace extensions {
+
+Command::Command() {}
+
+Command::Command(const std::string& command_name,
+                 const string16& description,
+                 const std::string& accelerator)
+    : command_name_(command_name),
+      description_(description) {
+  string16 error;
+  accelerator_ = ParseImpl(accelerator, CommandPlatform(), 0, &error);
+}
+
+Command::~Command() {}
 
 // static
 std::string Command::CommandPlatform() {
@@ -122,6 +135,15 @@ std::string Command::CommandPlatform() {
 #else
   return "";
 #endif
+}
+
+// static
+ui::Accelerator Command::StringToAccelerator(const std::string& accelerator) {
+  string16 error;
+  Command command;
+  ui::Accelerator parsed =
+      ParseImpl(accelerator, Command::CommandPlatform(), 0, &error);
+  return parsed;
 }
 
 bool Command::Parse(DictionaryValue* command,
@@ -240,6 +262,8 @@ DictionaryValue* Command::ToValue(const Extension* extension,
   extension_data->SetString("description", command_description);
   extension_data->SetBoolean("active", active);
   extension_data->SetString("keybinding", accelerator().GetShortcutText());
+  extension_data->SetString("command_name", command_name());
+  extension_data->SetString("extension_id", extension->id());
 
   return extension_data;
 }

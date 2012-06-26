@@ -39,9 +39,10 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
       extensions::CommandServiceFactory::GetForProfile(profile_);
   // Add all the active keybindings (except page actions and browser actions,
   // which are handled elsewhere).
-  const extensions::CommandMap& commands =
-      command_service->GetNamedCommands(
-          extension->id(), extensions::CommandService::ACTIVE_ONLY);
+  extensions::CommandMap commands;
+  if (!command_service->GetNamedCommands(
+          extension->id(), extensions::CommandService::ACTIVE_ONLY, &commands))
+    return;
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     event_targets_[iter->second.accelerator()] =

@@ -150,18 +150,19 @@ class InstalledBubbleContent : public views::View,
         extensions::CommandService* command_service =
             extensions::CommandServiceFactory::GetForProfile(
                 browser_->profile());
-        const extensions::Command* browser_action_command =
-            command_service->GetBrowserActionCommand(
+        extensions::Command browser_action_command;
+        if (!command_service->GetBrowserActionCommand(
                 extension->id(),
-                extensions::CommandService::ACTIVE_ONLY);
-        if (!browser_action_command) {
+                extensions::CommandService::ACTIVE_ONLY,
+                &browser_action_command,
+                NULL)) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO));
         } else {
           has_keybinding = true;
           info_ = new views::Label(l10n_util::GetStringFUTF16(
               IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
-              browser_action_command->accelerator().GetShortcutText()));
+              browser_action_command.accelerator().GetShortcutText()));
         }
 
         info_->SetFont(font);
@@ -174,18 +175,19 @@ class InstalledBubbleContent : public views::View,
         extensions::CommandService* command_service =
             extensions::CommandServiceFactory::GetForProfile(
                 browser_->profile());
-        const extensions::Command* page_action_command =
-            command_service->GetPageActionCommand(
+        extensions::Command page_action_command;
+        if (!command_service->GetPageActionCommand(
                 extension->id(),
-                extensions::CommandService::ACTIVE_ONLY);
-        if (!page_action_command) {
+                extensions::CommandService::ACTIVE_ONLY,
+                &page_action_command,
+                NULL)) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));
         } else {
           has_keybinding = true;
           info_ = new views::Label(l10n_util::GetStringFUTF16(
               IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
-              page_action_command->accelerator().GetShortcutText()));
+              page_action_command.accelerator().GetShortcutText()));
         }
 
         info_->SetFont(font);

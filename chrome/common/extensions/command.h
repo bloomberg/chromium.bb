@@ -24,12 +24,18 @@ namespace extensions {
 
 class Command {
  public:
-  // Define out of line constructor/destructor to please Clang.
   Command();
+  Command(const std::string& command_name,
+          const string16& description,
+          const std::string& accelerator);
   ~Command();
 
   // The platform value for the Command.
   static std::string CommandPlatform();
+
+  // Parse a string as an accelerator. If the accelerator is unparsable then
+  // a generic ui::Accelerator object will be returns (with key_code Unknown).
+  static ui::Accelerator StringToAccelerator(const std::string& accelerator);
 
   // Parse the command.
   bool Parse(base::DictionaryValue* command,
@@ -47,11 +53,12 @@ class Command {
   const ui::Accelerator& accelerator() const { return accelerator_; }
   const string16& description() const { return description_; }
 
+  // Setter:
+  void set_accelerator(ui::Accelerator accelerator) {
+    accelerator_ = accelerator;
+  }
+
  private:
-  ui::Accelerator ParseImpl(const std::string& shortcut,
-                            const std::string& platform_key,
-                            int index,
-                            string16* error);
   std::string command_name_;
   ui::Accelerator accelerator_;
   string16 description_;

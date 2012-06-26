@@ -57,10 +57,14 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const extensions::Extension* extension) {
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(profile_);
-  const extensions::CommandMap& commands =
-      command_service->GetNamedCommands(
+  extensions::CommandMap commands;
+  if (!command_service->GetNamedCommands(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY);
+          extensions::CommandService::ACTIVE_ONLY,
+          &commands)) {
+    return;
+  }
+
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     ui::AcceleratorGtk accelerator(iter->second.accelerator().key_code(),
@@ -86,30 +90,32 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   // Unlike on Windows, we need to explicitly add the browser action and page
   // action to the event_targets_, even though we don't register them as
   // handlers. See http://crbug.com/124873.
-  const extensions::Command* browser_action =
-      command_service->GetBrowserActionCommand(
+  extensions::Command browser_action;
+  if (command_service->GetBrowserActionCommand(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY);
-  if (browser_action) {
-    ui::AcceleratorGtk accelerator(browser_action->accelerator().key_code(),
-                                   browser_action->accelerator().IsShiftDown(),
-                                   browser_action->accelerator().IsCtrlDown(),
-                                   browser_action->accelerator().IsAltDown());
+          extensions::CommandService::ACTIVE_ONLY,
+          &browser_action,
+          NULL)) {
+    ui::AcceleratorGtk accelerator(browser_action.accelerator().key_code(),
+                                   browser_action.accelerator().IsShiftDown(),
+                                   browser_action.accelerator().IsCtrlDown(),
+                                   browser_action.accelerator().IsAltDown());
     event_targets_[accelerator] =
-      std::make_pair(extension->id(), browser_action->command_name());
+      std::make_pair(extension->id(), browser_action.command_name());
   }
 
-  const extensions::Command* page_action =
-      command_service->GetPageActionCommand(
+  extensions::Command page_action;
+  if (command_service->GetPageActionCommand(
           extension->id(),
-          extensions::CommandService::ACTIVE_ONLY);
-  if (page_action) {
-    ui::AcceleratorGtk accelerator(page_action->accelerator().key_code(),
-                                   page_action->accelerator().IsShiftDown(),
-                                   page_action->accelerator().IsCtrlDown(),
-                                   page_action->accelerator().IsAltDown());
+          extensions::CommandService::ACTIVE_ONLY,
+          &page_action,
+          NULL)) {
+    ui::AcceleratorGtk accelerator(page_action.accelerator().key_code(),
+                                   page_action.accelerator().IsShiftDown(),
+                                   page_action.accelerator().IsCtrlDown(),
+                                   page_action.accelerator().IsAltDown());
     event_targets_[accelerator] =
-        std::make_pair(extension->id(), page_action->command_name());
+        std::make_pair(extension->id(), page_action.command_name());
   }
 }
 

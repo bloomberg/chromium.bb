@@ -37,6 +37,9 @@ class CommandHandler : public content::WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+   // Update the list of extension commands in the config UI.
+  void UpdateCommandDataOnPage();
+
   // Handles requests from javascript to fetch the extensions data, including
   // the commands it contains.
   // Replies back through: ExtensionCommandsOverlay.returnExtensionsData.
