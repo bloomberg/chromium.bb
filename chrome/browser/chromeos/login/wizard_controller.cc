@@ -49,7 +49,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linuxish.h"
+#include "chrome/app/breakpad_linux.h"
 #endif
 
 using content::BrowserThread;

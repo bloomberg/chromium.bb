@@ -6,7 +6,7 @@
 // calls when in seccomp mode.
 #define SYS_SYSCALL_ENTRYPOINT "playground$syscallEntryPoint"
 
-#include "chrome/app/breakpad_linuxish.h"
+#include "chrome/app/breakpad_linux.h"
 
 #include <fcntl.h>
 #include <poll.h>

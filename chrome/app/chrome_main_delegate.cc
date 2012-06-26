@@ -87,7 +87,7 @@
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linuxish.h"
+#include "chrome/app/breakpad_linux.h"
 #endif
 
 base::LazyInstance<chrome::ChromeContentBrowserClient>

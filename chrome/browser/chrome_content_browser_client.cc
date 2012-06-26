@@ -120,7 +120,7 @@
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_ANDROID)
 #include "base/linux_util.h"
-#include "chrome/browser/crash_handler_host_linuxish.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(USE_NSS)

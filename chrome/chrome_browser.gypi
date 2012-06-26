@@ -4628,9 +4628,9 @@
           'conditions': [
             ['linux_breakpad==1', {
               'sources': [
-                'app/breakpad_linuxish.cc',
-                'app/breakpad_linuxish.h',
-                'browser/crash_handler_host_linuxish.cc',
+                'app/breakpad_linux.cc',
+                'app/breakpad_linux.h',
+                'browser/crash_handler_host_linux.cc',
               ],
               'dependencies': [
                 '../breakpad/breakpad.gyp:breakpad_client',
@@ -4638,13 +4638,13 @@
                 'common',
               ],
               'include_dirs': [
-                # breakpad_linuxish.cc uses generated file_version_info_linux.h.
+                # breakpad_linux.cc uses generated file_version_info_linux.h.
                 '<(SHARED_INTERMEDIATE_DIR)',
                 '../breakpad/src',
               ],
             }, {  # linux_breakpad==0
               'sources': [
-                'browser/crash_handler_host_linuxish_stub.cc',
+                'browser/crash_handler_host_linux_stub.cc',
               ],
             }],
           ],
@@ -5208,6 +5208,17 @@
             ['exclude', '^browser/ui/views/select_file_dialog_extension.h'],
           ]}
         ],
+      ],
+      'target_conditions': [
+        # Need 'target_conditions' to override default filename_rules to include
+        # the files on Android.
+        ['OS=="android"', {
+          'sources/': [
+            ['include', '^app/breakpad_linux\\.cc$'],
+            ['include', '^browser/crash_handler_host_linux\\.cc$'],
+            ['include', '^browser/crash_handler_host_linux_stub\\.cc$'],
+          ],
+        }],
       ],
     },
     {

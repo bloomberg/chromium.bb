@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_BREAKPAD_LINUXISH_H_
-#define CHROME_APP_BREAKPAD_LINUXISH_H_
+#ifndef CHROME_APP_BREAKPAD_LINUX_H_
+#define CHROME_APP_BREAKPAD_LINUX_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -33,4 +33,4 @@ struct BreakpadInfo {
 
 extern void HandleCrashDump(const BreakpadInfo& info);
 
-#endif  // CHROME_APP_BREAKPAD_LINUXISH_H_
+#endif  // CHROME_APP_BREAKPAD_LINUX_H_

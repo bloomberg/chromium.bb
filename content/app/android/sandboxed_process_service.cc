@@ -7,10 +7,8 @@
 #include "base/global_descriptors_posix.h"
 #include "base/logging.h"
 #include "content/common/android/surface_texture_peer.h"
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-#include "content/common/chrome_descriptors.h"
-#endif
 #include "content/public/app/android_library_loader_hooks.h"
+#include "content/public/common/content_descriptors.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/sandboxed_process_service_jni.h"
 

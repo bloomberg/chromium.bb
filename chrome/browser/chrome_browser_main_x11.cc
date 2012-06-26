@@ -16,7 +16,7 @@
 #include "ui/base/x/x11_util_internal.h"
 
 #if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linuxish.h"
+#include "chrome/app/breakpad_linux.h"
 #endif
 
 using content::BrowserThread;

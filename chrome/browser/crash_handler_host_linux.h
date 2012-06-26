@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CRASH_HANDLER_HOST_LINUXISH_H_
-#define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUXISH_H_
+#ifndef CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+#define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -181,4 +181,4 @@ class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
   DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);
 };
 
-#endif  // CHROME_BROWSER_CRASH_HANDLER_HOST_LINUXISH_H_
+#endif  // CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_

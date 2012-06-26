@@ -5,7 +5,7 @@
 // This is a stub file which is compiled in when we are building without
 // breakpad support.
 
-#include "chrome/browser/crash_handler_host_linuxish.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 
 #include "base/memory/singleton.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/crash_handler_host_linuxish.h"
+#include "chrome/browser/crash_handler_host_linux.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,7 +27,7 @@
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
-#include "chrome/app/breakpad_linuxish.h"
+#include "chrome/app/breakpad_linux.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
