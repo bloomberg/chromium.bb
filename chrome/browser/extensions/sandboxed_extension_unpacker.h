@@ -67,33 +67,6 @@ class SandboxedExtensionUnpackerClient
 // NOTE: This class should only be used on the file thread.
 class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
  public:
-  // The size of the magic character sequence at the beginning of each crx
-  // file, in bytes. This should be a multiple of 4.
-  static const size_t kExtensionHeaderMagicSize = 4;
-
-  // This header is the first data at the beginning of an extension. Its
-  // contents are purposely 32-bit aligned so that it can just be slurped into
-  // a struct without manual parsing.
-  struct ExtensionHeader {
-    char magic[kExtensionHeaderMagicSize];
-    uint32 version;
-    uint32 key_size;  // The size of the public key, in bytes.
-    uint32 signature_size;  // The size of the signature, in bytes.
-    // An ASN.1-encoded PublicKeyInfo structure follows.
-    // The signature follows.
-  };
-
-  // The maximum size the crx parser will tolerate for a public key.
-  static const uint32 kMaxPublicKeySize = 1 << 16;
-
-  // The maximum size the crx parser will tolerate for a signature.
-  static const uint32 kMaxSignatureSize = 1 << 16;
-
-  // The magic character sequence at the beginning of each crx file.
-  static const char kExtensionHeaderMagic[];
-
-  // The current version of the crx format.
-  static const uint32 kCurrentVersion = 2;
 
   // Unpacks the extension in |crx_path| into a temporary directory and calls
   // |client| with the result. If |run_out_of_process| is provided, unpacking

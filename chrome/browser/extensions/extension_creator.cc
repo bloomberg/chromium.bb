@@ -13,8 +13,8 @@
 #include "base/memory/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/crx_file.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
-#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/zip.h"
@@ -241,15 +241,15 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
   std::vector<uint8> public_key;
   CHECK(private_key->ExportPublicKey(&public_key));
 
-  SandboxedExtensionUnpacker::ExtensionHeader header;
-  memcpy(&header.magic, SandboxedExtensionUnpacker::kExtensionHeaderMagic,
-         SandboxedExtensionUnpacker::kExtensionHeaderMagicSize);
-  header.version = SandboxedExtensionUnpacker::kCurrentVersion;
-  header.key_size = public_key.size();
-  header.signature_size = signature.size();
+  CrxFile::Error error;
+  scoped_ptr<CrxFile> crx(
+      CrxFile::Create(public_key.size(), signature.size(), &error));
+  if (!crx.get()) {
+    LOG(ERROR) << "cannot create CrxFileHeader: " << error;
+  }
+  const CrxFile::Header header = crx->header();
 
-  if (fwrite(&header, sizeof(SandboxedExtensionUnpacker::ExtensionHeader), 1,
-             crx_handle.get()) != 1) {
+  if (fwrite(&header, sizeof(header), 1, crx_handle.get()) != 1) {
     PLOG(ERROR) << "fwrite failed to write header";
   }
   if (fwrite(&public_key.front(), sizeof(uint8), public_key.size(),

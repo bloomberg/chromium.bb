@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
+#include "chrome/browser/extensions/crx_file.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -49,8 +50,6 @@ using extensions::Extension;
 // Range from 1kB/s to 100mB/s.
 #define UNPACK_RATE_HISTOGRAM(name, rate) \
     UMA_HISTOGRAM_CUSTOM_COUNTS(name, rate, 1, 100000, 100);
-
-const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 
 namespace {
 
@@ -425,16 +424,13 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
   }
 
   // Read and verify the header.
-  ExtensionHeader header;
-  size_t len;
-
   // TODO(erikkay): Yuck.  I'm not a big fan of this kind of code, but it
   // appears that we don't have any endian/alignment aware serialization
   // code in the code base.  So for now, this assumes that we're running
   // on a little endian machine with 4 byte alignment.
-  len = fread(&header, 1, sizeof(ExtensionHeader),
-      file.get());
-  if (len < sizeof(ExtensionHeader)) {
+  CrxFile::Header header;
+  size_t len = fread(&header, 1, sizeof(header), file.get());
+  if (len < sizeof(header)) {
     // Invalid crx header
     ReportFailure(
         CRX_HEADER_INVALID,
@@ -443,50 +439,52 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
             ASCIIToUTF16("CRX_HEADER_INVALID")));
     return false;
   }
-  if (strncmp(kExtensionHeaderMagic, header.magic,
-      sizeof(header.magic))) {
-    // Bad magic number
-    ReportFailure(
-        CRX_MAGIC_NUMBER_INVALID,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_ERROR_CODE,
-            ASCIIToUTF16("CRX_MAGIC_NUMBER_INVALID")));
-    return false;
-  }
-  if (header.version != kCurrentVersion) {
-    // Bad version numer
-    ReportFailure(CRX_VERSION_NUMBER_INVALID,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_ERROR_CODE,
-            ASCIIToUTF16("CRX_VERSION_NUMBER_INVALID")));
-    return false;
-  }
-  if (header.key_size > kMaxPublicKeySize ||
-      header.signature_size > kMaxSignatureSize) {
-    // Excessively large key or signature
-    ReportFailure(
-        CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_ERROR_CODE,
-            ASCIIToUTF16("CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE")));
-    return false;
-  }
-  if (header.key_size == 0) {
-    // Key length is zero
-    ReportFailure(
-        CRX_ZERO_KEY_LENGTH,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_ERROR_CODE,
-            ASCIIToUTF16("CRX_ZERO_KEY_LENGTH")));
-    return false;
-  }
-  if (header.signature_size == 0) {
-    // Signature length is zero
-    ReportFailure(
-        CRX_ZERO_SIGNATURE_LENGTH,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_ERROR_CODE,
-            ASCIIToUTF16("CRX_ZERO_SIGNATURE_LENGTH")));
+
+  CrxFile::Error error;
+  scoped_ptr<CrxFile> crx(CrxFile::Parse(header, &error));
+  if (!crx.get()) {
+    switch (error) {
+      case CrxFile::kWrongMagic:
+        ReportFailure(
+            CRX_MAGIC_NUMBER_INVALID,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                ASCIIToUTF16("CRX_MAGIC_NUMBER_INVALID")));
+        break;
+      case CrxFile::kInvalidVersion:
+        // Bad version numer
+        ReportFailure(
+            CRX_VERSION_NUMBER_INVALID,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                ASCIIToUTF16("CRX_VERSION_NUMBER_INVALID")));
+        break;
+      case CrxFile::kInvalidKeyTooLarge:
+      case CrxFile::kInvalidSignatureTooLarge:
+        // Excessively large key or signature
+        ReportFailure(
+            CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                ASCIIToUTF16("CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE")));
+        break;
+      case CrxFile::kInvalidKeyTooSmall:
+        // Key length is zero
+        ReportFailure(
+            CRX_ZERO_KEY_LENGTH,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                ASCIIToUTF16("CRX_ZERO_KEY_LENGTH")));
+        break;
+      case CrxFile::kInvalidSignatureTooSmall:
+        // Signature length is zero
+        ReportFailure(
+            CRX_ZERO_SIGNATURE_LENGTH,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PACKAGE_ERROR_CODE,
+                ASCIIToUTF16("CRX_ZERO_SIGNATURE_LENGTH")));
+        break;
+    }
     return false;
   }
 

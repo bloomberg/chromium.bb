@@ -12,73 +12,40 @@
 #include "base/memory/scoped_handle.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/extensions/crx_file.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/zip.h"
 #include "crypto/secure_hash.h"
 #include "crypto/signature_verifier.h"
 
 using crypto::SecureHash;
-using extensions::Extension;
 
 namespace {
 // This class makes sure that the CRX digital signature is valid
 // and well formed.
 class CRXValidator {
  public:
-  enum Result {
-    kValid,
-    kInvalidHeader,
-    kWrongMagic,
-    kInvalidVersion,
-    kInvalidKey,
-    kInvalidSignature,
-    kWrongKeyFormat,
-    kSignatureMismatch,
-    kLast
-  };
-
-  explicit CRXValidator(FILE* crx_file) : result_(kLast) {
-    SXU::ExtensionHeader header;
+  explicit CRXValidator(FILE* crx_file) : valid_(false) {
+    CrxFile::Header header;
     size_t len = fread(&header, 1, sizeof(header), crx_file);
-    if (len < sizeof(header)) {
-      result_ = kInvalidHeader;
+    if (len < sizeof(header))
       return;
-    }
-    if (strncmp(SXU::kExtensionHeaderMagic, header.magic,
-        sizeof(header.magic))) {
-      result_ = kWrongMagic;
+
+    CrxFile::Error error;
+    scoped_ptr<CrxFile> crx(CrxFile::Parse(header, &error));
+    if (!crx.get())
       return;
-    }
-    if (header.version != SXU::kCurrentVersion) {
-      result_ = kInvalidVersion;
-      return;
-    }
-    if ((header.key_size > SXU::kMaxPublicKeySize) ||
-        (header.key_size == 0)) {
-      result_ = kInvalidKey;
-      return;
-    }
-    if ((header.signature_size > SXU::kMaxSignatureSize) ||
-        (header.signature_size == 0)) {
-      result_ = kInvalidSignature;
-      return;
-    }
 
     std::vector<uint8> key(header.key_size);
     len = fread(&key[0], sizeof(uint8), header.key_size, crx_file);
-    if (len < header.key_size) {
-      result_ = kInvalidKey;
+    if (len < header.key_size)
       return;
-    }
 
     std::vector<uint8> signature(header.signature_size);
     len = fread(&signature[0], sizeof(uint8), header.signature_size, crx_file);
-    if (len < header.signature_size) {
-      result_ = kInvalidSignature;
+    if (len < header.signature_size)
       return;
-    }
 
     crypto::SignatureVerifier verifier;
     if (!verifier.VerifyInit(extension_misc::kSignatureAlgorithm,
@@ -87,7 +54,6 @@ class CRXValidator {
                              &key[0], key.size())) {
       // Signature verification initialization failed. This is most likely
       // caused by a public key in the wrong format (should encode algorithm).
-      result_ = kWrongKeyFormat;
       return;
     }
 
@@ -96,24 +62,19 @@ class CRXValidator {
     while ((len = fread(buf.get(), 1, kBufSize, crx_file)) > 0)
       verifier.VerifyUpdate(buf.get(), len);
 
-    if (!verifier.VerifyFinal()) {
-      result_ = kSignatureMismatch;
+    if (!verifier.VerifyFinal())
       return;
-    }
 
     public_key_.swap(key);
-    result_ = kValid;
+    valid_ = true;
   }
 
-  Result result() const { return result_; }
+  bool valid() const { return valid_; }
 
   const std::vector<uint8>& public_key() const { return public_key_; }
 
  private:
-  // TODO(cpu): Move the kExtensionHeaderMagic constants to a better header
-  // right now it feels we are reaching too deep into the extension code.
-  typedef SandboxedExtensionUnpacker SXU;
-  Result result_;
+  bool valid_;
   std::vector<uint8> public_key_;
 };
 
@@ -153,7 +114,7 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     return;
   }
   CRXValidator validator(file.get());
-  if (validator.result() != CRXValidator::kValid) {
+  if (!validator.valid()) {
     error_ = kInvalidFile;
     return;
   }
