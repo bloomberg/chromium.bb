@@ -381,8 +381,9 @@ void ExtensionEventRouter::DispatchEventToListener(
 
   const Value* event_args = NULL;
   if (!CanDispatchEventToProfile(listener_profile, extension,
-                                 event, &event_args))
+                                 event, &event_args)) {
     return;
+  }
 
   DispatchEvent(listener.process, listener.extension_id,
                 event->event_name, *event_args,

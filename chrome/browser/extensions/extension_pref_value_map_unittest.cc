@@ -33,13 +33,13 @@ static base::Time CreateTime(int64 t) {
 template <typename BASECLASS>
 class ExtensionPrefValueMapTestBase : public BASECLASS {
  public:
-  const static ExtensionPrefsScope kRegular =
+  static const ExtensionPrefsScope kRegular =
       kExtensionPrefsScopeRegular;
-  const static ExtensionPrefsScope kRegularOnly =
+  static const ExtensionPrefsScope kRegularOnly =
       kExtensionPrefsScopeRegularOnly;
-  const static ExtensionPrefsScope kIncognitoPersistent =
+  static const ExtensionPrefsScope kIncognitoPersistent =
       kExtensionPrefsScopeIncognitoPersistent;
-  const static ExtensionPrefsScope kIncognitoSessionOnly =
+  static const ExtensionPrefsScope kIncognitoSessionOnly =
       kExtensionPrefsScopeIncognitoSessionOnly;
 
   // Returns an empty string if the key is not set.
@@ -112,18 +112,18 @@ TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
   epvm_.RegisterExtension(kExt2, CreateTime(20), true);
   epvm_.RegisterExtension(kExt3, CreateTime(30), true);
 
-  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, false));
-  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt2, kPref1, false));
-  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt3, kPref1, false));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, NULL));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt2, kPref1, NULL));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt3, kPref1, NULL));
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt1, kPref1, false));
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt2, kPref1, false));
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt3, kPref1, false));
 
   epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val1"));
 
-  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, false));
-  EXPECT_TRUE(epvm_.DoesExtensionControlPref(kExt2, kPref1, false));
-  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt3, kPref1, false));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, NULL));
+  EXPECT_TRUE(epvm_.DoesExtensionControlPref(kExt2, kPref1, NULL));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt3, kPref1, NULL));
   EXPECT_FALSE(epvm_.CanExtensionControlPref(kExt1, kPref1, false));
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt2, kPref1, false));
   EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt3, kPref1, false));

@@ -102,9 +102,10 @@ void ExtensionPrefValueMap::ClearAllIncognitoSessionOnlyPreferences() {
 bool ExtensionPrefValueMap::DoesExtensionControlPref(
     const std::string& extension_id,
     const std::string& pref_key,
-    bool incognito) const {
+    bool* from_incognito) const {
+  bool incognito = (from_incognito != NULL);
   ExtensionEntryMap::const_iterator winner =
-      GetEffectivePrefValueController(pref_key, incognito, NULL);
+      GetEffectivePrefValueController(pref_key, incognito, from_incognito);
   if (winner == entries_.end())
     return false;
   return winner->first == extension_id;

@@ -109,13 +109,16 @@ class ExtensionPrefValueMap : public ProfileKeyedService {
 
   // Returns true if an extension identified by |extension_id| controls the
   // preference. This means this extension has set a preference value and no
-  // other extension with higher precedence overrides it.
+  // other extension with higher precedence overrides it. If |from_incognito|
+  // is not NULL, looks at incognito preferences first, and |from_incognito| is
+  // set to true if the effective pref value is coming from the incognito
+  // preferences, false if it is coming from the normal ones.
   // Note that the this function does does not consider the existence of
   // policies. An extension is only really able to control a preference if
   // PrefService::Preference::IsExtensionModifiable() returns true as well.
   bool DoesExtensionControlPref(const std::string& extension_id,
                                 const std::string& pref_key,
-                                bool incognito) const;
+                                bool* from_incognito) const;
 
   // Tell the store it's now fully initialized.
   void NotifyInitializationCompleted();

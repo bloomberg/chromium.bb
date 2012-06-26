@@ -382,10 +382,13 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
                                bool incognito);
 
   // Returns true if extension |extension_id| currently controls the
-  // preference.
+  // preference. If |from_incognito| is not NULL, looks at incognito preferences
+  // first, and |from_incognito| is set to true if the effective pref value is
+  // coming from the incognito preferences, false if it is coming from the
+  // normal ones.
   bool DoesExtensionControlPref(const std::string& extension_id,
                                 const std::string& pref_key,
-                                bool incognito);
+                                bool* from_incognito);
 
   // Returns true if there is an extension which controls the preference value
   //  for |pref_key| *and* it is specific to incognito mode.
