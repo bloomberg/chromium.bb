@@ -30,4 +30,7 @@ TEST_F(ExtensionManifestTest, OfflineEnabled) {
   scoped_refptr<Extension> extension_4(
       LoadAndExpectSuccess("offline_enabled_hosted_app.json"));
   EXPECT_TRUE(extension_4->offline_enabled());
+  scoped_refptr<Extension> extension_5(
+      LoadAndExpectSuccess("offline_default_platform_app.json"));
+  EXPECT_TRUE(extension_5->offline_enabled());
 }
