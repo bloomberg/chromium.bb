@@ -15,7 +15,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources_standard.h"
+#include "ui/base/theme_provider.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -33,16 +36,19 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
     content::RenderViewHost* render_view_host,
     autofill::PasswordGenerator* password_generator,
     content::PageNavigator* navigator,
-    PasswordManager* password_manager)
+    PasswordManager* password_manager,
+    ui::ThemeProvider* theme_provider)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       accept_button_(NULL),
+      regenerate_button_(NULL),
       text_field_(NULL),
       anchor_rect_(anchor_rect),
       form_(form),
       render_view_host_(render_view_host),
       password_generator_(password_generator),
       navigator_(navigator),
-      password_manager_(password_manager) {}
+      password_manager_(password_manager),
+      theme_provider_(theme_provider) {}
 
 PasswordGenerationBubbleView::~PasswordGenerationBubbleView() {}
 
@@ -51,6 +57,15 @@ void PasswordGenerationBubbleView::Init() {
   // crbug.com/118062
   accept_button_ = new views::NativeTextButton(this,
                                                ASCIIToUTF16("Try It"));
+
+  regenerate_button_ = new views::ImageButton(this);
+  regenerate_button_->SetImage(views::CustomButton::BS_NORMAL,
+      theme_provider_->GetImageSkiaNamed(IDR_RELOAD));
+  regenerate_button_->SetImage(views::CustomButton::BS_HOT,
+      theme_provider_->GetImageSkiaNamed(IDR_RELOAD_H));
+  regenerate_button_->SetImage(views::CustomButton::BS_PUSHED,
+      theme_provider_->GetImageSkiaNamed(IDR_RELOAD_P));
+  regenerate_button_->SetTooltipText(ASCIIToUTF16("Regenerate"));
 
   text_field_ = new views::Textfield();
   text_field_->SetText(
@@ -79,6 +94,8 @@ void PasswordGenerationBubbleView::Init() {
   cs = layout->AddColumnSet(1);
   cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 100);
+  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0, GridLayout::FIXED,
+                regenerate_button_->GetPreferredSize().width(), 100);
   cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
   cs->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
@@ -89,6 +106,7 @@ void PasswordGenerationBubbleView::Init() {
 
   layout->StartRow(0, 1);
   layout->AddView(text_field_);
+  layout->AddView(regenerate_button_);
   layout->AddView(accept_button_);
 }
 
@@ -103,6 +121,9 @@ void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
         render_view_host_->GetRoutingID(), text_field_->text()));
     password_manager_->SetFormHasGeneratedPassword(form_);
     StartFade(false);
+  } else if (sender == regenerate_button_) {
+    text_field_->SetText(
+        ASCIIToUTF16(password_generator_->Generate()));
   }
 }
 

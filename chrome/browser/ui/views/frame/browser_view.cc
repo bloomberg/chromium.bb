@@ -2487,6 +2487,8 @@ void BrowserView::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
     autofill::PasswordGenerator* password_generator,
     const webkit::forms::PasswordForm& form) {
+  ui::ThemeProvider* theme_provider = GetWidget()->GetThemeProvider();
+
   // Create a rect in the content bounds that the bubble will point to.
   gfx::Point origin(rect.origin());
   views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
@@ -2505,7 +2507,8 @@ void BrowserView::ShowPasswordGenerationBubble(
           tab_contents->web_contents()->GetRenderViewHost(),
           password_generator,
           browser_.get(),
-          tab_contents->password_manager());
+          tab_contents->password_manager(),
+          theme_provider);
 
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
