@@ -14,7 +14,7 @@
 #define GL_TRUE 1
 #endif  // GL_TRUE
 
-#if defined(__GNUC__) && !defined(__APPLE__)
+#if defined(__GNUC__) && !defined(__APPLE__) && !defined(ANDROID)
 #define PP_TLS __thread
 #elif defined(_MSC_VER)
 #define PP_TLS __declspec(thread)
