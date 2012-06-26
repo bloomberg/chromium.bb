@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -97,7 +98,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   page_action->SetIsVisible(tab_id, enable);
   page_action->SetTitle(tab_id, title);
   page_action->SetIconIndex(tab_id, icon_id);
-  contents->extension_tab_helper()->PageActionStateChanged();
+  contents->extension_tab_helper()->location_bar_controller()->NotifyChange();
 
   return true;
 }

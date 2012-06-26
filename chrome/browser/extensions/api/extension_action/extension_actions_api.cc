@@ -7,11 +7,13 @@
 #include <string>
 
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -43,9 +45,13 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 }
 
 bool ExtensionActionFunction::RunImpl() {
-  extension_action_ = GetExtension()->browser_action();
-  if (!extension_action_)
-    extension_action_ = GetExtension()->page_action();
+  if (base::StringPiece(name()).starts_with("scriptBadge.")) {
+    extension_action_ = GetExtension()->script_badge();
+  } else {
+    extension_action_ = GetExtension()->browser_action();
+    if (!extension_action_)
+      extension_action_ = GetExtension()->page_action();
+  }
   if (!extension_action_) {
     // TODO(kalman): ideally the browserAction/pageAction APIs wouldn't event
     // exist for extensions that don't have one declared. This should come as
@@ -107,12 +113,16 @@ bool ExtensionActionFunction::RunImpl() {
 }
 
 void ExtensionActionFunction::NotifyChange() {
-  if (GetExtension()->browser_action())
-    NotifyBrowserActionChange();
-  else if (GetExtension()->page_action())
-    NotifyPageActionChange();
-  else
-    NOTREACHED();
+  switch (extension_action_->action_type()) {
+    case ExtensionAction::TYPE_BROWSER:
+      NotifyBrowserActionChange();
+      return;
+    case ExtensionAction::TYPE_PAGE:
+    case ExtensionAction::TYPE_SCRIPT_BADGE:
+      NotifyLocationBarChange();
+      return;
+  }
+  NOTREACHED();
 }
 
 void ExtensionActionFunction::NotifyBrowserActionChange() {
@@ -122,8 +132,8 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
       content::NotificationService::NoDetails());
 }
 
-void ExtensionActionFunction::NotifyPageActionChange() {
-  contents_->extension_tab_helper()->PageActionStateChanged();
+void ExtensionActionFunction::NotifyLocationBarChange() {
+  contents_->extension_tab_helper()->location_bar_controller()->NotifyChange();
 }
 
 // static

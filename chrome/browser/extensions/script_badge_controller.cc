@@ -4,8 +4,10 @@
 
 #include "chrome/browser/extensions/script_badge_controller.h"
 
+#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -45,12 +47,20 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
 
   const Extension* extension = service->extensions()->GetByID(extension_id);
   CHECK(extension);
+  ExtensionAction* script_badge = extension->script_badge();
+  CHECK(script_badge);
 
   switch (mouse_button) {
     case 1:  // left
       return ACTION_SHOW_SCRIPT_POPUP;
     case 2:  // middle
-      // TODO(kalman): decide what to do here.
+      // TODO(yoz): Show the popup if it's available or a default if not.
+
+      // Fire the scriptBadge.onClicked event.
+      GetExtensionService()->browser_event_router()->ScriptBadgeExecuted(
+          tab_contents_->profile(),
+          *script_badge,
+          tab_contents_->extension_tab_helper()->tab_id());
       return ACTION_NONE;
     case 3:  // right
       return extension->ShowConfigureContextMenus() ?
@@ -92,7 +102,7 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     const base::ListValue& script_results) {
   if (success && page_id == GetPageID()) {
     if (InsertExtension(extension_id))
-      Notify();
+      NotifyChange();
   }
 
   callback.Run(success, page_id, error, script_results);
@@ -107,7 +117,7 @@ int32 ScriptBadgeController::GetPageID() {
       GetPageID();
 }
 
-void ScriptBadgeController::Notify() {
+void ScriptBadgeController::NotifyChange() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
       content::Source<Profile>(tab_contents_->profile()),
@@ -129,7 +139,7 @@ void ScriptBadgeController::Observe(
   const Extension* extension =
       content::Details<UnloadedExtensionInfo>(details)->extension;
   if (EraseExtension(extension))
-    Notify();
+    NotifyChange();
 }
 
 bool ScriptBadgeController::OnMessageReceived(const IPC::Message& message) {
@@ -153,7 +163,7 @@ void ScriptBadgeController::OnContentScriptsExecuting(
     changed |= InsertExtension(*it);
   }
   if (changed)
-    Notify();
+    NotifyChange();
 }
 
 bool ScriptBadgeController::InsertExtension(const std::string& extension_id) {

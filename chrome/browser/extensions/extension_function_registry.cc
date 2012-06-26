@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
+#include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
@@ -134,6 +135,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionGetBadgeTextFunction>();
   RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
   RegisterFunction<BrowserActionGetPopupFunction>();
+
+  // Script Badges.
+  RegisterFunction<ScriptBadgeSetPopupFunction>();
+  RegisterFunction<ScriptBadgeGetPopupFunction>();
 
   // Browsing Data.
   RegisterFunction<RemoveBrowsingDataFunction>();

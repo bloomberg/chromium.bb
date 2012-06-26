@@ -88,14 +88,19 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                      int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 
-  // Page Action execute event.
+  // Fires the onClicked event for page_action.
   void PageActionExecuted(Profile* profile,
                           const ExtensionAction& page_action,
                           int tab_id,
                           const std::string& url,
                           int button);
 
-  // Browser Action execute event.
+  // Fires the onClicked event for script_badge.
+  void ScriptBadgeExecuted(Profile* profile,
+                           const ExtensionAction& script_badge,
+                           int tab_id);
+
+  // Fires the onClicked event for browser_action.
   void BrowserActionExecuted(const ExtensionAction& browser_action,
                              Browser* browser);
 

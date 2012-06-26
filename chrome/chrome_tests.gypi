@@ -2704,6 +2704,7 @@
         'browser/extensions/api/extension_action/browser_action_apitest.cc',
         'browser/extensions/api/extension_action/page_action_apitest.cc',
         'browser/extensions/api/extension_action/page_as_browser_action_apitest.cc',
+        'browser/extensions/api/extension_action/script_badge_apitest.cc',
         'browser/extensions/api/file_system/file_system_apitest.cc',
         'browser/extensions/api/identity/identity_apitest.cc',
         'browser/extensions/api/idltest/idltest_apitest.cc',

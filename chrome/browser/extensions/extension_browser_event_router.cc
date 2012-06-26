@@ -655,6 +655,18 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
   ExtensionActionExecuted(profile, page_action, tab_contents);
 }
 
+void ExtensionBrowserEventRouter::ScriptBadgeExecuted(
+    Profile* profile,
+    const ExtensionAction& script_badge,
+    int tab_id) {
+  TabContents* tab_contents = NULL;
+  if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
+                                    NULL, NULL, &tab_contents, NULL)) {
+    return;
+  }
+  ExtensionActionExecuted(profile, script_badge, tab_contents);
+}
+
 void ExtensionBrowserEventRouter::CommandExecuted(
     Profile* profile,
     const std::string& extension_id,

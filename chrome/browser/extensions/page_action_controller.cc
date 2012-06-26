@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -73,6 +74,11 @@ LocationBarController::Action PageActionController::OnClicked(
   }
 
   return ACTION_NONE;
+}
+
+void PageActionController::NotifyChange() {
+  tab_contents_->web_contents()->NotifyNavigationStateChanged(
+      content::INVALIDATE_TYPE_PAGE_ACTIONS);
 }
 
 ExtensionService* PageActionController::GetExtensionService() {

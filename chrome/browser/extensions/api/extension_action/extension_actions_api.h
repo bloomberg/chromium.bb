@@ -14,12 +14,12 @@ class DictionaryValue;
 }
 class TabContents;
 
-// Implementation of both the browserAction and pageAction APIs.
+// Implementation of the browserAction, pageAction, and scriptBadge APIs.
 //
-// Divergent behaviour between the two is minimal (pageAction has required
-// tabIds while browserAction's are optional, they have different internal
-// browser notification requirements, and not all functions are defined for
-// both APIs).
+// Divergent behaviour between the three is minimal (pageAction and scriptBadge
+// have required tabIds while browserAction's are optional, they have different
+// internal browser notification requirements, and not all functions are defined
+// for all APIs).
 class ExtensionActionFunction : public SyncExtensionFunction {
  public:
   static bool ParseCSSColorString(const std::string& color_string,
@@ -32,7 +32,7 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   virtual bool RunExtensionAction() = 0;
   void NotifyChange();
   void NotifyBrowserActionChange();
-  void NotifyPageActionChange();
+  void NotifyLocationBarChange();
   bool SetVisible(bool visible);
 
   // All the extension action APIs take a single argument called details that

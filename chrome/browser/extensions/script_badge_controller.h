@@ -63,6 +63,7 @@ class ScriptBadgeController
   virtual std::vector<ExtensionAction*> GetCurrentActions() OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
+  virtual void NotifyChange() OVERRIDE;
 
   // ScriptExecutor implementation.
   virtual void ExecuteScript(const std::string& extension_id,
@@ -91,9 +92,6 @@ class ScriptBadgeController
 
   // Gets the current page ID.
   int32 GetPageID();
-
-  // Sends a LOCATION_BAR_UPDATED notification.
-  void Notify();
 
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(

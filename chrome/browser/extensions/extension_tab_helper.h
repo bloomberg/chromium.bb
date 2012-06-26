@@ -51,9 +51,6 @@ class ExtensionTabHelper
   ExtensionTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(ExtensionTabHelperDelegate* d) { delegate_ = d; }
 
-  // Call this after updating a page action to notify clients about the changes.
-  void PageActionStateChanged();
-
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetApplicationInfo when
   // the data is available.

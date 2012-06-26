@@ -43,6 +43,9 @@ class LocationBarController {
   // TODO(kalman): make mouse_button an enum.
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) = 0;
+
+  // Notifies clients that the icons have changed.
+  virtual void NotifyChange() = 0;
 };
 
 }  // namespace extensions

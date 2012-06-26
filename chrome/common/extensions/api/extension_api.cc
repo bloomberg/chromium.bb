@@ -428,6 +428,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_PRIVACY));
   RegisterSchema("proxy", ReadFromResource(
       IDR_EXTENSION_API_JSON_PROXY));
+  RegisterSchema("scriptBadge", ReadFromResource(
+      IDR_EXTENSION_API_JSON_SCRIPTBADGE));
   RegisterSchema("storage", ReadFromResource(
       IDR_EXTENSION_API_JSON_STORAGE));
   RegisterSchema("systemPrivate", ReadFromResource(

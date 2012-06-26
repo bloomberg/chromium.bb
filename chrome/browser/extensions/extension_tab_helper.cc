@@ -68,11 +68,6 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
   extension_app_icon_ = source.extension_app_icon_;
 }
 
-void ExtensionTabHelper::PageActionStateChanged() {
-  web_contents()->NotifyNavigationStateChanged(
-      content::INVALIDATE_TYPE_PAGE_ACTIONS);
-}
-
 void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
   Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
 }
@@ -160,11 +155,13 @@ void ExtensionTabHelper::DidNavigateMainFrame(
           content::NotificationService::NoDetails());
     }
 
+    // TODO(jyasskin): Have PageActionController observe DidNavigateMainFrame,
+    // and move this code there.
     ExtensionAction* page_action = (*it)->page_action();
     if (page_action) {
       page_action->ClearAllValuesForTab(
           tab_contents_->restore_tab_helper()->session_id().id());
-      PageActionStateChanged();
+      location_bar_controller()->NotifyChange();
     }
   }
 }
