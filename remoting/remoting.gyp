@@ -574,6 +574,8 @@
             'host/host_service_resource.h',
             'host/host_service_win.cc',
             'host/host_service_win.h',
+            'host/launch_process_in_session_win.cc',
+            'host/launch_process_in_session_win.h',
             'host/sas_injector.h',
             'host/sas_injector_win.cc',
             'host/usage_stats_consent.h',

@@ -21,12 +21,12 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/scoped_process_information.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/launch_process_in_session_win.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/wts_console_monitor_win.h"
 
@@ -39,9 +39,6 @@ namespace {
 // a session.
 const int kMaxLaunchDelaySeconds = 60;
 const int kMinLaunchDelaySeconds = 1;
-
-// Name of the default session desktop.
-wchar_t kDefaultDesktopName[] = L"winsta0\\default";
 
 // Match the pipe name prefix used by Chrome IPC channels.
 const wchar_t kChromePipeNamePrefix[] = L"\\\\.\\pipe\\chrome.";
@@ -207,43 +204,12 @@ bool CreatePipeForIpcChannel(void* instance,
   return true;
 }
 
-// Launches |binary| in the security context of the supplied |user_token|.
-bool LaunchProcessAsUser(const FilePath& binary,
-                         const std::wstring& command_line,
-                         HANDLE user_token,
-                         base::Process* process_out) {
-  std::wstring application_name = binary.value();
-
-  base::win::ScopedProcessInformation process_info;
-  STARTUPINFOW startup_info;
-
-  memset(&startup_info, 0, sizeof(startup_info));
-  startup_info.cb = sizeof(startup_info);
-  startup_info.lpDesktop = kDefaultDesktopName;
-
-  if (!CreateProcessAsUserW(user_token,
-                            application_name.c_str(),
-                            const_cast<LPWSTR>(command_line.c_str()),
-                            NULL,
-                            NULL,
-                            FALSE,
-                            0,
-                            NULL,
-                            NULL,
-                            &startup_info,
-                            process_info.Receive())) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to launch a process with a user token";
-    return false;
-  }
-
-  process_out->set_handle(process_info.TakeProcessHandle());
-  return true;
-}
-
 } // namespace
 
 namespace remoting {
+
+// Session id that does not represent any session.
+const uint32 kInvalidSessionId = 0xffffffff;
 
 WtsSessionProcessLauncher::WtsSessionProcessLauncher(
     WtsConsoleMonitor* monitor,
@@ -299,8 +265,10 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
     // Try to launch the process and attach an object watcher to the returned
     // handle so that we get notified when the process terminates.
-    if (LaunchProcessAsUser(host_binary_, command_line.GetCommandLineString(),
-                            session_token_, &process_)) {
+    if (LaunchProcessInSession(host_binary_,
+                               command_line.GetCommandLineString(),
+                               session_token_,
+                               &process_)) {
       if (process_watcher_.StartWatching(process_.handle(), this)) {
         state_ = StateAttached;
         return;
@@ -490,6 +458,8 @@ void WtsSessionProcessLauncher::OnSessionDetached() {
       state_ = StateDetached;
       break;
   }
+
+  session_token_.Close();
 }
 
 } // namespace remoting

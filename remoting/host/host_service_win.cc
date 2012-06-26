@@ -35,9 +35,6 @@ using base::StringPrintf;
 
 namespace {
 
-// Session id that does not represent any session.
-const uint32 kInvalidSession = 0xffffffff;
-
 const char kIoThreadName[] = "I/O thread";
 
 // A window class for the session change notifications window.
@@ -84,7 +81,7 @@ void usage(const char* program_name) {
 namespace remoting {
 
 HostService::HostService() :
-  console_session_id_(kInvalidSession),
+  console_session_id_(kInvalidSessionId),
   message_loop_(NULL),
   run_routine_(&HostService::RunAsService),
   service_name_(kWindowsServiceName),
@@ -119,12 +116,12 @@ void HostService::OnSessionChange() {
   // the console session is still the same every time a session change
   // notification event is posted. This also takes care of coalescing multiple
   // events into one since we look at the latest state.
-  uint32 console_session_id = kInvalidSession;
+  uint32 console_session_id = kInvalidSessionId;
   if (!shutting_down_) {
     console_session_id = WTSGetActiveConsoleSessionId();
   }
   if (console_session_id_ != console_session_id) {
-    if (console_session_id_ != kInvalidSession) {
+    if (console_session_id_ != kInvalidSessionId) {
       FOR_EACH_OBSERVER(WtsConsoleObserver,
                         console_observers_,
                         OnSessionDetached());
@@ -132,7 +129,7 @@ void HostService::OnSessionChange() {
 
     console_session_id_ = console_session_id;
 
-    if (console_session_id_ != kInvalidSession) {
+    if (console_session_id_ != kInvalidSessionId) {
       FOR_EACH_OBSERVER(WtsConsoleObserver,
                         console_observers_,
                         OnSessionAttached(console_session_id_));
