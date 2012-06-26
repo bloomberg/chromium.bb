@@ -52,9 +52,9 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   // Initialize function again.
   virtual void ResetObjectProxy() = 0;
 
-  // Returns true if connected to target input context path, otherwise return
-  // false.
-  virtual bool IsConnected() const = 0;
+  // Returns true if the object proxy is ready to communicate with ibus-daemon,
+  // otherwise return false.
+  virtual bool IsObjectProxyReady() const = 0;
 
   // Signal handler accessors. Setting function can be called multiple times. If
   // you call setting function multiple times, previous callback will be

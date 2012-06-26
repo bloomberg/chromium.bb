@@ -67,7 +67,7 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   }
 
   // IBusInputContextClient override.
-  virtual bool IsConnected() const OVERRIDE {
+  virtual bool IsObjectProxyReady() const OVERRIDE {
     return proxy_ != NULL;
   }
 
@@ -374,7 +374,7 @@ class IBusInputContextClientStubImpl : public IBusInputContextClient {
   // IBusInputContextClient override.
   virtual void ResetObjectProxy() OVERRIDE {}
   // IBusInputContextClient override.
-  virtual bool IsConnected() const OVERRIDE {
+  virtual bool IsObjectProxyReady() const OVERRIDE {
     return true;
   }
   // IBusInputContextClient overrides.

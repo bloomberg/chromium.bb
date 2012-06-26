@@ -11,13 +11,16 @@ namespace chromeos {
 
 MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
   : mock_ibus_client_(new MockIBusClient),
-    mock_ibus_input_context_client_(new MockIBusInputContextClient) {
+    mock_ibus_input_context_client_(new MockIBusInputContextClient),
+    ibus_bus_(NULL) {
 }
 
 MockDBusThreadManagerWithoutGMock::~MockDBusThreadManagerWithoutGMock() {}
 
 void MockDBusThreadManagerWithoutGMock::InitIBusBus(
     const std::string& ibus_address) {
+  // Non-null bus address is used to ensure the connection to ibus-daemon.
+  ibus_bus_ = reinterpret_cast<dbus::Bus*>(0xdeadbeef);
 }
 
 dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
@@ -25,7 +28,7 @@ dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
 }
 
 dbus::Bus* MockDBusThreadManagerWithoutGMock::GetIBusBus() {
-  return NULL;
+  return ibus_bus_;
 }
 
 BluetoothAdapterClient*
