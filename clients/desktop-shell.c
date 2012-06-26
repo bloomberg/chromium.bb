@@ -718,10 +718,10 @@ static void
 desktop_shell_configure(void *data,
 			struct desktop_shell *desktop_shell,
 			uint32_t edges,
-			struct wl_shell_surface *shell_surface,
+			struct wl_surface *surface,
 			int32_t width, int32_t height)
 {
-	struct window *window = wl_shell_surface_get_user_data(shell_surface);
+	struct window *window = wl_surface_get_user_data(surface);
 	struct surface *s = window_get_user_data(window);
 
 	s->configure(data, desktop_shell, edges, window, width, height);
@@ -758,9 +758,8 @@ background_create(struct desktop *desktop)
 	memset(background, 0, sizeof *background);
 
 	background->base.configure = background_configure;
-	background->window = window_create(desktop->display);
+	background->window = window_create_custom(desktop->display);
 	background->widget = window_add_widget(background->window, background);
-	window_set_custom(background->window);
 	window_set_user_data(background->window, background);
 	widget_set_redraw_handler(background->widget, background_draw);
 
@@ -877,15 +876,17 @@ int main(int argc, char *argv[])
 				       global_handler, &desktop);
 
 	wl_list_for_each(output, &desktop.outputs, link) {
-		struct wl_shell_surface *s;
+		struct wl_shell_surface *shsurf;
+		struct wl_surface *surface;
 
 		output->panel = panel_create(desktop.display);
-		s = window_get_wl_shell_surface(output->panel->window);
-		desktop_shell_set_panel(desktop.shell, output->output, s);
+		shsurf = window_get_wl_shell_surface(output->panel->window);
+		desktop_shell_set_panel(desktop.shell, output->output, shsurf);
 
 		output->background = background_create(&desktop);
-		s = window_get_wl_shell_surface(output->background->window);
-		desktop_shell_set_background(desktop.shell, output->output, s);
+		surface = window_get_wl_surface(output->background->window);
+		desktop_shell_set_background(desktop.shell,
+					     output->output, surface);
 	}
 
 	busy_surface_create(&desktop);

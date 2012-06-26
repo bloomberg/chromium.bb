@@ -201,6 +201,8 @@ window_create(struct display *display);
 struct window *
 window_create_transient(struct display *display, struct window *parent,
 			int32_t x, int32_t y, uint32_t flags);
+struct window *
+window_create_custom(struct display *display);
 
 typedef void (*menu_func_t)(struct window *window, int index, void *data);
 

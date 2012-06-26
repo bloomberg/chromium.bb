@@ -2913,7 +2913,8 @@ static const struct wl_surface_listener surface_listener = {
 };
 
 static struct window *
-window_create_internal(struct display *display, struct window *parent)
+window_create_internal(struct display *display,
+		       struct window *parent, int type)
 {
 	struct window *window;
 
@@ -2926,7 +2927,7 @@ window_create_internal(struct display *display, struct window *parent)
 	window->parent = parent;
 	window->surface = wl_compositor_create_surface(display->compositor);
 	wl_surface_add_listener(window->surface, &surface_listener, window);
-	if (display->shell) {
+	if (type != TYPE_CUSTOM && display->shell) {
 		window->shell_surface =
 			wl_shell_get_shell_surface(display->shell,
 						   window->surface);
@@ -2940,7 +2941,7 @@ window_create_internal(struct display *display, struct window *parent)
 	window->allocation.height = 0;
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
-	window->type = TYPE_NONE;
+	window->type = type;
 	window->input_region = NULL;
 	window->opaque_region = NULL;
 
@@ -2973,7 +2974,19 @@ window_create(struct display *display)
 {
 	struct window *window;
 
-	window = window_create_internal(display, NULL);
+	window = window_create_internal(display, NULL, TYPE_NONE);
+	if (!window)
+		return NULL;
+
+	return window;
+}
+
+struct window *
+window_create_custom(struct display *display)
+{
+	struct window *window;
+
+	window = window_create_internal(display, NULL, TYPE_CUSTOM);
 	if (!window)
 		return NULL;
 
@@ -2986,11 +2999,11 @@ window_create_transient(struct display *display, struct window *parent,
 {
 	struct window *window;
 
-	window = window_create_internal(parent->display, parent);
+	window = window_create_internal(parent->display,
+					parent, TYPE_TRANSIENT);
 	if (!window)
 		return NULL;
 
-	window->type = TYPE_TRANSIENT;
 	window->x = x;
 	window->y = y;
 
@@ -3123,7 +3136,7 @@ window_show_menu(struct display *display,
 	if (!menu)
 		return;
 
-	window = window_create_internal(parent->display, parent);
+	window = window_create_internal(parent->display, parent, TYPE_MENU);
 	if (!window)
 		return;
 
