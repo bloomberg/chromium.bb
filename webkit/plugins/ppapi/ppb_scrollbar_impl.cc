@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScrollbar.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginScrollbar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
@@ -30,6 +30,7 @@ using ppapi::thunk::PPB_Scrollbar_API;
 using WebKit::WebInputEvent;
 using WebKit::WebRect;
 using WebKit::WebScrollbar;
+using WebKit::WebPluginScrollbar;
 
 namespace webkit {
 namespace ppapi {
@@ -55,10 +56,10 @@ void PPB_Scrollbar_Impl::Init(bool vertical) {
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
     return;
-  scrollbar_.reset(WebScrollbar::createForPlugin(
+  scrollbar_.reset(WebPluginScrollbar::createForPlugin(
       vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal,
       ResourceHelper::GetPluginInstance(this)->container(),
-      static_cast<WebKit::WebScrollbarClient*>(this)));
+      static_cast<WebKit::WebPluginScrollbarClient*>(this)));
 }
 
 PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
@@ -71,7 +72,7 @@ void PPB_Scrollbar_Impl::InstanceWasDeleted() {
 }
 
 uint32_t PPB_Scrollbar_Impl::GetThickness() {
-  return WebScrollbar::defaultThickness();
+  return WebPluginScrollbar::defaultThickness();
 }
 
 bool PPB_Scrollbar_Impl::IsOverlay() {
@@ -165,7 +166,7 @@ void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {
                                   location->size.height));
 }
 
-void PPB_Scrollbar_Impl::valueChanged(WebKit::WebScrollbar* scrollbar) {
+void PPB_Scrollbar_Impl::valueChanged(WebKit::WebPluginScrollbar* scrollbar) {
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (!plugin_module)
     return;
@@ -186,7 +187,7 @@ void PPB_Scrollbar_Impl::valueChanged(WebKit::WebScrollbar* scrollbar) {
                               scrollbar_->value());
 }
 
-void PPB_Scrollbar_Impl::overlayChanged(WebScrollbar* scrollbar) {
+void PPB_Scrollbar_Impl::overlayChanged(WebPluginScrollbar* scrollbar) {
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (!plugin_module)
     return;
@@ -201,7 +202,7 @@ void PPB_Scrollbar_Impl::overlayChanged(WebScrollbar* scrollbar) {
 }
 
 void PPB_Scrollbar_Impl::invalidateScrollbarRect(
-    WebKit::WebScrollbar* scrollbar,
+    WebKit::WebPluginScrollbar* scrollbar,
     const WebKit::WebRect& rect) {
   gfx::Rect gfx_rect(rect.x,
                      rect.y,
@@ -212,8 +213,8 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
   // since the PPB_Scrollbar_Impl code is still in the middle of updating its
   // internal state.
   // Note: we use a WeakPtrFactory here so that a lingering callback can not
-  // modify the lifetime of this object. Otherwise, WebKit::WebScrollbar could
-  // outlive WebKit::WebPluginContainer, which is against its contract.
+  // modify the lifetime of this object. Otherwise, WebKit::WebPluginScrollbar
+  // could outlive WebKit::WebPluginContainer, which is against its contract.
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PPB_Scrollbar_Impl::NotifyInvalidate,
@@ -221,7 +222,7 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
 }
 
 void PPB_Scrollbar_Impl::getTickmarks(
-    WebKit::WebScrollbar* scrollbar,
+    WebKit::WebPluginScrollbar* scrollbar,
     WebKit::WebVector<WebKit::WebRect>* tick_marks) const {
   if (tickmarks_.empty()) {
     WebRect* rects = NULL;
@@ -245,4 +246,3 @@ void PPB_Scrollbar_Impl::NotifyInvalidate() {
 
 }  // namespace ppapi
 }  // namespace webkit
-
