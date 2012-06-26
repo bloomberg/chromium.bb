@@ -280,4 +280,57 @@ TEST_F(SigninTrackerTest, SyncSigninError) {
   tracker_->OnStateChanged();
 }
 
-// TODO(kochi) Add tests with initial state != WATIING_FOR_GAIA_VALIDATION.
+// Test cases for initial state = SERVICES_INITIALIZING.
+TEST_F(SigninTrackerTest, SigninSuccess) {
+  // Reset the |tracker_| and restart with initial state parameter for its
+  // constructor later.
+  tracker_.reset();
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  ExpectSignedInSyncService(mock_pss_, mock_token_service_, error);
+  // Finally SigninSuccess() is expected to be called when everything is ready.
+  EXPECT_CALL(observer_, SigninSuccess());
+  tracker_.reset(new SigninTracker(profile_.get(), &observer_,
+                                   SigninTracker::SERVICES_INITIALIZING));
+}
+
+TEST_F(SigninTrackerTest, SigninFailedSyncTokenUnavailable) {
+  tracker_.reset();
+  EXPECT_CALL(*mock_token_service_, HasTokenForService(_))
+      .WillRepeatedly(Return(true));
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
+      Return(true));
+  // Inject Token unavailable error.
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable()).WillRepeatedly(
+      Return(false));
+  EXPECT_CALL(*mock_pss_, waiting_for_auth()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
+  EXPECT_CALL(*mock_pss_, HasUnrecoverableError()).WillRepeatedly(
+      Return(false));
+  EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
+  // Any error should result in SigninFailed() being called.
+  EXPECT_CALL(observer_, SigninFailed(error));
+  tracker_.reset(new SigninTracker(profile_.get(), &observer_,
+                                   SigninTracker::SERVICES_INITIALIZING));
+}
+
+TEST_F(SigninTrackerTest, SigninFailedGoogleServiceAuthError) {
+  tracker_.reset();
+  EXPECT_CALL(*mock_token_service_, HasTokenForService(_))
+      .WillRepeatedly(Return(true));
+  // Inject authentication error.
+  GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
+      Return(true));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable()).WillRepeatedly(
+      Return(true));
+  EXPECT_CALL(*mock_pss_, waiting_for_auth()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
+  EXPECT_CALL(*mock_pss_, HasUnrecoverableError()).WillRepeatedly(
+      Return(false));
+  EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
+  // Any error should result in SigninFailed() being called.
+  EXPECT_CALL(observer_, SigninFailed(error));
+  tracker_.reset(new SigninTracker(profile_.get(), &observer_,
+                                   SigninTracker::SERVICES_INITIALIZING));
+}
