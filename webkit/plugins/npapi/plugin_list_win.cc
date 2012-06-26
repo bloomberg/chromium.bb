@@ -317,8 +317,6 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   base::SplitString(a, ',', &a_ver);
   base::SplitString(b, ',', &b_ver);
   if (a_ver.size() == 1 && b_ver.size() == 1) {
-    a_ver.clear();
-    b_ver.clear();
     base::SplitString(a, '.', &a_ver);
     base::SplitString(b, '.', &b_ver);
   }
