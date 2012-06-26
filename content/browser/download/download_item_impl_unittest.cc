@@ -37,7 +37,7 @@ class MockDelegate : public DownloadItemImpl::Delegate {
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItem* download));
   MOCK_METHOD1(MaybeCompleteDownload, void(DownloadItem* download));
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
-  MOCK_METHOD1(DownloadCancelled, void(DownloadItem* download));
+  MOCK_METHOD1(DownloadStopped, void(DownloadItem* download));
   MOCK_METHOD1(DownloadCompleted, void(DownloadItem* download));
   MOCK_METHOD1(DownloadOpened, void(DownloadItem* download));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItem* download));
@@ -269,8 +269,7 @@ TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
-  item->Interrupted(kDownloadChunkSize, "",
-                    content::DOWNLOAD_INTERRUPT_REASON_NONE);
+  item->Interrupt(content::DOWNLOAD_INTERRUPT_REASON_NONE);
   ASSERT_TRUE(observer.CheckUpdated());
 }
 
@@ -543,23 +542,17 @@ TEST_F(DownloadItemTest, CallbackAfterRenameToIntermediateName) {
 TEST_F(DownloadItemTest, Interrupted) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
 
-  int64 size = 1022;
-  const std::string hash_state("Live beef");
   const content::DownloadInterruptReason reason(
       content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
 
   // Confirm interrupt sets state properly.
-  item->Interrupted(size, hash_state, reason);
-  EXPECT_EQ(size, item->GetReceivedBytes());
+  item->Interrupt(reason);
   EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
-  EXPECT_EQ(hash_state, item->GetHashState());
   EXPECT_EQ(reason, item->GetLastReason());
 
   // Cancel should result in no change.
   item->Cancel(true);
-  EXPECT_EQ(size, item->GetReceivedBytes());
   EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
-  EXPECT_EQ(hash_state, item->GetHashState());
   EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED,
             item->GetLastReason());
 }
@@ -568,7 +561,7 @@ TEST_F(DownloadItemTest, Canceled) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
 
   // Confirm cancel sets state properly.
-  EXPECT_CALL(*mock_delegate(), DownloadCancelled(item));
+  EXPECT_CALL(*mock_delegate(), DownloadStopped(item));
   item->Cancel(true);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
 }

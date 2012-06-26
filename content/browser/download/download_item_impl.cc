@@ -481,7 +481,18 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 
   TransitionTo(CANCELLED);
   if (user_cancel)
-    delegate_->DownloadCancelled(this);
+    delegate_->DownloadStopped(this);
+}
+
+// An error occurred somewhere.
+void DownloadItemImpl::Interrupt(content::DownloadInterruptReason reason) {
+  // It should not be possible both to have an error and complete.
+  DCHECK(IsInProgress());
+  last_reason_ = reason;
+  TransitionTo(INTERRUPTED);
+  download_stats::RecordDownloadInterrupted(
+      reason, received_bytes_, total_bytes_);
+  delegate_->DownloadStopped(this);
 }
 
 void DownloadItemImpl::MarkAsComplete() {
@@ -612,22 +623,6 @@ void DownloadItemImpl::SetFullPath(const FilePath& new_path) {
       net::NetLog::TYPE_DOWNLOAD_ITEM_RENAMED,
       base::Bind(&download_net_logs::ItemRenamedCallback,
                  &current_path_, &new_path));
-}
-
-void DownloadItemImpl::Interrupted(int64 size,
-                                   const std::string& hash_state,
-                                   content::DownloadInterruptReason reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!IsInProgress())
-    return;
-
-  last_reason_ = reason;
-  UpdateProgress(size, hash_state);
-  download_stats::RecordDownloadInterrupted(reason,
-                                            received_bytes_,
-                                            total_bytes_);
-  TransitionTo(INTERRUPTED);
 }
 
 void DownloadItemImpl::Delete(DeleteReason reason) {

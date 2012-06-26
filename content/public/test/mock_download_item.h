@@ -34,9 +34,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD2(OnAllDataSaved, void(int64, const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   MOCK_METHOD0(MaybeCompleteDownload, void());
-  MOCK_METHOD3(Interrupted, void(int64,
-                                 const std::string&,
-                                 DownloadInterruptReason));
+  MOCK_METHOD1(Interrupt, void(DownloadInterruptReason));
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));

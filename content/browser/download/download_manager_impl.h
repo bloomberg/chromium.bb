@@ -106,7 +106,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       content::DownloadItem* download_item) OVERRIDE;
   virtual void MaybeCompleteDownload(
       content::DownloadItem* download) OVERRIDE;
-  virtual void DownloadCancelled(
+  virtual void DownloadStopped(
       content::DownloadItem* download) OVERRIDE;
   virtual void DownloadCompleted(
       content::DownloadItem* download) OVERRIDE;

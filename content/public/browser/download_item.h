@@ -169,6 +169,9 @@ class CONTENT_EXPORT DownloadItem {
   // when resuming a download (assuming the server supports byte ranges).
   virtual void Cancel(bool user_cancel) = 0;
 
+  // Indicate that an error has occurred on the download.
+  virtual void Interrupt(content::DownloadInterruptReason reason) = 0;
+
   // Called by external code (SavePackage) using the DownloadItem interface
   // to display progress when the DownloadItem should be considered complete.
   virtual void MarkAsComplete() = 0;
@@ -182,14 +185,6 @@ class CONTENT_EXPORT DownloadItem {
 
   // Called when the downloaded file is removed.
   virtual void OnDownloadedFileRemoved() = 0;
-
-  // Download operation had an error.
-  // |size| is the amount of data received at interruption.
-  // |hash_state| is the current hash state at interruption.
-  // |reason| is the download interrupt reason code that the operation received.
-  virtual void Interrupted(int64 size,
-                           const std::string& hash_state,
-                           DownloadInterruptReason reason) = 0;
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking

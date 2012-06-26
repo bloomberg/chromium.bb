@@ -743,7 +743,7 @@ void DownloadManagerImpl::CancelDownload(int32 download_id) {
   download->Cancel(true);
 }
 
-void DownloadManagerImpl::DownloadCancelled(DownloadItem* download) {
+void DownloadManagerImpl::DownloadStopped(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(20) << __FUNCTION__ << "()"
@@ -768,16 +768,8 @@ void DownloadManagerImpl::OnDownloadInterrupted(
   DownloadItem* download = GetActiveDownload(download_id);
   if (!download)
     return;
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " reason " << InterruptReasonDebugString(reason)
-           << " at offset " << download->GetReceivedBytes()
-           << " size = " << size
-           << " download = " << download->DebugString(true);
-
-  RemoveFromActiveList(download);
-  download->Interrupted(size, hash_state, reason);
-  download->OffThreadCancel(file_manager_);
+  download->UpdateProgress(size, 0, hash_state);
+  download->Interrupt(reason);
 }
 
 DownloadItem* DownloadManagerImpl::GetActiveDownload(int32 download_id) {

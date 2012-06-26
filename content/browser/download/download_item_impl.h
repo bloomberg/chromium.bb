@@ -64,7 +64,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
     // Handle any delegate portions of a state change operation on the
     // DownloadItem.
-    virtual void DownloadCancelled(DownloadItem* download) = 0;
+    virtual void DownloadStopped(DownloadItem* download) = 0;
     virtual void DownloadCompleted(DownloadItem* download) = 0;
     virtual void DownloadOpened(DownloadItem* download) = 0;
     virtual void DownloadRemoved(DownloadItem* download) = 0;
@@ -127,14 +127,12 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
                               int64 bytes_per_sec,
                               const std::string& hash_state) OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
+  virtual void Interrupt(content::DownloadInterruptReason reason) OVERRIDE;
   virtual void MarkAsComplete() OVERRIDE;
   virtual void DelayedDownloadOpened(bool auto_opened) OVERRIDE;
   virtual void OnAllDataSaved(
       int64 size, const std::string& final_hash) OVERRIDE;
   virtual void OnDownloadedFileRemoved() OVERRIDE;
-  virtual void Interrupted(int64 size,
-                           const std::string& hash_state,
-                           content::DownloadInterruptReason reason) OVERRIDE;
   virtual void Delete(DeleteReason reason) OVERRIDE;
   virtual void Remove() OVERRIDE;
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;

@@ -512,8 +512,8 @@ TEST_F(DownloadManagerTest, OnTargetPathAvailable) {
 }
 
 // Do the results of an OnDownloadInterrupted get passed through properly
-// to the DownloadItem?  This test tests non-persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadInterrupted_NonPersisted) {
+// to the DownloadItem?
+TEST_F(DownloadManagerTest, OnDownloadInterrupted) {
   // Put a mock we have a handle to on the download manager.
   content::MockDownloadItem& item(AddItemToManager());
   int download_id = item.GetId();
@@ -523,49 +523,16 @@ TEST_F(DownloadManagerTest, OnDownloadInterrupted_NonPersisted) {
   content::DownloadInterruptReason reason(
       content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
-  EXPECT_CALL(item, Interrupted(size, hash_state, reason));
-  EXPECT_CALL(item, OffThreadCancel(&GetMockDownloadFileManager()));
-  EXPECT_CALL(item, IsPersisted())
-      .WillOnce(Return(false));
+  EXPECT_CALL(item, UpdateProgress(size, 0, hash_state));
+  EXPECT_CALL(item, Interrupt(reason));
   download_manager_->OnDownloadInterrupted(
       download_id, size, hash_state, reason);
   EXPECT_EQ(&item, GetActiveDownloadItem(download_id));
 }
 
-// Do the results of an OnDownloadInterrupted get passed through properly
-// to the DownloadItem?  This test tests persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadInterrupted_Persisted) {
-  // Put a mock we have a handle to on the download manager.
-  content::MockDownloadItem& item(AddItemToManager());
-  int download_id = item.GetId();
-  int64 db_handle = 0x7;
-  AddItemToHistory(item, db_handle);
-
-  int64 size = 0xdeadbeef;
-  const std::string hash_state("Undead beef");
-  content::DownloadInterruptReason reason(
-      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
-
-  EXPECT_CALL(item, Interrupted(size, hash_state, reason));
-  EXPECT_CALL(item, OffThreadCancel(&GetMockDownloadFileManager()));
-  EXPECT_CALL(item, IsPersisted())
-      .WillOnce(Return(true));
-  EXPECT_CALL(GetMockDownloadManagerDelegate(),
-              UpdateItemInPersistentStore(&item));
-  download_manager_->OnDownloadInterrupted(
-      download_id, size, hash_state, reason);
-  EXPECT_EQ(NULL, GetActiveDownloadItem(download_id));
-
-  // Remove so we don't get errors on shutdown.
-  EXPECT_CALL(GetMockDownloadManagerDelegate(),
-              RemoveItemFromPersistentStore(&item));
-  download_manager_->DownloadRemoved(&item);
-  RemoveMockDownloadItem(download_id);
-}
-
-// Does DownloadCancelled remove Download from appropriate queues?
+// Does DownloadStopped remove Download from appropriate queues?
 // This test tests non-persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadCancelled_NonPersisted) {
+TEST_F(DownloadManagerTest, OnDownloadStopped_NonPersisted) {
   // Put a mock we have a handle to on the download manager.
   content::MockDownloadItem& item(AddItemToManager());
 
@@ -577,16 +544,16 @@ TEST_F(DownloadManagerTest, OnDownloadCancelled_NonPersisted) {
       .WillRepeatedly(Return(DownloadItem::kUninitializedHandle));
 
   EXPECT_CALL(item, OffThreadCancel(&GetMockDownloadFileManager()));
-  download_manager_->DownloadCancelled(&item);
+  download_manager_->DownloadStopped(&item);
   // TODO(rdsmith): Confirm that the download item is no longer on the
   // active list by calling GetActiveDownloadItem(id).  Currently, the
   // item is left on the active list for rendez-vous with the history
   // system :-{.
 }
 
-// Does DownloadCancelled remove Download from appropriate queues?
+// Does DownloadStopped remove Download from appropriate queues?
 // This test tests persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadCancelled_Persisted) {
+TEST_F(DownloadManagerTest, OnDownloadStopped_Persisted) {
   // Put a mock we have a handle to on the download manager.
   content::MockDownloadItem& item(AddItemToManager());
   int download_id = item.GetId();
@@ -603,6 +570,6 @@ TEST_F(DownloadManagerTest, OnDownloadCancelled_Persisted) {
       .WillRepeatedly(Return(db_handle));
 
   EXPECT_CALL(item, OffThreadCancel(&GetMockDownloadFileManager()));
-  download_manager_->DownloadCancelled(&item);
+  download_manager_->DownloadStopped(&item);
   EXPECT_EQ(NULL, GetActiveDownloadItem(download_id));
 }
