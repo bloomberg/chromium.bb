@@ -5382,12 +5382,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables experimental extensions to the geolocation feature to use operating system location APIs (where available).
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_NAME" desc="Name of the 'Disable HTML5 interactive form validation' lab.">
-        Disable HTML5 interactive form validation
-      </message>
-      <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION" desc="Description of the 'Disable HTML5 interactive form validation' lab.">
-        Disable showing validation messages and preventing form submission.
-      </message>
       <message name="IDS_FLAGS_STATIC_IP_CONFIG_NAME" desc="Name of the static ip config lab.">
         Experimental static ip configuration
       </message>

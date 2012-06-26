@@ -55,7 +55,6 @@ extern const char kEnableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
 extern const char kDisableImageTransportSurface[];
-CONTENT_EXPORT extern const char kDisableInteractiveFormValidation[];
 CONTENT_EXPORT extern const char kDisableJava[];
 CONTENT_EXPORT extern const char kDisableJavaScript[];
 extern const char kDisableJavaScriptI18NAPI[];

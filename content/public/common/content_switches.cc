@@ -133,10 +133,6 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // will present the rendered page rather than the browser process.
 const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
 
-// Disables HTML5 Forms interactive validation.
-const char kDisableInteractiveFormValidation[] =
-    "disable-interactive-form-validation";
-
 // Disables GPU hardware acceleration.  If software renderer is not in place,
 // then the GPU process won't launch.
 const char kDisableGpu[]                    = "disable-gpu";

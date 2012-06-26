@@ -481,8 +481,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
   prefs.accelerated_video_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
-  prefs.interactive_form_validation_enabled =
-      !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
   prefs.css_regions_enabled =

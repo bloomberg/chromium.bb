@@ -93,7 +93,6 @@ WebPreferences::WebPreferences()
       accelerated_filters_enabled(false),
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
-      interactive_form_validation_enabled(true),
       fullscreen_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
@@ -352,8 +351,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(tabs_to_links);
 
-  settings->setInteractiveFormValidationEnabled(
-      interactive_form_validation_enabled);
+  settings->setInteractiveFormValidationEnabled(true);
 
   settings->setFullScreenEnabled(fullscreen_enabled);
   settings->setAllowDisplayOfInsecureContent(allow_displaying_insecure_content);
