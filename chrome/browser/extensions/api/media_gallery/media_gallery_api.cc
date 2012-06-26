@@ -43,13 +43,7 @@ bool GetMediaFileSystemsFunction::RunImpl() {
         filesystems[i];
     const std::string& fsid = fsid_and_path.first;
     const FilePath& path = fsid_and_path.second;
-    const FilePath::StringType basepath = path.BaseName().value();
-#if defined(OS_WIN)
-    // We standardize on UTF8 encoding for |basepath|.
-    const std::string basepath_utf8(base::SysWideToUTF8(basepath));
-#elif defined(OS_POSIX)
-    const std::string basepath_utf8(basepath);
-#endif
+    const std::string basepath_utf8(path.BaseName().AsUTF8Unsafe());
 
     base::DictionaryValue* dict_value = new base::DictionaryValue();
     dict_value->SetWithoutPathExpansion(
