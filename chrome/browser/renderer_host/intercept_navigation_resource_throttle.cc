@@ -45,10 +45,8 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
       &validated_url);
 
   bool should_ignore_navigation = false;
-  if (rvh) {
-    should_ignore_navigation = should_ignore_callback.Run(
-        rvh, validated_url, referrer, is_content_initiated);
-  }
+  should_ignore_navigation = should_ignore_callback.Run(
+      rvh, validated_url, referrer, is_content_initiated);
 
   BrowserThread::PostTask(
       BrowserThread::IO,
