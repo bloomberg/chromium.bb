@@ -341,6 +341,7 @@ Browser::Browser(Type type, Profile* profile)
           synced_window_delegate_(
               new BrowserSyncedWindowDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
+      device_attached_intent_source_(this, this),
       window_has_shown_(false) {
   tab_strip_model_->AddObserver(this);
 
@@ -2527,6 +2528,11 @@ void Browser::WebIntentDispatch(
 
   UMA_HISTOGRAM_COUNTS("WebIntents.Dispatch", 1);
 
+  if (!web_contents) {
+    // Intent is system-caused and the picker will show over the currently
+    // active web contents.
+    web_contents = GetActiveWebContents();
+  }
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   tab_contents->web_intent_picker_controller()->SetIntentsDispatcher(
       intents_dispatcher);

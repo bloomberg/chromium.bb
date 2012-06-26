@@ -22,6 +22,7 @@
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_tab_helper_delegate.h"
 #include "chrome/browser/instant/instant_delegate.h"
+#include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -1241,6 +1242,7 @@ class Browser : public TabStripModelDelegate,
   scoped_ptr<InstantUnloadHandler> instant_unload_handler_;
 
   BookmarkBar::State bookmark_bar_state_;
+  DeviceAttachedIntentSource device_attached_intent_source_;
 
   scoped_refptr<FullscreenController> fullscreen_controller_;
 

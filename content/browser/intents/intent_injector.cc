@@ -9,17 +9,22 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/intents/web_intents_dispatcher_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/intents_messages.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_switches.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
+using content::ChildProcessSecurityPolicy;
 using content::RenderViewHost;
 using content::WebContents;
+using content::WebIntentsDispatcher;
 
 IntentInjector::IntentInjector(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -31,7 +36,7 @@ IntentInjector::IntentInjector(WebContents* web_contents)
 IntentInjector::~IntentInjector() {
 }
 
-void IntentInjector::WebContentsDestroyed(content::WebContents* contents) {
+void IntentInjector::WebContentsDestroyed(WebContents* contents) {
   if (intents_dispatcher_) {
     intents_dispatcher_->SendReplyMessage(
         webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED, string16());
@@ -45,7 +50,7 @@ void IntentInjector::SourceWebContentsDestroyed(WebContents* contents) {
 }
 
 void IntentInjector::SetIntent(
-    content::WebIntentsDispatcher* intents_dispatcher,
+    WebIntentsDispatcher* intents_dispatcher,
     const webkit_glue::WebIntentData& intent) {
   intents_dispatcher_ = intents_dispatcher;
   intents_dispatcher_->RegisterReplyNotification(
@@ -78,9 +83,19 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (source_intent_->data_type == webkit_glue::WebIntentData::BLOB) {
     // Grant read permission on the blob file to the delivered context.
-    int child_id = render_view_host->GetProcess()->GetID();
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        child_id, source_intent_->blob_file);
+    const int child_id = render_view_host->GetProcess()->GetID();
+    ChildProcessSecurityPolicy* policy =
+         ChildProcessSecurityPolicy::GetInstance();
+    if (!policy->CanReadFile(child_id, source_intent_->blob_file))
+      policy->GrantReadFile(child_id, source_intent_->blob_file);
+  } else if (source_intent_->data_type ==
+             webkit_glue::WebIntentData::FILESYSTEM) {
+    const int child_id = render_view_host->GetProcess()->GetID();
+    ChildProcessSecurityPolicy* policy =
+         ChildProcessSecurityPolicy::GetInstance();
+    if (!policy->CanReadFile(child_id, source_intent_->root_path))
+      policy->GrantReadFile(child_id, source_intent_->root_path);
+    policy->GrantReadFileSystem(child_id, source_intent_->filesystem_id);
   }
 
   render_view_host->Send(new IntentsMsg_SetWebIntentData(
@@ -102,7 +117,7 @@ void IntentInjector::OnReply(webkit_glue::WebIntentReplyType reply_type,
     return;
 
   // Ensure SendReplyMessage is only called once.
-  content::WebIntentsDispatcher* intents_dispatcher = intents_dispatcher_;
+  WebIntentsDispatcher* intents_dispatcher = intents_dispatcher_;
   intents_dispatcher_ = NULL;
   intents_dispatcher->SendReplyMessage(reply_type, data);
 }

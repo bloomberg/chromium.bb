@@ -50,11 +50,16 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // Length of the blob.
   int64 blob_length;
 
+  // Store the file system parameters to create a new file system.
+  FilePath root_path;
+  std::string filesystem_id;
+
   // These enum values indicate which payload data type should be used.
   enum DataType {
     SERIALIZED = 0,    // The payload is serialized in |data|.
     UNSERIALIZED = 1,  // The payload is unserialized in |unserialized_data|.
-    BLOB = 2           // The payload is a blob
+    BLOB = 2,          // The payload is a blob.
+    FILESYSTEM = 3,    // The payload is WebFileSystem.
   };
   // Which data payload to use when delivering the intent.
   DataType data_type;
@@ -71,6 +76,10 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
                 const string16& type_in,
                 const FilePath& blob_file_in,
                 int64 blob_length_in);
+  WebIntentData(const string16& action_in,
+                const string16& type_in,
+                const FilePath& root_path_in,
+                const std::string& filesystem_id_in);
   ~WebIntentData();
 };
 

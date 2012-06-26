@@ -183,6 +183,9 @@ void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
                              base::Int64ToString(web_intent_data.blob_length));
       args.Append(intent_data);
       break;
+    default:
+      NOTREACHED();
+      break;
   }
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);

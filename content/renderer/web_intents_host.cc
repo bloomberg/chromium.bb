@@ -13,15 +13,18 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeliveredIntentClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "v8/include/v8.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 using WebKit::WebBindings;
@@ -157,7 +160,7 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
     web_intent = WebIntent::create(intent_->action, intent_->type,
                                    serialized_data.toString(),
                                    extras_keys, extras_values);
-  } else {
+  } else if (intent_->data_type == webkit_glue::WebIntentData::BLOB) {
     DCHECK(intent_->data_type == webkit_glue::WebIntentData::BLOB);
     web_blob_ = WebBlob::createFromFile(
         WebString::fromUTF8(intent_->blob_file.AsUTF8Unsafe()),
@@ -167,6 +170,31 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
     web_intent = WebIntent::create(intent_->action, intent_->type,
                                    serialized_data.toString(),
                                    extras_keys, extras_values);
+  } else if (intent_->data_type == webkit_glue::WebIntentData::FILESYSTEM) {
+    const GURL origin = GURL(frame->document().securityOrigin().toString());
+    const GURL root_url =
+        fileapi::GetFileSystemRootURI(origin, fileapi::kFileSystemTypeIsolated);
+    const std::string fsname =
+        fileapi::GetIsolatedFileSystemName(origin, intent_->filesystem_id);
+    const std::string url = base::StringPrintf(
+        "%s%s/%s/",
+        root_url.spec().c_str(),
+        intent_->filesystem_id.c_str(),
+        intent_->root_path.BaseName().AsUTF8Unsafe().c_str());
+    // TODO(kmadhusu): This is a temporary hack to create a serializable file
+    // system. Once we have a better way to create a serializable file system,
+    // remove this hack.
+    v8::Handle<v8::Value> filesystem_V8 = frame->createSerializableFileSystem(
+        WebKit::WebFileSystem::TypeIsolated,
+        WebKit::WebString::fromUTF8(fsname),
+        WebKit::WebString::fromUTF8(url));
+    WebSerializedScriptValue serialized_data =
+        WebSerializedScriptValue::serialize(filesystem_V8);
+    web_intent = WebIntent::create(intent_->action, intent_->type,
+                                   serialized_data.toString(),
+                                   extras_keys, extras_values);
+  } else {
+    NOTREACHED();
   }
 
   if (!web_intent.action().isEmpty())
