@@ -23,12 +23,6 @@ class ContentsContainer : public views::View {
   explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
 
-  // View positioned above the contents. The returned view is owned by this.
-  // The header is sized to the preferred height of its single child (width
-  // fills the available width). If the child is not visible the header is
-  // sized to an empty rect.
-  views::View* header();
-
   // Sets the overlay. The overlay is sized to the bounds of this view.
   void SetOverlay(views::View* overlay);
   views::View* overlay() { return overlay_; }
@@ -58,9 +52,6 @@ class ContentsContainer : public views::View {
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
-  class HeaderView;
-
-  HeaderView* header_;
   views::View* active_;
   views::View* overlay_;
   views::View* preview_;

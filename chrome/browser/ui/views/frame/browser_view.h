@@ -541,9 +541,6 @@ class BrowserView : public BrowserWindow,
   // Exposes resize corner size to BrowserViewLayout.
   gfx::Size GetResizeCornerSize() const;
 
-  // Set the value of |toolbar_| and hook it into the views hierarchy
-  void SetToolbar(ToolbarView* toolbar);
-
   // Create an icon for this window in the launcher (currently only for Ash).
   void CreateLauncherIcon();
 

@@ -1870,7 +1870,26 @@ void BrowserView::Init() {
   contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
   contents_ = new ContentsContainer(contents_container_);
 
-  SetToolbar(new ToolbarView(browser_.get()));
+  views::View* omnibox_popup_view_parent = NULL;
+  // SearchViewController doesn't work on windows yet.
+#if defined(USE_AURA)
+  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
+    search_view_controller_.reset(new SearchViewController(contents_));
+    omnibox_popup_view_parent =
+        search_view_controller_->omnibox_popup_view_parent();
+  }
+#endif
+
+  toolbar_ = new ToolbarView(browser_.get());
+  AddChildView(toolbar_);
+  toolbar_->Init(this, omnibox_popup_view_parent);
+
+#if defined(USE_AURA)
+  if (search_view_controller_.get()) {
+    search_view_controller_->set_location_bar_container(
+        toolbar_->location_bar_container());
+  }
+#endif
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeService::COLOR_TOOLBAR);
@@ -1906,14 +1925,6 @@ void BrowserView::Init() {
 #endif
 
   ReorderChildView(toolbar_->location_bar_container(), child_count() - 1);
-
-  // SearchViewController doesn't work on windows yet.
-#if defined(USE_AURA)
-  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
-    search_view_controller_.reset(new SearchViewController(
-        contents_, toolbar_->location_bar_container()));
-  }
-#endif
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
@@ -2429,18 +2440,6 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
 
 gfx::Size BrowserView::GetResizeCornerSize() const {
   return ResizeCorner::GetSize();
-}
-
-void BrowserView::SetToolbar(ToolbarView* toolbar) {
-  if (toolbar_) {
-    RemoveChildView(toolbar_);
-    delete toolbar_;
-  }
-  toolbar_ = toolbar;
-  if (toolbar) {
-    AddChildView(toolbar_);
-    toolbar_->Init(this, contents_->header());
-  }
 }
 
 void BrowserView::CreateLauncherIcon() {

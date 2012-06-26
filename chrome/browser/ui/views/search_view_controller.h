@@ -22,7 +22,6 @@ class SearchModel;
 }
 
 namespace views {
-class ImageView;
 class View;
 }
 
@@ -34,9 +33,15 @@ class SearchViewController
     : public chrome::search::SearchModelObserver,
       public ui::ImplicitAnimationObserver {
  public:
-  SearchViewController(ContentsContainer* contents_container,
-                       LocationBarContainer* location_bar_container);
+  explicit SearchViewController(ContentsContainer* contents_container);
   virtual ~SearchViewController();
+
+  views::View* omnibox_popup_view_parent();
+
+  void set_location_bar_container(
+      LocationBarContainer* location_bar_container) {
+    location_bar_container_ = location_bar_container;
+  }
 
   // Sets the active tab.
   void SetTabContents(TabContents* tab);
@@ -54,10 +59,29 @@ class SearchViewController
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
  private:
+  enum State {
+    // Search/ntp is not visible.
+    STATE_NOT_VISIBLE,
+
+    // Layout for the new tab page.
+    STATE_NTP,
+
+    // Animating between STATE_NTP and STATE_SEARCH.
+    STATE_ANIMATING,
+
+    // Search layout. This is only used when the omnibox is visible.
+    STATE_SEARCH,
+  };
+
+  class OmniboxPopupViewParent;
+
+  // Invokes SetState() based on the search model and omnibox.
+  void UpdateState();
+
   // Updates the views and animations. May do any of the following: create the
   // views, start an animation, or destroy the views. What happens is determined
   // from the current state of the SearchModel.
-  void Update();
+  void SetState(State state);
 
   // Starts the animation.
   void StartAnimation();
@@ -69,6 +93,9 @@ class SearchViewController
   // Destroys the various views.
   void DestroyViews();
 
+  // Invoked when the visibility of the omnibox popup changes.
+  void PopupVisibilityChanged();
+
   // Returns the SearchModel for the current tab, or NULL if there
   // is no current tab.
   chrome::search::SearchModel* search_model();
@@ -78,8 +105,7 @@ class SearchViewController
 
   LocationBarContainer* location_bar_container_;
 
-  // Are we animating?
-  bool animating_;
+  State state_;
 
   // The active TabContents; may be NULL.
   TabContents* tab_;
@@ -87,8 +113,8 @@ class SearchViewController
   // The following views are created to render the NTP. Visually they look
   // something like:
   //
-  // |---NTPContainer-------------------------------------|
-  // ||-----NTPView--------------------------------------||
+  // |---SearchContainerView------------------------------|
+  // ||-----NTPView & OmniboxPopupViewParent-------------||
   // ||                                                  ||
   // ||     |--LogoView----------------------------|     ||
   // ||     |                                      |     ||
@@ -108,10 +134,16 @@ class SearchViewController
   // * - the LocationBarContainer gets positioned here, but it is not a child
   // of any of these views.
   //
-  views::View* ntp_container_;
+  // NTPView and OmniboxPopupViewParent are siblings. When on the NTP the
+  // OmniboxPopupViewParent is obscured by the NTPView. When on a search page
+  // the NTPView is hidden.
+  //
+  //
+  views::View* search_container_;
   views::View* ntp_view_;
   views::View* logo_view_;
   views::View* content_view_;
+  OmniboxPopupViewParent* omnibox_popup_view_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchViewController);
 };

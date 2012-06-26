@@ -85,9 +85,7 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
     OmniboxEditModel* edit_model,
     views::View* location_bar,
     views::View* popup_parent_view) {
-  // TODO(sky): add a flag to enable this.
-  /*
-  if (...) {
+  if (popup_parent_view) {
     InlineOmniboxPopupView* inline_view =
         new InlineOmniboxPopupView(font, omnibox_view, edit_model,
                                    location_bar);
@@ -95,7 +93,6 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
     popup_parent_view->AddChildView(inline_view);
     return inline_view;
   }
-  */
 
   OmniboxPopupContentsView* view = NULL;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
