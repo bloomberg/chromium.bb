@@ -41,7 +41,11 @@ const SkBitmap CreateBitmap(int width, int height) {
 }
 
 gfx::Image CreateImage() {
-  return gfx::Image(CreateBitmap(100, 50));
+  return CreateImage(100, 50);
+}
+
+gfx::Image CreateImage(int width, int height) {
+  return gfx::Image(CreateBitmap(width, height));
 }
 
 bool IsEqual(const gfx::Image& image1, const gfx::Image& image2) {

@@ -27,7 +27,9 @@ void SetSupportedScaleFactorsTo1xAnd2x();
 
 const SkBitmap CreateBitmap(int width, int height);
 
+// TODO(rohitrao): Remove the no-argument version of CreateImage().
 gfx::Image CreateImage();
+gfx::Image CreateImage(int width, int height);
 
 bool IsEqual(const gfx::Image& image1, const gfx::Image& image2);
 

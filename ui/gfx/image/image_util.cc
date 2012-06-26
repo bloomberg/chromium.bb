@@ -13,11 +13,19 @@
 namespace gfx {
 
 Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size) {
-  SkBitmap favicon_bitmap;
-  if (gfx::PNGCodec::Decode(input, input_size, &favicon_bitmap))
-    return new Image(favicon_bitmap);
+  SkBitmap bitmap;
+  if (gfx::PNGCodec::Decode(input, input_size, &bitmap))
+    return new Image(bitmap);
 
   return NULL;
+}
+
+Image ImageFromJPEGEncodedData(const unsigned char* input, size_t input_size) {
+  scoped_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
+  if (bitmap.get())
+    return Image(*bitmap);
+
+  return Image();
 }
 
 bool PNGEncodedDataFromImage(const Image& image,
