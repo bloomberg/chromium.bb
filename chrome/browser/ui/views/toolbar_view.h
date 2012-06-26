@@ -220,10 +220,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
-  // Caches the search_model from browser.
-  // TODO(alicet): Replace this, and |model_| with accessors.
-  chrome::search::SearchModel* search_model_;
-
   // Controls
   views::ImageButton* back_;
   views::ImageButton* forward_;

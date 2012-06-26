@@ -140,7 +140,6 @@ const int ToolbarView::kVertSpacing = 5;
 
 ToolbarView::ToolbarView(Browser* browser)
     : model_(browser->toolbar_model()),
-      search_model_(browser->search_model()),
       back_(NULL),
       forward_(NULL),
       reload_(NULL),
@@ -178,7 +177,7 @@ ToolbarView::ToolbarView(Browser* browser)
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
-  search_model_->AddObserver(this);
+  browser_->search_model()->AddObserver(this);
 }
 
 ToolbarView::~ToolbarView() {
@@ -375,10 +374,8 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
 }
 
 void ToolbarView::LayoutForSearch() {
-  if (!chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()))
-    return;
-
-  if (search_model_->mode().is_ntp())
+  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()) &&
+      browser_->search_model()->mode().is_ntp())
     LayoutLocationBarNTP();
 }
 
@@ -697,7 +694,7 @@ void ToolbarView::Layout() {
   // In NTP mode, the location bar needs content area's bounds to layout within
   // it, so we skip doing that here. When the browser view finished setting the
   // tab content bounds, we then layout the NTP location bar over it.
-  const chrome::search::Mode& si_mode(search_model_->mode());
+  const chrome::search::Mode& si_mode(browser_->search_model()->mode());
   if (si_mode.is_ntp()) {
     // Force the reload button to go into disabled mode to display the grey
     // circle and not the grey cross. The disabled reload state only exists for

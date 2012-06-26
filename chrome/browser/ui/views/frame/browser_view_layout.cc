@@ -274,6 +274,8 @@ void BrowserViewLayout::Layout(views::View* host) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
+  // NTP needs to layout the search box now that we have the contents bounds.
+  toolbar_->LayoutForSearch();
 }
 
 // Return the preferred size which is the size required to give each
