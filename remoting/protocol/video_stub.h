@@ -25,7 +25,7 @@ class VideoStub {
                                   const base::Closure& done) = 0;
 
   // Returns number of packets currently pending in the buffer.
-  virtual int GetPendingPackets() = 0;
+  virtual int GetPendingVideoPackets() = 0;
 
  protected:
   VideoStub() { }

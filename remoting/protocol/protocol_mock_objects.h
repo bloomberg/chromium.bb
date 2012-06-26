@@ -141,7 +141,7 @@ class MockVideoStub : public VideoStub {
     ProcessVideoPacketPtr(video_packet.get(), done);
   }
 
-  MOCK_METHOD0(GetPendingPackets, int());
+  MOCK_METHOD0(GetPendingVideoPackets, int());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoStub);

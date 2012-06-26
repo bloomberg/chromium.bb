@@ -73,7 +73,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // VideoStub implementation.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                   const base::Closure& done) OVERRIDE;
-  virtual int GetPendingPackets() OVERRIDE;
+  virtual int GetPendingVideoPackets() OVERRIDE;
 
   // AudioStub implementation.
   virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,

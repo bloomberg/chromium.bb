@@ -136,7 +136,7 @@ void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
     DispatchPacket();
 }
 
-int ChromotingClient::GetPendingPackets() {
+int ChromotingClient::GetPendingVideoPackets() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return received_packets_.size();
 }

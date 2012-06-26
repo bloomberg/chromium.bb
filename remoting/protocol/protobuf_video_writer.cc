@@ -65,7 +65,7 @@ void ProtobufVideoWriter::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   buffered_writer_.Write(SerializeAndFrameMessage(*packet), done);
 }
 
-int ProtobufVideoWriter::GetPendingPackets() {
+int ProtobufVideoWriter::GetPendingVideoPackets() {
   return buffered_writer_.GetBufferChunks();
 }
 

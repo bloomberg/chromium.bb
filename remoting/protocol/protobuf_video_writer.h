@@ -36,7 +36,7 @@ class ProtobufVideoWriter : public VideoWriter {
   // VideoStub interface.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                   const base::Closure& done) OVERRIDE;
-  virtual int GetPendingPackets() OVERRIDE;
+  virtual int GetPendingVideoPackets() OVERRIDE;
 
  private:
   void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
