@@ -83,6 +83,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
@@ -1635,7 +1636,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // OS_POSIX && !OS_CHROMEOS
     }  // if (!first_run_ui_bypass_)
 
-    Browser::SetNewHomePagePrefs(profile_->GetPrefs());
+    chrome::SetNewHomePagePrefs(profile_->GetPrefs());
     browser_process_->profile_manager()->OnImportFinished(profile_);
   }  // if (is_first_run_)
 

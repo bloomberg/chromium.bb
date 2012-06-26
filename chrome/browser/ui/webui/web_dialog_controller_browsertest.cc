@@ -6,6 +6,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "chrome/common/url_constants.h"
@@ -61,7 +63,9 @@ IN_PROC_BROWSER_TEST_F(WebDialogControllerBrowserTest, IncognitoBrowser) {
 
   // Create the dialog and make sure the initial "closed" state is what we
   // expect.
-  browser->BrowserShowWebDialog(delegate.get(), NULL);
+  browser::ShowWebDialog(browser->window()->GetNativeWindow(),
+                         browser->profile(),
+                         delegate.get());
   ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_FALSE(delegate->dialog_closed());
 

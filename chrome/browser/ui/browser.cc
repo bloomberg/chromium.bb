@@ -103,6 +103,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_toolbar_model_delegate.h"
+#include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
@@ -478,7 +479,7 @@ Browser* Browser::Create(Profile* profile) {
 // static
 Browser* Browser::CreateWithParams(const CreateParams& params) {
   if (!params.app_name.empty())
-    RegisterAppPrefs(params.app_name, params.profile);
+    chrome::RegisterAppPrefs(params.app_name, params.profile);
 
   Browser* browser = new Browser(params.type, params.profile);
   browser->app_name_ = params.app_name;
@@ -910,15 +911,6 @@ void Browser::CloseTabContents(WebContents* contents) {
   CloseContents(contents);
 }
 
-gfx::NativeWindow Browser::BrowserShowWebDialog(
-    WebDialogDelegate* delegate,
-    gfx::NativeWindow parent_window) {
-  if (!parent_window)
-    parent_window = window_->GetNativeWindow();
-
-  return browser::ShowWebDialog(parent_window, profile_, delegate);
-}
-
 void Browser::ReplaceRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int selected_navigation,
@@ -975,10 +967,6 @@ void Browser::TogglePresentationMode() {
   fullscreen_controller_->TogglePresentationMode();
 }
 #endif
-
-void Browser::ViewSelectedSource() {
-  ViewSource(GetActiveTabContents());
-}
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
   return SupportsWindowFeatureImpl(feature, true);
@@ -1109,160 +1097,6 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-// static
-void Browser::SetNewHomePagePrefs(PrefService* prefs) {
-  const PrefService::Preference* home_page_pref =
-      prefs->FindPreference(prefs::kHomePage);
-  if (home_page_pref &&
-      !home_page_pref->IsManaged() &&
-      !prefs->HasPrefPath(prefs::kHomePage)) {
-    prefs->SetString(prefs::kHomePage, std::string());
-  }
-  const PrefService::Preference* home_page_is_new_tab_page_pref =
-      prefs->FindPreference(prefs::kHomePageIsNewTabPage);
-  if (home_page_is_new_tab_page_pref &&
-      !home_page_is_new_tab_page_pref->IsManaged() &&
-      !prefs->HasPrefPath(prefs::kHomePageIsNewTabPage))
-    prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
-}
-
-// static
-void Browser::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
-  prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
-  prefs->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
-  prefs->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
-#if defined(GOOGLE_CHROME_BUILD)
-                             false
-#else
-                             true
-#endif
-                             );
-}
-
-// static
-void Browser::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kHomePageChanged,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kShowHomeButton,
-                             false,
-                             PrefService::SYNCABLE_PREF);
-#if defined(OS_MACOSX)
-  // This really belongs in platform code, but there's no good place to
-  // initialize it between the time when the AppController is created
-  // (where there's no profile) and the time the controller gets another
-  // crack at the start of the main event loop. By that time,
-  // StartupBrowserCreator has already created the browser window, and it's too
-  // late: we need the pref to be already initialized. Doing it here also saves
-  // us from having to hard-code pref registration in the several unit tests
-  // that use this preference.
-  prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-#endif
-  prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteCache,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteCookies,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeletePasswords,
-                             false,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteFormData,
-                             false,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteHostedAppsData,
-                             false,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod,
-                             0,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDefaultBrowserFlowDialog,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableTranslate,
-                             true,
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kCloudPrintEmail,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCloudPrintSubmitEnabled,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDevToolsHSplitLocation,
-                             -1,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDevToolsVSplitLocation,
-                             -1,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,
-                                PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
-                                PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportBookmarks,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportHistory,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportHomepage,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportSearchEngine,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportSavedPasswords,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  // The map of timestamps of the last used file browser handlers.
-  prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers,
-                                PrefService::UNSYNCABLE_PREF);
-
-  // We need to register the type of these preferences in order to query
-  // them even though they're only typically controlled via policy.
-  prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-}
 
 // static
 bool Browser::RunUnloadEventsHelper(WebContents* contents) {
@@ -1551,7 +1385,7 @@ void Browser::ExecuteCommandWithDisposition(
       chrome::PinCurrentPageToStartScreen(this);
       break;
     case IDC_BOOKMARK_ALL_TABS:     BookmarkAllTabs();                break;
-    case IDC_VIEW_SOURCE:           ViewSelectedSource();             break;
+    case IDC_VIEW_SOURCE:           chrome::ViewSelectedSource(this); break;
     case IDC_EMAIL_PAGE_LOCATION:   chrome::EmailPageLocation(this);  break;
     case IDC_PRINT:                 chrome::Print(this);              break;
     case IDC_ADVANCED_PRINT:        chrome::AdvancedPrint(this);      break;
@@ -2505,7 +2339,7 @@ void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
   TabContents* tab_contents = GetTabContentsAt(
       tab_strip_model_->GetIndexOfWebContents(source));
-  ViewSource(tab_contents);
+  chrome::ViewSource(this, tab_contents);
 }
 
 void Browser::ViewSourceForFrame(WebContents* source,
@@ -2514,7 +2348,7 @@ void Browser::ViewSourceForFrame(WebContents* source,
   DCHECK(source);
   TabContents* tab_contents = GetTabContentsAt(
       tab_strip_model_->GetIndexOfWebContents(source));
-  ViewSource(tab_contents, frame_url, frame_content_state);
+  chrome::ViewSource(this, tab_contents, frame_url, frame_content_state);
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
@@ -3894,19 +3728,6 @@ void Browser::TabDetachedAtImpl(TabContents* contents, int index,
                     content::Source<WebContents>(contents->web_contents()));
 }
 
-// static
-void Browser::RegisterAppPrefs(const std::string& app_name, Profile* profile) {
-  // We need to register the window position pref.
-  std::string window_pref(prefs::kBrowserWindowPlacement);
-  window_pref.append("_");
-  window_pref.append(app_name);
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->FindPreference(window_pref.c_str())) {
-    prefs->RegisterDictionaryPref(window_pref.c_str(),
-                                  PrefService::UNSYNCABLE_PREF);
-  }
-}
-
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_fullscreen) const {
   // On Mac, fullscreen mode has most normal things (in a slide-down panel). On
@@ -3944,74 +3765,6 @@ void Browser::CreateInstantIfNecessary() {
     instant_.reset(new InstantController(this, InstantController::INSTANT));
     instant_unload_handler_.reset(new InstantUnloadHandler(this));
   }
-}
-
-void Browser::ViewSource(TabContents* contents) {
-  DCHECK(contents);
-
-  NavigationEntry* active_entry =
-      contents->web_contents()->GetController().GetActiveEntry();
-  if (!active_entry)
-    return;
-
-  ViewSource(contents, active_entry->GetURL(), active_entry->GetContentState());
-}
-
-void Browser::ViewSource(TabContents* contents,
-                         const GURL& url,
-                         const std::string& content_state) {
-  content::RecordAction(UserMetricsAction("ViewSource"));
-  DCHECK(contents);
-
-  TabContents* view_source_contents = contents->Clone();
-  view_source_contents->web_contents()->GetController().PruneAllButActive();
-  NavigationEntry* active_entry =
-      view_source_contents->web_contents()->GetController().GetActiveEntry();
-  if (!active_entry)
-    return;
-
-  GURL view_source_url = GURL(chrome::kViewSourceScheme + std::string(":") +
-      url.spec());
-  active_entry->SetVirtualURL(view_source_url);
-
-  // Do not restore scroller position.
-  active_entry->SetContentState(
-      webkit_glue::RemoveScrollOffsetFromHistoryState(content_state));
-
-  // Do not restore title, derive it from the url.
-  active_entry->SetTitle(string16());
-
-  // Now show view-source entry.
-  if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
-    // If this is a tabbed browser, just create a duplicate tab inside the same
-    // window next to the tab being duplicated.
-    int index = tab_strip_model_->GetIndexOfTabContents(contents);
-    int add_types = TabStripModel::ADD_ACTIVE |
-        TabStripModel::ADD_INHERIT_GROUP;
-    tab_strip_model_->InsertTabContentsAt(index + 1, view_source_contents,
-                                          add_types);
-  } else {
-    Browser* browser = Browser::CreateWithParams(
-        Browser::CreateParams(TYPE_TABBED, profile_));
-
-    // Preserve the size of the original window. The new window has already
-    // been given an offset by the OS, so we shouldn't copy the old bounds.
-    BrowserWindow* new_window = browser->window();
-    new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
-                          window()->GetRestoredBounds().size()));
-
-    // We need to show the browser now. Otherwise ContainerWin assumes the
-    // WebContents is invisible and won't size it.
-    browser->window()->Show();
-
-    // The page transition below is only for the purpose of inserting the tab.
-    browser->AddTab(view_source_contents, content::PAGE_TRANSITION_LINK);
-  }
-
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(profile_);
-  if (session_service)
-    session_service->TabRestored(view_source_contents, false);
 }
 
 int Browser::GetContentRestrictionsForSelectedTab() {

@@ -44,7 +44,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/find_pasteboard.h"
@@ -677,6 +679,81 @@ void OpenUpdateChromeDialog(Browser* browser) {
 
 void ToggleSpeechInput(Browser* browser) {
   browser->GetActiveWebContents()->GetRenderViewHost()->ToggleSpeechInput();
+}
+
+void ViewSource(Browser* browser, TabContents* contents) {
+  DCHECK(contents);
+
+  NavigationEntry* active_entry =
+    contents->web_contents()->GetController().GetActiveEntry();
+  if (!active_entry)
+    return;
+
+  ViewSource(browser, contents, active_entry->GetURL(),
+             active_entry->GetContentState());
+}
+
+void ViewSource(Browser* browser,
+                TabContents* contents,
+                const GURL& url,
+                const std::string& content_state) {
+  content::RecordAction(UserMetricsAction("ViewSource"));
+  DCHECK(contents);
+
+  TabContents* view_source_contents = contents->Clone();
+  view_source_contents->web_contents()->GetController().PruneAllButActive();
+  NavigationEntry* active_entry =
+      view_source_contents->web_contents()->GetController().GetActiveEntry();
+  if (!active_entry)
+    return;
+
+  GURL view_source_url = GURL(chrome::kViewSourceScheme + std::string(":") +
+      url.spec());
+  active_entry->SetVirtualURL(view_source_url);
+
+  // Do not restore scroller position.
+  active_entry->SetContentState(
+      webkit_glue::RemoveScrollOffsetFromHistoryState(content_state));
+
+  // Do not restore title, derive it from the url.
+  active_entry->SetTitle(string16());
+
+  // Now show view-source entry.
+  if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
+    // If this is a tabbed browser, just create a duplicate tab inside the same
+    // window next to the tab being duplicated.
+    int index = browser->tab_strip_model()->GetIndexOfTabContents(contents);
+    int add_types = TabStripModel::ADD_ACTIVE |
+        TabStripModel::ADD_INHERIT_GROUP;
+    browser->tab_strip_model()->InsertTabContentsAt(index + 1,
+                                                    view_source_contents,
+                                                    add_types);
+  } else {
+    Browser* b = Browser::CreateWithParams(
+        Browser::CreateParams(Browser::TYPE_TABBED, browser->profile()));
+
+    // Preserve the size of the original window. The new window has already
+    // been given an offset by the OS, so we shouldn't copy the old bounds.
+    BrowserWindow* new_window = b->window();
+    new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
+                          browser->window()->GetRestoredBounds().size()));
+
+    // We need to show the browser now. Otherwise ContainerWin assumes the
+    // WebContents is invisible and won't size it.
+    b->window()->Show();
+
+    // The page transition below is only for the purpose of inserting the tab.
+    b->AddTab(view_source_contents, content::PAGE_TRANSITION_LINK);
+  }
+
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
+  if (session_service)
+    session_service->TabRestored(view_source_contents, false);
+}
+
+void ViewSelectedSource(Browser* browser) {
+  ViewSource(browser, browser->GetActiveTabContents());
 }
 
 }  // namespace chrome

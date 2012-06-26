@@ -412,15 +412,6 @@ class Browser : public TabStripModelDelegate,
                       bool user_gesture);
   void CloseTabContents(content::WebContents* contents);
 
-  // Shows a dialog with HTML content and returns it. |delegate| contains a
-  // pointer to the delegate who knows how to display the dialog (which file
-  // URL and JSON string input to use during initialization). |parent_window|
-  // is the window that should be parent of the dialog, or NULL for the default.
-  // |style| customizes this HTML dialog decoration and layout (X button,
-  // throbber, default content padding).
-  gfx::NativeWindow BrowserShowWebDialog(ui::WebDialogDelegate* delegate,
-                                         gfx::NativeWindow parent_window);
-
   // Replaces the state of the currently selected tab with the session
   // history restored from the SessionRestore system.
   void ReplaceRestoredTab(
@@ -453,9 +444,6 @@ class Browser : public TabStripModelDelegate,
   void TogglePresentationMode();
 #endif
 
-  // Page-related commands
-  void ViewSelectedSource();
-
   // Returns true if the Browser supports the specified feature. The value of
   // this varies during the lifetime of the browser. For example, if the window
   // is fullscreen this may return a different value. If you only care about
@@ -483,17 +471,6 @@ class Browser : public TabStripModelDelegate,
   bool OpenInstant(WindowOpenDisposition disposition);
 
   /////////////////////////////////////////////////////////////////////////////
-
-  // Sets the value of homepage related prefs to new values. Since we do not
-  // want to change these values for existing users, we can not change the
-  // default values under RegisterUserPrefs. Also if user already has an
-  // existing profile we do not want to override those preferences so we only
-  // set new values if they have not been set already. This method gets called
-  // during First Run.
-  static void SetNewHomePagePrefs(PrefService* prefs);
-
-  static void RegisterPrefs(PrefService* prefs);
-  static void RegisterUserPrefs(PrefService* prefs);
 
   // Helper function to run unload listeners on a WebContents.
   static bool RunUnloadEventsHelper(content::WebContents* contents);
@@ -1079,11 +1056,6 @@ class Browser : public TabStripModelDelegate,
 
   void TabDetachedAtImpl(TabContents* contents, int index, DetachType type);
 
-  // Create a preference dictionary for the provided application name, in the
-  // given user profile. This is done only once per application name / per
-  // session / per user profile.
-  static void RegisterAppPrefs(const std::string& app_name, Profile* profile);
-
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
@@ -1101,14 +1073,6 @@ class Browser : public TabStripModelDelegate,
 
   // If this browser should have instant one is created, otherwise does nothing.
   void CreateInstantIfNecessary();
-
-  // Opens view-source tab for given tab contents.
-  void ViewSource(TabContents* tab);
-
-  // Opens view-source tab for any frame within given tab contents.
-  void ViewSource(TabContents* tab,
-                  const GURL& url,
-                  const std::string& content_state);
 
   // Retrieves the content restrictions for the currently selected tab.
   // Returns 0 if no tab selected, which is equivalent to no content

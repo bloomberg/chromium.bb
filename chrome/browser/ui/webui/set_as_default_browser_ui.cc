@@ -11,8 +11,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -246,7 +248,9 @@ SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
 }
 
 void SetAsDefaultBrowserDialogImpl::ShowDialog() {
-  browser_->BrowserShowWebDialog(this, NULL);
+  browser::ShowWebDialog(browser_->window()->GetNativeWindow(),
+                         browser_->profile(),
+                         this);
 }
 
 ui::ModalType SetAsDefaultBrowserDialogImpl::GetDialogModalType() const {

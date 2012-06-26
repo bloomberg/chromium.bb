@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1344,7 +1345,7 @@ class BrowserTest2 : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
-  Browser::RegisterAppPrefs(L"Test");
+  chrome::RegisterAppPrefs(L"Test");
 
   // We start with a normal browser with one tab.
   EXPECT_EQ(1, browser()->tab_count());

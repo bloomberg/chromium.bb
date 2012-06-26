@@ -57,7 +57,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
@@ -148,7 +148,7 @@ void RegisterLocalState(PrefService* local_state) {
 #if !defined(OS_ANDROID)
   AppsPromo::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
-  Browser::RegisterPrefs(local_state);
+  chrome::RegisterBrowserPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
@@ -229,7 +229,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);
-  Browser::RegisterUserPrefs(user_prefs);
+  chrome::RegisterBrowserUserPrefs(user_prefs);
   browser::RegisterAutolaunchPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   PepperFlashSettingsManager::RegisterUserPrefs(user_prefs);

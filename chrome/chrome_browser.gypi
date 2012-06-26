@@ -2384,6 +2384,8 @@
         'browser/ui/browser_mac.h',
         'browser/ui/browser_navigator.cc',
         'browser/ui/browser_navigator.h',
+        'browser/ui/browser_ui_prefs.cc',
+        'browser/ui/browser_ui_prefs.h',
         'browser/ui/browser_tab_restore_service_delegate.cc',
         'browser/ui/browser_tab_restore_service_delegate.h',
         'browser/ui/browser_toolbar_model_delegate.cc',

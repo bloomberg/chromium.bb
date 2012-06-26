@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_BROWSER_COMMANDS_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "content/public/common/page_zoom.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -13,6 +15,7 @@
 class Browser;
 class GURL;
 class Profile;
+class TabContents;
 
 namespace content {
 class WebContents;
@@ -101,6 +104,17 @@ void ShowAppMenu(Browser* browser);
 void ShowAvatarMenu(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);
 void ToggleSpeechInput(Browser* browser);
+
+// Opens view-source tab for given tab contents.
+void ViewSource(Browser* browser, TabContents* tab);
+
+// Opens view-source tab for any frame within given tab contents.
+void ViewSource(Browser* browser,
+                TabContents* tab,
+                const GURL& url,
+                const std::string& content_state);
+
+void ViewSelectedSource(Browser* browser);
 
 }  // namespace chrome
 
