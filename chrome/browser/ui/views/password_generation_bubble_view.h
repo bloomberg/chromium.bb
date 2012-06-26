@@ -24,7 +24,6 @@ class RenderViewHost;
 }
 
 namespace views {
-class ImageButton;
 class TextButton;
 class Textfield;
 }
@@ -45,8 +44,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
                                content::RenderViewHost* render_view_host,
                                autofill::PasswordGenerator* password_generator,
                                content::PageNavigator* navigator,
-                               PasswordManager* password_manager,
-                               ui::ThemeProvider* theme_provider);
+                               PasswordManager* password_manager);
   virtual ~PasswordGenerationBubbleView();
 
  private:
@@ -66,7 +64,6 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
 
   // Subviews
   views::TextButton* accept_button_;
-  views::ImageButton* regenerate_button_;
   views::Textfield* text_field_;
 
   // Location that the bubble points to
@@ -87,9 +84,6 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
 
   // PasswordManager associated with this tab.
   PasswordManager* password_manager_;
-
-  // Theme provider used to draw the regenerate button.
-  ui::ThemeProvider* theme_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationBubbleView);
 };
