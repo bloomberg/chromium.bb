@@ -19,9 +19,6 @@ class Profile;
 
 namespace content {
 class RenderViewHost;
-}
-
-namespace ui {
 struct SelectedFileInfo;
 }
 
@@ -45,11 +42,11 @@ class SelectFileDialogExtension
   // Routes callback to appropriate SelectFileDialog::Listener based on
   // the owning |tab_id|.
   static void OnFileSelected(int32 tab_id,
-                             const ui::SelectedFileInfo& file,
+                             const content::SelectedFileInfo& file,
                              int index);
   static void OnMultiFilesSelected(
       int32 tab_id,
-      const std::vector<ui::SelectedFileInfo>& files);
+      const std::vector<content::SelectedFileInfo>& files);
   static void OnFileSelectionCanceled(int32 tab_id);
 
   // For testing, so we can inject JavaScript into the contained view.
@@ -110,7 +107,7 @@ class SelectFileDialogExtension
     MULTIPLE_FILES
   };
   SelectionType selection_type_;
-  std::vector<ui::SelectedFileInfo> selection_files_;
+  std::vector<content::SelectedFileInfo> selection_files_;
   int selection_index_;
   void* params_;
 

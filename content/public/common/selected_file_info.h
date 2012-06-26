@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
-#define UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
+#ifndef CONTENT_PUBLIC_COMMON_SELECTED_FILE_INFO_H_
+#define CONTENT_PUBLIC_COMMON_SELECTED_FILE_INFO_H_
 #pragma once
 
 #include <vector>
 
 #include "base/file_path.h"
 #include "base/string16.h"
-#include "ui/base/ui_export.h"
+#include "content/common/content_export.h"
 
-namespace ui {
+namespace content {
 
 // Struct used for passing selected file info to WebKit.
-struct UI_EXPORT SelectedFileInfo {
+struct CONTENT_EXPORT SelectedFileInfo {
   // The real path to the selected file. This can be a snapshot file with a
   // human unreadable name like /blah/.d41d8cd98f00b204e9800998ecf8427e.
   FilePath path;
@@ -34,6 +34,6 @@ struct UI_EXPORT SelectedFileInfo {
   }
 };
 
-}  // namespace ui
+}  // namespace content
 
-#endif  // UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
+#endif  // CONTENT_PUBLIC_COMMON_SELECTED_FILE_INFO_H_

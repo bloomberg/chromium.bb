@@ -23,9 +23,9 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/selected_file_info.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
-#include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -42,7 +42,7 @@ namespace {
 const int kFileSelectEnumerationId = -1;
 
 void NotifyRenderViewHost(RenderViewHost* render_view_host,
-                          const std::vector<ui::SelectedFileInfo>& files,
+                          const std::vector<content::SelectedFileInfo>& files,
                           SelectFileDialog::Type dialog_type) {
   const int kReadFilePermissions =
       base::PLATFORM_FILE_OPEN |
@@ -68,12 +68,12 @@ void NotifyRenderViewHost(RenderViewHost* render_view_host,
 
 // Converts a list of FilePaths to a list of SelectedFileInfo, with the
 // display name field left empty.
-std::vector<ui::SelectedFileInfo> ConvertToSelectedFileInfoList(
+std::vector<content::SelectedFileInfo> ConvertToSelectedFileInfoList(
     const std::vector<FilePath>& paths) {
-  std::vector<ui::SelectedFileInfo> selected_files;
+  std::vector<content::SelectedFileInfo> selected_files;
   for (size_t i = 0; i < paths.size(); ++i) {
     selected_files.push_back(
-        ui::SelectedFileInfo(paths[i], FilePath::StringType()));
+        content::SelectedFileInfo(paths[i], FilePath::StringType()));
   }
   return selected_files;
 }
@@ -118,12 +118,12 @@ FileSelectHelper::~FileSelectHelper() {
 void FileSelectHelper::FileSelected(const FilePath& path,
                                     int index, void* params) {
   FileSelectedWithExtraInfo(
-      ui::SelectedFileInfo(path, FilePath::StringType()),
+      content::SelectedFileInfo(path, FilePath::StringType()),
       index, params);
 }
 
 void FileSelectHelper::FileSelectedWithExtraInfo(
-    const ui::SelectedFileInfo& file,
+    const content::SelectedFileInfo& file,
     int index,
     void* params) {
   if (!render_view_host_)
@@ -137,7 +137,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
     return;
   }
 
-  std::vector<ui::SelectedFileInfo> files;
+  std::vector<content::SelectedFileInfo> files;
   files.push_back(file);
   NotifyRenderViewHost(render_view_host_, files, dialog_type_);
 
@@ -147,13 +147,13 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
 
 void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
                                           void* params) {
-  std::vector<ui::SelectedFileInfo> selected_files =
+  std::vector<content::SelectedFileInfo> selected_files =
       ConvertToSelectedFileInfoList(files);
   MultiFilesSelectedWithExtraInfo(selected_files, params);
 }
 
 void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
-    const std::vector<ui::SelectedFileInfo>& files,
+    const std::vector<content::SelectedFileInfo>& files,
     void* params) {
   if (!files.empty())
     profile_->set_last_selected_directory(files[0].path.DirName());
@@ -173,7 +173,7 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
   // If the user cancels choosing a file to upload we pass back an
   // empty vector.
   NotifyRenderViewHost(
-      render_view_host_, std::vector<ui::SelectedFileInfo>(),
+      render_view_host_, std::vector<content::SelectedFileInfo>(),
       dialog_type_);
 
   // No members should be accessed from here on.
@@ -226,7 +226,7 @@ void FileSelectHelper::OnListDone(int id, int error) {
     return;
   }
 
-  std::vector<ui::SelectedFileInfo> selected_files =
+  std::vector<content::SelectedFileInfo> selected_files =
       ConvertToSelectedFileInfoList(entry->results_);
 
   if (id == kFileSelectEnumerationId)

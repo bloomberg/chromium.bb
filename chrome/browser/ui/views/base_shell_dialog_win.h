@@ -9,7 +9,7 @@
 #include <shlobj.h>
 #include <set>
 
-#include "ui/base/dialogs/base_shell_dialog.h"
+#include "chrome/browser/ui/base_shell_dialog.h"
 
 namespace base {
 class Thread;

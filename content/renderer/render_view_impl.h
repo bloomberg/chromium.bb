@@ -100,16 +100,13 @@ class RenderViewTest;
 class RendererAccessibility;
 struct CustomContextMenuContext;
 struct FileChooserParams;
+struct SelectedFileInfo;
 }  // namespace content
 
 namespace gfx {
 class Point;
 class Rect;
 }  // namespace gfx
-
-namespace ui {
-struct SelectedFileInfo;
-}  // namespace ui
 
 namespace webkit {
 
@@ -922,7 +919,7 @@ class RenderViewImpl : public RenderWidget,
   void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnFileChooserResponse(
-      const std::vector<ui::SelectedFileInfo>& files);
+      const std::vector<content::SelectedFileInfo>& files);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);

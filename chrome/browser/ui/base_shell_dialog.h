@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOG_BASE_SHELL_DIALOG_H_
-#define UI_BASE_DIALOG_BASE_SHELL_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_BASE_SHELL_DIALOG_H_
+#define CHROME_BROWSER_UI_BASE_SHELL_DIALOG_H_
 #pragma once
 
-#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace ui {
-
 // A base class for shell dialogs.
-class UI_EXPORT BaseShellDialog {
+class BaseShellDialog {
  public:
   // Returns true if a shell dialog box is currently being shown modally
   // to the specified owner.
@@ -26,6 +23,4 @@ class UI_EXPORT BaseShellDialog {
   virtual ~BaseShellDialog() {}
 };
 
-}  // namespace ui
-
-#endif  // UI_BASE_DIALOG_BASE_SHELL_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_BASE_SHELL_DIALOG_H_

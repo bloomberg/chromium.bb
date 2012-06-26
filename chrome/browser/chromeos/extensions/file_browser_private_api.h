@@ -20,7 +20,7 @@
 
 class GURL;
 
-namespace ui {
+namespace content {
 struct SelectedFileInfo;
 }
 
@@ -154,7 +154,7 @@ class FileBrowserFunction
 
  protected:
   typedef std::vector<GURL> UrlList;
-  typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
+  typedef std::vector<content::SelectedFileInfo> SelectedFileInfoList;
   typedef base::Callback<void(const SelectedFileInfoList&)>
       GetLocalPathsCallback;
 

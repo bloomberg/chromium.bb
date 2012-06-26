@@ -21,9 +21,6 @@ class Profile;
 namespace content {
 class RenderViewHost;
 struct FileChooserParams;
-}
-
-namespace ui {
 struct SelectedFileInfo;
 }
 
@@ -91,13 +88,13 @@ class FileSelectHelper
   virtual void FileSelected(
       const FilePath& path, int index, void* params) OVERRIDE;
   virtual void FileSelectedWithExtraInfo(
-      const ui::SelectedFileInfo& file,
+      const content::SelectedFileInfo& file,
       int index,
       void* params) OVERRIDE;
   virtual void MultiFilesSelected(const std::vector<FilePath>& files,
                                   void* params) OVERRIDE;
   virtual void MultiFilesSelectedWithExtraInfo(
-      const std::vector<ui::SelectedFileInfo>& files,
+      const std::vector<content::SelectedFileInfo>& files,
       void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 

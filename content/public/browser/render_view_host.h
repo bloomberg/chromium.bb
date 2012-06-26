@@ -25,10 +25,6 @@ namespace gfx {
 class Point;
 }
 
-namespace ui {
-struct SelectedFileInfo;
-}
-
 namespace WebKit {
 struct WebFindOptions;
 struct WebMediaPlayerAction;
@@ -42,6 +38,7 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 struct CustomContextMenuContext;
+struct SelectedFileInfo;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
 // object in a child process. It exposes a high level API to users, for things
@@ -209,7 +206,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // base::PlatformFileFlags enum which specify which file permissions should
   // be granted to the renderer.
   virtual void FilesSelectedInChooser(
-      const std::vector<ui::SelectedFileInfo>& files,
+      const std::vector<SelectedFileInfo>& files,
       int permissions) = 0;
 
   virtual RenderViewHostDelegate* GetDelegate() const = 0;

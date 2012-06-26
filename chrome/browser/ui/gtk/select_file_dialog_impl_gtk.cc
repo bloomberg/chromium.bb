@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 #include "chrome/browser/ui/select_file_dialog.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
