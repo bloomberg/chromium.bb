@@ -4,7 +4,13 @@
 
 #include "chrome/app/hard_error_handler_win.h"
 
-#include <delayimp.h>
+#if _MSC_VER <= 1600
+// The windows SDK now defines in FACILITY_VISUALCPP winerror.h which
+// clashes with the older crt's definition of the same.
+#undef FACILITY_VISUALCPP
+#include <DelayIMP.h>
+#endif
+
 #include <ntsecapi.h>
 #include <string>
 
