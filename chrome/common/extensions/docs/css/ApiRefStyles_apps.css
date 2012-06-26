@@ -764,6 +764,10 @@ a.leftNavSelected,.leftNavSelected a,a.leftNavSelected:visited,.leftNavSelected 
   margin:0
 }
 
+#gc-toc ul li span {
+  cursor: pointer;
+}
+
 #gc-toc ul ul ul,#gc-toc ol ol ol {
   margin-top: 12px;
 }

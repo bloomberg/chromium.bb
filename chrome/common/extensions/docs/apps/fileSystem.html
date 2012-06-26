@@ -19,6 +19,7 @@
     <script type="text/javascript" src="../js/sidebar.js"></script>
   <meta name="description" content="Documentation for the chrome.fileSystem module, which is part of the Google Chrome  extension APIs."><title>chrome.fileSystem - Google Chrome Extensions - Google Code</title></head>
   <body><link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
+<link href="../css/prettify.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -109,7 +110,7 @@
           <li><h2>Developing</h2>
             <ul>
               <li><a href="develop_apps.html">Before You Start</a></li>
-              <li>The Fundamentals
+              <li><span>The Fundamentals</span>
                 <ul>
                   <li><a href="app_lifecycle.html">Manage App Lifecycle</a></li>
                   <li><a href="app_storage.html">Manage Data</a></li>
@@ -117,7 +118,7 @@
                   <li><a href="app_external.html">Embed Content</a></li>
                 </ul>
               </li>
-              <li>Security &amp; Privacy
+              <li><span>Security &amp; Privacy</span>
                 <ul>
                   <li><a href="app_security.html">About Security &amp; Privacy</a></li>
                   <li><a href="app_identity.html">Identify User</a></li>
@@ -125,7 +126,7 @@
                   <li><a href="app_csp">Comply with CSP</a></li>
                 </ul>
               </li>
-              <li>Advanced Technologies
+              <li><span>Advanced Technologies</span>
                 <ul>
                   <li><a href="app_network.html">Communicate across Network</a></li>
                   <li><a href="app_hardware.html">Access Hardware Devices</a></li>
@@ -613,6 +614,15 @@
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
 <script src="https://www.google-analytics.com/ga.js" type="text/javascript"></script>
+<script src="../js/prettify.js" type="text/javascript"></script>
+<script>
+  // Auto syntax highlight all pre tags.
+  var pres = document.querySelectorAll('pre');
+  for (var i = 0, pre; pre = pres[i]; ++i) {
+    pre.className += ' prettyprint';
+  };
+  prettyPrint();
+</script>
 <script type="text/javascript">
   // chrome doc tracking
   try {

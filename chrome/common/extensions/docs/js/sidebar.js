@@ -66,12 +66,15 @@ function initToggles() {
     if (item.className == 'leftNavSelected') {
       selectedNode = item;
     } else if (item.firstChild &&
-               item.firstChild.nodeType == TEXT_NODE) {
+               item.firstChild.tagName == 'SPAN') {
       // Only assign toggles to text nodes in the sidebar.
       var a = document.createElement('a');
       a.className = 'toggle selected';
       a.appendChild(document.createTextNode(' '));
       a.onclick = function() {
+        toggleList(this.parentNode.getElementsByTagName('ul'));
+      };
+      item.firstChild.onclick = function() {
         toggleList(this.parentNode.getElementsByTagName('ul'));
       };
       item.insertBefore(a, item.firstChild);
