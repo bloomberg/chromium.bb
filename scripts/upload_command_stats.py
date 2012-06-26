@@ -101,12 +101,16 @@ def UploadConditionsMet():
 
   # Verify that host domain is in golo.chromium.org or corp.google.com.
   domain = cros_build_lib.GetHostDomain()
-  if not DOMAIN_RE.search(domain):
+  if not domain or not DOMAIN_RE.search(domain):
     return False
 
   # Verify that git user email is from chromium.org or google.com.
   cwd = os.path.dirname(os.path.realpath(__file__))
   git_id = cros_build_lib.GetProjectUserEmail(cwd)
+  if not git_id:
+    logging.warning('Unable to determine current "git id".  Skipping stats'
+                    ' upload.')
+    return False
   if not GIT_ID_RE.search(git_id):
     return False
 
