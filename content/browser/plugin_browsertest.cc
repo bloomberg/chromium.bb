@@ -389,7 +389,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, PluginReferrerTest) {
 }
 
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(PluginTest, PluginConvertPointTest) {
+// Test is flaky, see http://crbug.com/134515.
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_PluginConvertPointTest) {
   gfx::NativeWindow window = NULL;
   gfx::Rect bounds(50, 50, 400, 400);
   ui_test_utils::GetNativeWindow(browser(), &window);
