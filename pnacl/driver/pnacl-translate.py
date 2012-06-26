@@ -187,7 +187,7 @@ TranslatorPatterns = [
   # removal but also help with reloc overflows on ARM
   ( '(-fdata-sections)',     "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-ffunction-sections)', "env.append('LLC_FLAGS_EXTRA', $0)"),
-  ( '(--gc-sections)',       "env.append('LD_FLAGS', '$0)"),
+  ( '(--gc-sections)',       "env.append('LD_FLAGS', $0)"),
 
   # This adds arch specific flags to the llc invocation aimed at
   # improving translation speed at the expense of code quality.

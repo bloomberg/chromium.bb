@@ -142,7 +142,7 @@ LDPatterns = [
   ( ('(-defsym)','(.*)'),         PassThrough),
 
   ( '(--print-gc-sections)',      PassThrough),
-  ( '(-gc-sections)',             PassThrough),
+  ( '(--gc-sections)',            PassThrough),
   ( '(--unresolved-symbols=.*)',  PassThrough),
   ( '(--dynamic-linker=.*)',      PassThrough),
 
