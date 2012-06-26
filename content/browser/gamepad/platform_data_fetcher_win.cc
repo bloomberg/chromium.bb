@@ -8,7 +8,10 @@
 #include "content/common/gamepad_messages.h"
 #include "content/common/gamepad_hardware_buffer.h"
 
+#if _MSC_VER <= 1600
+#undef FACILITY_VISUALCPP
 #include <delayimp.h>
+#endif
 
 #pragma comment(lib, "delayimp.lib")
 #pragma comment(lib, "xinput.lib")
