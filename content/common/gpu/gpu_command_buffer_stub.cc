@@ -28,6 +28,14 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
+namespace {
+// The first time polling a fence, delay some extra time to allow other
+// stubs to process some work, or else the timing of the fences could
+// allow a pattern of alternating fast and slow frames to occur.
+const int64 kHandleMoreWorkPeriodMs = 2;
+const int64 kHandleMoreWorkPeriodBusyMs = 1;
+}
+
 GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
                                                  bool visible,
                                                  base::TimeTicks last_used_time)
@@ -64,7 +72,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog),
-      sync_point_wait_count_(0) {
+      sync_point_wait_count_(0),
+      delayed_work_scheduled_(false) {
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
@@ -145,6 +154,9 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
+  // Ensure that any delayed work that was created will be handled.
+  ScheduleDelayedWork(kHandleMoreWorkPeriodMs);
+
   DCHECK(handled);
   return handled;
 }
@@ -163,10 +175,13 @@ bool GpuCommandBufferStub::HasMoreWork() {
 }
 
 void GpuCommandBufferStub::PollWork() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::PollWork");
+  delayed_work_scheduled_ = false;
   if (decoder_.get() && !MakeCurrent())
     return;
   if (scheduler_.get())
     scheduler_->PollUnscheduleFences();
+  ScheduleDelayedWork(kHandleMoreWorkPeriodBusyMs);
 }
 
 bool GpuCommandBufferStub::HasUnprocessedCommands() {
@@ -176,6 +191,17 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
         !gpu::error::IsError(state.error);
   }
   return false;
+}
+
+void GpuCommandBufferStub::ScheduleDelayedWork(int64 delay) {
+  if (HasMoreWork() && !delayed_work_scheduled_) {
+    delayed_work_scheduled_ = true;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GpuCommandBufferStub::PollWork,
+                   AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(delay));
+  }
 }
 
 void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {

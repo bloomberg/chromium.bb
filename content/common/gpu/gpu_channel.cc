@@ -32,12 +32,6 @@
 #endif
 
 namespace {
-// The first time polling a fence, delay some extra time to allow other
-// stubs to process some work, or else the timing of the fences could
-// allow a pattern of alternating fast and slow frames to occur.
-const int64 kHandleMoreWorkPeriodMs = 2;
-const int64 kHandleMoreWorkPeriodBusyMs = 1;
-
 // This filter does two things:
 // - it counts the number of messages coming in on the channel
 // - it handles the GpuCommandBufferMsg_InsertSyncPoint message on the IO
@@ -442,35 +436,12 @@ void GpuChannel::HandleMessage() {
               stub->route_id()));
           unprocessed_messages_->IncCount();
         }
-
-        ScheduleDelayedWork(stub, kHandleMoreWorkPeriodMs);
       }
     }
   }
 
   if (!deferred_messages_.empty()) {
     OnScheduled();
-  }
-}
-
-void GpuChannel::PollWork(int route_id) {
-  GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
-  if (stub) {
-    stub->PollWork();
-
-    ScheduleDelayedWork(stub, kHandleMoreWorkPeriodBusyMs);
-  }
-}
-
-void GpuChannel::ScheduleDelayedWork(GpuCommandBufferStub *stub,
-                                     int64 delay) {
-  if (stub->HasMoreWork()) {
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GpuChannel::PollWork,
-                   weak_factory_.GetWeakPtr(),
-                   stub->route_id()),
-        base::TimeDelta::FromMilliseconds(delay));
   }
 }
 

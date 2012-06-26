@@ -126,8 +126,6 @@ class GpuChannel : public IPC::Listener,
   bool OnControlMessageReceived(const IPC::Message& msg);
 
   void HandleMessage();
-  void PollWork(int route_id);
-  void ScheduleDelayedWork(GpuCommandBufferStub *stub, int64 delay);
 
   // Message handlers.
   void OnCreateOffscreenCommandBuffer(

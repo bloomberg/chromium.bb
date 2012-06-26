@@ -133,12 +133,6 @@ class GpuCommandBufferStub
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
-  // Whether this command buffer needs to be polled again in the future.
-  bool HasMoreWork();
-
-  // Poll the command buffer to execute work.
-  void PollWork();
-
   // Whether there are commands in the buffer that haven't been processed.
   bool HasUnprocessedCommands();
 
@@ -228,6 +222,14 @@ class GpuCommandBufferStub
 
   void ReportState();
 
+  // Poll the command buffer to execute work.
+  void PollWork();
+
+  // Whether this command buffer needs to be polled again in the future.
+  bool HasMoreWork();
+
+  void ScheduleDelayedWork(int64 delay);
+
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
@@ -272,6 +274,8 @@ class GpuCommandBufferStub
   // A queue of sync points associated with this stub.
   std::deque<uint32> sync_points_;
   int sync_point_wait_count_;
+
+  bool delayed_work_scheduled_;
 
   scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
 
