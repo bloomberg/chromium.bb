@@ -128,6 +128,9 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
     return false;
   }
 
+  virtual void OnWallpaperAnimationFinished() OVERRIDE {
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
 };

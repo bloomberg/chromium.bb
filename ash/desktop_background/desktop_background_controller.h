@@ -34,6 +34,9 @@ class UserWallpaperDelegate {
   // Returns true if user can open set wallpaper page. Only guest user returns
   // false currently.
   virtual bool CanOpenSetWallpaperPage() = 0;
+
+  // Notifies delegate that wallpaper animation has finished.
+  virtual void OnWallpaperAnimationFinished() = 0;
 };
 
 // Loads selected desktop wallpaper from file system asynchronously and updates

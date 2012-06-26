@@ -46,6 +46,10 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
         static_cast<internal::RootWindowLayoutManager*>(
             root_window_->layout_manager());
     root_window_layout->SetBackgroundWidget(desktop_widget_);
+
+    ash::Shell::GetInstance()->
+        user_wallpaper_delegate()->OnWallpaperAnimationFinished();
+
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 

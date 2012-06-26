@@ -61,12 +61,13 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
- private:
+ protected:
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+ private:
   // Marks display host for deletion.
   // If |post_quit_task| is true also posts Quit task to the MessageLoop.
   void ShutdownDisplayHost(bool post_quit_task);

@@ -271,17 +271,19 @@ void BaseLoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  registrar_.RemoveAll();
-  switch (type) {
-    case content::NOTIFICATION_APP_EXITING:
-      ShutdownDisplayHost(true);
-      break;
-    case chrome::NOTIFICATION_BROWSER_OPENED:
-      OnBrowserCreated();
-      break;
-    default:
-      LOG(FATAL) << "Unknown notification type:" << type;
-  }
+  if (content::NOTIFICATION_APP_EXITING == type)
+    ShutdownDisplayHost(true);
+  else if (chrome::NOTIFICATION_BROWSER_OPENED == type)
+    OnBrowserCreated();
+  else
+    return;
+
+  registrar_.Remove(this,
+                    content::NOTIFICATION_APP_EXITING,
+                    content::NotificationService::AllSources());
+  registrar_.Remove(this,
+                    chrome::NOTIFICATION_BROWSER_OPENED,
+                    content::NotificationService::AllSources());
 }
 
 void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {

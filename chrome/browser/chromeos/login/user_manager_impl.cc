@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -77,6 +78,16 @@ const char kImageIndexNodeName[] = "index";
 
 const char kWallpaperTypeNodeName[] = "type";
 const char kWallpaperIndexNodeName[] = "index";
+
+// Default wallpaper index used in OOBE (first boot).
+// Defined here because Chromium default index differs.
+// Also see ash::WallpaperInfo kDefaultWallpapers in
+// desktop_background_resources.cc
+#if defined(GOOGLE_CHROME_BUILD)
+const int kDefaultOOBEWallpaperIndex = 16; // IDR_AURA_WALLPAPERS_3_URBAN0
+#else
+const int kDefaultOOBEWallpaperIndex = 0;  // IDR_AURA_WALLPAPERS_ROMAINGUY_0
+#endif
 
 const int kThumbnailWidth = 128;
 const int kThumbnailHeight = 80;
@@ -377,14 +388,21 @@ void UserManagerImpl::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!IsUserLoggedIn()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe)) {
-      bool show_users = true;
-      bool result = CrosSettings::Get()->GetBoolean(
-          kAccountsPrefShowUserNamesOnSignIn, &show_users);
-      DCHECK(result) << "Unable to fetch setting "
-                     << kAccountsPrefShowUserNamesOnSignIn;
-      if (!show_users) {
+      if (!WizardController::IsDeviceRegistered()) {
+        // TODO(nkostylev): Add switch to disable wallpaper transition on OOBE.
+        // Should be used on test images so that they are not slowed down.
         ash::Shell::GetInstance()->desktop_background_controller()->
-            SetDefaultWallpaper(ash::GetSolidColorIndex());
+            SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
+      } else {
+        bool show_users = true;
+        bool result = CrosSettings::Get()->GetBoolean(
+            kAccountsPrefShowUserNamesOnSignIn, &show_users);
+        DCHECK(result) << "Unable to fetch setting "
+                       << kAccountsPrefShowUserNamesOnSignIn;
+        if (!show_users) {
+          ash::Shell::GetInstance()->desktop_background_controller()->
+              SetDefaultWallpaper(ash::GetSolidColorIndex());
+        }
       }
     }
     return;

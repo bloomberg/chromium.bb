@@ -42,6 +42,13 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
     return !chromeos::UserManager::Get()->IsLoggedInAsGuest();
   }
 
+  virtual void OnWallpaperAnimationFinished() OVERRIDE {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UserWallpaperDelegate);
 };

@@ -8,7 +8,9 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace gfx {
@@ -47,7 +49,14 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   virtual WizardController* CreateWizardController() OVERRIDE;
   virtual void OnBrowserCreated() OVERRIDE;
 
+  // Returns instance of the OOBE WebUI.
   OobeUI* GetOobeUI() const;
+
+ protected:
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Overridden from content::WebContentsObserver:
@@ -55,6 +64,10 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
 
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);
+
+  // Starts postponed WebUI (OOBE/sign in) if it was waiting for
+  // wallpaper animation end.
+  void StartPostponedWebUI();
 
   // Container of the screen we are displaying.
   views::Widget* login_window_;
@@ -67,6 +80,16 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
 
   // True if the login display is the current screen.
   bool is_showing_login_;
+
+  // True if NOTIFICATION_WALLPAPER_ANIMATION_FINISHED notification has been
+  // received.
+  bool is_wallpaper_loaded_;
+
+  // True if should not show WebUI on first StartWizard/StartSignInScreen call
+  // but wait for wallpaper load animation to finish.
+  // Used in OOBE (first boot, boot after update) i.e. till
+  // device is marked as registered to postpone loading OOBE screen / sign in.
+  bool waiting_for_wallpaper_load_;
 
   content::NotificationRegistrar registrar_;
 
