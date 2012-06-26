@@ -294,14 +294,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'running_on_valgrind', default=False,
     desc='Compile and test using valgrind')
 
-  # Linking in -lcrypto makes sel_ldr binaries that depend on a
-  # particular shared library version being available, which makes
-  # the SDK binaries less portable among Linux variants.  With this
-  # switch off, standalone sel_ldr relies on /dev/urandom as the
-  # Chromium incarnation will.
-  BitFromArgument(env, 'use_libcrypto', default=False,
-    desc='Use libcrypto')
-
   BitFromArgument(env, 'enable_tmpfs_redirect_var', default=False,
     desc='Allow redirecting tmpfs location for shared memory '
          '(by default, /dev/shm is used)')
@@ -2932,11 +2924,6 @@ def MakeUnixLikeEnv():
   if not unix_like_env.Bit('clang'):
     unix_like_env.Append(CCFLAGS=['--param', 'ssp-buffer-size=4'])
 
-  if unix_like_env.Bit('use_libcrypto'):
-    unix_like_env.Append(LIBS=['crypto'])
-  else:
-    unix_like_env.Append(CPPDEFINES=[['USE_CRYPTO', '0']])
-
   if unix_like_env.Bit('enable_tmpfs_redirect_var'):
     unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
   else:
@@ -2988,15 +2975,6 @@ def MakeLinuxEnv():
       #                   doing.
       LINK = '$CXX',
   )
-
-  # -m32 and -L/usr/lib32 are needed to do 32-bit builds on 64-bit
-  # user-space machines; requires ia32-libs-dev to be installed; or,
-  # failing that, ia32-libs and symbolic links *manually* created for
-  # /usr/lib32/libssl.so and /usr/lib32/libcrypto.so to the current
-  # /usr/lib32/lib*.so.version (tested with ia32-libs 2.2ubuntu11; no
-  # ia32-libs-dev was available for testing).
-  # Additional symlinks of this sort are needed for gtk,
-  # see src/trusted/nonnacl_util/build.scons.
 
   linux_env.SetDefault(
       # NOTE: look into http://www.scons.org/wiki/DoxygenBuilder

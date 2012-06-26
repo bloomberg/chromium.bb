@@ -71,88 +71,6 @@ void NaClSecureRngModuleFini(void) {
   }
 }
 
-#if USE_CRYPTO
-
-static int NaClSecureRngCtorCommon(struct NaClSecureRng *self,
-                                   unsigned char        *key) {
-  self->base.vtbl = &kNaClSecureRngVtbl;
-  AES_set_encrypt_key(key, AES_BLOCK_SIZE * 8, &self->expanded_key);
-  memset(self->counter, 0, sizeof self->counter);
-  self->nvalid = 0;
-
-  memset(key, 0, AES_BLOCK_SIZE);
-  return 1;
-}
-
-int NaClSecureRngCtor(struct NaClSecureRng *self) {
-  unsigned char key[AES_BLOCK_SIZE];
-
-  self->base.vtbl = NULL;
-  /*
-   * Windows version should get seed bytes from CryptoAPI's
-   * CryptGenRandom.  Whether we want to use that as seed as here, or
-   * as the generator for everything depends on how expensive it is
-   * (and whether it matters for our usage).
-   */
-
-  VCHECK(-1 != urandom_d,
-         ("NaClSecureRngCtor: random descriptor invalid;"
-          " module initialization failed?\n"));
-  if (sizeof key != read(urandom_d, key, sizeof key)) {
-    return 0;
-  }
-  return NaClSecureRngCtorCommon(self, key);
-}
-
-int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
-                             uint8_t              *seed_material,
-                             size_t               seed_bytes) {
-  unsigned char key[AES_BLOCK_SIZE];
-
-  self->base.vtbl = NULL;
-  memset(key, 0, sizeof key);
-  memcpy(key, seed_material, seed_bytes > sizeof key ? sizeof key : seed_bytes);
-  return NaClSecureRngCtorCommon(self, key);
-}
-
-static void NaClSecureRngDtor(struct NaClSecureRngIf *self) {
-  memset(self, 0, sizeof(struct NaClSecureRng));
-  /* self->base.vtbl = NULL; */
-}
-
-static void NaClSecureRngCycle(struct NaClSecureRng *self) {
-  int ix;
-
-  AES_encrypt(self->counter, self->randbytes, &self->expanded_key);
-  self->nvalid = NACL_RANDOM_EXPOSE_BYTES;
-  /*
-   * odometric counter, low probability of carry, and byte order
-   * independent as opposed to loading as words, incrementing, and
-   * storing back, etc.
-   *
-   * counter value v = \sum_{i=0}{AES_BLOCK_SIZE-1} self->counter[i] * 256^{i}
-   */
-  for (ix = 0; ix < AES_BLOCK_SIZE; ++ix) {
-    if (0 != ++self->counter[ix]) {
-      break;
-    }
-  }
-}
-
-static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
-  struct NaClSecureRng *self = (struct NaClSecureRng *) vself;
-
-  if (self->nvalid <= 0) {
-    NaClSecureRngCycle(self);
-  }
-  /*
-   * 0 < self->nvalid <= NACL_RANDOM_EXPOSE_BYTES <= AES_BLOCK_SIZE
-   */
-  return (char) self->randbytes[--self->nvalid];
-}
-
-#else
-
 int NaClSecureRngCtor(struct NaClSecureRng *self) {
   self->base.vtbl = &kNaClSecureRngVtbl;
   self->nvalid = 0;
@@ -198,8 +116,6 @@ static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
   /* 0 < self->nvalid <= sizeof self->buf */
   return self->buf[--self->nvalid];
 }
-
-#endif
 
 static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl = {
   NaClSecureRngDtor,

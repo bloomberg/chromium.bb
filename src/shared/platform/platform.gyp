@@ -110,8 +110,6 @@
       ['OS=="linux" and nacl_standalone==1', {
         'link_settings': {
           'libraries': [
-            '-lssl',
-            '-lcrypto',
             '-lstdc++',
           ],
         },
@@ -119,8 +117,6 @@
       ['OS=="mac" and nacl_standalone==1', {
         'link_settings': {
           'libraries': [
-            '$(SDKROOT)/usr/lib/libcrypto.dylib',
-            '$(SDKROOT)/usr/lib/libssl.dylib',
             '$(SDKROOT)/usr/lib/libstdc++.dylib',
           ],
         },
