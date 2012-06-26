@@ -24,8 +24,8 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
+#include "ui/gfx/image/image.h"
 
 class BookmarkExpandedStateTracker;
 class BookmarkIndex;
@@ -117,8 +117,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
 
-  const SkBitmap& favicon() const { return favicon_; }
-  void set_favicon(const SkBitmap& icon) { favicon_ = icon; }
+  const gfx::Image& favicon() const { return favicon_; }
+  void set_favicon(const gfx::Image& icon) { favicon_ = icon; }
 
   void set_is_favicon_loaded(bool loaded) { is_favicon_loaded_ = loaded; }
 
@@ -146,7 +146,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   base::Time date_folder_modified_;
 
   // The favicon of this node.
-  SkBitmap favicon_;
+  gfx::Image favicon_;
 
   // Whether the favicon has been loaded.
   bool is_favicon_loaded_;
@@ -269,7 +269,7 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Returns the favicon for |node|. If the favicon has not yet been
   // loaded it is loaded and the observer of the model notified when done.
-  const SkBitmap& GetFavicon(const BookmarkNode* node);
+  const gfx::Image& GetFavicon(const BookmarkNode* node);
 
   // Sets the title of |node|.
   void SetTitle(const BookmarkNode* node, const string16& title);

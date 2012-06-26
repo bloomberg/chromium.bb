@@ -22,8 +22,7 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_util.h"
 
 using content::BrowserThread;
 
@@ -72,18 +71,18 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
 void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
                                             BookmarkModel* model,
                                             std::vector<unsigned char>* dst) {
-  const SkBitmap& favicon = model->GetFavicon(src);
+  const gfx::Image& favicon = model->GetFavicon(src);
 
   dst->clear();
 
-  // Check for zero-dimension images.  This can happen if the favicon is
+  // Check for empty images.  This can happen if the favicon is
   // still being loaded.
-  if (favicon.empty())
+  if (favicon.IsEmpty())
     return;
 
   // Re-encode the BookmarkNode's favicon as a PNG, and pass the data to the
   // sync subsystem.
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(favicon, false, dst))
+  if (!gfx::PNGEncodedDataFromImage(favicon, dst))
     return;
 }
 

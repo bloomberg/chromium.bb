@@ -323,7 +323,9 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
        i != node_to_menu_map_.end(); ++i) {
     MenuItemView* menu_item = i->second->GetMenuItemByID(menu_pair->second);
     if (menu_item) {
-      menu_item->SetIcon(model->GetFavicon(node));
+      const gfx::Image& favicon = model->GetFavicon(node);
+      menu_item->SetIcon(
+          favicon.IsEmpty() ? SkBitmap() : *favicon.ToSkBitmap());
       return;
     }
   }
@@ -331,8 +333,11 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
   if (parent_menu_item_) {
     MenuItemView* menu_item = parent_menu_item_->GetMenuItemByID(
         menu_pair->second);
-    if (menu_item)
-      menu_item->SetIcon(model->GetFavicon(node));
+    if (menu_item) {
+      const gfx::Image& favicon = model->GetFavicon(node);
+      menu_item->SetIcon(
+          favicon.IsEmpty() ? SkBitmap() : *favicon.ToSkBitmap());
+    }
   }
 }
 
@@ -458,12 +463,10 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
 
     (*next_menu_id)++;
     if (node->is_url()) {
-      gfx::ImageSkia icon = gfx::ImageSkia(
-          profile_->GetBookmarkModel()->GetFavicon(node));
-      if (icon.width() == 0) {
-        icon = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
-      }
-      menu->AppendMenuItemWithIcon(id, node->GetTitle(), icon);
+      const gfx::Image& image = profile_->GetBookmarkModel()->GetFavicon(node);
+      const gfx::ImageSkia* icon = image.IsEmpty() ?
+          rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON) : image.ToImageSkia();
+      menu->AppendMenuItemWithIcon(id, node->GetTitle(), *icon);
       node_to_menu_id_map_[node] = id;
     } else if (node->is_folder()) {
       gfx::ImageSkia* folder_icon =

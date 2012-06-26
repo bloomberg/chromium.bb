@@ -1253,8 +1253,9 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->set_context_menu_controller(this);
   button->set_drag_controller(this);
   if (node->is_url()) {
-    if (model_->GetFavicon(node).width() != 0)
-      button->SetIcon(model_->GetFavicon(node));
+    const gfx::Image& favicon = model_->GetFavicon(node);
+    if (!favicon.IsEmpty())
+      button->SetIcon(*favicon.ToImageSkia());
     else
       button->SetIcon(*kDefaultFavicon);
   }

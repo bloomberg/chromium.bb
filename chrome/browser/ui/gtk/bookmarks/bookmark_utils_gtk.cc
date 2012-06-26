@@ -22,7 +22,6 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -169,8 +168,9 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
   GdkPixbuf* pixbuf;
 
   if (node->is_url()) {
-    if (model->GetFavicon(node).width() != 0) {
-      pixbuf = gfx::GdkPixbufFromSkBitmap(model->GetFavicon(node));
+    const gfx::Image& favicon = model->GetFavicon(node);
+    if (!favicon.IsEmpty()) {
+      pixbuf = favicon.CopyGdkPixbuf();
     } else {
       pixbuf = GtkThemeService::GetDefaultFavicon(native).ToGdkPixbuf();
       g_object_ref(pixbuf);

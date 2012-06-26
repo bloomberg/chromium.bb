@@ -50,7 +50,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -529,9 +528,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (node->is_folder())
     return folderImage_;
 
-  const SkBitmap& favicon = bookmarkModel_->GetFavicon(node);
-  if (!favicon.isNull())
-    return gfx::SkBitmapToNSImage(favicon);
+  const gfx::Image& favicon = bookmarkModel_->GetFavicon(node);
+  if (!favicon.IsEmpty())
+    return favicon.ToNSImage();
 
   return defaultImage_;
 }

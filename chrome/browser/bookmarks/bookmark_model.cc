@@ -28,7 +28,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_util.h"
 
 using base::Time;
 
@@ -75,7 +75,7 @@ void BookmarkNode::Initialize(int64 id) {
 }
 
 void BookmarkNode::InvalidateFavicon() {
-  favicon_ = SkBitmap();
+  favicon_ = gfx::Image();
   is_favicon_loaded_ = false;
 }
 
@@ -291,7 +291,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
     store_->ScheduleSave();
 }
 
-const SkBitmap& BookmarkModel::GetFavicon(const BookmarkNode* node) {
+const gfx::Image& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   DCHECK(node);
   if (!node->is_favicon_loaded()) {
     BookmarkNode* mutable_node = AsMutable(node);
@@ -772,17 +772,19 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
 void BookmarkModel::OnFaviconDataAvailable(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
-  SkBitmap favicon_bitmap;
   BookmarkNode* node =
       load_consumer_.GetClientData(
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
-  if (favicon.is_valid() && gfx::PNGCodec::Decode(favicon.image_data->front(),
-                                                  favicon.image_data->size(),
-                                                  &favicon_bitmap)) {
-    node->set_favicon(favicon_bitmap);
-    FaviconLoaded(node);
+  if (favicon.is_valid()) {
+    scoped_ptr<gfx::Image> favicon_image(
+        gfx::ImageFromPNGEncodedData(favicon.image_data->front(),
+                                     favicon.image_data->size()));
+    if (favicon_image.get()) {
+      node->set_favicon(*favicon_image.get());
+      FaviconLoaded(node);
+    }
   }
 }
 

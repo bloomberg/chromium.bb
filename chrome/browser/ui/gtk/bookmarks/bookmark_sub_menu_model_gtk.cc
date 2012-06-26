@@ -79,9 +79,9 @@ void BookmarkNodeMenuModel::PopulateMenu() {
           bookmark_utils::BuildMenuLabelFor(child)));
       // No command id. We override ActivatedAt below to handle activations.
       AddItem(kBookmarkItemCommandId, label);
-      const SkBitmap& node_icon = model_->GetFavicon(child);
-      if (node_icon.width() > 0)
-        SetIcon(GetItemCount() - 1, node_icon);
+      const gfx::Image& node_icon = model_->GetFavicon(child);
+      if (!node_icon.IsEmpty())
+        SetIcon(GetItemCount() - 1, *node_icon.ToSkBitmap());
       // TODO(mdm): set up an observer to watch for icon load events and set
       // the icons in response.
     }

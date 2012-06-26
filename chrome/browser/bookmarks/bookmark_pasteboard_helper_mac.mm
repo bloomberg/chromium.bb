@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
-#include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -248,8 +247,9 @@ NSImage* MakeDragImage(BookmarkModel* model,
                        const std::vector<const BookmarkNode*>& nodes) {
   if (nodes.size() == 1) {
     const BookmarkNode* node = nodes[0];
+    const gfx::Image& favicon = model->GetFavicon(node);
     return bookmark_pasteboard_helper_mac::DragImageForBookmark(
-        gfx::SkBitmapToNSImage(model->GetFavicon(node)), node->GetTitle());
+        favicon.IsEmpty() ? nil : favicon.ToNSImage(), node->GetTitle());
   } else {
     // TODO(feldstein): Do something better than this. Should have badging
     // and a single drag image.
