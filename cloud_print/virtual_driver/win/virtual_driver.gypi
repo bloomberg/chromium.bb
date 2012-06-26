@@ -25,7 +25,7 @@
         'virtual_driver_consts.h',
         'virtual_driver_helpers.cc',
         'virtual_driver_helpers.h',
-        ],
+      ],
     },
     {
       'target_name': 'gcp_portmon_lib<(virtual_driver_suffix)',
@@ -42,6 +42,7 @@
       'target_name': 'gcp_portmon<(virtual_driver_suffix)',
       'type': 'loadable_module',
       'sources': [
+        'port_monitor/port_monitor.def',
         'port_monitor/port_monitor_dll.cc',
         'virtual_driver_common_resources.rc',
       ],

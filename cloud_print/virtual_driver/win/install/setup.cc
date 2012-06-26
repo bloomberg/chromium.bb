@@ -29,7 +29,7 @@ namespace {
 const wchar_t kVersionKey[] = L"pv";
 const wchar_t kNameKey[] = L"name";
 const wchar_t kNameValue[] = L"GCP Virtual Driver";
-const wchar_t kPpdName[] = L"GCP-DRIVER.PPD";
+const wchar_t kPpdName[] = L"gcp-driver.ppd";
 const wchar_t kDriverName[] = L"MXDWDRV.DLL";
 const wchar_t kUiDriverName[] = L"PS5UI.DLL";
 const wchar_t kHelpName[] = L"PSCRIPT.HLP";

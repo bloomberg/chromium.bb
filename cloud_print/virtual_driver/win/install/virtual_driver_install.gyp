@@ -86,6 +86,14 @@
           ],
         },
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '../../GCP-driver.ppd',
+          ],
+        },
+      ], 
     },
     {
       'target_name': 'virtual_driver_setup_resources',

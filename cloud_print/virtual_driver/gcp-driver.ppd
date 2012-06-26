@@ -4,7 +4,7 @@
 *FileVersion:	"1.1"
 *LanguageVersion: English
 *LanguageEncoding: ISOLatin1
-*PCFileName:	"GOOGLE-CLOUD-PRINT.PPD"
+*PCFileName:	"gcp-driver.ppd"
 *Manufacturer:	"Google Inc."
 *Product:	"(CUPS v1.1)"
 *ModelName:     "GCP Virtual Driver"
