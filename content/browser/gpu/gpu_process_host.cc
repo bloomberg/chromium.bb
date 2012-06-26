@@ -778,9 +778,11 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessSoftwareRendering", software_rendering_);
 
+#if defined(OS_WIN)
   // Make GoogleDesktopNetwork3.dll think that this is a renderer process so
   // it unloads itself. http://crbug/129884
   cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
+#endif
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
