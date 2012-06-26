@@ -40,10 +40,6 @@ void SetChromeSpecificCommandLineFlags() {
   if (IsTabletUi())
     parsed_command_line->AppendSwitch(switches::kTabletUi);
 
-  // TODO(jcivelli): Enable the History Quick Provider and figure out
-  //                 why it reports the wrong results for some pages.
-  parsed_command_line->AppendSwitch(switches::kDisableHistoryQuickProvider);
-
   // Enable prerender for the omnibox.
   parsed_command_line->AppendSwitchASCII(
       switches::kPrerenderMode, switches::kPrerenderModeSwitchValueEnabled);

@@ -320,9 +320,6 @@ const char kDisableExtensionsResourceWhitelist[] =
 // Disables the sandbox for the built-in flash player.
 const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 
-// Disable the use of the HistoryQuickProvider for autocomplete results.
-const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
-
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";

@@ -814,16 +814,20 @@ AutocompleteController::AutocompleteController(
       profile_(profile) {
   search_provider_ = new SearchProvider(this, profile);
   providers_.push_back(search_provider_);
-  // TODO(mrossetti): Remove the following and permanently modify the
-  // HistoryURLProvider to not search titles once HQP is turned on permanently.
-  bool hqp_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kDisableHistoryQuickProvider);
-  if (hqp_enabled)
-    providers_.push_back(new HistoryQuickProvider(this, profile));
 #if !defined(OS_ANDROID)
-  // No search provider/"tab to search" on Android.
+  // History quick provider is enabled on all platforms other than Android.
+  bool hqp_enabled = true;
+  providers_.push_back(new HistoryQuickProvider(this, profile));
+  // Search provider/"tab to search" is enabled on all platforms other than
+  // Android.
   keyword_provider_ = new KeywordProvider(this, profile);
   providers_.push_back(keyword_provider_);
+#else
+  // TODO(mrossetti): Remove the following and permanently modify the
+  // HistoryURLProvider to not search titles once HQP is turned on permanently.
+  // TODO(jcivelli): Enable the History Quick Provider and figure out why it
+  // reports the wrong results for some pages.
+  bool hqp_enabled = false;
 #endif  // !OS_ANDROID
   providers_.push_back(new HistoryURLProvider(this, profile));
   providers_.push_back(new ShortcutsProvider(this, profile));
