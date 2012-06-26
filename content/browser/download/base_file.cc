@@ -507,10 +507,6 @@ net::Error BaseFile::Open() {
     file_stream_->SetBoundNetLogSource(bound_net_log_);
   }
 
-#if defined(OS_WIN)
-  AnnotateWithSourceInformation();
-#endif
-
   return net::OK;
 }
 

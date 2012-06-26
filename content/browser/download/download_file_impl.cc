@@ -98,7 +98,9 @@ void DownloadFileImpl::Cancel() {
 }
 
 void DownloadFileImpl::AnnotateWithSourceInformation() {
+  bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
   file_.AnnotateWithSourceInformation();
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
 }
 
 FilePath DownloadFileImpl::FullPath() const {

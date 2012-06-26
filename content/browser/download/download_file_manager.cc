@@ -273,11 +273,13 @@ void DownloadFileManager::RenameCompletingDownloadFile(
     CancelDownloadOnRename(global_id, rename_error);
     new_path.clear();
   } else {
-#if defined(OS_MACOSX)
-    // Done here because we only want to do this once; see
+    // Done here on Windows so that anti-virus scanners invoked by
+    // the attachment service actually see the data; see
+    // http://crbug.com/127999.
+    // Done here for mac because we only want to do this once; see
     // http://crbug.com/13120 for details.
+    // Other platforms don't currently do source annotation.
     download_file->AnnotateWithSourceInformation();
-#endif
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
