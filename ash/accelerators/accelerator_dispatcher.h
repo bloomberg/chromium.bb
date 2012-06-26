@@ -22,8 +22,8 @@ namespace ash {
 class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher,
                                          public aura::WindowObserver {
  public:
-  explicit AcceleratorDispatcher(MessageLoop::Dispatcher* nested_dispatcher,
-                                 aura::Window* associated_window);
+  AcceleratorDispatcher(MessageLoop::Dispatcher* nested_dispatcher,
+                        aura::Window* associated_window);
   virtual ~AcceleratorDispatcher();
 
   // MessageLoop::Dispatcher overrides:

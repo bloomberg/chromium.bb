@@ -467,12 +467,14 @@ bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
+  touch_uma_.RecordTouchEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
+  touch_uma_.RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
   if (!target || target == target->GetRootWindow()) {
     switch (event->type()) {

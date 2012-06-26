@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/shell.h"
+#include "ash/touch/touch_uma.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
 
@@ -22,6 +23,7 @@ namespace ash {
 namespace internal {
 
 class SystemPinchHandler;
+class TouchUMA;
 
 enum BezelStart {
   BEZEL_START_UNSET = 0,
@@ -96,6 +98,8 @@ class SystemGestureEventFilter : public aura::EventFilter,
 
   class LongPressAffordanceAnimation;
   scoped_ptr<LongPressAffordanceAnimation> long_press_affordance_;
+
+  TouchUMA touch_uma_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };
