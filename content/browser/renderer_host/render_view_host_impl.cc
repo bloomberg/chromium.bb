@@ -552,7 +552,6 @@ void RenderViewHostImpl::DragTargetDragEnter(
   DCHECK(isolated_context);
   std::string filesystem_id = isolated_context->RegisterIsolatedFileSystem(
       filesets);
-  DCHECK(!filesystem_id.empty());
   policy->GrantReadFileSystem(renderer_id, filesystem_id);
   filtered_data.filesystem_id = UTF8ToUTF16(filesystem_id);
 

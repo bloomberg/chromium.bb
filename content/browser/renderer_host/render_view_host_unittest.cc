@@ -155,11 +155,9 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   WebDropData dropped_data;
   gfx::Point client_point;
   gfx::Point screen_point;
-  // We use "//foo/bar" path (rather than "/foo/bar") since dragged paths are
-  // expected to be absolute on any platforms.
-  FilePath highlighted_file_path(FILE_PATH_LITERAL("//tmp/foo.html"));
-  FilePath dragged_file_path(FILE_PATH_LITERAL("//tmp/image.jpg"));
-  FilePath sensitive_file_path(FILE_PATH_LITERAL("//etc/passwd"));
+  FilePath highlighted_file_path(FILE_PATH_LITERAL("/tmp/foo.html"));
+  FilePath dragged_file_path(FILE_PATH_LITERAL("/tmp/image.jpg"));
+  FilePath sensitive_file_path(FILE_PATH_LITERAL("/etc/passwd"));
   GURL highlighted_file_url = net::FilePathToFileURL(highlighted_file_path);
   GURL dragged_file_url = net::FilePathToFileURL(dragged_file_path);
   GURL sensitive_file_url = net::FilePathToFileURL(sensitive_file_path);

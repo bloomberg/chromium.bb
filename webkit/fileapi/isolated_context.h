@@ -54,19 +54,7 @@ class FILEAPI_EXPORT IsolatedContext {
   std::string RegisterIsolatedFileSystem(const std::set<FilePath>& fileset);
 
   // Revokes filesystem specified by the given filesystem_id.
-  // Note that this revokes the filesystem no matter how many references it has.
-  // It is ok to call this on the filesystem that has been already deleted
-  // (if its reference count had reached 0).
   void RevokeIsolatedFileSystem(const std::string& filesystem_id);
-
-  // Adds a reference to a filesystem specified by the given filesystem_id.
-  void AddReference(const std::string& filesystem_id);
-
-  // Removes a reference to a filesystem specified by the given filesystem_id.
-  // If the reference count reaches 0 the isolated context gets destroyed.
-  // It is ok to call this on the filesystem that has been already deleted
-  // (e.g. by RevokeIsolatedFileSystem).
-  void RemoveReference(const std::string& filesystem_id);
 
   // Cracks the given |virtual_path| (which should look like
   // "/<filesystem_id>/<relative_path>") and populates the |filesystem_id|
@@ -114,10 +102,6 @@ class FILEAPI_EXPORT IsolatedContext {
   IsolatedContext();
   ~IsolatedContext();
 
-  // Removes the given filesystem without locking.
-  // (The caller must hold a lock)
-  void RevokeWithoutLocking(const std::string& filesystem_id);
-
   // Returns a new filesystem_id.  Called with lock.
   std::string GetNewFileSystemId() const;
 
@@ -133,10 +117,6 @@ class FILEAPI_EXPORT IsolatedContext {
   // Detailed filesystem permission may be provided by an external
   // security policy manager, e.g. ChildProcessSecurityPolicy.
   std::set<std::string> writable_ids_;
-
-  // Reference counts. Note that an isolated filesystem is created with ref==0.
-  // and will get deleted when the ref count reaches <=0.
-  std::map<std::string, int> ref_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };
