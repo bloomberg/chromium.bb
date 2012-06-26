@@ -17,7 +17,7 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <title>Experimental.serial - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.serial module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.serial - Google Chrome Extensions - Google Code</title></head>
   <body><link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -185,15 +185,1124 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Experimental.serial</h1>
+        <h1 class="page_title">chrome.experimental.serial</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
+        <div id="toc">
+          <h2>Contents</h2>
+          <ol>
+              <li>
+                <a href="#apiReference">API reference: chrome.experimental.serial</a>
+                <ol>
+                  <li>
+            <a href="#global-methods">Methods</a>
+            <ol>
+              <li>
+                <a href="#method-close">close</a>
+              </li><li>
+                <a href="#method-flush">flush</a>
+              </li><li>
+                <a href="#method-getPorts">getPorts</a>
+              </li><li>
+                <a href="#method-open">open</a>
+              </li><li>
+                <a href="#method-read">read</a>
+              </li><li>
+                <a href="#method-write">write</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#type-experimental.serial.OpenInfo">OpenInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-experimental.serial.ReadInfo">ReadInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-experimental.serial.WriteInfo">WriteInfo</a>
+                <ol>
+                </ol>
+              </li>
+            </ol>
+          </li>
+                </ol>
+              </li>
+          </ol>
+        </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
+        <p id="classSummary">
+          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"></div>
         <!-- API PAGE -->
-         <!-- /apiPage -->
+        <div class="apiPage">
+        <a name="apiReference"></a>
+        <h2>API reference: chrome.experimental.serial</h2>
+          <!-- PROPERTIES -->
+           <!-- /apiGroup -->
+          <!-- METHODS -->
+          <div id="methodsTemplate" class="apiGroup">
+            <a name="global-methods"></a>
+            <h3>Methods</h3>
+            <!-- iterates over all functions -->
+            <div class="apiItem">
+              <a name="method-close"></a> <!-- method-anchor -->
+              <h4>close</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.close</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>CloseCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Closes an open connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the opened connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>CloseCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns true if operation was successful.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>boolean result</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-flush"></a> <!-- method-anchor -->
+              <h4>flush</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.flush</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>FlushCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Flushes all bytes in the given connection's input and output buffers.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>FlushCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns true if operation was successful.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>boolean result</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getPorts"></a> <!-- method-anchor -->
+              <h4>getPorts</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.getPorts</span>(<span class="null"><span>function</span>
+                      <var><span>GetPortsCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Returns names of valid ports on this machine, each of which is likely to be valid to pass as the port argument to open(). The list is regenerated each time this method is called, as port validity is dynamic.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>GetPortsCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>ports</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>array of string ports</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>ports</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-open"></a> <!-- method-anchor -->
+              <h4>open</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.open</span>(<span class="null"><span>string</span>
+                      <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>OpenCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Opens a connection to the given serial port.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>port</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The name of the serial port to open.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>OpenCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>openInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.OpenInfo">experimental.serial.OpenInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>experimental.serial.OpenInfo openInfo</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>openInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.OpenInfo">experimental.serial.OpenInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-read"></a> <!-- method-anchor -->
+              <h4>read</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.read</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>ReadCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Reads a byte from the given connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>ReadCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>readInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.ReadInfo">experimental.serial.ReadInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>experimental.serial.ReadInfo readInfo</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>readInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.ReadInfo">experimental.serial.ReadInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-write"></a> <!-- method-anchor -->
+              <h4>write</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.serial.write</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>ArrayBuffer</span>
+                      <var><span>data</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>WriteCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Writes a string to the given connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The string to write.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>WriteCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>writeInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.WriteInfo">experimental.serial.WriteInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The <em>callback</em> parameter should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>experimental.serial.WriteInfo writeInfo</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>writeInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.serial.html#type-experimental.serial.WriteInfo">experimental.serial.WriteInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div>  <!-- /apiItem -->
+          </div>  <!-- /apiGroup -->
+          <!-- EVENTS -->
+           <!-- /apiGroup -->
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-experimental.serial.OpenInfo"></a>
+              <h4>experimental.serial.OpenInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the opened connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.serial.ReadInfo"></a>
+              <h4>experimental.serial.ReadInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bytesRead</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The number of bytes received, or a negative number if an error occurred.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The data received.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.serial.WriteInfo"></a>
+              <h4>experimental.serial.WriteInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bytesWritten</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The number of bytes written.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
+        </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->

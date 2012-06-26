@@ -52,7 +52,7 @@ TEST(SimpleFeatureProvider, ManifestFeatures) {
 TEST(SimpleFeatureProvider, PermissionFeatures) {
   SimpleFeatureProvider* provider =
       SimpleFeatureProvider::GetPermissionFeatures();
-  Feature* feature = provider->GetFeature("browsingData");
+  Feature* feature = provider->GetFeature("contextMenus");
   ASSERT_TRUE(feature);
   EXPECT_EQ(3u, feature->extension_types()->size());
   EXPECT_EQ(1u, feature->extension_types()->count(Extension::TYPE_EXTENSION));
@@ -66,7 +66,7 @@ TEST(SimpleFeatureProvider, PermissionFeatures) {
   manifest.SetString("version", "1");
   ListValue* permissions = new ListValue();
   manifest.Set("permissions", permissions);
-  permissions->Append(Value::CreateStringValue("browsingData"));
+  permissions->Append(Value::CreateStringValue("contextMenus"));
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(

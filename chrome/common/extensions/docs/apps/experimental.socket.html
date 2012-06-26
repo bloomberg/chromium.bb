@@ -17,8 +17,8 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.usb module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.usb - Google Chrome Extensions - Google Code</title></head>
-  <body><link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+  <meta name="description" content="Documentation for the chrome.experimental.socket module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.socket - Google Chrome Extensions - Google Code</title></head>
+  <body><link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -52,14 +52,16 @@
     <!-- API HEADER -->
     <table id="header" width="100%" cellspacing="0" border="0">
       <tbody><tr>
-        <td valign="middle"><a href="http://code.google.com/"><img src="../images/code_labs_logo.gif" height="43" width="161" alt="Google Code Labs" style="border:0; margin:0;"></a></td>
+        <td valign="middle"><a href="http://code.google.com/"><img src="../images/chrome_logo.gif" alt="Google Code" style="border:0; margin:0;"></a></td>
         <td valign="middle" width="100%" style="padding-left:0.6em;">
           <form action="http://www.google.com/cse" id="cse" style="margin-top:0.5em">
             <div id="gsc-search-box">
               <input type="hidden" name="cx" value="002967670403910741006:61_cvzfqtno">
               <input type="hidden" name="ie" value="UTF-8">
-              <input type="text" name="q" value="" size="55">
-              <input class="gsc-search-button" type="submit" name="sa" value="Search">
+              <input id="gsc-search-input" type="text" name="q" value="" size="55">
+              <button class="gsc-search-button" type="submit" name="sa">
+                <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
+              </button>
               <br>
               <span class="greytext">e.g. "page action" or "tabs"</span>
             </div>
@@ -74,25 +76,22 @@
     <div id="codesiteContent" class="">
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
-        <h1>Google Chrome Extensions (<a href="http://code.google.com/labs/">Labs</a>)</h1>
+        <h1>Packaged Apps</h1>
         <ul id="home" class="gc-topnav-tabs">
           <li id="home_link">
-            <a href="index.html" title="Google Chrome Extensions home page">Home</a>
+            <a href="app_landing.html" title="Packaged Apps home page"><span>Home</span></a>
           </li>
           <li id="docs_link">
-            <a href="docs.html" title="Official Google Chrome Extensions documentation">Docs</a>
-          </li>
-          <li id="faq_link">
-            <a href="faq.html" title="Answers to frequently asked questions about Google Chrome Extensions">FAQ</a>
+            <a href="about_apps.html" title="Official Packaged apps documentation"><span>Docs</span></a>
           </li>
           <li id="samples_link">
-            <a href="samples.html" title="Sample extensions (with source code)">Samples</a>
+            <a href="app_samples.html" title="Sample apps (with source code)"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum">Group</a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
-            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow">Questions?</a>
+            <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
           </li>
         </ul>
       </div> <!-- end gc-topnav -->
@@ -100,84 +99,58 @@
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
         <ul>
-          <li><a href="getstarted.html">Getting Started</a></li>
-          <li><a href="overview.html">Overview</a></li>
-          <li><a href="whats_new.html">What's New?</a></li>
-          <li><h2><a href="devguide.html">Developer's Guide</a></h2>
+          <li><h2>Getting Started</h2>
             <ul>
-              <li>Browser UI
-                <ul>
-                  <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li><a href="contextMenus.html">Context Menus</a></li>
-                  <li><a href="notifications.html">Desktop Notifications</a></li>
-                  <li><a href="omnibox.html">Omnibox</a></li>
-                  <li><a href="options.html">Options Pages</a></li>
-                  <li><a href="override.html">Override Pages</a></li>
-                  <li><a href="pageAction.html">Page Actions</a></li>
-                </ul>
-              </li>
-              <li>Browser Interaction
-                <ul>
-                  <li><a href="bookmarks.html">Bookmarks</a></li>
-                  <li><a href="cookies.html">Cookies</a></li>
-                  <li><a href="devtools.html">Developer Tools</a></li>
-                  <li><a href="events.html">Events</a></li>
-                  <li><a href="history.html">History</a></li>
-                  <li><a href="management.html">Management</a></li>
-                  <li><a href="tabs.html">Tabs</a></li>
-                  <li><a href="windows.html">Windows</a></li>
-                </ul>
-              </li>
-              <li>Implementation
-                <ul>
-                  <li><a href="a11y.html">Accessibility</a></li>
-                  <li><a href="background_pages.html">Background Pages</a></li>
-                  <li><a href="content_scripts.html">Content Scripts</a></li>
-                  <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="i18n.html">Internationalization</a></li>
-                  <li><a href="messaging.html">Message Passing</a></li>
-                  <li><a href="permissions.html">Optional Permissions</a></li>
-                  <li><a href="npapi.html">NPAPI Plugins</a></li>
-                </ul>
-              </li>
-              <li>Finishing
-                <ul>
-                  <li><a href="hosting.html">Hosting</a></li>
-                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
-                </ul>
-              </li>
+              <li><a href="about_apps.html">What Are Packaged Apps?</a></li>
+              <li><a href="app_architecture.html">Understand the Architecture</a></li>
+              <li><a href="first_app.html">Create Your First App</a></li>
             </ul>
           </li>
-          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
-          <li><h2><a href="tutorials.html">Tutorials</a></h2>
+          <li><h2>Developing</h2>
             <ul>
-              <li><a href="tut_debugging.html">Debugging</a></li>
-              <li><a href="tut_analytics.html">Google Analytics</a></li>
-              <li><a href="tut_oauth.html">OAuth</a></li>
+              <li><a href="develop_apps.html">Before You Start</a></li>
+              <li>The Fundamentals
+                <ul>
+                  <li><a href="app_lifecycle.html">Manage App Lifecycle</a></li>
+                  <li><a href="app_storage.html">Manage Data</a></li>
+                  <li><a href="offline_apps.html">Offline First</a></li>
+                  <li><a href="app_external.html">Embed Content</a></li>
+                </ul>
+              </li>
+              <li>Security &amp; Privacy
+                <ul>
+                  <li><a href="app_security.html">About Security &amp; Privacy</a></li>
+                  <li><a href="app_identity.html">Identify User</a></li>
+                  <li><a href="app_permissions.html">Manage User Permissions</a></li>
+                  <li><a href="app_csp">Comply with CSP</a></li>
+                </ul>
+              </li>
+              <li>Advanced Technologies
+                <ul>
+                  <li><a href="app_network.html">Communicate across Network</a></li>
+                  <li><a href="app_hardware.html">Access Hardware Devices</a></li>
+                  <li><a href="app_intents.html">Connect Apps with Web Intents</a></li>
+                </ul>
+              </li>
+              <li><a href="app_frameworks.html">Recommended Frameworks</a></li>
+            </ul>
+          </li>
+          <li><h2>Deploying</h2>
+            <ul>
+              <li><a href="publish_app.html">Publish</a></li>
+              <li><a href="sell_app.html">Sell</a></li>
             </ul>
           </li>
           <li><h2>Reference</h2>
             <ul>
-              <li>Formats
-                <ul>
-                  <li><a href="manifest.html">Manifest Files</a></li>
-                  <li><a href="match_patterns.html">Match Patterns</a></li>
-                </ul>
-              </li>
-              <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li><a href="api_index.html">chrome.* APIs</a></li>
-              <li><a href="api_other.html">Other APIs</a></li>
+              <li><a href="manifest.html">Manifest Files</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="experimental.html">Experimental APIs</a></li>
+              <li><a href="api_other.html">Supported Libraries</a></li>
+              <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
           </li>
-          <li><h2><a href="samples.html">Samples</a></h2></li>
-          <div class="line"> </div>
-          <li><h2>More</h2>
-            <ul>
-              <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
-              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
-              <li><a href="themes.html">Themes</a></li>
-            </ul>
-          </li>
+          <li><h2><a href="app_samples.html">Samples</a></h2></li>
         </ul>
       </div>
       <script>
@@ -185,38 +158,40 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.usb</h1>
+        <h1 class="page_title">chrome.experimental.socket</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.usb</a>
+                <a href="#apiReference">API reference: chrome.experimental.socket</a>
                 <ol>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-bulkTransfer">bulkTransfer</a>
+                <a href="#method-bind">bind</a>
               </li><li>
-                <a href="#method-closeDevice">closeDevice</a>
+                <a href="#method-connect">connect</a>
               </li><li>
-                <a href="#method-controlTransfer">controlTransfer</a>
+                <a href="#method-create">create</a>
               </li><li>
-                <a href="#method-findDevice">findDevice</a>
+                <a href="#method-destroy">destroy</a>
               </li><li>
-                <a href="#method-interruptTransfer">interruptTransfer</a>
+                <a href="#method-disconnect">disconnect</a>
               </li><li>
-                <a href="#method-isochronousTransfer">isochronousTransfer</a>
-              </li>
-            </ol>
-          </li>
-                  <li>
-            <a href="#global-events">Events</a>
-            <ol>
-              <li>
-                <a href="#event-onEvent">onEvent</a>
+                <a href="#method-read">read</a>
+              </li><li>
+                <a href="#method-recvFrom">recvFrom</a>
+              </li><li>
+                <a href="#method-sendTo">sendTo</a>
+              </li><li>
+                <a href="#method-setKeepAlive">setKeepAlive</a>
+              </li><li>
+                <a href="#method-setNoDelay">setNoDelay</a>
+              </li><li>
+                <a href="#method-write">write</a>
               </li>
             </ol>
           </li>
@@ -224,27 +199,27 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-experimental.usb.Device">Device</a>
+                <a href="#type-experimental.socket.SocketType">experimental.socket.SocketType</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.ControlTransferInfo">ControlTransferInfo</a>
+                <a href="#type-experimental.socket.CreateOptions">experimental.socket.CreateOptions</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.GenericTransferInfo">GenericTransferInfo</a>
+                <a href="#type-experimental.socket.CreateInfo">experimental.socket.CreateInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.IsochronousTransferInfo">IsochronousTransferInfo</a>
+                <a href="#type-experimental.socket.ReadInfo">experimental.socket.ReadInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.UsbEvent">UsbEvent</a>
+                <a href="#type-experimental.socket.WriteInfo">experimental.socket.WriteInfo</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-experimental.usb.DeviceOptions">DeviceOptions</a>
+                <a href="#type-experimental.socket.RecvFromInfo">experimental.socket.RecvFromInfo</a>
                 <ol>
                 </ol>
               </li>
@@ -264,7 +239,7 @@
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.usb</h2>
+        <h2>API reference: chrome.experimental.socket</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -273,37 +248,38 @@
             <h3>Methods</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-bulkTransfer"></a> <!-- method-anchor -->
-              <h4>bulkTransfer</h4>
+              <a name="method-bind"></a> <!-- method-anchor -->
+              <h4>bind</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.usb.bulkTransfer</span>(<span class="null"><span>experimental.usb.Device</span>
-                      <var><span>device</span></var></span><span class="null"><span>, </span><span>experimental.usb.GenericTransferInfo</span>
-                      <var><span>transferInfo</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>TransferCallback</span></var></span>)</div>
+                  <span>chrome.experimental.socket.bind</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>string</span>
+                      <var><span>address</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>BindCallback</span></var></span>)</div>
               <div class="description">
-                <p>Performs a bulk transfer on the specified device.</p>
+                <p>Binds the local address for socket. Currently, it does not support TCP socket.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>device</var>
+            <var>socketId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>An open device to make the transfer on.</dd>
+          <dd>The socketId.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -312,21 +288,21 @@
                   </div><div>
                     <div>
           <dt>
-            <var>transferInfo</var>
+            <var>address</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.GenericTransferInfo">experimental.usb.GenericTransferInfo</a>
+                        <span>string</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The paramters to the transfer. See GenericTransferInfo.</dd>
+          <dd>The address of the local machine.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -335,12 +311,34 @@
                   </div><div>
                     <div>
           <dt>
-            <var>TransferCallback</var>
+            <var>port</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The port of the local machine.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>BindCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
                     <span id="typeTemplate">
                       <span>
                         <span>function</span>
@@ -358,6 +356,37 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
           <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
           </dd>
         </div>
                   </div>
@@ -366,96 +395,41 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-closeDevice"></a> <!-- method-anchor -->
-              <h4>closeDevice</h4>
+              <a name="method-connect"></a> <!-- method-anchor -->
+              <h4>connect</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.usb.closeDevice</span>(<span class="null"><span>experimental.usb.Device</span>
-                      <var><span>device</span></var></span>)</div>
+                  <span>chrome.experimental.socket.connect</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>string</span>
+                      <var><span>hostname</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>ConnectCallback</span></var></span>)</div>
               <div class="description">
-                <p>Closes an open device instance. Invoking operations on a device after it has been closed is a safe operation, but causes no action to be taken.</p>
+                <p>Connects the socket to the remote machine.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>device</var>
+            <var>socketId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The device to close.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-controlTransfer"></a> <!-- method-anchor -->
-              <h4>controlTransfer</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.usb.controlTransfer</span>(<span class="null"><span>experimental.usb.Device</span>
-                      <var><span>device</span></var></span><span class="null"><span>, </span><span>experimental.usb.ControlTransferInfo</span>
-                      <var><span>transferInfo</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>TransferCallback</span></var></span>)</div>
-              <div class="description">
-                <p>Performs a control transfer on the specified device. See the ControlTransferInfo structure for the parameters required to make a transfer.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>device</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>An open device to make the transfer on.</dd>
+          <dd>The socketId.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -464,21 +438,21 @@
                   </div><div>
                     <div>
           <dt>
-            <var>transferInfo</var>
+            <var>hostname</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.ControlTransferInfo">experimental.usb.ControlTransferInfo</a>
+                        <span>string</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The parameters to the transfer. See ControlTransferInfo.</dd>
+          <dd>The hostname or IP address of the remote machine.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -487,12 +461,34 @@
                   </div><div>
                     <div>
           <dt>
-            <var>TransferCallback</var>
+            <var>port</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The port of the remote machine.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>ConnectCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
                     <span id="typeTemplate">
                       <span>
                         <span>function</span>
@@ -510,6 +506,37 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
           <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
           </dd>
         </div>
                   </div>
@@ -518,77 +545,40 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-findDevice"></a> <!-- method-anchor -->
-              <h4>findDevice</h4>
+              <a name="method-create"></a> <!-- method-anchor -->
+              <h4>create</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.usb.findDevice</span>(<span class="null"><span>integer</span>
-                      <var><span>vendorId</span></var></span><span class="null"><span>, </span><span>integer</span>
-                      <var><span>productId</span></var></span><span class="null"><span>, </span><span>experimental.usb.DeviceOptions</span>
+                  <span>chrome.experimental.socket.create</span>(<span class="null"><span>experimental.socket.SocketType</span>
+                      <var><span>type</span></var></span><span class="optional"><span>, </span><span>experimental.socket.CreateOptions</span>
                       <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>FindDeviceCallback</span></var></span>)</div>
+                      <var><span>CreateCallback</span></var></span>)</div>
               <div class="description">
-                <p>Finds the first instance of the USB device specified by the vendorId/ productId pair and, if permissions allow, opens it for use. Upon successfully opening a device the callback is invoked with a populated Device object. On failure, the callback is invoked with null.</p>
+                <p>Creates a socket of the specified type that will connect to the specified remote machine.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>vendorId</var>
+            <var>type</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <a href="experimental.socket.html#type-experimental.socket.SocketType">experimental.socket.SocketType</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The vendor ID of the USB device to find.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>productId</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The product ID of the USB device to find.</dd>
+          <dd>The type of socket to create. Must be <code>tcp</code> or <code>udp</code>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -602,18 +592,17 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.DeviceOptions">experimental.usb.DeviceOptions</a>
+                        <a href="experimental.socket.html#type-experimental.socket.CreateOptions">experimental.socket.CreateOptions</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>The socket options.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -622,7 +611,7 @@
                   </div><div>
                     <div>
           <dt>
-            <var>FindDeviceCallback</var>
+            <var>CreateCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -650,15 +639,14 @@
             <div>
               <div>
           <dt>
-            <var>device</var>
+            <var>createInfo</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
+                        <a href="experimental.socket.html#type-experimental.socket.CreateInfo">experimental.socket.CreateInfo</a>
                       </span>
                     </span>
                   )
@@ -684,80 +672,126 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The <em>callback</em> parameter should specify a function
-                    that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>experimental.usb.Device device</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>device</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-interruptTransfer"></a> <!-- method-anchor -->
-              <h4>interruptTransfer</h4>
+              <a name="method-destroy"></a> <!-- method-anchor -->
+              <h4>destroy</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.usb.interruptTransfer</span>(<span class="null"><span>experimental.usb.Device</span>
-                      <var><span>device</span></var></span><span class="null"><span>, </span><span>experimental.usb.GenericTransferInfo</span>
-                      <var><span>transferInfo</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>TransferCallback</span></var></span>)</div>
+                  <span>chrome.experimental.socket.destroy</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span>)</div>
               <div class="description">
-                <p>Performs an interrupt transfer on the specified device.</p>
+                <p>Destroys the socket. Each socket created should be destroyed after use.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>device</var>
+            <var>socketId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>An open device to make the transfer on.</dd>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-disconnect"></a> <!-- method-anchor -->
+              <h4>disconnect</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.disconnect</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span>)</div>
+              <div class="description">
+                <p>Disconnects the socket. For UDP sockets, <code>disconnect</code> is a non-operation but is safe to call.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-read"></a> <!-- method-anchor -->
+              <h4>read</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.read</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="optional"><span>, </span><span>integer</span>
+                      <var><span>bufferSize</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>ReadCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Reads data from the given socket.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -766,35 +800,35 @@
                   </div><div>
                     <div>
           <dt>
-            <var>transferInfo</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.GenericTransferInfo">experimental.usb.GenericTransferInfo</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The paramters to the transfer. See GenericTransferInfo.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>TransferCallback</var>
+            <var>bufferSize</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The read buffer size.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>ReadCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
                     <span id="typeTemplate">
                       <span>
                         <span>function</span>
@@ -812,6 +846,37 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
           <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>readInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.socket.html#type-experimental.socket.ReadInfo">experimental.socket.ReadInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
           </dd>
         </div>
                   </div>
@@ -820,53 +885,40 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-isochronousTransfer"></a> <!-- method-anchor -->
-              <h4>isochronousTransfer</h4>
+              <a name="method-recvFrom"></a> <!-- method-anchor -->
+              <h4>recvFrom</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.usb.isochronousTransfer</span>(<span class="null"><span>experimental.usb.Device</span>
-                      <var><span>device</span></var></span><span class="null"><span>, </span><span>experimental.usb.IsochronousTransferInfo</span>
-                      <var><span>transferInfo</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>TransferCallback</span></var></span>)</div>
+                  <span>chrome.experimental.socket.recvFrom</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="optional"><span>, </span><span>integer</span>
+                      <var><span>bufferSize</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>RecvFromCallback</span></var></span>)</div>
               <div class="description">
-                <p>Performs an isochronous transfer on the specific device.</p>
+                <p>Reads data from the given socket.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>device</var>
+            <var>socketId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.Device">experimental.usb.Device</a>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>An open device to make the transfer on.</dd>
+          <dd>The socketId.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -875,35 +927,35 @@
                   </div><div>
                     <div>
           <dt>
-            <var>transferInfo</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.IsochronousTransferInfo">experimental.usb.IsochronousTransferInfo</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The parameters to the transfer. See IsochronousTransferInfo.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>TransferCallback</var>
+            <var>bufferSize</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The receive buffer size.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>RecvFromCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
                     <span id="typeTemplate">
                       <span>
                         <span>function</span>
@@ -921,6 +973,37 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
           <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>recvFromInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.socket.html#type-experimental.socket.RecvFromInfo">experimental.socket.RecvFromInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
           </dd>
         </div>
                   </div>
@@ -929,84 +1012,655 @@
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-sendTo"></a> <!-- method-anchor -->
+              <h4>sendTo</h4>
+              <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
+                  <span>chrome.experimental.socket.sendTo</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>ArrayBuffer</span>
+                      <var><span>data</span></var></span><span class="null"><span>, </span><span>string</span>
+                      <var><span>address</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>SendToCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Writes data on the given socket.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
                 </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The data to write.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>address</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The address of the remote machine.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>port</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The port of the remote machine.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>SendToCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>writeInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.socket.html#type-experimental.socket.WriteInfo">experimental.socket.WriteInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-setKeepAlive"></a> <!-- method-anchor -->
+              <h4>setKeepAlive</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.setKeepAlive</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>boolean</span>
+                      <var><span>enable</span></var></span><span class="optional"><span>, </span><span>integer</span>
+                      <var><span>delay</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>SetKeepAliveCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Enable/disable keep-alive functionality for a TCP connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>enable</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If true, enable keep-alive functionality.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>delay</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Set the delay seconds between the last data packet received and the first keepalive probe. Default is 0.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>SetKeepAliveCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-setNoDelay"></a> <!-- method-anchor -->
+              <h4>setNoDelay</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.setNoDelay</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>boolean</span>
+                      <var><span>noDelay</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>SetNoDelayCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Enable/disable Nagle algorithm.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>noDelay</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If true, disable Nagle algorithm.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>SetNoDelayCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-write"></a> <!-- method-anchor -->
+              <h4>write</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.write</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>ArrayBuffer</span>
+                      <var><span>data</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>WriteCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Writes data on the given socket.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The data to write.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>WriteCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>writeInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.socket.html#type-experimental.socket.WriteInfo">experimental.socket.WriteInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div>  <!-- /apiItem -->
           </div>  <!-- /apiGroup -->
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a name="global-events"></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
-            <div class="apiItem">
-              <a name="event-onEvent"></a>
-              <h4>onEvent</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.usb.</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>experimental.usb.UsbEvent event</span>) <span class="subdued">{...}</span><span></span>);
-              </div>
-              <div class="description">
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>event</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.UsbEvent">experimental.usb.UsbEvent</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                </div>
-                <!-- EXTRA PARAMETERS -->
-                <!-- LISTENER RETURN VALUE -->
-                <dl>
-                </dl>
-              </div> <!-- /description -->
-               <!-- /description -->
-            </div> <!-- /apiItem -->
-          </div> <!-- /apiGroup -->
+           <!-- /apiGroup -->
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types"></a>
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-experimental.usb.Device"></a>
-              <h4>experimental.usb.Device</h4>
+              <a name="type-experimental.socket.SocketType"></a>
+              <h4>experimental.socket.SocketType</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["tcp", "udp"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.socket.CreateOptions"></a>
+              <h4>experimental.socket.CreateOptions</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.socket.CreateInfo"></a>
+              <h4>experimental.socket.CreateInfo</h4>
               <div>
           <dt>
               <em>
@@ -1031,7 +1685,7 @@
               <div>
                 <div>
           <dt>
-            <var>handle</var>
+            <var>socketId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1045,59 +1699,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>productId</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>vendorId</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>The id of the newly created socket.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1111,8 +1713,8 @@
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-experimental.usb.ControlTransferInfo"></a>
-              <h4>experimental.usb.ControlTransferInfo</h4>
+              <a name="type-experimental.socket.ReadInfo"></a>
+              <h4>experimental.socket.ReadInfo</h4>
               <div>
           <dt>
               <em>
@@ -1142,7 +1744,6 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>ArrayBuffer</span>
@@ -1152,481 +1753,9 @@
                 </div>
               </em>
           </dt>
-          <dd>The data payload carried by this transfer. If this is an output tranfer then this field must be set.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>direction</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The direction of this transfer. Must be one of either in or out.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>index</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
           <dd class="todo">
             Undocumented.
           </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>length</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If this transfer is an input transfer, then this field must be set to indicate the expected data length. If this is an output transfer, then this field is ignored.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>recipient</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The intended recipient for this transfer. Must be one of device, interface, endpoint, or other.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>request</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>requestType</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The type of this request. Must be one of standard, class, vendor, or reserved.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>value</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-experimental.usb.GenericTransferInfo"></a>
-              <h4>experimental.usb.GenericTransferInfo</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>data</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>ArrayBuffer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If this is an output transfer then this field must be populated. Otherwise, it will be ignored.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>direction</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The direction of this transfer. Must be one of in or out.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>endpoint</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>length</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If this is an input transfer then this field indicates the size of the input buffer. If this is an output transfer then this field is ignored.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-experimental.usb.IsochronousTransferInfo"></a>
-              <h4>experimental.usb.IsochronousTransferInfo</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>packetLength</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The length of each of the packets in this transfer.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>packets</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The total number of packets in this transfer.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>transferInfo</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="experimental.usb.html#type-experimental.usb.GenericTransferInfo">experimental.usb.GenericTransferInfo</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>All of the normal transfer parameters are encapsulated in the transferInfo parameters. Note that the data specified in this parameter block is split along packetLength boundaries to form the individual packets of the transfer.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-experimental.usb.UsbEvent"></a>
-              <h4>experimental.usb.UsbEvent</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>data</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>ArrayBuffer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If the transfer was an input transfer then this field will contain all of the input data requested.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>error</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If resultCode is not 0, this field will contain a textual description of the error that occurred during the transfer.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1640,7 +1769,6 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>integer</span>
@@ -1650,30 +1778,7 @@
                 </div>
               </em>
           </dt>
-          <dd>A value of 0 indicates that the transfer was a success. Other values indicate failure.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>type</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>A string indicating the type of the event. Currently will only contain the value 'transferResult'.</dd>
+          <dd>The resultCode returned from the underlying read() call.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1687,8 +1792,8 @@
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-experimental.usb.DeviceOptions"></a>
-              <h4>experimental.usb.DeviceOptions</h4>
+              <a name="type-experimental.socket.WriteInfo"></a>
+              <h4>experimental.socket.WriteInfo</h4>
               <div>
           <dt>
               <em>
@@ -1713,41 +1818,68 @@
               <div>
                 <div>
           <dt>
-            <var>onEvent</var>
+            <var>bytesWritten</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>function</span>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Invoked by the extension API whenever an event occurs for the device(s) that this DeviceOptions is associated with.</dd>
+          <dd>The number of bytes sent, or a negative error code.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div>
-          <h5>Parameters</h5>
-          <dl>
-            <div>
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.socket.RecvFromInfo"></a>
+              <h4>experimental.socket.RecvFromInfo</h4>
               <div>
           <dt>
-            <var>event</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.usb.html#type-experimental.usb.UsbEvent">experimental.usb.UsbEvent</a>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>address</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
                       </span>
                     </span>
                   )
@@ -1762,10 +1894,78 @@
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
-            </div>
-          </dl>
-        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
           </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>port</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>resultCode</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The resultCode returned from the underlying read() call.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
         </div>
               </div>
             </dl>
