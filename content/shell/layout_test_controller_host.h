@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/cancelable_callback.h"
 #include "content/public/browser/render_view_host_observer.h"
 
 namespace content {
@@ -30,6 +31,7 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
 
  private:
   void CaptureDump();
+  void TimeoutHandler();
 
   // Message handlers.
   void OnDidFinishLoad();
@@ -45,11 +47,15 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
 
   static std::map<RenderViewHost*, LayoutTestControllerHost*> controllers_;
 
+  bool captured_dump_;
+
   bool dump_as_text_;
   bool dump_child_frames_;
   bool is_printing_;
   bool should_stay_on_page_after_handling_before_unload_;
   bool wait_until_done_;
+
+  base::CancelableClosure watchdog_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestControllerHost);
 };

@@ -12,6 +12,10 @@
 
 namespace content {
 
+namespace {
+const int kTestTimeoutMilliseconds = 30 * 1000;
+}  // namespace
+
 std::map<RenderViewHost*, LayoutTestControllerHost*>
     LayoutTestControllerHost::controllers_;
 
@@ -28,6 +32,7 @@ LayoutTestControllerHost* LayoutTestControllerHost::FromRenderViewHost(
 LayoutTestControllerHost::LayoutTestControllerHost(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
+      captured_dump_(false),
       dump_as_text_(false),
       dump_child_frames_(false),
       is_printing_(false),
@@ -38,14 +43,25 @@ LayoutTestControllerHost::LayoutTestControllerHost(
 
 LayoutTestControllerHost::~LayoutTestControllerHost() {
   controllers_.erase(render_view_host());
+  watchdog_.Cancel();
 }
 
 void LayoutTestControllerHost::CaptureDump() {
+  if (captured_dump_)
+    return;
+  captured_dump_ = true;
+
   render_view_host()->Send(
       new ShellViewMsg_CaptureTextDump(render_view_host()->GetRoutingID(),
                                        dump_as_text_,
                                        is_printing_,
                                        dump_child_frames_));
+}
+
+void LayoutTestControllerHost::TimeoutHandler() {
+  std::cout << "FAIL: Timed out waiting for notifyDone to be called\n";
+  std::cerr << "FAIL: Timed out waiting for notifyDone to be called\n";
+  CaptureDump();
 }
 
 bool LayoutTestControllerHost::OnMessageReceived(
@@ -85,6 +101,9 @@ void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
 }
 
 void LayoutTestControllerHost::OnNotifyDone() {
+  if (!wait_until_done_)
+    return;
+  watchdog_.Cancel();
   CaptureDump();
 }
 
@@ -106,6 +125,14 @@ void LayoutTestControllerHost::OnDumpChildFramesAsText() {
 }
 
 void LayoutTestControllerHost::OnWaitUntilDone() {
+  if (wait_until_done_)
+    return;
+  watchdog_.Reset(base::Bind(&LayoutTestControllerHost::TimeoutHandler,
+                             base::Unretained(this)));
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      watchdog_.callback(),
+      base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
   wait_until_done_ = true;
 }
 
