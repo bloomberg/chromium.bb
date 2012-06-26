@@ -64,7 +64,6 @@ void OnlineAttempt::Initiate(Profile* auth_profile) {
     oauth_fetcher_.reset(
         new GaiaOAuthFetcher(this,
                              auth_profile->GetRequestContext(),
-                             auth_profile,
                              kServiceScopeChromeOS));
   } else {
     client_fetcher_.reset(

@@ -9,16 +9,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -63,10 +59,9 @@ class MockGaiaOAuthFetcher : public GaiaOAuthFetcher {
  public:
   MockGaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                        net::URLRequestContextGetter* getter,
-                       Profile* profile,
                        const std::string& service_scope)
       : GaiaOAuthFetcher(
-          consumer, getter, profile, service_scope) {}
+          consumer, getter, service_scope) {}
 
   ~MockGaiaOAuthFetcher() {}
 
@@ -123,14 +118,8 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile.GetRequestContext(),
-                                     &profile,
                                      std::string());
   EXPECT_CALL(oauth_fetcher, StartOAuthGetAccessToken(oauth_token)).Times(1);
-
-  oauth_fetcher.Observe(
-      chrome::NOTIFICATION_COOKIE_CHANGED,
-      content::Source<Profile>(&profile),
-      content::Details<ChromeCookieDetails>(cookie_details.get()));
 }
 #endif  // 0  // Suppressing for now
 
@@ -152,7 +141,6 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   TestingProfile profile;
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile.GetRequestContext(),
-                                     &profile,
                                      "service_scope-JnG18MEE");
   oauth_fetcher.set_request_type(GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
   EXPECT_CALL(oauth_fetcher,
@@ -192,7 +180,6 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   TestingProfile profile;
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile.GetRequestContext(),
-                                     &profile,
                                      "service_scope-0fL85iOi");
   oauth_fetcher.set_request_type(GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
   EXPECT_CALL(oauth_fetcher, StartUserInfo(wrap_token)).Times(1);
@@ -224,7 +211,6 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   TestingProfile profile;
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile.GetRequestContext(),
-                                     &profile,
                                      "service_scope-Nrj4LmgU");
   oauth_fetcher.set_request_type(GaiaOAuthFetcher::USER_INFO);
 
@@ -250,7 +236,6 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
   TestingProfile profile;
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile.GetRequestContext(),
-                                     &profile,
                                      "service_scope-Nrj4LmgU");
   oauth_fetcher.set_request_type(GaiaOAuthFetcher::OAUTH2_REVOKE_TOKEN);
 

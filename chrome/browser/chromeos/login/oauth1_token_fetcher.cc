@@ -35,7 +35,6 @@ OAuth1TokenFetcher::OAuth1TokenFetcher(OAuth1TokenFetcher::Delegate* delegate,
       auth_profile_(auth_profile),
       oauth_fetcher_(this,
                      auth_profile_->GetRequestContext(),
-                     auth_profile_,
                      kServiceScopeChromeOS),
       retry_count_(0) {
   DCHECK(delegate);

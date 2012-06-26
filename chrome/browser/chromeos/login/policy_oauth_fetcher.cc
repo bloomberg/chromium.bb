@@ -23,7 +23,6 @@ PolicyOAuthFetcher::PolicyOAuthFetcher(Profile* profile,
                                        const std::string& oauth1_secret)
     : oauth_fetcher_(this,
                      profile->GetRequestContext(),
-                     profile,
                      kServiceScopeChromeOSDeviceManagement),
       oauth1_token_(oauth1_token),
       oauth1_secret_(oauth1_secret) {
@@ -32,7 +31,6 @@ PolicyOAuthFetcher::PolicyOAuthFetcher(Profile* profile,
 PolicyOAuthFetcher::PolicyOAuthFetcher(Profile* profile)
     : oauth_fetcher_(this,
                      profile->GetRequestContext(),
-                     profile,
                      kServiceScopeChromeOSDeviceManagement) {
 }
 

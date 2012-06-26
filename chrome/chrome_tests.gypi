@@ -2157,6 +2157,7 @@
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
+            ['exclude', '^browser/net/gaia/gaia_oauth_fetcher_unittest.cc'],
             ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
             ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
             ['exclude', '^browser/policy/cros_user_policy_cache_unittest.cc'],

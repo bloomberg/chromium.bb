@@ -50,7 +50,7 @@ class TokenRevoker : public GaiaOAuthConsumer {
   TokenRevoker(const std::string& token,
                const std::string& secret,
                Profile* profile)
-      : oauth_fetcher_(this, profile->GetRequestContext(), profile,
+      : oauth_fetcher_(this, profile->GetRequestContext(),
                        kServiceScopeChromeOSDeviceManagement) {
     if (secret.empty())
       oauth_fetcher_.StartOAuthRevokeWrapToken(token);
@@ -455,7 +455,6 @@ void EnterpriseOAuthEnrollmentScreenHandler::EnrollAfterLogin() {
   oauth_fetcher_.reset(
       new GaiaOAuthFetcher(this,
                            profile->GetRequestContext(),
-                           profile,
                            GaiaConstants::kDeviceManagementServiceOAuth));
   oauth_fetcher_->SetAutoFetchLimit(
       GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);

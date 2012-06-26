@@ -11,24 +11,16 @@
 #include "base/json/json_reader.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth_request_signer.h"
 #include "chrome/common/net/url_util.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/common/referrer.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -39,12 +31,9 @@ static const char kOAuthTokenCookie[] = "oauth_token";
 
 GaiaOAuthFetcher::GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                                    net::URLRequestContextGetter* getter,
-                                   Profile* profile,
                                    const std::string& service_scope)
     : consumer_(consumer),
       getter_(getter),
-      profile_(profile),
-      popup_(NULL),
       service_scope_(service_scope),
       fetch_pending_(false),
       auto_fetch_limit_(USER_INFO) {}
@@ -170,27 +159,6 @@ std::string GaiaOAuthFetcher::MakeOAuthWrapBridgeBody(
 
 // Helper method that extracts tokens from a successful reply.
 // static
-void GaiaOAuthFetcher::ParseGetOAuthTokenResponse(
-    const std::string& data,
-    std::string* token) {
-  using std::vector;
-  using std::pair;
-  using std::string;
-
-  vector<pair<string, string> > tokens;
-  base::SplitStringIntoKeyValuePairs(data, '=', '&', &tokens);
-  for (vector<pair<string, string> >::iterator i = tokens.begin();
-       i != tokens.end(); ++i) {
-    if (i->first == "oauth_token") {
-      std::string decoded;
-      if (OAuthRequestSigner::Decode(i->second, &decoded))
-        token->assign(decoded);
-    }
-  }
-}
-
-// Helper method that extracts tokens from a successful reply.
-// static
 void GaiaOAuthFetcher::ParseOAuthLoginResponse(
     const std::string& data,
     std::string* sid,
@@ -279,56 +247,6 @@ void GaiaOAuthFetcher::ParseUserInfoResponse(const std::string& data,
       }
     }
   }
-}
-
-namespace {
-// Based on Browser::OpenURLFromTab
-void OpenGetOAuthTokenURL(Browser* browser,
-                          const GURL& url,
-                          const content::Referrer& referrer,
-                          WindowOpenDisposition disposition,
-                          content::PageTransition transition) {
-  browser::NavigateParams params(
-      browser,
-      url,
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.source_contents = browser->tab_strip_model()->GetTabContentsAt(
-      browser->tab_strip_model()->GetIndexOfWebContents(NULL));
-  params.referrer = referrer;
-  params.disposition = disposition;
-  params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
-  params.window_bounds = gfx::Rect(380, 520);
-  params.user_gesture = true;
-  browser::Navigate(&params);
-}
-}
-
-void GaiaOAuthFetcher::StartGetOAuthToken() {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-  DCHECK(!popup_);
-
-  request_type_ = OAUTH1_LOGIN;
-  fetch_pending_ = true;
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_COOKIE_CHANGED,
-                 content::Source<Profile>(profile_));
-
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  DCHECK(browser);
-
-  OpenGetOAuthTokenURL(browser,
-      MakeGetOAuthTokenUrl(GaiaUrls::GetInstance()->oauth1_login_scope(),
-                           l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)),
-      content::Referrer(GURL("chrome://settings/personal"),
-                        WebKit::WebReferrerPolicyDefault),
-      NEW_POPUP,
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  popup_ = browser::FindLastActiveWithProfile(profile_);
-  DCHECK(popup_ && popup_ != browser);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_CLOSING,
-                 content::Source<Browser>(popup_));
 }
 
 void GaiaOAuthFetcher::StartOAuthLogin(
@@ -490,77 +408,6 @@ GoogleServiceAuthError GaiaOAuthFetcher::GenerateAuthError(
 
   NOTREACHED();
   return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-}
-
-void GaiaOAuthFetcher::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_COOKIE_CHANGED: {
-      OnCookieChanged(content::Source<Profile>(source).ptr(),
-                      content::Details<ChromeCookieDetails>(details).ptr());
-      break;
-    }
-    case chrome::NOTIFICATION_BROWSER_CLOSING: {
-      OnBrowserClosing(content::Source<Browser>(source).ptr(),
-                       *(content::Details<bool>(details)).ptr());
-      break;
-    }
-    default: {
-      NOTREACHED();
-    }
-  }
-}
-
-namespace {
-  const char* CauseName(net::CookieMonster::Delegate::ChangeCause cause) {
-    switch (cause) {
-      case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT:
-        return "CHANGE_COOKIE_EXPLICIT";
-      case net::CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE:
-        return "CHANGE_COOKIE_OVERWRITE";
-      case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED:
-        return "CHANGE_COOKIE_EXPIRED";
-      case net::CookieMonster::Delegate::CHANGE_COOKIE_EVICTED:
-        return "CHANGE_COOKIE_EVICTED";
-      case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
-        return "CHANGE_COOKIE_EXPIRED_OVERWRITE";
-      default:
-        return "<unknown>";
-    }
-  }
-}
-
-void GaiaOAuthFetcher::OnBrowserClosing(Browser* browser,
-                                        bool detail) {
-  if (browser == popup_) {
-    consumer_->OnGetOAuthTokenFailure(
-        GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
-  }
-  popup_ = NULL;
-}
-
-void GaiaOAuthFetcher::OnCookieChanged(Profile* profile,
-                                       ChromeCookieDetails* cookie_details) {
-  const net::CookieMonster::CanonicalCookie* canonical_cookie =
-      cookie_details->cookie;
-  if (canonical_cookie->Name() == kOAuthTokenCookie) {
-    VLOG(1) << "OAuth1 request token cookie changed.";
-    fetch_pending_ = false;
-    OnGetOAuthTokenFetched(canonical_cookie->Value());
-  }
-}
-
-void GaiaOAuthFetcher::OnGetOAuthTokenFetched(const std::string& token) {
-  VLOG(1) << "OAuth1 request token fetched.";
-  if (popup_) {
-    Browser* popped_up = popup_;
-    popup_ = NULL;
-    chrome::CloseWindow(popped_up);
-  }
-  consumer_->OnGetOAuthTokenSuccess(token);
-  if (ShouldAutoFetch(OAUTH1_ALL_ACCESS_TOKEN))
-    StartOAuthGetAccessToken(token);
 }
 
 void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
