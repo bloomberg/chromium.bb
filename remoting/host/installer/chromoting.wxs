@@ -4,15 +4,21 @@
   <?define EventSourceName = "chromoting" ?>
   <?define ServiceName = "chromoting" ?>
 
+  <!-- TODO(alexeypa): There strings should be localized,
+       see http://crbug.com/121785 -->
   <?if $(var.Branding) ~= Chrome ?>
     <?define ChromotingHost = "Chrome Remote Desktop Host" ?>
-    <?define FirewallName = "Chrome Remote Desktop Host" ?>
+    <?define ChromotingServiceName = "Chrome Remote Desktop Service" ?>
+    <?define ChromotingServiceDescription = "This service enables incoming connections from Chrome Remote Desktop clients." ?>
     <?define Manufacturer = "Google Inc." ?>
   <?else?>
     <?define ChromotingHost = "Chromoting Host" ?>
-    <?define FirewallName = "Chromoting Host" ?>
+    <?define ChromotingServiceName = "Chromoting Service" ?>
+    <?define ChromotingServiceDescription = "This service enables incoming connections from Chromoting clients." ?>
     <?define Manufacturer = "The Chromium Authors" ?>
   <?endif?>
+
+  <?define FirewallName = "$(var.ChromotingHost)" ?>
 
   <?define OmahaAppid = "{b210701e-ffc4-49e3-932b-370728c72662}" ?>
   <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
@@ -69,8 +75,8 @@
              InstallScope="perMachine"/>
 
     <Condition
-      Message="$(var.ChromotingHost) is only supported on Windows Vista, Windows Server 2008, or higher.">
-      <![CDATA[Installed OR (VersionNT >= 600)]]>
+      Message="$(var.ChromotingHost) is only supported on Windows XP, Windows Server 2003, or higher.">
+      <![CDATA[Installed OR (VersionNT >= 501)]]>
     </Condition>
 
     <MajorUpgrade
@@ -121,8 +127,8 @@
                         Type="ownProcess"
                         Vital="yes"
                         Name="$(var.ServiceName)"
-                        DisplayName="@[#remoting_service.exe],-101"
-                        Description="@[#remoting_service.exe],-102"
+                        DisplayName="[chromoting_service_display_name]"
+                        Description="[chromoting_service_description]"
                         Arguments="--host-binary=&quot;[binaries]remoting_me2me_host.exe&quot; --auth-config=&quot;[config_files]host.json&quot; --host-config=&quot;[config_files]host.json&quot;"
                         Start="demand"
                         Account="LocalSystem"
@@ -353,6 +359,22 @@
       ]]>
     </CustomAction>
 
+    <CustomAction Id="set_service_display_name"
+                  Property="chromoting_service_display_name"
+                  Value="[binaries]remoting_service.exe,-101" />
+    <CustomAction Id="set_service_description"
+                  Property="chromoting_service_description"
+                  Value="[binaries]remoting_service.exe,-102" />
+
+    <!-- XP does not support MUI strings in the service name and description, so
+         we fall back to plain strings on XP. -->
+    <CustomAction Id="set_service_display_name_xp"
+                  Property="chromoting_service_display_name"
+                  Value="$(var.ChromotingServiceName)" />
+    <CustomAction Id="set_service_description_xp"
+                  Property="chromoting_service_description"
+                  Value="$(var.ChromotingServiceDescription)" />
+
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
@@ -373,6 +395,20 @@
       <Custom Action="query_auto_start_service" Before="InstallInitialize"/>
       <Custom Action="set_auto_start_service" After="StartServices">
         <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
+      </Custom>
+
+      <!-- Set the serivce name and description -->
+      <Custom Action="set_service_display_name_xp" Before="InstallInitialize">
+        <![CDATA[VersionNT < 600]]>
+      </Custom>
+      <Custom Action="set_service_description_xp" Before="InstallInitialize">
+        <![CDATA[VersionNT < 600]]>
+      </Custom>
+      <Custom Action="set_service_display_name" Before="InstallInitialize">
+        <![CDATA[VersionNT >= 600]]>
+      </Custom>
+      <Custom Action="set_service_description" Before="InstallInitialize">
+        <![CDATA[VersionNT >= 600]]>
       </Custom>
     </InstallExecuteSequence>
   </Product>
