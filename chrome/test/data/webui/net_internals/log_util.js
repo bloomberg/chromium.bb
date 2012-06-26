@@ -131,6 +131,14 @@ function checkSecurityStripping(expectedValue) {
 }
 
 /**
+ * Checks the currently active view.
+ * @param {string} id ID of the view that should be active.
+ */
+function checkActiveView(id) {
+  expectEquals(id, NetInternalsTest.getActiveTabId());
+}
+
+/**
  * Exports a log dump to a string and loads it.  Makes sure no errors occur,
  * and checks visibility of tabs aftwards.  Does not actually save the log to a
  * file.
@@ -175,6 +183,8 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
           null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.addFunctionTask(checkSecurityStripping.bind(null, true));
+  taskQueue.addFunctionTask(checkActiveView.bind(null,
+                                                 ExportView.TAB_HANDLE_ID));
   taskQueue.run();
 
   // Simulate a click on the stop capturing button.

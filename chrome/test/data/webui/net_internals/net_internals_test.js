@@ -216,6 +216,14 @@ var NetInternalsTest = (function() {
   };
 
   /**
+   * Returns the id of the currently active tab.
+   * @return {string} ID of the active tab.
+   */
+  NetInternalsTest.getActiveTabId = function() {
+    return MainView.getInstance().categoryTabSwitcher().findActiveTab().id;
+  };
+
+  /**
    * Returns the tab id of a tab, given its associated URL hash value.  Asserts
    *     if |hash| has no associated tab.
    * @param {string}: hash Hash associated with the tab to return the id of.
@@ -303,6 +311,10 @@ var NetInternalsTest = (function() {
    */
   NetInternalsTest.checkTabHandleVisibility = function(tabVisibilityState,
                                                        tourTabs) {
+    // The currently active tab should have a handle that is visible.
+    expectTrue(NetInternalsTest.tabHandleIsVisible(
+                   NetInternalsTest.getActiveTabId()));
+
     // Check visibility state of all tabs.
     var tabCount = 0;
     for (var hash in tabVisibilityState) {

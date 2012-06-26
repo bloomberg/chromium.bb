@@ -123,10 +123,22 @@ var TabSwitcherView = (function() {
       return ids;
     },
 
-    // Shows/hides the DOM node that is used to select the tab.  Will not change
-    // the active tab.
+    /**
+     * Shows/hides the DOM node that is used to select the tab.  If the
+     * specified tab is the active tab, switches the active tab to the first
+     * still visible tab in the tab list.
+     */
     showTabHandleNode: function(id, isVisible) {
       var tab = this.findTabById(id);
+      if (!isVisible && tab == this.findActiveTab()) {
+        for (var i = 0; i < this.tabs_.length; ++i) {
+          if (this.tabs_[i].id != id &&
+              this.tabs_[i].getTabHandleNode().style.display != 'none') {
+            this.switchToTab(this.tabs_[i].id, null);
+            break;
+          }
+        }
+      }
       setNodeDisplay(tab.getTabHandleNode(), isVisible);
     }
   };
