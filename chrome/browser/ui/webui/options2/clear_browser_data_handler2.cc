@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +22,11 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+const char kClearBrowsingDataLearnMoreUrl[] =
+    "https://support.google.com/chrome/?p=settings_clear_browsing_data";
+}
 
 namespace options2 {
 
@@ -58,12 +64,15 @@ void ClearBrowserDataHandler::GetLocalizedValues(
       IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX },
     { "clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
-    { "clearBrowsingDataLearnMoreUrl", IDS_CLEAR_BROWSING_DATA_LEARN_MORE_URL },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "clearBrowserDataOverlay",
                 IDS_CLEAR_BROWSING_DATA_TITLE);
+  localized_strings->SetString(
+      "clearBrowsingDataLearnMoreUrl",
+      google_util::StringAppendGoogleLocaleParam(
+          kClearBrowsingDataLearnMoreUrl));
 
   ListValue* time_list = new ListValue;
   for (int i = 0; i < 5; i++) {
