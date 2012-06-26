@@ -4558,32 +4558,12 @@
    fun:_ZN19ExtensionDispatcher18OnSetFunctionNamesERKSt6vectorISsSaISsEE
 }
 {
-   bug_109466
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore16CSSStyleSelector31findFromMatchedDeclarationCacheEjRKNS0_11MatchResultE
-   fun:_ZN7WebCore16CSSStyleSelector24applyMatchedDeclarationsERKNS0_11MatchResultE
-   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbb
-   fun:_ZN7WebCore7Element16styleForRendererEv
-}
-{
    bug_109470
    Memcheck:Uninitialized
    ...
    fun:_ZN7WebCore16CSSStyleSelector24applyMatchedDeclarationsERKNS0_11MatchResultE
    fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbb
    fun:_ZN7WebCore7Element16styleForRendererEv
-}
-{
-   bug_109481
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN3WTF7HashMapIjN7WebCore16CSSStyleSelector32MatchedStyleDeclarationCacheItemENS_7IntHashIjEENS_10HashTraitsIjEENS6_IS3_EEED1Ev
-   fun:_ZN7WebCore16CSSStyleSelectorD1Ev
-   fun:_ZN3WTF14deleteOwnedPtrIN7WebCore16CSSStyleSelectorEEEvPT_
-   fun:_ZN3WTF6OwnPtrIN7WebCore16CSSStyleSelectorEE5clearEv
-   ...
-   fun:_ZN7WebCore8Document20styleSelectorChangedENS_23StyleSelectorUpdateFlagE
 }
 {
    bug_109495e
