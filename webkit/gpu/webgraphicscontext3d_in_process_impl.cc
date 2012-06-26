@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -347,7 +348,7 @@ void WebGraphicsContext3DInProcessImpl::prepareTexture() {
 
 void WebGraphicsContext3DInProcessImpl::postSubBufferCHROMIUM(
     int x, int y, int width, int height) {
-  DCHECK(gl_context_->HasExtension("GL_CHROMIUM_post_sub_buffer"));
+  DCHECK(gl_surface_->HasExtension("GL_CHROMIUM_post_sub_buffer"));
   gl_surface_->PostSubBuffer(x, y, width, height);
 }
 
@@ -1294,6 +1295,9 @@ WebString WebGraphicsContext3DInProcessImpl::getString(WGC3Denum name) {
         result += " GL_EXT_texture_format_BGRA8888 GL_EXT_read_format_bgra";
       }
     }
+    std::string surface_extensions = gl_surface_->GetExtensions();
+    if (!surface_extensions.empty())
+      result += " " + surface_extensions;
   } else {
     result = reinterpret_cast<const char*>(glGetString(name));
   }
@@ -1650,16 +1654,14 @@ void WebGraphicsContext3DInProcessImpl::texImageIOSurface2DCHROMIUM(
 DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
                  WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
 
-WebGLId WebGraphicsContext3DInProcessImpl::createQueryEXT()
-{
+WebGLId WebGraphicsContext3DInProcessImpl::createQueryEXT() {
   makeContextCurrent();
   GLuint o = 0;
   glGenQueriesARB(1, &o);
   return o;
 }
 
-void WebGraphicsContext3DInProcessImpl::deleteQueryEXT(WebGLId query)
-{
+void WebGraphicsContext3DInProcessImpl::deleteQueryEXT(WebGLId query) {
   makeContextCurrent();
   glDeleteQueriesARB(1, &query);
 }

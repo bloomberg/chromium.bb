@@ -9,7 +9,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
@@ -21,9 +20,9 @@ namespace gles2 {
 namespace {
 
 struct FormatInfo {
-   GLenum format;
-   const GLenum* types;
-   size_t count;
+  GLenum format;
+  const GLenum* types;
+  size_t count;
 };
 
 }  // anonymous namespace.
@@ -143,11 +142,7 @@ bool FeatureInfo::Initialize(const DisallowedFeatures& disallowed_features,
 void FeatureInfo::AddFeatures(const char* desired_features) {
   // Figure out what extensions to turn on.
   ExtensionHelper ext(
-      // Some unittests execute without a context made current
-      // so fall back to glGetString
-      gfx::GLContext::GetCurrent() ?
-          gfx::GLContext::GetCurrent()->GetExtensions().c_str() :
-          reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
       desired_features);
 
   // NOTE: We need to check both GL_VENDOR and GL_RENDERER because for example
@@ -490,14 +485,6 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   feature_flags_.enable_texture_half_float_linear |=
       enable_texture_half_float_linear;
   feature_flags_.npot_ok |= npot_ok;
-
-  if (ext.HaveAndDesire("GL_CHROMIUM_post_sub_buffer")) {
-    AddExtensionString("GL_CHROMIUM_post_sub_buffer");
-  }
-
-  if (ext.HaveAndDesire("GL_CHROMIUM_front_buffer_cached")) {
-    AddExtensionString("GL_CHROMIUM_front_buffer_cached");
-  }
 
   if (ext.Desire("GL_ANGLE_pack_reverse_row_order") &&
       ext.Have("GL_ANGLE_pack_reverse_row_order")) {

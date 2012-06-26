@@ -6535,7 +6535,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
 error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     uint32 immediate_data_size, const gles2::PostSubBufferCHROMIUM& c) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandlePostSubBufferCHROMIUM");
-  if (!context_->HasExtension("GL_CHROMIUM_post_sub_buffer")) {
+  if (!surface_->HasExtension("GL_CHROMIUM_post_sub_buffer")) {
     SetGLError(GL_INVALID_OPERATION,
                "glPostSubBufferCHROMIUM", "command not supported by surface");
     return error::kNoError;
@@ -6726,10 +6726,13 @@ error::Error GLES2DecoderImpl::HandleGetString(
                                offset + arraysize(kOESDerivativeExtension),
                                std::string());
           }
-          str = extensions.c_str();
         } else {
-          str = feature_info_->extensions().c_str();
+          extensions = feature_info_->extensions().c_str();
         }
+        std::string surface_extensions = surface_->GetExtensions();
+        if (!surface_extensions.empty())
+          extensions += " " + surface_extensions;
+        str = extensions.c_str();
       }
       break;
     default:

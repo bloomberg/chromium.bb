@@ -75,8 +75,7 @@ bool GLSurface::InitializeOneOff() {
 
 GLSurface::GLSurface() {}
 
-bool GLSurface::Initialize()
-{
+bool GLSurface::Initialize() {
   return true;
 }
 
@@ -90,6 +89,16 @@ std::string GLSurface::GetExtensions() {
   // GetCurrent() and this directly.
   DCHECK_EQ(GetCurrent()->GetHandle(), GetHandle());
   return std::string("");
+}
+
+bool GLSurface::HasExtension(const char* name) {
+  std::string extensions = GetExtensions();
+  extensions += " ";
+
+  std::string delimited_name(name);
+  delimited_name += " ";
+
+  return extensions.find(delimited_name) != std::string::npos;
 }
 
 unsigned int GLSurface::GetBackingFrameBufferObject() {

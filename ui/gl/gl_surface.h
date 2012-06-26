@@ -6,6 +6,8 @@
 #define UI_GL_GL_SURFACE_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
@@ -57,6 +59,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Returns space separated list of surface specific extensions.
   // The surface must be current.
   virtual std::string GetExtensions();
+
+  bool HasExtension(const char* name);
 
   // Returns the internal frame buffer object name if the surface is backed by
   // FBO. Otherwise returns 0.
