@@ -59,6 +59,7 @@
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -515,7 +516,13 @@ ProfileImpl::~ProfileImpl() {
   }
 
   // Destroy OTR profile and its profile services first.
-  DestroyOffTheRecordProfile();
+  if (off_the_record_profile_.get()) {
+    ProfileDestroyer::DestroyOffTheRecordProfileNow(
+        off_the_record_profile_.get());
+  } else {
+    ExtensionPrefValueMapFactory::GetForProfile(this)->
+        ClearAllIncognitoSessionOnlyPreferences();
+  }
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
