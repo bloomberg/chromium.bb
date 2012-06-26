@@ -29,10 +29,9 @@ std::string IsolatedContext::RegisterIsolatedFileSystem(
   PathMap toplevels;
   for (std::set<FilePath>::const_iterator iter = files.begin();
        iter != files.end(); ++iter) {
-    // If the given path contains any '..' or is not an absolute path,
-    // return an empty (invalid) id.
+    // The given path should not contain any '..' and should be absolute.
     if (iter->ReferencesParent() || !iter->IsAbsolute())
-      return std::string();
+      continue;
 
     // Register the basename -> fullpath map. (We only expose the basename
     // part to the user scripts)
@@ -42,16 +41,39 @@ std::string IsolatedContext::RegisterIsolatedFileSystem(
     // with the same basename. For now we only register the first one.
     toplevels.insert(std::make_pair(basename, fullpath));
   }
+
+  // TODO(kinuko): we may not want to register the file system if there're
+  // no valid paths in the given file set.
+
   toplevel_map_[filesystem_id] = toplevels;
+
+  // Each file system is created with refcount == 0.
+  ref_counts_[filesystem_id] = 0;
+
   return filesystem_id;
 }
 
-// Revoke any registered drag context for the child_id.
 void IsolatedContext::RevokeIsolatedFileSystem(
     const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
-  toplevel_map_.erase(filesystem_id);
-  writable_ids_.erase(filesystem_id);
+  RevokeWithoutLocking(filesystem_id);
+}
+
+void IsolatedContext::AddReference(const std::string& filesystem_id) {
+  base::AutoLock locker(lock_);
+  DCHECK(ref_counts_.find(filesystem_id) != ref_counts_.end());
+  ref_counts_[filesystem_id]++;
+}
+
+void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
+  base::AutoLock locker(lock_);
+  // This could get called for non-existent filesystem if it has been
+  // already deleted by RevokeIsolatedFileSystem.
+  if (ref_counts_.find(filesystem_id) == ref_counts_.end())
+    return;
+  DCHECK(ref_counts_[filesystem_id] > 0);
+  if (--ref_counts_[filesystem_id] == 0)
+    RevokeWithoutLocking(filesystem_id);
 }
 
 bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
@@ -145,6 +167,13 @@ IsolatedContext::IsolatedContext() {
 }
 
 IsolatedContext::~IsolatedContext() {
+}
+
+void IsolatedContext::RevokeWithoutLocking(
+    const std::string& filesystem_id) {
+  toplevel_map_.erase(filesystem_id);
+  writable_ids_.erase(filesystem_id);
+  ref_counts_.erase(filesystem_id);
 }
 
 std::string IsolatedContext::GetNewFileSystemId() const {
