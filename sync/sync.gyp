@@ -461,7 +461,9 @@
         'test_support_sync',
       ],
       'sources': [
+        'internal_api/public/test/test_entry_factory.h',
         'internal_api/public/test/test_user_share.h',
+        'internal_api/test/test_entry_factory.cc',
         'internal_api/test/test_user_share.cc',
       ],
     },

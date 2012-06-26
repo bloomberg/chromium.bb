@@ -3,6 +3,7 @@ include_rules = [
   "+sync/internal_api/public/engine",
   "+sync/internal_api/public/sessions",
   "+sync/internal_api/public/syncable",
+  "+sync/internal_api/public/test",
   "+sync/internal_api/public/util",
   "+sync/protocol",
   "+sync/sessions",
