@@ -146,4 +146,56 @@ TEST(SandboxBpf, ApplyBasicWhitelistPolicy) {
   TryPolicyInProcess(WhitelistGetpidPolicy, GetpidProcess);
 }
 
+// A simple blacklist policy, with a SIGSYS handler
+
+// TODO: provide an API to provide the auxiliary data pointer
+// to the evaluator
+
+static int BlacklistNanosleepPolicySigsysAuxData;
+
+intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
+  // We also check that the auxiliary data is correct
+  if (!aux)
+    ExitGroup(1);
+  *(static_cast<int*>(aux)) = kExpectedReturnValue;
+  return -ENOMEM;
+}
+
+Sandbox::ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
+  if (sysno < static_cast<int>(MIN_SYSCALL) ||
+      sysno > static_cast<int>(MAX_SYSCALL)) {
+    // FIXME: we should really not have to do that in a trivial policy
+    return ENOSYS;
+  }
+  switch (sysno) {
+    case __NR_nanosleep:
+      return Sandbox::ErrorCode(EnomemHandler,
+                 static_cast<void *>(&BlacklistNanosleepPolicySigsysAuxData));
+    default:
+      return Sandbox::SB_ALLOWED;
+  }
+}
+
+void NanosleepProcessSigsys(void) {
+  const struct timespec ts = {0, 0};
+  errno = 0;
+  // getpid() should work properly
+  if (syscall(__NR_getpid) < 0)
+    ExitGroup(1);
+  // Our Auxiliary Data, should be reset by the signal handler
+  BlacklistNanosleepPolicySigsysAuxData = -1;
+  errno = 0;
+  if (syscall(__NR_nanosleep, &ts, NULL) != -1 || errno != ENOMEM)
+    ExitGroup(1);
+  // We expect the signal handler to modify AuxData
+  if (BlacklistNanosleepPolicySigsysAuxData != kExpectedReturnValue)
+    ExitGroup(1);
+  else
+    ExitGroup(kExpectedReturnValue);
+}
+
+TEST(SandboxBpf, BasicBlacklistWithSigsys) {
+  TryPolicyInProcess(BlacklistNanosleepPolicySigsys, NanosleepProcessSigsys);
+}
+
 } // namespace
