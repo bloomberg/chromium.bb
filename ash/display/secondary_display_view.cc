@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/monitor/secondary_monitor_view.h"
+#include "ash/display/secondary_display_view.h"
 
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -24,13 +24,13 @@ namespace {
 const SkColor kBackgroundColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kTextColor = SkColorSetRGB(127, 127, 127);
 
-// A view to be displayed on secondary monitor.
-class SecondaryMonitorView : public views::WidgetDelegateView {
+// A view to be displayed on secondary display.
+class SecondaryDisplayView : public views::WidgetDelegateView {
  public:
-  SecondaryMonitorView() {
+  SecondaryDisplayView() {
     Init();
   }
-  virtual ~SecondaryMonitorView() {
+  virtual ~SecondaryDisplayView() {
   }
 
   void Init() {
@@ -89,22 +89,22 @@ class SecondaryMonitorView : public views::WidgetDelegateView {
   views::Label* shortcut_text_;
   views::ImageView* shortcut_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(SecondaryMonitorView);
+  DISALLOW_COPY_AND_ASSIGN(SecondaryDisplayView);
 };
 
 }  // namespace
 
-views::Widget* CreateSecondaryMonitorWidget(aura::Window* parent) {
+views::Widget* CreateSecondaryDisplayWidget(aura::Window* parent) {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  SecondaryMonitorView* view = new SecondaryMonitorView();
+  SecondaryDisplayView* view = new SecondaryDisplayView();
   params.delegate = view;
   params.parent = parent;
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
-  desktop_widget->GetNativeView()->SetName("SecondaryMonitor");
+  desktop_widget->GetNativeView()->SetName("SecondaryDisplay");
   return desktop_widget;
 }
 

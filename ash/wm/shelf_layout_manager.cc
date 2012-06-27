@@ -206,7 +206,7 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
-  // TODO: this is wrong. Figure out what monitor shelf is on and everything
+  // TODO: this is wrong. Figure out what display shelf is on and everything
   // should be based on it.
   gfx::Rect bounds(
       gfx::Screen::GetDisplayNearestWindow(status_->GetNativeView()).bounds());
@@ -239,7 +239,7 @@ void ShelfLayoutManager::LayoutShelf() {
   }
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
   status_->SetBounds(target_bounds.status_bounds);
-  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(),
       target_bounds.work_area_insets);
   UpdateHitTestBounds();
@@ -384,7 +384,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
   GetLayer(status_)->SetBounds(target_bounds.status_bounds);
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
-  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(),
       target_bounds.work_area_insets);
   UpdateHitTestBounds();

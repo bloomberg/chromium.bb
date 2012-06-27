@@ -12,7 +12,7 @@
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 #if defined(OS_LINUX)
@@ -30,7 +30,7 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #if !defined(USE_ASH)
   gfx::Screen::SetInstance(aura::CreateDesktopScreen());
-  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
+  aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
   stacking_client_.reset(new aura::DesktopStackingClient);
 #endif  // !USE_ASH
 

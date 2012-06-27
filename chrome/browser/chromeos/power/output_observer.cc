@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/monitor/output_configurator.h"
+#include "chromeos/display/output_configurator.h"
 
 namespace chromeos {
 

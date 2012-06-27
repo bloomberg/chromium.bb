@@ -376,8 +376,8 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
 
   // We don't need the extra lightness in the edges when we're at the top edge
   // of the screen.
-  // TODO(oshima): This will not work under multi-monitor, need to add method
-  // like GetWindowBoundsInMonitor().
+  // TODO(oshima): This will not work under multi-display, need to add method
+  // like GetWindowBoundsInDisplay().
   if (frame_->GetWindowScreenBounds().y() == 0)
     return;
 

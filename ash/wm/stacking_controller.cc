@@ -4,7 +4,7 @@
 
 #include "ash/wm/stacking_controller.h"
 
-#include "ash/monitor/monitor_controller.h"
+#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
@@ -23,7 +23,7 @@ namespace {
 // that matches the window's bound will be used. Otherwise, it'll
 // return the active root window.
 aura::RootWindow* FindContainerRoot(const gfx::Rect& bounds) {
-  if (!MonitorController::IsVirtualScreenCoordinatesEnabled() ||
+  if (!DisplayController::IsVirtualScreenCoordinatesEnabled() ||
       (bounds.origin().x() == 0 && bounds.origin().y() == 0
        && bounds.IsEmpty())) {
     return Shell::GetActiveRootWindow();

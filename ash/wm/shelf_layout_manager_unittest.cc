@@ -14,7 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor_manager.h"
+#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
@@ -92,8 +92,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   gfx::Rect launcher_bounds(shelf->launcher_widget()->GetWindowScreenBounds());
   int shelf_height = shelf->GetIdealBounds().height();
 
-  const aura::MonitorManager* manager =
-      aura::Env::GetInstance()->monitor_manager();
+  const aura::DisplayManager* manager =
+      aura::Env::GetInstance()->display_manager();
   const gfx::Display& display =
       manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
@@ -144,8 +144,8 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   shelf->LayoutShelf();
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 
-  const aura::MonitorManager* manager =
-      aura::Env::GetInstance()->monitor_manager();
+  const aura::DisplayManager* manager =
+      aura::Env::GetInstance()->display_manager();
   const gfx::Display& display =
       manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
 
@@ -326,25 +326,25 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   widget->Init(params);
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
-  gfx::Rect monitor_bounds(
+  gfx::Rect display_bounds(
       gfx::Screen::GetDisplayNearestWindow(window).bounds());
-  EXPECT_EQ(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->GetMaximizedWindowBounds(window).bottom());
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->GetMaximizedWindowBounds(window).bottom());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT);
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_EQ(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->GetMaximizedWindowBounds(window).bottom());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
-  EXPECT_GT(monitor_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
+  EXPECT_GT(display_bounds.bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->GetMaximizedWindowBounds(window).bottom());
 
   widget->Maximize();
@@ -498,8 +498,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
 
   gfx::Rect launcher_bounds(shelf->launcher_widget()->GetWindowScreenBounds());
-  const aura::MonitorManager* manager =
-      aura::Env::GetInstance()->monitor_manager();
+  const aura::DisplayManager* manager =
+      aura::Env::GetInstance()->display_manager();
   gfx::Display display =
       manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/monitor_manager.h"
+#include "ui/aura/display_manager.h"
 
 #include <stdio.h>
 
@@ -16,7 +16,7 @@
 
 namespace aura {
 namespace {
-// Default bounds for a monitor.
+// Default bounds for a display.
 const int kDefaultHostWindowX = 200;
 const int kDefaultHostWindowY = 200;
 const int kDefaultHostWindowWidth = 1280;
@@ -24,11 +24,11 @@ const int kDefaultHostWindowHeight = 1024;
 }  // namespace
 
 // static
-bool MonitorManager::use_fullscreen_host_window_ = false;
+bool DisplayManager::use_fullscreen_host_window_ = false;
 
 // static
-gfx::Display MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
-  static int synthesized_monitor_id = 1000;
+gfx::Display DisplayManager::CreateDisplayFromSpec(const std::string& spec) {
+  static int synthesized_display_id = 1000;
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   int x = 0, y = 0, width, height;
@@ -41,46 +41,46 @@ gfx::Display MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
   } else if (use_fullscreen_host_window_) {
     bounds = gfx::Rect(aura::RootWindowHost::GetNativeScreenSize());
   }
-  gfx::Display display(synthesized_monitor_id++);
+  gfx::Display display(synthesized_display_id++);
   display.SetScaleAndBounds(scale, bounds);
   DVLOG(1) << "Display bounds=" << bounds.ToString() << ", scale=" << scale;
   return display;
 }
 
 // static
-RootWindow* MonitorManager::CreateRootWindowForPrimaryMonitor() {
-  MonitorManager* manager = aura::Env::GetInstance()->monitor_manager();
+RootWindow* DisplayManager::CreateRootWindowForPrimaryDisplay() {
+  DisplayManager* manager = aura::Env::GetInstance()->display_manager();
   RootWindow* root =
-      manager->CreateRootWindowForMonitor(manager->GetDisplayAt(0));
+      manager->CreateRootWindowForDisplay(manager->GetDisplayAt(0));
   if (use_fullscreen_host_window_)
     root->ConfineCursorToWindow();
   return root;
 }
 
-MonitorManager::MonitorManager() {
+DisplayManager::DisplayManager() {
 }
 
-MonitorManager::~MonitorManager() {
+DisplayManager::~DisplayManager() {
 }
 
-void MonitorManager::AddObserver(DisplayObserver* observer) {
+void DisplayManager::AddObserver(DisplayObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void MonitorManager::RemoveObserver(DisplayObserver* observer) {
+void DisplayManager::RemoveObserver(DisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MonitorManager::NotifyBoundsChanged(const gfx::Display& display) {
+void DisplayManager::NotifyBoundsChanged(const gfx::Display& display) {
   FOR_EACH_OBSERVER(DisplayObserver, observers_,
                     OnDisplayBoundsChanged(display));
 }
 
-void MonitorManager::NotifyDisplayAdded(const gfx::Display& display) {
+void DisplayManager::NotifyDisplayAdded(const gfx::Display& display) {
   FOR_EACH_OBSERVER(DisplayObserver, observers_, OnDisplayAdded(display));
 }
 
-void MonitorManager::NotifyDisplayRemoved(const gfx::Display& display) {
+void DisplayManager::NotifyDisplayRemoved(const gfx::Display& display) {
   FOR_EACH_OBSERVER(DisplayObserver, observers_, OnDisplayRemoved(display));
 }
 

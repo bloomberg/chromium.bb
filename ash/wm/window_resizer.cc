@@ -292,7 +292,7 @@ int WindowResizer::GetWidthForDrag(const Details& details,
       *delta_x = -x_multiplier * (details.initial_bounds.width() - min_width);
     }
 
-    // And don't let the window go bigger than the monitor.
+    // And don't let the window go bigger than the display.
     int max_width =
         gfx::Screen::GetDisplayNearestWindow(details.window).bounds().width();
     if (width > max_width) {
@@ -326,7 +326,7 @@ int WindowResizer::GetHeightForDrag(const Details& details,
       *delta_y = -y_multiplier * (details.initial_bounds.height() - min_height);
     }
 
-    // And don't let the window go bigger than the monitor.
+    // And don't let the window go bigger than the display.
     int max_height =
         gfx::Screen::GetDisplayNearestWindow(details.window).bounds().height();
     if (height > max_height) {

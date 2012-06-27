@@ -16,8 +16,8 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/monitor/monitor_controller.h"
-#include "ash/monitor/multi_monitor_manager.h"
+#include "ash/display/display_controller.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -44,7 +44,7 @@
 #include "ui/oak/oak.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/monitor/output_configurator.h"
+#include "chromeos/display/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -585,17 +585,17 @@ bool AcceleratorController::PerformAction(int action,
       return HandleToggleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
-    case MONITOR_ADD_REMOVE:
+    case DISPLAY_ADD_REMOVE:
       if (DebugShortcutsEnabled())
-        internal::MultiMonitorManager::AddRemoveMonitor();
+        internal::MultiDisplayManager::AddRemoveDisplay();
       return true;
-    case MONITOR_CYCLE:
+    case DISPLAY_CYCLE:
       if (DebugShortcutsEnabled())
-        internal::MultiMonitorManager::CycleMonitor();
+        internal::MultiDisplayManager::CycleDisplay();
       return true;
-    case MONITOR_TOGGLE_SCALE:
+    case DISPLAY_TOGGLE_SCALE:
       if (DebugShortcutsEnabled())
-        internal::MultiMonitorManager::ToggleMonitorScale();
+        internal::MultiDisplayManager::ToggleDisplayScale();
       return true;
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);

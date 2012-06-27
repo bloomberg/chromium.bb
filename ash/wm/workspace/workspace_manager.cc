@@ -141,7 +141,7 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
   if (!shelf_ || !active_workspace_)
     return WINDOW_STATE_DEFAULT;
 
-  // TODO: this code needs to be made multi-monitor aware.
+  // TODO: this code needs to be made multi-display aware.
   gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
   const aura::Window::Windows& windows(contents_view_->children());
   bool window_overlaps_launcher = false;

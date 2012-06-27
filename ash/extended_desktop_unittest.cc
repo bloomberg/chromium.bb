@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/monitor/monitor_controller.h"
-#include "ash/monitor/multi_monitor_manager.h"
+#include "ash/display/display_controller.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_cycle_controller.h"
@@ -58,19 +58,19 @@ class ExtendedDesktopTest : public test::AshTestBase {
   virtual ~ExtendedDesktopTest() {}
 
   virtual void SetUp() OVERRIDE {
-    internal::MonitorController::SetExtendedDesktopEnabled(true);
+    internal::DisplayController::SetExtendedDesktopEnabled(true);
     AshTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
-    internal::MonitorController::SetExtendedDesktopEnabled(false);
+    internal::DisplayController::SetExtendedDesktopEnabled(false);
   }
 
  protected:
-  internal::MultiMonitorManager* monitor_manager() {
-    return static_cast<internal::MultiMonitorManager*>(
-        aura::Env::GetInstance()->monitor_manager());
+  internal::MultiDisplayManager* display_manager() {
+    return static_cast<internal::MultiDisplayManager*>(
+        aura::Env::GetInstance()->display_manager());
   }
 
  private:
@@ -80,7 +80,7 @@ class ExtendedDesktopTest : public test::AshTestBase {
 // Test conditions that root windows in extended desktop mode
 // must satisfy.
 TEST_F(ExtendedDesktopTest, Basic) {
-  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   // All root windows must have the root window controller.
@@ -99,7 +99,7 @@ TEST_F(ExtendedDesktopTest, Basic) {
 }
 
 TEST_F(ExtendedDesktopTest, Activation) {
-  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   // Move the active root window to the secondary.
@@ -134,7 +134,7 @@ TEST_F(ExtendedDesktopTest, Activation) {
 }
 
 TEST_F(ExtendedDesktopTest, SystemModal) {
-  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
 
@@ -153,7 +153,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());
   EXPECT_EQ(root_windows[1], Shell::GetActiveRootWindow());
 
-  // Clicking a widget on widget_on_1st monitor should not change activation.
+  // Clicking a widget on widget_on_1st display should not change activation.
   aura::test::EventGenerator generator_1st(root_windows[0]);
   generator_1st.MoveMouseToCenterOf(widget_on_1st->GetNativeView());
   generator_1st.ClickLeftButton();
@@ -169,7 +169,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
 }
 
 TEST_F(ExtendedDesktopTest, TestCursor) {
-  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::GetInstance()->ShowCursor(false);
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_FALSE(root_windows[0]->cursor_shown());
@@ -186,8 +186,8 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
 }
 
 TEST_F(ExtendedDesktopTest, CycleWindows) {
-  internal::MonitorController::SetVirtualScreenCoordinatesEnabled(true);
-  UpdateMonitor("0+0-700x500,0+0-500x500");
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
+  UpdateDisplay("0+0-700x500,0+0-500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
   root_windows[0]->SetBounds(gfx::Rect(0, 0, 700, 500));
@@ -235,12 +235,12 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
   EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(d2_w2->GetNativeView()));
-  internal::MonitorController::SetVirtualScreenCoordinatesEnabled(false);
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
 }
 
 TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
-  internal::MonitorController::SetVirtualScreenCoordinatesEnabled(true);
-  UpdateMonitor("0+0-700x500,0+0-500x500");
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
+  UpdateDisplay("0+0-700x500,0+0-500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
   root_windows[0]->SetBounds(gfx::Rect(500, 0, 700, 500));
@@ -257,12 +257,12 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
   // Out of range point should return the primary root window
   EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(-100, 0)));
   EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(1201, 100)));
-  internal::MonitorController::SetVirtualScreenCoordinatesEnabled(false);
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
 }
 
 TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
-  internal::MonitorController::SetVirtualScreenCoordinatesEnabled(true);
-  UpdateMonitor("0+0-700x500,0+0-500x500");
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
+  UpdateDisplay("0+0-700x500,0+0-500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
   root_windows[0]->SetBounds(gfx::Rect(500, 0, 700, 500));
@@ -297,11 +297,11 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
             Shell::GetRootWindowMatching(gfx::Rect(-100, -300, 50, 50)));
   EXPECT_EQ(root_windows[0],
             Shell::GetRootWindowMatching(gfx::Rect(0, 2000, 50, 50)));
-  internal::MonitorController::SetVirtualScreenCoordinatesEnabled(false);
+  internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
 }
 
 TEST_F(ExtendedDesktopTest, Capture) {
-  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   aura::test::EventCountDelegate r1_d1;
@@ -353,13 +353,13 @@ namespace internal {
 // Test if the Window::ConvertPointToWindow works across root windows.
 // TODO(oshima): Move multiple display suport and this test to aura.
 TEST_F(ExtendedDesktopTest, ConvertPoint) {
-  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   gfx::Display& display_1 =
-      monitor_manager()->FindDisplayForRootWindow(root_windows[0]);
+      display_manager()->FindDisplayForRootWindow(root_windows[0]);
   EXPECT_EQ("0,0", display_1.bounds().origin().ToString());
   gfx::Display& display_2 =
-      monitor_manager()->FindDisplayForRootWindow(root_windows[1]);
+      display_manager()->FindDisplayForRootWindow(root_windows[1]);
   Shell::GetInstance()->set_active_root_window(root_windows[0]);
   aura::Window* d1 =
       CreateTestWidget(gfx::Rect(10, 10, 100, 100))->GetNativeView();

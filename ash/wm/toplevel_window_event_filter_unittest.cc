@@ -402,7 +402,7 @@ TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
   EXPECT_EQ(100, target->bounds().height());
 }
 
-// Verifies we don't let windows go bigger than the monitor width.
+// Verifies we don't let windows go bigger than the display width.
 TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
   scoped_ptr<aura::Window> target(CreateWindow(HTRIGHT));
   gfx::Rect work_area =
