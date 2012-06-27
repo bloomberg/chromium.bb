@@ -221,6 +221,15 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_PERMISSION_DEFAULT" desc="The label used in the permissions dropdowns for the global browser wide default. ">
         Global default
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ALLOWED" desc="The label used in the permissions list for granted permissions.">
+        Allowed
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_BLOCKED" desc="The label used in the permissions list for denied permissions.">
+        Blocked
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ASK" desc="The label used in the permissions list if the user is asked for permission.">
+        Ask
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permissions controls in the Website Settings popup.">
         Popups
       </message>
@@ -268,6 +277,12 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_PERMISSION_LABEL" desc="The label for a permission value that is used in the permisisons dropdown.">
         Always <ph name="PERMISSION_VALUE">$1<ex>ALLOW</ex></ph>
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_DEFAULT_SETTING">
+        <ph name="PERMISSION_VALUE">$1<ex>Allowed</ex></ph> by default
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_USER_SETTING">
+        <ph name="PERMISSION_VALUE">$1<ex>Allowed</ex></ph> by you
       </message>
 
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">

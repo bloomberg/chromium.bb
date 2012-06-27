@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_POPUP_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_POPUP_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 
 class GURL;
-class PopupHeader;
+class PermissionSelectorView;
+class PopupHeaderView;
 class Profile;
 class TabContents;
 
@@ -27,25 +27,18 @@ struct SSLStatus;
 }
 
 namespace views {
-class Combobox;
-class ImageView;
 class Link;
-class Label;
 class TabbedPane;
-class View;
-}
-
-namespace website_settings {
-class PermissionComboboxModel;
 }
 
 // The views implementation of the website settings UI.
-class WebsiteSettingsPopupView : public WebsiteSettingsUI,
-                                 public views::BubbleDelegateView,
-                                 public views::ComboboxListener,
-                                 public views::LinkListener,
-                                 public views::TabbedPaneListener,
-                                 public views::ButtonListener {
+class WebsiteSettingsPopupView
+    : public PermissionSelectorViewObserver,
+      public views::BubbleDelegateView,
+      public views::ButtonListener,
+      public views::LinkListener,
+      public views::TabbedPaneListener,
+      public WebsiteSettingsUI {
  public:
   virtual ~WebsiteSettingsPopupView();
 
@@ -62,31 +55,32 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
                            const GURL& url,
                            const content::SSLStatus& ssl);
 
+  // PermissionSelectorViewObserver implementation.
+  virtual void OnPermissionChanged(
+      PermissionSelectorView* selector) OVERRIDE;
+
+  // views::BubbleDelegate implementations.
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+
+  // views::ButtonListener implementation.
+  virtual void ButtonPressed(views::Button* button,
+                             const views::Event& event) OVERRIDE;
+
+  // views::LinkListener implementation.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  // views::TabbedPaneListener implementations.
+  virtual void TabSelectedAt(int index) OVERRIDE;
+
+  // views::View implementation.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
   // WebsiteSettingsUI implementations.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) OVERRIDE;
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
   virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
-
-  // views::View implementation.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  // views::BubbleDelegate implementations.
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
-
-  // views::ComboboxListener implementation.
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
-
-  // LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  // views::TabbedPaneListener implementations.
-  virtual void TabSelectedAt(int index) OVERRIDE;
-
-  // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
 
   // Creates the contents of the "Permissions" tab. The ownership of the
   // returned view is transferred to the caller.
@@ -113,25 +107,14 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
                              const gfx::Image& icon,
                              const string16& text);
 
-  // Creates a single row for the "Permissions" section from the "Permissions"
-  // tab. Such a row contains a |permissions_label| with the name of the
-  // permission and a |combobox| that allows to select setting for the given
-  // permission. The ownership of the returned view is transferred to the
-  // caller.
-  views::View* CreatePermissionRow(
-      views::ImageView* icon,
-      views::Label* permission_label,
-      views::Combobox* combobox) WARN_UNUSED_RESULT;
-
   // The tab contents of the current tab. The popup can't live longer than a
   // tab.
-  TabContents* tab_contents_;  // Weak pointer.
+  TabContents* tab_contents_;
 
   // The presenter that controlls the Website Settings UI.
   scoped_ptr<WebsiteSettings> presenter_;
 
-  // The view |PopupHeader| is owned by the popup contents view.
-  PopupHeader* header_;
+  PopupHeaderView* header_;  // Owned by views hierarchy.
 
   // The |TabbedPane| that contains the tabs of the Website Settings UI.
   views::TabbedPane* tabbed_pane_;
@@ -149,11 +132,7 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
   views::View* connection_info_content_;
   views::View* page_info_content_;
 
-  // A |ComboboxModel| is not owned by a |Combobox|. Therefor the popup owns
-  // all |PermissionComboboxModels| and deletes them when it is destroyed.
-  ScopedVector<website_settings::PermissionComboboxModel> combobox_models_;
-
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_POPUP_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_

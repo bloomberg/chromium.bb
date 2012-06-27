@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
+#include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/cert_store.h"
@@ -17,16 +18,19 @@
 #include "grit/ui_resources_standard.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/combobox_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -51,7 +55,7 @@ const int kIdentityVerifiedTextColor = 0xFF298a27;
 // Left icon margin.
 const int kIconMarginLeft = 6;
 
-// Margin and padding values for the |PopupHeader|.
+// Margin and padding values for the |PopupHeaderView|.
 const int kHeaderMarginBottom = 10;
 const int kHeaderPaddingBottom = 12;
 const int kHeaderPaddingLeft = 10;
@@ -74,119 +78,21 @@ const int kSectionHeadlineMarginBottom = 10;
 // space between these rows.
 const int kSectionRowSpacing = 6;
 
-// The width of the column that contains the permissions icons.
-const int kPermissionIconColumnWidth = 20;
-// Left margin of the label that displays the permission types.
-const int kPermissionsRowLabelMarginLeft = 8;
-
 // The max width of the popup.
 const int kPopupWidth = 300;
 
 // The bottom margin of the tabbed pane view.
 const int kTabbedPaneMarginBottom = 8;
 
-string16 PermissionTypeToString(ContentSettingsType type) {
-  return l10n_util::GetStringUTF16(
-      WebsiteSettingsUI::PermissionTypeToUIStringID(type));
-}
-
-string16 PermissionValueToString(ContentSetting value) {
-  return l10n_util::GetStringUTF16(
-      WebsiteSettingsUI::PermissionValueToUIStringID(value));
-}
-
 }  // namespace
 
-namespace website_settings {
-
-// A |ComboboxModel| implementation that is used for |Combobox|es that allow
-// selecting a setting for a given site permission.
-class PermissionComboboxModel : public ui::ComboboxModel {
- public:
-  // Creates a combobox model that provides all possible settings for the given
-  // |site_permission|.
-  PermissionComboboxModel(ContentSettingsType site_permission,
-                          ContentSetting default_setting);
-  virtual ~PermissionComboboxModel();
-
-  // Returns the setting for the given |index|.
-  ContentSetting GetSettingAt(int index) const;
-
-  // Returns the site permission for which the combobox model provides
-  // settings.
-  ContentSettingsType site_permission() const {
-    return site_permission_;
-  }
-
-  // ui::ComboboxModel implementations.
-  virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
-
- private:
-  // The site permission (the |ContentSettingsType|) for which the combobox
-  // model provides settings.
-  ContentSettingsType site_permission_;
-
-  // The global default setting for the |site_permission_|.
-  ContentSetting default_setting_;
-
-  // All possible valid setting for the |site_permission_|.
-  std::vector<ContentSetting> settings_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionComboboxModel);
-};
-
-PermissionComboboxModel::PermissionComboboxModel(
-    ContentSettingsType site_permission,
-    ContentSetting default_setting)
-    : site_permission_(site_permission),
-      default_setting_(default_setting) {
-  settings_.push_back(CONTENT_SETTING_DEFAULT);
-  settings_.push_back(CONTENT_SETTING_ALLOW);
-  settings_.push_back(CONTENT_SETTING_BLOCK);
-  if (site_permission == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      site_permission == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-    settings_.push_back(CONTENT_SETTING_ASK);
-}
-
-PermissionComboboxModel::~PermissionComboboxModel() {
-}
-
-ContentSetting PermissionComboboxModel::GetSettingAt(int index) const {
-  if (index < static_cast<int>(settings_.size()))
-    return settings_[index];
-  NOTREACHED();
-  return CONTENT_SETTING_DEFAULT;
-}
-
-int PermissionComboboxModel::GetItemCount() const {
-  return settings_.size();
-}
-
-string16 PermissionComboboxModel::GetItemAt(int index) {
-  if (index == 0) {
-    return l10n_util::GetStringFUTF16(
-        IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
-        PermissionValueToString(default_setting_));
-  }
-  if (index < static_cast<int>(settings_.size())) {
-    return l10n_util::GetStringFUTF16(
-        IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-        PermissionValueToString(settings_[index]));
-  }
-  NOTREACHED();
-  return string16();
-}
-
-}  // namespace website_settings
-
-// |PopupHeader| is the UI element (view) that represents the header of the
+// |PopupHeaderView| is the UI element (view) that represents the header of the
 // |WebsiteSettingsPopupView|. The header shows the status of the site's
 // identity check and the name of the site's identity.
-class PopupHeader : public views::View {
+class PopupHeaderView : public views::View {
  public:
-  explicit PopupHeader(views::ButtonListener* close_button_listener);
-  virtual ~PopupHeader();
+  explicit PopupHeaderView(views::ButtonListener* close_button_listener);
+  virtual ~PopupHeaderView();
 
   // Sets the name of the site's identity.
   void SetIdentityName(const string16& name);
@@ -201,14 +107,14 @@ class PopupHeader : public views::View {
   // The label that displays the status of the identity check for this site.
   views::Label* status_;
 
-  DISALLOW_COPY_AND_ASSIGN(PopupHeader);
+  DISALLOW_COPY_AND_ASSIGN(PopupHeaderView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Popup Header
 ////////////////////////////////////////////////////////////////////////////////
 
-PopupHeader::PopupHeader(views::ButtonListener* close_button_listener)
+PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
   : name_(NULL), status_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -264,14 +170,14 @@ PopupHeader::PopupHeader(views::ButtonListener* close_button_listener)
   layout->AddPaddingRow(0, kHeaderPaddingBottom);
 }
 
-PopupHeader::~PopupHeader() {
+PopupHeaderView::~PopupHeaderView() {
 }
 
-void PopupHeader::SetIdentityName(const string16& name) {
+void PopupHeaderView::SetIdentityName(const string16& name) {
   name_->SetText(name);
 }
 
-void PopupHeader::SetIdentityStatus(const string16& status,
+void PopupHeaderView::SetIdentityStatus(const string16& status,
                                     SkColor text_color) {
   status_->SetText(status);
   status_->SetEnabledColor(text_color);
@@ -320,7 +226,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
                         0,
                         0);
 
-  header_ = new PopupHeader(this);
+  header_ = new PopupHeaderView(this);
   layout->StartRow(1, content_column);
   layout->AddView(header_);
 
@@ -353,6 +259,50 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
                                        ssl, content::CertStore::GetInstance()));
 }
 
+void WebsiteSettingsPopupView::OnPermissionChanged(
+    PermissionSelectorView* permission_selector) {
+  DCHECK(permission_selector);
+  presenter_->OnSitePermissionChanged(
+      permission_selector->GetPermissionType(),
+      permission_selector->GetSelectedSetting());
+}
+
+gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
+  // Compensate for some built-in padding in the icon. This will make the arrow
+  // point to the middle of the icon.
+  gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
+  anchor.Inset(0, anchor_view() ? kLocationIconBottomMargin : 0);
+  return anchor;
+}
+
+void WebsiteSettingsPopupView::ButtonPressed(
+    views::Button* button,
+    const views::Event& event) {
+  GetWidget()->Close();
+}
+
+void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
+                                           int event_flags) {
+  DCHECK_EQ(cookie_dialog_link_, source);
+  new CollectedCookiesViews(tab_contents_);
+  // The popup closes automatically when the collected cookies dialog opens.
+}
+
+void WebsiteSettingsPopupView::TabSelectedAt(int index) {
+  tabbed_pane_->GetSelectedTab()->Layout();
+  SizeToContents();
+}
+
+gfx::Size WebsiteSettingsPopupView::GetPreferredSize() {
+  int height = 0;
+  if (header_)
+    height += header_->GetPreferredSize().height();
+  if (tabbed_pane_)
+    height += tabbed_pane_->GetPreferredSize().height();
+
+  return gfx::Size(kPopupWidth, height);
+}
+
 void WebsiteSettingsPopupView::SetCookieInfo(
     const CookieInfoList& cookie_info_list) {
   site_data_content_->RemoveAllChildViews(true);
@@ -377,14 +327,14 @@ void WebsiteSettingsPopupView::SetCookieInfo(
                         0,
                         0);
 
-  for (CookieInfoList::const_iterator it = cookie_info_list.begin();
-       it != cookie_info_list.end();
-       ++it) {
+  for (CookieInfoList::const_iterator i(cookie_info_list.begin());
+       i != cookie_info_list.end();
+       ++i) {
     string16 label_text = l10n_util::GetStringFUTF16(
         IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
-        UTF8ToUTF16(it->cookie_source),
-        base::IntToString16(it->allowed),
-        base::IntToString16(it->allowed));
+        UTF8ToUTF16(i->cookie_source),
+        base::IntToString16(i->allowed),
+        base::IntToString16(i->blocked));
     layout->StartRow(1, site_data_content_column);
     views::ImageView* icon = new views::ImageView();
     const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
@@ -424,42 +374,14 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
            permission_info_list.begin();
        permission != permission_info_list.end();
        ++permission) {
-    views::Label* label =
-        new views::Label(PermissionTypeToString(permission->type));
-
-    // The |ComboboxModel| is not owned by the |Combobox|. Therefore all models
-    // are stored in a scoped vector so that they are be deleted when the popup
-    // is destroyed.
-    combobox_models_->push_back(new website_settings::PermissionComboboxModel(
-          permission->type, permission->default_setting));
-    views::Combobox* combobox = new views::Combobox(
-        combobox_models_->back());
-    switch (permission->setting) {
-      case CONTENT_SETTING_DEFAULT:
-        combobox->SetSelectedIndex(0);
-        break;
-      case CONTENT_SETTING_ALLOW:
-        combobox->SetSelectedIndex(1);
-        break;
-      case CONTENT_SETTING_BLOCK:
-        combobox->SetSelectedIndex(2);
-        break;
-      default:
-        combobox->SetSelectedIndex(4);
-        break;
-    }
-    combobox->set_listener(this);
-
-    views::ImageView* icon = new views::ImageView();
-    ContentSetting setting = permission->setting;
-    if (setting == CONTENT_SETTING_DEFAULT)
-      setting = permission->default_setting;
-    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
-        permission->type, setting);
-    icon->SetImage(image.ToImageSkia());
-
     layout->StartRow(1, content_column);
-    layout->AddView(CreatePermissionRow(icon, label, combobox),
+    PermissionSelectorView* selector = new PermissionSelectorView(
+        permission->type,
+        permission->default_setting,
+        permission->setting);
+    selector->AddObserver(this);
+
+    layout->AddView(selector,
                     1,
                     1,
                     views::GridLayout::LEADING,
@@ -508,61 +430,13 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
 void WebsiteSettingsPopupView::SetFirstVisit(const string16& first_visit) {
   // TODO(markusheintz): Display a minor warning icon if the page is visited
   // the first time.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  ResetContentContainer(
-      page_info_content_,
-      rb.GetImageNamed(IDR_PAGEINFO_INFO),
-      first_visit);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ResetContentContainer(page_info_content_, rb.GetImageNamed(IDR_PAGEINFO_INFO),
+                        first_visit);
 
   // Layout.
   GetLayoutManager()->Layout(this);
   SizeToContents();
-}
-
-gfx::Size WebsiteSettingsPopupView::GetPreferredSize() {
-  int height = 0;
-  if (header_)
-    height += header_->GetPreferredSize().height();
-  if (tabbed_pane_)
-    height += tabbed_pane_->GetPreferredSize().height();
-
-  return gfx::Size(kPopupWidth, height);
-}
-
-gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
-  // Compensate for some built-in padding in the icon. This will make the arrow
-  // point to the middle of the icon.
-  gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
-  anchor.Inset(0, anchor_view() ? kLocationIconBottomMargin : 0);
-  return anchor;
-}
-
-void WebsiteSettingsPopupView::OnSelectedIndexChanged(
-    views::Combobox* combobox) {
-  website_settings::PermissionComboboxModel* model =
-    static_cast<website_settings::PermissionComboboxModel*>(combobox->model());
-  DCHECK(model);
-  presenter_->OnSitePermissionChanged(
-      model->site_permission(),
-      model->GetSettingAt(combobox->selected_index()));
-}
-
-void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
-                                           int event_flags) {
-  DCHECK_EQ(cookie_dialog_link_, source);
-  new CollectedCookiesViews(tab_contents_);
-  // The popup closes automatically when the collected cookies dialog opens.
-}
-
-void WebsiteSettingsPopupView::TabSelectedAt(int index) {
-  tabbed_pane_->GetSelectedTab()->Layout();
-  SizeToContents();
-}
-
-void WebsiteSettingsPopupView::ButtonPressed(
-    views::Button* button,
-    const views::Event& event) {
-  GetWidget()->Close();
 }
 
 views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
@@ -598,8 +472,7 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
 
   // Add Identity section.
   views::View* section_content = new views::View();
-  views::GridLayout* layout =
-      new views::GridLayout(section_content);
+  views::GridLayout* layout = new views::GridLayout(section_content);
   section_content->SetLayoutManager(layout);
   const int content_column = 0;
   views::ColumnSet* column_set =
@@ -614,19 +487,18 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
   layout->StartRow(1, content_column);
   layout->AddView(identity_info_content_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
-  views::View* section =
-      CreateSection(l10n_util::GetStringUTF16(
-                        IDS_WEBSITE_SETTINGS_TITEL_IDENTITY),
-                    section_content,
-                    NULL);
+  views::View* section = CreateSection(
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITEL_IDENTITY),
+      section_content,
+      NULL);
   pane->AddChildView(section);
 
   // Add connection section.
   connection_info_content_ = new views::View();
-  section = CreateSection(l10n_util::GetStringUTF16(
-                              IDS_WEBSITE_SETTINGS_TITEL_CONNECTION),
-                          connection_info_content_,
-                          NULL);
+  section = CreateSection(
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITEL_CONNECTION),
+      connection_info_content_,
+      NULL);
   pane->AddChildView(section);
 
   // Add page info section.
@@ -644,10 +516,10 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
   layout->StartRow(1, content_column);
   layout->AddView(page_info_content_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
-  section = CreateSection(l10n_util::GetStringUTF16(
-                              IDS_PAGE_INFO_SITE_INFO_TITLE),
-                          section_content,
-                          NULL);
+  section = CreateSection(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
+      section_content,
+      NULL);
   pane->AddChildView(section);
 
   return pane;
@@ -727,44 +599,4 @@ void WebsiteSettingsPopupView::ResetContentContainer(
                   views::GridLayout::LEADING);
   layout->AddView(label, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
-}
-
-views::View* WebsiteSettingsPopupView::CreatePermissionRow(
-    views::ImageView* icon,
-    views::Label* label,
-    views::Combobox* combobox) {
-  views::View* container = new views::View();
-  views::GridLayout* layout = new views::GridLayout(container);
-  container->SetLayoutManager(layout);
-  const int two_column_layout = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(two_column_layout);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::FIXED,
-                        kPermissionIconColumnWidth,
-                        0);
-  column_set->AddPaddingColumn(0, kIconMarginLeft);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  column_set->AddPaddingColumn(0, kPermissionsRowLabelMarginLeft);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-
-  layout->StartRow(1, two_column_layout);
-
-  layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
-                  views::GridLayout::CENTER);
-  layout->AddView(label, 1,1, views::GridLayout::LEADING,
-                  views::GridLayout::CENTER);
-  layout->AddView(combobox);
-  return container;
 }

@@ -67,6 +67,21 @@ int WebsiteSettingsUI::PermissionValueToUIStringID(ContentSetting value) {
 }
 
 // static
+int WebsiteSettingsUI::PermissionActionUIStringID(ContentSetting value) {
+  switch (value) {
+    case CONTENT_SETTING_ALLOW:
+      return IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ALLOWED;
+    case CONTENT_SETTING_BLOCK:
+      return IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_BLOCKED;
+    case CONTENT_SETTING_ASK:
+      return IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ASK;
+    default:
+      NOTREACHED();
+      return kInvalidRessourceID;
+  }
+}
+
+// static
 const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
     ContentSettingsType type,
     ContentSetting setting) {

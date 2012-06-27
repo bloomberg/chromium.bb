@@ -92,6 +92,12 @@ class WebsiteSettingsUI {
   // Returns the resource ID of the UI string for the given permission |value|.
   static int PermissionValueToUIStringID(ContentSetting value);
 
+  // Returns the resource ID of the UI string for the action that is performed
+  // for the given permission |value|. E.g. for the |value|
+  // CONTENT_SETTING_ALLOW content is "allowed" and for the |value|
+  // CONTENT_SETTING_BLOCK content is "blocked".
+  static int PermissionActionUIStringID(ContentSetting value);
+
   // Returns the icon for the given permission |type| and |setting|.
   static const gfx::Image& GetPermissionIcon(ContentSettingsType type,
                                        ContentSetting setting);
