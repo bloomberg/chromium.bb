@@ -546,8 +546,9 @@ function listChromeAPIs(includeExperimental) {
     result = result.filter(function(item) {
       return [
         "browserAction", "extension", "input.ime", "omnibox", "pageAction",
-        "scriptBadge", "windows", "experimental.fontSettings",
-        "experimental.infobars", "experimental.keybindings",
+        "scriptBadge", "windows", "experimental.devtools.audits",
+        "experimental.devtools.console", "experimental.fontSettings",
+        "experimental.infobars", "experimental.keybinding",
         "experimental.offscreenTabs", "experimental.processes",
       ].indexOf(item) == -1;
     });
