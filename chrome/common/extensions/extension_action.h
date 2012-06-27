@@ -11,15 +11,21 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/linear_animation.h"
+
+class GURL;
+class SkBitmap;
+class SkDevice;
 
 namespace gfx {
 class Canvas;
 class Rect;
 }
-
-class GURL;
-class SkBitmap;
 
 // ExtensionAction encapsulates the state of a browser action, page action, or
 // script badge.
@@ -38,8 +44,69 @@ class ExtensionAction {
     TYPE_SCRIPT_BADGE,
   };
 
+  // A fade-in animation.
+  class IconAnimation : public ui::LinearAnimation,
+                        public base::SupportsWeakPtr<IconAnimation> {
+   public:
+    // Observes changes to icon animation state.
+    class Observer {
+     public:
+      virtual void OnIconChanged(const IconAnimation& animation) = 0;
+
+     protected:
+      virtual ~Observer() {}
+    };
+
+    // A holder for an IconAnimation with a scoped observer.
+    class ScopedObserver {
+     public:
+      ScopedObserver(const base::WeakPtr<IconAnimation>& icon_animation,
+                     Observer* observer);
+      ~ScopedObserver();
+
+      // Gets the icon animation, or NULL if the reference has expired.
+      const IconAnimation* icon_animation() const {
+        return icon_animation_.get();
+      }
+
+     private:
+      base::WeakPtr<IconAnimation> icon_animation_;
+      Observer* observer_;
+
+      DISALLOW_COPY_AND_ASSIGN(ScopedObserver);
+    };
+
+    virtual ~IconAnimation();
+
+    // Returns the icon derived from the current animation state applied to
+    // |icon|. Ownership remains with this.
+    const SkBitmap& Apply(const SkBitmap& icon) const;
+
+    void AddObserver(Observer* observer);
+    void RemoveObserver(Observer* observer);
+
+   private:
+    // Construct using ExtensionAction::RunIconAnimation().
+    friend class ExtensionAction;
+    explicit IconAnimation(ui::AnimationDelegate* delegate);
+
+    // ui::LinearAnimation implementation.
+    virtual void AnimateToState(double state) OVERRIDE;
+
+    // Device we use to paint icons to.
+    mutable scoped_ptr<SkDevice> device_;
+
+    ObserverList<Observer> observers_;
+
+    DISALLOW_COPY_AND_ASSIGN(IconAnimation);
+  };
+
   ExtensionAction(const std::string& extension_id, Type action_type);
   ~ExtensionAction();
+
+  // Gets a copy of this, ownership passed to caller.
+  // It doesn't make sense to copy of an ExtensionAction except in tests.
+  scoped_ptr<ExtensionAction> CopyForTest() const;
 
   // extension id
   const std::string& extension_id() const { return extension_id_; }
@@ -150,6 +217,13 @@ class ExtensionAction {
   // If the specified tab has a badge, paint it into the provided bounds.
   void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds, int tab_id);
 
+  // Gets a weak reference to the icon animation for a tab, if any. The
+  // reference will only have a value while the animation is running.
+  base::WeakPtr<IconAnimation> GetIconAnimation(int tab_id) const;
+
+  // Runs an animation on a tab.
+  void RunIconAnimation(int tab_id);
+
  private:
   template <class T>
   struct ValueTraits {
@@ -191,6 +265,9 @@ class ExtensionAction {
   std::map<int, SkColor> badge_text_color_;
   std::map<int, bool> visible_;
 
+  class IconAnimationWrapper;
+  std::map<int, linked_ptr<IconAnimationWrapper> > icon_animation_;
+
   std::string default_icon_path_;
 
   // The id for the ExtensionAction, for example: "RssPageAction". This is
@@ -200,6 +277,8 @@ class ExtensionAction {
   // A list of paths to icons this action might show. This is needed to support
   // the legacy setIcon({iconIndex:...} method of the page actions API.
   std::vector<std::string> icon_paths_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionAction);
 };
 
 template<>

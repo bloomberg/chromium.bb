@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,9 @@
 
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "googleurl/src/gurl.h"
 
-class ExtensionAction;
 @class ExtensionActionContextMenu;
 class LocationBarViewMac;
 class Profile;
@@ -24,7 +24,8 @@ class WebContents;
 
 class PageActionDecoration : public ImageDecoration,
                              public ImageLoadingTracker::Observer,
-                             public content::NotificationObserver {
+                             public content::NotificationObserver,
+                             public ExtensionAction::IconAnimation::Observer {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
                        Profile* profile,
@@ -64,6 +65,10 @@ class PageActionDecoration : public ImageDecoration,
  private:
   // Show the popup in the frame, with the given URL.
   void ShowPopup(const NSRect& frame, const GURL& popup_url);
+
+  // Overridden from ExtensionAction::IconAnimation::Observer.
+  virtual void OnIconChanged(
+      const ExtensionAction::IconAnimation& animation) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
@@ -106,6 +111,10 @@ class PageActionDecoration : public ImageDecoration,
   // icon is briefly shown even if it hasn't been enabled by its
   // extension.
   bool preview_enabled_;
+
+  // Fade-in animation for the icon with observer scoped to this.
+  ExtensionAction::IconAnimation::ScopedObserver
+      scoped_icon_animation_observer_;
 
   // Used to register for notifications received by
   // NotificationObserver.

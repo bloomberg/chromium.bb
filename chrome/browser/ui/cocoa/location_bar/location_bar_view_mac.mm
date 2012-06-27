@@ -699,6 +699,14 @@ void LocationBarViewMac::Layout() {
   [field_ setNeedsDisplay:YES];
 }
 
+void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  NSRect frame = [cell frameForDecoration:decoration
+                                  inFrame:[field_ bounds]];
+  if (!NSIsEmptyRect(frame))
+    [field_ setNeedsDisplayInRect:frame];
+}
+
 bool LocationBarViewMac::IsStarEnabled() {
   return [field_ isEditable] &&
          browser_defaults::bookmarks_enabled &&

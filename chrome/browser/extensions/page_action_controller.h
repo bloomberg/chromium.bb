@@ -25,14 +25,14 @@ class PageActionController : public LocationBarController {
   virtual ~PageActionController();
 
   // LocationBarController implementation.
-  virtual std::vector<ExtensionAction*> GetCurrentActions() OVERRIDE;
+  virtual std::vector<ExtensionAction*> GetCurrentActions() const OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;
 
  private:
   // Gets the ExtensionService for |tab_contents_|.
-  ExtensionService* GetExtensionService();
+  ExtensionService* GetExtensionService() const;
 
   TabContents* tab_contents_;
 

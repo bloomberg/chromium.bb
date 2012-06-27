@@ -29,13 +29,8 @@ class LocationBarController {
 
   virtual ~LocationBarController() {}
 
-  // Utility to add any actions to |out| which aren't present in |actions|.
-  static void AddMissingActions(
-      const std::set<ExtensionAction*>& actions,
-      std::vector<ExtensionAction*>* out);
-
   // Gets the action data for all extensions.
-  virtual std::vector<ExtensionAction*> GetCurrentActions() = 0;
+  virtual std::vector<ExtensionAction*> GetCurrentActions() const = 0;
 
   // Notifies this that the badge for an extension has been clicked with some
   // mouse button (1 for left, 2 for middle, and 3 for right click), and

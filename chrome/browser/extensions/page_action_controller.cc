@@ -23,7 +23,7 @@ PageActionController::PageActionController(TabContents* tab_contents)
 
 PageActionController::~PageActionController() {}
 
-std::vector<ExtensionAction*> PageActionController::GetCurrentActions() {
+std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
   ExtensionService* service = GetExtensionService();
   if (!service)
     return std::vector<ExtensionAction*>();
@@ -81,7 +81,7 @@ void PageActionController::NotifyChange() {
       content::INVALIDATE_TYPE_PAGE_ACTIONS);
 }
 
-ExtensionService* PageActionController::GetExtensionService() {
+ExtensionService* PageActionController::GetExtensionService() const {
   return ExtensionSystem::Get(tab_contents_->profile())->extension_service();
 }
 

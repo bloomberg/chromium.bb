@@ -56,7 +56,7 @@ class ScriptBadgeController
   explicit ScriptBadgeController(TabContents* tab_contents);
 
   // LocationBarController implementation.
-  virtual std::vector<ExtensionAction*> GetCurrentActions() OVERRIDE;
+  virtual std::vector<ExtensionAction*> GetCurrentActions() const OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;

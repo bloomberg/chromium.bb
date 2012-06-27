@@ -11,7 +11,11 @@
 #include "googleurl/src/gurl.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
@@ -50,7 +54,97 @@ const int kCenterAlignThreshold = 20;
 
 }  // namespace
 
+// Wraps an IconAnimation and implements its ui::AnimationDelegate to erase the
+// animation from a map when the animation ends or is cancelled, causing itself
+// and its owned IconAnimation to be deleted.
+class ExtensionAction::IconAnimationWrapper : public ui::AnimationDelegate {
+ public:
+  IconAnimationWrapper(ExtensionAction* owner, int tab_id)
+      : owner_(owner),
+        tab_id_(tab_id),
+        ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {}
+
+  virtual ~IconAnimationWrapper() {}
+
+  IconAnimation* animation() {
+    return &animation_;
+  }
+
+ private:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+    Done();
+  }
+
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+    Done();
+  }
+
+  void Done() {
+    owner_->icon_animation_.erase(tab_id_);
+    // this will now have been deleted.
+  }
+
+  ExtensionAction* owner_;
+  int tab_id_;
+  IconAnimation animation_;
+};
+
 const int ExtensionAction::kDefaultTabId = -1;
+
+ExtensionAction::IconAnimation::IconAnimation(
+    ui::AnimationDelegate* delegate)
+    // 100ms animation at 50fps (so 5 animation frames in total).
+    : ui::LinearAnimation(100, 50, delegate) {}
+
+ExtensionAction::IconAnimation::~IconAnimation() {}
+
+const SkBitmap& ExtensionAction::IconAnimation::Apply(
+    const SkBitmap& icon) const {
+  DCHECK_GT(icon.width(), 0);
+  DCHECK_GT(icon.height(), 0);
+
+  if (!device_.get() ||
+      (device_->width() != icon.width()) ||
+      (device_->height() != icon.height())) {
+    device_.reset(new SkDevice(
+      SkBitmap::kARGB_8888_Config, icon.width(), icon.height(), true));
+  }
+
+  SkCanvas canvas(device_.get());
+  canvas.clear(SK_ColorWHITE);
+  SkPaint paint;
+  paint.setAlpha(CurrentValueBetween(0, 255));
+  canvas.drawBitmap(icon, 0, 0, &paint);
+  return device_->accessBitmap(false);
+}
+
+void ExtensionAction::IconAnimation::AddObserver(
+    ExtensionAction::IconAnimation::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ExtensionAction::IconAnimation::RemoveObserver(
+    ExtensionAction::IconAnimation::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void ExtensionAction::IconAnimation::AnimateToState(double state) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnIconChanged(*this));
+}
+
+ExtensionAction::IconAnimation::ScopedObserver::ScopedObserver(
+    const base::WeakPtr<IconAnimation>& icon_animation,
+    Observer* observer)
+    : icon_animation_(icon_animation),
+      observer_(observer) {
+  if (icon_animation.get())
+    icon_animation->AddObserver(observer);
+}
+
+ExtensionAction::IconAnimation::ScopedObserver::~ScopedObserver() {
+  if (icon_animation_.get())
+    icon_animation_->RemoveObserver(observer_);
+}
 
 ExtensionAction::ExtensionAction(const std::string& extension_id,
                                  Type action_type)
@@ -59,6 +153,24 @@ ExtensionAction::ExtensionAction(const std::string& extension_id,
 }
 
 ExtensionAction::~ExtensionAction() {
+}
+
+scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
+  scoped_ptr<ExtensionAction> copy(
+      new ExtensionAction(extension_id_, action_type_));
+  copy->popup_url_ = popup_url_;
+  copy->title_ = title_;
+  copy->icon_ = icon_;
+  copy->icon_index_ = icon_index_;
+  copy->badge_text_ = badge_text_;
+  copy->badge_background_color_ = badge_background_color_;
+  copy->badge_text_color_ = badge_text_color_;
+  copy->visible_ = visible_;
+  copy->icon_animation_ = icon_animation_;
+  copy->default_icon_path_ = default_icon_path_;
+  copy->id_ = id_;
+  copy->icon_paths_ = icon_paths_;
+  return copy.Pass();
 }
 
 void ExtensionAction::SetPopupUrl(int tab_id, const GURL& url) {
@@ -95,6 +207,7 @@ void ExtensionAction::SetIconIndex(int tab_id, int index) {
 }
 
 void ExtensionAction::ClearAllValuesForTab(int tab_id) {
+  popup_url_.erase(tab_id);
   title_.erase(tab_id);
   icon_.erase(tab_id);
   icon_index_.erase(tab_id);
@@ -102,7 +215,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);
   visible_.erase(tab_id);
-  popup_url_.erase(tab_id);
+  icon_animation_.erase(tab_id);
 }
 
 void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
@@ -192,4 +305,19 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
                                 rect.fTop + kTextSize + kTopTextPadding,
                                 *text_paint);
   canvas->Restore();
+}
+
+base::WeakPtr<ExtensionAction::IconAnimation> ExtensionAction::GetIconAnimation(
+    int tab_id) const {
+  std::map<int, linked_ptr<IconAnimationWrapper> >::const_iterator it =
+      icon_animation_.find(tab_id);
+  return (it != icon_animation_.end()) ? it->second->animation()->AsWeakPtr()
+                                       : base::WeakPtr<IconAnimation>();
+}
+
+void ExtensionAction::RunIconAnimation(int tab_id) {
+  IconAnimationWrapper* icon_animation =
+      new IconAnimationWrapper(this, tab_id);
+  icon_animation_[tab_id] = make_linked_ptr(icon_animation);
+  icon_animation->animation()->Start();
 }

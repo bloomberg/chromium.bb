@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -35,7 +34,7 @@ ScriptBadgeController::ScriptBadgeController(TabContents* tab_contents)
 
 ScriptBadgeController::~ScriptBadgeController() {}
 
-std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() {
+std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() const {
   return current_actions_;
 }
 
@@ -177,10 +176,13 @@ bool ScriptBadgeController::InsertExtension(const std::string& extension_id) {
   if (!extension)
     return false;
 
-  current_actions_.push_back(extension->script_badge());
+  ExtensionAction* script_badge = extension->script_badge();
+  current_actions_.push_back(script_badge);
+  script_badge->RunIconAnimation(
+      tab_contents_->extension_tab_helper()->tab_id());
+
   return true;
 }
-
 
 bool ScriptBadgeController::EraseExtension(const Extension* extension) {
   if (extensions_executing_scripts_.erase(extension->id()) == 0)

@@ -29,6 +29,7 @@ class CommandUpdater;
 class ContentSettingDecoration;
 class EVBubbleDecoration;
 class KeywordHintDecoration;
+class LocationBarDecoration;
 class LocationIconDecoration;
 class PageActionDecoration;
 class Profile;
@@ -109,6 +110,9 @@ class LocationBarViewMac : public LocationBar,
 
   // Layout the various decorations which live in the field.
   void Layout();
+
+  // Re-draws |decoration| if it's already being displayed.
+  void RedrawDecoration(LocationBarDecoration* decoration);
 
   // Returns the current WebContents.
   content::WebContents* GetWebContents() const;

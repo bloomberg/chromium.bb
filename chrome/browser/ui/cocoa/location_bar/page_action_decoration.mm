@@ -49,7 +49,11 @@ PageActionDecoration::PageActionDecoration(
       page_action_(page_action),
       tracker_(this),
       current_tab_id_(-1),
-      preview_enabled_(false) {
+      preview_enabled_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
+          page_action->GetIconAnimation(
+              owner->GetTabContents()->extension_tab_helper()->tab_id()),
+          this)) {
   DCHECK(profile);
   const Extension* extension = profile->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
@@ -147,11 +151,12 @@ void PageActionDecoration::OnImageLoaded(const gfx::Image& image,
       page_action_icons_[page_action_->default_icon_path()] = *bitmap;
   }
 
-  // If we have no owner, that means this class is still being constructed and
-  // we should not UpdatePageActions, since it leads to the PageActions being
-  // destroyed again and new ones recreated (causing an infinite loop).
-  if (owner_)
-    owner_->UpdatePageActions();
+  // If we have no owner, that means this class is still being constructed.
+  TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
+  if (tab_contents) {
+    UpdateVisibility(tab_contents->web_contents(), current_url_);
+    owner_->RedrawDecoration(this);
+  }
 }
 
 void PageActionDecoration::UpdateVisibility(WebContents* contents,
@@ -189,6 +194,10 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
       }
     }
     if (!skia_icon.isNull()) {
+      const ExtensionAction::IconAnimation* icon_animation =
+          scoped_icon_animation_observer_.icon_animation();
+      if (icon_animation)
+        skia_icon = icon_animation->Apply(skia_icon);
       SetImage(gfx::SkBitmapToNSImage(skia_icon));
     } else if (!GetImage()) {
       // During install the action can be displayed before the icons
@@ -269,6 +278,12 @@ void PageActionDecoration::ShowPopup(const NSRect& frame,
                          anchoredAt:anchor
                       arrowLocation:info_bubble::kTopRight
                             devMode:NO];
+}
+
+void PageActionDecoration::OnIconChanged(
+    const ExtensionAction::IconAnimation& animation) {
+  UpdateVisibility(owner_->GetWebContents(), current_url_);
+  owner_->RedrawDecoration(this);
 }
 
 void PageActionDecoration::Observe(

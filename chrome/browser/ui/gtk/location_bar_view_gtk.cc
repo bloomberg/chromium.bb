@@ -731,9 +731,9 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   TabContents* tab_contents = GetTabContents();
   if (tab_contents) {
-    LocationBarController* controller =
+    LocationBarController* location_bar_controller =
         tab_contents->extension_tab_helper()->location_bar_controller();
-    new_page_actions = controller->GetCurrentActions();
+    new_page_actions = location_bar_controller->GetCurrentActions();
   }
 
   // Initialize on the first call, or re-initialize if more extensions have been
@@ -1627,7 +1627,11 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       current_tab_id_(-1),
       window_(NULL),
       accel_group_(NULL),
-      preview_enabled_(false) {
+      preview_enabled_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
+          page_action->GetIconAnimation(
+              owner->GetTabContents()->extension_tab_helper()->tab_id()),
+          this)) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
                               Extension::kPageActionIconMaxSize,
@@ -1735,8 +1739,21 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
       }
     }
     // The pixbuf might not be loaded yet.
-    if (pixbuf)
-      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
+    if (pixbuf) {
+      const ExtensionAction::IconAnimation* icon_animation =
+          scoped_icon_animation_observer_.icon_animation();
+      if (icon_animation) {
+        // Draw |pixbuf| with the fade-in |icon_animation_| applied to it.
+        // Use a temporary gfx::Image to do the conversion to/from a SkBitmap.
+        g_object_ref(pixbuf);  // don't let gfx::Image take ownership.
+        gfx::Image animated_image(
+            icon_animation->Apply(*gfx::Image(pixbuf).ToSkBitmap()));
+        gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
+                                  animated_image.ToGdkPixbuf());
+      } else {
+        gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
+      }
+    }
   }
 
   bool old_visible = IsVisible();
@@ -1775,11 +1792,10 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
       pixbufs_[page_action_->default_icon_path()] = pixbuf;
   }
 
-  // If we have no owner, that means this class is still being constructed and
-  // we should not UpdatePageActions, since it leads to the PageActions being
-  // destroyed again and new ones recreated (causing an infinite loop).
-  if (owner_)
-    owner_->UpdatePageActions();
+  // If we have no owner, that means this class is still being constructed.
+  TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
+  if (tab_contents)
+    UpdateVisibility(tab_contents->web_contents(), current_url_);
 }
 
 void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
@@ -1841,6 +1857,11 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
                    chrome::NOTIFICATION_WINDOW_CLOSED,
                    content::Source<GtkWindow>(window_));
   }
+}
+
+void LocationBarViewGtk::PageActionViewGtk::OnIconChanged(
+    const ExtensionAction::IconAnimation& animation) {
+  UpdateVisibility(owner_->GetWebContents(), current_url_);
 }
 
 void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {

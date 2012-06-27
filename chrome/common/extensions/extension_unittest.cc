@@ -96,10 +96,10 @@ static scoped_refptr<Extension> LoadManifestStrict(
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
-static ExtensionAction* LoadAction(const std::string& manifest) {
+static scoped_ptr<ExtensionAction> LoadAction(const std::string& manifest) {
   scoped_refptr<Extension> extension = LoadManifest("page_action",
       manifest);
-  return new ExtensionAction(*(extension->page_action()));
+  return extension->page_action()->CopyForTest();
 }
 
 static void LoadActionAndExpectError(const std::string& manifest,
@@ -204,7 +204,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   scoped_ptr<ExtensionAction> action;
 
   // First try with an empty dictionary.
-  action.reset(LoadAction("page_action_empty.json"));
+  action = LoadAction("page_action_empty.json");
   ASSERT_TRUE(action != NULL);
 
   // Now setup some values to use in the action.
@@ -213,7 +213,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   std::string img1("image1.png");
   std::string img2("image2.png");
 
-  action.reset(LoadAction("page_action.json"));
+  action = LoadAction("page_action.json");
   ASSERT_TRUE(NULL != action.get());
   ASSERT_EQ(id, action->id());
 
@@ -224,20 +224,20 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_EQ(img2, (*action->icon_paths())[1]);
 
   // Same test with explicitly set type.
-  action.reset(LoadAction("page_action_type.json"));
+  action = LoadAction("page_action_type.json");
   ASSERT_TRUE(NULL != action.get());
 
   // Try an action without id key.
-  action.reset(LoadAction("page_action_no_id.json"));
+  action = LoadAction("page_action_no_id.json");
   ASSERT_TRUE(NULL != action.get());
 
   // Then try without the name key. It's optional, so no error.
-  action.reset(LoadAction("page_action_no_name.json"));
+  action = LoadAction("page_action_no_name.json");
   ASSERT_TRUE(NULL != action.get());
   ASSERT_TRUE(action->GetTitle(1).empty());
 
   // Then try without the icon paths key.
-  action.reset(LoadAction("page_action_no_icon.json"));
+  action = LoadAction("page_action_no_icon.json");
   ASSERT_TRUE(NULL != action.get());
 
   // Now test that we can parse the new format for page actions.
@@ -245,7 +245,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   const std::string kIcon("image1.png");
   const std::string kPopupHtmlFile("a_popup.html");
 
-  action.reset(LoadAction("page_action_new_format.json"));
+  action = LoadAction("page_action_new_format.json");
   ASSERT_TRUE(action.get());
   ASSERT_EQ(kTitle, action->GetTitle(1));
   ASSERT_EQ(0u, action->icon_paths()->size());
@@ -255,7 +255,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
       errors::kInvalidPageActionDefaultTitle);
 
   // Invalid name should give an error only with no title.
-  action.reset(LoadAction("page_action_invalid_name.json"));
+  action = LoadAction("page_action_invalid_name.json");
   ASSERT_TRUE(NULL != action.get());
   ASSERT_EQ(kTitle, action->GetTitle(1));
 
@@ -269,7 +269,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Only use "popup", expect success.
   scoped_refptr<Extension> extension = LoadManifest("page_action",
              "page_action_popup.json");
-  action.reset(LoadAction("page_action_popup.json"));
+  action = LoadAction("page_action_popup.json");
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ(
       extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
@@ -284,14 +284,14 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Use only "default_popup", expect success.
   extension = LoadManifest("page_action", "page_action_popup.json");
-  action.reset(LoadAction("page_action_default_popup.json"));
+  action = LoadAction("page_action_default_popup.json");
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ(
       extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
   // Setting default_popup to "" is the same as having no popup.
-  action.reset(LoadAction("page_action_empty_default_popup.json"));
+  action = LoadAction("page_action_empty_default_popup.json");
   ASSERT_TRUE(NULL != action.get());
   EXPECT_FALSE(action->HasPopup(ExtensionAction::kDefaultTabId));
   ASSERT_STREQ(
@@ -299,7 +299,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
   // Setting popup to "" is the same as having no popup.
-  action.reset(LoadAction("page_action_empty_popup.json"));
+  action = LoadAction("page_action_empty_popup.json");
 
   ASSERT_TRUE(NULL != action.get());
   EXPECT_FALSE(action->HasPopup(ExtensionAction::kDefaultTabId));
