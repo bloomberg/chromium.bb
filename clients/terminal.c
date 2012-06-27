@@ -588,6 +588,9 @@ terminal_scroll_buffer(struct terminal *terminal, int d)
 			    terminal->curr_attr, terminal->width);
 		}
 	}
+
+	terminal->selection_start_row -= d;
+	terminal->selection_end_row -= d;
 }
 
 static void
