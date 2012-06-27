@@ -121,6 +121,8 @@
         'browser/autocomplete/autocomplete_controller_delegate.h',
         'browser/autocomplete/autocomplete_field_trial.cc',
         'browser/autocomplete/autocomplete_field_trial.h',
+        'browser/autocomplete/autocomplete_log.cc',
+        'browser/autocomplete/autocomplete_log.h',
         'browser/autocomplete/autocomplete_match.cc',
         'browser/autocomplete/autocomplete_match.h',
         'browser/autocomplete/autocomplete_provider.cc',

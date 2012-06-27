@@ -160,6 +160,7 @@
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
