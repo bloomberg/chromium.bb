@@ -98,7 +98,8 @@ class Isolate(unittest.TestCase):
         isolate = isolate_file
         variables = {'foo': 'bar'}
 
-      result_data = {
+      # Data to be loaded in the .result file. Do not create a .state file.
+      input_data = {
         'command': ['python'],
         'files': {
           'foo': {
@@ -115,8 +116,18 @@ class Isolate(unittest.TestCase):
           },
         },
       }
-      isolate.trace_inputs.write_json(Options.result, result_data, False)
+      isolate.trace_inputs.write_json(Options.result, input_data, False)
+
+      # A CompleteState object contains two parts:
+      # - Result instance stored in complete_state.result, corresponding to the
+      #   .result file, is what is read by run_test_from_archive.py.
+      # - SavedState instance stored in compelte_state.saved_state,
+      #   corresponding to the .state file, which is simply to aid the developer
+      #   when re-running the same command multiple times and contain
+      #   discardable information.
       complete_state = isolate.load_complete_state(Options, isolate.STATS_ONLY)
+      actual_result = complete_state.result.flatten()
+      actual_saved_state = complete_state.saved_state.flatten()
 
       expected_result = {
         'command': ['python', 'touch_root.py'],
@@ -133,7 +144,6 @@ class Isolate(unittest.TestCase):
         'read_only': None,
         'relative_cwd': 'data/isolate',
       }
-      actual_result = complete_state.result.flatten()
       for item in actual_result['files'].itervalues():
         self.assertTrue(item.pop('timestamp'))
       self.assertEquals(expected_result, actual_result)
@@ -142,8 +152,7 @@ class Isolate(unittest.TestCase):
         'isolate_file': isolate_file,
         'variables': {'foo': 'bar'},
       }
-      self.assertEquals(
-          expected_saved_state, complete_state.saved_state.flatten())
+      self.assertEquals(expected_saved_state, actual_saved_state)
     finally:
       isolate.run_test_from_archive.rmtree(directory)
 
