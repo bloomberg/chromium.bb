@@ -643,7 +643,17 @@ void DaemonControllerWin::DoGetUsageStatsConsent(
 
   // Activate the Daemon Controller and see if it supports |IDaemonControl2|.
   HRESULT hr = ActivateController();
-  if (FAILED(hr) || control2_.get() == NULL) {
+  if (FAILED(hr)) {
+    // The host is not installed yet. Assume that the user's consent is not
+    // recorded yet and set the default value to true. This value will not come
+    // into effect until the user installs the host and agrees to crash
+    // dump reporting.
+    done.Run(true, true, false);
+    return;
+  }
+
+  if (control2_.get() == NULL) {
+    // The host is installed and does not support crash dump reporting.
     done.Run(false, false, false);
     return;
   }
@@ -655,7 +665,7 @@ void DaemonControllerWin::DoGetUsageStatsConsent(
   if (FAILED(hr)) {
     // If the user's consent is not recorded yet, set the default value to true.
     // This value will not come into effect until the user agrees to crash
-    // dump reporting while starting the host.
+    // dump reporting.
     done.Run(true, true, false);
     return;
   }

@@ -58,8 +58,8 @@ bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
     return true;
   }
 
-  LOG_GETLASTERROR(ERROR)
-      << "Failed to record the user's consent to crash dump reporting";
+  // We do not log the error code here because the logging hasn't been
+  // initialized yet.
   return false;
 }
 
