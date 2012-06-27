@@ -1,3 +1,6 @@
 # http://crbug.com/93245
 GeolocationGatewayDataProviderCommonTest.*
 GeolocationWifiDataProviderCommonTest.*
+
+# Flaky, see http://crbug.com/131154
+WebRTCAudioDeviceTest.FullDuplexAudioWithAGC

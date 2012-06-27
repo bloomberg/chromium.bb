@@ -2,6 +2,3 @@
 PipelineIntegrationTest.BasicPlayback
 PipelineIntegrationTest.BasicPlaybackHashed
 PipelineIntegrationTest.EncryptedPlayback
-
-# Flaky, see http://crbug.com/131154
-WebRTCAudioDeviceTest.FullDuplexAudioWithAGC
