@@ -175,14 +175,38 @@ void setFantasyFontFamilyWrapper(WebSettings* settings,
 typedef void (*SetFontFamilyWrapper)(
     WebKit::WebSettings*, const string16&, UScriptCode);
 
+// If |scriptCode| is a member of a family of "similar" script codes, returns
+// the script code in that family that is used by WebKit for font selection
+// purposes.  For example, USCRIPT_KATAKANA_OR_HIRAGANA and USCRIPT_JAPANESE are
+// considered equivalent for the purposes of font selection.  WebKit uses the
+// script code USCRIPT_KATAKANA_OR_HIRAGANA.  So, if |scriptCode| is
+// USCRIPT_JAPANESE, the function returns USCRIPT_KATAKANA_OR_HIRAGANA.  WebKit
+// uses different scripts than the ones in Chrome pref names because the version
+// of ICU included on certain ports does not have some of the newer scripts.  If
+// |scriptCode| is not a member of such a family, returns |scriptCode|.
+UScriptCode GetScriptForWebSettings(UScriptCode scriptCode) {
+  switch (scriptCode) {
+  case USCRIPT_HIRAGANA:
+  case USCRIPT_KATAKANA:
+  case USCRIPT_JAPANESE:
+    return USCRIPT_KATAKANA_OR_HIRAGANA;
+  case USCRIPT_KOREAN:
+    return USCRIPT_HANGUL;
+  default:
+    return scriptCode;
+  }
+}
+
 void ApplyFontsFromMap(const WebPreferences::ScriptFontFamilyMap& map,
                        SetFontFamilyWrapper setter,
                        WebSettings* settings) {
   for (WebPreferences::ScriptFontFamilyMap::const_iterator it = map.begin();
        it != map.end(); ++it) {
     int32 script = u_getPropertyValueEnum(UCHAR_SCRIPT, (it->first).c_str());
-    if (script >= 0 && script < USCRIPT_CODE_LIMIT)
-      (*setter)(settings, it->second, (UScriptCode) script);
+    if (script >= 0 && script < USCRIPT_CODE_LIMIT) {
+      UScriptCode code = static_cast<UScriptCode>(script);
+      (*setter)(settings, it->second, GetScriptForWebSettings(code));
+    }
   }
 }
 

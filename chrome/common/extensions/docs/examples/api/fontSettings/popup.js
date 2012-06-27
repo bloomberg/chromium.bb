@@ -22,13 +22,13 @@ var sampleTextDivIds = [
 var defaultSampleText = 'Lorem ipsum dolor sit amat.';
 var scriptSpecificSampleText = {
   // "Cyrllic script".
-  'Cyrl': 'Lorem ipsum Кириллица',
-  'Hang': 'Lorem ipsum 雪海泳 정 참판 양반댁 규수 큰 교자 타고 혼례 치른 날.',
-  'Hans': 'Lorem ipsum 雪海泳 简体字。',
-  'Hant': 'Lorem ipsum 雪海泳 繁體字。',
-  'Hrkt': 'Lorem ipsum 雪海泳 バスを待ち大路の春をうたがはず。',
-   // "Khmer language".
-  'Khmr': 'Lorem ipsum \u1797\u17B6\u179F\u17B6\u1781\u17D2\u1798\u17C2\u179A',
+  'Cyrl': 'Кириллица',
+  'Hang': '정 참판 양반댁 규수 큰 교자 타고 혼례 치른 날.',
+  'Hans': '床前明月光，疑是地上霜。举头望明月，低头思故乡。',
+  'Hant': '床前明月光，疑是地上霜。舉頭望明月，低頭思故鄉。',
+  'Jpan': '吾輩は猫である。名前はまだ無い。',
+  // "Khmer language".
+  'Khmr': '\u1797\u17B6\u179F\u17B6\u1781\u17D2\u1798\u17C2\u179A',
 };
 
 function getSelectedScript() {
@@ -182,8 +182,8 @@ function clearAllSettings() {
        "Cari", "Cham", "Cher", "Cirt", "Copt", "Cprt", "Cyrl", "Cyrs", "Deva",
        "Dsrt", "Dupl", "Egyd", "Egyh", "Egyp", "Elba", "Ethi", "Geor", "Geok",
        "Glag", "Goth", "Gran", "Grek", "Gujr", "Guru", "Hang", "Hani", "Hano",
-       "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hrkt", "Hung", "Inds", "Ital",
-       "Java", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi",
+       "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hung", "Inds", "Ital", "Java",
+       "Jpan", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi",
        "Lana", "Laoo", "Latf", "Latg", "Latn", "Lepc", "Limb", "Lina", "Linb",
        "Lisu", "Loma", "Lyci", "Lydi", "Mand", "Mani", "Maya", "Mend", "Merc",
        "Mero", "Mlym", "Moon", "Mong", "Mroo", "Mtei", "Mymr", "Narb", "Nbat",

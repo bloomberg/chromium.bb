@@ -177,8 +177,8 @@ const char* const kWebKitScriptsForFontFamilyMaps[] = {
   "Cari", "Cham", "Cher", "Cirt", "Copt", "Cprt", "Cyrl", "Cyrs", "Deva",
   "Dsrt", "Dupl", "Egyd", "Egyh", "Egyp", "Elba", "Ethi", "Geor", "Geok",
   "Glag", "Goth", "Gran", "Grek", "Gujr", "Guru", "Hang", "Hani", "Hano",
-  "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hrkt", "Hung", "Inds", "Ital",
-  "Java", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi",
+  "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hung", "Inds", "Ital", "Java",
+  "Jpan", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi",
   "Lana", "Laoo", "Latf", "Latg", "Latn", "Lepc", "Limb", "Lina", "Linb",
   "Lisu", "Loma", "Lyci", "Lydi", "Mand", "Mani", "Maya", "Mend", "Merc",
   "Mero", "Mlym", "Moon", "Mong", "Mroo", "Mtei", "Mymr", "Narb", "Nbat",
@@ -220,13 +220,13 @@ const char kWebKitSerifFontFamilyGreek[] =
 const char kWebKitSansSerifFontFamilyGreek[] =
     "webkit.webprefs.fonts.sansserif.Grek";
 const char kWebKitStandardFontFamilyJapanese[] =
-    "webkit.webprefs.fonts.standard.Hrkt";
+    "webkit.webprefs.fonts.standard.Jpan";
 const char kWebKitFixedFontFamilyJapanese[] =
-    "webkit.webprefs.fonts.fixed.Hrkt";
+    "webkit.webprefs.fonts.fixed.Jpan";
 const char kWebKitSerifFontFamilyJapanese[] =
-    "webkit.webprefs.fonts.serif.Hrkt";
+    "webkit.webprefs.fonts.serif.Jpan";
 const char kWebKitSansSerifFontFamilyJapanese[] =
-    "webkit.webprefs.fonts.sansserif.Hrkt";
+    "webkit.webprefs.fonts.sansserif.Jpan";
 const char kWebKitStandardFontFamilyKorean[] =
     "webkit.webprefs.fonts.standard.Hang";
 const char kWebKitFixedFontFamilyKorean[] =

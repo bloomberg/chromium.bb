@@ -28,16 +28,12 @@ generic font family.</p>
 setting for the corresponding language script. If no language is specified,
 Chrome uses the setting for the default, or global, script.</p>
 
-<p>The supported language scripts are based on ISO 15924 script codes and listed
-in the API reference below. Technically, Chrome settings are not strictly
+<p>The supported language scripts are specified by ISO 15924 script code and
+listed in the API reference below. Technically, Chrome settings are not strictly
 per-script but also depend on language. For example, Chrome chooses the font for
-Hangul (ISO 15924 script code "Hang") when a webpage specifies Korean language,
-and uses this font not just for Hangul script but for everything the font
-covers, such as Hanja.</p>
-
-<p>Although ISO 15924 provides script codes like "Japn" for Japanese and "Kore"
-for Korean, these codes are newer than "Hrkt" and "Hang" which Chrome continues
-to use for compatibility purposes.</p>
+Cyrillic (ISO 15924 script code "Cyrl") when a webpage specifies the Russian
+language, and uses this font not just for Cyrillic script but for everything the
+font covers, such as Latin.</p>
 
 <h2 id="examples">Examples</h2>
 <p>The following code gets the standard font for Arabic.</p>
@@ -51,7 +47,7 @@ chrome.experimental.fontSettings.getFont(
 <p>The next snippet sets the sans-serif font for Japanese.</p>
 <pre>
 chrome.experimental.fontSettings.setFont(
-  { genericFamily: 'sansserif', script: 'Hrkt', fontName: 'IPAPGothic' }
+  { genericFamily: 'sansserif', script: 'Jpan', fontName: 'MS PGothic' }
 );
 </pre>
 
