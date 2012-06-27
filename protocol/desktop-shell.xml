@@ -74,7 +74,7 @@
 	A keybaord surface is only shown, when a text model is active
       </description>
 
-      <arg name="surface" type="object" interface="wl_shell_surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="output" type="object" interface="wl_output"/>
     </request>
 

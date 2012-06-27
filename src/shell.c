@@ -128,9 +128,6 @@ struct desktop_shell {
 
 enum shell_surface_type {
 	SHELL_SURFACE_NONE,
-
-	SHELL_SURFACE_INPUT_PANEL,
-
 	SHELL_SURFACE_TOPLEVEL,
 	SHELL_SURFACE_TRANSIENT,
 	SHELL_SURFACE_FULLSCREEN,
@@ -1221,10 +1218,6 @@ reset_shell_surface_type(struct shell_surface *surface)
 					    surface->saved_x,
 					    surface->saved_y);
 		break;
-	case SHELL_SURFACE_INPUT_PANEL:
-		wl_list_remove(&surface->link);
-		wl_list_init(&surface->link);
-		break;
 	case SHELL_SURFACE_NONE:
 	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_TRANSIENT:
@@ -1845,33 +1838,6 @@ terminate_screensaver(struct desktop_shell *shell)
 }
 
 static void
-show_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
-{
-	if (weston_surface_is_mapped(surface->surface))
-		return;
-
-	wl_list_remove(&surface->surface->layer_link);
-	wl_list_insert(&shell->panel_layer.surface_list, &surface->surface->layer_link);
-	surface->surface->output = surface->output;
-	weston_surface_damage(surface->surface);
-
-	weston_slide_run(surface->surface,
-			 surface->surface->geometry.height, 0,
-			 NULL, NULL);
-}
-
-static void
-hide_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
-{
-	weston_surface_damage_below(surface->surface);
-	wl_list_remove(&surface->surface->layer_link);
-	wl_list_init(&surface->surface->layer_link);
-	surface->surface->output = NULL;
-
-	weston_compositor_schedule_repaint(surface->surface->compositor);
-}
-
-static void
 configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
 {
 	struct weston_surface *s, *next;
@@ -2084,16 +2050,8 @@ move_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (shsurf == NULL)
+	if (shsurf == NULL || shsurf->type == SHELL_SURFACE_FULLSCREEN)
 		return;
-
-	switch (shsurf->type) {
-		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_INPUT_PANEL:
-			return;
-		default:
-			break;
-	}
 
 	surface_move(shsurf, (struct weston_seat *) seat);
 }
@@ -2111,16 +2069,8 @@ resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (!shsurf)
+	if (!shsurf || shsurf->type == SHELL_SURFACE_FULLSCREEN)
 		return;
-
-	switch (shsurf->type) {
-		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_INPUT_PANEL:
-			return;
-		default:
-			break;
-	}
 
 	weston_surface_from_global(surface,
 				   wl_fixed_to_int(seat->pointer->grab_x),
@@ -2345,16 +2295,8 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		return;
 
 	surface = get_shell_surface(base_surface);
-	if (!surface)
+	if (!surface || surface->type == SHELL_SURFACE_FULLSCREEN)
 		return;
-
-	switch (surface->type) {
-		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_INPUT_PANEL:
-			return;
-		default:
-			break;
-	}
 
 	rotate = malloc(sizeof *rotate);
 	if (!rotate)
@@ -2419,9 +2361,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	weston_surface_activate(es, seat);
 
 	switch (get_shell_surface_type(es)) {
-	case SHELL_SURFACE_INPUT_PANEL:
-		break;
-
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
 		shell_stack_fullscreen(get_shell_surface(es));
@@ -2468,13 +2407,8 @@ click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 	if (is_black_surface(focus, &upper))
 		focus = upper;
 
-	switch (get_shell_surface_type(focus)) {
-		case SHELL_SURFACE_INPUT_PANEL:
-		case SHELL_SURFACE_NONE:
-			return;
-		default:
-			break;
-	}
+	if (get_shell_surface_type(focus) == SHELL_SURFACE_NONE)
+		return;
 
 	if (seat->pointer->grab == &seat->pointer->default_grab)
 		activate(shell, focus, ws);
@@ -2547,23 +2481,37 @@ show_input_panels(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, show_input_panel_listener);
-	struct shell_surface *priv;
+	struct weston_surface *surface, *next;
 
-	wl_list_for_each(priv, &shell->input_panel.surfaces, link) {
-		show_input_panel(shell, priv);
+	wl_list_for_each_safe(surface, next,
+			      &shell->input_panel.surfaces, layer_link) {
+		wl_list_remove(&surface->layer_link);
+		wl_list_insert(&shell->panel_layer.surface_list,
+			       &surface->layer_link);
+		weston_surface_assign_output(surface);
+		weston_surface_damage(surface);
+		weston_slide_run(surface,
+				 surface->geometry.height, 0, NULL, NULL);
 	}
 }
+
+static void
+input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy);
 
 static void
 hide_input_panels(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, hide_input_panel_listener);
-	struct shell_surface *priv;
+	struct weston_surface *surface, *next;
 
-	wl_list_for_each(priv, &shell->input_panel.surfaces, link) {
-		hide_input_panel(shell, priv);
-	}
+	wl_list_for_each_safe(surface, next,
+			      &shell->panel_layer.surface_list, layer_link)
+		if (surface->configure == input_panel_configure) {
+			weston_surface_unmap(surface);
+			wl_list_insert(&shell->input_panel.surfaces,
+				       &surface->layer_link);
+		}
 }
 
 static void
@@ -2576,17 +2524,6 @@ center_on_output(struct weston_surface *surface, struct weston_output *output)
 	weston_surface_configure(surface, output->x + x, output->y + y,
 				 surface->buffer->width,
 				 surface->buffer->height);
-}
-
-
-static void
-bottom_center_on_output(struct weston_surface *surface, struct weston_output *output)
-{
-	struct weston_mode *mode = output->current;
-	GLfloat x = (mode->width - surface->geometry.width) / 2;
-	GLfloat y = mode->height - surface->geometry.height;
-
-	weston_surface_set_position(surface, output->x + x, output->y + y);
 }
 
 static void
@@ -2620,11 +2557,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		weston_surface_set_position(surface, surface->output->x,
 					    surface->output->y + panel_height);
 		break;
-	case SHELL_SURFACE_INPUT_PANEL:
-		bottom_center_on_output(surface, get_default_output(compositor));
-		/* Don't map the input panel here, wait for
-		 * show_input_panels signal. */
-		return;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
 	case SHELL_SURFACE_NONE:
@@ -2645,7 +2577,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_NONE:
-	case SHELL_SURFACE_INPUT_PANEL:
 		break;
 	default:
 		ws = get_current_workspace(shell);
@@ -2923,20 +2854,36 @@ bind_screensaver(struct wl_client *client,
 }
 
 static void
+input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+{
+	struct weston_mode *mode = surface->output->current;
+	GLfloat x = (mode->width - surface->buffer->width) / 2;
+	GLfloat y = mode->height - surface->buffer->height;
+
+	/* Don't map the input panel here, wait for
+	 * show_input_panels signal. */
+
+	weston_surface_configure(surface,
+				 surface->output->x + x,
+				 surface->output->y + y,
+				 surface->buffer->width,
+				 surface->buffer->height);
+}
+
+static void
 input_panel_set_surface(struct wl_client *client,
 			struct wl_resource *resource,
-			struct wl_resource *shell_surface_resource,
+			struct wl_resource *surface_resource,
 			struct wl_resource *output_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct shell_surface *surface = shell_surface_resource->data;
+	struct weston_surface *surface = surface_resource->data;
 	struct weston_output *output = output_resource->data;
 
-	surface->next_type = SHELL_SURFACE_INPUT_PANEL;
-
-	surface->fullscreen_output = output;
+	surface->configure = input_panel_configure;
+	surface->private = shell;
 	surface->output = output;
-	wl_list_insert(shell->input_panel.surfaces.prev, &surface->link);
+	wl_list_insert(shell->input_panel.surfaces.prev, &surface->layer_link);
 }
 
 static const struct input_panel_interface input_panel_implementation = {

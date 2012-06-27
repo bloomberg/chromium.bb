@@ -156,11 +156,10 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	memset(keyboard, 0, sizeof *keyboard);
 
 	keyboard->keyboard = virtual_keyboard;
-	keyboard->window = window_create(virtual_keyboard->display);
+	keyboard->window = window_create_custom(virtual_keyboard->display);
 	keyboard->widget = window_add_widget(keyboard->window, keyboard);
 
 	window_set_title(keyboard->window, "Virtual keyboard");
-	window_set_custom(keyboard->window);
 	window_set_user_data(keyboard->window, keyboard);
 	
 	keyboard->cx = 40;
@@ -173,7 +172,7 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	window_schedule_resize(keyboard->window, keyboard->cx * 10, keyboard->cy * 5);
 
 	input_panel_set_surface(virtual_keyboard->input_panel,
-				window_get_wl_shell_surface(keyboard->window),
+				window_get_wl_surface(keyboard->window),
 				output_get_wl_output(output));
 }
 
