@@ -121,8 +121,6 @@
       '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
       '-policy.PolicyTest.testExtensionInstallFromForceList',
-      # crbug.com/133832
-      '-policy.PolicyTest.testPolicyToPrefMapping',
       # crbug.com/134560
       '-policy.PolicyTest.testBlacklistPolicy',
       '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
