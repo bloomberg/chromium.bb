@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -71,9 +71,9 @@ static int NaClFindUnusedEntryNumber() {
   if (-1 != retval) {
     retval = -1;  /* In case we don't find any free entry */
     for (i = 0; i < LDT_ENTRIES; ++i) {
-    if (!entries[i].present) {
-      retval = i;
-      break;
+      if (!entries[i].present) {
+        retval = i;
+        break;
       }
     }
   }
