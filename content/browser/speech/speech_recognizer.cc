@@ -541,9 +541,25 @@ SpeechRecognizer::FSMState SpeechRecognizer::ProcessIntermediateResult(
   // If this check is reached it means that a continuous speech recognition
   // engine is being used for a one shot recognition.
   DCHECK_EQ(false, is_single_shot_);
+
+  // In continuous recognition, intermediate results can occur even when we are
+  // in the ESTIMATING_ENVIRONMENT or WAITING_FOR_SPEECH states (if the
+  // recognition engine is "faster" than our endpointer). In these cases we
+  // skip the endpointer and fast-forward to the RECOGNIZING state, with respect
+  // of the events triggering order.
+  if (state_ == STATE_ESTIMATING_ENVIRONMENT) {
+    DCHECK(endpointer_.IsEstimatingEnvironment());
+    endpointer_.SetUserInputMode();
+    listener_->OnEnvironmentEstimationComplete(session_id_);
+  } else if (state_ == STATE_WAITING_FOR_SPEECH) {
+    listener_->OnSoundStart(session_id_);
+  } else {
+    DCHECK_EQ(STATE_RECOGNIZING, state_);
+  }
+
   const SpeechRecognitionResult& result = event_args.engine_result;
   listener_->OnRecognitionResult(session_id_, result);
-  return state_;
+  return STATE_RECOGNIZING;
 }
 
 SpeechRecognizer::FSMState
