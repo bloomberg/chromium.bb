@@ -3408,7 +3408,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 				  "src offset 0x%04x bytes\n",
 				  data[i] >> (IS_GEN6(devid) ? 26 : 27),
 				  data[i] & (1 << (IS_GEN6(devid) ? 25 : 26)) ?
-				  "in" : "", (data[i] >> 16) & 0x1ff,
+				  "" : "in", (data[i] >> 16) & 0x1ff,
 				  data[i] & 0x07ff);
 			i++;
 			instr_out(ctx, i, "(%s, %s, %s, %s), "
