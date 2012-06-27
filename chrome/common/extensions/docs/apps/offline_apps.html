@@ -228,16 +228,12 @@ will work offline.
 Your offline-enabled app should follow these rules:
 </p>
 <dl>
-  <dt> Specify <code>"offline_enabled": true</code>in the manifest. </dt>
-  <dd> The Chrome Web Store and browser use this setting to
-    determine whether to present your app as offline capable.
-    </dd>
   <dt> Use local data whenever possible. </dt>
   <dd> When using resources from the internet,
     use <code>XMLHttpRequest</code> to get it,
     and then save the data locally.
     You can use the Chrome Storage API,
-    IndexedDB, or 
+    IndexedDB, or
     Filesystem API to save data locally. </dd>
   <dt> Separate your app’s UI from its data. </dt>
   <dd>
@@ -245,7 +241,7 @@ Your offline-enabled app should follow these rules:
     improves your app's design and
     eases the task of enabling offline usage,
     but also lets you provide other views of the user's data.
-    An MVC framework can help you keep the UI and data separate. 
+    An MVC framework can help you keep the UI and data separate.
   </dd>
   <dt> Assume your app can be closed at any time. </dt>
   <dd> Save application state
@@ -316,49 +312,33 @@ but it has no direct access to the Chrome app APIs
 (see <a href="app_external.html#objecttag">Embed external web pages</a>).
 </p>
 <p>
-Some of the restrictions on packaged apps are enforced by the 
+Some of the restrictions on packaged apps are enforced by the
 <a href="http://code.google.com/chrome/extensions/contentSecurityPolicy.html">Content Security Policy (CSP)</a>
 which is always the following and cannot be changed for packaged apps:
 </p>
-<pre>default-src 'self' chrome-extension-resource:;
+<pre>default-src 'self';
 connect-src *;
-style-src 'self' blob: data: filesystem: chrome-extension-resource: 'unsafe-inline';
-img-src 'self' blob: data: filesystem: chrome-extension-resource:;
-frame-src 'self' blob: data: filesystem: chrome-extension-resource:;
-font-src 'self' blob: data: filesystem: chrome-extension-resource:;
+style-src 'self' blob: data: filesystem: 'unsafe-inline';
+img-src 'self' blob: data: filesystem:;
+frame-src 'self' blob: data: filesystem:;
+font-src 'self' blob: data: filesystem:;
 media-src *;
 </pre>
-<p class="note">
-<b>Note:</b>
-The <code>chrome-extension-resource:</code> string
-refers to a file in the app's package.
-<span class="comment"> 
-{PENDING: true?}
-</span>
-</p>
 <h2 id="manifest"> Specifying offline_enabled </h2>
 <p>
-If your app behaves well offline,
-then you should advertise that fact.
-To do so, set offline_enabled to true
-in the app manifest file.
-<span class="comment"> 
-{PENDING: make that a link}
-</span>
+It is assumed that your app behaves well offline. If it doesn't, you should
+advertise that fact, so that its launch icon is dimmed when the user is offline.
+To do so, set <code>offline_enabled</code> to <code>false</code> in the
+<a href="manifest.html">app manifest file</a>:
 </p>
 <pre>{
-  "name": "My extension",
+  "name": "My app",
   ...
-  <b>"offline_enabled": true,</b>
+  <b>"offline_enabled": false,</b>
   "manifest_version": 2,
   ...
 }
 </pre>
-<p class="comment">
-{PENDING: Why do NONE of the
-<a href="https://code.google.com/a/google.com/p/chrome-apps-samples/">samples</a>
-have offline_enabled set?}
-</p>
 <p class="comment">
 {PENDING: should we link to <a href="https://chrome.google.com/webstore/category/collection/offline_enabled">Offline Apps collection</a>?
 show a screenshot of how offline apps are highlighted?
@@ -409,7 +389,7 @@ The Storage API handles data asynchronously.
 <p>
 In general, how you save data remotely is up to you,
 but some frameworks and APIs can help.
-For example, 
+For example,
 in the Backbone MVC model,
 you can use a custom Backbone.sync adapter.
 </p>
@@ -423,7 +403,7 @@ If the user isn't signed in,
 they'll be prompted to sign in.
 However, note that the user's synced data
 is deleted if the user uninstalls your app.
-<span class="comment"> 
+<span class="comment">
 {QUESTION: true?}
 </span>
 </p>

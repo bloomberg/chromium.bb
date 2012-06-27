@@ -8,7 +8,7 @@ is a good starting point.
 It covers the broader web platform view of CSP;
 packaged apps CSP isn't as flexible.
 You should read the
-<a href="contentSecurityPolicy.html">Chrome extension Content Security Policy</a>
+<a href="http://code.google.com/chrome/extensions/contentSecurityPolicy.html">Chrome extension Content Security Policy</a>
 as it's the foundation for the packaged app CSP.
 For brevity's sake,
 we don't repeat the same information here.
@@ -18,7 +18,7 @@ we don't repeat the same information here.
 CSP is a policy to mitigate against cross-site scripting issues,
 and we all know that cross-scripting is bad.
 We aren’t going to try and convince you
-that CSP is a warm-and-fuzzy new policy. 
+that CSP is a warm-and-fuzzy new policy.
 There's work involved;
 you'll need to learn how to do fundamental tasks differently.
 </p>
@@ -46,6 +46,18 @@ you from doing the following:</p>
 	<li>You can’t use string-to-JavaScript methods like
 		<code>eval()</code> and <code>function()</code>.</li>
 </ul>
+
+<p>This is implemented via the following policy value:</p>
+
+<pre>
+default-src 'self';
+connect-src *;
+style-src 'self' blob: data: filesystem: 'unsafe-inline';
+img-src 'self' blob: data: filesystem:;
+frame-src 'self' blob: data: filesystem:;
+font-src 'self' blob: data: filesystem:;
+media-src *;
+</pre>
 
 <p>
 Your packaged app can only refer to scripts and objects
@@ -82,7 +94,7 @@ but it will require some work on your part and there are restrictions.
 
 <p>
 You will need to use sandboxing to isolate any content
-that you want to do ‘eval’ things to. 
+that you want to do ‘eval’ things to.
 Sandboxing lifts CSP on the content that you specify.
 If you want to use the very powerful Chrome APIs in your packaged app,
 your sandboxed content can't directly interact with these APIs
@@ -99,8 +111,8 @@ or <code>filesystem:</code> URLs
 </p>
 
 <p>
-Video and audio can be loaded from remote services 
-because they have good fallback behavior when offline or under spotty connectivity. 
+Video and audio can be loaded from remote services
+because they have good fallback behavior when offline or under spotty connectivity.
 </p>
 
 <h3>Embed web content</h3>
@@ -108,7 +120,7 @@ because they have good fallback behavior when offline or under spotty connectivi
 <p>
 Instead of using an iframe,
 you can call out to an external URL using an object tag
-(see <a href="app_external.html#objecttag">Embed external web pages</a>). 
+(see <a href="app_external.html#objecttag">Embed external web pages</a>).
 </p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>

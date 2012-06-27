@@ -175,33 +175,31 @@
               <a href="#objecttag">Embed external web pages</a>
               <ol>
                 <li>
-                  <a href="#H3-4">Enable flags</a>
+                  <a href="#H3-4">Add object element</a>
                 </li><li>
-                  <a href="#H3-5">Add object element</a>
-                </li><li>
-                  <a href="#H3-6">Change URL</a>
+                  <a href="#H3-5">Change URL</a>
                 </li>
               </ol>
             </li><li>
               <a href="#sandboxing">Sandbox local content</a>
               <ol>
                 <li>
-                  <a href="#H3-8">Use inline scripts in sandbox</a>
+                  <a href="#H3-7">Use inline scripts in sandbox</a>
                 </li><li>
-                  <a href="#H3-9">Include sandbox in manifest</a>
+                  <a href="#H3-8">Include sandbox in manifest</a>
                 </li><li>
-                  <a href="#H3-10">Opening a sandboxed page in a window</a>
+                  <a href="#H3-9">Opening a sandboxed page in a window</a>
                 </li><li>
-                  <a href="#H3-11">Embedding a sandboxed page in an app page</a>
+                  <a href="#H3-10">Embedding a sandboxed page in an app page</a>
                 </li>
               </ol>
             </li><li>
               <a href="#postMessage">Sending messages to sandboxed pages</a>
               <ol>
                 <li>
-                  <a href="#H3-13">Post message</a>
+                  <a href="#H3-12">Post message</a>
                 </li><li>
-                  <a href="#H3-14">Listen for message</a>
+                  <a href="#H3-13">Listen for message</a>
                 </li>
               </ol>
             </li>
@@ -213,7 +211,7 @@
         <div id="static"><div id="pageData-name" class="pageData">Embed Content</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 <p>
-The <a href="app_security.html">packaged apps security model</a> disallows
+The <a href="app_architecture.html#security">packaged apps security model</a> disallows
 external content in iframes and
 the use of inline scripting and <code>eval()</code>.
 You can override these restrictions,
@@ -230,24 +228,21 @@ and indirectly access the APIs.
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/eval-in-iframe">eval-in-iframe</a>
-and <a href="https://github.com/GoogleChrome/chrome-apps/blob/master/regex-tester">regex-tester</a> samples.
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/eval-in-iframe">eval-in-iframe</a>
+and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/regex-tester">regex-tester</a> samples.
 </p>
 <h2 id="external">Referencing external resources</h2>
 <p>
-The Content Security Policy disallows the use
-of third-party URLs,
-so you can't directly reference external resources
-from a web page (image, audio, video).
-Use <a href="xhr.html">cross-origin XMLHttpRequests</a>
-to bring the resources into your app locally
-and create blob URLs,
-making sure to include a permission for that same URL
-in the manifest.
+The <a href="app_csp.html">Content Security Policy</a> used by apps disallows
+the use of many kinds of remote URLs, so you can't directly reference external
+images, stylesheets, or fonts from an app page. Instead, you can use use
+<a href="xhr.html">cross-origin XMLHttpRequests</a> to fetch these resources,
+and then serve them via <code>blob:</code> URLs.
 </p>
 <a name="H3-1"></a><h3>Manifest requirement</h3>
 <p>
-Add a permission for the third-party URL:
+To be able to do cross-origin XMLHttpRequests, you'll need to add a permission
+for the remote URL's host:
 </p>
 <pre>"permissions": [
     "...",
@@ -256,10 +251,11 @@ Add a permission for the third-party URL:
 </pre>
 <a name="H3-2"></a><h3>Cross-origin XMLHttpRequest</h3>
 <p>
-Bring the third-party URL into the app:
+Fetch the remote URL into the app and serve its contents as a <code>blob:</code>
+URL:
 </p>
 <pre>var xhr = new XMLHttpRequest();
-xhr.open('GET', 'https://supersweetdomainbutnotcspfriendly.com', true);
+xhr.open('GET', 'https://supersweetdomainbutnotcspfriendly.com/image.png', true);
 xhr.responseType = 'blob';
 xhr.onload = function(e) {
   var img = document.createElement('img');
@@ -268,6 +264,8 @@ xhr.onload = function(e) {
 };
 xhr.send();
 </pre>
+<p>You may want to <a href="offline_apps.html#saving-locally">save</a>
+these resources locally, so that they are available offline.</p>
 <h2 id="objecttag">Embed external web pages</h2>
 <p>
 The <code>object</code> tag allows you to embed content in your app,
@@ -281,25 +279,14 @@ and won't be able to gain elevated privileges.
 Further, since storage is isolated from the app,
 there is no way for the web content to access any of the app's data.
 </p>
-<a name="H3-4"></a><h3>Enable flags</h3>
-<p>
-You need to enable GPU compositing
-before you can embed external content in your app:
-</p>
-<ul>
-  <li>Go to <b>chrome://flags</b>.</li>
-  <li>Find "GPU compositing on all pages",
-    and click its "Enable" link.</li>
-  <li>Restart Chrome.</li>
-</ul>
-<a name="H3-5"></a><h3>Add object element</h3>
+<a name="H3-4"></a><h3>Add object element</h3>
 <p>
 Your <code>object</code> element must include the URL to the source content
 and have a type="application/browser-plugin".
 </p>
 <pre>&lt;object id="mybrowser" src="http://news.google.com/"
 	type="application/browser-plugin" width="640" height="480"&gt;&lt;/object&gt;</pre>
-<a name="H3-6"></a><h3>Change URL</h3>
+<a name="H3-5"></a><h3>Change URL</h3>
 <p>
 The app cannot dynamically change the src
 and have this work as expected.
@@ -324,7 +311,7 @@ If you need to do things like <code>eval()</code>,
 go this route to be exempt from CSP,
 but you won't be able to use the cool new stuff.
 </p>
-<a name="H3-8"></a><h3>Use inline scripts in sandbox</h3>
+<a name="H3-7"></a><h3>Use inline scripts in sandbox</h3>
 <p>
 Here's a sample sandboxed page
 which uses an inline script and <code>eval()</code>:
@@ -339,7 +326,7 @@ which uses an inline script and <code>eval()</code>:
   &lt;/body&gt;
 &lt;/html&gt;
 </pre>
-<a name="H3-9"></a><h3>Include sandbox in manifest</h3>
+<a name="H3-8"></a><h3>Include sandbox in manifest</h3>
 <p>
 You need to include the <code>sandbox</code> field in the manifest
 and list the app pages to be served in a sandbox:
@@ -348,7 +335,7 @@ and list the app pages to be served in a sandbox:
   "pages": ["sandboxed.html"]
 }
 </pre>
-<a name="H3-10"></a><h3>Opening a sandboxed page in a window</h3>
+<a name="H3-9"></a><h3>Opening a sandboxed page in a window</h3>
 <p>
 Just like any other app pages,
 you can create a window that the sandboxed page opens in.
@@ -371,7 +358,7 @@ and one for the sandboxed page:
   });
 });
 </pre>
-<a name="H3-11"></a><h3>Embedding a sandboxed page in an app page</h3>
+<a name="H3-10"></a><h3>Embedding a sandboxed page in an app page</h3>
 <p>Sandboxed pages can also be embedded within another app page
   using an <code>iframe</code>:</p>
 <pre>&lt;!DOCTYPE html&gt;
@@ -390,7 +377,7 @@ There are two parts to sending a message:
 you need to post a message from the sender page/window,
 and listen for messages on the receiving page/window.
 </p>
-<a name="H3-13"></a><h3>Post message</h3>
+<a name="H3-12"></a><h3>Post message</h3>
 <p>
 You can use <code>postMessage</code> to communicate
 between your app and sandboxed content.
@@ -424,7 +411,7 @@ it isn't necessary.
 To find out more,
 see <a href="https://developer.mozilla.org/DOM/window.postMessage">window.postMessage</a>.
 </p>
-<a name="H3-14"></a><h3>Listen for message</h3>
+<a name="H3-13"></a><h3>Listen for message</h3>
 <p>
 Here's a sample message receiver
 that gets added to your sandboxed page:

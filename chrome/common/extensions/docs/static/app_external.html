@@ -2,7 +2,7 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-The <a href="app_security.html">packaged apps security model</a> disallows
+The <a href="app_architecture.html#security">packaged apps security model</a> disallows
 external content in iframes and
 the use of inline scripting and <code>eval()</code>.
 You can override these restrictions,
@@ -21,28 +21,25 @@ and indirectly access the APIs.
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/eval-in-iframe">eval-in-iframe</a>
-and <a href="https://github.com/GoogleChrome/chrome-apps/blob/master/regex-tester">regex-tester</a> samples.
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/eval-in-iframe">eval-in-iframe</a>
+and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/regex-tester">regex-tester</a> samples.
 </p>
 
 <h2 id="external">Referencing external resources</h2>
 
 <p>
-The Content Security Policy disallows the use
-of third-party URLs,
-so you can't directly reference external resources
-from a web page (image, audio, video).
-Use <a href="xhr.html">cross-origin XMLHttpRequests</a>
-to bring the resources into your app locally
-and create blob URLs,
-making sure to include a permission for that same URL
-in the manifest.
+The <a href="app_csp.html">Content Security Policy</a> used by apps disallows
+the use of many kinds of remote URLs, so you can't directly reference external
+images, stylesheets, or fonts from an app page. Instead, you can use use
+<a href="xhr.html">cross-origin XMLHttpRequests</a> to fetch these resources,
+and then serve them via <code>blob:</code> URLs.
 </p>
 
 <h3>Manifest requirement</h3>
 
 <p>
-Add a permission for the third-party URL:
+To be able to do cross-origin XMLHttpRequests, you'll need to add a permission
+for the remote URL's host:
 </p>
 
 <pre>
@@ -55,12 +52,13 @@ Add a permission for the third-party URL:
 <h3>Cross-origin XMLHttpRequest</h3>
 
 <p>
-Bring the third-party URL into the app:
+Fetch the remote URL into the app and serve its contents as a <code>blob:</code>
+URL:
 </p>
 
 <pre>
 var xhr = new XMLHttpRequest();
-xhr.open('GET', 'https://supersweetdomainbutnotcspfriendly.com', true);
+xhr.open('GET', 'https://supersweetdomainbutnotcspfriendly.com/image.png', true);
 xhr.responseType = 'blob';
 xhr.onload = function(e) {
   var img = document.createElement('img');
@@ -70,6 +68,9 @@ xhr.onload = function(e) {
 
 xhr.send();
 </pre>
+
+<p>You may want to <a href="offline_apps.html#saving-locally">save</a>
+these resources locally, so that they are available offline.</p>
 
 <h2 id="objecttag">Embed external web pages</h2>
 
@@ -85,20 +86,6 @@ and won't be able to gain elevated privileges.
 Further, since storage is isolated from the app,
 there is no way for the web content to access any of the app's data.
 </p>
-
-<h3>Enable flags</h3>
-
-<p>
-You need to enable GPU compositing
-before you can embed external content in your app:
-</p>
-
-<ul>
-  <li>Go to <b>chrome://flags</b>.</li>
-  <li>Find "GPU compositing on all pages",
-    and click its "Enable" link.</li>
-  <li>Restart Chrome.</li>
-</ul>
 
 <h3>Add object element</h3>
 
@@ -175,7 +162,7 @@ and list the app pages to be served in a sandbox:
 </pre>
 
 <h3>Opening a sandboxed page in a window</h3>
- 
+
 <p>
 Just like any other app pages,
 you can create a window that the sandboxed page opens in.

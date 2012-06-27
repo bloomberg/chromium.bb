@@ -310,15 +310,12 @@ generic font family.</p>
 <p>When a webpage specifies a language, Chrome selects the font based on the
 setting for the corresponding language script. If no language is specified,
 Chrome uses the setting for the default, or global, script.</p>
-<p>The supported language scripts are based on ISO 15924 script codes and listed
-in the API reference below. Technically, Chrome settings are not strictly
+<p>The supported language scripts are specified by ISO 15924 script code and
+listed in the API reference below. Technically, Chrome settings are not strictly
 per-script but also depend on language. For example, Chrome chooses the font for
-Hangul (ISO 15924 script code "Hang") when a webpage specifies Korean language,
-and uses this font not just for Hangul script but for everything the font
-covers, such as Hanja.</p>
-<p>Although ISO 15924 provides script codes like "Japn" for Japanese and "Kore"
-for Korean, these codes are newer than "Hrkt" and "Hang" which Chrome continues
-to use for compatibility purposes.</p>
+Cyrillic (ISO 15924 script code "Cyrl") when a webpage specifies the Russian
+language, and uses this font not just for Cyrillic script but for everything the
+font covers, such as Latin.</p>
 <h2 id="examples">Examples</h2>
 <p>The following code gets the standard font for Arabic.</p>
 <pre>chrome.experimental.fontSettings.getFont(
@@ -328,7 +325,7 @@ to use for compatibility purposes.</p>
 </pre>
 <p>The next snippet sets the sans-serif font for Japanese.</p>
 <pre>chrome.experimental.fontSettings.setFont(
-  { genericFamily: 'sansserif', script: 'Hrkt', fontName: 'IPAPGothic' }
+  { genericFamily: 'sansserif', script: 'Jpan', fontName: 'MS PGothic' }
 );
 </pre>
 <p>You can find a sample extension using the Font Settings API in the
@@ -2590,7 +2587,7 @@ directory. For other examples and for help in viewing the source code, see
                     <span id="typeTemplate">
                       <span>
                         <span>string</span>
-                        <span>["Afak", "Arab", "Armi", "Armn", "Avst", "Bali", "Bamu", "Bass", "Batk", "Beng", "Blis", "Bopo", "Brah", "Brai", "Bugi", "Buhd", "Cakm", "Cans", "Cari", "Cham", "Cher", "Cirt", "Copt", "Cprt", "Cyrl", "Cyrs", "Deva", "Dsrt", "Dupl", "Egyd", "Egyh", "Egyp", "Elba", "Ethi", "Geor", "Geok", "Glag", "Goth", "Gran", "Grek", "Gujr", "Guru", "Hang", "Hani", "Hano", "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hrkt", "Hung", "Inds", "Ital", "Java", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi", "Lana", "Laoo", "Latf", "Latg", "Latn", "Lepc", "Limb", "Lina", "Linb", "Lisu", "Loma", "Lyci", "Lydi", "Mand", "Mani", "Maya", "Mend", "Merc", "Mero", "Mlym", "Moon", "Mong", "Mroo", "Mtei", "Mymr", "Narb", "Nbat", "Nkgb", "Nkoo", "Nshu", "Ogam", "Olck", "Orkh", "Orya", "Osma", "Palm", "Perm", "Phag", "Phli", "Phlp", "Phlv", "Phnx", "Plrd", "Prti", "Rjng", "Roro", "Runr", "Samr", "Sara", "Sarb", "Saur", "Sgnw", "Shaw", "Shrd", "Sind", "Sinh", "Sora", "Sund", "Sylo", "Syrc", "Syre", "Syrj", "Syrn", "Tagb", "Takr", "Tale", "Talu", "Taml", "Tang", "Tavt", "Telu", "Teng", "Tfng", "Tglg", "Thaa", "Thai", "Tibt", "Tirh", "Ugar", "Vaii", "Visp", "Wara", "Wole", "Xpeo", "Xsux", "Yiii", "Zmth", "Zsym", "Zyyy"]</span>
+                        <span>["Afak", "Arab", "Armi", "Armn", "Avst", "Bali", "Bamu", "Bass", "Batk", "Beng", "Blis", "Bopo", "Brah", "Brai", "Bugi", "Buhd", "Cakm", "Cans", "Cari", "Cham", "Cher", "Cirt", "Copt", "Cprt", "Cyrl", "Cyrs", "Deva", "Dsrt", "Dupl", "Egyd", "Egyh", "Egyp", "Elba", "Ethi", "Geor", "Geok", "Glag", "Goth", "Gran", "Grek", "Gujr", "Guru", "Hang", "Hani", "Hano", "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hung", "Inds", "Ital", "Java", "Jpan", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi", "Lana", "Laoo", "Latf", "Latg", "Latn", "Lepc", "Limb", "Lina", "Linb", "Lisu", "Loma", "Lyci", "Lydi", "Mand", "Mani", "Maya", "Mend", "Merc", "Mero", "Mlym", "Moon", "Mong", "Mroo", "Mtei", "Mymr", "Narb", "Nbat", "Nkgb", "Nkoo", "Nshu", "Ogam", "Olck", "Orkh", "Orya", "Osma", "Palm", "Perm", "Phag", "Phli", "Phlp", "Phlv", "Phnx", "Plrd", "Prti", "Rjng", "Roro", "Runr", "Samr", "Sara", "Sarb", "Saur", "Sgnw", "Shaw", "Shrd", "Sind", "Sinh", "Sora", "Sund", "Sylo", "Syrc", "Syre", "Syrj", "Syrn", "Tagb", "Takr", "Tale", "Talu", "Taml", "Tang", "Tavt", "Telu", "Teng", "Tfng", "Tglg", "Thaa", "Thai", "Tibt", "Tirh", "Ugar", "Vaii", "Visp", "Wara", "Wole", "Xpeo", "Xsux", "Yiii", "Zmth", "Zsym", "Zyyy"]</span>
                       </span>
                     </span>
                   )
