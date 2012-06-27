@@ -337,6 +337,13 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     queued_messages_.pop();
   }
 
+  if (run_renderer_in_process()) {
+    // In single process mode, need to set IO allowed in browser main thread
+    // before joining the renderer thread
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    in_process_renderer_.reset();
+  }
+
   ClearTransportDIBCache();
   UnregisterHost(GetID());
 }
