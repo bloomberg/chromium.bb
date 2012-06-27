@@ -1205,3 +1205,19 @@ html[dir=rtl] .error-message {
   margin: 0 auto;
   max-width: 850px;
 }
+
+#background {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+#background-transition {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
