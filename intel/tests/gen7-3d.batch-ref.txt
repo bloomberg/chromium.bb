@@ -198,9 +198,9 @@
 0x12300314:      0x158c2fff:    max index
 0x12300318:      0x00000000:    mbz
 0x1230031c:      0x78090003: 3DSTATE_VERTEX_ELEMENTS
-0x12300320:      0x02850000:    buffer 0: invalid, type 0x0085, src offset 0x0000 bytes
+0x12300320:      0x02850000:    buffer 0: valid, type 0x0085, src offset 0x0000 bytes
 0x12300324:      0x11230000:    (X, Y, 0.0, 1.0), dst offset 0x00 bytes
-0x12300328:      0x02400008:    buffer 0: invalid, type 0x0040, src offset 0x0008 bytes
+0x12300328:      0x02400008:    buffer 0: valid, type 0x0040, src offset 0x0008 bytes
 0x1230032c:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
 0x12300330:      0x7b000005: 3DPRIMITIVE: 
 0x12300334:      0x00000007:    quad list sequential
