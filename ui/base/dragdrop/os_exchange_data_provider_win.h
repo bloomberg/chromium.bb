@@ -16,7 +16,6 @@
 // being binary compatible.
 #ifndef __IDataObjectAsyncCapability_FWD_DEFINED__
 #define IDataObjectAsyncCapability IAsyncOperation
-#define IID_IDataObjectAsyncCapability IID_IAsyncOperation
 #endif
 
 #include "base/win/scoped_comptr.h"
