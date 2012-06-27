@@ -89,6 +89,10 @@ ASH_EXPORT base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(
     aura::Window* window, bool visible);
 
+// Delay the old layer deletion so that test can verify the behavior of
+// old layer.
+ASH_EXPORT void SetDelayedOldLayerDeletionInCrossFadeForTest(bool value);
+
 }  // namespace internal
 }  // namespace ash
 

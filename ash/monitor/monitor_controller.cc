@@ -215,10 +215,12 @@ void MonitorController::OnDisplayRemoved(const gfx::Display& display) {
     root_windows_.erase(display.id());
     internal::RootWindowController* controller =
         wm::GetRootWindowController(root);
-    if (controller)
+    if (controller) {
+      controller->MoveWindowsTo(Shell::GetPrimaryRootWindow());
       delete controller;
-    else
+    } else {
       delete root;
+    }
   }
 }
 

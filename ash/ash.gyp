@@ -388,6 +388,7 @@
         'launcher/launcher_unittest.cc',
         'launcher/launcher_view_unittest.cc',
         'monitor/multi_monitor_manager_unittest.cc',
+        'root_window_controller_unittest.cc',
         'screensaver/screensaver_view_unittest.cc',
         'shell_unittest.cc',
         'system/tray/system_tray_unittest.cc',

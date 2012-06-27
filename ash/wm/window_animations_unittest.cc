@@ -115,6 +115,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 }
 
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
+  internal::SetDelayedOldLayerDeletionInCrossFadeForTest(true);
+
   Window* default_container =
       ash::Shell::GetContainer(
           Shell::GetPrimaryRootWindow(),
@@ -162,6 +164,7 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
 
   RunAllPendingInMessageLoop();
+  internal::SetDelayedOldLayerDeletionInCrossFadeForTest(false);
 }
 
 TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {

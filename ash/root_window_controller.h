@@ -66,6 +66,9 @@ class RootWindowController {
   // Returns true if the workspace has a maximized or fullscreen window.
   bool IsInMaximizedMode() const;
 
+  // Moves child windows to |dest|.
+  void MoveWindowsTo(aura::RootWindow* dest);
+
  private:
   scoped_ptr<aura::RootWindow> root_window_;
   internal::RootWindowLayoutManager* root_window_layout_;

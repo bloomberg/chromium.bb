@@ -4,6 +4,8 @@
 
 #include "ash/root_window_controller.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -17,11 +19,54 @@
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/tooltip_client.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 namespace {
+
+// This class keeps track of whether or not an object has been deleted.
+class WindowLifeTracker : public aura::WindowObserver {
+ public:
+  WindowLifeTracker() {}
+  virtual ~WindowLifeTracker() {
+    for (aura::Window::Windows::iterator iter = tracking_windows_.begin();
+         iter != tracking_windows_.end(); ++iter) {
+      (*iter)->RemoveObserver(this);
+    }
+  }
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    aura::Window::Windows::iterator iter =
+        std::find(tracking_windows_.begin(), tracking_windows_.end(), window);
+    DCHECK(iter != tracking_windows_.end());
+    tracking_windows_.erase(iter);
+    window->RemoveObserver(this);
+  }
+
+  void TrackWindow(aura::Window* window) {
+    window->AddObserver(this);
+    tracking_windows_.push_back(window);
+  }
+
+  bool IsWindowAlive(aura::Window* window) {
+    aura::Window::Windows::iterator iter =
+        std::find(tracking_windows_.begin(), tracking_windows_.end(), window);
+    return iter != tracking_windows_.end();
+  }
+
+ private:
+  std::vector<aura::Window*> tracking_windows_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowLifeTracker);
+};
 
 // Creates a new window for use as a container.
 aura::Window* CreateContainer(int window_id,
@@ -35,6 +80,37 @@ aura::Window* CreateContainer(int window_id,
   if (window_id != internal::kShellWindowId_UnparentedControlContainer)
     container->Show();
   return container;
+}
+
+void MoveAllWindows(aura::RootWindow* src,
+                    aura::RootWindow* dst) {
+  // Windows move only from secondary displays to the primary
+  // display, so no need to move windows in the containers that are
+  // available only in the primary display (launcher, panels etc)
+  const int kContainerIdsToMove[] = {
+    internal::kShellWindowId_DefaultContainer,
+    internal::kShellWindowId_AlwaysOnTopContainer,
+    internal::kShellWindowId_SystemModalContainer,
+    internal::kShellWindowId_LockSystemModalContainer,
+  };
+
+  for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
+    int id = kContainerIdsToMove[i];
+    aura::Window* src_container = Shell::GetContainer(src, id);
+    aura::Window* dst_container = Shell::GetContainer(dst, id);
+    aura::Window::Windows children = src_container->children();
+    for (aura::Window::Windows::iterator iter = children.begin();
+         iter != children.end(); ++iter) {
+      aura::Window* window = *iter;
+      // Don't move modal screen.
+      if ((id == internal::kShellWindowId_SystemModalContainer ||
+           id == internal::kShellWindowId_LockSystemModalContainer) &&
+          window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE) {
+        continue;
+      }
+      dst_container->AddChild(window);
+    }
+  }
 }
 
 // Creates each of the special window containers that holds windows of various
@@ -216,6 +292,32 @@ void RootWindowController::CloseChildWindows() {
 
 bool RootWindowController::IsInMaximizedMode() const {
   return workspace_controller_->workspace_manager()->IsInMaximizedMode();
+}
+
+void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
+  aura::Window* focused = dst->GetFocusManager()->GetFocusedWindow();
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(dst);
+  aura::Window* active = activation_client->GetActiveWindow();
+  // Deactivate the window to close menu / bubble windows.
+  activation_client->DeactivateWindow(active);
+  // Release capture if any.
+  aura::client::GetCaptureClient(root_window_.get())->
+      SetCapture(NULL);
+  WindowLifeTracker tracker;
+  if (focused)
+    tracker.TrackWindow(focused);
+  if (active && focused != active)
+    tracker.TrackWindow(active);
+
+  MoveAllWindows(root_window_.get(), dst);
+
+  // Restore focused or active window if it's still alive.
+  if (focused && tracker.IsWindowAlive(focused) && dst->Contains(focused)) {
+    dst->GetFocusManager()->SetFocusedWindow(focused, NULL);
+  } else if (active && tracker.IsWindowAlive(active) && dst->Contains(active)) {
+    activation_client->ActivateWindow(active);
+  }
 }
 
 }  // namespace internal
