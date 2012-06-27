@@ -998,7 +998,7 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   # If the tests take longer than an hour and a half, abort.
-  INFRASTRUCTURE_TIMEOUT = 5400
+  INFRASTRUCTURE_TIMEOUT = 10800
   option_name = 'tests'
   config_name = 'hw_tests'
 
