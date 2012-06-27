@@ -779,9 +779,11 @@ cr.define('options', function() {
       if (visible) {
         uber.invokeMethodOnParent('beginInterceptingEvents');
         this.pageDiv.removeAttribute('aria-hidden');
-        this.parentPage.pageDiv.setAttribute('aria-hidden', true);
+        if (this.parentPage)
+          this.parentPage.pageDiv.setAttribute('aria-hidden', true);
       } else {
-        this.parentPage.pageDiv.removeAttribute('aria-hidden');
+        if (this.parentPage)
+          this.parentPage.pageDiv.removeAttribute('aria-hidden');
       }
 
       if (container.hidden != visible) {
