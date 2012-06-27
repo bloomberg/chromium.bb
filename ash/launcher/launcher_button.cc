@@ -398,10 +398,12 @@ void LauncherButton::Layout() {
 
 void LauncherButton::OnFocus() {
   AddState(STATE_FOCUSED);
+  CustomButton::OnFocus();
 }
 
 void LauncherButton::OnBlur() {
   ClearState(STATE_FOCUSED);
+  CustomButton::OnBlur();
 }
 
 void LauncherButton::Init() {
