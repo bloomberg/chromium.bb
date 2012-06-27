@@ -85,7 +85,7 @@ deps = {
     (Var("googlecode_url") % "googlemock") + "/trunk@405",
 
   "src/third_party/angle":
-    (Var("googlecode_url") % "angleproject") + "/trunk@1046",
+    (Var("googlecode_url") % "angleproject") + "/trunk@1164",
 
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@57",

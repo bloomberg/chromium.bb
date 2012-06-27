@@ -753,7 +753,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("gpu", "Copy");
 
-    if (reverse_rows_) {
+    if (!reverse_rows_) {
       // Use a simple pixel / vertex shader pair to render a quad that flips the
       // source texture on the vertical axis.
       IDirect3DSurface9 *default_render_target = NULL;
