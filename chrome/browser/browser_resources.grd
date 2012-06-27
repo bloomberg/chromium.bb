@@ -8,6 +8,17 @@
     <output filename="browser_resources.rc" type="rc_all" />
   </outputs>
   <release seq="1">
+    <structures>
+      <if expr="is_posix and not is_macosx">
+        <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="chrome_html" />
+      </if>
+      <if expr="is_macosx">
+        <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_mac.html" flattenhtml="true" type="chrome_html" />
+      </if>
+      <if expr="is_win">
+        <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="chrome_html" />
+      </if>
+    </structures>
     <includes>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
@@ -15,15 +26,6 @@
       </if>
       <include name="IDR_ABOUT_FLASH_HTML" file="resources\about_flash.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_FLASH_JS" file="resources\about_flash.js" type="BINDATA" />
-      <if expr="is_posix and not is_macosx">
-        <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
-      </if>
-      <if expr="is_macosx">
-        <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_mac.html" flattenhtml="true" type="BINDATA" />
-      </if>
-      <if expr="is_win">
-        <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
-      </if>
       <include name="IDR_ABOUT_MEMORY_JS" file="resources\about_memory.js" type="BINDATA" />
       <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_STATS_JS" file="resources\about_stats.js" type="BINDATA" />
