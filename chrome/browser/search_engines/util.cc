@@ -257,10 +257,21 @@ void GetSearchProvidersUsingKeywordResult(
   WDKeywordsResult keyword_result = reinterpret_cast<
       const WDResult<WDKeywordsResult>*>(&result)->GetValue();
 
-  for (KeywordTable::Keywords::const_iterator i(
-       keyword_result.keywords.begin()); i != keyword_result.keywords.end();
-       ++i)
+  for (KeywordTable::Keywords::iterator i(keyword_result.keywords.begin());
+       i != keyword_result.keywords.end(); ++i) {
+    // Fix any duplicate encodings in the local database.  Note that we don't
+    // adjust the last_modified time of this keyword; this way, we won't later
+    // overwrite any changes on the sync server that happened to this keyword
+    // since the last time we synced.  Instead, we also run a de-duping pass on
+    // the server-provided data in
+    // TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData() and
+    // update the server with the merged, de-duped results at that time.  We
+    // still fix here, though, to correct problems in clients that have disabled
+    // search engine sync, since in that case that code will never be reached.
+    if (DeDupeEncodings(&i->input_encodings) && service)
+      service->UpdateKeyword(*i);
     template_urls->push_back(new TemplateURL(profile, *i));
+  }
 
   int64 default_search_provider_id = keyword_result.default_search_provider_id;
   if (default_search_provider_id) {
@@ -285,6 +296,18 @@ void GetSearchProvidersUsingKeywordResult(
         removed_keyword_guids);
     *new_resource_keyword_version = resource_keyword_version;
   }
+}
+
+bool DeDupeEncodings(std::vector<std::string>* encodings) {
+  std::vector<std::string> deduped_encodings;
+  std::set<std::string> encoding_set;
+  for (std::vector<std::string>::const_iterator i(encodings->begin());
+       i != encodings->end(); ++i) {
+    if (encoding_set.insert(*i).second)
+      deduped_encodings.push_back(*i);
+  }
+  encodings->swap(deduped_encodings);
+  return encodings->size() != deduped_encodings.size();
 }
 
 bool DidDefaultSearchProviderChange(

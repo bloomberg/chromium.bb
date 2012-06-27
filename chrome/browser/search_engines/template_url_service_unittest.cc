@@ -1466,6 +1466,46 @@ TEST_F(TemplateURLServiceTest, PatchEmptySyncGUID) {
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
   const TemplateURL* loaded_url =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
-  ASSERT_TRUE(loaded_url != NULL);
+  ASSERT_FALSE(loaded_url == NULL);
   ASSERT_FALSE(loaded_url->sync_guid().empty());
+}
+
+// Test that if we load a TemplateURL with duplicate input encodings, the load
+// process de-dupes them.
+TEST_F(TemplateURLServiceTest, DuplicateInputEncodings) {
+  // Add a new TemplateURL.
+  test_util_.VerifyLoad();
+  const size_t initial_count = model()->GetTemplateURLs().size();
+
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("google");
+  data.SetKeyword(ASCIIToUTF16("keyword"));
+  data.SetURL("http://www.google.com/foo/bar");
+  std::vector<std::string> encodings;
+  data.input_encodings.push_back("UTF-8");
+  data.input_encodings.push_back("UTF-8");
+  data.input_encodings.push_back("UTF-16");
+  data.input_encodings.push_back("UTF-8");
+  data.input_encodings.push_back("Big5");
+  data.input_encodings.push_back("UTF-16");
+  data.input_encodings.push_back("Big5");
+  data.input_encodings.push_back("Windows-1252");
+  TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
+  model()->Add(t_url);
+
+  VerifyObserverCount(1);
+  test_util_.BlockTillServiceProcessesRequests();
+  ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
+  const TemplateURL* loaded_url =
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
+  ASSERT_TRUE(loaded_url != NULL);
+  EXPECT_EQ(8U, loaded_url->input_encodings().size());
+
+  // Reload the model to verify it was actually saved to the database and the
+  // duplicate encodings were removed.
+  test_util_.ResetModel(true);
+  ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
+  loaded_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
+  ASSERT_FALSE(loaded_url == NULL);
+  EXPECT_EQ(4U, loaded_url->input_encodings().size());
 }

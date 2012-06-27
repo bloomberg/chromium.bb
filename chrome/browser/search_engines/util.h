@@ -46,6 +46,11 @@ void GetSearchProvidersUsingKeywordResult(
     int* new_resource_keyword_version,
     std::set<std::string>* removed_keyword_guids);
 
+// Due to a bug, the |input_encodings| field of TemplateURLData could have
+// contained duplicate entries.  This removes those entries and returns whether
+// any were found.
+bool DeDupeEncodings(std::vector<std::string>* encodings);
+
 // Returns true if the default search provider setting has been changed or
 // corrupted. Returns the backup setting in |backup_default_search_provider|.
 // |*backup_default_search_provider| can be NULL if the original setting is
