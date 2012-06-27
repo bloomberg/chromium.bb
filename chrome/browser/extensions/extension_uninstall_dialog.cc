@@ -27,7 +27,6 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
       delegate_(delegate),
       extension_(NULL),
       ui_loop_(MessageLoop::current()) {
-  tracker_.reset(new ImageLoadingTracker(this));
   if (browser) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_BROWSER_CLOSING,
@@ -47,6 +46,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
       extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
+  tracker_.reset(new ImageLoadingTracker(this));
   tracker_->LoadImage(extension_, image,
                       gfx::Size(kIconSize, kIconSize),
                       ImageLoadingTracker::DONT_CACHE);
