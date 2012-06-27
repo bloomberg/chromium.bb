@@ -48,14 +48,20 @@ class SuidAction(object):
 
   ## Actions ##
   def CleanFlimflamDirs(self):
-    """Clean the contents of all flimflam profiles.
+    """Clean the contents of all connection manager (shill/flimflam) profiles.
 
     TODO(stanleyw): crosbug.com/29421 This method restarts flimflam. It should
-    wait until flimflam is fully initialized and accessible via DBus. Otherwise,
-    there is a race conditions and subsequent accesses to flimflam may fail.
+    wait until flimflam/shill is fully initialized and accessible via DBus.
+    Otherwise, there is a race conditions and subsequent accesses to
+    flimflam/shill may fail.
     """
     flimflam_dirs = ['/home/chronos/user/flimflam',
-                     '/var/cache/flimflam']
+                     '/home/chronos/user/shill',
+                     '/var/cache/flimflam',
+                     '/var/cache/shill']
+
+    # The stop/start flimflam command should stop/start shill respectivly if
+    # enabled.
     os.system('stop flimflam')
     try:
       for flimflam_dir in flimflam_dirs:

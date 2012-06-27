@@ -746,8 +746,7 @@
     'chromeos': [
       'chromeos_ephemeral',
       'chromeos_device_policy',
-      # crosbug.com/32066
-      # 'chromeos_onc',
+      'chromeos_onc',
       'policy',
       'policy_prefs_ui',
       # crbug.com/115427
