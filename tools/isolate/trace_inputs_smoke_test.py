@@ -507,6 +507,50 @@ class TraceInputsImport(TraceInputsBase):
         self.assertTrue(actual['root']['children'][0].pop('pid'))
       self.assertEquals(expected_results[index], actual)
 
+  def test_trace_symlink(self):
+    expected = {
+      'root': {
+        'children': [],
+        'command': [
+          self.executable,
+          os.path.join('trace_inputs', 'symlink.py'),
+        ],
+        'executable': self.real_executable,
+        'files': [
+          {
+            'path': os.path.join(u'data', 'trace_inputs', 'files2', 'bar'),
+            'size': self._size('data', 'trace_inputs', 'files2', 'bar'),
+          },
+          {
+            'path': os.path.join(u'data', 'trace_inputs', 'files2', 'foo'),
+            'size': self._size('data', 'trace_inputs', 'files2', 'foo'),
+          },
+          {
+            'path': os.path.join(u'data', 'trace_inputs', 'symlink.py'),
+            'size': self._size('data', 'trace_inputs', 'symlink.py'),
+          },
+        ],
+        'initial_cwd': self.initial_cwd,
+      },
+    }
+    cmd = [sys.executable, os.path.join('trace_inputs', 'symlink.py')]
+    results = self._execute(cmd)
+    actual = results.flatten()
+    self.maxDiff = None
+    self.assertTrue(actual['root'].pop('pid'))
+    self.assertEquals(expected, actual)
+    files = [
+      # In particular, the symlink is *not* resolved.
+      u'data/trace_inputs/files2/'.replace('/', os.path.sep),
+      u'data/trace_inputs/symlink.py'.replace('/', os.path.sep),
+    ]
+    def blacklist(f):
+      return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
+    simplified = self.trace_inputs.extract_directories(
+        ROOT_DIR, results.files, blacklist)
+    self.assertEquals(files, [f.path for f in simplified])
+
+
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
