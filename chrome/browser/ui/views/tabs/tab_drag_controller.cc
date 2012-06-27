@@ -1196,7 +1196,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
       // still there.
       TabStripSelectionModel selection_model;
       selection_model.Copy(initial_selection_model_);
-      for (DragData::const_reverse_iterator i = drag_data_.rbegin();
+      for (DragData::const_reverse_iterator i(drag_data_.rbegin());
            i != drag_data_.rend(); ++i) {
         selection_model.DecrementFrom(i->source_model_index);
       }

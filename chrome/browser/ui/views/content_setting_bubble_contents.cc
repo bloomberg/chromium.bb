@@ -158,12 +158,11 @@ void ContentSettingBubbleContents::Init() {
   if (!plugins.empty()) {
     if (!bubble_content_empty)
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    for (std::set<std::string>::const_iterator it = plugins.begin();
-        it != plugins.end(); ++it) {
-      string16 name =
-          PluginService::GetInstance()->GetPluginGroupName(*it);
+    for (std::set<std::string>::const_iterator i(plugins.begin());
+         i != plugins.end(); ++i) {
+      string16 name = PluginService::GetInstance()->GetPluginGroupName(*i);
       if (name.empty())
-        name = UTF8ToUTF16(*it);
+        name = UTF8ToUTF16(*i);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(new views::Label(name));
       bubble_content_empty = false;
@@ -204,8 +203,8 @@ void ContentSettingBubbleContents::Init() {
   if (!radio_group.radio_items.empty()) {
     if (!bubble_content_empty)
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    for (ContentSettingBubbleModel::RadioItems::const_iterator i =
-         radio_group.radio_items.begin();
+    for (ContentSettingBubbleModel::RadioItems::const_iterator i(
+         radio_group.radio_items.begin());
          i != radio_group.radio_items.end(); ++i) {
       views::RadioButton* radio = new views::RadioButton(UTF8ToUTF16(*i), 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
@@ -231,8 +230,8 @@ void ContentSettingBubbleContents::Init() {
       0, views::kPanelHorizIndentation);
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
-  for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =
-       bubble_content.domain_lists.begin();
+  for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i(
+       bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
     layout->StartRow(0, single_column_set_id);
     views::Label* section_title = new views::Label(UTF8ToUTF16(i->title));
@@ -293,7 +292,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
     return;
   }
 
-  for (RadioGroup::const_iterator i = radio_group_.begin();
+  for (RadioGroup::const_iterator i(radio_group_.begin());
        i != radio_group_.end(); ++i) {
     if (sender == *i) {
       content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());

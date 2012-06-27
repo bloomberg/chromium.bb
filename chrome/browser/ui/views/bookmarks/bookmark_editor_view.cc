@@ -495,8 +495,8 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
 void BookmarkEditorView::ExpandAndSelect() {
   BookmarkExpandedStateTracker::Nodes expanded_nodes =
       bb_model_->expanded_state_tracker()->GetExpandedNodes();
-  for (BookmarkExpandedStateTracker::Nodes::const_iterator i =
-       expanded_nodes.begin(); i != expanded_nodes.end(); ++i) {
+  for (BookmarkExpandedStateTracker::Nodes::const_iterator i(
+       expanded_nodes.begin()); i != expanded_nodes.end(); ++i) {
     EditorNode* editor_node =
         FindNodeWithID(tree_model_->GetRoot(), (*i)->id());
     if (editor_node)

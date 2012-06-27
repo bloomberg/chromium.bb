@@ -268,15 +268,15 @@ void ChromeToMobileBubbleView::Init() {
 
     views::RadioButton* radio = NULL;
     layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-    for (std::vector<DictionaryValue*>::const_iterator it = mobiles.begin();
-         it != mobiles.end(); ++it) {
+    for (std::vector<DictionaryValue*>::const_iterator i(mobiles.begin());
+         i != mobiles.end(); ++i) {
       string16 name;
-      (*it)->GetString("name", &name);
+      (*i)->GetString("name", &name);
       radio = new views::RadioButton(name, 0);
       radio->set_listener(this);
       radio->SetEnabledColor(SK_ColorBLACK);
       radio->SetHoverColor(SK_ColorBLACK);
-      mobile_map_[radio] = *it;
+      mobile_map_[radio] = *i;
       layout->StartRow(0, single_column_set_id);
       layout->AddView(radio);
     }

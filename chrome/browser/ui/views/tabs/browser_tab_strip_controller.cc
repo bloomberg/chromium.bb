@@ -556,7 +556,7 @@ void BrowserTabStripController::StartHighlightTabsForCommand(
     if (IsValidIndex(model_index)) {
       std::vector<int> indices =
           model_->GetIndicesClosedByCommand(model_index, command_id);
-      for (std::vector<int>::const_iterator i = indices.begin();
+      for (std::vector<int>::const_iterator i(indices.begin());
            i != indices.end(); ++i) {
         tabstrip_->StartHighlight(*i);
       }

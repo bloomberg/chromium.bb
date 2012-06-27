@@ -56,9 +56,9 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
   if (!page_action_->default_icon_path().empty())
     icon_paths.push_back(page_action_->default_icon_path());
 
-  for (std::vector<std::string>::iterator iter = icon_paths.begin();
-       iter != icon_paths.end(); ++iter) {
-    tracker_.LoadImage(extension, extension->GetResource(*iter),
+  for (std::vector<std::string>::iterator i(icon_paths.begin());
+       i != icon_paths.end(); ++i) {
+    tracker_.LoadImage(extension, extension->GetResource(*i),
                        gfx::Size(Extension::kPageActionIconMaxSize,
                                  Extension::kPageActionIconMaxSize),
                        ImageLoadingTracker::DONT_CACHE);

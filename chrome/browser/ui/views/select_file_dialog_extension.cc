@@ -275,16 +275,16 @@ void SelectFileDialogExtension::SelectFileImpl(
     // window.
     std::vector<Profile*> profiles =
         g_browser_process->profile_manager()->GetLoadedProfiles();
-    for (std::vector<Profile*>::const_iterator iter = profiles.begin();
-         iter < profiles.end(); iter++) {
-      ShellWindowRegistry* registry = ShellWindowRegistry::Get(*iter);
+    for (std::vector<Profile*>::const_iterator i(profiles.begin());
+         i < profiles.end(); ++i) {
+      ShellWindowRegistry* registry = ShellWindowRegistry::Get(*i);
       DCHECK(registry);
       ShellWindow* shell_window = registry->GetShellWindowForNativeWindow(
           owner_window);
       if (shell_window) {
         base_window = shell_window;
         tab = shell_window->tab_contents();
-        profile_ = *iter;
+        profile_ = *i;
         break;
       }
     }

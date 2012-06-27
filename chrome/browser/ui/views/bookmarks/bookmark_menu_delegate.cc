@@ -319,7 +319,7 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
     return;  // We're not showing a menu item for the node.
 
   // Iterate through the menus looking for the menu containing node.
-  for (NodeToMenuMap::iterator i = node_to_menu_map_.begin();
+  for (NodeToMenuMap::iterator i(node_to_menu_map_.begin());
        i != node_to_menu_map_.end(); ++i) {
     MenuItemView* menu_item = i->second->GetMenuItemByID(menu_pair->second);
     if (menu_item) {
@@ -352,7 +352,7 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
 
   // Remove the menu items.
   std::set<MenuItemView*> changed_parent_menus;
-  for (std::vector<const BookmarkNode*>::const_iterator i = bookmarks.begin();
+  for (std::vector<const BookmarkNode*>::const_iterator i(bookmarks.begin());
        i != bookmarks.end(); ++i) {
     NodeToMenuIDMap::iterator node_to_menu = node_to_menu_id_map_.find(*i);
     if (node_to_menu != node_to_menu_id_map_.end()) {
@@ -373,27 +373,25 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
   // is the DCHECK.
   DCHECK(changed_parent_menus.size() <= 1);
 
-  for (std::set<MenuItemView*>::const_iterator i = changed_parent_menus.begin();
-       i != changed_parent_menus.end(); ++i) {
+  for (std::set<MenuItemView*>::const_iterator i(changed_parent_menus.begin());
+       i != changed_parent_menus.end(); ++i)
     (*i)->ChildrenChanged();
-  }
 
-  // Remove any descendants of the removed nodes in node_to_menu_id_map_.
-  for (NodeToMenuIDMap::iterator i = node_to_menu_id_map_.begin();
+  // Remove any descendants of the removed nodes in |node_to_menu_id_map_|.
+  for (NodeToMenuIDMap::iterator i(node_to_menu_id_map_.begin());
        i != node_to_menu_id_map_.end(); ) {
     bool ancestor_removed = false;
-    for (std::vector<const BookmarkNode*>::const_iterator j = bookmarks.begin();
+    for (std::vector<const BookmarkNode*>::const_iterator j(bookmarks.begin());
          j != bookmarks.end(); ++j) {
       if (i->first->HasAncestor(*j)) {
         ancestor_removed = true;
         break;
       }
     }
-    if (ancestor_removed) {
+    if (ancestor_removed)
       node_to_menu_id_map_.erase(i++);
-    } else {
+    else
       ++i;
-    }
   }
 }
 
@@ -483,7 +481,7 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
 }
 
 MenuItemView* BookmarkMenuDelegate::GetMenuByID(int id) {
-  for (NodeToMenuMap::const_iterator i = node_to_menu_map_.begin();
+  for (NodeToMenuMap::const_iterator i(node_to_menu_map_.begin());
        i != node_to_menu_map_.end(); ++i) {
     MenuItemView* menu = i->second->GetMenuItemByID(id);
     if (menu)

@@ -905,7 +905,7 @@ void TabStrip::CloseTab(BaseTab* tab) {
     // If the tab is already closing, close the next tab. We do this so that the
     // user can rapidly close tabs by clicking the close button and not have
     // the animations interfere with that.
-    for (TabsClosingMap::const_iterator i = tabs_closing_map_.begin();
+    for (TabsClosingMap::const_iterator i(tabs_closing_map_.begin());
          i != tabs_closing_map_.end(); ++i) {
       std::vector<BaseTab*>::const_iterator j =
           std::find(i->second.begin(), i->second.end(), tab);
@@ -1648,7 +1648,7 @@ void TabStrip::RemoveTabFromViewModel(int index) {
 
 void TabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   scoped_ptr<BaseTab> deleter(tab);
-  for (TabsClosingMap::iterator i = tabs_closing_map_.begin();
+  for (TabsClosingMap::iterator i(tabs_closing_map_.begin());
        i != tabs_closing_map_.end(); ++i) {
     std::vector<BaseTab*>::iterator j =
         std::find(i->second.begin(), i->second.end(), tab);
@@ -1674,13 +1674,12 @@ void TabStrip::UpdateTabsClosingMap(int index, int delta) {
         tabs_closing_map_[index - 1].end(), tabs.begin(), tabs.end());
   }
   TabsClosingMap updated_map;
-  for (TabsClosingMap::iterator i = tabs_closing_map_.begin();
+  for (TabsClosingMap::iterator i(tabs_closing_map_.begin());
        i != tabs_closing_map_.end(); ++i) {
-    if (i->first > index) {
+    if (i->first > index)
       updated_map[i->first + delta] = i->second;
-    } else if (i->first < index) {
+    else if (i->first < index)
       updated_map[i->first] = i->second;
-    }
   }
   if (delta > 0 && tabs_closing_map_.find(index) != tabs_closing_map_.end())
     updated_map[index + delta] = tabs_closing_map_[index];
@@ -1766,7 +1765,7 @@ void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
     return;
 
   const std::vector<BaseTab*>& tabs = tabs_closing_map_[index];
-  for (std::vector<BaseTab*>::const_reverse_iterator i = tabs.rbegin();
+  for (std::vector<BaseTab*>::const_reverse_iterator i(tabs.rbegin());
        i != tabs.rend(); ++i) {
     (*i)->Paint(canvas);
   }

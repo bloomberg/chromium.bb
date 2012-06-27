@@ -97,7 +97,7 @@ void InitDialog(HWND hwnd) {
   messages->InsertColumn(0, L"id", LVCFMT_LEFT, 230);
 
   LogFunctionMap* log_functions = IPC::Logging::log_function_map();
-  for (LogFunctionMap::iterator i = log_functions->begin();
+  for (LogFunctionMap::iterator i(log_functions->begin());
        i != log_functions->end(); ++i) {
     std::string name;
     (*i->second)(&name, NULL, NULL);
