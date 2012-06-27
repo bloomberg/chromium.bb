@@ -4,7 +4,7 @@ import glob
 import sys
 import louis
 
-if sys.version_info>(3,0,0):
+if sys.version_info >= (3,):
   sys.stderr.write("The doctests have not been ported to python 3. Skipping...\n")
   sys.exit(0)
 
