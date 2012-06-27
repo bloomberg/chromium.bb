@@ -405,6 +405,12 @@ class GIT(object):
   @staticmethod
   def IsValidRevision(cwd, rev):
     """Verifies the revision is a proper git revision."""
+    # 'git rev-parse foo' where foo is *any* 40 character hex string will return
+    # the string and return code 0. So strip one character to force 'git
+    # rev-parse' to do a hash table look-up and returns 128 if the hash is not
+    # present.
+    if re.match(r'^[0-9a-fA-F]{40}$', rev):
+      rev = rev[:-1]
     try:
       GIT.Capture(['rev-parse', rev], cwd=cwd)
       return True
