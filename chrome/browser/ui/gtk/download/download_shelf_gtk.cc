@@ -74,7 +74,6 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
       close_on_mouse_out_(false),
       mouse_in_shelf_(false),
       weak_factory_(this) {
-  LOG(INFO) << __FUNCTION__;
   // Logically, the shelf is a vbox that contains two children: a one pixel
   // tall event box, which serves as the top border, and an hbox, which holds
   // the download items and other shelf widgets (close button, show-all-
@@ -164,7 +163,6 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
 }
 
 DownloadShelfGtk::~DownloadShelfGtk() {
-  LOG(INFO) << __FUNCTION__;
   for (std::vector<DownloadItemGtk*>::iterator iter = download_items_.begin();
        iter != download_items_.end(); ++iter) {
     delete *iter;
@@ -178,34 +176,28 @@ DownloadShelfGtk::~DownloadShelfGtk() {
 }
 
 content::PageNavigator* DownloadShelfGtk::GetNavigator() {
-  LOG(INFO) << __FUNCTION__;
   return browser_;
 }
 
 void DownloadShelfGtk::DoAddDownload(BaseDownloadItemModel* download_model) {
-  LOG(INFO) << __FUNCTION__;
   download_items_.push_back(new DownloadItemGtk(this, download_model));
 }
 
 bool DownloadShelfGtk::IsShowing() const {
-  LOG(INFO) << __FUNCTION__;
   return slide_widget_->IsShowing();
 }
 
 bool DownloadShelfGtk::IsClosing() const {
-  LOG(INFO) << __FUNCTION__;
   return slide_widget_->IsClosing();
 }
 
 void DownloadShelfGtk::DoShow() {
-  LOG(INFO) << __FUNCTION__;
   slide_widget_->Open();
   browser_->UpdateDownloadShelfVisibility(true);
   CancelAutoClose();
 }
 
 void DownloadShelfGtk::DoClose() {
-  LOG(INFO) << __FUNCTION__;
   // When we are closing, we can vertically overlap the render view. Make sure
   // we are on top.
   gdk_window_raise(gtk_widget_get_window(shelf_.get()));
@@ -222,12 +214,10 @@ void DownloadShelfGtk::DoClose() {
 }
 
 Browser* DownloadShelfGtk::browser() const {
-  LOG(INFO) << __FUNCTION__;
   return browser_;
 }
 
 void DownloadShelfGtk::Closed() {
-  LOG(INFO) << __FUNCTION__ << " " << is_hidden();
   // Don't remove completed downloads if the shelf is just being auto-hidden
   // rather than explicitly closed by the user.
   if (is_hidden())
@@ -255,7 +245,6 @@ void DownloadShelfGtk::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
-    LOG(INFO) << __FUNCTION__;
     GdkColor color = theme_service_->GetGdkColor(
         ThemeService::COLOR_TOOLBAR);
     gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
@@ -285,15 +274,12 @@ void DownloadShelfGtk::Observe(int type,
 }
 
 int DownloadShelfGtk::GetHeight() const {
-  LOG(INFO) << __FUNCTION__;
   GtkAllocation allocation;
   gtk_widget_get_allocation(slide_widget_->widget(), &allocation);
   return allocation.height;
 }
 
 void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {
-  LOG(INFO) << __FUNCTION__ << " " << download_item
-             << " " << download_items_.size();
   DCHECK(download_item);
   std::vector<DownloadItemGtk*>::iterator i =
       find(download_items_.begin(), download_items_.end(), download_item);
@@ -309,19 +295,16 @@ void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {
 }
 
 GtkWidget* DownloadShelfGtk::GetHBox() const {
-  LOG(INFO) << __FUNCTION__;
   return items_hbox_.get();
 }
 
 void DownloadShelfGtk::MaybeShowMoreDownloadItems() {
-  LOG(INFO) << __FUNCTION__;
   // Show all existing download items. It'll trigger "size-allocate" signal,
   // which will hide download items that don't have enough space to show.
   gtk_widget_show_all(items_hbox_.get());
 }
 
 void DownloadShelfGtk::OnButtonClick(GtkWidget* button) {
-  LOG(INFO) << __FUNCTION__ << " " << button << " " << close_button_->widget();
   if (button == close_button_->widget()) {
     Close();
   } else {
@@ -331,30 +314,25 @@ void DownloadShelfGtk::OnButtonClick(GtkWidget* button) {
 }
 
 void DownloadShelfGtk::AutoCloseIfPossible() {
-  LOG(INFO) << __FUNCTION__;
   for (std::vector<DownloadItemGtk*>::iterator iter = download_items_.begin();
        iter != download_items_.end(); ++iter) {
     if (!(*iter)->get_download()->GetOpened())
       return;
   }
 
-  LOG(INFO) << __FUNCTION__;
   SetCloseOnMouseOut(true);
 }
 
 void DownloadShelfGtk::CancelAutoClose() {
-  LOG(INFO) << __FUNCTION__;
   SetCloseOnMouseOut(false);
   weak_factory_.InvalidateWeakPtrs();
 }
 
 void DownloadShelfGtk::ItemOpened() {
-  LOG(INFO) << __FUNCTION__;
   AutoCloseIfPossible();
 }
 
 void DownloadShelfGtk::SetCloseOnMouseOut(bool close) {
-  LOG(INFO) << __FUNCTION__ << " " << close_on_mouse_out_ << " " << close;
   if (close_on_mouse_out_ == close)
     return;
 
@@ -367,11 +345,9 @@ void DownloadShelfGtk::SetCloseOnMouseOut(bool close) {
 }
 
 void DownloadShelfGtk::WillProcessEvent(GdkEvent* event) {
-  LOG(INFO) << __FUNCTION__;
 }
 
 void DownloadShelfGtk::DidProcessEvent(GdkEvent* event) {
-  LOG(INFO) << __FUNCTION__ << " " << event->type;
   gfx::Point cursor_screen_coords;
 
   switch (event->type) {
@@ -402,11 +378,8 @@ bool DownloadShelfGtk::IsCursorInShelfZone(
     const gfx::Point& cursor_screen_coords) {
   bool realized = (shelf_.get() &&
                    gtk_widget_get_window(shelf_.get()));
-  LOG(INFO) << __FUNCTION__ << " " << realized;
-
   // Do nothing if we've been unrealized in order to avoid a NOTREACHED in
-  // GetWidgetScreenPosition. TODO(benjhayden) Try to find a more principled
-  // fix, remove the LOGs, and update the comment on DownloadTest.AutoOpen.
+  // GetWidgetScreenPosition.
   if (!realized)
     return false;
 
@@ -423,7 +396,6 @@ bool DownloadShelfGtk::IsCursorInShelfZone(
 }
 
 void DownloadShelfGtk::MouseLeftShelf() {
-  LOG(INFO) << __FUNCTION__;
   DCHECK(close_on_mouse_out_);
 
   MessageLoop::current()->PostDelayedTask(
@@ -433,6 +405,5 @@ void DownloadShelfGtk::MouseLeftShelf() {
 }
 
 void DownloadShelfGtk::MouseEnteredShelf() {
-  LOG(INFO) << __FUNCTION__;
   weak_factory_.InvalidateWeakPtrs();
 }
