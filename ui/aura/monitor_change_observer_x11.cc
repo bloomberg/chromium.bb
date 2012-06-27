@@ -101,11 +101,14 @@ void MonitorChangeObserverX11::NotifyDisplayChange() {
     }
     XRRCrtcInfo* crtc_info = crtc_info_map[output_info->crtc];
     if (!crtc_info) {
-      LOG(WARNING) << "Crtc not found for output";
+      LOG(WARNING) << "Crtc not found for output: output=" << o;
       continue;
     }
     XRRModeInfo* mode = FindMode(screen_resources, crtc_info->mode);
-    CHECK(mode);
+    if (!mode) {
+      LOG(WARNING) << "Could not find a mode for the output: output=" << o;
+      continue;
+    }
     // Mirrored monitors have the same y coordinates.
     if (y_coords.find(crtc_info->y) != y_coords.end())
       continue;
