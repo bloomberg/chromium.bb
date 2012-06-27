@@ -97,6 +97,11 @@ class ThemeService : public base::NonThreadSafe,
     COLOR_CONTROL_BACKGROUND,
     COLOR_BUTTON_BACKGROUND,
 
+    COLOR_SEARCH_NTP_BACKGROUND,
+    COLOR_SEARCH_SEARCH_BACKGROUND,
+    COLOR_SEARCH_DEFAULT_BACKGROUND,
+    COLOR_SEARCH_SEPARATOR_LINE,
+
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_SECTION_HEADER_TEXT,

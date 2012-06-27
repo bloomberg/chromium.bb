@@ -14,7 +14,7 @@ class TabStripTest : public testing::Test {
  public:
   TabStripTest()
       : controller_(new FakeBaseTabStripController),
-        tab_strip_(new TabStrip(controller_)) {
+        tab_strip_(new TabStrip(controller_, false)) {
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
     parent_.AddChildView(tab_strip_);

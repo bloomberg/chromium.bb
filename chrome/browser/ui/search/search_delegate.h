@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
+#include "chrome/browser/ui/search/toolbar_search_animator.h"
 
 class TabContents;
 
@@ -43,6 +44,10 @@ class SearchDelegate : public SearchModelObserver {
   // tab's model.
   void OnTabDetached(TabContents* contents);
 
+  ToolbarSearchAnimator& toolbar_search_animator() {
+    return toolbar_search_animator_;
+  }
+
  private:
   // Stop observing tab.
   void StopObserveringTab(TabContents* contents);
@@ -54,6 +59,10 @@ class SearchDelegate : public SearchModelObserver {
   // Weak.  The TabContents owns this.  It is the model of the active
   // tab.  Changes to this model are propagated through to the |browser_model_|.
   SearchModel* tab_model_;
+
+  // Animator for fading in toolbar and tab backgrounds when mode changes from
+  // NTP to SEARCH.
+  ToolbarSearchAnimator toolbar_search_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchDelegate);
 };

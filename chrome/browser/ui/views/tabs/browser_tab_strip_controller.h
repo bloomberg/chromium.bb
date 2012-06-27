@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
+#include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -27,9 +29,12 @@ class WebContents;
 
 // An implementation of TabStripController that sources data from the
 // TabContentses in a TabStripModel.
-class BrowserTabStripController : public TabStripController,
-                                  public TabStripModelObserver,
-                                  public content::NotificationObserver {
+class BrowserTabStripController
+    : public TabStripController,
+      public TabStripModelObserver,
+      public content::NotificationObserver,
+      public chrome::search::SearchModelObserver,
+      public chrome::search::ToolbarSearchAnimatorObserver {
  public:
   BrowserTabStripController(Browser* browser, TabStripModel* model);
   virtual ~BrowserTabStripController();
@@ -97,6 +102,14 @@ class BrowserTabStripController : public TabStripController,
                                    int model_index) OVERRIDE;
   virtual void TabBlockedStateChanged(TabContents* contents,
                                       int model_index) OVERRIDE;
+
+  // chrome::search::SearchModelObserver implementation:
+  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
+
+  // chrome::search::ToolbarSearchAnimatorObserver implementation:
+  virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;
+  virtual void OnToolbarBackgroundAnimatorCanceled(
+      TabContents* tab_contents) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

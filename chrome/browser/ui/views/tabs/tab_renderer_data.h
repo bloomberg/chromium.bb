@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "chrome/browser/ui/search/search_types.h"
+#include "chrome/browser/ui/search/toolbar_search_animator.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -49,6 +51,12 @@ struct TabRendererData {
   bool mini;
   bool blocked;
   bool app;
+  chrome::search::Mode::Type mode;
+  // Only applicable if |mode| is chrome::search::Mode::SEARCH.
+  chrome::search::ToolbarSearchAnimator::BackgroundState background_state;
+  // Only applicable if |background_state| is or a combination including
+  // chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_SHOW_NEW;
+  double search_background_opacity;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_

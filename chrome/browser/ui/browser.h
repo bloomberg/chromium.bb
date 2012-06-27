@@ -272,6 +272,9 @@ class Browser : public TabStripModelDelegate,
     return command_controller_.get();
   }
   chrome::search::SearchModel* search_model() { return search_model_.get(); }
+  chrome::search::SearchDelegate* search_delegate() {
+    return search_delegate_.get();
+  }
   const SessionID& session_id() const { return session_id_; }
   BrowserContentSettingBubbleModelDelegate*
       content_setting_bubble_model_delegate() {

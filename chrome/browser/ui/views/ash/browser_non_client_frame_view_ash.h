@@ -8,6 +8,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/search/search_types.h"
+#include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/views/controls/button/button.h"  // ButtonListener
@@ -19,9 +21,11 @@ namespace views {
 class ImageButton;
 }
 
-class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
-                                     public views::ButtonListener,
-                                     public TabIconView::TabIconViewModel {
+class BrowserNonClientFrameViewAsh
+    : public BrowserNonClientFrameView,
+      public views::ButtonListener,
+      public TabIconView::TabIconViewModel,
+      public chrome::search::ToolbarSearchAnimatorObserver {
  public:
   static const char kViewClassName[];
 
@@ -62,6 +66,11 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 
+  // Overridden from chrome::search::ToolbarSearchAnimatorObserver:
+  virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;
+  virtual void OnToolbarBackgroundAnimatorCanceled(
+      TabContents* tab_contents) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, UseShortHeader);
 
@@ -75,7 +84,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void LayoutAvatar();
 
   void PaintTitleBar(gfx::Canvas* canvas);
-  void PaintToolbarBackground(gfx::Canvas* canvas);
+  void PaintToolbarBackground(gfx::Canvas* canvas,
+                              chrome::search::Mode::Type mode);
 
   // Windows without a toolbar need to draw their own line under the header,
   // above the content area.

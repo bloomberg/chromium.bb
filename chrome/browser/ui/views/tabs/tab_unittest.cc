@@ -50,6 +50,9 @@ class FakeTabController : public TabController {
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE {
     return true;
   }
+  virtual bool IsInstantExtendedAPIEnabled() OVERRIDE {
+    return false;
+  }
 
  private:
   TabStripSelectionModel selection_model_;

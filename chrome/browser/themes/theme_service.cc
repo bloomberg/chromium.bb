@@ -124,6 +124,12 @@ const SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
 const SkColor kDefaultColorControlBackground = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
+const SkColor kDefaultColorSearchNTPBackground = SkColorSetRGB(245, 245, 245);
+const SkColor kDefaultColorSearchSearchBackground =
+    SkColorSetRGB(245, 245, 245);
+const SkColor kDefaultColorSearchDefaultBackground =
+    SkColorSetRGB(245, 245, 245);
+const SkColor kDefaultColorSearchSeparator = SkColorSetRGB(200, 200, 200);
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbarButtonStroke = SkColorSetARGB(75, 81, 81, 81);
 const SkColor kDefaultColorToolbarButtonStrokeInactive =
@@ -534,6 +540,14 @@ SkColor ThemeService::GetDefaultColor(int id) {
       return kDefaultColorControlBackground;
     case COLOR_BUTTON_BACKGROUND:
       return kDefaultColorButtonBackground;
+    case COLOR_SEARCH_NTP_BACKGROUND:
+      return kDefaultColorSearchNTPBackground;
+    case COLOR_SEARCH_SEARCH_BACKGROUND:
+      return kDefaultColorSearchSearchBackground;
+    case COLOR_SEARCH_DEFAULT_BACKGROUND:
+      return kDefaultColorSearchDefaultBackground;
+    case COLOR_SEARCH_SEPARATOR_LINE:
+      return kDefaultColorSearchSeparator;
 #if defined(OS_MACOSX)
     case COLOR_TOOLBAR_BUTTON_STROKE:
       return kDefaultColorToolbarButtonStroke;

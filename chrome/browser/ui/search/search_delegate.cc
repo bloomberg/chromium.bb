@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/search/toolbar_search_animator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 namespace chrome {
@@ -13,7 +14,8 @@ namespace search {
 
 SearchDelegate::SearchDelegate(SearchModel* browser_model)
     : browser_model_(browser_model),
-      tab_model_(NULL) {
+      tab_model_(NULL),
+      toolbar_search_animator_(browser_model) {
 }
 
 SearchDelegate::~SearchDelegate() {
@@ -48,6 +50,7 @@ void SearchDelegate::StopObserveringTab(
     tab_model_->RemoveObserver(this);
     browser_model_->set_tab_contents(NULL);
     tab_model_ = NULL;
+    toolbar_search_animator_.FinishAnimation(contents);
   }
 }
 

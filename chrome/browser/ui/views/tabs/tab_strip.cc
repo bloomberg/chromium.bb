@@ -553,8 +553,10 @@ const char TabStrip::kViewClassName[] = "TabStrip";
 // static
 const int TabStrip::kMiniToNonMiniGap = 3;
 
-TabStrip::TabStrip(TabStripController* controller)
+TabStrip::TabStrip(TabStripController* controller,
+                   bool instant_extended_api_enabled)
     : controller_(controller),
+      instant_extended_api_enabled_(instant_extended_api_enabled),
       newtab_button_(NULL),
       current_unselected_width_(Tab::GetStandardSize().width()),
       current_selected_width_(Tab::GetStandardSize().width()),
@@ -1107,6 +1109,10 @@ bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
     }
   }
   return true;
+}
+
+bool TabStrip::IsInstantExtendedAPIEnabled() {
+  return instant_extended_api_enabled_;
 }
 
 void TabStrip::MouseMovedOutOfHost() {

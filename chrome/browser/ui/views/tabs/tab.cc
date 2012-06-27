@@ -493,9 +493,56 @@ void Tab::OnMouseMoved(const views::MouseEvent& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
 
+gfx::ImageSkia* Tab::GetTabBackgroundImage(
+    chrome::search::Mode::Type mode) const {
+  ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp) {
+    DCHECK(tp) << "Unable to get theme provider";
+    return NULL;
+  }
+
+  if (!controller() || !controller()->IsInstantExtendedAPIEnabled())
+    return tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+
+  switch (mode) {
+    case chrome::search::Mode::MODE_NTP:
+      return tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
+
+    case chrome::search::Mode::MODE_SEARCH:
+    case chrome::search::Mode::MODE_DEFAULT:
+    default:
+      return tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR_SEARCH);
+  }
+}
+
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsActive()) {
-    PaintActiveTabBackground(canvas);
+    bool fading_in = false;
+    // If mode is SEARCH, we might be waiting to fade in or fading in new
+    // background, in which case, the previous background needs to be painted.
+    if (data().mode == chrome::search::Mode::MODE_SEARCH &&
+        data().background_state &
+            chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_NTP) {
+      // Paint background for NTP mode.
+      PaintActiveTabBackground(canvas,
+          GetTabBackgroundImage(chrome::search::Mode::MODE_NTP));
+      // We're done if we're not showing background for |MODE_SEARCH|.
+      if (!(data().background_state & chrome::search::ToolbarSearchAnimator::
+            BACKGROUND_STATE_SEARCH)) {
+        return;
+      }
+      // Otherwise, we're fading in the background for |MODE_SEARCH| at
+      // |data().search_background_opacity|.
+      fading_in = true;
+      canvas->SaveLayerAlpha(
+          static_cast<uint8>(data().search_background_opacity * 0xFF),
+          gfx::Rect(width(), height()));
+    }
+    // Paint the background for the current mode.
+    PaintActiveTabBackground(canvas, GetTabBackgroundImage(data().mode));
+    // If we're fading in and have saved canvas, restore it now.
+    if (fading_in)
+      canvas->Restore();
   } else {
     if (mini_title_animation_.get() && mini_title_animation_->is_animating())
       PaintInactiveTabBackgroundWithTitleChange(canvas);
@@ -507,7 +554,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
       canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
                              gfx::Rect(width(), height()));
       canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-      PaintActiveTabBackground(canvas);
+      PaintActiveTabBackground(canvas, GetTabBackgroundImage(data().mode));
       canvas->Restore();
     }
   }
@@ -645,26 +692,24 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
                        width() - tab_inactive_image->r_width, 0);
 }
 
-void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  int offset = GetMirroredX() + background_offset_.x();
-  ui::ThemeProvider* tp = GetThemeProvider();
-  DCHECK(tp) << "Unable to get theme provider";
+void Tab::PaintActiveTabBackground(gfx::Canvas* canvas,
+                                   gfx::ImageSkia* tab_background) {
+  DCHECK(tab_background);
 
-  gfx::ImageSkia* tab_bg =
-      GetThemeProvider()->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  int offset = GetMirroredX() + background_offset_.x();
 
   TabImage* tab_image = &tab_active_;
   TabImage* alpha = &tab_alpha_;
 
   // Draw left edge.
   gfx::ImageSkia tab_l = SkBitmapOperations::CreateTiledBitmap(
-      *tab_bg, offset, 0, tab_image->l_width, height());
+      *tab_background, offset, 0, tab_image->l_width, height());
   gfx::ImageSkia theme_l =
       SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
   canvas->DrawImageInt(theme_l, 0, 0);
 
   // Draw right edge.
-  gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+  gfx::ImageSkia tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_background,
       offset + width() - tab_image->r_width, 0, tab_image->r_width, height());
   gfx::ImageSkia theme_r =
       SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
@@ -672,7 +717,7 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
   // by incrementing by GetDropShadowHeight(), since it's a simple rectangle.
-  canvas->TileImageInt(*tab_bg,
+  canvas->TileImageInt(*tab_background,
      offset + tab_image->l_width,
      drop_shadow_height() + tab_image->y_offset,
      tab_image->l_width,

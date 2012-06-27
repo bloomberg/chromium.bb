@@ -17,6 +17,7 @@
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
@@ -214,6 +215,12 @@ class BrowserView : public BrowserWindow,
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
   void ToolbarSizeChanged(bool is_animating);
+
+  // Returns the toolbar background color.
+  SkColor GetToolbarBackgroundColor(chrome::search::Mode::Type mode);
+
+  // Returns the toolbar background image.
+  gfx::ImageSkia* GetToolbarBackgroundImage(chrome::search::Mode::Type mode);
 
 #if defined(USE_ASH)
   BrowserLauncherItemController* launcher_item_controller() const {

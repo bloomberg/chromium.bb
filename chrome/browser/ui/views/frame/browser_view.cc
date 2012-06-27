@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -244,7 +245,11 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   } else {
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
-        gfx::Point(host_view_->GetMirroredX(), host_view_->y())));
+        gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
+        browser_view_->GetToolbarBackgroundColor(
+            browser_view_->browser()->search_model()->mode().mode),
+        browser_view_->GetToolbarBackgroundImage(
+            browser_view_->browser()->search_model()->mode().mode));
     if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
@@ -856,6 +861,48 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   if ((call_state == NORMAL) && !is_animating) {
     contents_container_->InvalidateLayout();
     contents_split_->Layout();
+  }
+}
+
+SkColor BrowserView::GetToolbarBackgroundColor(
+    chrome::search::Mode::Type mode) {
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  DCHECK(theme_provider);
+
+  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
+    return theme_provider->GetColor(ThemeService::COLOR_TOOLBAR);
+
+  switch (mode) {
+    case chrome::search::Mode::MODE_NTP:
+      return theme_provider->GetColor(
+          ThemeService::COLOR_SEARCH_NTP_BACKGROUND);
+
+    case chrome::search::Mode::MODE_SEARCH:
+      return theme_provider->GetColor(
+          ThemeService::COLOR_SEARCH_SEARCH_BACKGROUND);
+
+    case chrome::search::Mode::MODE_DEFAULT:
+    default:
+      return theme_provider->GetColor(
+          ThemeService::COLOR_SEARCH_DEFAULT_BACKGROUND);
+  }
+}
+
+gfx::ImageSkia* BrowserView::GetToolbarBackgroundImage(
+      chrome::search::Mode::Type mode) {
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  DCHECK(theme_provider);
+  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
+    return theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+
+  switch (mode) {
+    case chrome::search::Mode::MODE_NTP:
+      return theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
+
+    case chrome::search::Mode::MODE_SEARCH:
+    case chrome::search::Mode::MODE_DEFAULT:
+    default:
+      return theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR_SEARCH);
   }
 }
 
@@ -1863,7 +1910,9 @@ void BrowserView::Init() {
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_.get(),
                                     browser_->tab_strip_model());
-  tabstrip_ = new TabStrip(tabstrip_controller);
+  tabstrip_ = new TabStrip(tabstrip_controller,
+                           chrome::search::IsInstantExtendedAPIEnabled(
+                               browser_->profile()));
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
 

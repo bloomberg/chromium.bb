@@ -459,6 +459,8 @@
       <if expr="not pp_ifdef('use_ash') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" />
       </if>
+      <!-- Instant Extended API toolbar background is common for all platforms. -->
+      <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_SEARCH" file="theme_toolbar_search.png" />
       <if expr="is_macosx">
         <!-- TODO(jamescook): Is this right? -->
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2.png" />

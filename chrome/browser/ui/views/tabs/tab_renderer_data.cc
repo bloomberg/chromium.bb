@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,11 @@ TabRendererData::TabRendererData()
       show_icon(true),
       mini(false),
       blocked(false),
-      app(false) {
+      app(false),
+      mode(chrome::search::Mode::MODE_DEFAULT),
+      background_state(
+          chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_DEFAULT),
+      search_background_opacity(-1.0f) {
 }
 
 TabRendererData::~TabRendererData() {}
@@ -31,5 +35,8 @@ bool TabRendererData::Equals(const TabRendererData& data) {
       show_icon == data.show_icon &&
       mini == data.mini &&
       blocked == data.blocked &&
-      app == data.app;
+      app == data.app &&
+      mode == data.mode &&
+      background_state == data.background_state &&
+      search_background_opacity == data.search_background_opacity;
 }

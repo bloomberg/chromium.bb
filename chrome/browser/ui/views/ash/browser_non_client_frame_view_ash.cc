@@ -7,10 +7,15 @@
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_delegate.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"  // Accessibility names
 #include "grit/theme_resources.h"
@@ -130,6 +135,12 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
+  // A non-NULL |size_button_| means it was initialized in Init() where
+  // |this| was added as observer to ToolbarSearchAnimator, so remove it now.
+  if (size_button_) {
+    browser_view()->browser()->search_delegate()->toolbar_search_animator().
+        RemoveObserver(this);
+  }
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
@@ -166,6 +177,9 @@ void BrowserNonClientFrameViewAsh::Init() {
   // Frame painter handles layout of these buttons.
   frame_painter_->Init(frame(), window_icon_, size_button_, close_button_,
                        size_button_behavior);
+
+  browser_view()->browser()->search_delegate()->toolbar_search_animator().
+      AddObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -260,10 +274,47 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       GetThemeFrameOverlayImage());
   if (browser_view()->ShouldShowWindowTitle())
     frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
-  if (browser_view()->IsToolbarVisible())
-    PaintToolbarBackground(canvas);
-  else
+  if (browser_view()->IsToolbarVisible()) {
+    chrome::search::Mode mode =
+        browser_view()->browser()->search_model()->mode();
+    bool fading_in = false;
+    // For |MODE_SEARCH|, get current state of background animation to figure
+    // out if we're waiting to fade in or in the process of fading in new
+    // background for |MODE_SEARCH|.
+    // In the former case, just paint the previous background for |MODE_NTP|.
+    // In the latter case, paint the previous background for |MODE_NTP| and then
+    // the new background at specified opacity value.
+    if (mode.is_search()) {
+      chrome::search::ToolbarSearchAnimator::BackgroundState background_state =
+          chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_DEFAULT;
+      double search_background_opacity = -1.0f;
+      browser_view()->browser()->search_delegate()->toolbar_search_animator().
+          GetCurrentBackgroundState(&background_state,
+                                    &search_background_opacity);
+      if (background_state &
+          chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_NTP) {
+        // Paint background for |MODE_NTP|.
+        PaintToolbarBackground(canvas, chrome::search::Mode::MODE_NTP);
+        // We're done if we're not showing background for SEARCH mode.
+        if (!(background_state & chrome::search::ToolbarSearchAnimator::
+                  BACKGROUND_STATE_SEARCH)) {
+          return;
+        }
+        // Otherwise, we're fading in the new background at
+        // |search_background_opacity|.
+        fading_in = true;
+        canvas->SaveLayerAlpha(static_cast<uint8>(
+            search_background_opacity * 0xFF));
+      }
+    }
+    // Paint the background for the current mode.
+    PaintToolbarBackground(canvas, mode.mode);
+    // If we're fading in and have saved canvas, restore it now.
+    if (fading_in)
+      canvas->Restore();
+  } else {
     PaintContentEdge(canvas);
+  }
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
@@ -349,6 +400,21 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// chrome::search::ToolbarSearchAnimator::Observer overrides:
+
+void BrowserNonClientFrameViewAsh::OnToolbarBackgroundAnimatorProgressed() {
+  // We're fading in the toolbar background, repaint the toolbar background.
+  browser_view()->toolbar()->SchedulePaint();
+}
+
+void BrowserNonClientFrameViewAsh::OnToolbarBackgroundAnimatorCanceled(
+    TabContents* tab_contents) {
+  // Fade in of toolbar background has been canceled, repaint the toolbar
+  // background.
+  browser_view()->toolbar()->SchedulePaint();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
 
@@ -411,7 +477,8 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
 }
 
 void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
-    gfx::Canvas* canvas) {
+    gfx::Canvas* canvas,
+    chrome::search::Mode::Type mode) {
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   if (toolbar_bounds.IsEmpty())
     return;
@@ -433,15 +500,17 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
   ui::ThemeProvider* tp = GetThemeProvider();
   int bottom_edge_height = h - split_point;
 
+  SkColor background_color = browser_view()->GetToolbarBackgroundColor(mode);
   canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
-                   tp->GetColor(ThemeService::COLOR_TOOLBAR));
+                   background_color);
 
   // Paint the main toolbar image.  Since this image is also used to draw the
   // tab background, we must use the tab strip offset to compute the image
   // source y position.  If you have to debug this code use an image editor
   // to paint a diagonal line through the toolbar image and ensure it lines up
   // across the tab and toolbar.
-  gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
+  gfx::ImageSkia* theme_toolbar =
+      browser_view()->GetToolbarBackgroundImage(mode);
   canvas->TileImageInt(
       *theme_toolbar,
       x, bottom_y - GetHorizontalTabStripVerticalOffset(false),
@@ -473,12 +542,19 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
                        y + kClientEdgeThickness + kContentShadowHeight,
                        toolbar_right->width(), theme_toolbar->height());
 
-  // Draw the content/toolbar separator.
-  canvas->FillRect(gfx::Rect(x + kClientEdgeThickness,
-                             toolbar_bounds.bottom() - kClientEdgeThickness,
-                             w - (2 * kClientEdgeThickness),
-                             kClientEdgeThickness),
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+  // Only draw the content/toolbar separator if Instant Extended API is disabled
+  // or mode is DEFAULT.
+  bool extended_instant_enabled = chrome::search::IsInstantExtendedAPIEnabled(
+      browser_view()->browser()->profile());
+  if (!extended_instant_enabled || mode == chrome::search::Mode::MODE_DEFAULT) {
+    canvas->FillRect(
+        gfx::Rect(x + kClientEdgeThickness,
+                  toolbar_bounds.bottom() - kClientEdgeThickness,
+                  w - (2 * kClientEdgeThickness), kClientEdgeThickness),
+        ThemeService::GetDefaultColor(extended_instant_enabled ?
+            ThemeService::COLOR_SEARCH_SEPARATOR_LINE :
+                ThemeService::COLOR_TOOLBAR_SEPARATOR));
+  }
 }
 
 void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {

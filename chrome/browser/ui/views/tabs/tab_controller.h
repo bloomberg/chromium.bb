@@ -84,6 +84,9 @@ class TabController {
   // set to the clip (if |clip| is empty means no clip).
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) = 0;
 
+  // Returns true if Instant Extended API is enabled.
+  virtual bool IsInstantExtendedAPIEnabled() = 0;
+
  protected:
   virtual ~TabController() {}
 };
