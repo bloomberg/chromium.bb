@@ -47,7 +47,7 @@ sign \X0914 246 #"au"
 
 sign \X0915 13 # davanagari ka
 sign \X0916 46 # davanagari kha
-sign \X0917 1234 # davanagari ga
+sign \X0917 1245 # davanagari ga
 sign \X0918 126 # davanagari gha
 sign \X0919 346 #davanagari aNgaa
 
