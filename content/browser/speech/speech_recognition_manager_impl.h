@@ -26,7 +26,7 @@ class SpeechRecognitionManagerDelegate;
 
 namespace speech {
 
-class SpeechRecognizerImpl;
+class SpeechRecognizer;
 
 // This is the manager for speech recognition. It is a single instance in
 // the browser process and can serve several requests. Each recognition request
@@ -124,7 +124,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     bool listener_is_active;
     content::SpeechRecognitionSessionConfig config;
     content::SpeechRecognitionSessionContext context;
-    scoped_refptr<SpeechRecognizerImpl> recognizer;
+    scoped_refptr<SpeechRecognizer> recognizer;
   };
 
   // Callback issued by the SpeechRecognitionManagerDelegate for reporting

@@ -309,13 +309,11 @@ void GoogleStreamingRemoteEngineTest::EndMockRecognition() {
   engine_under_test_->EndRecognition();
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
 
-  // TODO(primiano): In order to be very pedantic we should check that both
-  // the upstream and downstream URL fetchers have been disposed at this time.
+  // TODO(primiano): In order to be very pedantic we should check that both the
+  // upstream and downstream URL fetchers have been disposed at this time.
   // Unfortunately it seems that there is no direct way to detect (in tests)
   // if a url_fetcher has been freed or not, since they are not automatically
   // de-registered from the TestURLFetcherFactory on destruction.
-  // ASSERT_FALSE(GetUpstreamFetcher());
-  // ASSERT_FALSE(GetDownstreamFetcher());
 }
 
 void GoogleStreamingRemoteEngineTest::InjectDummyAudioChunk() {

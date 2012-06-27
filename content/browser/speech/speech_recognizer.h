@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
-#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
+#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -25,14 +25,11 @@ class AudioManager;
 }
 
 namespace speech {
-
-// TODO(primiano) Next CL: Remove the Impl suffix.
-
 // Handles speech recognition for a session (identified by |session_id|), taking
 // care of audio capture, silence detection/endpointer and interaction with the
 // SpeechRecognitionEngine.
-class CONTENT_EXPORT SpeechRecognizerImpl
-    : public base::RefCountedThreadSafe<SpeechRecognizerImpl>,
+class CONTENT_EXPORT SpeechRecognizer
+    : public base::RefCountedThreadSafe<SpeechRecognizer>,
       public media::AudioInputController::EventHandler,
       public NON_EXPORTED_BASE(SpeechRecognitionEngineDelegate) {
  public:
@@ -42,7 +39,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   static const int kNoSpeechTimeoutMs;
   static const int kEndpointerEstimationTimeMs;
 
-  SpeechRecognizerImpl(
+  SpeechRecognizer(
       content::SpeechRecognitionEventListener* listener,
       int session_id,
       bool is_single_shot,
@@ -56,8 +53,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   const SpeechRecognitionEngine& recognition_engine() const;
 
  private:
-  friend class base::RefCountedThreadSafe<SpeechRecognizerImpl>;
-  friend class SpeechRecognizerImplTest;
+  friend class base::RefCountedThreadSafe<SpeechRecognizer>;
+  friend class SpeechRecognizerTest;
 
   enum FSMState {
     STATE_IDLE = 0,
@@ -91,7 +88,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
     content::SpeechRecognitionError engine_error;
   };
 
-  virtual ~SpeechRecognizerImpl();
+  virtual ~SpeechRecognizer();
 
   // Entry point for pushing any new external event into the recognizer FSM.
   void DispatchEvent(const FSMEventArgs& event_args);
@@ -157,9 +154,9 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   bool is_single_shot_;
   FSMState state_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
+  DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };
 
 }  // namespace speech
 
-#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
+#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
