@@ -57,12 +57,12 @@ class SearchResultView : public views::CustomButton,
   // SearchResultObserver overrides:
   virtual void OnIconChanged() OVERRIDE;
 
-  SearchResult* result_;
+  SearchResult* result_;  // Owned by AppListModel::SearchResults.
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;
 
-  views::ImageView* icon_;  // Owned by views hierarchy
+  views::ImageView* icon_;  // Owned by views hierarchy.
   scoped_ptr<gfx::RenderText> title_text_;
   scoped_ptr<gfx::RenderText> details_text_;
 

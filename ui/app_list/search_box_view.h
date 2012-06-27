@@ -66,11 +66,11 @@ class SearchBoxView : public views::View,
   virtual void TextChanged() OVERRIDE;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
-  SearchBoxModel* model_;  // Owned by AppListModel
+  SearchBoxModel* model_;  // Owned by AppListModel.
 
-  views::ImageView* icon_view_;  // Owned by views hierarchy
-  views::Textfield* search_box_;  // Owned by views hierarchy
-  views::View* contents_view_;  // Owned by views hierarchy
+  views::ImageView* icon_view_;  // Owned by views hierarchy.
+  views::Textfield* search_box_;  // Owned by views hierarchy.
+  views::View* contents_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };

@@ -44,10 +44,10 @@ class AppListBubbleBorder : public views::BubbleBorder {
                      gfx::Canvas* canvas) const OVERRIDE;
 
   // AppListView hosted inside this bubble.
-  const views::View* app_list_view_;
+  const views::View* app_list_view_;  // Owned by views hierarchy.
 
   // Children view of AppListView that needs to paint background.
-  const views::View* search_box_view_;
+  const views::View* search_box_view_;  // Owned by views hierarchy.
 
   // Offset in pixels relative the default middle position.
   gfx::Point offset_;
