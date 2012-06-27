@@ -231,6 +231,16 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP" file="omnibox_extension_app.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="omnibox_extension_app_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_WARNING" file="omnibox_https_warning.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="omnibox_http_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="omnibox_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR" file="omnibox_star.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS" file="omnibox_tts.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" />

@@ -118,22 +118,12 @@
       <include name="IDR_NEWTAB_OPTION_H" file="default_100_percent/ntp_option_hover.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_P" file="default_100_percent/ntp_option_pressed.png" type="BINDATA" />
       <include name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="default_100_percent/ntp_webstore_thumb.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EXTENSION_APP" file="default_100_percent/omnibox_extension_app.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="default_100_percent/omnibox_extension_app_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="default_100_percent/omnibox_extension_app_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTP" file="default_100_percent/omnibox_http.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTPS_INVALID" file="default_100_percent/omnibox_https_invalid.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTPS_VALID" file="default_100_percent/omnibox_https_valid.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTPS_WARNING" file="default_100_percent/omnibox_https_warning.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP_DARK" file="default_100_percent/omnibox_http_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HTTP_SELECTED" file="default_100_percent/omnibox_http_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_SEARCH" file="default_100_percent/omnibox_search.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_SEARCH_DARK" file="default_100_percent/omnibox_search_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_SEARCH_SELECTED" file="default_100_percent/omnibox_search_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_STAR" file="default_100_percent/omnibox_star.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_DARK" file="default_100_percent/omnibox_star_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_SELECTED" file="default_100_percent/omnibox_star_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_TTS" file="default_100_percent/omnibox_tts.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_TTS_DARK" file="default_100_percent/omnibox_tts_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_TTS_SELECTED" file="default_100_percent/omnibox_tts_selected.png" type="BINDATA" />
       <include name="IDR_PRERENDER" file="default_100_percent/prerender_succeed_icon.png" type="BINDATA" />

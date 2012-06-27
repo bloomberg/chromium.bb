@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
