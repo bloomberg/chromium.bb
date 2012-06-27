@@ -186,12 +186,11 @@ main() {
   local input_dir="$(shell_safe_path "${2}")"
   local keychain="$(shell_safe_path "${3}")"
   local codesign_id="${4}"
-  local productsign_id="${5}"
+  local productsign_id=""
   if [[ ${#} -ge 5 ]]; then
     productsign_id="${5}"
   fi
 
-exit 1;
   verify_clean_dir "${output_dir}"
 
   sign_binaries "${input_dir}" "${keychain}" "${codesign_id}"
