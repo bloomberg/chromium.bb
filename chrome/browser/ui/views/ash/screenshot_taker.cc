@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
@@ -108,6 +109,20 @@ void SaveScreenshot(const FilePath& screenshot_directory,
   }
 }
 
+bool GrabWindowSnapshot(aura::Window* window,
+                        const gfx::Rect& snapshot_bounds,
+                        std::vector<unsigned char>* png_data) {
+#if defined(OS_LINUX)
+  // We use XGetImage() for Linux/ChromeOS for performance reasons.
+  // See crbug.com/119492
+  // TODO(mukai): remove this when the performance issue has been fixed.
+  if (window->GetRootWindow()->GrabSnapshot(snapshot_bounds, png_data))
+    return true;
+#endif  // OS_LINUX
+
+  return browser::GrabWindowSnapshot(window, png_data, snapshot_bounds);
+}
+
 // How opaque should the layer that we flash onscreen to provide visual
 // feedback after the screenshot is taken be?
 const float kVisualFeedbackLayerOpacity = 0.25f;
@@ -148,7 +163,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
 
   bool use_24hour_clock = ShouldUse24HourClock();
 
-  if (browser::GrabWindowSnapshot(window, &png_data->data(), rect)) {
+  if (GrabWindowSnapshot(window, rect, &png_data->data())) {
     DisplayVisualFeedback(rect);
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
