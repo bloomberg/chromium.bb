@@ -3105,6 +3105,12 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
+  // TODO(jeremya/kalman) do this via the features system by exposing the
+  // appWindow API to platform apps, with no dependency on any permissions.
+  // See http://crbug.com/120069.
+  if (is_platform_app())
+    api_permissions.insert(ExtensionAPIPermission::kAppWindow);
+
   ExtensionAPIPermissionSet optional_api_permissions;
   URLPatternSet optional_host_permissions;
   if (!ParsePermissions(keys::kOptionalPermissions,
