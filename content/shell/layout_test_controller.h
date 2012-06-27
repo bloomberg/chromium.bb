@@ -23,6 +23,7 @@ class LayoutTestController : public RenderViewObserver {
  private:
   // Message handlers.
   void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
+  void OnCaptureImageDump(const std::string& expected_pixel_hash);
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestController);
 };

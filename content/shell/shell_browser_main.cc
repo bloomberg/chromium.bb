@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
@@ -19,7 +20,8 @@
 
 namespace {
 
-GURL GetURLForLayoutTest(const char* test_name) {
+GURL GetURLForLayoutTest(const char* test_name,
+                         std::string* expected_pixel_hash) {
 #if defined(OS_ANDROID)
   // DumpRenderTree is not currently supported for Android using the content
   // shell.
@@ -28,18 +30,13 @@ GURL GetURLForLayoutTest(const char* test_name) {
 #else
   std::string path_or_url = test_name;
   std::string pixel_hash;
-  std::string timeout;
-  std::string::size_type separator_position = path_or_url.find(' ');
+  std::string::size_type separator_position = path_or_url.find('\'');
   if (separator_position != std::string::npos) {
-    timeout = path_or_url.substr(separator_position + 1);
+    pixel_hash = path_or_url.substr(separator_position + 1);
     path_or_url.erase(separator_position);
-    separator_position = path_or_url.find(' ');
-    if (separator_position != std::string::npos) {
-      pixel_hash = timeout.substr(separator_position + 1);
-      timeout.erase(separator_position);
-    }
   }
-  // TODO(jochen): use pixel_hash and timeout.
+  if (expected_pixel_hash)
+    *expected_pixel_hash = pixel_hash;
   GURL test_url = webkit_support::CreateURLForPathOrURL(path_or_url);
   {
     // We're outside of the message loop here, and this is a test.
@@ -86,11 +83,15 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       // Test header.
       std::cout << "Content-Type: text/plain\n";
 
-      content::Shell::CreateNewWindow(browser_context,
-                                      GetURLForLayoutTest(test_string),
-                                      NULL,
-                                      MSG_ROUTING_NONE,
-                                      NULL);
+      std::string pixel_hash;
+      content::Shell::CreateNewWindow(
+          browser_context,
+          GetURLForLayoutTest(test_string, &pixel_hash),
+          NULL,
+          MSG_ROUTING_NONE,
+          NULL);
+      content::LayoutTestControllerHost::Init(pixel_hash);
+
       main_runner_->Run();
 
       content::Shell::CloseAllWindows();

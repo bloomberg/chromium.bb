@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/shell/shell_messages.h"
+#include "webkit/support/webkit_support_gfx.h"
 
 namespace content {
 
@@ -18,6 +19,7 @@ const int kTestTimeoutMilliseconds = 30 * 1000;
 
 std::map<RenderViewHost*, LayoutTestControllerHost*>
     LayoutTestControllerHost::controllers_;
+std::string LayoutTestControllerHost::expected_pixel_hash_;
 
 // static
 LayoutTestControllerHost* LayoutTestControllerHost::FromRenderViewHost(
@@ -27,6 +29,12 @@ LayoutTestControllerHost* LayoutTestControllerHost::FromRenderViewHost(
   if (it == controllers_.end())
     return NULL;
   return it->second;
+}
+
+// static
+void LayoutTestControllerHost::Init(const std::string& expected_pixel_hash) {
+  // TODO(jochen): We should only dump the results for the "main window".
+  expected_pixel_hash_ = expected_pixel_hash;
 }
 
 LayoutTestControllerHost::LayoutTestControllerHost(
@@ -56,6 +64,11 @@ void LayoutTestControllerHost::CaptureDump() {
                                        dump_as_text_,
                                        is_printing_,
                                        dump_child_frames_));
+  if (!dump_as_text_) {
+    render_view_host()->Send(
+        new ShellViewMsg_CaptureImageDump(render_view_host()->GetRoutingID(),
+                                          expected_pixel_hash_));
+  }
 }
 
 void LayoutTestControllerHost::TimeoutHandler() {
@@ -70,6 +83,7 @@ bool LayoutTestControllerHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(LayoutTestControllerHost, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotifyDone, OnNotifyDone)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpAsText, OnDumpAsText)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpChildFramesAsText,
@@ -97,7 +111,52 @@ void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
   std::cout << "#EOF\n";
   std::cerr << "#EOF\n";
 
+  if (dump_as_text_)
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
+void LayoutTestControllerHost::OnImageDump(
+    const std::string& actual_pixel_hash,
+    const SkBitmap& image) {
+#if !defined(OS_ANDROID)
+  // DumpRenderTree is not currently supported for Android. Also, on Android
+  // the required webkit_support methods are not defined, so this method just
+  // doesn't compile.
+
+  SkAutoLockPixels image_lock(image);
+
+  std::cout << "\nActualHash: " << actual_pixel_hash << "\n";
+  if (!expected_pixel_hash_.empty())
+    std::cout << "\nExpectedHash: " << expected_pixel_hash_ << "\n";
+
+  // Only encode and dump the png if the hashes don't match. Encoding the
+  // image is really expensive.
+  if (actual_pixel_hash != expected_pixel_hash_) {
+    std::vector<unsigned char> png;
+
+    // Only the expected PNGs for Mac have a valid alpha channel.
+#if defined(OS_MACOSX)
+    bool discard_transparency = false;
+#else
+    bool discard_transparency = true;
+#endif
+
+    webkit_support::EncodeBGRAPNGWithChecksum(
+        reinterpret_cast<const unsigned char*>(image.getPixels()),
+        image.width(),
+        image.height(),
+        static_cast<int>(image.rowBytes()),
+        discard_transparency,
+        actual_pixel_hash,
+        &png);
+
+    std::cout << "Content-Type: image/png\n";
+    std::cout << "Content-Length: " << png.size() << "\n";
+    std::cout.write(reinterpret_cast<const char*>(&png[0]), png.size());
+  }
+
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+#endif
 }
 
 void LayoutTestControllerHost::OnNotifyDone() {

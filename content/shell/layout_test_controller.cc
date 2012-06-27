@@ -4,19 +4,26 @@
 
 #include "content/shell/layout_test_controller.h"
 
+#include "base/md5.h"
 #include "base/stringprintf.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/shell_messages.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 using WebKit::WebElement;
+using WebKit::WebRect;
 using WebKit::WebSize;
+using WebKit::WebView;
 
 namespace content {
 
@@ -84,6 +91,47 @@ std::string DumpFrameScrollPosition(WebFrame* frame, bool recursive) {
   return result;
 }
 
+bool PaintViewIntoCanvas(WebView* view, skia::PlatformCanvas& canvas) {
+  view->layout();
+  const WebSize& size = view->size();
+
+  if (!canvas.initialize(size.width, size.height, true))
+    return false;
+
+  view->paint(webkit_glue::ToWebCanvas(&canvas),
+              WebRect(0, 0, size.width, size.height));
+  return true;
+}
+
+#if !defined(OS_MACOSX)
+void MakeBitmapOpaque(SkBitmap* bitmap) {
+  SkAutoLockPixels lock(*bitmap);
+  DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
+  for (int y = 0; y < bitmap->height(); ++y) {
+    uint32_t* row = bitmap->getAddr32(0, y);
+    for (int x = 0; x < bitmap->width(); ++x)
+      row[x] |= 0xFF000000;  // Set alpha bits to 1.
+  }
+}
+#endif
+
+void CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
+  skia::PlatformCanvas canvas;
+  if (!PaintViewIntoCanvas(view, canvas))
+    return;
+
+  SkDevice* device = skia::GetTopDevice(canvas);
+
+  const SkBitmap& bitmap = device->accessBitmap(false);
+  bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config);
+
+#if !defined(OS_MACOSX)
+  // Only the expected PNGs for Mac have a valid alpha channel.
+  MakeBitmapOpaque(snapshot);
+#endif
+
+}
+
 }  // namespace
 
 LayoutTestController::LayoutTestController(RenderView* render_view)
@@ -102,6 +150,7 @@ bool LayoutTestController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LayoutTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureTextDump, OnCaptureTextDump)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureImageDump, OnCaptureImageDump)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -124,6 +173,25 @@ void LayoutTestController::OnCaptureTextDump(bool as_text,
     dump.append(DumpFrameScrollPosition(frame, recursive));
   }
   Send(new ShellViewHostMsg_TextDump(routing_id(), dump));
+}
+
+void LayoutTestController::OnCaptureImageDump(
+    const std::string& expected_pixel_hash) {
+  SkBitmap snapshot;
+  CaptureSnapshot(render_view()->GetWebView(), &snapshot);
+
+  SkAutoLockPixels snapshot_lock(snapshot);
+  base::MD5Digest digest;
+  base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
+  std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
+
+  if (actual_pixel_hash == expected_pixel_hash) {
+    SkBitmap empty_image;
+    Send(new ShellViewHostMsg_ImageDump(
+        routing_id(), actual_pixel_hash, empty_image));
+  }
+  Send(new ShellViewHostMsg_ImageDump(
+      routing_id(), actual_pixel_hash, snapshot));
 }
 
 }  // namespace content

@@ -12,12 +12,17 @@
 #include "base/cancelable_callback.h"
 #include "content/public/browser/render_view_host_observer.h"
 
+class SkBitmap;
+
 namespace content {
 
 class LayoutTestControllerHost : public RenderViewHostObserver {
  public:
   static LayoutTestControllerHost* FromRenderViewHost(
       RenderViewHost* render_view_host);
+
+  // Initialize the LayoutTestControllerHost for a given test.
+  static void Init(const std::string& expected_pixel_hash);
 
   explicit LayoutTestControllerHost(RenderViewHost* render_view_host);
   virtual ~LayoutTestControllerHost();
@@ -36,6 +41,7 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
   // Message handlers.
   void OnDidFinishLoad();
   void OnTextDump(const std::string& dump);
+  void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
 
   // layoutTestController handlers.
   void OnNotifyDone();
@@ -46,6 +52,7 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
   void OnWaitUntilDone();
 
   static std::map<RenderViewHost*, LayoutTestControllerHost*> controllers_;
+  static std::string expected_pixel_hash_;
 
   bool captured_dump_;
 
