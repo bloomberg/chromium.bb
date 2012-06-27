@@ -474,6 +474,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   std::map<const void*, Value> prop_map_;
 
+  // A boolean flag to debug crash in http://crbug.com/134507. It is set when
+  // SetVisible is called and reset when SetVisible finishes. In Window dtor,
+  // the flag is CHECKed to catch the case that Window is destroyed during
+  // SetVisbile(false).
+  // TODO(xiyuan): Remove this when http://crbug.com/134507 is resolved.
+  bool in_set_visible_call_;
+
   DISALLOW_COPY_AND_ASSIGN(Window);
 };
 
