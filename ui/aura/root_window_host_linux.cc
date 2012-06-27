@@ -958,6 +958,11 @@ bool RootWindowHostLinux::GrabSnapshot(
       snapshot_bounds.width(), snapshot_bounds.height(),
       AllPlanes, ZPixmap);
 
+  if (!image) {
+    LOG(ERROR) << "XGetImage failed";
+    return false;
+  }
+
   gfx::PNGCodec::ColorFormat color_format;
 
   if (image->bits_per_pixel == 32) {
