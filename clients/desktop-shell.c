@@ -669,10 +669,9 @@ unlock_dialog_create(struct desktop *desktop)
 		return NULL;
 	memset(dialog, 0, sizeof *dialog);
 
-	dialog->window = window_create(display);
+	dialog->window = window_create_custom(display);
 	dialog->widget = frame_create(dialog->window, dialog);
 	window_set_title(dialog->window, "Unlock your desktop");
-	window_set_custom(dialog->window);
 
 	window_set_user_data(dialog->window, dialog);
 	window_set_keyboard_focus_handler(dialog->window,
@@ -688,7 +687,7 @@ unlock_dialog_create(struct desktop *desktop)
 				  unlock_dialog_button_handler);
 
 	desktop_shell_set_lock_surface(desktop->shell,
-	       window_get_wl_shell_surface(dialog->window));
+				       window_get_wl_surface(dialog->window));
 
 	window_schedule_resize(dialog->window, 260, 230);
 

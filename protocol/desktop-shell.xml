@@ -18,7 +18,7 @@
     </request>
 
     <request name="set_lock_surface">
-      <arg name="surface" type="object" interface="wl_shell_surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
     <request name="unlock"/>

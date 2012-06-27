@@ -92,7 +92,7 @@ struct desktop_shell {
 	bool locked;
 	bool prepare_event_sent;
 
-	struct shell_surface *lock_surface;
+	struct weston_surface *lock_surface;
 	struct wl_listener lock_surface_listener;
 
 	struct {
@@ -129,7 +129,6 @@ struct desktop_shell {
 enum shell_surface_type {
 	SHELL_SURFACE_NONE,
 
-	SHELL_SURFACE_LOCK,
 	SHELL_SURFACE_SCREENSAVER,
 	SHELL_SURFACE_INPUT_PANEL,
 
@@ -1228,7 +1227,6 @@ reset_shell_surface_type(struct shell_surface *surface)
 		wl_list_init(&surface->link);
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
-	case SHELL_SURFACE_LOCK:
 		wl_resource_post_error(&surface->resource,
 				       WL_DISPLAY_ERROR_INVALID_METHOD,
 				       "cannot reassign surface type");
@@ -1858,7 +1856,7 @@ show_screensaver(struct desktop_shell *shell, struct shell_surface *surface)
 	struct wl_list *list;
 
 	if (shell->lock_surface)
-		list = &shell->lock_surface->surface->layer_link;
+		list = &shell->lock_surface->layer_link;
 	else
 		list = &shell->lock_layer.surface_list;
 
@@ -1991,6 +1989,21 @@ desktop_shell_set_panel(struct wl_client *client,
 }
 
 static void
+lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+{
+	struct desktop_shell *shell = surface->private;
+
+	center_on_output(surface, get_default_output(shell->compositor));
+
+	if (!weston_surface_is_mapped(surface)) {
+		wl_list_insert(&shell->lock_layer.surface_list,
+			       &surface->layer_link);
+		weston_surface_assign_output(surface);
+		weston_compositor_wake(shell->compositor);
+	}
+}
+
+static void
 handle_lock_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
@@ -2006,7 +2019,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct shell_surface *surface = surface_resource->data;
+	struct weston_surface *surface = surface_resource->data;
 
 	shell->prepare_event_sent = false;
 
@@ -2019,7 +2032,8 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	wl_signal_add(&surface_resource->destroy_signal,
 		      &shell->lock_surface_listener);
 
-	shell->lock_surface->next_type = SHELL_SURFACE_LOCK;
+	surface->configure = lock_surface_configure;
+	surface->private = shell;
 }
 
 static void
@@ -2445,7 +2459,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	weston_surface_activate(es, seat);
 
 	switch (get_shell_surface_type(es)) {
-	case SHELL_SURFACE_LOCK:
 	case SHELL_SURFACE_INPUT_PANEL:
 		break;
 
@@ -2453,7 +2466,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		/* always below lock surface */
 		if (shell->lock_surface)
 			weston_surface_restack(es,
-					       &shell->lock_surface->surface->layer_link);
+					       &shell->lock_surface->layer_link);
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
@@ -2504,6 +2517,7 @@ click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 	switch (get_shell_surface_type(focus)) {
 		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
+		case SHELL_SURFACE_NONE:
 			return;
 		default:
 			break;
@@ -2616,10 +2630,12 @@ static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
 	struct weston_mode *mode = output->current;
-	GLfloat x = (mode->width - surface->geometry.width) / 2;
-	GLfloat y = (mode->height - surface->geometry.height) / 2;
+	GLfloat x = (mode->width - surface->buffer->width) / 2;
+	GLfloat y = (mode->height - surface->buffer->height) / 2;
 
-	weston_surface_set_position(surface, output->x + x, output->y + y);
+	weston_surface_configure(surface, output->x + x, output->y + y,
+				 surface->buffer->width,
+				 surface->buffer->height);
 }
 
 
@@ -2667,9 +2683,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		weston_surface_set_position(surface, surface->output->x,
 					    surface->output->y + panel_height);
 		break;
-	case SHELL_SURFACE_LOCK:
-		center_on_output(surface, get_default_output(compositor));
-		break;
 	case SHELL_SURFACE_INPUT_PANEL:
 		bottom_center_on_output(surface, get_default_output(compositor));
 		/* Don't map the input panel here, wait for
@@ -2688,12 +2701,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 
 	/* surface stacking order, see also activate() */
 	switch (surface_type) {
-	case SHELL_SURFACE_LOCK:
-		/* lock surface always visible, on top */
-		wl_list_insert(&shell->lock_layer.surface_list,
-			       &surface->layer_link);
-		weston_compositor_wake(compositor);
-		break;
 	case SHELL_SURFACE_SCREENSAVER:
 		/* If locked, show it. */
 		if (shell->locked) {
