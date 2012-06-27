@@ -32,11 +32,15 @@ import os
 import sys
 import traceback
 from glob import iglob
-from nose.plugins import Plugin
-from nose import run
 from louis import translate, backTranslateString
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
 
+try:
+    from nose.plugins import Plugin
+    from nose import run
+except ImportError:
+    sys.stderr.write("The harness tests require nose. Skipping...\n")
+    sys.exit(0)
 
 ### Nosetest plugin for controlling the output format. ###
 
