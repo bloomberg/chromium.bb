@@ -61,7 +61,7 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
           file_size = os.path.getsize(target)
           if content_len != file_size:
             sys.stdout.write('Filesize:%d does not match Content-Length:%d' % (
-                file_size, content_length))
+                file_size, content_len))
             continue
       finally:
         src.close()
