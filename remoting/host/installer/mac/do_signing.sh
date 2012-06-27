@@ -177,26 +177,35 @@ cleanup() {
 }
 
 usage() {
-  echo "Usage: ${ME}: output_dir input_dir codesign_keychain codesign_id" >&2
+  echo "Usage: ${ME}: output_dir input_dir keychain codesign_id"\
+      "[productsign_id]" >&2
 }
 
 main() {
   local output_dir="$(shell_safe_path "${1}")"
   local input_dir="$(shell_safe_path "${2}")"
-  local codesign_keychain="$(shell_safe_path "${3}")"
+  local keychain="$(shell_safe_path "${3}")"
   local codesign_id="${4}"
+  local productsign_id="${5}"
+  if [[ ${#} -ge 5 ]]; then
+    productsign_id="${5}"
+  fi
 
+exit 1;
   verify_clean_dir "${output_dir}"
 
-  sign_binaries "${input_dir}" "${codesign_keychain}" "${codesign_id}"
+  sign_binaries "${input_dir}" "${keychain}" "${codesign_id}"
   build_packages "${input_dir}"
-  sign_installer "${input_dir}" "${codesign_keychain}" "${codesign_id}"
+  if [[ -n "${productsign_id}" ]]; then
+    echo "Signing installer..."
+    sign_installer "${input_dir}" "${keychain}" "${productsign_id}"
+  fi
   build_dmg "${input_dir}" "${output_dir}"
 
   cleanup
 }
 
-if [[ ${#} -ne 4 ]]; then
+if [[ ${#} < 4 || ${#} > 5 ]]; then
   usage
   exit 1
 fi
