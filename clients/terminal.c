@@ -364,6 +364,13 @@ enum escape_state {
 #define ESC_FLAG_DQUOTE	0x20
 #define ESC_FLAG_SPACE	0x40
 
+enum {
+	SELECT_NONE,
+	SELECT_CHAR,
+	SELECT_WORD,
+	SELECT_LINE
+};
+
 struct terminal {
 	struct window *window;
 	struct widget *widget;
@@ -404,9 +411,12 @@ struct terminal {
 	uint32_t hide_cursor_serial;
 
 	struct wl_data_source *selection;
-	int32_t dragging;
+	uint32_t button_time;
+	int dragging, click_count;
 	int selection_start_x, selection_start_y;
 	int selection_end_x, selection_end_y;
+	int selection_start_row, selection_start_col;
+	int selection_end_row, selection_end_col;
 	struct wl_list link;
 };
 
@@ -505,57 +515,20 @@ union decoded_attr {
 	uint32_t key;
 };
 
-static int
-terminal_compare_position(struct terminal *terminal,
-			  int x, int y, int32_t ref_row, int32_t ref_col)
-{
-	struct rectangle allocation;
-	int top_margin, side_margin, col, row, ref_x;
-
-	widget_get_allocation(terminal->widget, &allocation);
-	side_margin = allocation.x + (allocation.width - terminal->width * terminal->extents.max_x_advance) / 2;
-	top_margin = allocation.y + (allocation.height - terminal->height * terminal->extents.height) / 2;
-
-	col = (x - side_margin) / terminal->extents.max_x_advance;
-	row = (y - top_margin) / terminal->extents.height;
-
-	ref_x = side_margin + ref_col * terminal->extents.max_x_advance +
-		terminal->extents.max_x_advance / 2;
-
-	if (row < ref_row)
-		return -1;
-	if (row == ref_row) {
-		if (col < ref_col)
-			return -1;
-		if (col == ref_col && x < ref_x)
-			return -1;
-	}
-
-	return 1;
-}
-
 static void
 terminal_decode_attr(struct terminal *terminal, int row, int col,
 		     union decoded_attr *decoded)
 {
 	struct attr attr;
 	int foreground, background, tmp;
-	int start_cmp, end_cmp;
 
-	start_cmp =
-		terminal_compare_position(terminal,
-					  terminal->selection_start_x,
-					  terminal->selection_start_y,
-					  row, col);
-	end_cmp =
-		terminal_compare_position(terminal,
-					  terminal->selection_end_x,
-					  terminal->selection_end_y,
-					  row, col);
 	decoded->attr.s = 0;
-	if (start_cmp < 0 && end_cmp > 0)
-		decoded->attr.s = 1;
-	else if (end_cmp < 0 && start_cmp > 0)
+	if (((row == terminal->selection_start_row &&
+	      col >= terminal->selection_start_col) ||
+	     row > terminal->selection_start_row) &&
+	    ((row == terminal->selection_end_row &&
+	      col < terminal->selection_end_col) ||
+	     row < terminal->selection_end_row))
 		decoded->attr.s = 1;
 
 	/* get the attributes for this character cell */
@@ -2275,6 +2248,86 @@ keyboard_focus_handler(struct window *window,
 	window_schedule_redraw(terminal->window);
 }
 
+static int wordsep(int ch)
+{
+	const char extra[] = "-,./?%&#:_=+@~";
+
+	return ch == 0 || !(isalpha(ch) || isdigit(ch) || strchr(extra, ch));
+}
+
+static int
+recompute_selection(struct terminal *terminal)
+{
+	struct rectangle allocation;
+	int col, x, width, height;
+	int start_row, end_row;
+	int word_start;
+	int side_margin, top_margin;
+	int start_x, end_x;
+	int cw, ch;
+	union utf8_char *data;
+
+	cw = terminal->extents.max_x_advance;
+	ch = terminal->extents.height;
+	widget_get_allocation(terminal->widget, &allocation);
+	width = terminal->width * cw;
+	height = terminal->height * ch;
+	side_margin = allocation.x + (allocation.width - width) / 2;
+	top_margin = allocation.y + (allocation.height - height) / 2;
+
+	start_row = (terminal->selection_start_y - top_margin) / ch;
+	end_row = (terminal->selection_end_y - top_margin) / ch;
+	if (start_row < end_row ||
+	    (start_row == end_row &&
+	     terminal->selection_start_x < terminal->selection_end_x)) {
+		terminal->selection_start_row = start_row;
+		terminal->selection_end_row = end_row;
+		start_x = terminal->selection_start_x;
+		end_x = terminal->selection_end_x;
+	} else {
+		terminal->selection_start_row = end_row;
+		terminal->selection_end_row = start_row;
+		start_x = terminal->selection_end_x;
+		end_x = terminal->selection_start_x;
+	}
+
+	x = side_margin + cw / 2;
+	data = terminal_get_row(terminal, terminal->selection_start_row);
+	word_start = 0;
+	for (col = 0; col < terminal->width; col++, x += cw) {
+		if (col == 0 || wordsep(data[col - 1].ch))
+			word_start = col;
+		if (start_x < x)
+			break;
+	}
+
+	switch (terminal->dragging) {
+	case SELECT_LINE:
+		terminal->selection_start_col = 0;
+		break;
+	case SELECT_WORD:
+		terminal->selection_start_col = word_start;
+		break;
+	case SELECT_CHAR:
+		terminal->selection_start_col = col;
+		break;
+	}
+
+	x = side_margin + cw / 2;
+	data = terminal_get_row(terminal, terminal->selection_end_row);
+	for (col = 0; col < terminal->width; col++, x += cw) {
+		if (terminal->dragging == SELECT_CHAR && end_x < x)
+			break;
+		if (terminal->dragging == SELECT_WORD &&
+		    end_x < x && wordsep(data[col].ch))
+			break;
+	}
+
+	terminal->selection_end_col = col;
+
+	return 1;
+}
+
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
@@ -2286,15 +2339,25 @@ button_handler(struct widget *widget,
 	switch (button) {
 	case 272:
 		if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-			terminal->dragging = 1;
+
+			if (time - terminal->button_time < 500)
+				terminal->click_count++;
+			else
+				terminal->click_count = 1;
+
+			terminal->button_time = time;
+			terminal->dragging =
+				(terminal->click_count - 1) % 3 + SELECT_CHAR;
+
 			input_get_position(input,
 					   &terminal->selection_start_x,
 					   &terminal->selection_start_y);
 			terminal->selection_end_x = terminal->selection_start_x;
 			terminal->selection_end_y = terminal->selection_start_y;
-			widget_schedule_redraw(widget);
+			if (recompute_selection(terminal))
+				widget_schedule_redraw(widget);
 		} else {
-			terminal->dragging = 0;
+			terminal->dragging = SELECT_NONE;
 		}
 		break;
 	}
@@ -2311,7 +2374,9 @@ motion_handler(struct widget *widget,
 		input_get_position(input,
 				   &terminal->selection_end_x,
 				   &terminal->selection_end_y);
-		widget_schedule_redraw(widget);
+
+		if (recompute_selection(terminal))
+			widget_schedule_redraw(widget);
 	}
 
 	return CURSOR_IBEAM;
