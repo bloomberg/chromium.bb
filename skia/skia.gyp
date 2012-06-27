@@ -929,7 +929,6 @@
           'conditions': [
             [ '_toolset == "target"', {
               'defines': [
-                'HAVE_ENDIAN_H',
                 'HAVE_PTHREADS',
                 'OS_ANDROID',
                 'USE_CHROMIUM_SKIA',
@@ -958,6 +957,11 @@
               ],
               'export_dependent_settings': [
                 '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
+              ],
+            }],
+            [ '_toolset == "target" and android_build_type == 0', {
+              'defines': [
+                'HAVE_ENDIAN_H',
               ],
             }],
             [ '_toolset=="host" and host_os=="linux"', {
@@ -1070,12 +1074,16 @@
             'conditions': [
               [ '_toolset == "target"', {
                 'defines': [
-                  'HAVE_ENDIAN_H',
                   'SK_RELEASE',  # Assume platform has a release build.
                 ],
                 'dependencies!': [
                   'skia_opts',
                   '../third_party/zlib/zlib.gyp:zlib',
+                ],
+              }],
+              [ '_toolset == "target" and android_build_type == 0', {
+                'defines': [
+                  'HAVE_ENDIAN_H',
                 ],
               }],
             ],
