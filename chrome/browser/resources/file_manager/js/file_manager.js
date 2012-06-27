@@ -1071,9 +1071,13 @@ FileManager.prototype = {
       case 'cut':
         return this.document_.queryCommandEnabled(commandId);
 
+      // Hack goes below, since we don't receive beforepaste event, but receive
+      // beforecut and beforecopy events.
       case 'paste':
-        return !!this.fileTransferController_ &&
-               this.fileTransferController_.queryPasteCommandEnabled();
+        return this.isRenamingInProgress()
+                   ? this.document_.queryCommandEnabled(commandId)
+                   : (!!this.fileTransferController_ &&
+                      this.fileTransferController_.queryPasteCommandEnabled());
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1085,12 +1089,11 @@ FileManager.prototype = {
                 this.selection.totalCount == 1);
 
       case 'delete':
-        return (// Initialized to the point where we have a current directory
-                !readonly &&
-                // Rename not in progress.
-                !this.isRenamingInProgress() &&
-                this.selection &&
-                this.selection.totalCount > 0);
+        return (this.isRenamingInProgress()
+                ? this.document_.queryCommandEnabled(commandId)
+                : !readonly &&
+                  this.selection &&
+                  this.selection.totalCount > 0);
 
       case 'newfolder':
         return !readonly &&
@@ -1380,15 +1383,9 @@ FileManager.prototype = {
   FileManager.prototype.onCommand_ = function(event) {
     switch (event.command.id) {
       case 'cut':
-        document.execCommand('cut');
-        return;
-
       case 'copy':
-        document.execCommand('copy');
-        return;
-
       case 'paste':
-        document.execCommand('paste');
+        document.execCommand(event.command.id);
         return;
 
       case 'rename':
@@ -1396,7 +1393,11 @@ FileManager.prototype = {
         return;
 
       case 'delete':
-        this.deleteEntries(this.selection.entries);
+        if (this.isRenamingInProgress())
+          document.execCommand('delete');
+        else
+          this.deleteEntries(this.selection.entries);
+
         return;
 
       case 'newfolder':

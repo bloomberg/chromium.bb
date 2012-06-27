@@ -351,7 +351,8 @@ FileTransferController.prototype = {
   },
 
   isDocumentWideEvent_: function(event) {
-    return event.target == this.document_.body;
+    return this.document_.activeElement.nodeName.toLowerCase() != 'input' ||
+        this.document_.activeElement.type.toLowerCase() != 'text';
   },
 
   onCopy_: function(event) {
@@ -456,6 +457,10 @@ FileTransferController.prototype = {
   },
 
   queryPasteCommandEnabled: function() {
+    if (!this.isDocumentWideEvent_()) {
+      return false;
+    }
+
     // HACK(serya): return this.document_.queryCommandEnabled('paste')
     // should be used.
     var result;
