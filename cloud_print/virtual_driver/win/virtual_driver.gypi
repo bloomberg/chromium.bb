@@ -35,6 +35,7 @@
         'port_monitor/port_monitor.h',
       ],
       'dependencies': [
+        '<(DEPTH)/chrome/chrome.gyp:launcher_support<(virtual_driver_suffix)',
         'virtual_driver_lib<(virtual_driver_suffix)',
       ],
     },

@@ -14,8 +14,11 @@
 
 namespace cloud_print {
 
-// Fills chrome_path with the path to be used for launching Chrome.
-bool GetChromeExePath(FilePath* chrome_path);
+// Returns path to be used for launching Chrome.
+FilePath GetChromeExePath();
+
+// Returns path to user profile to be used for launching Chrome.
+FilePath GetChromeProfilePath();
 
 // Implementations for the function pointers in the MONITOR2 structure
 // returned by InitializePrintMonitor2.  The prototypes and behaviors
@@ -79,7 +82,8 @@ BOOL WINAPI MonitorUiConfigureOrDeletePortUI(const wchar_t*,
                                              const wchar_t* port_name);
 
 extern const wchar_t kChromeExePath[];
-extern const wchar_t kChromePathRegValue[];
+extern const wchar_t kChromeExePathRegValue[];
+extern const wchar_t kChromeProfilePathRegValue[];
 extern const bool kIsUnittest;
 
 }   // namespace cloud_print

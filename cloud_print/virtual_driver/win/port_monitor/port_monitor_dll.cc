@@ -31,7 +31,8 @@
 namespace cloud_print {
 
 const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrome.exe";
-const wchar_t kChromePathRegValue[] = L"PathToChromeExe";
+const wchar_t kChromeExePathRegValue[] = L"PathToChromeExe";
+const wchar_t kChromeProfilePathRegValue[] = L"PathToChromeProfile";
 const bool kIsUnittest = false;
 
 namespace {

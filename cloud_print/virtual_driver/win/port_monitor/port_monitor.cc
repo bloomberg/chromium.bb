@@ -23,6 +23,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "cloud_print/virtual_driver/virtual_driver_switches.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
@@ -37,7 +38,7 @@ const wchar_t kIePath[] = L"Internet Explorer\\iexplore.exe";
 const char kChromeInstallUrl[] =
     "http://google.com/cloudprint/learn/chrome.html";
 
-const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
+const wchar_t kCloudPrintRegKey[] = L"Software\\Google\\CloudPrint";
 
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
@@ -178,12 +179,20 @@ bool LaunchPrintDialog(const string16& xps_path,
   }
   base::win::ScopedHandle primary_token_scoped(token);
 
-  FilePath chrome_path;
-  if (!GetChromeExePath(&chrome_path)) {
+  FilePath chrome_path = GetChromeExePath();
+  if (chrome_path.empty()) {
     LOG(ERROR) << "Unable to get chrome exe path.";
     return false;
   }
+
   CommandLine command_line(chrome_path);
+
+  FilePath chrome_profile = GetChromeProfilePath();
+  if (!chrome_profile.empty()) {
+    command_line.AppendSwitchPath(switches::kCloudPrintUserDataDir,
+                                  chrome_profile);
+  }
+
   command_line.AppendSwitchPath(switches::kCloudPrintFile,
                                 FilePath(xps_path));
   command_line.AppendSwitchNative(switches::kCloudPrintFileType,
@@ -251,38 +260,35 @@ bool ValidateCurrentUser() {
 }
 }  // namespace
 
-bool GetChromeExePath(FilePath* chrome_path) {
-  base::win::RegKey app_path_key(HKEY_CURRENT_USER,
-                                 kChromePathRegKey,
-                                 KEY_READ);
-  DCHECK(chrome_path != NULL);
-  std::wstring reg_data;
-  if (SUCCEEDED(app_path_key.ReadValue(kChromePathRegValue,
-                                       &reg_data))) {
-    if (!reg_data.empty() && file_util::PathExists(FilePath(reg_data))) {
-      *chrome_path = FilePath(reg_data);
-      return true;
-    }
+FilePath ReadPathFromRegistry(HKEY root, const wchar_t* path_name) {
+  base::win::RegKey gcp_key(HKEY_CURRENT_USER, kCloudPrintRegKey, KEY_READ);
+  string16 data;
+  if (SUCCEEDED(gcp_key.ReadValue(path_name, &data)) &&
+      file_util::PathExists(FilePath(data))) {
+    return FilePath(data);
   }
-  // First check %localappdata%\google\chrome\application\chrome.exe
-  FilePath path;
-  PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
-  path = path.Append(kChromeExePath);
-  if (file_util::PathExists(path)) {
-    *chrome_path = FilePath(path.value());
-    return true;
-  }
+  return FilePath();
+}
 
-  // Chrome doesn't appear to be installed per user.
-  // Now check %programfiles(x86)%\google\chrome\application
-  PathService::Get(base::DIR_PROGRAM_FILESX86, &path);
-  path = path.Append(kChromeExePath);
-  if (file_util::PathExists(path)) {
-    *chrome_path = FilePath(path.value());
-    return true;
-  }
-  LOG(WARNING) << kChromeExePath << " not found.";
-  return false;
+FilePath ReadPathFromAnyRegistry(const wchar_t* path_name) {
+  FilePath result = ReadPathFromRegistry(HKEY_CURRENT_USER, path_name);
+  if (!result.empty())
+    return result;
+  return ReadPathFromRegistry(HKEY_LOCAL_MACHINE, path_name);
+}
+
+FilePath GetChromeExePath() {
+  FilePath path = ReadPathFromAnyRegistry(kChromeExePathRegValue);
+  if (!path.empty())
+    return path;
+  return chrome_launcher_support::GetAnyChromePath();
+}
+
+FilePath GetChromeProfilePath() {
+  FilePath path = ReadPathFromAnyRegistry(kChromeProfilePathRegValue);
+  if (!path.empty() && file_util::DirectoryExists(path))
+    return path;
+  return FilePath();
 }
 
 BOOL WINAPI Monitor2EnumPorts(HANDLE,
@@ -605,10 +611,10 @@ MONITOR2* WINAPI InitializePrintMonitor2(MONITORINIT*,
   }
   if (handle != NULL) {
     *handle = (HANDLE)monitor_data;
-    #ifndef UNIT_TEST
-    // Unit tests set up their own AtExitManager
-    monitor_data->at_exit_manager = new base::AtExitManager();
-    #endif
+    if (!cloud_print::kIsUnittest) {
+      // Unit tests set up their own AtExitManager
+      monitor_data->at_exit_manager = new base::AtExitManager();
+    }
   } else {
     SetLastError(ERROR_INVALID_PARAMETER);
     return NULL;

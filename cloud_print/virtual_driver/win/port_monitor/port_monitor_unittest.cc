@@ -15,7 +15,8 @@
 namespace cloud_print {
 
 const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrometest.exe";
-const wchar_t kChromePathRegValue[] =L"PathToChromeTestExe";
+const wchar_t kChromeExePathRegValue[] = L"PathToChromeTestExe";
+const wchar_t kChromeProfilePathRegValue[] = L"PathToChromeTestProfile";
 const bool kIsUnittest = true;
 
 namespace {
@@ -23,7 +24,7 @@ namespace {
 const wchar_t kAlternateChromeExePath[] =
     L"google\\chrome\\application\\chrometestalternate.exe";
 
-const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
+const wchar_t kCloudPrintRegKey[] = L"Software\\Google\\CloudPrint";
 
 }  // namespace
 
@@ -35,22 +36,29 @@ class PortMonitorTest : public testing::Test  {
   virtual void SetUpChromeExeRegistry() {
     // Create a temporary chrome.exe location value.
     base::win::RegKey key(HKEY_CURRENT_USER,
-                          cloud_print::kChromePathRegKey,
+                          cloud_print::kCloudPrintRegKey,
                           KEY_ALL_ACCESS);
 
     FilePath path;
     PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     path = path.Append(kAlternateChromeExePath);
     ASSERT_EQ(ERROR_SUCCESS,
-              key.WriteValue(cloud_print::kChromePathRegValue,
+              key.WriteValue(cloud_print::kChromeExePathRegValue,
                              path.value().c_str()));
+    FilePath temp;
+    PathService::Get(base::DIR_TEMP, &temp);
+    // Write any dir here.
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(cloud_print::kChromeProfilePathRegValue,
+                             temp.value().c_str()));
   }
   // Deletes the registry entry created in SetUpChromeExeRegistry
   virtual void DeleteChromeExeRegistry() {
     base::win::RegKey key(HKEY_CURRENT_USER,
-                          cloud_print::kChromePathRegKey,
+                          cloud_print::kCloudPrintRegKey,
                           KEY_ALL_ACCESS);
-    key.DeleteValue(cloud_print::kChromePathRegValue);
+    key.DeleteValue(cloud_print::kChromeExePathRegValue);
+    key.DeleteValue(cloud_print::kChromeProfilePathRegValue);
   }
 
   virtual void CreateTempChromeExeFiles() {
@@ -72,24 +80,43 @@ class PortMonitorTest : public testing::Test  {
     ASSERT_TRUE(file_util::Delete(alternate_path, true));
   }
 
+ protected:
+  virtual void SetUp() {
+    SetUpChromeExeRegistry();
+  }
+
+  virtual void TearDown() {
+    DeleteChromeExeRegistry();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PortMonitorTest);
 };
 
 TEST_F(PortMonitorTest, GetChromeExePathTest) {
-  FilePath chrome_path;
-  SetUpChromeExeRegistry();
   CreateTempChromeExeFiles();
-  EXPECT_TRUE(cloud_print::GetChromeExePath(&chrome_path));
+  FilePath chrome_path = cloud_print::GetChromeExePath();
+  EXPECT_FALSE(chrome_path.empty());
   EXPECT_TRUE(
       chrome_path.value().rfind(kAlternateChromeExePath) != std::string::npos);
+  EXPECT_TRUE(file_util::PathExists(chrome_path));
   DeleteChromeExeRegistry();
-  chrome_path.clear();
-  EXPECT_TRUE(cloud_print::GetChromeExePath(&chrome_path));
-  EXPECT_TRUE(chrome_path.value().rfind(kChromeExePath) != std::string::npos);
-  EXPECT_TRUE(file_util::PathExists(FilePath(chrome_path)));
-  DeleteTempChromeExeFiles();
-  EXPECT_FALSE(cloud_print::GetChromeExePath(&chrome_path));
+  chrome_path = cloud_print::GetChromeExePath();
+  // No Chrome or regular chrome path.
+  EXPECT_TRUE(chrome_path.empty() ||
+              chrome_path.value().rfind(kChromeExePath) == std::string::npos);
+}
+
+TEST_F(PortMonitorTest, GetChromeProfilePathTest) {
+  FilePath data_path = cloud_print::GetChromeProfilePath();
+  EXPECT_FALSE(data_path.empty());
+  FilePath temp;
+  PathService::Get(base::DIR_TEMP, &temp);
+  EXPECT_EQ(data_path, temp);
+  EXPECT_TRUE(file_util::DirectoryExists(data_path));
+  DeleteChromeExeRegistry();
+  data_path = cloud_print::GetChromeProfilePath();
+  EXPECT_TRUE(data_path.empty());
 }
 
 TEST_F(PortMonitorTest, EnumPortsTest) {

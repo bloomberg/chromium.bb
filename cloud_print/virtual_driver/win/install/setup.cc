@@ -48,7 +48,7 @@ void SetOmahaKeys() {
   }
 
   // Get the version from the resource file.
-  std::wstring version_string;
+  string16 version_string;
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
 
