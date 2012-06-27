@@ -70,6 +70,9 @@ bool PrepareCommitMessage(sessions::SyncSession* session,
   commit_set->Clear();
   commit_message->Clear();
 
+  // TODO(134769): This is a temporary fix for crbug.com/134715.
+  commit_message->set_protocol_version(commit_message->protocol_version());
+
   WriteTransaction trans(FROM_HERE, SYNCER, session->context()->directory());
   sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 
