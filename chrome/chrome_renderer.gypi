@@ -275,9 +275,6 @@
           'dependencies': [
             'nacl',
           ],
-          'sources': [
-            'renderer/nacl_desc_wrapper_chrome.cc',
-          ],
         }],
         ['safe_browsing==1', {
           'defines': [
