@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 
 #include <algorithm>
+#include <iterator>
 #include <string>
 
 #include "chrome/common/extensions/extension.h"
