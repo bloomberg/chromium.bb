@@ -679,7 +679,7 @@
     # include all DLLs imported by the installed binaries, so supporting
     # the component build becomes a burden.
     ['OS == "win" and component != "shared_library" and wix_exists == "True" \
-        and platformsdk_exists == "True"', {
+        and sas_dll_exists == "True"', {
       'targets': [
         {
           'target_name': 'remoting_host_installation',
@@ -713,7 +713,7 @@
                 '<(PRODUCT_DIR)/remoting_host_controller.exe',
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
-                '<(platformsdk_path)/redist/x86/sas.dll',
+                '<(sas_dll_path)/sas.dll',
                 'resources/chromoting.ico',
                 'candle_and_light.py',
               ],
@@ -727,7 +727,7 @@
                 '--version', '<(version_full)',
                 '--product_dir', '<(PRODUCT_DIR).',
                 '--intermediate_dir', '<(INTERMEDIATE_DIR).',
-                '--platformsdk_path', '<(platformsdk_path)',
+                '--sas_dll_path', '<(sas_dll_path)',
                 '--input', '<(RULE_INPUT_PATH)',
                 '--output', '<@(_outputs)',
                 '<@(_wix_defines)',

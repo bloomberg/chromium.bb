@@ -25,7 +25,7 @@ def main():
   parser.add_option('--version', dest='version')
   parser.add_option('--product_dir', dest='product_dir')
   parser.add_option('--intermediate_dir', dest='intermediate_dir')
-  parser.add_option('--platformsdk_path', dest='platformsdk_path')
+  parser.add_option('--sas_dll_path', dest='sas_dll_path')
   parser.add_option('-d', dest='define_list', action='append')
   parser.add_option('--input', dest='input')
   parser.add_option('--output', dest='output')
@@ -45,7 +45,7 @@ def main():
       '-dVersion=%(version)s '
       '-dFileSource=%(product_dir)s '
       '-dIconPath=resources/chromoting.ico '
-      '-dSasDllPath=%(platformsdk_path)s/redist/x86/sas.dll '
+      '-dSasDllPath=%(sas_dll_path)s/sas.dll '
       '%(defines)s '
       )
 
