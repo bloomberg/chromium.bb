@@ -110,6 +110,11 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
                                                 int flags,
                                                 uint32 ibus_keyval);
 
+  // Processes an unfiltered key press event with character composer.
+  // This method returns true if the key press is filtered by the composer.
+  bool ProcessUnfilteredKeyPressEventWithCharacterComposer(uint32 ibus_keyval,
+                                                           uint32 state);
+
   // Sends input method result caused by the given key event to the focused text
   // input client.
   void ProcessInputMethodResult(const base::NativeEvent& native_key_event,

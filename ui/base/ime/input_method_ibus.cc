@@ -584,22 +584,8 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
       EventFlagsFromXFlags(GetKeyEvent(native_event)->state);
 
   // Process compose and dead keys
-  if (character_composer_.FilterKeyPress(ibus_keyval, state)) {
-    string16 composed = character_composer_.composed_character();
-    if (!composed.empty()) {
-      client = GetTextInputClient();
-      if (client) {
-        // TODO(hashimoto): Send correct DOM event for characters which cannot
-        // be inserted with InsertChar(). Without sending those events, composed
-        // character will not be shown on docs.google.com. crbug.com/133269
-        if (composed.size() == 1)
-          client->InsertChar(composed[0], state);
-        else
-          client->InsertText(composed);
-      }
-    }
+  if (ProcessUnfilteredKeyPressEventWithCharacterComposer(ibus_keyval, state))
     return;
-  }
 
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
@@ -629,27 +615,45 @@ void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
   if (client != GetTextInputClient())
     return;
 
-  if (character_composer_.FilterKeyPress(ibus_keyval, flags)) {
-    string16 composed = character_composer_.composed_character();
-    if (!composed.empty()) {
-      client = GetTextInputClient();
-      if (client) {
-        // TODO(hashimoto): Send correct DOM event for characters which cannot
-        // be inserted with InsertChar(). Without sending those events, composed
-        // character will not be shown on docs.google.com. crbug.com/133269
-        if (composed.size() == 1)
-          client->InsertChar(composed[0], flags);
-        else
-          client->InsertText(composed);
-      }
-    }
+  if (ProcessUnfilteredKeyPressEventWithCharacterComposer(ibus_keyval, flags))
     return;
-  }
 
   client = GetTextInputClient();
   const uint16 ch = ui::GetCharacterFromKeyCode(key_code, flags);
   if (client && ch)
     client->InsertChar(ch, flags);
+}
+
+bool InputMethodIBus::ProcessUnfilteredKeyPressEventWithCharacterComposer(
+    uint32 ibus_keyval,
+    uint32 state) {
+  // We don't filter key presses for inappropriate input types.
+  const TextInputType text_input_type = GetTextInputType();
+  if (text_input_type == TEXT_INPUT_TYPE_NONE ||
+      text_input_type == TEXT_INPUT_TYPE_PASSWORD)
+    return false;
+
+  // Do nothing if the key press is not filtered by our composer.
+  if (!character_composer_.FilterKeyPress(ibus_keyval, state))
+    return false;
+
+  TextInputClient* client = GetTextInputClient();
+  if (!client) // Do nothing if we cannot get the client.
+    return true;
+
+  // Insert composed character.
+  const string16 composed = character_composer_.composed_character();
+  if (!composed.empty()) {
+    if (composed.size() == 1) {
+      client->InsertChar(composed[0], state);
+    } else {
+      CompositionText composition;
+      composition.text = composed;
+      client->SetCompositionText(composition);
+      client->ConfirmCompositionText();
+    }
+  }
+  return true;
 }
 
 void InputMethodIBus::ProcessInputMethodResult(
@@ -783,6 +787,9 @@ void InputMethodIBus::OnUpdatePreeditText(const chromeos::ibus::IBusText& text,
                                           bool visible) {
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
+
+  // Preedit update means there is a working IME, discard our composer's state.
+  character_composer_.Reset();
 
   // |visible| argument is very confusing. For example, what's the correct
   // behavior when:
