@@ -574,7 +574,7 @@ void BrowserView::Show() {
 
   browser()->OnWindowDidShow();
 
-  browser::MaybeShowInvertBubbleView(browser_->profile(), contents_);
+  browser::MaybeShowInvertBubbleView(browser_.get(), contents_);
 }
 
 void BrowserView::ShowInactive() {
@@ -1059,8 +1059,7 @@ void BrowserView::ToggleBookmarkBar() {
 }
 
 void BrowserView::ShowAboutChromeDialog() {
-  browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(),
-                               browser_->profile());
+  browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(), browser_.get());
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
@@ -1812,7 +1811,7 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
 }
 
 void BrowserView::OnSysColorChange() {
-  browser::MaybeShowInvertBubbleView(browser_->profile(), contents_);
+  browser::MaybeShowInvertBubbleView(browser_.get(), contents_);
 }
 
 int BrowserView::GetOTRIconResourceID() const {

@@ -8,7 +8,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
@@ -32,7 +31,7 @@ const int kBubbleWidth = 500;
 class InvertBubbleView : public views::BubbleDelegateView,
                          public views::LinkListener {
  public:
-  InvertBubbleView(Profile* profile, views::View* anchor_view);
+  InvertBubbleView(Browser* browser, views::View* anchor_view);
   virtual ~InvertBubbleView();
 
  private:
@@ -45,7 +44,7 @@ class InvertBubbleView : public views::BubbleDelegateView,
 
   void OpenLink(const std::string& url, int event_flags);
 
-  Profile* profile_;
+  Browser* browser_;
   views::Link* high_contrast_;
   views::Link* dark_theme_;
   views::Link* learn_more_;
@@ -54,9 +53,9 @@ class InvertBubbleView : public views::BubbleDelegateView,
   DISALLOW_COPY_AND_ASSIGN(InvertBubbleView);
 };
 
-InvertBubbleView::InvertBubbleView(Profile* profile, views::View* anchor_view)
+InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      profile_(profile),
+      browser_(browser),
       high_contrast_(NULL),
       dark_theme_(NULL),
       learn_more_(NULL),
@@ -144,28 +143,25 @@ void InvertBubbleView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  if (browser) {
-    WindowOpenDisposition disposition =
-        browser::DispositionFromEventFlags(event_flags);
-    content::OpenURLParams params(
-        GURL(url), content::Referrer(),
-        disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
-        content::PAGE_TRANSITION_LINK, false);
-    browser->OpenURL(params);
-  }
+  WindowOpenDisposition disposition =
+      browser::DispositionFromEventFlags(event_flags);
+  content::OpenURLParams params(
+      GURL(url), content::Referrer(),
+      disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  browser_->OpenURL(params);
 }
 
 }  // namespace
 
 namespace browser {
 
-void MaybeShowInvertBubbleView(Profile* profile, views::View* anchor_view) {
-  PrefService* pref_service = profile->GetPrefs();
+void MaybeShowInvertBubbleView(Browser* browser, views::View* anchor_view) {
+  PrefService* pref_service = browser->profile()->GetPrefs();
   if (gfx::IsInvertedColorScheme() &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
-    InvertBubbleView* delegate = new InvertBubbleView(profile, anchor_view);
+    InvertBubbleView* delegate = new InvertBubbleView(browser, anchor_view);
     views::BubbleDelegateView::CreateBubble(delegate);
     delegate->StartFade(true);
   }

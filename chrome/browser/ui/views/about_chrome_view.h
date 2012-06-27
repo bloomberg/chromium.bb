@@ -25,7 +25,7 @@ class Textfield;
 class Throbber;
 }
 
-class Profile;
+class Browser;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -41,7 +41,7 @@ class AboutChromeView : public views::DialogDelegateView,
 #endif
                         {
  public:
-  explicit AboutChromeView(Profile* profile);
+  explicit AboutChromeView(Browser* browser);
   virtual ~AboutChromeView();
 
   // Initialize the controls on the dialog.
@@ -91,7 +91,7 @@ class AboutChromeView : public views::DialogDelegateView,
   int EnlargeWindowSizeIfNeeded();
 #endif
 
-  Profile* profile_;
+  Browser* browser_;
 
   // UI elements on the dialog.
   views::ImageView* about_dlg_background_logo_;

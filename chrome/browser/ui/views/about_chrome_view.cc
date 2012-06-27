@@ -21,7 +21,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -93,9 +92,9 @@ namespace browser {
 
 // Declared in browser_dialogs.h so that others don't
 // need to depend on our .h.
-void ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
+void ShowAboutChromeView(gfx::NativeWindow parent, Browser* browser) {
   views::Widget* window = views::Widget::CreateWindowWithParent(
-      new AboutChromeView(profile), parent);
+      new AboutChromeView(browser), parent);
   window->Show();
 }
 
@@ -104,8 +103,8 @@ void ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, public:
 
-AboutChromeView::AboutChromeView(Profile* profile)
-    : profile_(profile),
+AboutChromeView::AboutChromeView(Browser* browser)
+    : browser_(browser),
       about_dlg_background_logo_(NULL),
       about_title_label_(NULL),
       version_label_(NULL),
@@ -119,7 +118,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
       restart_button_visible_(false),
       chromium_url_appears_first_(true),
       text_direction_is_rtl_(false) {
-  DCHECK(profile);
+  DCHECK(browser);
 
   Init();
 
@@ -623,10 +622,9 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
     NOTREACHED() << "Unknown link source";
   }
 
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   OpenURLParams params(
       url, Referrer(), NEW_WINDOW, content::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
+  browser_->OpenURL(params);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

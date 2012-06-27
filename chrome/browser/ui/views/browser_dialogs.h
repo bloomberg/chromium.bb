@@ -17,6 +17,7 @@
 // TODO: Make as many of these methods as possible cross platform, and move them
 // into chrome/browser/ui/browser_dialogs.h.
 
+class Browser;
 class BrowserView;
 class EditSearchEngineControllerDelegate;
 class FindBar;
@@ -67,7 +68,7 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         content::PageNavigator* navigator);
 
 // Shows the about dialog. See AboutChromeView.
-void ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile);
+void ShowAboutChromeView(gfx::NativeWindow parent, Browser* browser);
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);

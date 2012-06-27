@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_INVERT_BUBBLE_VIEW_H_
 #pragma once
 
-class Profile;
+class Browser;
 
 namespace views {
 class View;
@@ -18,7 +18,7 @@ namespace browser {
 // with a light-on-dark scheme, so they may be interested in a high-contrast
 // Chrome extension and a dark theme. Only shows the first time we encounter
 // this condition for a particular profile.
-void MaybeShowInvertBubbleView(Profile* profile, views::View* anchor_view);
+void MaybeShowInvertBubbleView(Browser* browser, views::View* anchor_view);
 
 }  // namespace browser
 
