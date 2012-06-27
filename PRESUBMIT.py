@@ -478,33 +478,23 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def GetPreferredTrySlaves(project, change):
-  affected_files = change.LocalPaths()
-  only_objc_files = all(f.endswith(('.mm', '.m')) for f in affected_files)
-  if only_objc_files:
+  files = change.LocalPaths()
+
+  if all(re.search('\.(m|mm)$|[/_]mac[/_.]', f) for f in files):
     return ['mac_rel']
-  preferred = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile']
-  aura_re = '_aura[^/]*[.][^/]*'
-  if any(re.search(aura_re, f) for f in affected_files):
-    preferred.append('linux_chromeos')
-  # Nothing in chrome/
-  android_re_list = ('^base/',
-                     '^build/common.gypi$',
-                     '^content/',
-                     '^ipc/',
-                     '^jingle/',
-                     '^media/',
-                     '^net/',
-                     '^sql/')
-  # Nothing that looks like win-only or aura-only
-  win_re = '_win\.(cc|h)$'
-  possibly_android = True
-  for non_android_re in (aura_re, win_re):
-    if all(re.search(non_android_re, f) for f in affected_files):
-      possibly_android = False
-      break
-  if possibly_android:
-    for f in change.AffectedFiles():
-      if any(re.search(r, f.LocalPath()) for r in android_re_list):
-        preferred.append('android')
-        break
-  return preferred
+  if all(re.search('[/_]win[/_.]', f) for f in files):
+    return ['win_rel']
+  if all(re.search('[/_]android[/_.]', f) for f in files):
+    return ['android']
+
+  trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile']
+  # match things like aurax11.cc or aura_oak.cc
+  if any(re.search('[/_]aura', f) for f in files):
+    trybots.append('linux_chromeos')
+
+  # Ensure CL contains some relevant files (i.e. not purely ^chrome)
+  if any(re.search('^(base|build|content|ipc|jingle|media|net|sql)/', f)
+         for f in files):
+    trybots.append('android')
+
+  return trybots
