@@ -16,13 +16,13 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "media/base/video_decoder_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_context.h"
@@ -36,6 +36,7 @@
 
 class GpuChannel;
 struct GpuMemoryAllocation;
+class GpuVideoDecodeAccelerator;
 class GpuWatchdog;
 
 namespace gpu {

@@ -116,6 +116,9 @@ void VaapiVideoDecodeAccelerator::NotifyInputBufferRead(int input_buffer_id) {
 void VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady(int32 input_id,
                                                             int32 output_id) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  // Handle Destroy() arriving while pictures are queued for output.
+  if (!client_)
+    return;
 
   // Sync the contents of the texture.
   RETURN_AND_NOTIFY_ON_FAILURE(decoder_.PutPicToTexture(output_id),
@@ -508,26 +511,8 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
   DVLOG(1) << "Reset finished";
 }
 
-void VaapiVideoDecodeAccelerator::DestroyTask() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
-
-  DVLOG(1) << "DestroyTask";
-  base::AutoLock auto_lock(lock_);
-
-  // This is a dummy task to ensure that all tasks on decoder thread have
-  // finished, so we can destroy it from ChildThread, as we need to do that
-  // on the thread that has the GLX context.
-
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VaapiVideoDecodeAccelerator::FinishDestroy, this));
-}
-
 void VaapiVideoDecodeAccelerator::Destroy() {
-  if (message_loop_ != MessageLoop::current()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
-        &VaapiVideoDecodeAccelerator::Destroy, this));
-    return;
-  }
+  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (state_ == kUninitialized || state_ == kDestroying)
     return;
@@ -535,19 +520,20 @@ void VaapiVideoDecodeAccelerator::Destroy() {
   DVLOG(1) << "Destroying VAVDA";
   base::AutoLock auto_lock(lock_);
   state_ = kDestroying;
-  decoder_thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&VaapiVideoDecodeAccelerator::DestroyTask, this));
+
   client_ = NULL;
 
-  input_ready_.Signal();
-  output_ready_.Signal();
-}
+  {
+    base::AutoUnlock auto_unlock(lock_);
+    // Post a dummy task to the decoder_thread_ to ensure it is drained.
+    base::WaitableEvent waiter(false, false);
+    decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+        &base::WaitableEvent::Signal, base::Unretained(&waiter)));
+    input_ready_.Signal();
+    output_ready_.Signal();
+    waiter.Wait();
+  }
 
-void VaapiVideoDecodeAccelerator::FinishDestroy() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  base::AutoLock auto_lock(lock_);
-  // Called from here as we need to be on the thread that has the GLX context
-  // as current.
   decoder_.Destroy();
   state_ = kUninitialized;
 }

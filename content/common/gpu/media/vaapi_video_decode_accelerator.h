@@ -125,16 +125,6 @@ class VaapiVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // finished.
   void FinishReset();
 
-  // Scheduled on the decoder thread after receiving a Destroy() call from the
-  // client, executed after the current decoding task finishes decoding the
-  // current frame, ignoring any remaining inputs. Cleans up the decoder and
-  // frees all resources.
-  void DestroyTask();
-
-  // Scheduled by DestroyTask after it's done destroying the decoder, puts
-  // VAVDA into an uninitialized state.
-  void FinishDestroy();
-
   // Client-provided X/GLX state.
   Display* x_display_;
   GLXContext glx_context_;

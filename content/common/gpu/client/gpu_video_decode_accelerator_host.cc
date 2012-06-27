@@ -128,12 +128,19 @@ GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   // After OnChannelError is called, the client should no longer send
-  // messages to the gpu channel through this object.
-  DCHECK(channel_);
-  if (!channel_ || !channel_->Send(message)) {
+  // messages to the gpu channel through this object.  But queued posted tasks
+  // can still be draining, so we're forgiving and simply ignore them.
+  bool error = false;
+  if (!channel_) {
+    delete message;
+    DLOG(ERROR) << "Send(" << message->type() << ") after error ignored";
+    error = true;
+  } else if (!channel_->Send(message)) {
     DLOG(ERROR) << "Send(" << message->type() << ") failed";
-    OnErrorNotification(PLATFORM_FAILURE);
+    error = true;
   }
+  if (error)
+    OnErrorNotification(PLATFORM_FAILURE);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
@@ -188,4 +195,5 @@ void GpuVideoDecodeAcceleratorHost::OnErrorNotification(uint32 error) {
     return;
   client_->NotifyError(
       static_cast<media::VideoDecodeAccelerator::Error>(error));
+  client_ = NULL;
 }
