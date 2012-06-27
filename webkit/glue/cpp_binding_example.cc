@@ -7,6 +7,8 @@
 
 #include "cpp_binding_example.h"
 
+#include <stdio.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 
