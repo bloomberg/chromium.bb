@@ -44,11 +44,17 @@ using content::BrowserThread;
 
 namespace {
 
+// The list of content settings types to display on the Website Settings UI.
 ContentSettingsType kPermissionType[] = {
-  CONTENT_SETTINGS_TYPE_POPUPS,
+  CONTENT_SETTINGS_TYPE_IMAGES,
+  CONTENT_SETTINGS_TYPE_JAVASCRIPT,
   CONTENT_SETTINGS_TYPE_PLUGINS,
-  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  CONTENT_SETTINGS_TYPE_POPUPS,
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  CONTENT_SETTINGS_TYPE_FULLSCREEN,
+  CONTENT_SETTINGS_TYPE_MOUSELOCK,
+  CONTENT_SETTINGS_TYPE_MEDIASTREAM,
 };
 
 }  // namespace
@@ -105,8 +111,13 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
       break;
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
     case CONTENT_SETTINGS_TYPE_PLUGINS:
     case CONTENT_SETTINGS_TYPE_POPUPS:
+    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       primary_pattern = ContentSettingsPattern::FromURL(site_url_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
       break;
@@ -402,18 +413,16 @@ void WebsiteSettings::PresentSitePermissions() {
     permission_info.setting =
         content_settings::ValueToContentSetting(value.get());
 
-    if (permission_info.setting != CONTENT_SETTING_ASK) {
-      if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-          info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-        permission_info.default_setting = permission_info.setting;
-        permission_info.setting = CONTENT_SETTING_DEFAULT;
-      } else {
-        permission_info.default_setting =
-            content_settings_->GetDefaultContentSetting(permission_info.type,
-                                                        NULL);
-      }
-      permission_info_list.push_back(permission_info);
+    if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+        info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+      permission_info.default_setting = permission_info.setting;
+      permission_info.setting = CONTENT_SETTING_DEFAULT;
+    } else {
+      permission_info.default_setting =
+          content_settings_->GetDefaultContentSetting(permission_info.type,
+                                                      NULL);
     }
+    permission_info_list.push_back(permission_info);
   }
 
   ui_->SetPermissionInfo(permission_info_list);

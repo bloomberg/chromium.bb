@@ -230,17 +230,32 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ASK" desc="The label used in the permissions list if the user is asked for permission.">
         Ask
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permissions controls in the Website Settings popup.">
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_IMAGES" desc="The label used for images permission controls in the Website Settings popup.">
+        Images
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_JAVASCRIPT" desc="The label used for JavaScript permission controls in the Website Settings popup.">
+        JavaScript
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permission controls in the Website Settings popup.">
         Popups
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_PLUGINS" desc="The label used for plugin permissions in the Website Settings popup.">
         Plugins
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TYPE_LOCATION" desc="The label used for location permissions controls in the Website Settings popup.">
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_LOCATION" desc="The label used for location permission controls in the Website Settings popup.">
         Location
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS" desc="The label used for notifications permissions controls in the Website Settings popup.">
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS" desc="The label used for notifications permission controls in the Website Settings popup.">
         Notifications
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_FULLSCREEN" desc="The label used for fullscreen permission controls in the Website Settings popup.">
+        Fullscreen
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK" desc="The label used for mouse lock permission controls in the Website Settings popup.">
+        Mouse Lock
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM" desc="The label used for media stream permission controls in the Website Settings popup.">
+        Media
       </message>
       <message name="IDS_WEBSITE_SETTINGS_SHOW_PERMISSION_SETTINGS" desc="The label of the Manage Permission Settings link in the site permissions section of the Website Settings popup.">
         Manage permission settings

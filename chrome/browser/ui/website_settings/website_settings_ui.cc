@@ -37,6 +37,10 @@ WebsiteSettingsUI::~WebsiteSettingsUI() {
 // static
 int WebsiteSettingsUI::PermissionTypeToUIStringID(ContentSettingsType type) {
   switch (type) {
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+     return IDS_WEBSITE_SETTINGS_TYPE_IMAGES;
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+     return IDS_WEBSITE_SETTINGS_TYPE_JAVASCRIPT;
     case CONTENT_SETTINGS_TYPE_POPUPS:
       return IDS_WEBSITE_SETTINGS_TYPE_POPUPS;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
@@ -45,6 +49,12 @@ int WebsiteSettingsUI::PermissionTypeToUIStringID(ContentSettingsType type) {
       return IDS_WEBSITE_SETTINGS_TYPE_LOCATION;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       return IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS;
+    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+      return IDS_WEBSITE_SETTINGS_TYPE_FULLSCREEN;
+    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+      return IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      return IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM;
     default:
       NOTREACHED();
       return kInvalidRessourceID;
@@ -88,6 +98,14 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
   bool use_blocked = (setting == CONTENT_SETTING_BLOCK);
   int resource_id = IDR_INFO;
   switch (type) {
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+      resource_id = use_blocked ? IDR_BLOCKED_IMAGES
+                                : IDR_INFO;
+      break;
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      resource_id = use_blocked ? IDR_BLOCKED_JAVASCRIPT
+                                : IDR_INFO;
+      break;
     case CONTENT_SETTINGS_TYPE_COOKIES:
       resource_id = use_blocked ? IDR_BLOCKED_COOKIES
                                 : IDR_COOKIE_ICON;
@@ -105,6 +123,10 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
                                 : IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      resource_id = IDR_INFO;
       break;
     default:
       NOTREACHED();

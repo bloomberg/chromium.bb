@@ -394,18 +394,8 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
     GtkListStore* store =
         gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
     GtkTreeIter iter;
-    // Add option for permission "Allow" to the combobox model.
-    std::string setting_str = PermissionValueToString(CONTENT_SETTING_ALLOW);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
-                       CONTENT_SETTING_ALLOW, 2, permission->type, -1);
-    // Add option for permission "BLOCK" to the combobox model.
-    setting_str = PermissionValueToString(CONTENT_SETTING_BLOCK);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
-                       CONTENT_SETTING_BLOCK, 2, permission->type, -1);
     // Add option for permission "Global Default" to the combobox model.
-    setting_str =
+    std::string setting_str =
         l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_DEFAULT);
     setting_str += " (" + PermissionValueToString(permission->default_setting);
     setting_str += ")";
@@ -413,6 +403,20 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
     gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
                        CONTENT_SETTING_DEFAULT, 2, permission->type, -1);
     GtkWidget* combo_box = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    // Add option for permission "Allow" to the combobox model.
+    setting_str = PermissionValueToString(CONTENT_SETTING_ALLOW);
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
+                       CONTENT_SETTING_ALLOW, 2, permission->type, -1);
+    // The content settings type fullscreen does not support the concept of
+    // blocking.
+    if (permission->type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+      // Add option for permission "BLOCK" to the combobox model.
+      setting_str = PermissionValueToString(CONTENT_SETTING_BLOCK);
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, setting_str.c_str(), 1,
+                         CONTENT_SETTING_BLOCK, 2, permission->type, -1);
+    }
     // Remove reference to the store to prevent leaking.
     g_object_unref(G_OBJECT(store));
 
@@ -424,11 +428,11 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
     // Select the combobox entry for the currently configured permission value.
     int active = -1;
     switch (permission->setting) {
-      case CONTENT_SETTING_DEFAULT: active = 2;
+      case CONTENT_SETTING_DEFAULT: active = 0;
         break;
-      case CONTENT_SETTING_ALLOW: active = 0;
+      case CONTENT_SETTING_ALLOW: active = 1;
         break;
-      case CONTENT_SETTING_BLOCK: active = 1;
+      case CONTENT_SETTING_BLOCK: active = 2;
         break;
       default:
         NOTREACHED() << "Bad content setting:" << permission->setting;

@@ -155,10 +155,12 @@ PermissionMenuModel::PermissionMenuModel(
                l10n_util::GetStringFUTF16(
                    IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
                    PermissionValueToString(CONTENT_SETTING_ALLOW)));
-  AddCheckItem(COMMAND_SET_TO_BLOCK,
-               l10n_util::GetStringFUTF16(
-                   IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-                   PermissionValueToString(CONTENT_SETTING_BLOCK)));
+  if (site_permission != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+    AddCheckItem(COMMAND_SET_TO_BLOCK,
+                 l10n_util::GetStringFUTF16(
+                     IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
+                     PermissionValueToString(CONTENT_SETTING_BLOCK)));
+  }
 }
 
 bool PermissionMenuModel::IsCommandIdChecked(int command_id) const {
