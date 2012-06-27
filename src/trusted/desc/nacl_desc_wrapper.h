@@ -44,13 +44,6 @@ class DescWrapperFactory {
   // Create a DescWrapper for the designated invalid descriptor
   DescWrapper* MakeInvalid();
 
-  // Create a DescWrapper from a generic Pepper shared memory descriptor.
-  DescWrapper* ImportPepperSharedMemory(intptr_t shm, size_t size);
-  // Create a DescWrapper from a Pepper2D shared memory descriptor.
-  DescWrapper* ImportPepper2DSharedMemory(intptr_t dib);
-  // Create a DescWrapper from a Pepper synchronization object.
-  DescWrapper* ImportPepperSync(intptr_t sock);
-
   // We will doubtless want more specific factory methods.  For now,
   // we provide a wide-open method.
   DescWrapper* MakeGeneric(struct NaClDesc* desc);

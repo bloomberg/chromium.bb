@@ -286,56 +286,6 @@ DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
 }
 #endif  // NACL_LINUX
 
-#if defined(NACL_STANDALONE)
-DescWrapper* DescWrapperFactory::ImportPepperSharedMemory(intptr_t shm_int,
-                                                          size_t size) {
-  // PepperSharedMemory is only present in the Chrome hookup.
-  UNREFERENCED_PARAMETER(shm_int);
-  UNREFERENCED_PARAMETER(size);
-  return NULL;
-}
-
-DescWrapper* DescWrapperFactory::ImportPepper2DSharedMemory(intptr_t shm_int) {
-  // Pepper2DSharedMemory is only present in the Chrome hookup.
-  UNREFERENCED_PARAMETER(shm_int);
-  return NULL;
-}
-
-DescWrapper* DescWrapperFactory::ImportPepperSync(intptr_t sync_int) {
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-  base::SyncSocket* sock = reinterpret_cast<base::SyncSocket*>(sync_int);
-  struct NaClDescSyncSocket* ss_desc = NULL;
-  DescWrapper* wrapper = NULL;
-
-  ss_desc = static_cast<NaClDescSyncSocket*>(
-      calloc(1, sizeof(*ss_desc)));
-  if (NULL == ss_desc) {
-    // TODO(sehr): Gotos are awful.  Add a scoped_ptr variant that
-    // invokes NaClDescSafeUnref.
-    goto cleanup;
-  }
-  if (!NaClDescSyncSocketCtor(ss_desc, sock->handle())) {
-    free(ss_desc);
-    ss_desc = NULL;
-    goto cleanup;
-  }
-  wrapper = new DescWrapper(common_data_, &ss_desc->base);
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
-  return wrapper;
-
- cleanup:
-  NaClDescSafeUnref(&ss_desc->base);
-  return NULL;
-#else
-  UNREFERENCED_PARAMETER(sync_int);
-  return NULL;
-#endif
-}
-#endif  // NACL_STANDALONE
-
 DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
   CHECK(common_data_->is_initialized());
   return new(std::nothrow) DescWrapper(common_data_, desc);
