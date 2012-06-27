@@ -193,7 +193,7 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
     ShowSingletonTabOverwritingNTP(browser, params);
   } else {
     LoginUIServiceFactory::GetForProfile(
-        browser->profile()->GetOriginalProfile())->ShowLoginUI();
+        browser->profile()->GetOriginalProfile())->ShowLoginUI(browser);
   }
 }
 

@@ -137,9 +137,8 @@ void StartSync(content::WebContents* web_contents,
                const std::string& password,
                OneClickSigninSyncStarter::StartSyncMode start_mode) {
   // The starter deletes itself once its done.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  new OneClickSigninSyncStarter(profile, session_index, email, password,
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  new OneClickSigninSyncStarter(browser, session_index, email, password,
                                 start_mode);
 }
 

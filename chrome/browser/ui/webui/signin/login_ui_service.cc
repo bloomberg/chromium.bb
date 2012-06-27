@@ -5,15 +5,10 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 
-LoginUIService::LoginUIService(Profile* profile)
-    : ui_(NULL),
-      profile_(profile) {
+LoginUIService::LoginUIService() : ui_(NULL) {
 }
 
 LoginUIService::~LoginUIService() {}
@@ -28,7 +23,7 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
     ui_ = NULL;
 }
 
-void LoginUIService::ShowLoginUI() {
+void LoginUIService::ShowLoginUI(Browser* browser) {
   if (ui_) {
     // We already have active login UI - make it visible.
     ui_->FocusUI();
@@ -36,14 +31,5 @@ void LoginUIService::ShowLoginUI() {
   }
 
   // Need to navigate to the settings page and display the UI.
-  if (profile_) {
-    Browser* browser = browser::FindLastActiveWithProfile(profile_);
-    if (!browser) {
-      browser = Browser::Create(profile_);
-      chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
-      browser->window()->Show();
-    } else {
-      chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
-    }
-  }
+  chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
 }
