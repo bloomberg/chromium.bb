@@ -10,13 +10,13 @@
 #include "content/app/android/sandboxed_process_service.h"
 #include "content/app/android/user_agent.h"
 #include "content/browser/android/android_browser_process.h"
+#include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_view_client.h"
 #include "content/browser/android/content_view_impl.h"
 #include "content/browser/android/device_info.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/touch_point.h"
-#include "content/browser/android/web_settings.h"
 #include "content/common/android/command_line.h"
 #include "content/common/android/surface_callback.h"
 #include "content/common/android/trace_event_binding.h"
@@ -27,6 +27,7 @@ namespace android {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
   { "CommandLine", RegisterCommandLine },
+  { "ContentSettings", ContentSettings::RegisterContentSettings },
   { "ContentView", RegisterContentView },
   { "ContentViewClient", RegisterContentViewClient },
   { "ContentMain", content::RegisterContentMain },
@@ -38,7 +39,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "TouchPoint", content::RegisterTouchPoint },
   { "TraceEvent", RegisterTraceEvent },
   { "UserAgent", content::RegisterUserAgent },
-  { "WebSettings", WebSettings::RegisterWebSettings },
 };
 
 bool RegisterJni(JNIEnv* env) {

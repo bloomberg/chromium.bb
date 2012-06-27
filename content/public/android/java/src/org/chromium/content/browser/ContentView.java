@@ -53,7 +53,7 @@ public class ContentView extends FrameLayout {
     // in terms of clean up.
     private ContentViewClient mContentViewClient;
 
-    private WebSettings mWebSettings;
+    private ContentSettings mContentSettings;
 
     // Native pointer to C++ ContentView object which will be set by nativeInit()
     private int mNativeContentView = 0;
@@ -118,7 +118,7 @@ public class ContentView extends FrameLayout {
         mNativeContentView = nativeInit(nativeWebContents);
 
         mPersonality = personality;
-        mWebSettings = new WebSettings(this, mNativeContentView);
+        mContentSettings = new ContentSettings(this, mNativeContentView);
 
         initGestureDetectors(context);
 
@@ -152,9 +152,9 @@ public class ContentView extends FrameLayout {
             nativeDestroy(mNativeContentView);
             mNativeContentView = 0;
         }
-        if (mWebSettings != null) {
-            mWebSettings.destroy();
-            mWebSettings = null;
+        if (mContentSettings != null) {
+            mContentSettings.destroy();
+            mContentSettings = null;
         }
     }
 
@@ -221,7 +221,7 @@ public class ContentView extends FrameLayout {
                         mNativeContentView,
                         url,
                         pageTransition,
-                        mWebSettings.getUserAgentString());
+                        mContentSettings.getUserAgentString());
             } else {
                 // Chrome stores overridden UA strings in navigation history
                 // items, so they stay the same on going back / forward.
@@ -375,17 +375,17 @@ public class ContentView extends FrameLayout {
     }
 
     /**
-     * Return the WebSettings object used to control the settings for this
+     * Return the ContentSettings object used to control the settings for this
      * WebView.
      *
      * Note that when ContentView is used in the PERSONALITY_CHROME role,
-     * WebSettings can only be used for retrieving settings values. For
+     * ContentSettings can only be used for retrieving settings values. For
      * modifications, ChromeNativePreferences is to be used.
-     * @return A WebSettings object that can be used to control this WebView's
+     * @return A ContentSettings object that can be used to control this WebView's
      *         settings.
      */
-    public WebSettings getSettings() {
-        return mWebSettings;
+    public ContentSettings getContentSettings() {
+        return mContentSettings;
     }
 
     private void initGestureDetectors(final Context context) {
@@ -539,7 +539,7 @@ public class ContentView extends FrameLayout {
 
     // Invokes the graphical zoom picker widget for this ContentView.
     public void invokeZoomPicker() {
-        if (mWebSettings.supportZoom()) {
+        if (mContentSettings.supportZoom()) {
             mZoomManager.invokeZoomPicker();
         }
     }

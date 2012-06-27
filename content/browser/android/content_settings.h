@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_WEB_SETTINGS_H_
-#define CONTENT_BROWSER_ANDROID_WEB_SETTINGS_H_
+#ifndef CONTENT_BROWSER_ANDROID_CONTENT_SETTINGS_H_
+#define CONTENT_BROWSER_ANDROID_CONTENT_SETTINGS_H_
 #pragma once
 
 #include <jni.h>
@@ -14,14 +14,14 @@
 
 namespace content {
 
-class WebSettings : public WebContentsObserver {
+class ContentSettings : public WebContentsObserver {
  public:
-  WebSettings(JNIEnv* env, jobject obj,
-              WebContents* contents,
-              bool is_master_mode);
-  virtual ~WebSettings();
+  ContentSettings(JNIEnv* env, jobject obj,
+                  WebContents* contents,
+                  bool is_master_mode);
+  virtual ~ContentSettings();
 
-  static bool RegisterWebSettings(JNIEnv* env);
+  static bool RegisterContentSettings(JNIEnv* env);
 
   void Destroy(JNIEnv* env, jobject obj);
 
@@ -47,9 +47,9 @@ class WebSettings : public WebContentsObserver {
   scoped_ptr<FieldIds> field_ids_;
 
   // The Java counterpart to this class.
-  base::android::ScopedJavaGlobalRef<jobject> web_settings_;
+  base::android::ScopedJavaGlobalRef<jobject> content_settings_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_WEB_SETTINGS_H_
+#endif  // CONTENT_BROWSER_ANDROID_CONTENT_SETTINGS_H_

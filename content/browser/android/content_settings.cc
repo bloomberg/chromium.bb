@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/web_settings.h"
+#include "content/browser/android/content_settings.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -10,7 +10,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/web_settings_jni.h"
+#include "jni/content_settings_jni.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -27,7 +27,7 @@ using webkit_glue::WebPreferences;
 
 namespace content {
 
-struct WebSettings::FieldIds {
+struct ContentSettings::FieldIds {
   // Note on speed. One may think that an approach that reads field values via
   // JNI is ineffective and should not be used. Please keep in mind that in the
   // legacy WebView the whole Sync method took <1ms on Xoom, and no one is
@@ -39,7 +39,7 @@ struct WebSettings::FieldIds {
 
     // FIXME: we should be using a new GetFieldIDFromClassName() with caching.
     ScopedJavaLocalRef<jclass> clazz(
-        GetClass(env, "org/chromium/content/browser/WebSettings"));
+        GetClass(env, "org/chromium/content/browser/ContentSettings"));
     standard_fond_family =
         GetFieldID(env, clazz, "mStandardFontFamily", kStringClassName);
     fixed_font_family =
@@ -88,34 +88,34 @@ struct WebSettings::FieldIds {
   jfieldID java_script_can_open_windows_automatically;
 };
 
-WebSettings::WebSettings(JNIEnv* env,
+ContentSettings::ContentSettings(JNIEnv* env,
                          jobject obj,
                          WebContents* contents,
                          bool is_master_mode)
     : WebContentsObserver(contents),
       is_master_mode_(is_master_mode) {
-  web_settings_.Reset(env, obj);
+  content_settings_.Reset(env, obj);
 }
 
-WebSettings::~WebSettings() {
+ContentSettings::~ContentSettings() {
 }
 
 // static
-bool WebSettings::RegisterWebSettings(JNIEnv* env) {
+bool ContentSettings::RegisterContentSettings(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void WebSettings::Destroy(JNIEnv* env, jobject obj) {
+void ContentSettings::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void WebSettings::SyncFromNativeImpl() {
+void ContentSettings::SyncFromNativeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   if (!field_ids_.get())
     field_ids_.reset(new FieldIds(env));
 
-  jobject obj = web_settings_.obj();
+  jobject obj = content_settings_.obj();
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
@@ -190,17 +190,17 @@ void WebSettings::SyncFromNativeImpl() {
       prefs.javascript_can_open_windows_automatically);
   CheckException(env);
 
-  Java_WebSettings_setPluginsDisabled(env, obj, !prefs.plugins_enabled);
+  Java_ContentSettings_setPluginsDisabled(env, obj, !prefs.plugins_enabled);
   CheckException(env);
 }
 
-void WebSettings::SyncToNativeImpl() {
+void ContentSettings::SyncToNativeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   if (!field_ids_.get())
     field_ids_.reset(new FieldIds(env));
 
-  jobject obj = web_settings_.obj();
+  jobject obj = content_settings_.obj();
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
@@ -266,20 +266,20 @@ void WebSettings::SyncToNativeImpl() {
   prefs.javascript_can_open_windows_automatically = env->GetBooleanField(
       obj, field_ids_->java_script_can_open_windows_automatically);
 
-  prefs.plugins_enabled = !Java_WebSettings_getPluginsDisabled(env, obj);
+  prefs.plugins_enabled = !Java_ContentSettings_getPluginsDisabled(env, obj);
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }
 
-void WebSettings::SyncFromNative(JNIEnv* env, jobject obj) {
+void ContentSettings::SyncFromNative(JNIEnv* env, jobject obj) {
   SyncFromNativeImpl();
 }
 
-void WebSettings::SyncToNative(JNIEnv* env, jobject obj) {
+void ContentSettings::SyncToNative(JNIEnv* env, jobject obj) {
   SyncToNativeImpl();
 }
 
-void WebSettings::RenderViewCreated(RenderViewHost* render_view_host) {
+void ContentSettings::RenderViewCreated(RenderViewHost* render_view_host) {
   if (is_master_mode_)
     SyncToNativeImpl();
 }
@@ -290,9 +290,9 @@ jint Init(
   WebContents* web_contents =
       reinterpret_cast<ContentViewImpl*>(nativeContentView)
           ->web_contents();
-  WebSettings* web_settings =
-      new WebSettings(env, obj, web_contents, is_master_mode);
-  return reinterpret_cast<jint>(web_settings);
+  ContentSettings* content_settings =
+      new ContentSettings(env, obj, web_contents, is_master_mode);
+  return reinterpret_cast<jint>(content_settings);
 }
 
 jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {

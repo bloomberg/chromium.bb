@@ -14,25 +14,25 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
 /**
- * Manages settings state for a ContentView. A WebSettings instance is obtained
- * from ContentView.getSettings(). If ContentView is used in the
+ * Manages settings state for a ContentView. A ContentSettings instance is obtained
+ * from ContentView.getContentSettings(). If ContentView is used in the
  * ContentView.PERSONALITY_VIEW role, all settings are read / write. If ContentView
  * is in the ContentView.PERSONALITY_CHROME role, setting can only be read.
  */
 @JNINamespace("content")
-public class WebSettings {
-    private static final String TAG = "WebSettings";
+public class ContentSettings {
+    private static final String TAG = "ContentSettings";
 
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
     // to call native code on the UI thread only.
 
-    private int mNativeWebSettings = 0;
+    private int mNativeContentSettings = 0;
 
     private ContentView mContentView;
 
     // When ContentView is used in PERSONALITY_CHROME mode, settings can't
-    // be modified through the WebSettings instance.
+    // be modified through the ContentSettings instance.
     private boolean mCanModifySettings;
 
     // A flag to avoid sending superfluous synchronization messages.
@@ -90,8 +90,8 @@ public class WebSettings {
                         public void handleMessage(Message msg) {
                             switch (msg.what) {
                                 case SYNC:
-                                    synchronized (WebSettings.this) {
-                                        nativeSyncToNative(mNativeWebSettings);
+                                    synchronized (ContentSettings.this) {
+                                        nativeSyncToNative(mNativeContentSettings);
                                         mIsSyncMessagePending = false;
                                     }
                                     break;
@@ -113,8 +113,8 @@ public class WebSettings {
                         public void handleMessage(Message msg) {
                             switch (msg.what) {
                                 case SYNC:
-                                    synchronized (WebSettings.this) {
-                                        nativeSyncFromNative(mNativeWebSettings);
+                                    synchronized (ContentSettings.this) {
+                                        nativeSyncFromNative(mNativeContentSettings);
                                         mIsSyncMessagePending = false;
                                     }
                                     break;
@@ -140,37 +140,37 @@ public class WebSettings {
      * Package constructor to prevent clients from creating a new settings
      * instance. Must be called on the UI thread.
      */
-    WebSettings(ContentView contentView, int nativeContentView) {
+    ContentSettings(ContentView contentView, int nativeContentView) {
         ThreadUtils.assertOnUiThread();
         mContentView = contentView;
         mCanModifySettings = mContentView.isPersonalityView();
-        mNativeWebSettings = nativeInit(nativeContentView, mCanModifySettings);
-        assert mNativeWebSettings != 0;
+        mNativeContentSettings = nativeInit(nativeContentView, mCanModifySettings);
+        assert mNativeContentSettings != 0;
 
         mEventHandler = new EventHandler();
         if (mCanModifySettings) {
             // PERSONALITY_VIEW
             mDefaultUserAgent = nativeGetDefaultUserAgent();
             mUserAgent = mDefaultUserAgent;
-            nativeSyncToNative(mNativeWebSettings);
+            nativeSyncToNative(mNativeContentSettings);
         } else {
             // PERSONALITY_CHROME
             // Chrome has zooming enabled by default. These settings are not
             // set by the native code.
             mBuiltInZoomControls = true;
             mDisplayZoomControls = false;
-            nativeSyncFromNative(mNativeWebSettings);
+            nativeSyncFromNative(mNativeContentSettings);
         }
     }
 
     /**
-     * Destroys the native side of the WebSettings. This WebSettings object
+     * Destroys the native side of the ContentSettings. This ContentSettings object
      * cannot be used after this method has been called. Should only be called
      * when related ContentView is destroyed.
      */
     void destroy() {
-        nativeDestroy(mNativeWebSettings);
-        mNativeWebSettings = 0;
+        nativeDestroy(mNativeContentSettings);
+        mNativeContentSettings = 0;
     }
 
     /**
@@ -665,16 +665,16 @@ public class WebSettings {
         }
     }
 
-    // Initialize the WebSettings native side.
+    // Initialize the ContentSettings native side.
     private native int nativeInit(int contentViewPtr, boolean isMasterMode);
 
-    private native void nativeDestroy(int nativeWebSettings);
+    private native void nativeDestroy(int nativeContentSettings);
 
     private static native String nativeGetDefaultUserAgent();
 
     // Synchronize Java settings from native settings.
-    private native void nativeSyncFromNative(int nativeWebSettings);
+    private native void nativeSyncFromNative(int nativeContentSettings);
 
     // Synchronize native settings from Java settings.
-    private native void nativeSyncToNative(int nativeWebSettings);
+    private native void nativeSyncToNative(int nativeContentSettings);
 }

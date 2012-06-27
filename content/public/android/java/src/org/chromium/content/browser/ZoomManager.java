@@ -148,12 +148,12 @@ class ZoomManager {
 
     void updateMultiTouchSupport() {
         mMultiTouchListener.setPermanentlyIgnoreDetectorEvents(
-            !mContentView.getSettings().supportsMultiTouchZoom());
+            !mContentView.getContentSettings().supportsMultiTouchZoom());
     }
 
     private ZoomButtonsController getZoomControls() {
         if (mZoomButtonsController == null &&
-            mContentView.getSettings().shouldDisplayZoomControls()) {
+            mContentView.getContentSettings().shouldDisplayZoomControls()) {
             mZoomButtonsController = new ZoomButtonsController(mContentView);
             mZoomButtonsController.setOnZoomListener(new ZoomListener());
             // ZoomButtonsController positions the buttons at the bottom, but in
