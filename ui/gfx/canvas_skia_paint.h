@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "skia/ext/canvas_paint.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/size.h"
 
 // Define a gfx::CanvasSkiaPaint type that wraps our gfx::Canvas like the
 // skia::PlatformCanvasPaint wraps PlatformCanvas.
@@ -20,6 +21,14 @@ PlatformCanvas* GetPlatformCanvas(skia::CanvasPaintT<gfx::Canvas>* canvas) {
   PlatformCanvas* platform_canvas = canvas->platform_canvas();
   DCHECK(platform_canvas);
   return platform_canvas;
+}
+
+template<> inline
+void RecreateBackingCanvas(skia::CanvasPaintT<gfx::Canvas>* canvas,
+    int width, int height, float scale, bool opaque) {
+  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
+  canvas->RecreateBackingCanvas(gfx::Size(width, height), scale_factor,
+      opaque);
 }
 
 }  // namespace skia

@@ -87,24 +87,18 @@ class CanvasPaintT : public T {
         (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     CGRect scaled_unit_rect = CGContextConvertRectToDeviceSpace(
         destination_context, CGRectMake(0, 0, 1, 1));
-    CGFloat x_scale = scaled_unit_rect.size.width;
-    CGFloat y_scale = scaled_unit_rect.size.height;
+    // Assume that the x scale and the y scale are the same.
+    CGFloat scale = scaled_unit_rect.size.width;
 
+    RecreateBackingCanvas(this,
+        NSWidth(rectangle_), NSHeight(rectangle_), scale, opaque);
     PlatformCanvas* canvas = GetPlatformCanvas(this);
-    if (!canvas->initialize(NSWidth(rectangle_) * x_scale,
-                            NSHeight(rectangle_) * y_scale,
-                            opaque, NULL)) {
-      // Cause a deliberate crash.
-      *(volatile char*) 0 = 0;
-    }
     canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_) * x_scale),
-                      -SkDoubleToScalar(NSMinY(rectangle_) * y_scale));
-    // Scale appropriately.
-    canvas->scale(SkFloatToScalar(x_scale), SkFloatToScalar(y_scale));
+    canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_)),
+                      -SkDoubleToScalar(NSMinY(rectangle_)));
 
     context_ = GetBitmapContext(GetTopDevice(*canvas));
   }

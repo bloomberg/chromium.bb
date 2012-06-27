@@ -34,11 +34,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -482,7 +483,10 @@ void PrintHeaderFooterByRenderText(
   int save_count = canvas->save();
   canvas->translate(-margin_left, -margin_top);
   {
-    gfx::Canvas gfx_canvas(canvas);
+    SkMatrix m = canvas->getTotalMatrix();
+    ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
+        SkScalarAbs(m.getScaleX()));
+    gfx::Canvas gfx_canvas(canvas, device_scale_factor, false);
     render_text->Draw(&gfx_canvas);
   }
   canvas->restoreToCount(save_count);

@@ -32,27 +32,69 @@ Canvas::Canvas(const gfx::Size& size, bool is_opaque)
   if (!is_opaque)
     owned_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
 #endif
+
+  ApplyScaleFactor(ui::SCALE_FACTOR_100P, false);
 }
 
-Canvas::Canvas(const SkBitmap& bitmap, bool is_opaque)
-    : owned_canvas_(new skia::PlatformCanvas(bitmap.width(), bitmap.height(),
+Canvas::Canvas(const gfx::Size& size,
+               ui::ScaleFactor scale_factor,
+               bool is_opaque) {
+  gfx::Size pixel_size = size.Scale(ui::GetScaleFactorScale(scale_factor));
+  owned_canvas_.reset(new skia::PlatformCanvas(pixel_size.width(),
+                                               pixel_size.height(),
+                                               is_opaque));
+  canvas_ = owned_canvas_.get();
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // skia::PlatformCanvas instances are initialized to 0 by Cairo on Linux, but
+  // uninitialized on Win and Mac.
+  if (!is_opaque)
+    owned_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
+#endif
+
+  ApplyScaleFactor(scale_factor, true);
+}
+
+Canvas::Canvas(const gfx::ImageSkiaRep& image_rep, bool is_opaque)
+    : owned_canvas_(new skia::PlatformCanvas(image_rep.pixel_width(),
+                                             image_rep.pixel_height(),
                                              is_opaque)),
       canvas_(owned_canvas_.get()) {
-  DrawImageInt(bitmap, 0, 0);
+  ApplyScaleFactor(image_rep.scale_factor(), true);
+  DrawImageInt(gfx::ImageSkia(image_rep), 0, 0);
 }
 
 Canvas::Canvas()
     : owned_canvas_(new skia::PlatformCanvas()),
       canvas_(owned_canvas_.get()) {
+  ApplyScaleFactor(ui::SCALE_FACTOR_100P, false);
 }
 
-Canvas::Canvas(SkCanvas* canvas)
+Canvas::Canvas(SkCanvas* canvas,
+               ui::ScaleFactor scale_factor,
+               bool scale_canvas)
     : owned_canvas_(),
       canvas_(canvas) {
   DCHECK(canvas);
+  ApplyScaleFactor(scale_factor, scale_canvas);
 }
 
 Canvas::~Canvas() {
+  if (scale_factor_scales_canvas_) {
+    SkScalar scale = 1.0f / ui::GetScaleFactorScale(scale_factor_);
+    canvas_->scale(scale, scale);
+  }
+}
+
+void Canvas::RecreateBackingCanvas(const gfx::Size& size,
+                                   ui::ScaleFactor scale_factor,
+                                   bool is_opaque) {
+  gfx::Size pixel_size = size.Scale(ui::GetScaleFactorScale(scale_factor));
+  owned_canvas_.reset(new skia::PlatformCanvas(pixel_size.width(),
+                                               pixel_size.height(),
+                                               is_opaque));
+  canvas_ = owned_canvas_.get();
+
+  ApplyScaleFactor(scale_factor, true);
 }
 
 // static
@@ -76,6 +118,10 @@ SkBitmap Canvas::ExtractBitmap() const {
   SkBitmap result;
   device_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
   return result;
+}
+
+gfx::ImageSkiaRep Canvas::ExtractImageSkiaRep() const {
+  return gfx::ImageSkiaRep(ExtractBitmap(), scale_factor_);
 }
 
 void Canvas::DrawDashedRect(const gfx::Rect& rect, SkColor color) {
@@ -458,6 +504,15 @@ bool Canvas::IntersectsClipRect(const gfx::Rect& rect) {
                                rect.width(), rect.height());
 }
 
+void Canvas::ApplyScaleFactor(ui::ScaleFactor scale_factor,
+                              bool scale_canvas) {
+  scale_factor_scales_canvas_ = scale_canvas;
+  scale_factor_ = scale_factor;
+  if (scale_canvas) {
+    SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor));
+    canvas_->scale(scale, scale);
+  }
+}
 
 const SkBitmap& Canvas::GetBitmapToPaint(const gfx::ImageSkia& image,
                                          float* bitmap_scale_factor) const {
@@ -468,21 +523,20 @@ const SkBitmap& Canvas::GetBitmapToPaint(const gfx::ImageSkia& image,
                                          float user_additional_scale_x,
                                          float user_additional_scale_y,
                                          float* bitmap_scale_factor) const {
-  SkMatrix m = canvas_->getTotalMatrix();
-  float scale_x = SkScalarToFloat(SkScalarAbs(m.getScaleX())) *
-      user_additional_scale_x;
-  float scale_y = SkScalarToFloat(SkScalarAbs(m.getScaleY())) *
-      user_additional_scale_y;
-
-  ui::ScaleFactor request_scale_factor =
-      ui::GetScaleFactorFromScale((scale_x + scale_y) / 2);
-  const gfx::ImageSkiaRep& image_rep =
-      image.GetRepresentation(request_scale_factor);
+  const gfx::ImageSkiaRep& image_rep = image.GetRepresentation(scale_factor_);
   const SkBitmap& bitmap = image_rep.sk_bitmap();
   *bitmap_scale_factor = image_rep.GetScale();
-  if (!bitmap.isNull() &&
-      (scale_x < *bitmap_scale_factor || scale_y < *bitmap_scale_factor))
-    const_cast<SkBitmap&>(bitmap).buildMipMap();
+
+  if (!bitmap.isNull()) {
+    SkMatrix m = canvas_->getTotalMatrix();
+    float scale_x = SkScalarToFloat(SkScalarAbs(m.getScaleX())) *
+        user_additional_scale_x;
+    float scale_y = SkScalarToFloat(SkScalarAbs(m.getScaleY())) *
+        user_additional_scale_y;
+
+    if (scale_x < *bitmap_scale_factor || scale_y < *bitmap_scale_factor)
+      const_cast<SkBitmap&>(bitmap).buildMipMap();
+  }
 
   return bitmap;
 }

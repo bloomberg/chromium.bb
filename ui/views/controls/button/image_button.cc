@@ -75,7 +75,7 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
 
-  ui::ScaleFactor current_device_scale_factor = GetCurrentDeviceScaleFactor();
+  ui::ScaleFactor current_device_scale_factor = canvas->scale_factor();
   gfx::ImageSkia img = GetImageToPaint(current_device_scale_factor);
 
   if (!img.isNull()) {
@@ -108,12 +108,6 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, protected:
-
-ui::ScaleFactor ImageButton::GetCurrentDeviceScaleFactor() {
-  gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
-      GetWidget() ? GetWidget()->GetNativeView() : NULL);
-  return ui::GetScaleFactorFromScale(display.device_scale_factor());
-}
 
 gfx::ImageSkia ImageButton::GetImageToPaint(ui::ScaleFactor scale_factor) {
   gfx::ImageSkia img;

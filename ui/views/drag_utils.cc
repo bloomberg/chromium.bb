@@ -22,8 +22,8 @@
 #error
 #endif
 
-float GetDeviceScaleFactorForNativeView(views::Widget* widget) {
-  float device_scale_factor = 1;
+ui::ScaleFactor GetDeviceScaleFactorForNativeView(views::Widget* widget) {
+  ui::ScaleFactor device_scale_factor = ui::SCALE_FACTOR_100P;
 #if defined(USE_AURA)
   // The following code should work on other platforms as well. But we do not
   // yet care about device scale factor on other platforms. So to keep drag and
@@ -31,7 +31,8 @@ float GetDeviceScaleFactorForNativeView(views::Widget* widget) {
   if (widget && widget->GetNativeView()) {
     gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
         widget->GetNativeView());
-    device_scale_factor = display.device_scale_factor();
+    device_scale_factor = ui::GetScaleFactorFromScale(
+        display.device_scale_factor());
   }
 #endif
   return device_scale_factor;
@@ -63,11 +64,9 @@ void RunShellDrag(gfx::NativeView view,
 
 gfx::Canvas* GetCanvasForDragImage(views::Widget* widget,
                                    const gfx::Size& canvas_size) {
-  float device_scale_factor = GetDeviceScaleFactorForNativeView(widget);
-  gfx::Size scaled_canvas_size = canvas_size.Scale(device_scale_factor);
-  gfx::Canvas* canvas = new gfx::Canvas(scaled_canvas_size, false);
-  canvas->Scale(device_scale_factor, device_scale_factor);
-  return canvas;
+  ui::ScaleFactor device_scale_factor =
+      GetDeviceScaleFactorForNativeView(widget);
+  return new gfx::Canvas(canvas_size, device_scale_factor, false);
 }
 
 }  // namespace views

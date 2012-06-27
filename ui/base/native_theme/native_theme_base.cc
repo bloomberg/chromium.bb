@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
@@ -1011,18 +1012,30 @@ bool NativeThemeBase::IntersectsClipRectInt(SkCanvas* canvas,
 }
 
 void NativeThemeBase::DrawImageInt(
-    SkCanvas* canvas, const gfx::ImageSkia& image,
+    SkCanvas* sk_canvas, const gfx::ImageSkia& image,
     int src_x, int src_y, int src_w, int src_h,
     int dest_x, int dest_y, int dest_w, int dest_h) const {
-  gfx::Canvas(canvas).DrawImageInt(image, src_x, src_y, src_w, src_h,
+  // TODO(pkotwicz): Do something better and don't infer device
+  // scale factor from canvas scale.
+  SkMatrix m = sk_canvas->getTotalMatrix();
+  ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
+      SkScalarAbs(m.getScaleX()));
+  gfx::Canvas canvas(sk_canvas, device_scale_factor, false);
+  canvas.DrawImageInt(image, src_x, src_y, src_w, src_h,
       dest_x, dest_y, dest_w, dest_h, true);
 }
 
-void NativeThemeBase::DrawTiledImage(SkCanvas* canvas,
+void NativeThemeBase::DrawTiledImage(SkCanvas* sk_canvas,
     const gfx::ImageSkia& image,
     int src_x, int src_y, float tile_scale_x, float tile_scale_y,
     int dest_x, int dest_y, int w, int h) const {
-  gfx::Canvas(canvas).TileImageInt(image, src_x, src_y, tile_scale_x,
+  // TODO(pkotwicz): Do something better and don't infer device
+  // scale factor from canvas scale.
+  SkMatrix m = sk_canvas->getTotalMatrix();
+  ui::ScaleFactor device_scale_factor = ui::GetScaleFactorFromScale(
+      SkScalarAbs(m.getScaleX()));
+  gfx::Canvas canvas(sk_canvas, device_scale_factor, false);
+  canvas.TileImageInt(image, src_x, src_y, tile_scale_x,
       tile_scale_y, dest_x, dest_y, w, h);
 }
 

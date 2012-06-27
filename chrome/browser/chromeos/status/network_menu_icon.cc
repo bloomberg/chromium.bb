@@ -762,13 +762,7 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
   std::vector<gfx::ImageSkiaRep> image_reps = icon.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::iterator it = image_reps.begin();
        it != image_reps.end(); ++it) {
-    float dip_scale = it->GetScale();
-    gfx::Canvas canvas(it->sk_bitmap(), false);
-    // TODO(kevers): This looks ugly, but gfx::Canvas::Scale is restricted to
-    // integer scale factors.  Consider adding a method to gfx::Canvas for
-    // float scale factors.
-    canvas.sk_canvas()->scale(SkFloatToScalar(dip_scale),
-                              SkFloatToScalar(dip_scale));
+    gfx::Canvas canvas(*it, false);
     if (top_left_badge)
       canvas.DrawImageInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
     if (top_right_badge)
@@ -783,8 +777,7 @@ const gfx::ImageSkia NetworkMenuIcon::GenerateImageFromComponents(
       canvas.DrawImageInt(*bottom_right_badge,
                           dip_width - bottom_right_badge->width(),
                           dip_height - bottom_right_badge->height());
-    badged.AddRepresentation(gfx::ImageSkiaRep(canvas.ExtractBitmap(),
-                                               it->scale_factor()));
+    badged.AddRepresentation(canvas.ExtractImageSkiaRep());
   }
   return badged;
 }
