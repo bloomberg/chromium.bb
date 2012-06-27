@@ -29,8 +29,13 @@ from template_data_source import TemplateDataSource
 EXTENSIONS_PATH = 'chrome/common/extensions'
 DOCS_PATH = 'docs'
 API_PATH = 'api'
-PUBLIC_TEMPLATE_PATH = DOCS_PATH + '/template2/public'
-PRIVATE_TEMPLATE_PATH = DOCS_PATH + '/template2/private'
+PUBLIC_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/public'
+PRIVATE_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/private'
+
+# The branch that the server will default to when no branch is specified in the
+# URL. This is necessary because it is not possible to pass flags to the script
+# handler.
+DEFAULT_BRANCH = 'local'
 
 # Global cache of instances because the Server is recreated for every request.
 SERVER_INSTANCES = {}
@@ -48,6 +53,7 @@ class Server(webapp.RequestHandler):
       cache_timeout_seconds = 300
     cache_builder = FetcherCache.Builder(fetcher, cache_timeout_seconds)
     template_data_source = TemplateDataSource(
+        branch,
         cache_builder,
         [PUBLIC_TEMPLATE_PATH, PRIVATE_TEMPLATE_PATH])
     api_data_source = APIDataSource(cache_builder, [API_PATH])
@@ -58,16 +64,22 @@ class Server(webapp.RequestHandler):
     return SERVER_INSTANCES[branch]
 
   def _HandleRequest(self, path):
-    channel_name = branch_utility.GetChannelNameFromPath(path)
+    channel_name, real_path = (
+        branch_utility.SplitChannelNameFromPath(path, default=DEFAULT_BRANCH))
     branch = branch_utility.GetBranchNumberForChannelName(channel_name,
                                                           urlfetch)
-    self._GetInstanceForBranch(branch).Run(path, self)
+    if real_path == '':
+      real_path = 'index.html'
+    self._GetInstanceForBranch(branch).Get(real_path, self)
 
   def get(self):
     path = self.request.path
+    # Redirect paths like "directory" to "directory/". This is so relative file
+    # paths will know to treat this as a directory.
+    if os.path.splitext(path)[1] == '' and path[-1] != '/':
+      self.redirect(path + '/')
     path = path.replace('/chrome/extensions/', '')
-    if len(path) > 0 and path[0] == '/':
-      path = path.strip('/')
+    path = path.strip('/')
     self._HandleRequest(path)
 
 def main():

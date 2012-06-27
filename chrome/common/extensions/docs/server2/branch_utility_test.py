@@ -8,17 +8,22 @@ import unittest
 import test_urlfetch
 
 class BranchUtilityTest(unittest.TestCase):
-  def testGetChannelNameFromPath(self):
-    self.assertEquals('dev', branch_utility.GetChannelNameFromPath(
-        'dev/hello/stuff.html'))
-    self.assertEquals('beta', branch_utility.GetChannelNameFromPath(
-        'beta/hello/stuff.html'))
-    self.assertEquals('trunk', branch_utility.GetChannelNameFromPath(
-        'trunk/hello/stuff.html'))
-    self.assertEquals('stable', branch_utility.GetChannelNameFromPath(
-        'hello/stuff.html'))
-    self.assertEquals('stable', branch_utility.GetChannelNameFromPath(
-        'hello/dev/stuff.html'))
+  def testSplitChannelNameFromPath(self):
+    self.assertEquals(('dev', 'hello/stuff.html'),
+                      branch_utility.SplitChannelNameFromPath(
+                      'dev/hello/stuff.html'))
+    self.assertEquals(('beta', 'hello/stuff.html'),
+                      branch_utility.SplitChannelNameFromPath(
+                      'beta/hello/stuff.html'))
+    self.assertEquals(('trunk', 'hello/stuff.html'),
+                      branch_utility.SplitChannelNameFromPath(
+                      'trunk/hello/stuff.html'))
+    self.assertEquals(('stable', 'hello/stuff.html'),
+                      branch_utility.SplitChannelNameFromPath(
+                      'hello/stuff.html'))
+    self.assertEquals(('stable', 'hello/dev/stuff.html'),
+                      branch_utility.SplitChannelNameFromPath(
+                      'hello/dev/stuff.html'))
 
   def testGetBranchNumberForChannelName(self):
     base_path = 'branch_utility/first.json'

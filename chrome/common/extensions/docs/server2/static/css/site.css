@@ -1,0 +1,166 @@
+body {
+  font-family: "open sans", Helvetica, Arial, sans-serif;
+  font-size: small;
+  color: #333;
+  background-color: white;
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin: 1em 0 0 0;
+  line-height: 125%;
+}
+
+a, a:link {
+  text-decoration: none;
+  color: #333;
+}
+
+a:visited {
+  color: #61C;
+}
+
+#header {
+  margin: 1em 0 1em 14px;
+  width: 100%;
+  height: 64px;
+}
+
+#header td {
+  border: none;
+  padding: 0;
+}
+
+#logo {
+  float: left;
+  padding-top: 10px;
+}
+
+#cse {
+  float: left;
+  width: 50%;
+}
+
+li {
+  margin: .3em 0 0 1.5em;
+  padding: 0;
+}
+
+ol li {
+  margin-top: 1em;
+}
+
+img {
+  border: none;
+  padding: 0;
+}
+
+.hidden, .hidden *, #skipto, #skipto * {
+  position: relative;
+  top: -9999px;
+  left: -9999px;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+  z-index: 4444;
+}
+
+.displayModeWarning {
+  background-color: #FF7735;
+  color: white;
+  font-weight: bold;
+  padding: 6px 8px;
+  width: 100%;
+}
+
+span.displayModeWarning {
+  margin-right: 2ex;
+}
+
+.greytext {
+  position: absolute;
+  top: 95px;
+  left: 150px;
+  color: #AAA;
+  font-size: 11px;
+  height: 14px;
+}
+
+#gc-container {
+  margin: 3px 8px;
+  padding: 0;
+  max-width: 1160px;
+  position: relative;
+  min-height: 100%;
+  height: auto !important;
+  _height: 100%;
+}
+
+#gc-topnav {
+  font-size: 1em;
+  margin: 0;
+  padding: .4em 0;
+  width: 100%;
+  white-space: nowrap;
+  word-wrap: normal;
+  background-color: #F1F1F1;
+  border-top: 1px solid #E5E5E5;
+}
+
+#gc-topnav h1 {
+  font-size: 1.5em;
+  line-height: 1.3em;
+  font-weight: bold;
+  background-color: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0 0 0 14px;
+  float: left;
+}
+
+#gc-topnav li {
+  float: none;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+#gc-topnav ul {
+  line-height: 1em;
+  text-align: right;
+  list-style: none;
+  margin: 0;
+  padding: .47em 0;
+}
+
+#gc-topnav a {
+  padding: 0 .8em;
+}
+
+.pageData {
+  display: none;
+}
+
+#gc-pagecontent {
+  padding-left: 24px;
+}
+
+#gc-pagecontent h3 {
+  font-size: 130%;
+  font-weight: bold;
+  margin: 1.5em 0 0 0;
+  top: 0em;
+}
+
+#gc-footer {
+  clear: both;
+  margin: 0;
+  color: #666;
+}
+
+#gc-footer .text {
+  text-align: center;
+  padding: 30px 0;
+  margin: 0 0 0 0;
+}

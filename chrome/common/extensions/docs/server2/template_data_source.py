@@ -4,13 +4,28 @@
 
 from third_party.handlebar import Handlebar
 
+EXTENSIONS_URL = '/chrome/extensions'
+
 class TemplateDataSource(object):
   """This class fetches and compiles templates using the fetcher passed in with
   |cache_builder|.
   """
-  def __init__(self, cache_builder, base_paths):
+  def __init__(self, branch, cache_builder, base_paths):
     self._cache = cache_builder.build(self._LoadTemplate)
     self._base_paths = base_paths
+    self._branch_info = self._MakeBranchDict(branch)
+
+  def _MakeBranchDict(self, branch):
+    return {
+      'showWarning': branch != 'stable',
+      'branches': [
+        { 'name': 'Stable', 'path': EXTENSIONS_URL + '/stable' },
+        { 'name': 'Dev', 'path': EXTENSIONS_URL + '/dev' },
+        { 'name': 'Beta', 'path': EXTENSIONS_URL + '/beta' },
+        { 'name': 'Trunk', 'path': EXTENSIONS_URL + '/trunk' }
+      ],
+      'current': branch
+    }
 
   def _LoadTemplate(self, template):
     return Handlebar(template)
@@ -24,7 +39,11 @@ class TemplateDataSource(object):
     if not template:
       return ''
       # TODO error handling
-    return template.render(context, {'partials': self}).text
+    return template.render({
+      'api': context,
+      'branchInfo': self._branch_info,
+      'partials': self
+    }).text
 
   def __getitem__(self, key):
     return self.get(key)

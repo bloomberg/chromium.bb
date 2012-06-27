@@ -7,12 +7,16 @@ import json
 
 OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'
 
-def GetChannelNameFromPath(path):
-  first_part = path.split('/')[0]
-  if first_part in ['trunk', 'dev', 'beta', 'stable', 'local']:
-    return first_part
+def SplitChannelNameFromPath(path, default='stable'):
+  try:
+    first, second = path.split('/', 1)
+  except ValueError:
+    first = path
+    second =''
+  if first in ['trunk', 'dev', 'beta', 'stable']:
+    return (first, second)
   else:
-    return 'stable'
+    return (default, path)
 
 def GetBranchNumberForChannelName(channel_name,
                                   urlfetch,

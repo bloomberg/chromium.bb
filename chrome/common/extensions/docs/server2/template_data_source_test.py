@@ -32,7 +32,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'simple')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource(cache_builder, ['./'])
+    t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
 
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
     self.assertEqual(template_a1.render({}, {'templates': {}}).text,
@@ -48,7 +48,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'partials')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource(cache_builder, ['./'])
+    t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
 
     self.assertEqual(self._ReadLocalFile('test.html'),
         t_data_source['test_tmpl'].render(
@@ -58,7 +58,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'render')
     fetcher = LocalFetcher(self._base_path)
     cache_builder = FetcherCache.Builder(fetcher, 0)
-    t_data_source = TemplateDataSource(cache_builder, ['./'])
+    t_data_source = TemplateDataSource('fake_branch', cache_builder, ['./'])
     self._RenderTest('test1', t_data_source)
     self._RenderTest('test2', t_data_source)
 

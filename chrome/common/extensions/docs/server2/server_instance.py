@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import logging
+import os
 
-DOCS_PATH = 'docs/'
-STATIC_PATH = DOCS_PATH + 'static/'
+STATIC_DIR_PREFIX = 'docs/server2/'
 
 class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
@@ -16,22 +16,31 @@ class ServerInstance(object):
     self._template_data_source = template_data_source
     self._fetcher = fetcher
 
+  def _NotFound(self, request_handler):
+    # TODO: Actual 404 page.
+    request_handler.response.set_status(404);
+    request_handler.response.out.write('File not found.')
 
-  def Run(self, path, request_handler):
-    parts = path.split('/')
+  def _FetchStaticResource(self, path, request_handler):
+    """Fetch a resource in the 'static' directory.
+    """
+    try:
+      result = self._fetcher.FetchResource(STATIC_DIR_PREFIX + path)
+      for key in result.headers:
+        request_handler.response.headers[key] = result.headers[key]
+      request_handler.response.out.write(result.content)
+    except:
+      self._NotFound(request_handler)
+
+  def Get(self, path, request_handler):
+    parts = path.rsplit('/', 1)
     filename = parts[-1]
+    if parts[0].startswith('static'):
+      self._FetchStaticResource(path, request_handler)
+      return
     content = self._template_data_source.Render(filename,
                                                 self._api_data_source[filename])
     if not content:
-      logging.info('Template not found for: ' + filename)
-      try:
-        result = self._fetcher.FetchResource(STATIC_PATH + filename)
-        for key in result.headers:
-          request_handler.response.headers[key] = result.headers[key]
-        content = result.content
-      except:
-        request_handler.response.set_status(404)
-        # TODO should be an actual not found page.
-        content = 'File not found.'
-    logging.info
+      self._NotFound(request_handler)
+      return
     request_handler.response.out.write(content)
