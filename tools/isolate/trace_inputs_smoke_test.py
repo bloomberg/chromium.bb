@@ -19,6 +19,7 @@ ROOT_DIR = os.path.dirname(FULLNAME)
 FILENAME = os.path.basename(__file__)
 VERBOSE = False
 
+unittest.TestCase.maxDiff = None
 
 class CalledProcessError(subprocess.CalledProcessError):
   """Makes 2.6 version act like 2.7"""
@@ -43,8 +44,8 @@ class TraceInputsBase(unittest.TestCase):
     # - Windows doesn't track initial_cwd.
     # - OSX replaces /usr/bin/python with /usr/bin/python2.7.
     self.cwd = os.path.join(ROOT_DIR, u'data')
-    self.initial_cwd = self.cwd
-    self.expected_cwd = ROOT_DIR
+    self.initial_cwd = unicode(self.cwd)
+    self.expected_cwd = unicode(ROOT_DIR)
     if sys.platform == 'win32':
       # Not supported on Windows.
       self.initial_cwd = None
@@ -64,7 +65,7 @@ class TraceInputsBase(unittest.TestCase):
 
     import trace_inputs
     self.real_executable = trace_inputs.get_native_path_case(
-        self.executable)
+        unicode(self.executable))
     trace_inputs = None
 
     if sys.platform == 'darwin':
@@ -77,7 +78,7 @@ class TraceInputsBase(unittest.TestCase):
                 os.readlink(self.real_executable)))
 
     # self.naked_executable will only be naked on Windows.
-    self.naked_executable = sys.executable
+    self.naked_executable = unicode(sys.executable)
     if sys.platform == 'win32':
       self.naked_executable = os.path.basename(sys.executable)
 
@@ -140,10 +141,13 @@ class TraceInputs(TraceInputsBase):
 
   def test_trace(self):
     expected = '\n'.join((
-      'Total: 5',
+      'Total: 7',
       'Non existent: 0',
-      'Interesting: 5 reduced to 3',
-      '  data/trace_inputs/'.replace('/', os.path.sep),
+      'Interesting: 7 reduced to 6',
+      '  data/trace_inputs/child1.py'.replace('/', os.path.sep),
+      '  data/trace_inputs/child2.py'.replace('/', os.path.sep),
+      '  data/trace_inputs/files1/'.replace('/', os.path.sep),
+      '  data/trace_inputs/test_file.txt'.replace('/', os.path.sep),
       '  trace_inputs.py',
       '  %s' % FILENAME,
     )) + '\n'
@@ -154,7 +158,12 @@ class TraceInputs(TraceInputsBase):
     trace_actual = self._trace(False)
     actual = self._execute(
         'read',
-        ['--root-dir', ROOT_DIR, '--blacklist', '.+\\.pyc'],
+        [
+          '--root-dir', ROOT_DIR,
+          '--blacklist', '.+\\.pyc',
+          '--blacklist', '.*\\.svn',
+          '--blacklist', '.*do_not_care\\.txt',
+        ],
         cwd=ROOT_DIR)
     self.assertEquals(expected, actual)
     self.assertEquals(trace_expected, trace_actual)
@@ -173,6 +182,14 @@ class TraceInputs(TraceInputsBase):
                 u'size': self._size('data', 'trace_inputs', 'child2.py'),
               },
               {
+                u'path': os.path.join(u'data', 'trace_inputs', 'files1', 'bar'),
+                u'size': self._size('data', 'trace_inputs', 'files1', 'bar'),
+              },
+              {
+                u'path': os.path.join(u'data', 'trace_inputs', 'files1', 'foo'),
+                u'size': self._size('data', 'trace_inputs', 'files1', 'foo'),
+              },
+              {
                 u'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
                 u'size': self._size('data', 'trace_inputs', 'test_file.txt'),
               },
@@ -182,7 +199,7 @@ class TraceInputs(TraceInputsBase):
           },
         ],
         u'command': [
-          self.executable,
+          unicode(self.executable),
           os.path.join(u'trace_inputs', 'child1.py'),
           u'--child-gyp',
         ],
@@ -212,7 +229,13 @@ class TraceInputs(TraceInputsBase):
     trace_actual = self._trace(True)
     actual_text = self._execute(
         'read',
-        ['--root-dir', ROOT_DIR, '--blacklist', '.+\\.pyc', '--json'],
+        [
+          '--root-dir', ROOT_DIR,
+          '--blacklist', '.+\\.pyc',
+          '--blacklist', '.*\\.svn',
+          '--blacklist', '.*do_not_care\\.txt',
+          '--json',
+        ],
         cwd=ROOT_DIR)
     actual_json = json.loads(actual_text)
     # Removes the pids.
@@ -244,7 +267,7 @@ class TraceInputsImport(TraceInputsBase):
     #self.assertEquals(0, returncode)
     #self.assertEquals('', output)
     def blacklist(f):
-      return f.endswith('.pyc')
+      return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
     return self.trace_inputs.load_trace(self.log, ROOT_DIR, api, blacklist)
 
   def _gen_dict_wrong_path(self):
@@ -282,8 +305,16 @@ class TraceInputsImport(TraceInputsBase):
                 'size': self._size(u'data', 'trace_inputs', 'child2.py'),
               },
               {
+                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'bar'),
+                'size': self._size(u'data', 'trace_inputs', 'files1', 'bar'),
+              },
+              {
+                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'foo'),
+                'size': self._size(u'data', 'trace_inputs', 'files1', 'foo'),
+              },
+              {
                 'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
-                'size': 4,
+                'size': self._size(u'data', 'trace_inputs', 'test_file.txt'),
               },
             ],
             'initial_cwd': self.expected_cwd,
@@ -328,6 +359,14 @@ class TraceInputsImport(TraceInputsBase):
               {
                 'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
                 'size': self._size('data', 'trace_inputs', 'child2.py'),
+              },
+              {
+                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'bar'),
+                'size': self._size('data', 'trace_inputs', 'files1', 'bar'),
+              },
+              {
+                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'foo'),
+                'size': self._size('data', 'trace_inputs', 'files1', 'foo'),
               },
               {
                 'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
@@ -379,11 +418,17 @@ class TraceInputsImport(TraceInputsBase):
     self.assertTrue(actual['root']['children'][0].pop('pid'))
     self.assertEquals(expected, actual)
     files = [
-      os.path.join(u'data', 'trace_inputs') + os.path.sep,
+      u'data/trace_inputs/child1.py'.replace('/', os.path.sep),
+      u'data/trace_inputs/child2.py'.replace('/', os.path.sep),
+      u'data/trace_inputs/files1/'.replace('/', os.path.sep),
+      u'data/trace_inputs/test_file.txt'.replace('/', os.path.sep),
       u'trace_inputs.py',
       u'trace_inputs_smoke_test.py',
     ]
-    simplified = self.trace_inputs.extract_directories(ROOT_DIR, results.files)
+    def blacklist(f):
+      return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
+    simplified = self.trace_inputs.extract_directories(
+        ROOT_DIR, results.files, blacklist)
     self.assertEquals(files, [f.path for f in simplified])
 
   def test_trace_multiple(self):
@@ -419,7 +464,7 @@ class TraceInputsImport(TraceInputsBase):
             trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
         trace_results = pool.join()
     def blacklist(f):
-      return f.endswith('.pyc')
+      return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     actual_results = api.parse_log(self.log, blacklist)
     self.assertEquals(8, len(trace_results))
     self.assertEquals(8, len(actual_results))

@@ -2570,7 +2570,7 @@ def get_api():
   return flavors.get(sys.platform, Strace)()
 
 
-def extract_directories(root_dir, files):
+def extract_directories(root_dir, files, blacklist):
   """Detects if all the files in a directory are in |files| and if so, replace
   the individual files by a Results.Directory instance.
 
@@ -2580,6 +2580,7 @@ def extract_directories(root_dir, files):
   Arguments:
     - root_dir: Optional base directory that shouldn't be search further.
     - files: list of Results.File instances.
+    - blacklist: regexp of files to ignore, for example r'.+\.pyc'.
   """
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
@@ -2588,9 +2589,6 @@ def extract_directories(root_dir, files):
     return files
   # All files must share the same root, which can be None.
   assert len(set(f.root for f in files)) == 1, set(f.root for f in files)
-
-  def blacklist(f):
-    return f in ('.git', '.svn') or f.endswith('.pyc')
 
   # Creates a {directory: {filename: File}} mapping, up to root.
   buckets = {}
@@ -2729,7 +2727,7 @@ def CMDread(args):
   def blacklist(f):
     return any(re.match(b, f) for b in options.blacklist)
   results = load_trace(options.log, options.root_dir, api, blacklist)
-  simplified = extract_directories(options.root_dir, results.files)
+  simplified = extract_directories(options.root_dir, results.files, blacklist)
   simplified = [f.replace_variables(variables) for f in simplified]
 
   if options.json:

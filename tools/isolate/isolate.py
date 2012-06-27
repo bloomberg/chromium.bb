@@ -240,7 +240,7 @@ def determine_root_dir(relative_root, infiles):
 def process_variables(variables, relative_base_dir):
   """Processes path variables as a special case and returns a copy of the dict.
 
-  For each 'path' varaible: first normalizes it, verifies it exists, converts it
+  For each 'path' variable: first normalizes it, verifies it exists, converts it
   to an absolute path, then sets it as relative to relative_base_dir.
   """
   variables = variables.copy()
@@ -449,12 +449,14 @@ class CompleteState(object):
 
   def save_files(self):
     """Saves both self.result and self.saved_state."""
+    logging.debug('Dumping to %s' % self.result_file)
     trace_inputs.write_json(self.result_file, self.result.flatten(), False)
     total_bytes = sum(i.get('size', 0) for i in self.result.files.itervalues())
     if total_bytes:
       logging.debug('Total size: %d bytes' % total_bytes)
-    trace_inputs.write_json(
-        result_to_state(self.result_file), self.saved_state.flatten(), False)
+    saved_state_file = result_to_state(self.result_file)
+    logging.debug('Dumping to %s' % saved_state_file)
+    trace_inputs.write_json(saved_state_file, self.saved_state.flatten(), False)
 
   @property
   def root_dir(self):
@@ -806,6 +808,8 @@ class OptionParserIsolate(OptionParserWithLogging):
 
     if self.require_result and not options.result:
       self.error('--result is required.')
+    if not options.result.endswith('.results'):
+      self.error('--result value must end with \'.results\'')
 
     if options.result:
       options.result = os.path.abspath(options.result.replace('/', os.path.sep))

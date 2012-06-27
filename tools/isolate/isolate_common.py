@@ -61,7 +61,8 @@ def default_blacklist(f):
   return (
       f.endswith(('.pyc', 'testserver.log')) or
       _GIT_PATH in f or
-      _SVN_PATH in f)
+      _SVN_PATH in f or
+      f in ('.git', '.svn'))
 
 
 def classify_files(files):
@@ -119,7 +120,7 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
       ('<(%s)' % k, variables[k]) for k in PATH_VARIABLES if k in variables)
 
   # Actual work: Process the files.
-  files = trace_inputs.extract_directories(root_dir, files)
+  files = trace_inputs.extract_directories(root_dir, files, default_blacklist)
   files = (f.replace_variables(variables) for f in files)
 
   def fix(f):
