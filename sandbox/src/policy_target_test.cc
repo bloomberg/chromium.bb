@@ -1,7 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_factory.h"
@@ -149,9 +150,9 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_process(int argc, wchar_t **argv) {
   // Use default values to create a new process.
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
-  PROCESS_INFORMATION process_info;
+  base::win::ScopedProcessInformation process_info;
   if (!::CreateProcessW(L"foo.exe", L"foo.exe", NULL, NULL, FALSE, 0,
-                        NULL, NULL, &startup_info, &process_info))
+                        NULL, NULL, &startup_info, process_info.Receive()))
     return SBOX_TEST_SUCCEEDED;
   return SBOX_TEST_FAILED;
 }
@@ -233,33 +234,31 @@ TEST(PolicyTargetTest, DesktopPolicy) {
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;
-  PROCESS_INFORMATION target = {0};
+  base::win::ScopedProcessInformation target;
 
   TargetPolicy* policy = broker->CreatePolicy();
   policy->SetAlternateDesktop(false);
   policy->SetTokenLevel(USER_INTERACTIVE, USER_LOCKDOWN);
-  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy, &target);
+  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
+                               target.Receive());
   policy->Release();
 
   EXPECT_EQ(SBOX_ALL_OK, result);
 
-  EXPECT_EQ(1, ::ResumeThread(target.hThread));
+  EXPECT_EQ(1, ::ResumeThread(target.thread_handle()));
 
-  EXPECT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(target.hProcess, 2000));
+  EXPECT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(target.process_handle(), 2000));
 
-  EXPECT_NE(::GetThreadDesktop(target.dwThreadId),
+  EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
 
   std::wstring desktop_name = policy->GetAlternateDesktop();
   HDESK desk = ::OpenDesktop(desktop_name.c_str(), 0, FALSE, DESKTOP_ENUMERATE);
   EXPECT_TRUE(NULL != desk);
   EXPECT_TRUE(::CloseDesktop(desk));
-  EXPECT_TRUE(::TerminateProcess(target.hProcess, 0));
+  EXPECT_TRUE(::TerminateProcess(target.process_handle(), 0));
 
-  ::WaitForSingleObject(target.hProcess, INFINITE);
-
-  EXPECT_TRUE(::CloseHandle(target.hProcess));
-  EXPECT_TRUE(::CloseHandle(target.hThread));
+  ::WaitForSingleObject(target.process_handle(), INFINITE);
 
   // Close the desktop handle.
   temp_policy = broker->CreatePolicy();
@@ -295,21 +294,22 @@ TEST(PolicyTargetTest, WinstaPolicy) {
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;
-  PROCESS_INFORMATION target = {0};
+  base::win::ScopedProcessInformation target;
 
   TargetPolicy* policy = broker->CreatePolicy();
   policy->SetAlternateDesktop(true);
   policy->SetTokenLevel(USER_INTERACTIVE, USER_LOCKDOWN);
-  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy, &target);
+  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
+                               target.Receive());
   policy->Release();
 
   EXPECT_EQ(SBOX_ALL_OK, result);
 
-  EXPECT_EQ(1, ::ResumeThread(target.hThread));
+  EXPECT_EQ(1, ::ResumeThread(target.thread_handle()));
 
-  EXPECT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(target.hProcess, 2000));
+  EXPECT_EQ(WAIT_TIMEOUT, ::WaitForSingleObject(target.process_handle(), 2000));
 
-  EXPECT_NE(::GetThreadDesktop(target.dwThreadId),
+  EXPECT_NE(::GetThreadDesktop(target.thread_id()),
             ::GetThreadDesktop(::GetCurrentThreadId()));
 
   std::wstring desktop_name = policy->GetAlternateDesktop();
@@ -324,12 +324,9 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   HDESK desk = ::OpenDesktop(desktop_name.c_str(), 0, FALSE, DESKTOP_ENUMERATE);
   // This should fail if the desktop is really on another window station.
   EXPECT_FALSE(NULL != desk);
-  EXPECT_TRUE(::TerminateProcess(target.hProcess, 0));
+  EXPECT_TRUE(::TerminateProcess(target.process_handle(), 0));
 
-  ::WaitForSingleObject(target.hProcess, INFINITE);
-
-  EXPECT_TRUE(::CloseHandle(target.hProcess));
-  EXPECT_TRUE(::CloseHandle(target.hThread));
+  ::WaitForSingleObject(target.process_handle(), INFINITE);
 
   // Close the desktop handle.
   temp_policy = broker->CreatePolicy();

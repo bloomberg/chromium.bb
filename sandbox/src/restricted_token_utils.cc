@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/job.h"
 #include "sandbox/src/restricted_token.h"
@@ -182,7 +183,7 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
 
   // Start the process
   STARTUPINFO startup_info = {0};
-  PROCESS_INFORMATION process_info = {0};
+  base::win::ScopedProcessInformation process_info;
   DWORD flags = CREATE_SUSPENDED;
 
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
@@ -201,30 +202,30 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
                              NULL,   // Use the environment of the caller.
                              NULL,   // Use current directory of the caller.
                              &startup_info,
-                             &process_info)) {
+                             process_info.Receive())) {
     return ::GetLastError();
   }
-
-  base::win::ScopedHandle thread_handle(process_info.hThread);
-  base::win::ScopedHandle process_handle(process_info.hProcess);
 
   // Change the token of the main thread of the new process for the
   // impersonation token with more rights.
-  if (!::SetThreadToken(&process_info.hThread, impersonation_token.Get())) {
-    ::TerminateProcess(process_handle.Get(),
-                       0);  // exit code
-    return ::GetLastError();
+  {
+    HANDLE temp_thread = process_info.thread_handle();
+    if (!::SetThreadToken(&temp_thread, impersonation_token.Get())) {
+      ::TerminateProcess(process_info.process_handle(),
+                         0);  // exit code
+      return ::GetLastError();
+    }
   }
 
-  err_code = job.AssignProcessToJob(process_handle.Get());
+  err_code = job.AssignProcessToJob(process_info.process_handle());
   if (ERROR_SUCCESS != err_code) {
-    ::TerminateProcess(process_handle.Get(),
+    ::TerminateProcess(process_info.process_handle(),
                        0);  // exit code
     return ::GetLastError();
   }
 
   // Start the application
-  ::ResumeThread(thread_handle.Get());
+  ::ResumeThread(process_info.thread_handle());
 
   (*job_handle_ret) = job.Detach();
 
