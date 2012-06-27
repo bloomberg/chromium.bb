@@ -176,6 +176,8 @@ function renderPage() {
   var apiTemplate = docFamily == "extensions" ?
       API_TEMPLATE_EXTENSIONS : API_TEMPLATE_APPS;
 
+  document.body.setAttribute("doc-family", docFamily);
+
   // Fetch the api template and insert into the <body>.
   fetchContent(apiTemplate, function(templateContent) {
     document.getElementsByTagName('body')[0].innerHTML = templateContent;
@@ -510,7 +512,10 @@ function filterDocumented(things) {
   });
 }
 
-function listChromeAPIs(packageType, includeExperimental) {
+function listChromeAPIs(includeExperimental) {
+  var packageType = document.body.getAttribute('doc-family') == 'extensions' ?
+      'extension' : 'platform_app';
+
   // Super ghetto to use a synchronous XHR here, but this only runs during
   // generation of docs, so I guess it's ok.
   var req = new XMLHttpRequest();
@@ -519,7 +524,7 @@ function listChromeAPIs(packageType, includeExperimental) {
 
   var permissionFeatures = JSON.parse(JSON.minify(req.responseText));
 
-  return schema.filter(function(module) {
+  var result = schema.filter(function(module) {
     if (disableDocs(module))
       return false;
 
@@ -536,6 +541,19 @@ function listChromeAPIs(packageType, includeExperimental) {
   }).map(function(module) {
     return module.namespace;
   }).sort();
+
+  if (packageType == 'platform_app') {
+    result = result.filter(function(item) {
+      return [
+        "browserAction", "extension", "input.ime", "omnibox", "pageAction",
+        "scriptBadge", "windows", "experimental.fontSettings",
+        "experimental.infobars", "experimental.keybindings",
+        "experimental.offscreenTabs", "experimental.processes",
+      ].indexOf(item) == -1;
+    });
+  }
+
+  return result;
 }
 
 function getDataFromPageHTML(id) {

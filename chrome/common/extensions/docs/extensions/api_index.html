@@ -18,7 +18,8 @@
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
   <title>chrome.* APIs - Google Chrome Extensions - Google Code</title></head>
-  <body><link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+  <body doc-family="extensions">  <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+  <link href="../css/shared.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -211,10 +212,15 @@
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">chrome.* APIs</div>
 <div id="pageData-showTOC" class="pageData">true</div>
-<p>
-Google Chrome provides APIs such as
+<p class="doc-family extensions">
+Chrome provides APIs such as
 <code>chrome.bookmarks</code> and <code>chrome.tab</code>
 so that extensions can interact with the browser.
+</p>
+<p class="doc-family apps">
+Chrome provides many special-purpose APIs like
+<code>chrome.runtime</code> and <code>chrome.alarms</code>
+to packaged apps.
 </p>
 <h2 id="supported">Supported APIs</h2>
 <p>
@@ -261,7 +267,7 @@ Here are the supported chrome.* APIs:
 </ul>
 <h2 id="experimental">Experimental APIs</h2>
 <p>
-Google Chrome also has
+Chrome also has
 <a href="experimental.html">experimental APIs</a>,
 some of which will become supported APIs
 in future releases of Chrome.
@@ -276,7 +282,7 @@ If you need to know the outcome of an operation,
 then you pass a callback function into the method.
 For more information, watch this video:
 </p>
-<p>
+<p class="doc-family extensions">
 <iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/bmxr75CV36A?rel=0" frameborder="0" allowfullscreen=""></iframe>
 </p>
 </div>

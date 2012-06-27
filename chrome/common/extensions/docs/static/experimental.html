@@ -1,6 +1,7 @@
 <div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
+<div class="doc-family extensions">
 <p>
 Before you start, <strong>choose the right version of this page.</strong>
 You should read either:
@@ -18,22 +19,23 @@ Canary (bleeding edge) and the Dev channel, see
 For details about channel-specific docs,
 see <a href="docs.html#versions">Doc versions</a>.
 </p>
+</div>
 
 <h2 id="overview">
 List of APIs
 </h2>
 
-<p>
+<p class="doc-family extensions">
 We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
 on the following experimental APIs:
 </p>
 
 <ul>
-  <li jsselect="listChromeAPIs('extension', true);">
+  <li jsselect="listChromeAPIs(true);">
   <a jsvalues=".href: $this + '.html'" jscontent="$this"></a></li>
 </ul>
 
-<p>
+<p class="doc-family extensions">
 Pay special attention to the following APIs,
 which we expect to finalize soon:
 <b>devtools</b>,
@@ -49,14 +51,14 @@ Don't depend on these experimental APIs.
 They might disappear,
 and they <em>will</em> change.
 Also, the Chrome Web Store doesn't allow you to
-upload extensions that use experimental APIs.
+upload items that use experimental APIs.
 </p>
 
 
 <h2 id="using">How to use experimental APIs</h2>
 
 <ol>
-  <li>
+  <li class="doc-family extensions">
     Make sure you're using either
     <a href="http://tools.google.com/dlpage/chromesxs">Canary</a>
     (which you can use at the same time as other Chrome channels) or the
@@ -65,7 +67,7 @@ upload extensions that use experimental APIs.
     we need your feedback on the latest incarnation of the APIs,
     which you can find in Canary and on the Dev channel.
   </li>
-  <li>
+  <li class="doc-family extensions">
     Using either the
     <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">most recent API documentation</a> (if you're using Canary) or the
     <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
@@ -74,7 +76,7 @@ upload extensions that use experimental APIs.
   <li>
     Specify the "experimental"
     <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
+    in your manifest, like this:
 <pre>
 "permissions": [
   <b>"experimental"</b>,
@@ -92,7 +94,7 @@ upload extensions that use experimental APIs.
         and restart Chrome.
         From now on,
         unless you return to that page and disable experimental APIs,
-        you'll be able to run extensions that use experimental APIs.
+        you'll be able to run extensions and apps that use experimental APIs.
       </li>
       <li> Specify the <b>--enable-experimental-extension-apis</b> flag
         each time you launch the browser.
@@ -106,7 +108,7 @@ upload extensions that use experimental APIs.
     </ul>
   </li>
 
-  <li>
+  <li class="doc-family extension">
     <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
     Your comments and suggestions help us
     improve the APIs and decide
@@ -117,7 +119,7 @@ upload extensions that use experimental APIs.
 <h2 id="other">More APIs</h2>
 
 <p>
-For information on the standard APIs that extensions can use, see
+For information on the standard APIs that packaged apps can use, see
 <a href="api_index.html">chrome.* APIs</a> and
 <a href="api_other.html">Other APIs</a>.
 </p>
