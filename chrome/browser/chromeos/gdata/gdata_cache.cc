@@ -26,8 +26,6 @@ namespace {
 
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
-const char kLocallyModifiedFileExtension[] = "local";
-
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
 const FilePath::CharType kGDataCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
@@ -288,15 +286,21 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
   }
 }
 
-// Appends |resource_id| ID to |resource_ids| if the file is pinned but not
-// fetched (not present locally).
-void CollectPinnedButNotFetched(std::vector<std::string>* resource_ids,
-                                const std::string& resource_id,
-                                const GDataCache::CacheEntry& cache_entry) {
-  DCHECK(resource_ids);
+// Appends |resource_id| ID to |to_fetch| if the file is pinned but not
+// fetched (not present locally), or to |to_upload| if the file is dirty
+// but not uploaded.
+void CollectBacklog(std::vector<std::string>* to_fetch,
+                    std::vector<std::string>* to_upload,
+                    const std::string& resource_id,
+                    const GDataCache::CacheEntry& cache_entry) {
+  DCHECK(to_fetch);
+  DCHECK(to_upload);
 
   if (cache_entry.IsPinned() && !cache_entry.IsPresent())
-    resource_ids->push_back(resource_id);
+    to_fetch->push_back(resource_id);
+
+  if (cache_entry.IsDirty())
+    to_upload->push_back(resource_id);
 }
 
 
@@ -342,14 +346,16 @@ void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
 }
 
 // Runs callback with pointers dereferenced.
-// Used to implement GetResourceIds* methods.
+// Used to implement GetResourceIdsOfBacklog().
 void RunGetResourceIdsCallback(const GetResourceIdsCallback& callback,
-                               std::vector<std::string>* resource_ids) {
+                               std::vector<std::string>* to_fetch,
+                               std::vector<std::string>* to_upload) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(resource_ids);
+  DCHECK(to_fetch);
+  DCHECK(to_upload);
 
   if (!callback.is_null())
-    callback.Run(*resource_ids);
+    callback.Run(*to_fetch, *to_upload);
 }
 
 }  // namespace
@@ -406,7 +412,7 @@ FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
   if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
     DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
     base_name += FilePath::kExtensionSeparator;
-    base_name += kLocallyModifiedFileExtension;
+    base_name += util::kLocallyModifiedFileExtension;
   } else if (!md5.empty()) {
     base_name += FilePath::kExtensionSeparator;
     base_name += util::EscapeCacheFileName(md5);
@@ -439,19 +445,22 @@ void GDataCache::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void GDataCache::GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread(
+void GDataCache::GetResourceIdsOfBacklogOnUIThread(
     const GetResourceIdsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::vector<std::string>* resource_ids = new std::vector<std::string>;
+  std::vector<std::string>* to_fetch = new std::vector<std::string>;
+  std::vector<std::string>* to_upload = new std::vector<std::string>;
   pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::GetResourceIdsOfPinnedButNotFetchedFiles,
+      base::Bind(&GDataCache::GetResourceIdsOfBacklog,
                  base::Unretained(this),
-                 resource_ids),
+                 to_fetch,
+                 to_upload),
       base::Bind(&RunGetResourceIdsCallback,
                  callback,
-                 base::Owned(resource_ids)));
+                 base::Owned(to_fetch),
+                 base::Owned(to_upload)));
 }
 
 void GDataCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
@@ -732,12 +741,14 @@ void GDataCache::Destroy() {
   delete this;
 }
 
-void GDataCache::GetResourceIdsOfPinnedButNotFetchedFiles(
-    std::vector<std::string>* resource_ids) {
+void GDataCache::GetResourceIdsOfBacklog(
+    std::vector<std::string>* to_fetch,
+    std::vector<std::string>* to_upload) {
   AssertOnSequencedWorkerPool();
-  DCHECK(resource_ids);
+  DCHECK(to_fetch);
+  DCHECK(to_upload);
 
-  metadata_->Iterate(base::Bind(&CollectPinnedButNotFetched, resource_ids));
+  metadata_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload));
 }
 
 void GDataCache::GetFile(const std::string& resource_id,

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -65,12 +66,15 @@ class GDataSyncClient
     UPLOAD,  // Upload a file to the gdata server.
   };
 
-  // The struct is used to queue tasks for fetching and uploding.
+  // The struct is used to queue tasks for fetching and uploading.
   struct SyncTask {
-    SyncTask(SyncType in_sync_type, const std::string& in_resource_id);
+    SyncTask(SyncType in_sync_type,
+             const std::string& in_resource_id,
+             const base::Time& in_timestamp);
 
     SyncType sync_type;
     std::string resource_id;
+    base::Time timestamp;
   };
 
   // |profile| is used to access user preferences.
@@ -94,9 +98,10 @@ class GDataSyncClient
                                const std::string& md5) OVERRIDE;
   virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE;
 
-  // Starts processing the pinned-but-not-filed files. Kicks off retrieval of
-  // the resource IDs of these files, and then starts the sync loop.
-  void StartProcessingPinnedButNotFetchedFiles();
+  // Starts processing the backlog (i.e. pinned-but-not-filed files and
+  // dirty-but-not-uploaded files). Kicks off retrieval of the resource
+  // IDs of these files, and then starts the sync loop.
+  void StartProcessingBacklog();
 
   // Returns the resource IDs in |queue_| for the given sync type. Used only
   // for testing.
@@ -105,7 +110,12 @@ class GDataSyncClient
   // Adds the resource ID to the queue. Used only for testing.
   void AddResourceIdForTesting(SyncType sync_type,
                                const std::string& resource_id) {
-    queue_.push_back(SyncTask(sync_type, resource_id));
+    queue_.push_back(SyncTask(sync_type, resource_id, base::Time::Now()));
+  }
+
+  // Sets a delay for testing.
+  void set_delay_for_testing(const base::TimeDelta& delay) {
+    delay_ = delay;
   }
 
   // Starts the sync loop if it's not running.
@@ -113,6 +123,10 @@ class GDataSyncClient
 
  private:
   friend class GDataSyncClientTest;
+
+  // Adds the given task to the queue. If the same task is queued, remove the
+  // existing one, and adds a new one to the end of the queue.
+  void AddTaskToQueue(const SyncTask& sync_task);
 
   // Runs the sync loop that fetches/uploads files in |queue_|. One file is
   // fetched/uploaded at a time, rather than in parallel. The loop ends when
@@ -122,9 +136,10 @@ class GDataSyncClient
   // Returns true if we should stop the sync loop.
   bool ShouldStopSyncLoop();
 
-  // Called when the resource IDs of pinned-but-not-fetched files are obtained.
-  void OnGetResourceIdsOfPinnedButNotFetchedFiles(
-      const std::vector<std::string>& resource_ids);
+  // Called when the resource IDs of files in the backlog are obtained.
+  void OnGetResourceIdsOfBacklog(
+      const std::vector<std::string>& to_fetch,
+      const std::vector<std::string>& to_upload);
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
@@ -133,6 +148,11 @@ class GDataSyncClient
                            const FilePath& local_path,
                            const std::string& ununsed_mime_type,
                            GDataFileType file_type);
+
+  // Called when the file for |resource_id| is uploaded.
+  // Calls DoSyncLoop() to go back to the sync loop.
+  void OnUploadFileComplete(const std::string& resource_id,
+                            base::PlatformFileError error);
 
   // chromeos::NetworkLibrary::NetworkManagerObserver override.
   virtual void OnNetworkManagerChanged(
@@ -151,6 +171,9 @@ class GDataSyncClient
   // thread. Note that this class does not use a lock to protect |queue_| as
   // all methods touching |queue_| run on the UI thread.
   std::deque<SyncTask> queue_;
+
+  // The delay is used for delaying processing SyncTasks in DoSyncLoop().
+  base::TimeDelta delay_;
 
   // True if the sync loop is running.
   bool sync_loop_is_running_;

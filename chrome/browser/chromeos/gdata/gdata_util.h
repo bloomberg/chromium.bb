@@ -19,9 +19,15 @@ class Profile;
 namespace gdata {
 namespace util {
 
-// Path constants
-extern const char kMountedArchiveFileExtension[];
-extern const char kWildCard[];
+// Path constants.
+
+// The extention for dirty files. The file names look like
+// "<resource-id>.local".
+const char kLocallyModifiedFileExtension[] = "local";
+// The extension for mounted files. The file names look like
+// "<resource-id>.<md5>.mounted".
+const char kMountedArchiveFileExtension[] = "mounted";
+const char kWildCard[] = "*";
 
 // Returns the GData mount point path, which looks like "/special/gdata".
 const FilePath& GetGDataMountPointPath();

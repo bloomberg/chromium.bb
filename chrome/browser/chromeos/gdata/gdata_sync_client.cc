@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -26,10 +27,50 @@ using content::BrowserThread;
 
 namespace gdata {
 
+namespace {
+
+// The delay constant is used to delay processing a SyncTask in
+// DoSyncLoop(). We should not process SyncTasks immediately for the
+// following reasons:
+//
+// 1) For fetching, the user may accidentally click on "Make available
+//    offline" checkbox on a file, and immediately cancel it in a second.
+//    It's a waste to fetch the file in this case.
+//
+// 2) For uploading, file writing via HTML5 file system API is perfomred in
+//    two steps: 1) truncate a file to 0 bytes, 2) write contents. We
+//    shouldn't start uploading right after the step 1). Besides, the user
+//    may edit the same file repeatedly in a short period of time.
+//
+// TODO(satorux): We should find a way to handle the upload case more nicely,
+// and shorten the delay. crbug.com/134774
+const int kDelaySeconds = 5;
+
+// Functor for std::find_if() search for a sync task that matches
+// |in_sync_type| and |in_resource_id|.
+struct CompareTypeAndResourceId {
+  CompareTypeAndResourceId(const GDataSyncClient::SyncType& in_sync_type,
+                           const std::string& in_resource_id)
+      : sync_type(in_sync_type),
+        resource_id(in_resource_id) {}
+
+  bool operator()(const GDataSyncClient::SyncTask& sync_task) {
+    return (sync_type == sync_task.sync_type &&
+            resource_id == sync_task.resource_id);
+  }
+
+  const GDataSyncClient::SyncType sync_type;
+  const std::string resource_id;
+};
+
+}  // namespace
+
 GDataSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
-                                    const std::string& in_resource_id)
+                                    const std::string& in_resource_id,
+                                    const base::Time& in_timestamp)
     : sync_type(in_sync_type),
-      resource_id(in_resource_id) {
+      resource_id(in_resource_id),
+      timestamp(in_timestamp) {
 }
 
 GDataSyncClient::GDataSyncClient(Profile* profile,
@@ -39,6 +80,7 @@ GDataSyncClient::GDataSyncClient(Profile* profile,
       file_system_(file_system),
       cache_(cache),
       registrar_(new PrefChangeRegistrar),
+      delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
       sync_loop_is_running_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -73,9 +115,11 @@ void GDataSyncClient::Initialize() {
   registrar_->Add(prefs::kDisableGDataOverCellular, this);
 }
 
-void GDataSyncClient::StartProcessingPinnedButNotFetchedFiles() {
-  cache_->GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread(
-      base::Bind(&GDataSyncClient::OnGetResourceIdsOfPinnedButNotFetchedFiles,
+void GDataSyncClient::StartProcessingBacklog() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  cache_->GetResourceIdsOfBacklogOnUIThread(
+      base::Bind(&GDataSyncClient::OnGetResourceIdsOfBacklog,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -105,18 +149,41 @@ void GDataSyncClient::DoSyncLoop() {
   }
   sync_loop_is_running_ = true;
 
-  const SyncTask& sync_task = queue_.front();
-  DCHECK_EQ(FETCH, sync_task.sync_type);
-  const std::string resource_id = sync_task.resource_id;
-  queue_.pop_front();
+  // Should copy before calling queue_.pop_front().
+  const SyncTask sync_task = queue_.front();
 
-  DVLOG(1) << "Fetching " << resource_id;
-  file_system_->GetFileByResourceId(
-      resource_id,
-      base::Bind(&GDataSyncClient::OnFetchFileComplete,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id),
-      GetDownloadDataCallback());
+  // Check if we are ready to process the task.
+  const base::TimeDelta elapsed = base::Time::Now() - sync_task.timestamp;
+  if (elapsed < delay_) {
+    // Not yet ready. Revisit at a later time.
+    const bool posted = base::MessageLoopProxy::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GDataSyncClient::DoSyncLoop,
+                   weak_ptr_factory_.GetWeakPtr()),
+        delay_);
+    DCHECK(posted);
+    return;
+  }
+
+  queue_.pop_front();
+  if (sync_task.sync_type == FETCH) {
+    DVLOG(1) << "Fetching " << sync_task.resource_id;
+    file_system_->GetFileByResourceId(
+        sync_task.resource_id,
+        base::Bind(&GDataSyncClient::OnFetchFileComplete,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   sync_task.resource_id),
+        GetDownloadDataCallback());
+  } else if (sync_task.sync_type == UPLOAD) {
+    DVLOG(1) << "Uploading " << sync_task.resource_id;
+    file_system_->UpdateFileByResourceId(
+        sync_task.resource_id,
+        base::Bind(&GDataSyncClient::OnUploadFileComplete,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   sync_task.resource_id));
+  } else {
+    NOTREACHED() << ": Unexpected sync type: " << sync_task.sync_type;
+  }
 }
 
 bool GDataSyncClient::ShouldStopSyncLoop() {
@@ -154,15 +221,14 @@ bool GDataSyncClient::ShouldStopSyncLoop() {
 void GDataSyncClient::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  StartProcessingPinnedButNotFetchedFiles();
+  StartProcessingBacklog();
 }
 
 void GDataSyncClient::OnCachePinned(const std::string& resource_id,
                                     const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Add it to the queue, kick off the loop.
-  queue_.push_back(SyncTask(FETCH, resource_id));
+  AddTaskToQueue(SyncTask(FETCH, resource_id, base::Time::Now()));
   StartSyncLoop();
 }
 
@@ -172,31 +238,52 @@ void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
 
   // Remove the resource_id if it's in the queue. This can happen if the user
   // cancels pinning before the file is fetched.
-  for (std::deque<SyncTask>::iterator iter = queue_.begin();
-       iter != queue_.end(); ++iter) {
-    const SyncTask& sync_task = *iter;
-    if (sync_task.sync_type == FETCH && sync_task.resource_id == resource_id) {
-      queue_.erase(iter);
-      break;
-    }
-  }
+  std::deque<SyncTask>::iterator iter =
+      std::find_if(queue_.begin(), queue_.end(),
+                   CompareTypeAndResourceId(FETCH, resource_id));
+  if (iter != queue_.end())
+    queue_.erase(iter);
 }
 
 void GDataSyncClient::OnCacheCommitted(const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(satorux): Initiate uploading of the committed file.
-  // crbug.com/127080
+  AddTaskToQueue(SyncTask(UPLOAD, resource_id, base::Time::Now()));
+  StartSyncLoop();
 }
 
-void GDataSyncClient::OnGetResourceIdsOfPinnedButNotFetchedFiles(
-    const std::vector<std::string>& resource_ids) {
+void GDataSyncClient::AddTaskToQueue(const SyncTask& sync_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (size_t i = 0; i < resource_ids.size(); ++i) {
-    const std::string& resource_id = resource_ids[i];
-    DVLOG(1) << "Queuing " << resource_id;
-    queue_.push_back(SyncTask(FETCH, resource_id));
+  std::deque<SyncTask>::iterator iter =
+      std::find_if(queue_.begin(), queue_.end(),
+                   CompareTypeAndResourceId(sync_task.sync_type,
+                                            sync_task.resource_id));
+  // If the same task is already queued, remove it. We'll add back the new
+  // task to the end of the queue.
+  if (iter != queue_.end())
+    queue_.erase(iter);
+
+  queue_.push_back(sync_task);
+}
+
+void GDataSyncClient::OnGetResourceIdsOfBacklog(
+    const std::vector<std::string>& to_fetch,
+    const std::vector<std::string>& to_upload) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Give priority to upload tasks over fetch tasks, so that dirty files are
+  // uploaded as soon as possible.
+  for (size_t i = 0; i < to_upload.size(); ++i) {
+    const std::string& resource_id = to_upload[i];
+    DVLOG(1) << "Queuing to upload: " << resource_id;
+    AddTaskToQueue(SyncTask(UPLOAD, resource_id, base::Time::Now()));
+  }
+
+  for (size_t i = 0; i < to_fetch.size(); ++i) {
+    const std::string& resource_id = to_fetch[i];
+    DVLOG(1) << "Queuing to fetch: " << resource_id;
+    AddTaskToQueue(SyncTask(FETCH, resource_id, base::Time::Now()));
   }
 
   StartSyncLoop();
@@ -214,6 +301,21 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.
     LOG(WARNING) << "Failed to fetch " << resource_id << ": " << error;
+  }
+
+  // Continue the loop.
+  DoSyncLoop();
+}
+
+void GDataSyncClient::OnUploadFileComplete(const std::string& resource_id,
+                                           base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    DVLOG(1) << "Uploaded " << resource_id;
+  } else {
+    // TODO(satorux): We should re-queue if the error is recoverable.
+    LOG(WARNING) << "Failed to upload " << resource_id << ": " << error;
   }
 
   // Continue the loop.

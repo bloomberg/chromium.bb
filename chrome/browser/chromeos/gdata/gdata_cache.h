@@ -38,8 +38,11 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
-// Callback for GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread.
-typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
+// Callback for GetResourceIdsOfBacklogOnUIThread.
+// |to_fetch| is for resource IDs of pinned-but-not-fetched files.
+// |to_upload| is for resource IDs of dirty-but-not-uploaded files.
+typedef base::Callback<void(const std::vector<std::string>& to_fetch,
+                            const std::vector<std::string>& to_upload)>
     GetResourceIdsCallback;
 
 // GDataCache is used to maintain cache states of GDataFileSystem.
@@ -202,9 +205,11 @@ class GDataCache {
   // Must be called on UI thread.
   void RemoveObserver(Observer* observer);
 
-  // Gets the resource IDs of pinned-but-not-fetched files.
+  // Gets the resource IDs of pinned-but-not-fetched files and
+  // dirty-but-not-uploaded files.
+  //
   // Must be called on UI thread. |callback| is run on UI thread.
-  void GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread(
+  void GetResourceIdsOfBacklogOnUIThread(
       const GetResourceIdsCallback& callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
@@ -336,9 +341,10 @@ class GDataCache {
   // Deletes the cache.
   void Destroy();
 
-  // Used to implement GetResourceIdsOfPinnedButNotFetchedFilesOnUIThread.
-  void GetResourceIdsOfPinnedButNotFetchedFiles(
-      std::vector<std::string>* resource_ids);
+  // Used to implement GetResourceIdsOfBacklogOnUIThread.
+  void GetResourceIdsOfBacklog(
+      std::vector<std::string>* to_fetch,
+      std::vector<std::string>* to_upload);
 
   // Used to implement GetFileOnUIThread.
   void GetFile(const std::string& resource_id,
