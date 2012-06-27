@@ -192,6 +192,13 @@ Shell::Shell(ShellDelegate* delegate)
 
 Shell::~Shell() {
   views::FocusManagerFactory::Install(NULL);
+
+  // Remove the focus from any window. This will prevent overhead and side
+  // effects (e.g. crashes) from changing focus during shutdown.
+  // See bug crbug.com/134502.
+  if (active_root_window_)
+    active_root_window_->GetFocusManager()->SetFocusedWindow(NULL, NULL);
+
   aura::Env::GetInstance()->cursor_manager()->set_delegate(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.

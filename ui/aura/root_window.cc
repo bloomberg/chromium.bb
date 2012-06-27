@@ -813,6 +813,7 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     }
     if (focus_to &&
         (!focus_to->IsVisible() ||
+         !focus_to->CanFocus() ||
          (client::GetActivationClient(this) &&
           !client::GetActivationClient(this)->OnWillFocusWindow(focus_to,
                                                                 NULL)))) {
