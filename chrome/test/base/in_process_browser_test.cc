@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_switches.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -297,8 +298,8 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   CommandLine::SwitchMap switches =
       CommandLine::ForCurrentProcess()->GetSwitches();
   switches.erase(switches::kUserDataDir);
-  switches.erase(test_launcher::kSingleProcessTestsFlag);
-  switches.erase(test_launcher::kSingleProcessTestsAndChromeFlag);
+  switches.erase(switches::kSingleProcessTestsFlag);
+  switches.erase(switches::kSingleProcessChromeFlag);
   new_command_line.AppendSwitch(ChromeTestSuite::kLaunchAsBrowser);
 
 #if defined(USE_AURA)

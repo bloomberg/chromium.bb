@@ -19,6 +19,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_suite.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -342,7 +343,7 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
   // tests unless this flag was specified to the browser test executable.
   new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
-  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+  new_cmd_line.AppendSwitch(switches::kSingleProcessTestsFlag);
 
   // Do not let the child ignore failures.  We need to propagate the
   // failure status back to the parent.
@@ -566,8 +567,6 @@ const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 
-const char kSingleProcessTestsFlag[]   = "single_process";
-const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
 // The following is kept for historical reasons (so people that are used to
 // using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
@@ -594,12 +593,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   // terrible UI.  Instead, there should be some sort of signal flag on the
   // command line, with all subsequent arguments passed through to the
   // underlying browser.
-  if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
-      command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) ||
+  if (command_line->HasSwitch(switches::kSingleProcessTestsFlag) ||
+      command_line->HasSwitch(switches::kSingleProcessChromeFlag) ||
       command_line->HasSwitch(kGTestListTestsFlag) ||
       command_line->HasSwitch(kGTestHelpFlag)) {
 #if defined(OS_WIN)
-    if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
+    if (command_line->HasSwitch(switches::kSingleProcessTestsFlag)) {
       sandbox::SandboxInterfaceInfo sandbox_info;
       content::InitializeSandboxInfo(&sandbox_info);
       content::InitializeSandbox(&sandbox_info);
