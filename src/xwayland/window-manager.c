@@ -1329,7 +1329,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	}
 
 	parent = hash_table_lookup(wm->window_hash, window->transient_for->id);
-	shell_interface->set_transient(window->shsurf, parent->shsurf,
+	shell_interface->set_transient(window->shsurf, parent->surface,
 				       window->x - parent->x + t->margin + t->width,
 				       window->y - parent->y + t->margin + t->titlebar_height,
 				       WL_SHELL_SURFACE_TRANSIENT_INACTIVE);

@@ -3009,7 +3009,7 @@ window_create_transient(struct display *display, struct window *parent,
 
 	if (display->shell)
 		wl_shell_surface_set_transient(window->shell_surface,
-					       window->parent->shell_surface,
+					       window->parent->surface,
 					       window->x, window->y, flags);
 
 	return window;
@@ -3155,7 +3155,7 @@ window_show_menu(struct display *display,
 	input_ungrab(input);
 	wl_shell_surface_set_popup(window->shell_surface, input->seat,
 				   display_get_serial(window->display),
-				   window->parent->shell_surface,
+				   window->parent->surface,
 				   window->x, window->y, 0);
 
 	widget_set_redraw_handler(menu->widget, menu_redraw_handler);

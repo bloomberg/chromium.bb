@@ -145,7 +145,7 @@ struct shell_surface {
 
 	struct weston_surface *surface;
 	struct wl_listener surface_destroy_listener;
-	struct shell_surface *parent;
+	struct weston_surface *parent;
 	struct desktop_shell *shell;
 
 	enum shell_surface_type type, next_type;
@@ -1233,8 +1233,7 @@ static void
 set_surface_type(struct shell_surface *shsurf)
 {
 	struct weston_surface *surface = shsurf->surface;
-	struct shell_surface *pshsurf = shsurf->parent;
-	struct weston_surface *pes;
+	struct weston_surface *pes = shsurf->parent;
 
 	reset_shell_surface_type(shsurf);
 
@@ -1245,7 +1244,6 @@ set_surface_type(struct shell_surface *shsurf)
 	case SHELL_SURFACE_TOPLEVEL:
 		break;
 	case SHELL_SURFACE_TRANSIENT:
-		pes = pshsurf->surface;
 		weston_surface_set_position(surface,
 				pes->geometry.x + shsurf->transient.x,
 				pes->geometry.y + shsurf->transient.y);
@@ -1292,10 +1290,10 @@ shell_surface_set_toplevel(struct wl_client *client,
 
 static void
 set_transient(struct shell_surface *shsurf,
-	      struct shell_surface *pshsurf, int x, int y, uint32_t flags)
+	      struct weston_surface *parent, int x, int y, uint32_t flags)
 {
 	/* assign to parents output */
-	shsurf->parent = pshsurf;
+	shsurf->parent = parent;
 	shsurf->transient.x = x;
 	shsurf->transient.y = y;
 	shsurf->transient.flags = flags;
@@ -1309,9 +1307,9 @@ shell_surface_set_transient(struct wl_client *client,
 			    int x, int y, uint32_t flags)
 {
 	struct shell_surface *shsurf = resource->data;
-	struct shell_surface *pshsurf = parent_resource->data;
+	struct weston_surface *parent = parent_resource->data;
 
-	set_transient(shsurf, pshsurf, x, y, flags);
+	set_transient(shsurf, parent, x, y, flags);
 }
 
 static struct desktop_shell *
@@ -1584,7 +1582,7 @@ shell_map_popup(struct shell_surface *shsurf)
 {
 	struct wl_seat *seat = shsurf->popup.seat;
 	struct weston_surface *es = shsurf->surface;
-	struct weston_surface *parent = shsurf->parent->surface;
+	struct weston_surface *parent = shsurf->parent;
 
 	es->output = parent->output;
 	shsurf->popup.grab.interface = &popup_grab_interface;
@@ -2572,7 +2570,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	switch (surface_type) {
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_TRANSIENT:
-		parent = shsurf->parent->surface;
+		parent = shsurf->parent;
 		wl_list_insert(parent->layer_link.prev, &surface->layer_link);
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
