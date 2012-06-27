@@ -375,6 +375,7 @@ void GaiaOAuthFetcher::StartOAuthRevokeAccessToken(const std::string& token,
 void GaiaOAuthFetcher::StartOAuthRevokeWrapToken(const std::string& token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = OAUTH2_REVOKE_TOKEN;
   // Must outlive fetcher_.
   request_body_ = "";
 
@@ -440,7 +441,6 @@ void GaiaOAuthFetcher::OnOAuthLoginFetched(
     std::string lsid;
     std::string auth;
     ParseOAuthLoginResponse(data, &sid, &lsid, &auth);
-    // TODO(pastarmovj): Verify if all parameters are required.
     if (!sid.empty() && !lsid.empty() && !auth.empty()) {
       consumer_->OnOAuthLoginSuccess(sid, lsid, auth);
       return;
@@ -462,7 +462,6 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     std::string secret;
     std::string token;
     ParseOAuthGetAccessTokenResponse(data, &token, &secret);
-    // TODO(pastarmovj): Verify if all parameters are required.
     if (!token.empty() && !secret.empty()) {
       consumer_->OnOAuthGetAccessTokenSuccess(token, secret);
       if (ShouldAutoFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
@@ -484,7 +483,6 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     std::string token;
     std::string expires_in;
     ParseOAuthWrapBridgeResponse(data, &token, &expires_in);
-    // TODO(pastarmovj): Verify if all parameters are required.
     if (!token.empty() && !expires_in.empty()) {
       consumer_->OnOAuthWrapBridgeSuccess(service_scope_, token, expires_in);
       if (ShouldAutoFetch(USER_INFO))
@@ -502,7 +500,6 @@ void GaiaOAuthFetcher::OnOAuthRevokeTokenFetched(
     const net::URLRequestStatus& status,
     int response_code) {
   if (status.is_success() && response_code == net::HTTP_OK) {
-    // TODO(pastarmovj): Verify if all parameters are required.
     consumer_->OnOAuthRevokeTokenSuccess();
   } else {
     LOG(ERROR) << "Token revocation failure " << response_code << ": " << data;
@@ -518,7 +515,6 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     std::string email;
     ParseUserInfoResponse(data, &email);
-    // TODO(pastarmovj): Verify if all parameters are required.
     if (!email.empty()) {
       VLOG(1) << "GAIA user info fetched for " << email << ".";
       consumer_->OnUserInfoSuccess(email);
