@@ -160,7 +160,10 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal() {
   const NSPoint kOffset = NSMakePoint(
       info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth/2.0,
       kFirstRunBubbleYOffset);
-  [FirstRunBubbleController showForView:field_ offset:kOffset profile:profile_];
+  [FirstRunBubbleController showForView:field_
+                                 offset:kOffset
+                                browser:browser_
+                                profile:profile_];
 }
 
 string16 LocationBarViewMac::GetInputString() const {

@@ -7,8 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,11 +29,12 @@ namespace first_run {
 }  // namespace first_run
 
 // static
-FirstRunBubble* FirstRunBubble::ShowBubble(Profile* profile,
+FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
+                                           Profile* profile,
                                            views::View* anchor_view) {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
-  FirstRunBubble* delegate = new FirstRunBubble(profile, anchor_view);
+  FirstRunBubble* delegate = new FirstRunBubble(browser, profile, anchor_view);
   views::BubbleDelegateView::CreateBubble(delegate);
   delegate->StartFade(true);
   return delegate;
@@ -85,8 +84,11 @@ gfx::Rect FirstRunBubble::GetAnchorRect() {
   return rect;
 }
 
-FirstRunBubble::FirstRunBubble(Profile* profile, views::View* anchor_view)
+FirstRunBubble::FirstRunBubble(Browser* browser,
+                               Profile* profile,
+                               views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
+      browser_(browser),
       profile_(profile) {
 }
 
@@ -96,9 +98,7 @@ FirstRunBubble::~FirstRunBubble() {
 void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_CHANGE_INVOKED);
 
-  // Get |profile_|'s browser before closing the bubble, which deletes |this|.
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   GetWidget()->Close();
-  if (browser)
-    chrome::ShowSearchEngineSettings(browser);
+  if (browser_)
+    chrome::ShowSearchEngineSettings(browser_);
 }

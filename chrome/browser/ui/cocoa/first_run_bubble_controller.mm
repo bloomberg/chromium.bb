@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -18,6 +17,7 @@
 @interface FirstRunBubbleController(Private)
 - (id)initRelativeToView:(NSView*)view
                   offset:(NSPoint)offset
+                 browser:(Browser*)browser
                  profile:(Profile*)profile;
 - (void)closeIfNotKey;
 @end
@@ -26,19 +26,23 @@
 
 + (FirstRunBubbleController*) showForView:(NSView*)view
                                    offset:(NSPoint)offset
+                                  browser:(Browser*)browser
                                   profile:(Profile*)profile {
   // Autoreleases itself on bubble close.
   return [[FirstRunBubbleController alloc] initRelativeToView:view
                                                        offset:offset
+                                                      browser:browser
                                                       profile:profile];
 }
 
 - (id)initRelativeToView:(NSView*)view
                   offset:(NSPoint)offset
+                 browser:(Browser*)browser
                  profile:(Profile*)profile {
   if ((self = [super initWithWindowNibPath:@"FirstRunBubble"
                             relativeToView:view
                                     offset:offset])) {
+    browser_ = browser;
     profile_ = profile;
     [self showWindow:nil];
 
@@ -87,7 +91,7 @@
 - (IBAction)onChange:(id)sender {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_CHANGE_INVOKED);
 
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
+  Browser* browser = browser_;
   [self close];
   if (browser)
     chrome::ShowSearchEngineSettings(browser);

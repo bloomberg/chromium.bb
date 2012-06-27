@@ -32,6 +32,7 @@ TEST_F(FirstRunBubbleControllerTest, Init) {
   FirstRunBubbleController* controller = [FirstRunBubbleController
       showForView:[parent.get() contentView]
            offset:NSMakePoint(300, 300)
+          browser:NULL
           profile:profile()];
   EXPECT_TRUE(controller != nil);
   EXPECT_TRUE([[controller window] isVisible]);

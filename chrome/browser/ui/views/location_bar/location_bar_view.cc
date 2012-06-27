@@ -1090,7 +1090,9 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 void LocationBarView::ShowFirstRunBubbleInternal() {
 #if !defined(OS_CHROMEOS)
   // First run bubble doesn't make sense for Chrome OS.
-  FirstRunBubble::ShowBubble(profile_, location_icon_view_);
+  WebContents* contents = GetWebContentsFromDelegate(delegate_);
+  Browser* browser = browser::FindBrowserWithWebContents(contents);
+  FirstRunBubble::ShowBubble(browser, profile_, location_icon_view_);
 #endif
 }
 

@@ -43,7 +43,7 @@ void FirstRunBubbleTest::SetUp() {
 }
 
 TEST_F(FirstRunBubbleTest, CreateAndClose) {
-  FirstRunBubble* delegate = FirstRunBubble::ShowBubble(profile(), NULL);
+  FirstRunBubble* delegate = FirstRunBubble::ShowBubble(NULL, profile(), NULL);
   EXPECT_TRUE(delegate != NULL);
   delegate->GetWidget()->CloseNow();
 }
