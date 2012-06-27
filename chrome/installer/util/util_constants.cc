@@ -53,9 +53,6 @@ const char kDeleteProfile[] = "delete-profile";
 // Disable logging
 const char kDisableLogging[] = "disable-logging";
 
-// Prevent installer from creating desktop shortcuts.
-const char kDoNotCreateShortcuts[] = "do-not-create-shortcuts";
-
 // Prevent installer from launching Chrome after a successful first install.
 const char kDoNotLaunchChrome[] = "do-not-launch-chrome";
 

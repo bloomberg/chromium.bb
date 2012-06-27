@@ -136,7 +136,6 @@ extern const char kCreateAllShortcuts[];
 extern const char kCriticalUpdateVersion[];
 extern const char kDeleteProfile[];
 extern const char kDisableLogging[];
-extern const char kDoNotCreateShortcuts[];
 extern const char kDoNotLaunchChrome[];
 extern const char kDoNotRegisterForUpdateLaunch[];
 extern const char kDoNotRemoveSharedItems[];

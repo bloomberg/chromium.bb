@@ -24,7 +24,6 @@ SwitchBuilder& SwitchBuilder::AddChrome() {
 
 SwitchBuilder& SwitchBuilder::AddChromeFrame() {
   switches_.AppendSwitch(installer::switches::kChromeFrame);
-  switches_.AppendSwitch(installer::switches::kDoNotCreateShortcuts);
   switches_.AppendSwitch(installer::switches::kDoNotLaunchChrome);
   switches_.AppendSwitch(installer::switches::kDoNotRegisterForUpdateLaunch);
   return *this;

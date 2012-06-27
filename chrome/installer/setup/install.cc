@@ -495,15 +495,11 @@ InstallStatus InstallOrUpdateProduct(
     if (result == FIRST_INSTALL_SUCCESS && !prefs_path.empty())
       CopyPreferenceFileForFirstRun(installer_state, prefs_path);
 
-    bool do_not_create_shortcuts = false;
-    prefs.GetBool(master_preferences::kDoNotCreateShortcuts,
-                  &do_not_create_shortcuts);
-
     // Currently this only creates shortcuts for Chrome, but for other products
     // we might want to create shortcuts.
     const Product* chrome_install =
         installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
-    if (chrome_install && !do_not_create_shortcuts) {
+    if (chrome_install) {
       installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
 
       bool create_all_shortcut = false;

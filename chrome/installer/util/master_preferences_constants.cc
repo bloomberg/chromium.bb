@@ -24,7 +24,6 @@ namespace master_preferences {
   const char kDistroShowWelcomePage[] = "show_welcome_page";
   const char kDistroSkipFirstRunPref[] = "skip_first_run_ui";
   const char kDistroSuppressFirstRunBubble[] = "suppress_first_run_bubble";
-  const char kDoNotCreateShortcuts[] = "do_not_create_shortcuts";
   const char kDoNotLaunchChrome[] = "do_not_launch_chrome";
   const char kDoNotRegisterForUpdateLaunch[] =
       "do_not_register_for_update_launch";

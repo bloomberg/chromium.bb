@@ -146,8 +146,6 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kCreateAllShortcuts },
     { installer::switches::kDisableLogging,
       installer::master_preferences::kDisableLogging },
-    { installer::switches::kDoNotCreateShortcuts,
-      installer::master_preferences::kDoNotCreateShortcuts },
     { installer::switches::kMsi,
       installer::master_preferences::kMsi },
     { installer::switches::kMultiInstall,

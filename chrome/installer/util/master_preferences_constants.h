@@ -52,8 +52,6 @@ extern const char kDistroShowWelcomePage[];
 extern const char kDistroSkipFirstRunPref[];
 // Boolean. Do not show first run bubble, even if it would otherwise be shown.
 extern const char kDistroSuppressFirstRunBubble[];
-// Boolean. Do not create Chrome desktop shortcuts. Cmd line override present.
-extern const char kDoNotCreateShortcuts[];
 // Boolean. Do not launch Chrome after first install. Cmd line override present.
 extern const char kDoNotLaunchChrome[];
 // Boolean. Do not register with Google Update to have Chrome launched after
