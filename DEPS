@@ -194,7 +194,7 @@ deps = {
 
   # We should use the same software_rendering_list.json for all branches.
   "src/chrome/browser/resources/software_rendering_list":
-    "/trunk/deps/gpu/software_rendering_list@142401",
+    "/trunk/deps/gpu/software_rendering_list@144494",
 
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
