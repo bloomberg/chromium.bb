@@ -4,9 +4,9 @@ import glob
 import sys
 import louis
 
-if sys.version_info>(2,0,0):
+if sys.version_info>(3,0,0):
   sys.stderr.write("The doctests have not been ported to python 3. Skipping...\n")
-  exit(0)
+  sys.exit(0)
 
 class TestHelper():
 
