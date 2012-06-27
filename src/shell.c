@@ -95,8 +95,6 @@ struct desktop_shell {
 	struct shell_surface *lock_surface;
 	struct wl_listener lock_surface_listener;
 
-	struct wl_list panels;
-
 	struct {
 		struct wl_array array;
 		unsigned int current;
@@ -131,7 +129,6 @@ struct desktop_shell {
 enum shell_surface_type {
 	SHELL_SURFACE_NONE,
 
-	SHELL_SURFACE_PANEL,
 	SHELL_SURFACE_LOCK,
 	SHELL_SURFACE_SCREENSAVER,
 	SHELL_SURFACE_INPUT_PANEL,
@@ -1226,7 +1223,6 @@ reset_shell_surface_type(struct shell_surface *surface)
 					    surface->saved_x,
 					    surface->saved_y);
 		break;
-	case SHELL_SURFACE_PANEL:
 	case SHELL_SURFACE_INPUT_PANEL:
 		wl_list_remove(&surface->link);
 		wl_list_init(&surface->link);
@@ -1254,8 +1250,6 @@ set_surface_type(struct shell_surface *shsurf)
 	struct weston_surface *surface = shsurf->surface;
 	struct shell_surface *pshsurf = shsurf->parent;
 	struct weston_surface *pes;
-	struct shell_surface *priv;
-	struct desktop_shell *shell = shsurf->shell;
 
 	reset_shell_surface_type(shsurf);
 
@@ -1289,22 +1283,6 @@ set_surface_type(struct shell_surface *shsurf)
 			shsurf->surface->geometry.dirty = 1;
 			shsurf->saved_rotation_valid = true;
 		}
-		break;
-
-	case SHELL_SURFACE_PANEL:
-		wl_list_for_each(priv, &shell->panels, link) {
-			if (priv->output == shsurf->output) {
-				priv->surface->output = NULL;
-				wl_list_remove(&priv->surface->layer_link);
-				wl_list_remove(&priv->link);
-				break;
-			}
-		}
-
-		wl_list_insert(&shell->panels, &shsurf->link);
-
-		weston_surface_set_position(surface, shsurf->output->x,
-					    shsurf->output->y);
 		break;
 
 	default:
@@ -1361,18 +1339,19 @@ static int
 get_output_panel_height(struct desktop_shell *shell,
 			struct weston_output *output)
 {
-	struct shell_surface *priv;
+	struct weston_surface *surface;
 	int panel_height = 0;
 
 	if (!output)
 		return 0;
 
-	wl_list_for_each(priv, &shell->panels, link) {
-		if (priv->output == output) {
-			panel_height = priv->surface->geometry.height;
+	wl_list_for_each(surface, &shell->panel_layer.surface_list, link) {
+		if (surface->output == output) {
+			panel_height = surface->geometry.height;
 			break;
 		}
 	}
+
 	return panel_height;
 }
 
@@ -1925,17 +1904,14 @@ hide_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
 }
 
 static void
-background_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
 {
-	struct desktop_shell *shell = es->private;
-	struct weston_surface *s;
+	struct weston_surface *s, *next;
 
-	wl_list_for_each(s, &shell->background_layer.surface_list, layer_link) {
-		if (s->output == es->output) {
-			s->output = NULL;
-			wl_list_remove(&s->layer_link);
+	wl_list_for_each_safe(s, next, &layer->surface_list, layer_link) {
+		if (s->output == es->output && s != es) {
+			weston_surface_unmap(s);
 			s->configure = NULL;
-			break;
 		}
 	}
 
@@ -1943,10 +1919,17 @@ background_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 				 es->buffer->width, es->buffer->height);
 
 	if (wl_list_empty(&es->layer_link)) {
-		wl_list_insert(&shell->background_layer.surface_list,
-			       &es->layer_link);
+		wl_list_insert(&layer->surface_list, &es->layer_link);
 		weston_surface_assign_output(es);
 	}
+}
+
+static void
+background_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	struct desktop_shell *shell = es->private;
+
+	configure_static_surface(es, &shell->background_layer);
 }
 
 static void
@@ -1975,20 +1958,36 @@ desktop_shell_set_background(struct wl_client *client,
 }
 
 static void
+panel_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	struct desktop_shell *shell = es->private;
+
+	configure_static_surface(es, &shell->panel_layer);
+}
+
+static void
 desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *resource,
 			struct wl_resource *output_resource,
 			struct wl_resource *surface_resource)
 {
-	struct shell_surface *shsurf = surface_resource->data;
+	struct desktop_shell *shell = resource->data;
+	struct weston_surface *surface = surface_resource->data;
 
-	shsurf->next_type = SHELL_SURFACE_PANEL;
-	shsurf->output = output_resource->data;
+	if (surface->configure) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface role already assigned");
+		return;
+	}
 
+	surface->configure = panel_configure;
+	surface->private = shell;
+	surface->output = output_resource->data;
 	desktop_shell_send_configure(resource, 0,
-				     &shsurf->surface->surface.resource,
-				     shsurf->output->current->width,
-				     shsurf->output->current->height);
+				     surface_resource,
+				     surface->output->current->width,
+				     surface->output->current->height);
 }
 
 static void
@@ -2105,7 +2104,6 @@ move_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		return;
 
 	switch (shsurf->type) {
-		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_FULLSCREEN:
 		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
@@ -2134,7 +2132,6 @@ resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		return;
 
 	switch (shsurf->type) {
-		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_FULLSCREEN:
 		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
@@ -2377,7 +2374,6 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		return;
 
 	switch (surface->type) {
-		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_FULLSCREEN:
 		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
@@ -2449,7 +2445,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	weston_surface_activate(es, seat);
 
 	switch (get_shell_surface_type(es)) {
-	case SHELL_SURFACE_PANEL:
 	case SHELL_SURFACE_LOCK:
 	case SHELL_SURFACE_INPUT_PANEL:
 		break;
@@ -2693,11 +2688,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 
 	/* surface stacking order, see also activate() */
 	switch (surface_type) {
-	case SHELL_SURFACE_PANEL:
-		/* panel always on top, hidden while locked */
-		wl_list_insert(&shell->panel_layer.surface_list,
-			       &surface->layer_link);
-		break;
 	case SHELL_SURFACE_LOCK:
 		/* lock surface always visible, on top */
 		wl_list_insert(&shell->lock_layer.surface_list,
@@ -3421,7 +3411,6 @@ shell_init(struct weston_compositor *ec)
 	ec->shell_interface.move = surface_move;
 	ec->shell_interface.resize = surface_resize;
 
-	wl_list_init(&shell->panels);
 	wl_list_init(&shell->screensaver.surfaces);
 	wl_list_init(&shell->input_panel.surfaces);
 

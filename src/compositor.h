@@ -637,6 +637,9 @@ void
 weston_surface_damage_below(struct weston_surface *surface);
 
 void
+weston_surface_unmap(struct weston_surface *surface);
+
+void
 weston_buffer_post_release(struct wl_buffer *buffer);
 
 uint32_t

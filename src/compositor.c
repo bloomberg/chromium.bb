@@ -634,7 +634,7 @@ weston_compositor_repick(struct weston_compositor *compositor)
 		weston_device_repick(&seat->seat);
 }
 
-static void
+WL_EXPORT void
 weston_surface_unmap(struct weston_surface *surface)
 {
 	struct weston_seat *seat;

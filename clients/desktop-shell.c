@@ -446,12 +446,11 @@ panel_create(struct display *display)
 	memset(panel, 0, sizeof *panel);
 
 	panel->base.configure = panel_configure;
-	panel->window = window_create(display);
+	panel->window = window_create_custom(display);
 	panel->widget = window_add_widget(panel->window, panel);
 	wl_list_init(&panel->launcher_list);
 
 	window_set_title(panel->window, "panel");
-	window_set_custom(panel->window);
 	window_set_user_data(panel->window, panel);
 
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
@@ -876,12 +875,12 @@ int main(int argc, char *argv[])
 				       global_handler, &desktop);
 
 	wl_list_for_each(output, &desktop.outputs, link) {
-		struct wl_shell_surface *shsurf;
 		struct wl_surface *surface;
 
 		output->panel = panel_create(desktop.display);
-		shsurf = window_get_wl_shell_surface(output->panel->window);
-		desktop_shell_set_panel(desktop.shell, output->output, shsurf);
+		surface = window_get_wl_surface(output->panel->window);
+		desktop_shell_set_panel(desktop.shell,
+					output->output, surface);
 
 		output->background = background_create(&desktop);
 		surface = window_get_wl_surface(output->background->window);
