@@ -4,7 +4,6 @@
 
 """Module containing the various individual commands a builder can run."""
 
-import constants
 import getpass
 import glob
 import logging

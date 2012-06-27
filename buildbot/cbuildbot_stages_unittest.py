@@ -683,7 +683,7 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.ReplayAll()
     try:
       self.RunStage()
-    except:
+    except Exception:
       pass
 
     self.mox.VerifyAll()
@@ -1070,7 +1070,7 @@ class ArchiveStageTest(AbstractStageTest):
     argv = ['--remote-trybot', '-r', self.tempdir, '--buildnumber=1234',
             'x86-mario-release']
     parser = cbuildbot._CreateParser()
-    (self.options, args) = cbuildbot._ParseCommandLine(parser, argv)
+    (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
     test_config = config.config['x86-mario-release']
     self._build_config = config.OverrideConfigForTrybot(test_config, True)
 

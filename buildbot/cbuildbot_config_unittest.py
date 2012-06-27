@@ -18,7 +18,7 @@ import urllib
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
-from chromite.scripts import cbuildbot
+from chromite.lib import cros_build_lib
 
 CHROMIUM_WATCHING_URL = ("http://src.chromium.org/viewvc/" +
     "chrome/trunk/tools/build/masters/" +
@@ -217,7 +217,7 @@ class CBuildBotTest(mox.MoxTestBase):
                                '--for-buildbot'],
                               stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
     configs = json.loads(output)
-    for name, cfg in configs.iteritems():
+    for cfg in configs.itervalues():
       self.assertTrue(cfg['display_position'] is not None)
 
     self.assertFalse(not configs)
@@ -234,29 +234,28 @@ class CBuildBotTest(mox.MoxTestBase):
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""
     for build_name, config in cbuildbot_config.config.iteritems():
+      error = 'Unified config for %s has invalid values' % build_name
       # Unified masters must be internal and must rev both overlays.
       if config['unified_manifest_version'] and config['master']:
         self.assertTrue(
-            config['internal'] and config['manifest_version'],
-            'Unified manifest version config detected with invalid values')
+            config['internal'] and config['manifest_version'], error)
         self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS)
       elif config['unified_manifest_version'] and not config['master']:
         # Unified slaves can rev either public or both depending on whether
         # they are internal or not.
-        self.assertTrue(config['manifest_version'],
-            'Unified manifest version config detected with invalid values')
+        self.assertTrue(config['manifest_version'], error)
         if config['internal']:
-          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS)
+          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS, error)
         else:
-          self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS)
+          self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS, error)
 
   def testFactoryFirmwareValidity(self):
     """Ensures that firmware/factory branches have at least 1 valid name."""
-    tracking_branch = cbuildbot._GetChromiteTrackingBranch()
+    tracking_branch = cros_build_lib.GetChromiteTrackingBranch()
     for branch in ['firmware', 'factory']:
       if tracking_branch.startswith(branch):
         saw_config_for_branch = False
-        for build_name, config in cbuildbot_config.config.iteritems():
+        for build_name in cbuildbot_config.config:
           if build_name.endswith('-%s' % branch):
             self.assertFalse('release' in build_name,
                              'Factory|Firmware release builders should not '
