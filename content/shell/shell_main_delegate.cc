@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -13,12 +14,30 @@
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_renderer_client.h"
+#include "content/shell/shell_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
 #include "content/shell/paths_mac.h"
 #endif  // OS_MACOSX
+
+namespace {
+
+void InitLogging() {
+  FilePath log_filename;
+  PathService::Get(base::DIR_EXE, &log_filename);
+  log_filename = log_filename.AppendASCII("content_shell.log");
+  logging::InitLogging(
+      log_filename.value().c_str(),
+      logging::LOG_ONLY_TO_FILE,
+      logging::LOCK_LOG_FILE,
+      logging::DELETE_OLD_LOG_FILE,
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::SetLogItems(true, true, true, true);
+}
+
+}  // namespace
 
 ShellMainDelegate::ShellMainDelegate() {
 }
@@ -30,6 +49,8 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    InitLogging();
 #if defined(OS_MACOSX)
   OverrideFrameworkBundlePath();
 #endif
