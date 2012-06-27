@@ -38,6 +38,10 @@
          'native_client/native_client.gyp:nacl_irt',
        ],
       'variables': {
+         'defines': [
+            '<@(default_defines)',
+            '-DGL_GLEXT_PROTOTYPES',
+           ],
         'nexe_target': 'ppapi_nacl_tests',
         'build_newlib': 1,
         'include_dirs': [
@@ -47,6 +51,9 @@
         'link_flags': [
           '-lppapi_cpp',
           '-lppapi',
+          '-lplatform',
+          '-lpthread',
+          '-lgio',
         ],
         # TODO(bradchen): get rid of extra_deps64 and extra_deps32
         # once native_client/build/untrusted.gypi no longer needs them.
@@ -80,6 +87,13 @@
         ],
       },
       'conditions': [
+        ['target_arch!="arm"', {
+          'variables': {
+            'compile_flags': [
+              '-mno-tls-use-call',
+	    ],
+          },
+        }],
         ['target_arch!="arm" and disable_glibc==0', {
           'variables': {
             'build_glibc': 1,
