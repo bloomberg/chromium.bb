@@ -9,6 +9,9 @@ chrome.experimental.app.onLaunched.addListener(function() {
    function testCreateWindow() {
      chrome.appWindow.create('test.html', {}, callbackPass(function (win) {
        chrome.test.assertTrue(typeof win.window === 'object');
+       chrome.test.assertEq('about:blank', win.location.href);
+       chrome.test.assertEq('<html><head></head><body></body></html>',
+           win.document.documentElement.outerHTML);
      }))
    },
 

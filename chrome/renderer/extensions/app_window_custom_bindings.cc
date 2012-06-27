@@ -12,15 +12,16 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
-#include "webkit/glue/webkit_glue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "v8/include/v8.h"
+#include "webkit/glue/webkit_glue.h"
 
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -92,6 +93,8 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
   WebKit::WebFrame* opener = render_view->GetWebView()->mainFrame();
   WebKit::WebFrame* frame = view->GetWebView()->mainFrame();
   frame->setOpener(opener);
+  content::RenderThread::Get()->Send(
+      new ExtensionHostMsg_ResumeRequests(view->GetRoutingID()));
 
   v8::Local<v8::Value> window = frame->mainWorldScriptContext()->Global();
   return window;

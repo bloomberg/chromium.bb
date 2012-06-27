@@ -41,6 +41,15 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
 
 }  // namespace
 
+// Tests that CreateShellWindow doesn't crash if you close it straight away.
+// LauncherPlatformAppBrowserTest relies on this behaviour, but is only run for
+// ash, so we test that it works here.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal");
+  ShellWindow* window = CreateShellWindow(extension);
+  CloseShellWindow(window);
+}
+
 // Tests that platform apps received the "launch" event when launched.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;
@@ -110,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/restrictions")) << message_;
 }
 
-// Tests that platform apps can use the chrome.windows.* API.
+// Tests that platform apps can use the chrome.appWindow.* API.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApi) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
 }
