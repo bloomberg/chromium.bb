@@ -763,7 +763,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     // transferFile API to copy files into or out from a gdata file system.
     if (sourceEntry.isFile && (task.sourceOnGData || task.targetOnGData)) {
       var sourceFileUrl = sourceEntry.toURL();
-      var targetFileUrl = targetDirEntry.toURL() + '/' + targetRelativePath;
+      var targetFileUrl = targetDirEntry.toURL() + '/' +
+                          encodeURIComponent(targetRelativePath);
       chrome.fileBrowserPrivate.transferFile(
         sourceFileUrl, targetFileUrl,
         function() {
