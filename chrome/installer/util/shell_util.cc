@@ -1153,7 +1153,6 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   // This process needs to be routed through the system's UI. Use
   // ShowMakeChromeDefaultSystemUI instead (below).
   if (!CanMakeChromeDefaultUnattended()) {
-    NOTREACHED();
     return false;
   }
 
