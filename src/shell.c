@@ -129,7 +129,6 @@ struct desktop_shell {
 enum shell_surface_type {
 	SHELL_SURFACE_NONE,
 
-	SHELL_SURFACE_SCREENSAVER,
 	SHELL_SURFACE_INPUT_PANEL,
 
 	SHELL_SURFACE_TOPLEVEL,
@@ -1226,11 +1225,6 @@ reset_shell_surface_type(struct shell_surface *surface)
 		wl_list_remove(&surface->link);
 		wl_list_init(&surface->link);
 		break;
-	case SHELL_SURFACE_SCREENSAVER:
-		wl_resource_post_error(&surface->resource,
-				       WL_DISPLAY_ERROR_INVALID_METHOD,
-				       "cannot reassign surface type");
-		return -1;
 	case SHELL_SURFACE_NONE:
 	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_TRANSIENT:
@@ -1851,30 +1845,6 @@ terminate_screensaver(struct desktop_shell *shell)
 }
 
 static void
-show_screensaver(struct desktop_shell *shell, struct shell_surface *surface)
-{
-	struct wl_list *list;
-
-	if (shell->lock_surface)
-		list = &shell->lock_surface->layer_link;
-	else
-		list = &shell->lock_layer.surface_list;
-
-	wl_list_remove(&surface->surface->layer_link);
-	wl_list_insert(list, &surface->surface->layer_link);
-	surface->surface->output = surface->output;
-	weston_surface_damage(surface->surface);
-}
-
-static void
-hide_screensaver(struct desktop_shell *shell, struct shell_surface *surface)
-{
-	wl_list_remove(&surface->surface->layer_link);
-	wl_list_init(&surface->surface->layer_link);
-	surface->surface->output = NULL;
-}
-
-static void
 show_input_panel(struct desktop_shell *shell, struct shell_surface *surface)
 {
 	if (weston_surface_is_mapped(surface->surface))
@@ -2039,11 +2009,11 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 static void
 resume_desktop(struct desktop_shell *shell)
 {
-	struct shell_surface *tmp;
+	struct weston_surface *surface;
 	struct workspace *ws = get_current_workspace(shell);
 
-	wl_list_for_each(tmp, &shell->screensaver.surfaces, link)
-		hide_screensaver(shell, tmp);
+	wl_list_for_each(surface, &shell->screensaver.surfaces, link)
+		weston_surface_unmap(surface);
 
 	terminate_screensaver(shell);
 
@@ -2119,7 +2089,6 @@ move_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 
 	switch (shsurf->type) {
 		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
 			return;
 		default:
@@ -2147,7 +2116,6 @@ resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 
 	switch (shsurf->type) {
 		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
 			return;
 		default:
@@ -2191,13 +2159,6 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time, uint32_t axis,
 	shsurf = get_shell_surface(surface);
 	if (!shsurf)
 		return;
-
-	switch (shsurf->type) {
-		case SHELL_SURFACE_SCREENSAVER:
-			return;
-		default:
-			break;
-	}
 
 	surface->alpha += wl_fixed_to_double(value) * step;
 
@@ -2389,7 +2350,6 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 
 	switch (surface->type) {
 		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
 			return;
 		default:
@@ -2462,12 +2422,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	case SHELL_SURFACE_INPUT_PANEL:
 		break;
 
-	case SHELL_SURFACE_SCREENSAVER:
-		/* always below lock surface */
-		if (shell->lock_surface)
-			weston_surface_restack(es,
-					       &shell->lock_surface->layer_link);
-		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
 		shell_stack_fullscreen(get_shell_surface(es));
@@ -2515,7 +2469,6 @@ click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		focus = upper;
 
 	switch (get_shell_surface_type(focus)) {
-		case SHELL_SURFACE_SCREENSAVER:
 		case SHELL_SURFACE_INPUT_PANEL:
 		case SHELL_SURFACE_NONE:
 			return;
@@ -2532,7 +2485,6 @@ lock(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, lock_listener);
-	struct shell_surface *shsurf;
 	struct weston_output *output;
 	struct workspace *ws = get_current_workspace(shell);
 
@@ -2557,18 +2509,6 @@ lock(struct wl_listener *listener, void *data)
 		       &shell->lock_layer.link);
 
 	launch_screensaver(shell);
-
-	wl_list_for_each(shsurf, &shell->screensaver.surfaces, link)
-		show_screensaver(shell, shsurf);
-
-	if (!wl_list_empty(&shell->screensaver.surfaces)) {
-		shell->compositor->idle_time = shell->screensaver.duration;
-		weston_compositor_wake(shell->compositor);
-		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
-	}
-
-	/* reset pointer foci */
-	weston_compositor_schedule_repaint(shell->compositor);
 
 	/* stash keyboard foci in current workspace */
 	push_focus_state(shell, get_current_workspace(shell));
@@ -2671,9 +2611,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 		weston_surface_set_position(surface, 10 + random() % 400,
 					    10 + random() % 400);
 		break;
-	case SHELL_SURFACE_SCREENSAVER:
-		center_on_output(surface, shsurf->fullscreen_output);
-		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		shell_map_fullscreen(shsurf);
 		break;
@@ -2701,16 +2638,6 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 
 	/* surface stacking order, see also activate() */
 	switch (surface_type) {
-	case SHELL_SURFACE_SCREENSAVER:
-		/* If locked, show it. */
-		if (shell->locked) {
-			show_screensaver(shell, shsurf);
-			compositor->idle_time = shell->screensaver.duration;
-			weston_compositor_wake(compositor);
-			if (!shell->lock_surface)
-				compositor->state = WESTON_COMPOSITOR_IDLE;
-		}
-		break;
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_TRANSIENT:
 		parent = shsurf->parent->surface;
@@ -2782,9 +2709,6 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 	surface->geometry.dirty = 1;
 
 	switch (surface_type) {
-	case SHELL_SURFACE_SCREENSAVER:
-		center_on_output(surface, shsurf->fullscreen_output);
-		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		shell_stack_fullscreen(shsurf);
 		shell_configure_fullscreen(shsurf);
@@ -2805,9 +2729,7 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 	if (surface->output) {
 		weston_surface_assign_output(surface);
 
-		if (surface_type == SHELL_SURFACE_SCREENSAVER)
-			surface->output = shsurf->output;
-		else if (surface_type == SHELL_SURFACE_MAXIMIZED)
+		if (surface_type == SHELL_SURFACE_MAXIMIZED)
 			surface->output = shsurf->output;
 	}
 }
@@ -2931,20 +2853,38 @@ bind_desktop_shell(struct wl_client *client,
 }
 
 static void
+screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+{
+	struct desktop_shell *shell = surface->private;
+
+	if (!shell->locked)
+		return;
+
+	center_on_output(surface, surface->output);
+
+	if (wl_list_empty(&surface->layer_link)) {
+		wl_list_insert(shell->lock_layer.surface_list.prev,
+			       &surface->layer_link);
+		weston_surface_assign_output(surface);
+		shell->compositor->idle_time = shell->screensaver.duration;
+		weston_compositor_wake(shell->compositor);
+		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
+	}
+}
+
+static void
 screensaver_set_surface(struct wl_client *client,
 			struct wl_resource *resource,
-			struct wl_resource *shell_surface_resource,
+			struct wl_resource *surface_resource,
 			struct wl_resource *output_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct shell_surface *surface = shell_surface_resource->data;
+	struct weston_surface *surface = surface_resource->data;
 	struct weston_output *output = output_resource->data;
 
-	surface->next_type = SHELL_SURFACE_SCREENSAVER;
-
-	surface->fullscreen_output = output;
+	surface->configure = screensaver_configure;
+	surface->private = shell;
 	surface->output = output;
-	wl_list_insert(shell->screensaver.surfaces.prev, &surface->link);
 }
 
 static const struct screensaver_interface screensaver_implementation = {

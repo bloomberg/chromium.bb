@@ -58,7 +58,7 @@
         idle timeout.
       </description>
 
-      <arg name="surface" type="object" interface="wl_shell_surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="output" type="object" interface="wl_output"/>
     </request>
 
