@@ -474,7 +474,7 @@
 	that relative position during moves.
       </description>
 
-      <arg name="parent" type="object" interface="wl_shell_surface"/>
+      <arg name="parent" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="flags" type="uint"/>
@@ -549,7 +549,7 @@
 
       <arg name="seat" type="object" interface="wl_seat"/>
       <arg name="serial" type="uint"/>
-      <arg name="parent" type="object" interface="wl_shell_surface"/>
+      <arg name="parent" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="flags" type="uint"/>
