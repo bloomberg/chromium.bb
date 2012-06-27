@@ -127,6 +127,7 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   }
   RState.inst_is_legal = res;
 #else
+  (void) res;  /* work around: for -Werror=unused-but-set-variable in gcc 4.6 */
   RState.inst_is_legal = (RState.inst_num_bytes != 0);
 #endif
 }
