@@ -50,43 +50,6 @@ BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
 BluetoothDevice::~BluetoothDevice() {
 }
 
-void BluetoothDevice::SetObjectPath(const dbus::ObjectPath& object_path) {
-  DCHECK(object_path_ == dbus::ObjectPath(""));
-  object_path_ = object_path;
-}
-
-void BluetoothDevice::RemoveObjectPath() {
-  DCHECK(object_path_ != dbus::ObjectPath(""));
-  object_path_ = dbus::ObjectPath("");
-}
-
-void BluetoothDevice::Update(
-    const BluetoothDeviceClient::Properties* properties,
-    bool update_state) {
-  std::string address = properties->address.value();
-  std::string name = properties->name.value();
-  uint32 bluetooth_class = properties->bluetooth_class.value();
-  const std::vector<std::string>& uuids = properties->uuids.value();
-
-  if (!address.empty())
-    address_ = address;
-  if (!name.empty())
-    name_ = name;
-  if (bluetooth_class)
-    bluetooth_class_ = bluetooth_class;
-  if (!uuids.empty()) {
-    service_uuids_.clear();
-    service_uuids_.assign(uuids.begin(), uuids.end());
-  }
-
-  if (update_state) {
-    // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
-    // spec refers to this as bonded. Use the spec name for our interface.
-    bonded_ = properties->paired.value();
-    connected_ = properties->connected.value();
-  }
-}
-
 const std::string& BluetoothDevice::address() const { return address_; }
 
 string16 BluetoothDevice::GetName() const {
@@ -157,20 +120,6 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
   return DEVICE_UNKNOWN;
 }
 
-bool BluetoothDevice::IsSupported() const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableUnsupportedBluetoothDevices))
-    return true;
-
-  DeviceType device_type = GetDeviceType();
-  return (device_type == DEVICE_JOYSTICK ||
-          device_type == DEVICE_GAMEPAD ||
-          device_type == DEVICE_KEYBOARD ||
-          device_type == DEVICE_MOUSE ||
-          device_type == DEVICE_TABLET ||
-          device_type == DEVICE_KEYBOARD_MOUSE_COMBO);
-}
-
 string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
   string16 address = UTF8ToUTF16(address_);
   DeviceType device_type = GetDeviceType();
@@ -207,6 +156,20 @@ string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
   }
 }
 
+bool BluetoothDevice::IsSupported() const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableUnsupportedBluetoothDevices))
+    return true;
+
+  DeviceType device_type = GetDeviceType();
+  return (device_type == DEVICE_JOYSTICK ||
+          device_type == DEVICE_GAMEPAD ||
+          device_type == DEVICE_KEYBOARD ||
+          device_type == DEVICE_MOUSE ||
+          device_type == DEVICE_TABLET ||
+          device_type == DEVICE_KEYBOARD_MOUSE_COMBO);
+}
+
 bool BluetoothDevice::IsPaired() const { return !object_path_.value().empty(); }
 
 bool BluetoothDevice::IsBonded() const { return bonded_; }
@@ -236,29 +199,6 @@ bool BluetoothDevice::ProvidesServiceWithUUID(const std::string& uuid) const {
       return true;
   }
   return false;
-}
-
-void BluetoothDevice::SearchServicesForNameCallback(
-    const std::string& name,
-    const ProvidesServiceCallback& callback,
-    const dbus::ObjectPath& object_path,
-    const BluetoothDeviceClient::ServiceMap& service_map,
-    bool success) {
-  if (!success) {
-    callback.Run(false);
-    return;
-  }
-
-  for (BluetoothDeviceClient::ServiceMap::const_iterator i =
-      service_map.begin(); i != service_map.end(); ++i) {
-    BluetoothServiceRecord service_record(address(), i->second);
-    if (service_record.name() == name) {
-      callback.Run(true);
-      return;
-    }
-  }
-
-  callback.Run(false);
 }
 
 void BluetoothDevice::ProvidesServiceWithName(const std::string& name,
@@ -325,6 +265,163 @@ void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
                            base::Bind(&BluetoothDevice::ConnectErrorCallback,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       error_callback));
+  }
+}
+
+void BluetoothDevice::SetPinCode(const std::string& pincode) {
+  if (!agent_.get() || pincode_callback_.is_null())
+    return;
+
+  pincode_callback_.Run(SUCCESS, pincode);
+  pincode_callback_.Reset();
+}
+
+void BluetoothDevice::SetPasskey(uint32 passkey) {
+  if (!agent_.get() || passkey_callback_.is_null())
+    return;
+
+  passkey_callback_.Run(SUCCESS, passkey);
+  passkey_callback_.Reset();
+}
+
+void BluetoothDevice::ConfirmPairing() {
+  if (!agent_.get() || confirmation_callback_.is_null())
+    return;
+
+  confirmation_callback_.Run(SUCCESS);
+  confirmation_callback_.Reset();
+}
+
+void BluetoothDevice::RejectPairing() {
+  if (!agent_.get())
+    return;
+
+  if (!pincode_callback_.is_null()) {
+    pincode_callback_.Run(REJECTED, "");
+    pincode_callback_.Reset();
+  }
+  if (!passkey_callback_.is_null()) {
+    passkey_callback_.Run(REJECTED, 0);
+    passkey_callback_.Reset();
+  }
+  if (!confirmation_callback_.is_null()) {
+    confirmation_callback_.Run(REJECTED);
+    confirmation_callback_.Reset();
+  }
+}
+
+void BluetoothDevice::CancelPairing() {
+  if (!agent_.get())
+    return;
+
+  if (!pincode_callback_.is_null()) {
+    pincode_callback_.Run(CANCELLED, "");
+    pincode_callback_.Reset();
+  }
+  if (!passkey_callback_.is_null()) {
+    passkey_callback_.Run(CANCELLED, 0);
+    passkey_callback_.Reset();
+  }
+  if (!confirmation_callback_.is_null()) {
+    confirmation_callback_.Run(CANCELLED);
+    confirmation_callback_.Reset();
+  }
+}
+
+void BluetoothDevice::Disconnect(const base::Closure& callback,
+                                 const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      Disconnect(object_path_,
+                 base::Bind(&BluetoothDevice::DisconnectCallback,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            callback,
+                            error_callback));
+
+}
+
+void BluetoothDevice::Forget(const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      RemoveDevice(adapter_->object_path_,
+                   object_path_,
+                   base::Bind(&BluetoothDevice::ForgetCallback,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              error_callback));
+}
+
+void BluetoothDevice::ConnectToService(const std::string& service_uuid,
+                                       const SocketCallback& callback) {
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      DiscoverServices(
+          object_path_,
+          service_uuid,
+          base::Bind(&BluetoothDevice::ConnectToMatchingService,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     service_uuid,
+                     callback));
+}
+
+void BluetoothDevice::SetOutOfBandPairingData(
+    const chromeos::BluetoothOutOfBandPairingData& data,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
+      AddRemoteData(
+          object_path_,
+          address(),
+          data,
+          base::Bind(&BluetoothDevice::OnRemoteDataCallback,
+              weak_ptr_factory_.GetWeakPtr(),
+              callback,
+              error_callback));
+}
+
+void BluetoothDevice::ClearOutOfBandPairingData(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
+      RemoveRemoteData(
+          object_path_,
+          address(),
+          base::Bind(&BluetoothDevice::OnRemoteDataCallback,
+              weak_ptr_factory_.GetWeakPtr(),
+              callback,
+              error_callback));
+}
+
+void BluetoothDevice::SetObjectPath(const dbus::ObjectPath& object_path) {
+  DCHECK(object_path_ == dbus::ObjectPath(""));
+  object_path_ = object_path;
+}
+
+void BluetoothDevice::RemoveObjectPath() {
+  DCHECK(object_path_ != dbus::ObjectPath(""));
+  object_path_ = dbus::ObjectPath("");
+}
+
+void BluetoothDevice::Update(
+    const BluetoothDeviceClient::Properties* properties,
+    bool update_state) {
+  std::string address = properties->address.value();
+  std::string name = properties->name.value();
+  uint32 bluetooth_class = properties->bluetooth_class.value();
+  const std::vector<std::string>& uuids = properties->uuids.value();
+
+  if (!address.empty())
+    address_ = address;
+  if (!name.empty())
+    name_ = name;
+  if (bluetooth_class)
+    bluetooth_class_ = bluetooth_class;
+  if (!uuids.empty()) {
+    service_uuids_.clear();
+    service_uuids_.assign(uuids.begin(), uuids.end());
+  }
+
+  if (update_state) {
+    // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
+    // spec refers to this as bonded. Use the spec name for our interface.
+    bonded_ = properties->paired.value();
+    connected_ = properties->connected.value();
   }
 }
 
@@ -484,77 +581,6 @@ void BluetoothDevice::OnConnectError(const ErrorCallback& error_callback,
   error_callback.Run();
 }
 
-void BluetoothDevice::SetPinCode(const std::string& pincode) {
-  if (!agent_.get() || pincode_callback_.is_null())
-    return;
-
-  pincode_callback_.Run(SUCCESS, pincode);
-  pincode_callback_.Reset();
-}
-
-void BluetoothDevice::SetPasskey(uint32 passkey) {
-  if (!agent_.get() || passkey_callback_.is_null())
-    return;
-
-  passkey_callback_.Run(SUCCESS, passkey);
-  passkey_callback_.Reset();
-}
-
-void BluetoothDevice::ConfirmPairing() {
-  if (!agent_.get() || confirmation_callback_.is_null())
-    return;
-
-  confirmation_callback_.Run(SUCCESS);
-  confirmation_callback_.Reset();
-}
-
-void BluetoothDevice::RejectPairing() {
-  if (!agent_.get())
-    return;
-
-  if (!pincode_callback_.is_null()) {
-    pincode_callback_.Run(REJECTED, "");
-    pincode_callback_.Reset();
-  }
-  if (!passkey_callback_.is_null()) {
-    passkey_callback_.Run(REJECTED, 0);
-    passkey_callback_.Reset();
-  }
-  if (!confirmation_callback_.is_null()) {
-    confirmation_callback_.Run(REJECTED);
-    confirmation_callback_.Reset();
-  }
-}
-
-void BluetoothDevice::CancelPairing() {
-  if (!agent_.get())
-    return;
-
-  if (!pincode_callback_.is_null()) {
-    pincode_callback_.Run(CANCELLED, "");
-    pincode_callback_.Reset();
-  }
-  if (!passkey_callback_.is_null()) {
-    passkey_callback_.Run(CANCELLED, 0);
-    passkey_callback_.Reset();
-  }
-  if (!confirmation_callback_.is_null()) {
-    confirmation_callback_.Run(CANCELLED);
-    confirmation_callback_.Reset();
-  }
-}
-
-void BluetoothDevice::Disconnect(const base::Closure& callback,
-                                 const ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-      Disconnect(object_path_,
-                 base::Bind(&BluetoothDevice::DisconnectCallback,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            callback,
-                            error_callback));
-
-}
-
 void BluetoothDevice::DisconnectCallback(const base::Closure& callback,
                                          const ErrorCallback& error_callback,
                                          const dbus::ObjectPath& device_path,
@@ -569,15 +595,42 @@ void BluetoothDevice::DisconnectCallback(const base::Closure& callback,
   }
 }
 
-void BluetoothDevice::Forget(const ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      RemoveDevice(adapter_->object_path_,
-                   object_path_,
-                   base::Bind(&BluetoothDevice::ForgetCallback,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              error_callback));
+void BluetoothDevice::ForgetCallback(const ErrorCallback& error_callback,
+                                     const dbus::ObjectPath& adapter_path,
+                                     bool success) {
+  // It's quite normal that this path never gets called on success; we use a
+  // weak pointer, and bluetoothd might send the DeviceRemoved signal before
+  // the method reply, in which case this object is deleted and the
+  // callback never takes place. Therefore don't do anything here for the
+  // success case.
+  if (!success) {
+    LOG(WARNING) << "Forget failed: " << address_;
+    error_callback.Run();
+  }
 }
 
+void BluetoothDevice::SearchServicesForNameCallback(
+    const std::string& name,
+    const ProvidesServiceCallback& callback,
+    const dbus::ObjectPath& object_path,
+    const BluetoothDeviceClient::ServiceMap& service_map,
+    bool success) {
+  if (!success) {
+    callback.Run(false);
+    return;
+  }
+
+  for (BluetoothDeviceClient::ServiceMap::const_iterator i =
+      service_map.begin(); i != service_map.end(); ++i) {
+    BluetoothServiceRecord service_record(address(), i->second);
+    if (service_record.name() == name) {
+      callback.Run(true);
+      return;
+    }
+  }
+
+  callback.Run(false);
+}
 
 void BluetoothDevice::ConnectToMatchingService(
     const std::string& service_uuid,
@@ -608,60 +661,6 @@ void BluetoothDevice::OnRemoteDataCallback(const base::Closure& callback,
     callback.Run();
   else
     error_callback.Run();
-}
-
-void BluetoothDevice::ConnectToService(const std::string& service_uuid,
-                                       const SocketCallback& callback) {
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-      DiscoverServices(
-          object_path_,
-          service_uuid,
-          base::Bind(&BluetoothDevice::ConnectToMatchingService,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     service_uuid,
-                     callback));
-}
-
-void BluetoothDevice::SetOutOfBandPairingData(
-    const chromeos::BluetoothOutOfBandPairingData& data,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
-      AddRemoteData(
-          object_path_,
-          address(),
-          data,
-          base::Bind(&BluetoothDevice::OnRemoteDataCallback,
-              weak_ptr_factory_.GetWeakPtr(),
-              callback,
-              error_callback));
-}
-
-void BluetoothDevice::ClearOutOfBandPairingData(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
-      RemoveRemoteData(
-          object_path_,
-          address(),
-          base::Bind(&BluetoothDevice::OnRemoteDataCallback,
-              weak_ptr_factory_.GetWeakPtr(),
-              callback,
-              error_callback));
-}
-
-void BluetoothDevice::ForgetCallback(const ErrorCallback& error_callback,
-                                     const dbus::ObjectPath& adapter_path,
-                                     bool success) {
-  // It's quite normal that this path never gets called on success; we use a
-  // weak pointer, and bluetoothd might send the DeviceRemoved signal before
-  // the method reply, in which case this object is deleted and the
-  // callback never takes place. Therefore don't do anything here for the
-  // success case.
-  if (!success) {
-    LOG(WARNING) << "Forget failed: " << address_;
-    error_callback.Run();
-  }
 }
 
 void BluetoothDevice::DisconnectRequested(const dbus::ObjectPath& object_path) {

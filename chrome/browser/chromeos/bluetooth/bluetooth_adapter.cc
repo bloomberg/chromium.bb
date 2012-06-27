@@ -51,6 +51,96 @@ void BluetoothAdapter::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool BluetoothAdapter::IsPresent() const {
+  return !object_path_.value().empty();
+}
+
+bool BluetoothAdapter::IsPowered() const {
+  return powered_;
+}
+
+void BluetoothAdapter::SetPowered(bool powered,
+                                  const base::Closure& callback,
+                                  const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_)->powered.Set(
+          powered,
+          base::Bind(&BluetoothAdapter::OnSetPowered,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     error_callback));
+}
+
+bool BluetoothAdapter::IsDiscovering() const {
+  return discovering_;
+}
+
+void BluetoothAdapter::SetDiscovering(bool discovering,
+                                      const base::Closure& callback,
+                                      const ErrorCallback& error_callback) {
+  if (discovering) {
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+        StartDiscovery(object_path_,
+                       base::Bind(&BluetoothAdapter::OnStartDiscovery,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback,
+                                  error_callback));
+  } else {
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+        StopDiscovery(object_path_,
+                      base::Bind(&BluetoothAdapter::OnStopDiscovery,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 callback,
+                                 error_callback));
+  }
+}
+
+BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
+  ConstDeviceList const_devices =
+      const_cast<const BluetoothAdapter *>(this)->GetDevices();
+
+  DeviceList devices;
+  for (ConstDeviceList::const_iterator i = const_devices.begin();
+      i != const_devices.end(); ++i)
+    devices.push_back(const_cast<BluetoothDevice *>(*i));
+
+  return devices;
+}
+
+BluetoothAdapter::ConstDeviceList BluetoothAdapter::GetDevices() const {
+  ConstDeviceList devices;
+  for (DevicesMap::const_iterator iter = devices_.begin();
+       iter != devices_.end(); ++iter)
+    devices.push_back(iter->second);
+
+  return devices;
+}
+
+BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
+  return const_cast<BluetoothDevice *>(
+      const_cast<const BluetoothAdapter *>(this)->GetDevice(address));
+}
+
+const BluetoothDevice* BluetoothAdapter::GetDevice(
+    const std::string& address) const {
+  DevicesMap::const_iterator iter = devices_.find(address);
+  if (iter != devices_.end())
+    return iter->second;
+
+  return NULL;
+}
+
+void BluetoothAdapter::ReadLocalOutOfBandPairingData(
+    const BluetoothOutOfBandPairingDataCallback& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
+      ReadLocalData(object_path_,
+          base::Bind(&BluetoothAdapter::OnReadLocalData,
+              weak_ptr_factory_.GetWeakPtr(),
+              callback,
+              error_callback));
+}
+
 void BluetoothAdapter::DefaultAdapter() {
   DVLOG(1) << "Tracking default adapter";
   track_default_ = true;
@@ -139,26 +229,6 @@ void BluetoothAdapter::RemoveAdapter() {
                     AdapterPresentChanged(this, false));
 }
 
-bool BluetoothAdapter::IsPresent() const {
-  return !object_path_.value().empty();
-}
-
-bool BluetoothAdapter::IsPowered() const {
-  return powered_;
-}
-
-void BluetoothAdapter::SetPowered(bool powered,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      GetProperties(object_path_)->powered.Set(
-          powered,
-          base::Bind(&BluetoothAdapter::OnSetPowered,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback,
-                     error_callback));
-}
-
 void BluetoothAdapter::OnSetPowered(const base::Closure& callback,
                                     const ErrorCallback& error_callback,
                                     bool success) {
@@ -176,30 +246,6 @@ void BluetoothAdapter::PoweredChanged(bool powered) {
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterPoweredChanged(this, powered_));
-}
-
-bool BluetoothAdapter::IsDiscovering() const {
-  return discovering_;
-}
-
-void BluetoothAdapter::SetDiscovering(bool discovering,
-                                      const base::Closure& callback,
-                                      const ErrorCallback& error_callback) {
-  if (discovering) {
-    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-        StartDiscovery(object_path_,
-                       base::Bind(&BluetoothAdapter::OnStartDiscovery,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback,
-                                  error_callback));
-  } else {
-    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-        StopDiscovery(object_path_,
-                      base::Bind(&BluetoothAdapter::OnStopDiscovery,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 callback,
-                                 error_callback));
-  }
 }
 
 void BluetoothAdapter::OnStartDiscovery(const base::Closure& callback,
@@ -327,52 +373,6 @@ void BluetoothAdapter::UpdateDevice(const dbus::ObjectPath& device_path) {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device));
   }
-}
-
-BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
-  ConstDeviceList const_devices =
-      const_cast<const BluetoothAdapter *>(this)->GetDevices();
-
-  DeviceList devices;
-  for (ConstDeviceList::const_iterator i = const_devices.begin();
-      i != const_devices.end(); ++i)
-    devices.push_back(const_cast<BluetoothDevice *>(*i));
-
-  return devices;
-}
-
-BluetoothAdapter::ConstDeviceList BluetoothAdapter::GetDevices() const {
-  ConstDeviceList devices;
-  for (DevicesMap::const_iterator iter = devices_.begin();
-       iter != devices_.end(); ++iter)
-    devices.push_back(iter->second);
-
-  return devices;
-}
-
-BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
-  return const_cast<BluetoothDevice *>(
-      const_cast<const BluetoothAdapter *>(this)->GetDevice(address));
-}
-
-const BluetoothDevice* BluetoothAdapter::GetDevice(
-    const std::string& address) const {
-  DevicesMap::const_iterator iter = devices_.find(address);
-  if (iter != devices_.end())
-    return iter->second;
-
-  return NULL;
-}
-
-void BluetoothAdapter::ReadLocalOutOfBandPairingData(
-    const BluetoothOutOfBandPairingDataCallback& callback,
-    const ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
-      ReadLocalData(object_path_,
-          base::Bind(&BluetoothAdapter::OnReadLocalData,
-              weak_ptr_factory_.GetWeakPtr(),
-              callback,
-              error_callback));
 }
 
 void BluetoothAdapter::ClearDevices() {

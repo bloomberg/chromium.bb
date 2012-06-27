@@ -218,10 +218,6 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
     return !confirmation_callback_.is_null();
   }
 
-  // The VoidResultCallback is used for methods that do not return any data, to
-  // indicate that the action requested is complete.
-  typedef base::Callback<void()> VoidResultCallback;
-
   // Initiates a connection to the device, pairing first if necessary.
   //
   // Method calls will be made on the supplied object |pairing_delegate|
