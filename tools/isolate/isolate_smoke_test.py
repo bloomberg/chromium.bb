@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -39,6 +40,8 @@ RELATIVE_CWD = {
   'missing_trailing_slash': '.',
   'no_run': '.',
   'non_existent': '.',
+  'symlink_full': '.',
+  'symlink_partial': '.',
   'touch_root': os.path.join('data', 'isolate'),
   'with_flag': '.',
 }
@@ -52,6 +55,19 @@ DEPENDENCIES = {
     os.path.join('files1', 'test_file2.txt'),
   ],
   'non_existent': [],
+  'symlink_full': [
+    os.path.join('files1', 'test_file1.txt'),
+    os.path.join('files1', 'test_file2.txt'),
+    # files2 is a symlink to files1.
+    'files2',
+    'symlink_full.py',
+  ],
+  'symlink_partial': [
+    os.path.join('files1', 'test_file2.txt'),
+    # files2 is a symlink to files1.
+    'files2',
+    'symlink_partial.py',
+  ],
   'touch_root': [
     os.path.join('data', 'isolate', 'touch_root.py'),
     'isolate.py',
@@ -85,8 +101,13 @@ class CalledProcessError(subprocess.CalledProcessError):
 def list_files_tree(directory):
   """Returns the list of all the files in a tree."""
   actual = []
-  for root, _dirs, files in os.walk(directory):
-    actual.extend(os.path.join(root, f)[len(directory)+1:] for f in files)
+  for root, dirnames, filenames in os.walk(directory):
+    actual.extend(os.path.join(root, f)[len(directory)+1:] for f in filenames)
+    for dirname in dirnames:
+      full = os.path.join(root, dirname)
+      # Manually include symlinks.
+      if os.path.islink(full):
+        actual.append(full[len(directory)+1:])
   return sorted(actual)
 
 
@@ -159,20 +180,29 @@ class IsolateModeBase(IsolateBase):
 
     files = dict((unicode(f), {}) for f in DEPENDENCIES[self.case()])
 
-    if self.LEVEL >= isolate.STATS_ONLY:
-      for k, v in files.iteritems():
-        if isolate.isolate_common.get_flavor() != 'win':
-          v[u'mode'] = self._fix_file_mode(k, read_only)
-        filestats = os.stat(os.path.join(root_dir, k))
-        v[u'size'] = filestats.st_size
+    for relfile, v in files.iteritems():
+      filepath = os.path.join(root_dir, relfile)
+      if self.LEVEL >= isolate.STATS_ONLY:
+        filestats = os.lstat(filepath)
+        is_link = stat.S_ISLNK(filestats.st_mode)
+        if not is_link:
+          v[u'size'] = filestats.st_size
+          if isolate.isolate_common.get_flavor() != 'win':
+            v[u'mode'] = self._fix_file_mode(relfile, read_only)
+        else:
+          v[u'mode'] = 488
         # Used the skip recalculating the hash. Use the most recent update
         # time.
         v[u'timestamp'] = int(round(filestats.st_mtime))
 
-    if self.LEVEL >= isolate.WITH_HASH:
-      for filename in files:
-        files[filename][u'sha-1'] = unicode(
-            calc_sha1(os.path.join(root_dir, filename)))
+      if self.LEVEL >= isolate.WITH_HASH:
+        if is_link:
+          v['link'] = os.readlink(filepath)
+        else:
+          # Upgrade the value to unicode so diffing the structure in case of
+          # test failure is easier, since the basestring type must match,
+          # str!=unicode.
+          v[u'sha-1'] = unicode(calc_sha1(filepath))
     return files
 
   def _expected_result(self, args, read_only):
@@ -249,7 +279,7 @@ class IsolateModeBase(IsolateBase):
 
     # Do not check on Windows since a lot of spew is generated there.
     if sys.platform != 'win32':
-      self.assertEquals('', err)
+      self.assertTrue(err in (None, ''), err)
     return out
 
   def case(self):
@@ -336,6 +366,16 @@ class Isolate_check(IsolateModeBase):
     self._expect_no_tree()
     self._expect_results([], None, None)
 
+  def test_symlink_full(self):
+    self._execute('check', 'symlink_full.isolate', [], False)
+    self._expect_no_tree()
+    self._expect_results(['symlink_full.py'], None, None)
+
+  def test_symlink_partial(self):
+    self._execute('check', 'symlink_partial.isolate', [], False)
+    self._expect_no_tree()
+    self._expect_results(['symlink_partial.py'], None, None)
+
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [], False)
     self._expect_no_tree()
@@ -385,6 +425,28 @@ class Isolate_hashtable(IsolateModeBase):
     self._expected_hash_tree()
     self._expect_results([], None, None)
 
+  def test_symlink_full(self):
+    self._execute('hashtable', 'symlink_full.isolate', [], False)
+    # Construct our own tree.
+    expected = [
+      str(v['sha-1'])
+      for v in self._gen_files(False).itervalues() if 'sha-1' in v
+    ]
+    expected.append(calc_sha1(self.result))
+    self.assertEquals(sorted(expected), self._result_tree())
+    self._expect_results(['symlink_full.py'], None, None)
+
+  def test_symlink_partial(self):
+    self._execute('hashtable', 'symlink_partial.isolate', [], False)
+    # Construct our own tree.
+    expected = [
+      str(v['sha-1'])
+      for v in self._gen_files(False).itervalues() if 'sha-1' in v
+    ]
+    expected.append(calc_sha1(self.result))
+    self.assertEquals(sorted(expected), self._result_tree())
+    self._expect_results(['symlink_partial.py'], None, None)
+
   def test_touch_root(self):
     self._execute('hashtable', 'touch_root.isolate', [], False)
     self._expected_hash_tree()
@@ -428,6 +490,16 @@ class Isolate_remap(IsolateModeBase):
     self._execute('remap', 'no_run.isolate', [], False)
     self._expected_tree()
     self._expect_results([], None, None)
+
+  def test_symlink_full(self):
+    self._execute('remap', 'symlink_full.isolate', [], False)
+    self._expected_tree()
+    self._expect_results(['symlink_full.py'], None, None)
+
+  def test_symlink_partial(self):
+    self._execute('remap', 'symlink_partial.isolate', [], False)
+    self._expected_tree()
+    self._expect_results(['symlink_partial.py'], None, None)
 
   def test_touch_root(self):
     self._execute('remap', 'touch_root.isolate', [], False)
@@ -482,6 +554,16 @@ class Isolate_run(IsolateModeBase):
       pass
     self._expect_empty_tree()
     self._expect_no_result()
+
+  def test_symlink_full(self):
+    self._execute('run', 'symlink_full.isolate', [], False)
+    self._expect_empty_tree()
+    self._expect_results(['symlink_full.py'], None, None)
+
+  def test_symlink_partial(self):
+    self._execute('run', 'symlink_partial.isolate', [], False)
+    self._expect_empty_tree()
+    self._expect_results(['symlink_partial.py'], None, None)
 
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [], False)
@@ -562,6 +644,40 @@ class Isolate_read_trace(IsolateModeBase):
     expected = '\nError: No command to run\n'
     self.assertEquals('', out)
     self.assertEquals(expected, err)
+
+  def test_symlink_full(self):
+    out = self._execute(
+        'trace', 'symlink_full.isolate', [], True)
+    self.assertEquals('', out)
+    self._expect_no_tree()
+    self._expect_results(['symlink_full.py'], None, None)
+    expected = {
+      isolate.isolate_common.KEY_TRACKED: [
+        'symlink_full.py',
+      ],
+      isolate.isolate_common.KEY_UNTRACKED: [
+        # Note that .isolate format mandates / and not os.path.sep.
+        'files2/',
+      ],
+    }
+    out = self._execute('read', 'symlink_full.isolate', [], True)
+    self.assertEquals(self._wrap_in_condition(expected), out)
+
+  def test_symlink_partial(self):
+    out = self._execute(
+        'trace', 'symlink_partial.isolate', [], True)
+    self.assertEquals('', out)
+    self._expect_no_tree()
+    self._expect_results(['symlink_partial.py'], None, None)
+    expected = {
+      isolate.isolate_common.KEY_TRACKED: [
+        # Note that .isolate format mandates / and not os.path.sep.
+        'files2/test_file2.txt',
+        'symlink_partial.py',
+      ],
+    }
+    out = self._execute('read', 'symlink_partial.isolate', [], True)
+    self.assertEquals(self._wrap_in_condition(expected), out)
 
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)

@@ -15,6 +15,7 @@ import optparse
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -67,7 +68,7 @@ def link_file(outfile, infile, action):
 
 def _set_write_bit(path, read_only):
   """Sets or resets the executable bit on a file or directory."""
-  mode = os.stat(path).st_mode
+  mode = os.lstat(path).st_mode
   if read_only:
     mode = mode & 0500
   else:
@@ -75,6 +76,11 @@ def _set_write_bit(path, read_only):
   if hasattr(os, 'lchmod'):
     os.lchmod(path, mode)  # pylint: disable=E1101
   else:
+    if stat.S_ISLNK(mode):
+      # Skip symlink without lchmod() support.
+      logging.debug('Can\'t change +w bit on symlink %s' % path)
+      return
+
     # TODO(maruel): Implement proper DACL modification on Windows.
     os.chmod(path, mode)
 
@@ -311,13 +317,20 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
   try:
     with Profiler('GetFiles') as _prof:
       for filepath, properties in manifest['files'].iteritems():
-        infile = properties['sha-1']
         outfile = os.path.join(outdir, filepath)
-        cache.retrieve(infile)
         outfiledir = os.path.dirname(outfile)
         if not os.path.isdir(outfiledir):
           os.makedirs(outfiledir)
-        link_file(outfile, cache.path(infile), HARDLINK)
+        if 'sha-1' in properties:
+          # A normal directory.
+          infile = properties['sha-1']
+          cache.retrieve(infile)
+          link_file(outfile, cache.path(infile), HARDLINK)
+        elif 'link' in properties:
+          # A symlink.
+          os.symlink(properties['link'], outfile)
+        else:
+          raise ValueError('Unexpected entry: %s' % properties)
         if 'mode' in properties:
           # It's not set on Windows.
           os.chmod(outfile, properties['mode'])

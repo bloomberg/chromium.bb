@@ -20,8 +20,8 @@ PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
 KEY_TRACKED = 'isolate_dependency_tracked'
 KEY_UNTRACKED = 'isolate_dependency_untracked'
 
-_GIT_PATH = os.path.sep + '.git' + os.path.sep
-_SVN_PATH = os.path.sep + '.svn' + os.path.sep
+_GIT_PATH = os.path.sep + '.git'
+_SVN_PATH = os.path.sep + '.svn'
 
 
 def posix_relpath(path, root):

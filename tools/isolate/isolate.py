@@ -52,41 +52,107 @@ def normpath(path):
   return out
 
 
-def expand_directories(indir, infiles, blacklist):
-  """Expands the directories, applies the blacklist and verifies files exist."""
-  logging.debug('expand_directories(%s, %s, %s)' % (indir, infiles, blacklist))
+def split_at_symlink(indir, relfile):
+  """Scans each component of relfile and cut the string at the symlink if there
+  is any.
+
+  Returns a tuple (symlink, rest), with rest == None if not symlink was found.
+  """
+  parts = relfile.rstrip(os.path.sep).split(os.path.sep)
+  for i in range(len(parts)):
+    if os.path.islink(os.path.join(indir, *parts[:i])):
+      # A symlink! Keep the trailing os.path.sep if there was any.
+      out = os.path.join(*parts[:i])
+      rest = os.path.sep.join(parts[i:])
+      logging.debug('split_at_symlink(%s) -> (%s, %s)' % (relfile, out, rest))
+      return out, rest
+  return relfile, None
+
+
+def expand_directory_and_symlink(indir, relfile, blacklist):
+  """Expands a single input. It can result in multiple outputs.
+
+  This function is recursive when relfile is a directory or a symlink.
+
+  Note: this code doesn't properly handle recursive symlink like one created
+  with:
+    ln -s .. foo
+  """
+  logging.debug(
+      'expand_directory_and_symlink(%s, %s, %s)' % (indir, relfile, blacklist))
+  if os.path.isabs(relfile):
+    raise run_test_from_archive.MappingError(
+        'Can\'t map absolute path %s' % relfile)
+
+  infile = normpath(os.path.join(indir, relfile))
+  if not infile.startswith(indir):
+    raise run_test_from_archive.MappingError(
+        'Can\'t map file %s outside %s' % (infile, indir))
+
+  # Look if any item in relfile is a symlink.
+  symlink_relfile, rest = split_at_symlink(indir, relfile)
+  if rest is not None:
+    # Append everything pointed by the symlink. If the symlink is recursive,
+    # this code blows up.
+    pointed = os.readlink(os.path.join(indir, symlink_relfile))
+    # Override infile with the new destination.
+    symlink_infile = normpath(
+        os.path.join(indir, os.path.dirname(symlink_relfile), pointed, rest))
+    if not symlink_infile.startswith(indir):
+      raise run_test_from_archive.MappingError(
+          'Can\'t map symlink reference %s->%s outside of %s' %
+          (symlink_relfile, symlink_infile, indir))
+    if infile.startswith(symlink_infile):
+      raise run_test_from_archive.MappingError(
+          'Can\'t map recursive symlink reference %s->%s' %
+          (symlink_relfile, symlink_infile))
+    logging.info('Found symlink: %s -> %s' % (symlink_relfile, symlink_infile))
+    out = expand_directory_and_symlink(
+        indir, symlink_infile[len(indir)+1:], blacklist)
+    # Add the symlink itself.
+    out.append(symlink_relfile)
+    return out
+
+  if relfile.endswith(os.path.sep):
+    if not os.path.isdir(infile):
+      raise run_test_from_archive.MappingError(
+          '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
+
+    outfiles = []
+    for filename in os.listdir(infile):
+      inner_relfile = os.path.join(relfile, filename)
+      if blacklist(inner_relfile):
+        continue
+      if os.path.isdir(os.path.join(indir, inner_relfile)):
+        inner_relfile += os.path.sep
+      outfiles.extend(
+          expand_directory_and_symlink(indir, inner_relfile, blacklist))
+    return outfiles
+  else:
+    # Always add individual files even if they were blacklisted.
+    if os.path.isdir(infile):
+      raise run_test_from_archive.MappingError(
+          'Input directory %s must have a trailing slash' % infile)
+
+    if not os.path.isfile(infile):
+      raise run_test_from_archive.MappingError(
+          'Input file %s doesn\'t exist' % infile)
+
+    return [relfile]
+
+
+def expand_directories_and_symlinks(indir, infiles, blacklist):
+  """Expands the directories and the symlinks, applies the blacklist and
+  verifies files exist.
+
+  Files are specified in os native path separatro.
+  """
+  logging.debug(
+      'expand_directories_and_symlinks(%s, %s, %s)' %
+        (indir, infiles, blacklist))
   outfiles = []
   for relfile in infiles:
-    if os.path.isabs(relfile):
-      raise run_test_from_archive.MappingError(
-          'Can\'t map absolute path %s' % relfile)
-    infile = normpath(os.path.join(indir, relfile))
-    if not infile.startswith(indir):
-      raise run_test_from_archive.MappingError(
-          'Can\'t map file %s outside %s' % (infile, indir))
-
-    if relfile.endswith(os.path.sep):
-      if not os.path.isdir(infile):
-        raise run_test_from_archive.MappingError(
-            '%s is not a directory' % infile)
-      for dirpath, dirnames, filenames in os.walk(infile):
-        # Convert the absolute path to subdir + relative subdirectory.
-        reldirpath = dirpath[len(indir)+1:]
-        files_to_add = (os.path.join(reldirpath, f) for f in filenames)
-        outfiles.extend(f for f in files_to_add if not blacklist(f))
-        for index, dirname in enumerate(dirnames):
-          # Do not process blacklisted directories.
-          if blacklist(os.path.join(reldirpath, dirname)):
-            del dirnames[index]
-    else:
-      # Always add individual files even if they were blacklisted.
-      if os.path.isdir(infile):
-        raise run_test_from_archive.MappingError(
-            'Input directory %s must have a trailing slash' % infile)
-      if not os.path.isfile(infile):
-        raise run_test_from_archive.MappingError(
-            'Input file %s doesn\'t exist' % infile)
-      outfiles.append(relfile)
+    outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist))
   return outfiles
 
 
@@ -149,8 +215,10 @@ def process_input(filepath, prevdict, level, read_only):
   assert level in (NO_INFO, STATS_ONLY, WITH_HASH)
   out = {}
   if level >= STATS_ONLY:
-    filestats = os.stat(filepath)
+    filestats = os.lstat(filepath)
+    is_link = stat.S_ISLNK(filestats.st_mode)
     if isolate_common.get_flavor() != 'win':
+      # Ignore file mode on Windows since it's not really useful there.
       filemode = stat.S_IMODE(filestats.st_mode)
       # Remove write access for group and all access to 'others'.
       filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
@@ -161,18 +229,26 @@ def process_input(filepath, prevdict, level, read_only):
       else:
         filemode &= ~stat.S_IXGRP
       out['mode'] = filemode
-    out['size'] = filestats.st_size
+    if not is_link:
+      out['size'] = filestats.st_size
     # Used to skip recalculating the hash. Use the most recent update time.
     out['timestamp'] = int(round(filestats.st_mtime))
     # If the timestamp wasn't updated, carry on the sha-1.
-    if (prevdict.get('timestamp') == out['timestamp'] and
-        'sha-1' in prevdict):
-      # Reuse the previous hash.
-      out['sha-1'] = prevdict['sha-1']
+    if prevdict.get('timestamp') == out['timestamp']:
+      if 'sha-1' in prevdict:
+        # Reuse the previous hash.
+        out['sha-1'] = prevdict['sha-1']
+      if 'link' in prevdict:
+        # Reuse the previous link destination.
+        out['link'] = prevdict['link']
 
-  if level >= WITH_HASH and not out.get('sha-1'):
-    with open(filepath, 'rb') as f:
-      out['sha-1'] = hashlib.sha1(f.read()).hexdigest()
+  if level >= WITH_HASH and not out.get('sha-1') and not out.get('link'):
+    if is_link:
+      # A symlink, store the link destination instead.
+      out['link'] = os.readlink(filepath)
+    else:
+      with open(filepath, 'rb') as f:
+        out['sha-1'] = hashlib.sha1(f.read()).hexdigest()
   return out
 
 
@@ -206,7 +282,12 @@ def recreate_tree(outdir, indir, infiles, action):
     outsubdir = os.path.dirname(outfile)
     if not os.path.isdir(outsubdir):
       os.makedirs(outsubdir)
-    run_test_from_archive.link_file(outfile, infile, action)
+    if os.path.islink(infile):
+      pointed = os.readlink(infile)
+      logging.debug('Symlink: %s -> %s' % (outfile, pointed))
+      os.symlink(pointed, outfile)
+    else:
+      run_test_from_archive.link_file(outfile, infile, action)
 
 
 def result_to_state(filename):
@@ -427,7 +508,7 @@ class CompleteState(object):
     ]
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept.
-    infiles = expand_directories(
+    infiles = expand_directories_and_symlinks(
         root_dir,
         infiles,
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x))
@@ -547,6 +628,9 @@ def CMDhashtable(args):
   # Map each of the file.
   for relfile, properties in complete_state.result.files.iteritems():
     infile = os.path.join(complete_state.root_dir, relfile)
+    if not 'sha-1' in properties:
+      # It's a symlink.
+      continue
     outfile = os.path.join(options.outdir, properties['sha-1'])
     if os.path.isfile(outfile):
       # Just do a quick check that the file size matches. No need to stat()
