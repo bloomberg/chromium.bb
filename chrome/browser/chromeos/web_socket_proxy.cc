@@ -618,7 +618,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
       cert_verifier_.reset(net::CertVerifier::CreateDefault());
     ssl_context.cert_verifier = cert_verifier_.get();
     socket_.reset(factory->CreateSSLClientSocket(
-        handle, host_port_pair_, ssl_config_, NULL, ssl_context));
+        handle, host_port_pair_, ssl_config_, ssl_context));
     if (!socket_.get()) {
       LOG(WARNING) << "Failed to create an SSL client socket.";
       OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);
