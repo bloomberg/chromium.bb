@@ -545,11 +545,13 @@ function listChromeAPIs(includeExperimental) {
   if (packageType == 'platform_app') {
     result = result.filter(function(item) {
       return [
-        "browserAction", "extension", "input.ime", "omnibox", "pageAction",
-        "scriptBadge", "windows", "experimental.devtools.audits",
-        "experimental.devtools.console", "experimental.fontSettings",
+        "browserAction", "extension", "fileBrowserHandler", "input.ime",
+        "omnibox", "pageAction", "scriptBadge", "windows",
+        "experimental.devtools.audits", "experimental.devtools.console",
+        "experimental.discovery", "experimental.fontSettings",
         "experimental.infobars", "experimental.keybinding",
         "experimental.offscreenTabs", "experimental.processes",
+        "experimental.speechInput"
       ].indexOf(item) == -1;
     });
   }

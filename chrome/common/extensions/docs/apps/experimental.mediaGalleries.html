@@ -17,7 +17,7 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.fileSystem module, which is part of the Google Chrome  extension APIs."><title>chrome.fileSystem - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.mediaGalleries module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.mediaGalleries - Google Chrome Extensions - Google Code</title></head>
   <body doc-family="apps">  <link href="../css/ApiRefStyles_apps.css" rel="stylesheet" type="text/css">
   <link href="../css/prettify.css" rel="stylesheet" type="text/css">
   <link href="../css/shared.css" rel="stylesheet" type="text/css">
@@ -81,13 +81,13 @@
         <h1>Packaged Apps</h1>
         <ul id="home" class="gc-topnav-tabs">
           <li id="home_link">
-            <a href="about_apps.html" title="Packaged Apps home page"><span>Home</span></a>
+            <a href="app_landing.html" title="Packaged Apps home page"><span>Home</span></a>
           </li>
           <li id="docs_link">
-            <a href="develop_apps.html" title="Packaged apps developer documentation"><span>Docs</span></a>
+            <a href="about_apps.html" title="Official Packaged apps documentation"><span>Docs</span></a>
           </li>
           <li id="samples_link">
-            <a href="https://github.com/GoogleChrome/chrome-app-samples" title="Packaged apps samples repository"><span>Samples</span></a>
+            <a href="app_samples.html" title="Sample apps (with source code)"><span>Samples</span></a>
           </li>
           <li id="group_link">
             <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
@@ -121,34 +121,38 @@
               </li>
               <li><span>Security &amp; Privacy</span>
                 <ul>
+                  <li><a href="app_security.html">About Security &amp; Privacy</a></li>
                   <li><a href="app_identity.html">Identify User</a></li>
-                  <li><a href="app_csp.html">Comply with CSP</a></li>
+                  <li><a href="app_permissions.html">Manage User Permissions</a></li>
+                  <li><a href="app_csp">Comply with CSP</a></li>
                 </ul>
               </li>
               <li><span>Advanced Technologies</span>
                 <ul>
-                  <li><a href="app_network.html">Network Communications</a></li>
+                  <li><a href="app_network.html">Communicate across Network</a></li>
                   <li><a href="app_hardware.html">Access Hardware Devices</a></li>
                   <li><a href="app_intents.html">Connect Apps with Web Intents</a></li>
                 </ul>
               </li>
-              <li><a href="app_frameworks.html">MVC Architecture</a></li>
+              <li><a href="app_frameworks.html">Recommended Frameworks</a></li>
             </ul>
           </li>
           <li><h2>Deploying</h2>
             <ul>
               <li><a href="publish_app.html">Publish</a></li>
+              <li><a href="sell_app.html">Sell</a></li>
             </ul>
           </li>
           <li><h2>Reference</h2>
             <ul>
               <li><a href="manifest.html">Manifest Files</a></li>
-              <li><a href="apps_api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="experimental.html">Experimental APIs</a></li>
               <li><a href="api_other.html">Supported Libraries</a></li>
               <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
           </li>
-          <li><h2><a href="https://github.com/GoogleChrome/chrome-app-samples">Samples</a></h2></li>
+          <li><h2><a href="app_samples.html">Samples</a></h2></li>
         </ul>
       </div>
       <script>
@@ -156,34 +160,26 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.fileSystem</h1>
+        <h1 class="page_title">chrome.experimental.mediaGalleries</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.fileSystem</a>
+                <a href="#apiReference">API reference: chrome.experimental.mediaGalleries</a>
                 <ol>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-chooseFile">chooseFile</a>
+                <a href="#method-assembleMediaFile">assembleMediaFile</a>
               </li><li>
-                <a href="#method-getDisplayPath">getDisplayPath</a>
+                <a href="#method-extractEmbeddedThumbnails">extractEmbeddedThumbnails</a>
               </li><li>
-                <a href="#method-getWritableFileEntry">getWritableFileEntry</a>
-              </li>
-            </ol>
-          </li>
-                  <li>
-            <a href="#types">Types</a>
-            <ol>
-              <li>
-                <a href="#type-fileSystem.ChooseFileOptions">fileSystem.ChooseFileOptions</a>
-                <ol>
-                </ol>
+                <a href="#method-getMediaFileSystems">getMediaFileSystems</a>
+              </li><li>
+                <a href="#method-openMediaGalleryManager">openMediaGalleryManager</a>
               </li>
             </ol>
           </li>
@@ -193,23 +189,15 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
-        <p class="warning">
-          <!-- Standard content lead-in for APIs that are not yet available on
-          the stable channel. -->
-          <em>Warning:</em> This API is still under development. It is only
-          available for Chrome users on the
-          <span>
-            <strong>dev</strong>
-              <a href="http://www.chromium.org/getting-involved/dev-channel">early
-              release channel</a>.</span>
-          <a href="TODO">Learn more</a>.
+        <p id="classSummary">
+          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"></div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.fileSystem</h2>
+        <h2>API reference: chrome.experimental.mediaGalleries</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -218,333 +206,28 @@
             <h3>Methods</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-chooseFile"></a> <!-- method-anchor -->
-              <h4>chooseFile</h4>
+              <a name="method-assembleMediaFile"></a> <!-- method-anchor -->
+              <h4>assembleMediaFile</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.fileSystem.chooseFile</span>(<span class="optional"><span>fileSystem.ChooseFileOptions</span>
-                      <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>FileEntryCallback</span></var></span>)</div>
+                  <span>chrome.experimental.mediaGalleries.assembleMediaFile</span>(<span class="optional"><span>object</span>
+                      <var><span>mediaFileContents</span></var></span><span class="optional"><span>, </span><span>object</span>
+                      <var><span>metadata</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
               <div class="description">
+                <p>Create a new MediaFile setting the metadata in the Blob to the supplied values, overriding any existing metadata in the media file. If user agent does not recognize the&nbsp;Blob as a supported file format, it will return null in the callback.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>options</var>
+            <var>mediaFileContents</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="fileSystem.html#type-fileSystem.ChooseFileOptions">fileSystem.ChooseFileOptions</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>FileEntryCallback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div>
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-          <dt>
-            <var>fileEntry</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>fileEntry</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div>
-          </dl>
-        </div>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-getDisplayPath"></a> <!-- method-anchor -->
-              <h4>getDisplayPath</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.fileSystem.getDisplayPath</span>(<span class="null"><span>FileEntry</span>
-                      <var><span>fileEntry</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>GetDisplayPathCallback</span></var></span>)</div>
-              <div class="description">
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>fileEntry</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>FileEntry</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>GetDisplayPathCallback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div>
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-          <dt>
-            <var>displayPath</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div>
-          </dl>
-        </div>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-getWritableFileEntry"></a> <!-- method-anchor -->
-              <h4>getWritableFileEntry</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.fileSystem.getWritableFileEntry</span>(<span class="null"><span>FileEntry</span>
-                      <var><span>fileEntry</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>FileEntryCallback</span></var></span>)</div>
-              <div class="description">
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>fileEntry</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>FileEntry</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>FileEntryCallback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-          <dd>
-            <div>
-          <h5>Parameters</h5>
-          <dl>
-            <div>
-              <div>
-          <dt>
-            <var>fileEntry</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>fileEntry</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div>
-          </dl>
-        </div>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div>  <!-- /apiItem -->
-          </div>  <!-- /apiGroup -->
-          <!-- EVENTS -->
-           <!-- /apiGroup -->
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a name="type-fileSystem.ChooseFileOptions"></a>
-              <h4>fileSystem.ChooseFileOptions</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
                     <span id="typeTemplate">
                       <span>
                         <span>object</span>
@@ -558,12 +241,14 @@
             Undocumented.
           </dd>
           <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
           <dt>
-            <var>type</var>
+            <var>metadata</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -571,28 +256,195 @@
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>object</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>type can be 'openFile' or 'saveFile'. Default is 'openFile'.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
-              </div>
-            </dl>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
           </dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
-            </div> <!-- /apiItem -->
-          </div> <!-- /apiGroup -->
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-extractEmbeddedThumbnails"></a> <!-- method-anchor -->
+              <h4>extractEmbeddedThumbnails</h4>
+              <div class="summary"><span>object</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.mediaGalleries.extractEmbeddedThumbnails</span>(<span class="optional"><span>object</span>
+                      <var><span>mediaFile</span></var></span>)</div>
+              <div class="description">
+                <p>Get any thumbnails contained in the passed media file. The resulting directory reader refers to a virtual directory that can not be navigated to. If there are no thumbnails in the passed file entry, the virtual directory will have no entries.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>mediaFile</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <h4>Returns</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getMediaFileSystems"></a> <!-- method-anchor -->
+              <h4>getMediaFileSystems</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.mediaGalleries.getMediaFileSystems</span>(<span class="null"><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Get the media galleries configured in this user agent. If none are configured or available, the callback will receive an empty array.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-openMediaGalleryManager"></a> <!-- method-anchor -->
+              <h4>openMediaGalleryManager</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.mediaGalleries.openMediaGalleryManager</span>()</div>
+              <div class="description">
+                <p>The user can configure which directories on their computer are exposed as media galleries. Calling this function will cause the UI which configures media galleris to be visible in the current tab.</p>
+                <!-- PARAMETERS -->
+                <dl>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div>  <!-- /apiItem -->
+          </div>  <!-- /apiGroup -->
+          <!-- EVENTS -->
+           <!-- /apiGroup -->
+          <!-- TYPES -->
+           <!-- /apiGroup -->
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
@@ -606,7 +458,7 @@
   <a rel="license" href="http://code.google.com/google_bsd_license.html">BSD License</a>.
   </p>
   <p>
-  ©2012 Google
+  ©2011 Google
   </p>
 <!-- begin analytics -->
 <script src="https://www.google-analytics.com/urchin.js" type="text/javascript"></script>
