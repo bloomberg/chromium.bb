@@ -11,8 +11,8 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/quota/quota_types.h"
 
@@ -53,26 +53,24 @@ class FileSystemTestOriginHelper {
   FilePath GetOriginRootPath() const;
   FilePath GetLocalPath(const FilePath& path);
   FilePath GetLocalPathFromASCII(const std::string& path);
-  GURL GetURLForPath(const FilePath& path) const;
 
   // Returns empty path if filesystem type is neither temporary nor persistent.
   FilePath GetUsageCachePath() const;
 
-  // Creates a new FileSystemPath for the given |path|.
-  FileSystemPath CreatePath(const FilePath& path) const;
-  FileSystemPath CreatePathFromUTF8(const std::string& utf8) const {
-    return CreatePath(FilePath::FromUTF8Unsafe(utf8));
+  FileSystemURL CreateURL(const FilePath& path) const;
+  FileSystemURL CreateURLFromUTF8(const std::string& utf8) const {
+    return CreateURL(FilePath::FromUTF8Unsafe(utf8));
   }
 
   // Helper methods for same-FileUtil copy/move.
   base::PlatformFileError SameFileUtilCopy(
       FileSystemOperationContext* context,
-      const FileSystemPath& src,
-      const FileSystemPath& dest) const;
+      const FileSystemURL& src,
+      const FileSystemURL& dest) const;
   base::PlatformFileError SameFileUtilMove(
       FileSystemOperationContext* context,
-      const FileSystemPath& src,
-      const FileSystemPath& dest) const;
+      const FileSystemURL& src,
+      const FileSystemURL& dest) const;
 
   // This returns cached usage size returned by QuotaUtil.
   int64 GetCachedOriginUsage() const;

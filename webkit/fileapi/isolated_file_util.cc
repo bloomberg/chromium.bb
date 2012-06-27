@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/native_file_util.h"
 
@@ -175,7 +175,7 @@ IsolatedFileUtil::IsolatedFileUtil() {
 
 PlatformFileError IsolatedFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
-    const FileSystemPath& path, int file_flags,
+    const FileSystemURL& url, int file_flags,
     PlatformFile* file_handle, bool* created) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -189,14 +189,14 @@ PlatformFileError IsolatedFileUtil::Close(
 
 PlatformFileError IsolatedFileUtil::EnsureFileExists(
     FileSystemOperationContext* context,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     bool* created) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
 PlatformFileError IsolatedFileUtil::CreateDirectory(
     FileSystemOperationContext* context,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     bool exclusive,
     bool recursive) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
@@ -204,14 +204,14 @@ PlatformFileError IsolatedFileUtil::CreateDirectory(
 
 PlatformFileError IsolatedFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     PlatformFileInfo* file_info,
     FilePath* platform_path) {
   DCHECK(file_info);
   std::string filesystem_id;
   FilePath root_unused, cracked_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          path.internal_path(), &filesystem_id, &root_unused, &cracked_path))
+          url.path(), &filesystem_id, &root_unused, &cracked_path))
     return base::PLATFORM_FILE_ERROR_SECURITY;
   if (cracked_path.empty()) {
     // The root directory case.
@@ -238,12 +238,12 @@ PlatformFileError IsolatedFileUtil::GetFileInfo(
 FileSystemFileUtil::AbstractFileEnumerator*
 IsolatedFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
-    const FileSystemPath& root,
+    const FileSystemURL& root,
     bool recursive) {
   std::string filesystem_id;
   FilePath root_path, cracked_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          root.internal_path(), &filesystem_id, &root_path, &cracked_path))
+          root.path(), &filesystem_id, &root_path, &cracked_path))
     return NULL;
 
   FilePath virtual_base_path =
@@ -260,27 +260,27 @@ IsolatedFileUtil::CreateFileEnumerator(
   std::vector<FilePath> toplevels;
   IsolatedContext::GetInstance()->GetTopLevelPaths(filesystem_id, &toplevels);
   if (!recursive)
-    return new SetFileEnumerator(toplevels, root.internal_path());
+    return new SetFileEnumerator(toplevels, root.path());
   return new RecursiveSetFileEnumerator(
-      virtual_base_path, toplevels, root.internal_path());
+      virtual_base_path, toplevels, root.path());
 }
 
 PlatformFileError IsolatedFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
-    const FileSystemPath& file_system_path,
+    const FileSystemURL& file_system_url,
     FilePath* local_file_path) {
-  if (GetPlatformPath(file_system_path, local_file_path))
+  if (GetPlatformPath(file_system_url, local_file_path))
     return base::PLATFORM_FILE_OK;
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
 PlatformFileError IsolatedFileUtil::Touch(
     FileSystemOperationContext* context,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   FilePath platform_path;
-  if (!GetPlatformPathForWrite(path, &platform_path) || platform_path.empty())
+  if (!GetPlatformPathForWrite(url, &platform_path) || platform_path.empty())
     return base::PLATFORM_FILE_ERROR_SECURITY;
   return NativeFileUtil::Touch(
       platform_path, last_access_time, last_modified_time);
@@ -288,19 +288,19 @@ PlatformFileError IsolatedFileUtil::Touch(
 
 PlatformFileError IsolatedFileUtil::Truncate(
     FileSystemOperationContext* context,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     int64 length) {
   FilePath platform_path;
-  if (!GetPlatformPathForWrite(path, &platform_path) || platform_path.empty())
+  if (!GetPlatformPathForWrite(url, &platform_path) || platform_path.empty())
     return base::PLATFORM_FILE_ERROR_SECURITY;
   return NativeFileUtil::Truncate(platform_path, length);
 }
 
 bool IsolatedFileUtil::PathExists(
     FileSystemOperationContext* context,
-    const FileSystemPath& path) {
+    const FileSystemURL& url) {
   FilePath platform_path;
-  if (!GetPlatformPath(path, &platform_path))
+  if (!GetPlatformPath(url, &platform_path))
     return false;
   if (platform_path.empty()) {
     // The root directory case.
@@ -311,9 +311,9 @@ bool IsolatedFileUtil::PathExists(
 
 bool IsolatedFileUtil::DirectoryExists(
     FileSystemOperationContext* context,
-    const FileSystemPath& path) {
+    const FileSystemURL& url) {
   FilePath platform_path;
-  if (!GetPlatformPath(path, &platform_path))
+  if (!GetPlatformPath(url, &platform_path))
     return false;
   if (platform_path.empty()) {
     // The root directory case.
@@ -324,11 +324,11 @@ bool IsolatedFileUtil::DirectoryExists(
 
 bool IsolatedFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
-    const FileSystemPath& path) {
+    const FileSystemURL& url) {
   std::string filesystem_id;
   FilePath platform_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          path.internal_path(), &filesystem_id,
+          url.path(), &filesystem_id,
           NULL, &platform_path))
     return false;
   if (platform_path.empty()) {
@@ -344,8 +344,8 @@ bool IsolatedFileUtil::IsDirectoryEmpty(
 
 PlatformFileError IsolatedFileUtil::CopyOrMoveFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
       bool copy) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -353,43 +353,41 @@ PlatformFileError IsolatedFileUtil::CopyOrMoveFile(
 PlatformFileError IsolatedFileUtil::CopyInForeignFile(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
-      const FileSystemPath& dest_path) {
+      const FileSystemURL& dest_url) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
 PlatformFileError IsolatedFileUtil::DeleteFile(
     FileSystemOperationContext* context,
-    const FileSystemPath& path) {
+    const FileSystemURL& url) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
 PlatformFileError IsolatedFileUtil::DeleteSingleDirectory(
     FileSystemOperationContext* context,
-    const FileSystemPath& path) {
+    const FileSystemURL& url) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-bool IsolatedFileUtil::GetPlatformPath(const FileSystemPath& virtual_path,
+bool IsolatedFileUtil::GetPlatformPath(const FileSystemURL& url,
                                        FilePath* platform_path) const {
   DCHECK(platform_path);
   std::string filesystem_id;
   FilePath root_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          virtual_path.internal_path(), &filesystem_id,
-          &root_path, platform_path))
+          url.path(), &filesystem_id, &root_path, platform_path))
     return false;
   return true;
 }
 
 bool IsolatedFileUtil::GetPlatformPathForWrite(
-    const FileSystemPath& virtual_path,
+    const FileSystemURL& url,
     FilePath* platform_path) const {
   DCHECK(platform_path);
   std::string filesystem_id;
   FilePath root_path;
   if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
-          virtual_path.internal_path(), &filesystem_id,
-          &root_path, platform_path))
+          url.path(), &filesystem_id, &root_path, platform_path))
     return false;
   return IsolatedContext::GetInstance()->IsWritable(filesystem_id);
 }

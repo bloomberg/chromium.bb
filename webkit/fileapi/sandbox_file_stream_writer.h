@@ -9,9 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_stream_writer.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
@@ -23,7 +24,7 @@ class LocalFileStreamWriter;
 class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,
-                          const GURL& url,
+                          const FileSystemURL& url,
                           int64 initial_offset);
   virtual ~SandboxFileStreamWriter();
 
@@ -64,14 +65,10 @@ class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
   FileSystemQuotaUtil* quota_util() const;
 
   scoped_refptr<FileSystemContext> file_system_context_;
-  const GURL url_;
+  FileSystemURL url_;
   int64 initial_offset_;
   scoped_ptr<LocalFileStreamWriter> local_file_writer_;
   net::CompletionCallback cancel_callback_;
-
-  GURL origin_;
-  FileSystemType file_system_type_;
-  FilePath virtual_path_;
 
   FilePath file_path_;
   int64 file_size_;

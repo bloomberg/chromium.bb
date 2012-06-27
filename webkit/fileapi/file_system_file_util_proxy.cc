@@ -30,8 +30,8 @@ class EnsureFileExistsHelper {
 
   void RunWork(FileSystemFileUtil* file_util,
                FileSystemOperationContext* context,
-               const FileSystemPath& path) {
-    error_ = file_util->EnsureFileExists(context, path, &created_);
+               const FileSystemURL& url) {
+    error_ = file_util->EnsureFileExists(context, url, &created_);
   }
 
   void Reply(const Proxy::EnsureFileExistsCallback& callback) {
@@ -51,9 +51,9 @@ class GetFileInfoHelper {
 
   void RunWork(FileSystemFileUtil* file_util,
                FileSystemOperationContext* context,
-               const FileSystemPath& path) {
+               const FileSystemURL& url) {
     error_ = file_util->GetFileInfo(
-        context, path, &file_info_, &platform_path_);
+        context, url, &file_info_, &platform_path_);
   }
 
   void Reply(const Proxy::GetFileInfoCallback& callback) {
@@ -74,8 +74,8 @@ class ReadDirectoryHelper {
 
   void RunWork(FileSystemFileUtil* file_util,
                FileSystemOperationContext* context,
-               const FileSystemPath& path) {
-    error_ = FileUtilHelper::ReadDirectory(context, file_util, path, &entries_);
+               const FileSystemURL& url) {
+    error_ = FileUtilHelper::ReadDirectory(context, file_util, url, &entries_);
   }
 
   void Reply(const Proxy::ReadDirectoryCallback& callback) {
@@ -95,12 +95,12 @@ class ReadDirectoryHelper {
 bool FileSystemFileUtilProxy::Delete(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     bool recursive,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       context->file_task_runner(), FROM_HERE,
-      Bind(&FileUtilHelper::Delete, context, file_util, path, recursive),
+      Bind(&FileUtilHelper::Delete, context, file_util, url, recursive),
       callback);
 }
 
@@ -108,13 +108,13 @@ bool FileSystemFileUtilProxy::Delete(
 bool FileSystemFileUtilProxy::CreateOrOpen(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
   return base::FileUtilProxy::RelayCreateOrOpen(
       context->file_task_runner(),
       Bind(&FileSystemFileUtil::CreateOrOpen, Unretained(file_util),
-           context, path, file_flags),
+           context, url, file_flags),
       Bind(&FileSystemFileUtil::Close, Unretained(file_util),
            context),
       callback);
@@ -125,13 +125,13 @@ bool FileSystemFileUtilProxy::Copy(
     FileSystemOperationContext* context,
     FileSystemFileUtil* src_util,
     FileSystemFileUtil* dest_util,
-    const FileSystemPath& src_path,
-    const FileSystemPath& dest_path,
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       context->file_task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Copy,
-           context, src_util, dest_util, src_path, dest_path),
+           context, src_util, dest_util, src_url, dest_url),
       callback);
 }
 
@@ -140,13 +140,13 @@ bool FileSystemFileUtilProxy::Move(
     FileSystemOperationContext* context,
       FileSystemFileUtil* src_util,
       FileSystemFileUtil* dest_util,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       context->file_task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Move,
-           context, src_util, dest_util, src_path, dest_path),
+           context, src_util, dest_util, src_url, dest_url),
       callback);
 }
 
@@ -154,13 +154,13 @@ bool FileSystemFileUtilProxy::Move(
 bool FileSystemFileUtilProxy::EnsureFileExists(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   EnsureFileExistsHelper* helper = new EnsureFileExistsHelper;
   return context->file_task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&EnsureFileExistsHelper::RunWork, Unretained(helper),
-             file_util, context, path),
+             file_util, context, url),
         Bind(&EnsureFileExistsHelper::Reply, Owned(helper), callback));
 }
 
@@ -168,14 +168,14 @@ bool FileSystemFileUtilProxy::EnsureFileExists(
 bool FileSystemFileUtilProxy::CreateDirectory(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       context->file_task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CreateDirectory, Unretained(file_util),
-           context, path, exclusive, recursive),
+           context, url, exclusive, recursive),
       callback);
 }
 
@@ -183,13 +183,13 @@ bool FileSystemFileUtilProxy::CreateDirectory(
 bool FileSystemFileUtilProxy::GetFileInfo(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   GetFileInfoHelper* helper = new GetFileInfoHelper;
   return context->file_task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&GetFileInfoHelper::RunWork, Unretained(helper),
-             file_util, context, path),
+             file_util, context, url),
         Bind(&GetFileInfoHelper::Reply, Owned(helper), callback));
 }
 
@@ -197,13 +197,13 @@ bool FileSystemFileUtilProxy::GetFileInfo(
 bool FileSystemFileUtilProxy::ReadDirectory(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   ReadDirectoryHelper* helper = new ReadDirectoryHelper;
   return context->file_task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&ReadDirectoryHelper::RunWork, Unretained(helper),
-             file_util, context, path),
+             file_util, context, url),
         Bind(&ReadDirectoryHelper::Reply, Owned(helper), callback));
 }
 
@@ -211,14 +211,14 @@ bool FileSystemFileUtilProxy::ReadDirectory(
 bool FileSystemFileUtilProxy::Touch(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       context->file_task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Touch, Unretained(file_util),
-           context, path, last_access_time, last_modified_time),
+           context, url, last_access_time, last_modified_time),
       callback);
 }
 
@@ -226,13 +226,13 @@ bool FileSystemFileUtilProxy::Touch(
 bool FileSystemFileUtilProxy::Truncate(
     FileSystemOperationContext* context,
     FileSystemFileUtil* file_util,
-    const FileSystemPath& path,
+    const FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       context->file_task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Truncate, Unretained(file_util),
-           context, path, length),
+           context, url, length),
       callback);
 }
 

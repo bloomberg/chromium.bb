@@ -46,7 +46,7 @@ int64 AdjustQuotaForOverlap(int64 quota,
 
 SandboxFileStreamWriter::SandboxFileStreamWriter(
     FileSystemContext* file_system_context,
-    const GURL& url,
+    const FileSystemURL& url,
     int64 initial_offset)
     : file_system_context_(file_system_context),
       url_(url),
@@ -57,14 +57,12 @@ SandboxFileStreamWriter::SandboxFileStreamWriter(
       has_pending_operation_(false),
       default_quota_(kint64max),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  const bool result = CrackFileSystemURL(
-      url_, &origin_, &file_system_type_, &virtual_path_);
-  DCHECK(result);
+  DCHECK(url_.is_valid());
 }
 
 SandboxFileStreamWriter::~SandboxFileStreamWriter() {
   if (quota_util())
-    quota_util()->proxy()->EndUpdateOrigin(origin_, file_system_type_);
+    quota_util()->proxy()->EndUpdateOrigin(url_.origin(), url_.type());
 }
 
 int SandboxFileStreamWriter::Write(
@@ -158,11 +156,11 @@ void SandboxFileStreamWriter::DidGetFileInfo(
     return;
   }
 
-  quota_util()->proxy()->StartUpdateOrigin(origin_, file_system_type_);
+  quota_util()->proxy()->StartUpdateOrigin(url_.origin(), url_.type());
   DCHECK(quota_manager_proxy->quota_manager());
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
-      origin_,
-      FileSystemTypeToQuotaStorageType(file_system_type_),
+      url_.origin(),
+      FileSystemTypeToQuotaStorageType(url_.type()),
       base::Bind(&SandboxFileStreamWriter::DidGetUsageAndQuota,
                  weak_factory_.GetWeakPtr(), callback));
 }
@@ -221,7 +219,7 @@ void SandboxFileStreamWriter::DidWrite(
       overlapped = 0;
     quota_util()->proxy()->UpdateOriginUsage(
         file_system_context_->quota_manager_proxy(),
-        origin_, file_system_type_, write_response - overlapped);
+        url_.origin(), url_.type(), write_response - overlapped);
   }
   total_bytes_written_ += write_response;
 
@@ -243,7 +241,7 @@ bool SandboxFileStreamWriter::CancelIfRequested() {
 
 FileSystemQuotaUtil* SandboxFileStreamWriter::quota_util() const {
   DCHECK(file_system_context_.get());
-  return file_system_context_->GetQuotaUtil(file_system_type_);
+  return file_system_context_->GetQuotaUtil(url_.type());
 }
 
 }  // namespace fileapi

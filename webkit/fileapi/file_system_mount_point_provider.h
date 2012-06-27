@@ -14,14 +14,13 @@
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
 
-class GURL;
-
 namespace webkit_blob {
 class FileStreamReader;
 }
 
 namespace fileapi {
 
+class FileSystemURL;
 class FileStreamWriter;
 class FileSystemContext;
 class FileSystemFileUtil;
@@ -82,9 +81,7 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
   // This method is usually dispatched by
   // FileSystemContext::CreateFileSystemOperation.
   virtual FileSystemOperationInterface* CreateFileSystemOperation(
-      const GURL& origin_url,
-      FileSystemType file_system_type,
-      const FilePath& virtual_path,
+      const FileSystemURL& url,
       FileSystemContext* context) const = 0;
 
   // Creates a new file stream reader for a given filesystem URL |url| with an
@@ -93,7 +90,7 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
   // This method itself does *not* check if the given path exists and is a
   // regular file.
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const = 0;
 
@@ -103,7 +100,7 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
   // This method itself does *not* check if the given path exists and is a
   // regular file.
   virtual FileStreamWriter* CreateFileStreamWriter(
-      const GURL& url,
+      const FileSystemURL& url,
       int64 offset,
       FileSystemContext* context) const = 0;
 

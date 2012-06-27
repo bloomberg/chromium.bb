@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
-#include "googleurl/src/gurl.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -32,15 +31,12 @@ IsolatedContext* isolated_context() {
   return IsolatedContext::GetInstance();
 }
 
-FilePath GetPathFromURL(const GURL& url, bool for_writing) {
-  GURL origin_url;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-  FilePath virtual_path;
-  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &virtual_path))
+FilePath GetPathFromURL(const FileSystemURL& url, bool for_writing) {
+  if (!url.is_valid() || url.type() != kFileSystemTypeIsolated)
     return FilePath();
   std::string fsid;
   FilePath path;
-  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, NULL, &path))
+  if (!isolated_context()->CrackIsolatedPath(url.path(), &fsid, NULL, &path))
     return FilePath();
   if (for_writing && !isolated_context()->IsWritable(fsid))
     return FilePath();
@@ -112,16 +108,14 @@ FilePath IsolatedMountPointProvider::GetPathForPermissionsCheck(
 
 FileSystemOperationInterface*
 IsolatedMountPointProvider::CreateFileSystemOperation(
-    const GURL& origin_url,
-    FileSystemType file_system_type,
-    const FilePath& virtual_path,
+    const FileSystemURL& url,
     FileSystemContext* context) const {
   return new FileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader*
 IsolatedMountPointProvider::CreateFileStreamReader(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
   FilePath path = GetPathFromURL(url, false);
@@ -130,7 +124,7 @@ IsolatedMountPointProvider::CreateFileStreamReader(
 }
 
 FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
   FilePath path = GetPathFromURL(url, true);

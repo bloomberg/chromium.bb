@@ -18,10 +18,12 @@
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
 using base::MessageLoopProxy;
 using content::BrowserThread;
+using fileapi::FileSystemURL;
 using fileapi::FileSystemOperationInterface;
 using webkit_blob::ShareableFileReference;
 
@@ -177,7 +179,7 @@ GDataFileSystemProxy::GDataFileSystemProxy(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
+void GDataFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
     const FileSystemOperationInterface::GetMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -200,8 +202,8 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
                  callback));
 }
 
-void GDataFileSystemProxy::Copy(const GURL& src_file_url,
-    const GURL& dest_file_url,
+void GDataFileSystemProxy::Copy(const FileSystemURL& src_file_url,
+    const FileSystemURL& dest_file_url,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -216,8 +218,8 @@ void GDataFileSystemProxy::Copy(const GURL& src_file_url,
   file_system_->Copy(src_file_path, dest_file_path, callback);
 }
 
-void GDataFileSystemProxy::Move(const GURL& src_file_url,
-    const GURL& dest_file_url,
+void GDataFileSystemProxy::Move(const FileSystemURL& src_file_url,
+    const FileSystemURL& dest_file_url,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -232,7 +234,7 @@ void GDataFileSystemProxy::Move(const GURL& src_file_url,
   file_system_->Move(src_file_path, dest_file_path, callback);
 }
 
-void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
+void GDataFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -254,7 +256,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
                  callback));
 }
 
-void GDataFileSystemProxy::Remove(const GURL& file_url, bool recursive,
+void GDataFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -269,7 +271,7 @@ void GDataFileSystemProxy::Remove(const GURL& file_url, bool recursive,
 }
 
 void GDataFileSystemProxy::CreateDirectory(
-    const GURL& file_url,
+    const FileSystemURL& file_url,
     bool exclusive,
     bool recursive,
     const FileSystemOperationInterface::StatusCallback& callback) {
@@ -285,7 +287,8 @@ void GDataFileSystemProxy::CreateDirectory(
   file_system_->CreateDirectory(file_path, exclusive, recursive, callback);
 }
 
-void GDataFileSystemProxy::Truncate(const GURL& file_url, int64 length,
+void GDataFileSystemProxy::Truncate(
+    const FileSystemURL& file_url, int64 length,
     const fileapi::FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -360,7 +363,7 @@ void GDataFileSystemProxy::DidTruncate(
 }
 
 void GDataFileSystemProxy::OpenFile(
-    const GURL& file_url,
+    const FileSystemURL& file_url,
     int file_flags,
     base::ProcessHandle peer_handle,
     const FileSystemOperationInterface::OpenFileCallback& callback) {
@@ -385,7 +388,7 @@ void GDataFileSystemProxy::OpenFile(
 }
 
 void GDataFileSystemProxy::CreateSnapshotFile(
-    const GURL& file_url,
+    const FileSystemURL& file_url,
     const FileSystemOperationInterface::SnapshotFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -436,7 +439,7 @@ void GDataFileSystemProxy::OnGetEntryInfoByPath(
 }
 
 void GDataFileSystemProxy::CreateWritableSnapshotFile(
-    const GURL& file_url,
+    const FileSystemURL& file_url,
     const fileapi::WritableSnapshotFile& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -464,14 +467,13 @@ GDataFileSystemProxy::~GDataFileSystemProxy() {
 }
 
 // static.
-bool GDataFileSystemProxy::ValidateUrl(const GURL& url, FilePath* file_path) {
+bool GDataFileSystemProxy::ValidateUrl(
+    const FileSystemURL& url, FilePath* file_path) {
   // what platform you're on.
-  FilePath raw_path;
-  fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
-  if (!fileapi::CrackFileSystemURL(url, NULL, &type, file_path) ||
-      type != fileapi::kFileSystemTypeExternal) {
+  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeExternal) {
     return false;
   }
+  *file_path = url.path();
   return true;
 }
 

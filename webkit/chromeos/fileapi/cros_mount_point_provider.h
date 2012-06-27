@@ -63,16 +63,14 @@ class CrosMountPointProvider
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
   virtual fileapi::FileSystemOperationInterface* CreateFileSystemOperation(
-      const GURL& origin_url,
-      fileapi::FileSystemType file_system_type,
-      const FilePath& virtual_path,
+      const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
-    const GURL& path,
+    const fileapi::FileSystemURL& path,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileStreamWriter* CreateFileStreamWriter(
-    const GURL& url,
+    const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;

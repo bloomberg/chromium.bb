@@ -48,8 +48,8 @@ class LocalFileUtilTest : public testing::Test {
     return local_file_util_.get();
   }
 
-  FileSystemPath Path(const std::string& file_name) {
-    return test_helper_.CreatePathFromUTF8(file_name);
+  FileSystemURL Path(const std::string& file_name) {
+    return test_helper_.CreateURLFromUTF8(file_name);
   }
 
   FilePath LocalPath(const char *file_name) {

@@ -135,22 +135,20 @@ FilePath TestMountPointProvider::GetPathForPermissionsCheck(
 
 FileSystemOperationInterface*
 TestMountPointProvider::CreateFileSystemOperation(
-    const GURL& origin_url,
-    FileSystemType file_system_type,
-    const FilePath& virtual_path,
+    const FileSystemURL& url,
     FileSystemContext* context) const {
   return new FileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader* TestMountPointProvider::CreateFileStreamReader(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
   return new FileSystemFileStreamReader(context, url, offset);
 }
 
 fileapi::FileStreamWriter* TestMountPointProvider::CreateFileStreamWriter(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
   return new SandboxFileStreamWriter(context, url, offset);

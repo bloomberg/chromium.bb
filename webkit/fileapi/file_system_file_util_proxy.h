@@ -22,7 +22,7 @@ using base::PlatformFileInfo;
 
 class FileSystemFileUtil;
 class FileSystemOperationContext;
-class FileSystemPath;
+class FileSystemURL;
 
 // This class provides asynchronous access to FileSystemFileUtil methods for
 // FileSystem API operations.  This also implements cross-FileUtil copy/move
@@ -50,7 +50,7 @@ class FileSystemFileUtilProxy {
   static bool Delete(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       bool recursive,
       const StatusCallback& callback);
 
@@ -59,11 +59,11 @@ class FileSystemFileUtilProxy {
   static bool CreateOrOpen(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback);
 
-  // Copies a file or a directory from |src_path| to |dest_path| by calling
+  // Copies a file or a directory from |src_url| to |dest_url| by calling
   // FileSystemFileUtil's following methods on the given context's
   // file_task_runner.
   // - CopyOrMoveFile() for same-filesystem operations
@@ -71,20 +71,20 @@ class FileSystemFileUtilProxy {
   //
   // Error cases:
   // If destination's parent doesn't exist.
-  // If source dir exists but destination path is an existing file.
-  // If source file exists but destination path is an existing directory.
+  // If source dir exists but destination url is an existing file.
+  // If source file exists but destination url is an existing directory.
   // If source is a parent of destination.
   // If source doesn't exist.
-  // If source and dest are the same path in the same filesystem.
+  // If source and dest are the same url in the same filesystem.
   static bool Copy(
       FileSystemOperationContext* context,
       FileSystemFileUtil* src_util,
       FileSystemFileUtil* dest_util,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
       const StatusCallback& callback);
 
-  // Moves a file or a directory from |src_path| to |dest_path| by calling
+  // Moves a file or a directory from |src_url| to |dest_url| by calling
   // FileSystemFileUtil's following methods on the given context's
   // file_task_runner.
   // - CopyOrMoveFile() for same-filesystem operations
@@ -95,24 +95,24 @@ class FileSystemFileUtilProxy {
       FileSystemOperationContext* context,
       FileSystemFileUtil* src_util,
       FileSystemFileUtil* dest_util,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
       const StatusCallback& callback);
 
-  // Ensures that the given |path| exist by calling |file_util|'s
+  // Ensures that the given |url| exist by calling |file_util|'s
   // EnsureFileExists method on the given context's file_task_runner.
   static bool EnsureFileExists(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       const EnsureFileExistsCallback& callback);
 
-  // Creates directory at a given path by calling |file_util|'s
+  // Creates directory at a given url by calling |file_util|'s
   // CreateDirectory method on the given context's file_task_runner.
   static bool CreateDirectory(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback);
@@ -122,16 +122,16 @@ class FileSystemFileUtilProxy {
   static bool GetFileInfo(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       const GetFileInfoCallback& callback);
 
-  // Reads the filenames in |path| by calling |file_util|'s
+  // Reads the filenames in |url| by calling |file_util|'s
   // ReadDirectory method on the given context's file_task_runner.
   // TODO: this should support returning entries in multiple chunks.
   static bool ReadDirectory(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       const ReadDirectoryCallback& callback);
 
   // Touches a file by calling |file_util|'s Touch method
@@ -139,7 +139,7 @@ class FileSystemFileUtilProxy {
   static bool Touch(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback);
@@ -149,7 +149,7 @@ class FileSystemFileUtilProxy {
   static bool Truncate(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       int64 length,
       const StatusCallback& callback);
 

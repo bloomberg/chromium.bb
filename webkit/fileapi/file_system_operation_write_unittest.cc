@@ -94,8 +94,8 @@ class FileSystemOperationWriteTest
   virtual void TearDown();
 
  protected:
-  GURL URLForPath(const FilePath& path) const {
-    return test_helper_.GetURLForPath(path);
+  FileSystemURL URLForPath(const FilePath& path) const {
+    return test_helper_.CreateURL(path);
   }
 
   // Callback function for recording test results.

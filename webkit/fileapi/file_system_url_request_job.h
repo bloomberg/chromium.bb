@@ -14,6 +14,7 @@
 #include "base/platform_file.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/fileapi_export.h"
 
 class GURL;
@@ -66,6 +67,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemURLRequestJob
   FileSystemContext* file_system_context_;
   base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
   scoped_ptr<webkit_blob::FileStreamReader> reader_;
+  FileSystemURL url_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   int64 remaining_bytes_;

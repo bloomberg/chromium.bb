@@ -15,11 +15,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "googleurl/src/gurl.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace base {
@@ -35,13 +35,12 @@ class URLRequest;
 class URLRequestContext;
 }  // namespace net
 
-class GURL;
-
 namespace fileapi {
 
 class FileSystemContext;
-class FileWriterDelegate;
 class FileSystemOperationTest;
+class FileSystemURL;
+class FileWriterDelegate;
 
 // FileSystemOperation implementation for local file systems.
 class FILEAPI_EXPORT FileSystemOperation
@@ -50,61 +49,60 @@ class FILEAPI_EXPORT FileSystemOperation
   virtual ~FileSystemOperation();
 
   // FileSystemOperation overrides.
-  virtual void CreateFile(const GURL& path_url,
+  virtual void CreateFile(const FileSystemURL& url,
                           bool exclusive,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const GURL& path_url,
+  virtual void CreateDirectory(const FileSystemURL& url,
                                bool exclusive,
                                bool recursive,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void Copy(const GURL& src_path_url,
-                    const GURL& dest_path_url,
+  virtual void Copy(const FileSystemURL& src_url,
+                    const FileSystemURL& dest_url,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void Move(const GURL& src_path_url,
-                    const GURL& dest_path_url,
+  virtual void Move(const FileSystemURL& src_url,
+                    const FileSystemURL& dest_url,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void DirectoryExists(const GURL& path_url,
+  virtual void DirectoryExists(const FileSystemURL& url,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void FileExists(const GURL& path_url,
+  virtual void FileExists(const FileSystemURL& url,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void GetMetadata(const GURL& path_url,
+  virtual void GetMetadata(const FileSystemURL& url,
                            const GetMetadataCallback& callback) OVERRIDE;
-  virtual void ReadDirectory(const GURL& path_url,
+  virtual void ReadDirectory(const FileSystemURL& url,
                              const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void Remove(const GURL& path_url, bool recursive,
+  virtual void Remove(const FileSystemURL& url, bool recursive,
                       const StatusCallback& callback) OVERRIDE;
   virtual void Write(const net::URLRequestContext* url_request_context,
-                     const GURL& path_url,
+                     const FileSystemURL& url,
                      const GURL& blob_url,
                      int64 offset,
                      const WriteCallback& callback) OVERRIDE;
-  virtual void Truncate(const GURL& path_url, int64 length,
+  virtual void Truncate(const FileSystemURL& url, int64 length,
                         const StatusCallback& callback) OVERRIDE;
-  virtual void TouchFile(const GURL& path_url,
+  virtual void TouchFile(const FileSystemURL& url,
                          const base::Time& last_access_time,
                          const base::Time& last_modified_time,
                          const StatusCallback& callback) OVERRIDE;
-  virtual void OpenFile(const GURL& path_url,
+  virtual void OpenFile(const FileSystemURL& url,
                         int file_flags,
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual FileSystemOperation* AsFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(
-      const GURL& path,
+      const FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
 
-  // Synchronously gets the platform path for the given |path_url|.
-  void SyncGetPlatformPath(const GURL& path_url, FilePath* platform_path);
+  // Synchronously gets the platform path for the given |url|.
+  void SyncGetPlatformPath(const FileSystemURL& url, FilePath* platform_path);
 
  private:
   class ScopedQuotaNotifier;
 
-  // Modes for SetUpFileSystemPath.
-  enum SetUpPathMode {
-    PATH_FOR_READ,
-    PATH_FOR_WRITE,
-    PATH_FOR_CREATE,
+  enum SetUpMode {
+    SETUP_FOR_READ,
+    SETUP_FOR_WRITE,
+    SETUP_FOR_CREATE,
   };
 
   // A struct to pass arguments to DidGetUsageAndQuotaAndRunTask
@@ -112,8 +110,7 @@ class FILEAPI_EXPORT FileSystemOperation
   struct TaskParamsForDidGetQuota {
     TaskParamsForDidGetQuota();
     ~TaskParamsForDidGetQuota();
-    GURL origin;
-    FileSystemType type;
+    FileSystemURL url;
     base::Closure task;
     base::Closure error_callback;
   };
@@ -153,8 +150,7 @@ class FILEAPI_EXPORT FileSystemOperation
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.
   void GetUsageAndQuotaThenRunTask(
-      const GURL& origin,
-      FileSystemType type,
+      const FileSystemURL& url,
       const base::Closure& task,
       const base::Closure& error_callback);
 
@@ -170,14 +166,22 @@ class FILEAPI_EXPORT FileSystemOperation
 
   // The 'body' methods that perform the actual work (i.e. posting the
   // file task on proxy_) after the quota check.
-  void DoCreateFile(const StatusCallback& callback, bool exclusive);
-  void DoCreateDirectory(const StatusCallback& callback,
+  void DoCreateFile(const FileSystemURL& url,
+                    const StatusCallback& callback, bool exclusive);
+  void DoCreateDirectory(const FileSystemURL& url,
+                         const StatusCallback& callback,
                          bool exclusive,
                          bool recursive);
-  void DoCopy(const StatusCallback& callback);
-  void DoMove(const StatusCallback& callback);
-  void DoTruncate(const StatusCallback& callback, int64 length);
-  void DoOpenFile(const OpenFileCallback& callback, int file_flags);
+  void DoCopy(const FileSystemURL& src,
+              const FileSystemURL& dest,
+              const StatusCallback& callback);
+  void DoMove(const FileSystemURL& src,
+              const FileSystemURL& dest,
+              const StatusCallback& callback);
+  void DoTruncate(const FileSystemURL& url,
+                  const StatusCallback& callback, int64 length);
+  void DoOpenFile(const FileSystemURL& url,
+                  const OpenFileCallback& callback, int file_flags);
 
   // Callback for CreateFile for |exclusive|=true cases.
   void DidEnsureFileExistsExclusive(const StatusCallback& callback,
@@ -219,21 +223,17 @@ class FILEAPI_EXPORT FileSystemOperation
                    base::PassPlatformFile file,
                    bool created);
 
-  // Checks the validity of a given |path_url| and and populates
-  // |path| and |file_util| for |mode|.
-  base::PlatformFileError SetUpFileSystemPath(
-      const GURL& path_url,
-      FileSystemPath* file_system_path,
+  // Checks the validity of a given |url| and populates |file_util| for |mode|.
+  base::PlatformFileError SetUp(
+      const FileSystemURL& url,
       FileSystemFileUtil** file_util,
-      SetUpPathMode mode);
+      SetUpMode mode);
 
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);
 
   FileSystemOperationContext operation_context_;
-  FileSystemPath src_path_;
-  FileSystemPath dest_path_;
   FileSystemFileUtil* src_util_;  // Not owned.
   FileSystemFileUtil* dest_util_;  // Not owned.
 

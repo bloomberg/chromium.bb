@@ -11,9 +11,11 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
+using fileapi::FileSystemURL;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationInterface;
 using fileapi::WebFileWriterBase;
@@ -49,7 +51,7 @@ class SimpleFileWriter::IOThreadProxy
     }
     DCHECK(!operation_);
     operation_ = GetNewOperation(path);
-    operation_->Truncate(path, offset,
+    operation_->Truncate(FileSystemURL(path), offset,
                          base::Bind(&IOThreadProxy::DidFinish, this));
   }
 
@@ -63,7 +65,7 @@ class SimpleFileWriter::IOThreadProxy
     DCHECK(request_context_);
     DCHECK(!operation_);
     operation_ = GetNewOperation(path);
-    operation_->Write(request_context_, path, blob_url, offset,
+    operation_->Write(request_context_, FileSystemURL(path), blob_url, offset,
                       base::Bind(&IOThreadProxy::DidWrite, this));
   }
 
@@ -86,7 +88,7 @@ class SimpleFileWriter::IOThreadProxy
   virtual ~IOThreadProxy() {}
 
   FileSystemOperationInterface* GetNewOperation(const GURL& path) {
-    return file_system_context_->CreateFileSystemOperation(path);
+    return file_system_context_->CreateFileSystemOperation(FileSystemURL(path));
   }
 
   void DidSucceedOnMainThread() {

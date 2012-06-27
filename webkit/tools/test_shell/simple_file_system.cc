@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/blob/blob_storage_controller.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/glue/webkit_glue.h"
@@ -42,6 +43,7 @@ using WebKit::WebVector;
 
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
+using fileapi::FileSystemURL;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationInterface;
 
@@ -118,58 +120,65 @@ void SimpleFileSystem::OpenFileSystem(
 void SimpleFileSystem::move(
     const WebURL& src_path,
     const WebURL& dest_path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(src_path)->Move(GURL(src_path), GURL(dest_path),
+  GetNewOperation(src_path)->Move(FileSystemURL(src_path),
+                                  FileSystemURL(dest_path),
                                   FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::copy(
     const WebURL& src_path, const WebURL& dest_path,
     WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(src_path)->Copy(GURL(src_path), GURL(dest_path),
+  GetNewOperation(src_path)->Copy(FileSystemURL(src_path),
+                                  FileSystemURL(dest_path),
                                   FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::remove(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->Remove(path, false /* recursive */,
+  GetNewOperation(path)->Remove(FileSystemURL(path), false /* recursive */,
                                 FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::removeRecursively(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->Remove(path, true /* recursive */,
+  GetNewOperation(path)->Remove(FileSystemURL(path), true /* recursive */,
                                 FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::readMetadata(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->GetMetadata(path, GetMetadataHandler(callbacks));
+  GetNewOperation(path)->GetMetadata(FileSystemURL(path),
+                                     GetMetadataHandler(callbacks));
 }
 
 void SimpleFileSystem::createFile(
     const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->CreateFile(path, exclusive, FinishHandler(callbacks));
+  GetNewOperation(path)->CreateFile(FileSystemURL(path), exclusive,
+                                    FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::createDirectory(
     const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->CreateDirectory(path, exclusive, false,
+  GetNewOperation(path)->CreateDirectory(FileSystemURL(path), exclusive, false,
                                          FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::fileExists(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->FileExists(path, FinishHandler(callbacks));
+  GetNewOperation(path)->FileExists(FileSystemURL(path),
+                                    FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::directoryExists(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->DirectoryExists(path, FinishHandler(callbacks));
+  GetNewOperation(path)->DirectoryExists(FileSystemURL(path),
+                                         FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::readDirectory(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->ReadDirectory(path, ReadDirectoryHandler(callbacks));
+  GetNewOperation(path)->ReadDirectory(FileSystemURL(path),
+                                       ReadDirectoryHandler(callbacks));
 }
 
 WebFileWriter* SimpleFileSystem::createFileWriter(
@@ -182,7 +191,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
   GetNewOperation(path)->CreateSnapshotFile(
-      path, SnapshotFileHandler(blobURL, callbacks));
+      FileSystemURL(path), SnapshotFileHandler(blobURL, callbacks));
 }
 
 // static
@@ -200,7 +209,7 @@ void SimpleFileSystem::CleanupOnIOThread() {
 
 FileSystemOperationInterface* SimpleFileSystem::GetNewOperation(
     const WebURL& url) {
-  return file_system_context_->CreateFileSystemOperation(GURL(url));
+  return file_system_context_->CreateFileSystemOperation(FileSystemURL(url));
 }
 
 FileSystemOperationInterface::StatusCallback

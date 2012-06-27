@@ -28,7 +28,7 @@ class FILEAPI_EXPORT_PRIVATE IsolatedFileUtil : public FileSystemFileUtil {
   // FileSystemFileUtil overrides.
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       int file_flags,
       base::PlatformFile* file_handle,
       bool* created) OVERRIDE;
@@ -37,67 +37,67 @@ class FILEAPI_EXPORT_PRIVATE IsolatedFileUtil : public FileSystemFileUtil {
       base::PlatformFile file) OVERRIDE;
   virtual base::PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path, bool* created) OVERRIDE;
+      const FileSystemURL& url, bool* created) OVERRIDE;
   virtual base::PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       bool exclusive,
       bool recursive) OVERRIDE;
   virtual base::PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
       FilePath* platform_path) OVERRIDE;
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemPath& root_path,
+      const FileSystemURL& root_url,
       bool recursive) OVERRIDE;
   virtual PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
-      const FileSystemPath& file_system_path,
+      const FileSystemURL& file_system_url,
       FilePath* local_file_path) OVERRIDE;
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
   virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       int64 length) OVERRIDE;
   virtual bool PathExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
   virtual bool DirectoryExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
       bool copy) OVERRIDE;
   virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
         const FilePath& src_file_path,
-        const FileSystemPath& dest_path) OVERRIDE;
+        const FileSystemURL& dest_url) OVERRIDE;
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
   virtual base::PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
 
  private:
-  // Returns false if the given |virtual_path| is not a valid path.
-  bool GetPlatformPath(const FileSystemPath& virtual_path,
+  // Returns false if the given |url| is not a valid path.
+  bool GetPlatformPath(const FileSystemURL& url,
                        FilePath* platform_path) const;
 
-  // Returns false if the given |virtual_path| is not a valid path, or
+  // Returns false if the given |url| is not a valid path, or
   // the file system is not writable.
-  bool GetPlatformPathForWrite(const FileSystemPath& virtual_path,
+  bool GetPlatformPathForWrite(const FileSystemURL& url,
                                FilePath* platform_path) const;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtil);

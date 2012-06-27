@@ -116,18 +116,13 @@ FilePath FileSystemTestOriginHelper::GetLocalPath(const FilePath& path) {
   DCHECK(file_util_);
   FilePath local_path;
   scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
-  file_util_->GetLocalFilePath(context.get(), CreatePath(path), &local_path);
+  file_util_->GetLocalFilePath(context.get(), CreateURL(path), &local_path);
   return local_path;
 }
 
 FilePath FileSystemTestOriginHelper::GetLocalPathFromASCII(
     const std::string& path) {
   return GetLocalPath(FilePath().AppendASCII(path));
-}
-
-GURL FileSystemTestOriginHelper::GetURLForPath(const FilePath& path) const {
-  return GURL(GetFileSystemRootURI(origin_, type_).spec() +
-              path.MaybeAsASCII());
 }
 
 FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
@@ -138,22 +133,22 @@ FilePath FileSystemTestOriginHelper::GetUsageCachePath() const {
       sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
 }
 
-FileSystemPath FileSystemTestOriginHelper::CreatePath(
-    const FilePath& path) const {
-  return FileSystemPath(origin_, type_, path);
+FileSystemURL FileSystemTestOriginHelper::CreateURL(const FilePath& path)
+    const {
+  return FileSystemURL(origin_, type_, path);
 }
 
 base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilCopy(
     FileSystemOperationContext* context,
-    const FileSystemPath& src,
-    const FileSystemPath& dest) const {
+    const FileSystemURL& src,
+    const FileSystemURL& dest) const {
   return FileUtilHelper::Copy(context, file_util(), file_util(), src, dest);
 }
 
 base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilMove(
     FileSystemOperationContext* context,
-    const FileSystemPath& src,
-    const FileSystemPath& dest) const {
+    const FileSystemURL& src,
+    const FileSystemURL& dest) const {
   return FileUtilHelper::Move(context, file_util(), file_util(), src, dest);
 }
 

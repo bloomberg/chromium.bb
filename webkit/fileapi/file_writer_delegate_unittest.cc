@@ -86,12 +86,8 @@ class FileWriterDelegateTest : public PlatformTest {
     return test_helper_.ComputeCurrentOriginUsage();
   }
 
-  FileSystemPath GetFileSystemPath(const char* file_name) const {
-    return test_helper_.CreatePathFromUTF8(file_name);
-  }
-
-  GURL GetFileSystemURL(const char* file_name) const {
-    return test_helper_.GetURLForPath(FilePath().AppendASCII(file_name));
+  FileSystemURL GetFileSystemURL(const char* file_name) const {
+    return test_helper_.CreateURLFromUTF8(file_name);
   }
 
   FileWriterDelegate* CreateWriterDelegate(
@@ -209,7 +205,7 @@ void FileWriterDelegateTest::SetUp() {
   bool created = false;
   base::PlatformFileError error = file_util()->EnsureFileExists(
       context.get(),
-      GetFileSystemPath("test"),
+      GetFileSystemURL("test"),
       &created);
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
   ASSERT_TRUE(created);
@@ -332,7 +328,7 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimitConcurrent) {
       test_helper_.NewOperationContext());
   bool created = false;
   file_util()->EnsureFileExists(context.get(),
-                                GetFileSystemPath("test2"),
+                                GetFileSystemURL("test2"),
                                 &created);
   ASSERT_TRUE(created);
 

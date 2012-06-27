@@ -10,6 +10,10 @@
 
 class Profile;
 
+namespace fileapi {
+class FileSystemURL;
+}
+
 namespace gdata {
 
 class GDataEntry;
@@ -25,39 +29,46 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   explicit GDataFileSystemProxy(GDataFileSystemInterface* file_system);
 
   // fileapi::RemoteFileSystemProxyInterface overrides.
-  virtual void GetFileInfo(const GURL& path,
+  virtual void GetFileInfo(
+      const fileapi::FileSystemURL& url,
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback) OVERRIDE;
-  virtual void Copy(const GURL& src_path, const GURL& dest_path,
+  virtual void Copy(
+      const fileapi::FileSystemURL& src_url,
+      const fileapi::FileSystemURL& dest_url,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback)
           OVERRIDE;
-  virtual void Move(const GURL& src_path, const GURL& dest_path,
+  virtual void Move(
+      const fileapi::FileSystemURL& src_url,
+      const fileapi::FileSystemURL& dest_url,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback)
           OVERRIDE;
-  virtual void ReadDirectory(const GURL& path,
+  virtual void ReadDirectory(const fileapi::FileSystemURL& url,
      const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
          callback) OVERRIDE;
-  virtual void Remove(const GURL& path, bool recursive,
+  virtual void Remove(
+      const fileapi::FileSystemURL& url, bool recursive,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback)
           OVERRIDE;
   virtual void CreateDirectory(
-      const GURL& file_url,
+      const fileapi::FileSystemURL& file_url,
       bool exclusive,
       bool recursive,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback)
           OVERRIDE;
-  virtual void Truncate(const GURL& file_url, int64 length,
+  virtual void Truncate(
+      const fileapi::FileSystemURL& file_url, int64 length,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback)
           OVERRIDE;
   virtual void CreateSnapshotFile(
-      const GURL& path,
+      const fileapi::FileSystemURL& url,
       const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
       callback) OVERRIDE;
   virtual void CreateWritableSnapshotFile(
-      const GURL& path,
+      const fileapi::FileSystemURL& url,
       const fileapi::WritableSnapshotFile& callback) OVERRIDE;
   virtual void OpenFile(
-      const GURL& path,
+      const fileapi::FileSystemURL& url,
       int file_flags,
       base::ProcessHandle peer_handle,
       const fileapi::FileSystemOperationInterface::OpenFileCallback&
@@ -71,7 +82,8 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Checks if a given |url| belongs to this file system. If it does,
   // the call will return true and fill in |file_path| with a file path of
   // a corresponding element within this file system.
-  static bool ValidateUrl(const GURL& url, FilePath* file_path);
+  static bool ValidateUrl(const fileapi::FileSystemURL& url,
+                          FilePath* file_path);
 
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.

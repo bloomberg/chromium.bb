@@ -13,12 +13,12 @@
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_directory_database.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_origin_database.h"
-#include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace base {
 struct PlatformFileInfo;
@@ -59,7 +59,7 @@ class FILEAPI_EXPORT_PRIVATE ObfuscatedFileUtil : public FileSystemFileUtil {
 
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       int file_flags,
       base::PlatformFile* file_handle,
       bool* created) OVERRIDE;
@@ -70,71 +70,71 @@ class FILEAPI_EXPORT_PRIVATE ObfuscatedFileUtil : public FileSystemFileUtil {
 
   virtual base::PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path, bool* created) OVERRIDE;
+      const FileSystemURL& url, bool* created) OVERRIDE;
 
   virtual base::PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       bool exclusive,
       bool recursive) OVERRIDE;
 
   virtual base::PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
       FilePath* platform_file) OVERRIDE;
 
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemPath& root_path,
+      const FileSystemURL& root_url,
       bool recursive) OVERRIDE;
 
   virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
-      const FileSystemPath& file_system_path,
+      const FileSystemURL& file_system_url,
       FilePath* local_path) OVERRIDE;
 
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
 
   virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* context,
-      const FileSystemPath& path,
+      const FileSystemURL& url,
       int64 length) OVERRIDE;
 
   virtual bool PathExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
 
   virtual bool DirectoryExists(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
 
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
 
   virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
-      const FileSystemPath& dest_path,
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
       bool copy) OVERRIDE;
 
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
         const FilePath& src_file_path,
-        const FileSystemPath& dest_path) OVERRIDE;
+        const FileSystemURL& dest_url) OVERRIDE;
 
   virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
 
   virtual base::PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
-      const FileSystemPath& path) OVERRIDE;
+      const FileSystemURL& url) OVERRIDE;
 
   // Gets the topmost directory specific to this origin and type.  This will
   // contain both the directory database's files and all the backing file

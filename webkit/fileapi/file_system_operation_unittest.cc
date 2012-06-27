@@ -204,8 +204,8 @@ class FileSystemOperationTest
     return context;
   }
 
-  GURL URLForPath(const FilePath& path) const {
-    return test_helper_.GetURLForPath(path);
+  FileSystemURL URLForPath(const FilePath& path) const {
+    return test_helper_.CreateURL(path);
   }
 
   FilePath PlatformPath(const FilePath& virtual_path) {
@@ -213,7 +213,7 @@ class FileSystemOperationTest
   }
 
   bool FileExists(const FilePath& virtual_path) {
-    FileSystemPath path = test_helper_.CreatePath(virtual_path);
+    FileSystemURL path = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     if (!file_util()->PathExists(context.get(), path))
       return false;
@@ -223,35 +223,35 @@ class FileSystemOperationTest
   }
 
   bool DirectoryExists(const FilePath& virtual_path) {
-    FileSystemPath path = test_helper_.CreatePath(virtual_path);
+    FileSystemURL url = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return file_util()->DirectoryExists(context.get(), path);
+    return file_util()->DirectoryExists(context.get(), url);
   }
 
   FilePath CreateUniqueFileInDir(const FilePath& virtual_dir_path) {
     FilePath file_name = FilePath::FromUTF8Unsafe(
         "tmpfile-" + base::IntToString(next_unique_path_suffix_++));
-    FileSystemPath path = test_helper_.CreatePath(
+    FileSystemURL url = test_helper_.CreateURL(
         virtual_dir_path.Append(file_name));
 
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     bool created;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              file_util()->EnsureFileExists(context.get(), path, &created));
+              file_util()->EnsureFileExists(context.get(), url, &created));
     EXPECT_TRUE(created);
-    return path.internal_path();
+    return url.path();
   }
 
   FilePath CreateUniqueDirInDir(const FilePath& virtual_dir_path) {
     FilePath dir_name = FilePath::FromUTF8Unsafe(
         "tmpdir-" + base::IntToString(next_unique_path_suffix_++));
-    FileSystemPath path = test_helper_.CreatePath(
+    FileSystemURL url = test_helper_.CreateURL(
         virtual_dir_path.Append(dir_name));
 
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              file_util()->CreateDirectory(context.get(), path, false, true));
-    return path.internal_path();
+              file_util()->CreateDirectory(context.get(), url, false, true));
+    return url.path();
   }
 
   FilePath CreateUniqueDir() {
@@ -412,8 +412,8 @@ FileSystemOperation* FileSystemOperationTest::operation() {
 }
 
 TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
-  GURL src(URLForPath(FilePath(FILE_PATH_LITERAL("a"))));
-  GURL dest(URLForPath(FilePath(FILE_PATH_LITERAL("b"))));
+  FileSystemURL src(URLForPath(FilePath(FILE_PATH_LITERAL("a"))));
+  FileSystemURL dest(URLForPath(FilePath(FILE_PATH_LITERAL("b"))));
   operation()->Move(src, dest, RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());

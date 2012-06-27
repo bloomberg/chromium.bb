@@ -221,16 +221,16 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   int64 usage() const { return usage_; }
 
-  FileSystemPath CreatePathFromUTF8(const std::string& path) {
-    return test_helper_.CreatePathFromUTF8(path);
+  FileSystemURL CreateURLFromUTF8(const std::string& path) {
+    return test_helper_.CreateURLFromUTF8(path);
   }
 
-  int64 PathCost(const FileSystemPath& path) {
-    return ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path());
+  int64 PathCost(const FileSystemURL& url) {
+    return ObfuscatedFileUtil::ComputeFilePathCost(url.path());
   }
 
-  FileSystemPath CreatePath(const FilePath& path) {
-    return test_helper_.CreatePath(path);
+  FileSystemURL CreateURL(const FilePath& path) {
+    return test_helper_.CreateURL(path);
   }
 
   void OnGetUsage(quota::QuotaStatusCode status, int64 usage, int64 unused) {
@@ -240,16 +240,16 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   void CheckFileAndCloseHandle(
-      const FileSystemPath& virtual_path, PlatformFile file_handle) {
+      const FileSystemURL& url, PlatformFile file_handle) {
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     FilePath local_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
-        context.get(), virtual_path, &local_path));
+        context.get(), url, &local_path));
 
     base::PlatformFileInfo file_info0;
     FilePath data_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-        context.get(), virtual_path, &file_info0, &data_path));
+        context.get(), url, &file_info0, &data_path));
     EXPECT_EQ(data_path, local_path);
     EXPECT_TRUE(FileExists(data_path));
     EXPECT_EQ(0, GetSize(data_path));
@@ -276,7 +276,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     EXPECT_EQ(length, GetSize(data_path));
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-        context.get(), virtual_path, &file_info1, &data_path));
+        context.get(), url, &file_info1, &data_path));
     EXPECT_EQ(data_path, local_path);
 
     EXPECT_FALSE(file_info0.is_directory);
@@ -289,17 +289,17 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->Truncate(
-        context.get(), virtual_path, length * 2));
+        context.get(), url, length * 2));
     EXPECT_EQ(length * 2, GetSize(data_path));
 
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->Truncate(
-        context.get(), virtual_path, 0));
+        context.get(), url, 0));
     EXPECT_EQ(0, GetSize(data_path));
   }
 
   void ValidateTestDirectory(
-      const FileSystemPath& root_path,
+      const FileSystemURL& root_url,
       const std::set<FilePath::StringType>& files,
       const std::set<FilePath::StringType>& directories) {
     scoped_ptr<FileSystemOperationContext> context;
@@ -309,14 +309,14 @@ class ObfuscatedFileUtilTest : public testing::Test {
       context.reset(NewContext(NULL));
       ASSERT_EQ(base::PLATFORM_FILE_OK,
           ofu()->EnsureFileExists(
-              context.get(), root_path.Append(*iter),
+              context.get(), root_url.WithPath(root_url.path().Append(*iter)),
               &created));
       ASSERT_FALSE(created);
     }
     for (iter = directories.begin(); iter != directories.end(); ++iter) {
       context.reset(NewContext(NULL));
       EXPECT_TRUE(ofu()->DirectoryExists(context.get(),
-          root_path.Append(*iter)));
+          root_url.WithPath(root_url.path().Append(*iter))));
     }
   }
 
@@ -363,7 +363,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   void FillTestDirectory(
-      const FileSystemPath& root_path,
+      const FileSystemURL& root_url,
       std::set<FilePath::StringType>* files,
       std::set<FilePath::StringType>* directories) {
     scoped_ptr<FileSystemOperationContext> context;
@@ -371,7 +371,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     std::vector<base::FileUtilProxy::Entry> entries;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               FileUtilHelper::ReadDirectory(
-                  context.get(), ofu(), root_path, &entries));
+                  context.get(), ofu(), root_url, &entries));
     EXPECT_EQ(0UL, entries.size());
 
     files->clear();
@@ -389,7 +389,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       ASSERT_EQ(base::PLATFORM_FILE_OK,
           ofu()->EnsureFileExists(
               context.get(),
-              root_path.Append(*iter),
+              root_url.WithPath(root_url.path().Append(*iter)),
               &created));
       ASSERT_TRUE(created);
     }
@@ -399,22 +399,23 @@ class ObfuscatedFileUtilTest : public testing::Test {
       context.reset(NewContext(NULL));
       EXPECT_EQ(base::PLATFORM_FILE_OK,
           ofu()->CreateDirectory(
-              context.get(), root_path.Append(*iter), exclusive, recursive));
+              context.get(), root_url.WithPath(root_url.path().Append(*iter)),
+              exclusive, recursive));
     }
-    ValidateTestDirectory(root_path, *files, *directories);
+    ValidateTestDirectory(root_url, *files, *directories);
   }
 
-  void TestReadDirectoryHelper(const FileSystemPath& root_path) {
+  void TestReadDirectoryHelper(const FileSystemURL& root_url) {
     std::set<FilePath::StringType> files;
     std::set<FilePath::StringType> directories;
-    FillTestDirectory(root_path, &files, &directories);
+    FillTestDirectory(root_url, &files, &directories);
 
     scoped_ptr<FileSystemOperationContext> context;
     std::vector<base::FileUtilProxy::Entry> entries;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               FileUtilHelper::ReadDirectory(
-                  context.get(), ofu(), root_path, &entries));
+                  context.get(), ofu(), root_url, &entries));
     std::vector<base::FileUtilProxy::Entry>::iterator entry_iter;
     EXPECT_EQ(files.size() + directories.size(), entries.size());
     for (entry_iter = entries.begin(); entry_iter != entries.end();
@@ -433,19 +434,19 @@ class ObfuscatedFileUtilTest : public testing::Test {
     }
   }
 
-  void TestTouchHelper(const FileSystemPath& path, bool is_file) {
+  void TestTouchHelper(const FileSystemURL& url, bool is_file) {
     base::Time last_access_time = base::Time::Now();
     base::Time last_modified_time = base::Time::Now();
 
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofu()->Touch(
-                  context.get(), path, last_access_time, last_modified_time));
+                  context.get(), url, last_access_time, last_modified_time));
     FilePath local_path;
     base::PlatformFileInfo file_info;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-        context.get(), path, &file_info, &local_path));
+        context.get(), url, &file_info, &local_path));
     // We compare as time_t here to lower our resolution, to avoid false
     // negatives caused by conversion to the local filesystem's native
     // representation and back.
@@ -456,10 +457,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
     last_access_time += base::TimeDelta::FromHours(14);
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofu()->Touch(
-                  context.get(), path, last_access_time, last_modified_time));
+                  context.get(), url, last_access_time, last_modified_time));
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-        context.get(), path, &file_info, &local_path));
+        context.get(), url, &file_info, &local_path));
     EXPECT_EQ(file_info.last_modified.ToTimeT(), last_modified_time.ToTimeT());
     if (is_file)  // Directories in OFU don't support atime.
       EXPECT_EQ(file_info.last_accessed.ToTimeT(), last_access_time.ToTimeT());
@@ -470,7 +471,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     ASSERT_TRUE(source_dir.CreateUniqueTempDir());
     FilePath root_file_path = source_dir.path();
     FilePath src_file_path = root_file_path.AppendASCII("file_name");
-    FileSystemPath dest_path = CreatePathFromUTF8("new file");
+    FileSystemURL dest_url = CreateURLFromUTF8("new file");
     int64 src_file_length = 87;
 
     base::PlatformFileError error_code;
@@ -490,102 +491,106 @@ class ObfuscatedFileUtilTest : public testing::Test {
     if (overwrite) {
       context.reset(NewContext(NULL));
       EXPECT_EQ(base::PLATFORM_FILE_OK,
-          ofu()->EnsureFileExists(context.get(), dest_path, &created));
+          ofu()->EnsureFileExists(context.get(), dest_url, &created));
       EXPECT_TRUE(created);
     }
 
     const int64 path_cost =
-        ObfuscatedFileUtil::ComputeFilePathCost(dest_path.internal_path());
+        ObfuscatedFileUtil::ComputeFilePathCost(dest_url.path());
     if (!overwrite) {
       // Verify that file creation requires sufficient quota for the path.
       context.reset(NewContext(NULL));
       context->set_allowed_bytes_growth(path_cost + src_file_length - 1);
       EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
                 ofu()->CopyInForeignFile(context.get(),
-                                         src_file_path, dest_path));
+                                         src_file_path, dest_url));
     }
 
     context.reset(NewContext(NULL));
     context->set_allowed_bytes_growth(path_cost + src_file_length);
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofu()->CopyInForeignFile(context.get(),
-                                       src_file_path, dest_path));
+                                       src_file_path, dest_url));
 
     context.reset(NewContext(NULL));
-    EXPECT_TRUE(ofu()->PathExists(context.get(), dest_path));
+    EXPECT_TRUE(ofu()->PathExists(context.get(), dest_url));
     context.reset(NewContext(NULL));
-    EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_path));
+    EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_url));
     context.reset(NewContext(NULL));
     base::PlatformFileInfo file_info;
     FilePath data_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-        context.get(), dest_path, &file_info, &data_path));
+        context.get(), dest_url, &file_info, &data_path));
     EXPECT_NE(data_path, src_file_path);
     EXPECT_TRUE(FileExists(data_path));
     EXPECT_EQ(src_file_length, GetSize(data_path));
 
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-        ofu()->DeleteFile(context.get(), dest_path));
+        ofu()->DeleteFile(context.get(), dest_url));
   }
 
-  void ClearTimestamp(const FileSystemPath& path) {
+  void ClearTimestamp(const FileSystemURL& url) {
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->Touch(context.get(), path, base::Time(), base::Time()));
-    EXPECT_EQ(base::Time(), GetModifiedTime(path));
+              ofu()->Touch(context.get(), url, base::Time(), base::Time()));
+    EXPECT_EQ(base::Time(), GetModifiedTime(url));
   }
 
-  base::Time GetModifiedTime(const FileSystemPath& path) {
+  base::Time GetModifiedTime(const FileSystemURL& url) {
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     FilePath data_path;
     base::PlatformFileInfo file_info;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->GetFileInfo(context.get(), path, &file_info, &data_path));
+              ofu()->GetFileInfo(context.get(), url, &file_info, &data_path));
     return file_info.last_modified;
   }
 
-  void TestDirectoryTimestampHelper(const FileSystemPath& base_dir,
+  void TestDirectoryTimestampHelper(const FileSystemURL& base_dir,
                                     bool copy,
                                     bool overwrite) {
     scoped_ptr<FileSystemOperationContext> context;
-    const FileSystemPath src_dir_path(base_dir.AppendASCII("foo_dir"));
-    const FileSystemPath dest_dir_path(base_dir.AppendASCII("bar_dir"));
+    const FileSystemURL src_dir_url(base_dir.WithPath(
+            base_dir.path().AppendASCII("foo_dir")));
+    const FileSystemURL dest_dir_url(base_dir.WithPath(
+            base_dir.path().AppendASCII("bar_dir")));
 
-    const FileSystemPath src_file_path(src_dir_path.AppendASCII("hoge"));
-    const FileSystemPath dest_file_path(dest_dir_path.AppendASCII("fuga"));
+    const FileSystemURL src_file_url(src_dir_url.WithPath(
+            src_dir_url.path().AppendASCII("hoge")));
+    const FileSystemURL dest_file_url(dest_dir_url.WithPath(
+            dest_dir_url.path().AppendASCII("fuga")));
 
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->CreateDirectory(context.get(), src_dir_path, true, true));
+              ofu()->CreateDirectory(context.get(), src_dir_url, true, true));
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->CreateDirectory(context.get(), dest_dir_path, true, true));
+              ofu()->CreateDirectory(context.get(), dest_dir_url, true, true));
 
     bool created = false;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->EnsureFileExists(context.get(), src_file_path, &created));
+              ofu()->EnsureFileExists(context.get(), src_file_url, &created));
     if (overwrite) {
       context.reset(NewContext(NULL));
       EXPECT_EQ(base::PLATFORM_FILE_OK,
                 ofu()->EnsureFileExists(context.get(),
-                                        dest_file_path, &created));
+                                        dest_file_url, &created));
     }
 
-    ClearTimestamp(src_dir_path);
-    ClearTimestamp(dest_dir_path);
+    ClearTimestamp(src_dir_url);
+    ClearTimestamp(dest_dir_url);
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofu()->CopyOrMoveFile(context.get(),
-                                    src_file_path, dest_file_path,
+                                    src_file_url, dest_file_url,
                                     copy));
 
     if (copy)
-      EXPECT_EQ(base::Time(), GetModifiedTime(src_dir_path));
+      EXPECT_EQ(base::Time(), GetModifiedTime(src_dir_url));
     else
-      EXPECT_NE(base::Time(), GetModifiedTime(src_dir_path));
-    EXPECT_NE(base::Time(), GetModifiedTime(dest_dir_path));
+      EXPECT_NE(base::Time(), GetModifiedTime(src_dir_url));
+    EXPECT_NE(base::Time(), GetModifiedTime(dest_dir_url));
   }
 
   int64 ComputeCurrentUsage() {
@@ -614,44 +619,44 @@ class ObfuscatedFileUtilTest : public testing::Test {
 TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
   bool created;
-  FileSystemPath path = CreatePathFromUTF8("fake/file");
+  FileSystemURL url = CreateURLFromUTF8("fake/file");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   int file_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             ofu()->CreateOrOpen(
-                context.get(), path, file_flags, &file_handle,
+                context.get(), url, file_flags, &file_handle,
                 &created));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            ofu()->DeleteFile(context.get(), path));
+            ofu()->DeleteFile(context.get(), url));
 
-  path = CreatePathFromUTF8("test file");
+  url = CreateURLFromUTF8("test file");
 
   // Verify that file creation requires sufficient quota for the path.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()) - 1);
+      ObfuscatedFileUtil::ComputeFilePathCost(url.path()) - 1);
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
             ofu()->CreateOrOpen(
-                context.get(), path, file_flags, &file_handle, &created));
+                context.get(), url, file_flags, &file_handle, &created));
 
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()));
+      ObfuscatedFileUtil::ComputeFilePathCost(url.path()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             ofu()->CreateOrOpen(
-                context.get(), path, file_flags, &file_handle, &created));
+                context.get(), url, file_flags, &file_handle, &created));
   ASSERT_TRUE(created);
   EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
 
-  CheckFileAndCloseHandle(path, file_handle);
+  CheckFileAndCloseHandle(url, file_handle);
 
   context.reset(NewContext(NULL));
   FilePath local_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
-      context.get(), path, &local_path));
+      context.get(), url, &local_path));
   EXPECT_TRUE(file_util::PathExists(local_path));
 
   // Verify that deleting a file isn't stopped by zero quota, and that it frees
@@ -659,115 +664,115 @@ TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(0);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->DeleteFile(context.get(), path));
+            ofu()->DeleteFile(context.get(), url));
   EXPECT_FALSE(file_util::PathExists(local_path));
-  EXPECT_EQ(ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()),
+  EXPECT_EQ(ObfuscatedFileUtil::ComputeFilePathCost(url.path()),
       context->allowed_bytes_growth());
 
   context.reset(NewContext(NULL));
   bool exclusive = true;
   bool recursive = true;
-  FileSystemPath directory_path = CreatePathFromUTF8(
+  FileSystemURL directory_url = CreateURLFromUTF8(
       "series/of/directories");
-  path = directory_path.AppendASCII("file name");
+  url = directory_url.WithPath(directory_url.path().AppendASCII("file name"));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), directory_path, exclusive, recursive));
+      context.get(), directory_url, exclusive, recursive));
 
   context.reset(NewContext(NULL));
   file_handle = base::kInvalidPlatformFileValue;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             ofu()->CreateOrOpen(
-                context.get(), path, file_flags, &file_handle, &created));
+                context.get(), url, file_flags, &file_handle, &created));
   ASSERT_TRUE(created);
   EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
 
-  CheckFileAndCloseHandle(path, file_handle);
+  CheckFileAndCloseHandle(url, file_handle);
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
-      context.get(), path, &local_path));
+      context.get(), url, &local_path));
   EXPECT_TRUE(file_util::PathExists(local_path));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->DeleteFile(context.get(), path));
+            ofu()->DeleteFile(context.get(), url));
   EXPECT_FALSE(file_util::PathExists(local_path));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestTruncate) {
   bool created = false;
-  FileSystemPath path = CreatePathFromUTF8("file");
+  FileSystemURL url = CreateURLFromUTF8("file");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            ofu()->Truncate(context.get(), path, 4));
+            ofu()->Truncate(context.get(), url, 4));
 
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->EnsureFileExists(context.get(), path, &created));
+      ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
   context.reset(NewContext(NULL));
   FilePath local_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
-      context.get(), path, &local_path));
+      context.get(), url, &local_path));
   EXPECT_EQ(0, GetSize(local_path));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->Truncate(
-      context.get(), path, 10));
+      context.get(), url, 10));
   EXPECT_EQ(10, GetSize(local_path));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->Truncate(
-      context.get(), path, 1));
+      context.get(), url, 1));
   EXPECT_EQ(1, GetSize(local_path));
 
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->PathExists(context.get(), path));
+  EXPECT_TRUE(ofu()->PathExists(context.get(), url));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
   bool created = false;
-  FileSystemPath path = CreatePathFromUTF8("file");
+  FileSystemURL url = CreateURLFromUTF8("file");
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             ofu()->EnsureFileExists(
-                AllowUsageIncrease(PathCost(path))->context(),
-                path, &created));
+                AllowUsageIncrease(PathCost(url))->context(),
+                url, &created));
   ASSERT_TRUE(created);
   ASSERT_EQ(0, ComputeTotalFileSize());
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             ofu()->Truncate(
                 AllowUsageIncrease(1020)->context(),
-                path, 1020));
+                url, 1020));
   ASSERT_EQ(1020, ComputeTotalFileSize());
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             ofu()->Truncate(
                 AllowUsageIncrease(-1020)->context(),
-                path, 0));
+                url, 0));
   ASSERT_EQ(0, ComputeTotalFileSize());
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
             ofu()->Truncate(
                 DisallowUsageIncrease(1021)->context(),
-                path, 1021));
+                url, 1021));
   ASSERT_EQ(0, ComputeTotalFileSize());
 
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->Truncate(
                 AllowUsageIncrease(1020)->context(),
-                path, 1020));
+                url, 1020));
   ASSERT_EQ(1020, ComputeTotalFileSize());
 
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->Truncate(
                 AllowUsageIncrease(0)->context(),
-                path, 1020));
+                url, 1020));
   ASSERT_EQ(1020, ComputeTotalFileSize());
 
   // quota exceeded
@@ -776,7 +781,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
     helper->context()->set_allowed_bytes_growth(
         helper->context()->allowed_bytes_growth() - 1);
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->Truncate(helper->context(), path, 1019));
+              ofu()->Truncate(helper->context(), url, 1019));
     ASSERT_EQ(1019, ComputeTotalFileSize());
   }
 
@@ -785,65 +790,67 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             ofu()->GetLocalFilePath(
                 UnlimitedContext().get(),
-                path, &local_path));
+                url, &local_path));
   ASSERT_FALSE(local_path.empty());
   ASSERT_TRUE(file_util::Delete(local_path, false));
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             ofu()->Truncate(
                 LimitedContext(1234).get(),
-                path, 1234));
+                url, 1234));
   ASSERT_EQ(0, ComputeTotalFileSize());
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestEnsureFileExists) {
-  FileSystemPath path = CreatePathFromUTF8("fake/file");
+  FileSystemURL url = CreateURLFromUTF8("fake/file");
   bool created = false;
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             ofu()->EnsureFileExists(
-                context.get(), path, &created));
+                context.get(), url, &created));
 
   // Verify that file creation requires sufficient quota for the path.
   context.reset(NewContext(NULL));
-  path = CreatePathFromUTF8("test file");
+  url = CreateURLFromUTF8("test file");
   created = false;
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()) - 1);
+      ObfuscatedFileUtil::ComputeFilePathCost(url.path()) - 1);
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_FALSE(created);
 
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()));
+      ObfuscatedFileUtil::ComputeFilePathCost(url.path()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
-  CheckFileAndCloseHandle(path, base::kInvalidPlatformFileValue);
+  CheckFileAndCloseHandle(url, base::kInvalidPlatformFileValue);
 
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_FALSE(created);
 
   // Also test in a subdirectory.
-  path = CreatePathFromUTF8("path/to/file.txt");
+  url = CreateURLFromUTF8("path/to/file.txt");
   context.reset(NewContext(NULL));
   bool exclusive = true;
   bool recursive = true;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path.DirName(), exclusive, recursive));
+      context.get(),
+      url.WithPath(url.path().DirName()),
+      exclusive, recursive));
 
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->PathExists(context.get(), path));
+  EXPECT_TRUE(ofu()->PathExists(context.get(), url));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
@@ -851,19 +858,19 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
 
   bool exclusive = false;
   bool recursive = false;
-  FileSystemPath path = CreatePathFromUTF8("foo/bar");
+  FileSystemURL url = CreateURLFromUTF8("foo/bar");
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->DeleteSingleDirectory(context.get(), path));
+      ofu()->DeleteSingleDirectory(context.get(), url));
 
-  FileSystemPath root = CreatePathFromUTF8("");
+  FileSystemURL root = CreateURLFromUTF8("");
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->PathExists(context.get(), path));
+  EXPECT_FALSE(ofu()->PathExists(context.get(), url));
   context.reset(NewContext(NULL));
   EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), root));
 
@@ -871,28 +878,31 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
   exclusive = false;
   recursive = true;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->PathExists(context.get(), path));
+  EXPECT_TRUE(ofu()->PathExists(context.get(), url));
   context.reset(NewContext(NULL));
   EXPECT_FALSE(ofu()->IsDirectoryEmpty(context.get(), root));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), path.DirName()));
+  EXPECT_TRUE(ofu()->DirectoryExists(context.get(),
+                                     url.WithPath(url.path().DirName())));
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->IsDirectoryEmpty(context.get(), path.DirName()));
+  EXPECT_FALSE(ofu()->IsDirectoryEmpty(context.get(),
+                                       url.WithPath(url.path().DirName())));
 
   // Can't remove a non-empty directory.
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
-      ofu()->DeleteSingleDirectory(context.get(), path.DirName()));
+      ofu()->DeleteSingleDirectory(context.get(),
+                                   url.WithPath(url.path().DirName())));
 
   base::PlatformFileInfo file_info;
   FilePath local_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-      context.get(), path, &file_info, &local_path));
+      context.get(), url, &file_info, &local_path));
   EXPECT_TRUE(local_path.empty());
   EXPECT_TRUE(file_info.is_directory);
   EXPECT_FALSE(file_info.is_symbolic_link);
@@ -900,126 +910,126 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryOps) {
   // Same create again should succeed, since exclusive is false.
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   exclusive = true;
   recursive = true;
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   // Verify that deleting a directory isn't stopped by zero quota, and that it
   // frees up quota from its path.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(0);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->DeleteSingleDirectory(context.get(), path));
-  EXPECT_EQ(ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()),
+      ofu()->DeleteSingleDirectory(context.get(), url));
+  EXPECT_EQ(ObfuscatedFileUtil::ComputeFilePathCost(url.path()),
       context->allowed_bytes_growth());
 
-  path = CreatePathFromUTF8("foo/bop");
+  url = CreateURLFromUTF8("foo/bop");
 
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->PathExists(context.get(), path));
+  EXPECT_FALSE(ofu()->PathExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), path));
+  EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), url));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, ofu()->GetFileInfo(
-      context.get(), path, &file_info, &local_path));
+      context.get(), url, &file_info, &local_path));
 
   // Verify that file creation requires sufficient quota for the path.
   exclusive = true;
   recursive = false;
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()) - 1);
+      ObfuscatedFileUtil::ComputeFilePathCost(url.path()) - 1);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path()));
+      ObfuscatedFileUtil::ComputeFilePathCost(url.path()));
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->PathExists(context.get(), path));
+  EXPECT_TRUE(ofu()->PathExists(context.get(), url));
 
   exclusive = true;
   recursive = false;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   exclusive = true;
   recursive = false;
-  path = CreatePathFromUTF8("foo");
+  url = CreateURLFromUTF8("foo");
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
-  path = CreatePathFromUTF8("blah");
+  url = CreateURLFromUTF8("blah");
 
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->PathExists(context.get(), path));
+  EXPECT_FALSE(ofu()->PathExists(context.get(), url));
 
   exclusive = true;
   recursive = false;
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), path));
+  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->PathExists(context.get(), path));
+  EXPECT_TRUE(ofu()->PathExists(context.get(), url));
 
   exclusive = true;
   recursive = false;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestReadDirectory) {
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   bool exclusive = true;
   bool recursive = true;
-  FileSystemPath path = CreatePathFromUTF8("directory/to/use");
+  FileSystemURL url = CreateURLFromUTF8("directory/to/use");
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
-  TestReadDirectoryHelper(path);
+      context.get(), url, exclusive, recursive));
+  TestReadDirectoryHelper(url);
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestReadRootWithSlash) {
-  TestReadDirectoryHelper(CreatePathFromUTF8(""));
+  TestReadDirectoryHelper(CreateURLFromUTF8(""));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestReadRootWithEmptyString) {
-  TestReadDirectoryHelper(CreatePathFromUTF8("/"));
+  TestReadDirectoryHelper(CreateURLFromUTF8("/"));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
-  FileSystemPath path = CreatePathFromUTF8("file");
+  FileSystemURL url = CreateURLFromUTF8("file");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->EnsureFileExists(context.get(), path, &created));
+      ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
   context.reset(NewContext(NULL));
   std::vector<base::FileUtilProxy::Entry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             FileUtilHelper::ReadDirectory(
-                context.get(), ofu(), path, &entries));
+                context.get(), ofu(), url, &entries));
 
-  EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), path));
+  EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), url));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestTouch) {
-  FileSystemPath path = CreatePathFromUTF8("file");
+  FileSystemURL url = CreateURLFromUTF8("file");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
   base::Time last_access_time = base::Time::Now();
@@ -1028,50 +1038,49 @@ TEST_F(ObfuscatedFileUtilTest, TestTouch) {
   // It's not there yet.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             ofu()->Touch(
-                context.get(), path, last_access_time, last_modified_time));
+                context.get(), url, last_access_time, last_modified_time));
 
   // OK, now create it.
   context.reset(NewContext(NULL));
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
-  TestTouchHelper(path, true);
+  TestTouchHelper(url, true);
 
   // Now test a directory:
   context.reset(NewContext(NULL));
   bool exclusive = true;
   bool recursive = false;
-  path = CreatePathFromUTF8("dir");
+  url = CreateURLFromUTF8("dir");
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(context.get(),
-      path, exclusive, recursive));
-  TestTouchHelper(path, false);
+      url, exclusive, recursive));
+  TestTouchHelper(url, false);
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestPathQuotas) {
-  FileSystemPath path = CreatePathFromUTF8("fake/file");
+  FileSystemURL url = CreateURLFromUTF8("fake/file");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
-  path = CreatePathFromUTF8("file name");
+  url = CreateURLFromUTF8("file name");
   context->set_allowed_bytes_growth(5);
   bool created = false;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-      ofu()->EnsureFileExists(context.get(), path, &created));
+      ofu()->EnsureFileExists(context.get(), url, &created));
   EXPECT_FALSE(created);
   context->set_allowed_bytes_growth(1024);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->EnsureFileExists(context.get(), path, &created));
+      ofu()->EnsureFileExists(context.get(), url, &created));
   EXPECT_TRUE(created);
-  int64 path_cost = ObfuscatedFileUtil::ComputeFilePathCost(
-      path.internal_path());
+  int64 path_cost = ObfuscatedFileUtil::ComputeFilePathCost(url.path());
   EXPECT_EQ(1024 - path_cost, context->allowed_bytes_growth());
 
   context->set_allowed_bytes_growth(1024);
   bool exclusive = true;
   bool recursive = true;
-  path = CreatePathFromUTF8("directory/to/use");
+  url = CreateURLFromUTF8("directory/to/use");
   std::vector<FilePath::StringType> components;
-  path.internal_path().GetComponents(&components);
+  url.path().GetComponents(&components);
   path_cost = 0;
   for (std::vector<FilePath::StringType>::iterator iter = components.begin();
       iter != components.end(); ++iter) {
@@ -1081,38 +1090,40 @@ TEST_F(ObfuscatedFileUtilTest, TestPathQuotas) {
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(1024);
   EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
+      context.get(), url, exclusive, recursive));
   EXPECT_EQ(1024 - path_cost, context->allowed_bytes_growth());
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileNotFound) {
-  FileSystemPath source_path = CreatePathFromUTF8("path0.txt");
-  FileSystemPath dest_path = CreatePathFromUTF8("path1.txt");
+  FileSystemURL source_url = CreateURLFromUTF8("path0.txt");
+  FileSystemURL dest_url = CreateURLFromUTF8("path1.txt");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
   bool is_copy_not_move = false;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->CopyOrMoveFile(context.get(), source_path, dest_path,
+      ofu()->CopyOrMoveFile(context.get(), source_url, dest_url,
           is_copy_not_move));
   context.reset(NewContext(NULL));
   is_copy_not_move = true;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->CopyOrMoveFile(context.get(), source_path, dest_path,
+      ofu()->CopyOrMoveFile(context.get(), source_url, dest_url,
           is_copy_not_move));
-  source_path = CreatePathFromUTF8("dir/dir/file");
+  source_url = CreateURLFromUTF8("dir/dir/file");
   bool exclusive = true;
   bool recursive = true;
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), source_path.DirName(), exclusive, recursive));
+      context.get(),
+      source_url.WithPath(source_url.path().DirName()),
+      exclusive, recursive));
   is_copy_not_move = false;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->CopyOrMoveFile(context.get(), source_path, dest_path,
+      ofu()->CopyOrMoveFile(context.get(), source_url, dest_url,
           is_copy_not_move));
   context.reset(NewContext(NULL));
   is_copy_not_move = true;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-      ofu()->CopyOrMoveFile(context.get(), source_path, dest_path,
+      ofu()->CopyOrMoveFile(context.get(), source_url, dest_url,
           is_copy_not_move));
 }
 
@@ -1135,142 +1146,147 @@ TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
 
     bool exclusive = false;
     bool recursive = true;
-    FileSystemPath source_path = CreatePathFromUTF8(test_case.source_path);
-    FileSystemPath dest_path = CreatePathFromUTF8(test_case.dest_path);
+    FileSystemURL source_url = CreateURLFromUTF8(test_case.source_path);
+    FileSystemURL dest_url = CreateURLFromUTF8(test_case.dest_path);
 
     context.reset(NewContext(NULL));
     ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-        context.get(), source_path.DirName(), exclusive, recursive));
+        context.get(),
+        source_url.WithPath(source_url.path().DirName()),
+        exclusive, recursive));
     context.reset(NewContext(NULL));
     ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-        context.get(), dest_path.DirName(), exclusive, recursive));
+        context.get(),
+        dest_url.WithPath(dest_url.path().DirName()),
+        exclusive, recursive));
 
     bool created = false;
     context.reset(NewContext(NULL));
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->EnsureFileExists(context.get(), source_path, &created));
+              ofu()->EnsureFileExists(context.get(), source_url, &created));
     ASSERT_TRUE(created);
     context.reset(NewContext(NULL));
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->Truncate(context.get(), source_path, kSourceLength));
+              ofu()->Truncate(context.get(), source_url, kSourceLength));
 
     if (test_case.cause_overwrite) {
       context.reset(NewContext(NULL));
       created = false;
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-                ofu()->EnsureFileExists(context.get(), dest_path, &created));
+                ofu()->EnsureFileExists(context.get(), dest_url, &created));
       ASSERT_TRUE(created);
       context.reset(NewContext(NULL));
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-                ofu()->Truncate(context.get(), dest_path, kDestLength));
+                ofu()->Truncate(context.get(), dest_url, kDestLength));
     }
 
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->CopyOrMoveFile(context.get(),
-        source_path, dest_path, test_case.is_copy_not_move));
+        source_url, dest_url, test_case.is_copy_not_move));
     if (test_case.is_copy_not_move) {
       base::PlatformFileInfo file_info;
       FilePath local_path;
       context.reset(NewContext(NULL));
       EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-          context.get(), source_path, &file_info, &local_path));
+          context.get(), source_url, &file_info, &local_path));
       EXPECT_EQ(kSourceLength, file_info.size);
       EXPECT_EQ(base::PLATFORM_FILE_OK,
-                ofu()->DeleteFile(context.get(), source_path));
+                ofu()->DeleteFile(context.get(), source_url));
     } else {
       base::PlatformFileInfo file_info;
       FilePath local_path;
       context.reset(NewContext(NULL));
       EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, ofu()->GetFileInfo(
-          context.get(), source_path, &file_info, &local_path));
+          context.get(), source_url, &file_info, &local_path));
     }
     base::PlatformFileInfo file_info;
     FilePath local_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetFileInfo(
-        context.get(), dest_path, &file_info, &local_path));
+        context.get(), dest_url, &file_info, &local_path));
     EXPECT_EQ(kSourceLength, file_info.size);
 
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              ofu()->DeleteFile(context.get(), dest_path));
+              ofu()->DeleteFile(context.get(), dest_url));
   }
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestCopyPathQuotas) {
-  FileSystemPath src_path = CreatePathFromUTF8("src path");
-  FileSystemPath dest_path = CreatePathFromUTF8("destination path");
+  FileSystemURL src_url = CreateURLFromUTF8("src path");
+  FileSystemURL dest_url = CreateURLFromUTF8("destination path");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->EnsureFileExists(
-      context.get(), src_path, &created));
+      context.get(), src_url, &created));
 
   bool is_copy = true;
   // Copy, no overwrite.
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(dest_path.internal_path()) - 1);
+      ObfuscatedFileUtil::ComputeFilePathCost(dest_url.path()) - 1);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(dest_path.internal_path()));
+      ObfuscatedFileUtil::ComputeFilePathCost(dest_url.path()));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
 
   // Copy, with overwrite.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(0);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestMovePathQuotasWithRename) {
-  FileSystemPath src_path = CreatePathFromUTF8("src path");
-  FileSystemPath dest_path = CreatePathFromUTF8("destination path");
+  FileSystemURL src_url = CreateURLFromUTF8("src path");
+  FileSystemURL dest_url = CreateURLFromUTF8("destination path");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->EnsureFileExists(
-      context.get(), src_path, &created));
+      context.get(), src_url, &created));
 
   bool is_copy = false;
   // Move, rename, no overwrite.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(dest_path.internal_path()) -
-      ObfuscatedFileUtil::ComputeFilePathCost(src_path.internal_path()) - 1);
+      ObfuscatedFileUtil::ComputeFilePathCost(dest_url.path()) -
+      ObfuscatedFileUtil::ComputeFilePathCost(src_url.path()) - 1);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(
-      ObfuscatedFileUtil::ComputeFilePathCost(dest_path.internal_path()) -
-      ObfuscatedFileUtil::ComputeFilePathCost(src_path.internal_path()));
+      ObfuscatedFileUtil::ComputeFilePathCost(dest_url.path()) -
+      ObfuscatedFileUtil::ComputeFilePathCost(src_url.path()));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
 
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->EnsureFileExists(
-      context.get(), src_path, &created));
+      context.get(), src_url, &created));
 
   // Move, rename, with overwrite.
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(0);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
-  FileSystemPath src_path = CreatePathFromUTF8("src path");
+  FileSystemURL src_url = CreateURLFromUTF8("src path");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->EnsureFileExists(
-      context.get(), src_path, &created));
+      context.get(), src_url, &created));
 
   bool exclusive = true;
   bool recursive = false;
-  FileSystemPath dir_path = CreatePathFromUTF8("directory path");
+  FileSystemURL dir_url = CreateURLFromUTF8("directory path");
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), dir_path, exclusive, recursive));
+      context.get(), dir_url, exclusive, recursive));
 
-  FileSystemPath dest_path = dir_path.Append(src_path.internal_path());
+  FileSystemURL dest_url = dir_url.WithPath(
+      dir_url.path().Append(src_url.path()));
 
   bool is_copy = false;
   int64 allowed_bytes_growth = -1000;  // Over quota, this should still work.
@@ -1278,20 +1294,20 @@ TEST_F(ObfuscatedFileUtilTest, TestMovePathQuotasWithoutRename) {
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(allowed_bytes_growth);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
   EXPECT_EQ(allowed_bytes_growth, context->allowed_bytes_growth());
 
   // Move, no rename, with overwrite.
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->EnsureFileExists(
-      context.get(), src_path, &created));
+      context.get(), src_url, &created));
   context.reset(NewContext(NULL));
   context->set_allowed_bytes_growth(allowed_bytes_growth);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->CopyOrMoveFile(context.get(), src_path, dest_path, is_copy));
+      ofu()->CopyOrMoveFile(context.get(), src_url, dest_url, is_copy));
   EXPECT_EQ(
       allowed_bytes_growth +
-          ObfuscatedFileUtil::ComputeFilePathCost(src_path.internal_path()),
+          ObfuscatedFileUtil::ComputeFilePathCost(src_url.path()),
       context->allowed_bytes_growth());
 }
 
@@ -1302,36 +1318,36 @@ TEST_F(ObfuscatedFileUtilTest, TestCopyInForeignFile) {
 
 TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
-  FileSystemPath src_path = CreatePathFromUTF8("source dir");
+  FileSystemURL src_url = CreateURLFromUTF8("source dir");
   bool exclusive = true;
   bool recursive = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK, ofu()->CreateDirectory(
-      context.get(), src_path, exclusive, recursive));
+      context.get(), src_url, exclusive, recursive));
 
   std::set<FilePath::StringType> files;
   std::set<FilePath::StringType> directories;
-  FillTestDirectory(src_path, &files, &directories);
+  FillTestDirectory(src_url, &files, &directories);
 
-  FileSystemPath dest_path = CreatePathFromUTF8("destination dir");
+  FileSystemURL dest_url = CreateURLFromUTF8("destination dir");
 
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_url));
   context.reset(NewContext(NULL));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            test_helper().SameFileUtilCopy(context.get(), src_path, dest_path));
+            test_helper().SameFileUtilCopy(context.get(), src_url, dest_url));
 
-  ValidateTestDirectory(dest_path, files, directories);
+  ValidateTestDirectory(dest_url, files, directories);
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), src_path));
+  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), src_url));
   context.reset(NewContext(NULL));
-  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), dest_path));
+  EXPECT_TRUE(ofu()->DirectoryExists(context.get(), dest_url));
   context.reset(NewContext(NULL));
   recursive = true;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             FileUtilHelper::Delete(context.get(), ofu(),
-                                   dest_path, recursive));
+                                   dest_url, recursive));
   context.reset(NewContext(NULL));
-  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_path));
+  EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_url));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestMigration) {
@@ -1357,7 +1373,7 @@ TEST_F(ObfuscatedFileUtilTest, TestMigration) {
     FilePath data_path;
     SCOPED_TRACE(testing::Message() << "Path is " << test_case.path);
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-        ofu()->GetFileInfo(context.get(), CreatePath(FilePath(test_case.path)),
+        ofu()->GetFileInfo(context.get(), CreateURL(FilePath(test_case.path)),
             &ofu_file_info, &data_path));
     if (test_case.is_directory) {
       EXPECT_TRUE(ofu_file_info.is_directory);
@@ -1408,7 +1424,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       ASSERT_EQ(base::PLATFORM_FILE_OK,
                 ofu()->EnsureFileExists(
                     context.get(),
-                    helper->CreatePathFromUTF8("file"),
+                    helper->CreateURLFromUTF8("file"),
                     &created));
       EXPECT_TRUE(created);
     }
@@ -1420,7 +1436,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       ASSERT_EQ(base::PLATFORM_FILE_OK,
                 ofu()->EnsureFileExists(
                     context.get(),
-                    helper->CreatePathFromUTF8("file"),
+                    helper->CreateURLFromUTF8("file"),
                     &created));
       EXPECT_TRUE(created);
     }
@@ -1477,17 +1493,17 @@ TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
       bool exclusive = true;
       bool recursive = false;
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-          ofu()->CreateDirectory(context.get(), CreatePath(file_path),
+          ofu()->CreateDirectory(context.get(), CreateURL(file_path),
                                  exclusive, recursive));
     } else {
       bool created = false;
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-          ofu()->EnsureFileExists(context.get(), CreatePath(file_path),
+          ofu()->EnsureFileExists(context.get(), CreateURL(file_path),
                                   &created));
       ASSERT_TRUE(created);
       ASSERT_EQ(base::PLATFORM_FILE_OK,
           ofu()->Truncate(context.get(),
-                          CreatePath(file_path),
+                          CreateURL(file_path),
                           test_case.data_file_size));
       expected_quota += test_case.data_file_size;
     }
@@ -1510,8 +1526,8 @@ TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestInconsistency) {
-  const FileSystemPath kPath1 = CreatePathFromUTF8("hoge");
-  const FileSystemPath kPath2 = CreatePathFromUTF8("fuga");
+  const FileSystemURL kPath1 = CreateURLFromUTF8("hoge");
+  const FileSystemURL kPath2 = CreateURLFromUTF8("fuga");
 
   scoped_ptr<FileSystemOperationContext> context;
   base::PlatformFile file;
@@ -1587,12 +1603,12 @@ TEST_F(ObfuscatedFileUtilTest, TestInconsistency) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
-  const FileSystemPath kPath[] = {
-    CreatePathFromUTF8("foo"),
-    CreatePathFromUTF8("bar"),
-    CreatePathFromUTF8("baz")
+  const FileSystemURL kPath[] = {
+    CreateURLFromUTF8("foo"),
+    CreateURLFromUTF8("bar"),
+    CreateURLFromUTF8("baz")
   };
-  const FileSystemPath empty_path = CreatePath(FilePath());
+  const FileSystemURL empty_path = CreateURL(FilePath());
   scoped_ptr<FileSystemOperationContext> context;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPath); ++i) {
@@ -1626,121 +1642,123 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
 
 TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
-  const FileSystemPath dir_path = CreatePathFromUTF8("foo_dir");
+  const FileSystemURL dir_url = CreateURLFromUTF8("foo_dir");
 
   // Create working directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), dir_path, false, false));
+            ofu()->CreateDirectory(context.get(), dir_url, false, false));
 
   // EnsureFileExists, create case.
-  FileSystemPath path(dir_path.AppendASCII("EnsureFileExists_file"));
+  FileSystemURL url(dir_url.WithPath(
+          dir_url.path().AppendASCII("EnsureFileExists_file")));
   bool created = false;
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   EXPECT_TRUE(created);
-  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 
   // non create case.
   created = true;
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   EXPECT_FALSE(created);
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // fail case.
-  path = dir_path.AppendASCII("EnsureFileExists_dir");
+  url = dir_url.WithPath(dir_url.path().AppendASCII("EnsureFileExists_dir"));
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), path, false, false));
+            ofu()->CreateDirectory(context.get(), url, false, false));
 
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
-            ofu()->EnsureFileExists(context.get(), path, &created));
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+            ofu()->EnsureFileExists(context.get(), url, &created));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // CreateOrOpen, create case.
-  path = dir_path.AppendASCII("CreateOrOpen_file");
+  url = dir_url.WithPath(dir_url.path().AppendASCII("CreateOrOpen_file"));
   PlatformFile file_handle = base::kInvalidPlatformFileValue;
   created = false;
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->CreateOrOpen(
-                context.get(), path,
+                context.get(), url,
                 base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
                 &file_handle, &created));
   EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
   EXPECT_TRUE(created);
   EXPECT_TRUE(base::ClosePlatformFile(file_handle));
-  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 
   // open case.
   file_handle = base::kInvalidPlatformFileValue;
   created = true;
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->CreateOrOpen(
-                context.get(), path,
+                context.get(), url,
                 base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
                 &file_handle, &created));
   EXPECT_NE(base::kInvalidPlatformFileValue, file_handle);
   EXPECT_FALSE(created);
   EXPECT_TRUE(base::ClosePlatformFile(file_handle));
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // fail case
   file_handle = base::kInvalidPlatformFileValue;
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS,
             ofu()->CreateOrOpen(
-                context.get(), path,
+                context.get(), url,
                 base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
                 &file_handle, &created));
   EXPECT_EQ(base::kInvalidPlatformFileValue, file_handle);
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // CreateDirectory, create case.
   // Creating CreateDirectory_dir and CreateDirectory_dir/subdir.
-  path = dir_path.AppendASCII("CreateDirectory_dir");
-  FileSystemPath subdir_path(path.AppendASCII("subdir"));
-  ClearTimestamp(dir_path);
+  url = dir_url.WithPath(dir_url.path().AppendASCII("CreateDirectory_dir"));
+  FileSystemURL subdir_url(url.WithPath(url.path().AppendASCII("subdir")));
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), subdir_path,
+            ofu()->CreateDirectory(context.get(), subdir_url,
                                    true /* exclusive */, true /* recursive */));
-  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 
   // create subdir case.
   // Creating CreateDirectory_dir/subdir2.
-  subdir_path = path.AppendASCII("subdir2");
-  ClearTimestamp(dir_path);
-  ClearTimestamp(path);
+  subdir_url = url.WithPath(url.path().AppendASCII("subdir2"));
+  ClearTimestamp(dir_url);
+  ClearTimestamp(url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), subdir_path,
+            ofu()->CreateDirectory(context.get(), subdir_url,
                                    true /* exclusive */, true /* recursive */));
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
-  EXPECT_NE(base::Time(), GetModifiedTime(path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
+  EXPECT_NE(base::Time(), GetModifiedTime(url));
 
   // fail case.
-  path = dir_path.AppendASCII("CreateDirectory_dir");
-  ClearTimestamp(dir_path);
+  url = dir_url.WithPath(dir_url.path().AppendASCII("CreateDirectory_dir"));
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS,
-            ofu()->CreateDirectory(context.get(), path,
+            ofu()->CreateDirectory(context.get(), url,
                                    true /* exclusive */, true /* recursive */));
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // CopyInForeignFile, create case.
-  path = dir_path.AppendASCII("CopyInForeignFile_file");
-  FileSystemPath src_path = dir_path.AppendASCII("CopyInForeignFile_src_file");
+  url = dir_url.WithPath(dir_url.path().AppendASCII("CopyInForeignFile_file"));
+  FileSystemURL src_path = dir_url.WithPath(
+      dir_url.path().AppendASCII("CopyInForeignFile_src_file"));
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->EnsureFileExists(context.get(), src_path, &created));
@@ -1750,89 +1768,91 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->GetLocalFilePath(context.get(), src_path, &src_local_path));
 
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->CopyInForeignFile(context.get(),
                                      src_local_path,
-                                     path));
-  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+                                     url));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForDeletion) {
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
-  const FileSystemPath dir_path = CreatePathFromUTF8("foo_dir");
+  const FileSystemURL dir_url = CreateURLFromUTF8("foo_dir");
 
   // Create working directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), dir_path, false, false));
+            ofu()->CreateDirectory(context.get(), dir_url, false, false));
 
   // DeleteFile, delete case.
-  FileSystemPath path = dir_path.AppendASCII("DeleteFile_file");
+  FileSystemURL url = dir_url.WithPath(
+      dir_url.path().AppendASCII("DeleteFile_file"));
   bool created = false;
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(context.get(), url, &created));
   EXPECT_TRUE(created);
 
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->DeleteFile(context.get(), path));
-  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+            ofu()->DeleteFile(context.get(), url));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 
   // fail case.
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            ofu()->DeleteFile(context.get(), path));
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+            ofu()->DeleteFile(context.get(), url));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // DeleteSingleDirectory, fail case.
-  path = dir_path.AppendASCII("DeleteSingleDirectory_dir");
-  FileSystemPath file_path(path.AppendASCII("pakeratta"));
+  url = dir_url.WithPath(
+      dir_url.path().AppendASCII("DeleteSingleDirectory_dir"));
+  FileSystemURL file_path(url.WithPath(url.path().AppendASCII("pakeratta")));
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), path, true, true));
+            ofu()->CreateDirectory(context.get(), url, true, true));
   created = false;
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->EnsureFileExists(context.get(), file_path, &created));
   EXPECT_TRUE(created);
 
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
-            ofu()->DeleteSingleDirectory(context.get(), path));
-  EXPECT_EQ(base::Time(), GetModifiedTime(dir_path));
+            ofu()->DeleteSingleDirectory(context.get(), url));
+  EXPECT_EQ(base::Time(), GetModifiedTime(dir_url));
 
   // delete case.
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->DeleteFile(context.get(), file_path));
 
-  ClearTimestamp(dir_path);
+  ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->DeleteSingleDirectory(context.get(), path));
-  EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
+            ofu()->DeleteSingleDirectory(context.get(), url));
+  EXPECT_NE(base::Time(), GetModifiedTime(dir_url));
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCopyAndMove) {
   TestDirectoryTimestampHelper(
-      CreatePathFromUTF8("copy overwrite"), true, true);
+      CreateURLFromUTF8("copy overwrite"), true, true);
   TestDirectoryTimestampHelper(
-      CreatePathFromUTF8("copy non-overwrite"), true, false);
+      CreateURLFromUTF8("copy non-overwrite"), true, false);
   TestDirectoryTimestampHelper(
-      CreatePathFromUTF8("move overwrite"), false, true);
+      CreateURLFromUTF8("move overwrite"), false, true);
   TestDirectoryTimestampHelper(
-      CreatePathFromUTF8("move non-overwrite"), false, false);
+      CreateURLFromUTF8("move non-overwrite"), false, false);
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
-  FileSystemPath dir = CreatePathFromUTF8("foo");
-  FileSystemPath path1 = dir.AppendASCII("bar");
-  FileSystemPath path2 = dir.AppendASCII("baz");
+  FileSystemURL dir = CreateURLFromUTF8("foo");
+  FileSystemURL url1 = dir.WithPath(dir.path().AppendASCII("bar"));
+  FileSystemURL url2 = dir.WithPath(dir.path().AppendASCII("baz"));
 
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -1841,22 +1861,22 @@ TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
   bool created = false;
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path1, &created));
+            ofu()->EnsureFileExists(context.get(), url1, &created));
   EXPECT_TRUE(created);
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->CreateDirectory(context.get(), path2, false, false));
+            ofu()->CreateDirectory(context.get(), url2, false, false));
 
   FilePath file_path;
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->GetLocalFilePath(context.get(), path1, &file_path));
+            ofu()->GetLocalFilePath(context.get(), url1, &file_path));
   EXPECT_FALSE(file_path.empty());
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->Touch(context.get(), path1,
+            ofu()->Touch(context.get(), url1,
                          base::Time::Now() + base::TimeDelta::FromHours(1),
                          base::Time()));
 
@@ -1872,7 +1892,7 @@ TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
     FilePath file_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofu()->GetFileInfo(context.get(),
-                                 dir.WithInternalPath(file_path_each),
+                                 dir.WithPath(file_path_each),
                                  &file_info, &file_path));
     EXPECT_EQ(file_info.is_directory, file_enum->IsDirectory());
     EXPECT_EQ(file_info.last_modified, file_enum->LastModifiedTime());
@@ -1883,10 +1903,10 @@ TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestQuotaOnCopyFile) {
-  FileSystemPath from_file(CreatePathFromUTF8("fromfile"));
-  FileSystemPath obstacle_file(CreatePathFromUTF8("obstaclefile"));
-  FileSystemPath to_file1(CreatePathFromUTF8("tofile1"));
-  FileSystemPath to_file2(CreatePathFromUTF8("tofile2"));
+  FileSystemURL from_file(CreateURLFromUTF8("fromfile"));
+  FileSystemURL obstacle_file(CreateURLFromUTF8("obstaclefile"));
+  FileSystemURL to_file1(CreateURLFromUTF8("tofile1"));
+  FileSystemURL to_file2(CreateURLFromUTF8("tofile2"));
   bool created;
 
   int64 expected_total_file_size = 0;
@@ -1974,9 +1994,9 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnCopyFile) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
-  FileSystemPath from_file(CreatePathFromUTF8("fromfile"));
-  FileSystemPath obstacle_file(CreatePathFromUTF8("obstaclefile"));
-  FileSystemPath to_file(CreatePathFromUTF8("tofile"));
+  FileSystemURL from_file(CreateURLFromUTF8("fromfile"));
+  FileSystemURL obstacle_file(CreateURLFromUTF8("obstaclefile"));
+  FileSystemURL to_file(CreateURLFromUTF8("tofile"));
   bool created;
 
   int64 expected_total_file_size = 0;
@@ -2076,10 +2096,10 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
-  FileSystemPath dir(CreatePathFromUTF8("dir"));
-  FileSystemPath file(CreatePathFromUTF8("file"));
-  FileSystemPath dfile1(CreatePathFromUTF8("dir/dfile1"));
-  FileSystemPath dfile2(CreatePathFromUTF8("dir/dfile2"));
+  FileSystemURL dir(CreateURLFromUTF8("dir"));
+  FileSystemURL file(CreateURLFromUTF8("file"));
+  FileSystemURL dfile1(CreateURLFromUTF8("dir/dfile1"));
+  FileSystemURL dfile2(CreateURLFromUTF8("dir/dfile2"));
   bool created;
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
@@ -2144,7 +2164,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
-  FileSystemPath file(CreatePathFromUTF8("file"));
+  FileSystemURL file(CreateURLFromUTF8("file"));
   base::PlatformFile file_handle;
   bool created;
 

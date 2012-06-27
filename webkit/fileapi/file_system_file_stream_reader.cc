@@ -34,7 +34,7 @@ void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
 
 FileSystemFileStreamReader::FileSystemFileStreamReader(
     FileSystemContext* file_system_context,
-    const GURL& url,
+    const FileSystemURL& url,
     int64 initial_offset)
     : file_system_context_(file_system_context),
       url_(url),

@@ -93,18 +93,16 @@ class FILEAPI_EXPORT SandboxMountPointProvider
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
   virtual FileSystemOperationInterface* CreateFileSystemOperation(
-      const GURL& origin_url,
-      FileSystemType file_system_type,
-      const FilePath& virtual_path,
+      const FileSystemURL& url,
       FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
-    const GURL& url,
-    int64 offset,
-    FileSystemContext* context) const OVERRIDE;
+      const FileSystemURL& url,
+      int64 offset,
+      FileSystemContext* context) const OVERRIDE;
   virtual FileStreamWriter* CreateFileStreamWriter(
-    const GURL& url,
-    int64 offset,
-    FileSystemContext* context) const OVERRIDE;
+      const FileSystemURL& url,
+      int64 offset,
+      FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
   FilePath old_base_path() const;

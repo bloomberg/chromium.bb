@@ -20,6 +20,7 @@
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/glue/webkit_glue.h"
@@ -245,11 +246,9 @@ CrosMountPointProvider::GetMountPoint(const FilePath& virtual_path) const {
 
 fileapi::FileSystemOperationInterface*
 CrosMountPointProvider::CreateFileSystemOperation(
-    const GURL& origin_url,
-    fileapi::FileSystemType file_system_type,
-    const FilePath& virtual_path,
+    const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context) const {
-  const MountPoint* mount_point = GetMountPoint(virtual_path);
+  const MountPoint* mount_point = GetMountPoint(url.path());
   if (mount_point && mount_point->location == REMOTE)
     return new chromeos::RemoteFileSystemOperation(mount_point->remote_proxy);
 
@@ -257,7 +256,7 @@ CrosMountPointProvider::CreateFileSystemOperation(
 }
 
 webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
-    const GURL& url,
+    const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {
   // For now we return a generic Reader implementation which utilizes
@@ -267,13 +266,12 @@ webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
 }
 
 fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
-    const GURL& url,
+    const fileapi::FileSystemURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {
-  FilePath virtual_path;
-  if (!fileapi::CrackFileSystemURL(url, NULL, NULL, &virtual_path))
+  if (!url.is_valid())
     return NULL;
-  const MountPoint* mount_point = GetMountPoint(virtual_path);
+  const MountPoint* mount_point = GetMountPoint(url.path());
   if (!mount_point)
     return NULL;
   if (mount_point->location == REMOTE) {
@@ -283,7 +281,7 @@ fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
   }
   FilePath root_path = mount_point->local_root_path;
   return new fileapi::LocalFileStreamWriter(
-      root_path.Append(virtual_path), offset);
+      root_path.Append(url.path()), offset);
 }
 
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,

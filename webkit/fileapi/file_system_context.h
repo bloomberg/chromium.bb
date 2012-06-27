@@ -18,7 +18,6 @@
 #include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
-class GURL;
 
 namespace base {
 class SequencedTaskRunner;
@@ -40,8 +39,8 @@ class FileSystemFileUtil;
 class FileSystemMountPointProvider;
 class FileSystemOperationInterface;
 class FileSystemOptions;
-class FileSystemPathManager;
 class FileSystemQuotaUtil;
+class FileSystemURL;
 class IsolatedMountPointProvider;
 class SandboxMountPointProvider;
 
@@ -125,7 +124,8 @@ class FILEAPI_EXPORT FileSystemContext
   // and calling the provider's corresponding CreateFileSystemOperation method.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
-  FileSystemOperationInterface* CreateFileSystemOperation(const GURL& url);
+  FileSystemOperationInterface* CreateFileSystemOperation(
+      const FileSystemURL& url);
 
   // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|.
@@ -134,7 +134,7 @@ class FILEAPI_EXPORT FileSystemContext
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
   webkit_blob::FileStreamReader* CreateFileStreamReader(
-      const GURL& url,
+      const FileSystemURL& url,
       int64 offset);
 
   // Register a filesystem provider. The ownership of |provider| is

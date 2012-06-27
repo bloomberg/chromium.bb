@@ -26,6 +26,7 @@ class Time;
 }
 
 namespace fileapi {
+class FileSystemURL;
 class FileSystemContext;
 class FileSystemOperationInterface;
 }
@@ -151,13 +152,13 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // Checks renderer's access permissions for single file.
-  bool HasPermissionsForFile(const GURL& path,
+  bool HasPermissionsForFile(const fileapi::FileSystemURL& url,
                              int permissions,
                              base::PlatformFileError* error);
 
-  // Creates a new FileSystemOperationInterface based on |target_path|.
+  // Creates a new FileSystemOperationInterface based on |target_url|.
   fileapi::FileSystemOperationInterface* GetNewOperation(
-      const GURL& target_path,
+      const fileapi::FileSystemURL& target_url,
       int request_id);
 
   int process_id_;

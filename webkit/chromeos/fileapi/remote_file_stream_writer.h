@@ -11,9 +11,9 @@
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_stream_writer.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_url.h"
 
 namespace net {
 class IOBuffer;
@@ -26,13 +26,13 @@ class RemoteFileSystemProxyInterface;
 // FileStreamWriter interface for writing to a file on GData file system.
 class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
  public:
-  // Creates a writer for a file on |remote_filesystem| with path url |path|
+  // Creates a writer for a file on |remote_filesystem| with path url |url|
   // (like "filesystem:chrome-extension://id/external/special/drive/...") that
   // starts writing from |offset|. When invalid parameters are set, the first
   // call to Write() method fails.
   RemoteFileStreamWriter(
       const scoped_refptr<RemoteFileSystemProxyInterface>& remote_filesystem,
-      const GURL& path,
+      const FileSystemURL& url,
       int64 offset);
   virtual ~RemoteFileStreamWriter();
 
@@ -55,7 +55,7 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   void InvokePendingCancelCallback(int result);
 
   scoped_refptr<RemoteFileSystemProxyInterface> remote_filesystem_;
-  const GURL path_;
+  const FileSystemURL url_;
   const int64 initial_offset_;
   scoped_ptr<fileapi::FileStreamWriter> local_file_writer_;
   scoped_refptr<webkit_blob::ShareableFileReference> file_ref_;

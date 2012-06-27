@@ -37,6 +37,7 @@
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::UserMetricsAction;
+using fileapi::FileSystemURL;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
 using fileapi::FileSystemOperation;
@@ -194,15 +195,17 @@ void FileAPIMessageFilter::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
+  FileSystemURL src_url(src_path);
+  FileSystemURL dest_url(dest_path);
   const int src_permissions = kReadFilePermissions | kWriteFilePermissions;
-  if (!HasPermissionsForFile(src_path, src_permissions, &error) ||
-      !HasPermissionsForFile(dest_path, kCreateFilePermissions, &error)) {
+  if (!HasPermissionsForFile(src_url, src_permissions, &error) ||
+      !HasPermissionsForFile(dest_url, kCreateFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(src_path, request_id)->Move(
-      src_path, dest_path,
+  GetNewOperation(src_url, request_id)->Move(
+      src_url, dest_url,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -210,14 +213,16 @@ void FileAPIMessageFilter::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(src_path, kReadFilePermissions, &error) ||
-      !HasPermissionsForFile(dest_path, kCreateFilePermissions, &error)) {
+  FileSystemURL src_url(src_path);
+  FileSystemURL dest_url(dest_path);
+  if (!HasPermissionsForFile(src_url, kReadFilePermissions, &error) ||
+      !HasPermissionsForFile(dest_url, kCreateFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(src_path, request_id)->Copy(
-      src_path, dest_path,
+  GetNewOperation(src_url, request_id)->Copy(
+      src_url, dest_url,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -225,13 +230,14 @@ void FileAPIMessageFilter::OnRemove(
     int request_id, const GURL& path, bool recursive) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, kWriteFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->Remove(
-      path, recursive,
+  GetNewOperation(url, request_id)->Remove(
+      url, recursive,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -239,13 +245,14 @@ void FileAPIMessageFilter::OnReadMetadata(
     int request_id, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, kReadFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->GetMetadata(
-      path,
+  GetNewOperation(url, request_id)->GetMetadata(
+      url,
       base::Bind(&FileAPIMessageFilter::DidGetMetadata, this, request_id));
 }
 
@@ -254,18 +261,19 @@ void FileAPIMessageFilter::OnCreate(
     bool is_directory, bool recursive) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kCreateFilePermissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, kCreateFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
   if (is_directory) {
-    GetNewOperation(path, request_id)->CreateDirectory(
-        path, exclusive, recursive,
+    GetNewOperation(url, request_id)->CreateDirectory(
+        url, exclusive, recursive,
         base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   } else {
-    GetNewOperation(path, request_id)->CreateFile(
-        path, exclusive,
+    GetNewOperation(url, request_id)->CreateFile(
+        url, exclusive,
         base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   }
 }
@@ -274,18 +282,19 @@ void FileAPIMessageFilter::OnExists(
     int request_id, const GURL& path, bool is_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, kReadFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
   if (is_directory) {
-    GetNewOperation(path, request_id)->DirectoryExists(
-        path,
+    GetNewOperation(url, request_id)->DirectoryExists(
+        url,
         base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   } else {
-    GetNewOperation(path, request_id)->FileExists(
-        path,
+    GetNewOperation(url, request_id)->FileExists(
+        url,
         base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   }
 }
@@ -294,13 +303,14 @@ void FileAPIMessageFilter::OnReadDirectory(
     int request_id, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, kReadFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->ReadDirectory(
-      path, base::Bind(&FileAPIMessageFilter::DidReadDirectory,
+  GetNewOperation(url, request_id)->ReadDirectory(
+      url, base::Bind(&FileAPIMessageFilter::DidReadDirectory,
                        this, request_id));
 }
 
@@ -316,14 +326,15 @@ void FileAPIMessageFilter::OnWrite(
     return;
   }
 
+  FileSystemURL url(path);
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
+  if (!HasPermissionsForFile(url, kWriteFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->Write(
-      request_context_, path, blob_url, offset,
+  GetNewOperation(url, request_id)->Write(
+      request_context_, url, blob_url, offset,
       base::Bind(&FileAPIMessageFilter::DidWrite, this, request_id));
 }
 
@@ -332,13 +343,14 @@ void FileAPIMessageFilter::OnTruncate(
     const GURL& path,
     int64 length) {
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, kWriteFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->Truncate(
-      path, length,
+  GetNewOperation(url, request_id)->Truncate(
+      url, length,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -348,14 +360,15 @@ void FileAPIMessageFilter::OnTouchFile(
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  FileSystemURL url(path);
   base::PlatformFileError error;
-  if (!HasPermissionsForFile(path, kCreateFilePermissions, &error)) {
+  if (!HasPermissionsForFile(url, kCreateFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->TouchFile(
-      path, last_access_time, last_modified_time,
+  GetNewOperation(url, request_id)->TouchFile(
+      url, last_access_time, last_modified_time,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -383,40 +396,39 @@ void FileAPIMessageFilter::OnOpenFile(
   base::PlatformFileError error;
   const int open_permissions = base::PLATFORM_FILE_OPEN |
                                (file_flags & kOpenFilePermissions);
-  if (!HasPermissionsForFile(path, open_permissions, &error)) {
+  FileSystemURL url(path);
+  if (!HasPermissionsForFile(url, open_permissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
     return;
   }
 
-  GetNewOperation(path, request_id)->OpenFile(
-      path, file_flags, peer_handle(),
+  GetNewOperation(url, request_id)->OpenFile(
+      url, file_flags, peer_handle(),
       base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id));
 }
 
 void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
-  GURL origin_url;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  fileapi::FileSystemType type;
-  if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
+  FileSystemURL url(path);
+  if (!url.is_valid())
     return;
-  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(type);
+  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(url.type());
   if (!quota_util)
     return;
-  quota_util->proxy()->StartUpdateOrigin(origin_url, type);
+  quota_util->proxy()->StartUpdateOrigin(url.origin(), url.type());
 }
 
 void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  GURL origin_url;
-  fileapi::FileSystemType type;
-  if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
+  FileSystemURL url(path);
+  if (!url.is_valid())
     return;
-  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(type);
+  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(url.type());
   if (!quota_util)
     return;
   quota_util->proxy()->UpdateOriginUsage(
-      context_->quota_manager_proxy(), origin_url, type, delta);
-  quota_util->proxy()->EndUpdateOrigin(origin_url, type);
+      context_->quota_manager_proxy(), url.origin(), url.type(), delta);
+  quota_util->proxy()->EndUpdateOrigin(url.origin(), url.type());
 }
 
 void FileAPIMessageFilter::OnSyncGetPlatformPath(
@@ -424,14 +436,9 @@ void FileAPIMessageFilter::OnSyncGetPlatformPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(platform_path);
   *platform_path = FilePath();
-
-  GURL origin_url;
-  fileapi::FileSystemType file_system_type = fileapi::kFileSystemTypeUnknown;
-  FilePath file_path;
-  if (!fileapi::CrackFileSystemURL(
-          path, &origin_url, &file_system_type, &file_path)) {
+  FileSystemURL url(path);
+  if (!url.is_valid())
     return;
-  }
 
   // This is called only by pepper plugin as of writing to get the
   // underlying platform path to upload a file in the sandboxed filesystem
@@ -439,16 +446,17 @@ void FileAPIMessageFilter::OnSyncGetPlatformPath(
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
   FileSystemOperation* operation =
-      context_->CreateFileSystemOperation(path)->AsFileSystemOperation();
+      context_->CreateFileSystemOperation(url)->AsFileSystemOperation();
   DCHECK(operation);
-  operation->SyncGetPlatformPath(path, platform_path);
+  operation->SyncGetPlatformPath(url, platform_path);
 }
 
 void FileAPIMessageFilter::OnCreateSnapshotFile(
     int request_id, const GURL& blob_url, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  GetNewOperation(path, request_id)->CreateSnapshotFile(
-      path,
+  FileSystemURL url(path);
+  GetNewOperation(url, request_id)->CreateSnapshotFile(
+      url,
       base::Bind(&FileAPIMessageFilter::DidCreateSnapshot,
                  this, request_id, blob_url));
 }
@@ -641,22 +649,17 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 }
 
 bool FileAPIMessageFilter::HasPermissionsForFile(
-    const GURL& path, int permissions, base::PlatformFileError* error) {
+    const FileSystemURL& url, int permissions, base::PlatformFileError* error) {
   DCHECK(error);
   *error = base::PLATFORM_FILE_OK;
 
-  GURL origin;
-  fileapi::FileSystemType file_system_type = fileapi::kFileSystemTypeUnknown;
-  FilePath virtual_path;
-  // TODO(tbarzic): try to reduce number of calls to CrackFileSystemURL.
-  if (!fileapi::CrackFileSystemURL(path, &origin, &file_system_type,
-           &virtual_path)) {
+  if (!url.is_valid()) {
     *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
     return false;
   }
 
   FileSystemMountPointProvider* mount_point_provider =
-      context_->GetMountPointProvider(file_system_type);
+      context_->GetMountPointProvider(url.type());
   if (!mount_point_provider) {
     *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
     return false;
@@ -669,17 +672,22 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
   // Special handling for isolated filesystem.
   // (See ChildProcessSecurityPolicy::GrantReadFileSystem for more
   // details about access permission for isolated filesystem.)
-  if (file_system_type == fileapi::kFileSystemTypeIsolated) {
+  if (url.type() == fileapi::kFileSystemTypeIsolated) {
     std::string filesystem_id;
     if (!fileapi::IsolatedContext::GetInstance()->CrackIsolatedPath(
-            virtual_path, &filesystem_id, NULL, &file_path)) {
+            url.path(), &filesystem_id, NULL, &file_path)) {
       *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
       return false;
     }
     // The root directory case. Always allow read-only access as far as the
     // filesystem is valid.
-    if (file_path.empty())
-      return (permissions == kReadFilePermissions);
+    if (file_path.empty()) {
+      if (permissions != kReadFilePermissions) {
+        *error = base::PLATFORM_FILE_ERROR_SECURITY;
+        return false;
+      }
+      return true;
+    }
 
     // Access permission to the file system overrides the file permission
     // (if and only if they accessed via an isolated file system).
@@ -690,7 +698,7 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
     return success;
   }
 
-  file_path = mount_point_provider->GetPathForPermissionsCheck(virtual_path);
+  file_path = mount_point_provider->GetPathForPermissionsCheck(url.path());
   if (file_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_SECURITY;
     return false;
@@ -705,10 +713,10 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
 
 
 FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
-    const GURL& target_path,
+    const FileSystemURL& target_url,
     int request_id) {
   FileSystemOperationInterface* operation =
-      context_->CreateFileSystemOperation(target_path);
+      context_->CreateFileSystemOperation(target_url);
   DCHECK(operation);
   operations_.AddWithID(operation, request_id);
   return operation;

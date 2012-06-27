@@ -13,6 +13,7 @@
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_client.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -166,30 +167,23 @@ void FileSystemContext::OpenFileSystem(
 }
 
 FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
-    const GURL& url) {
-  GURL origin_url;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-  FilePath file_path;
-  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &file_path))
+    const FileSystemURL& url) {
+  if (!url.is_valid())
     return NULL;
   FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(file_system_type);
+      GetMountPointProvider(url.type());
   if (!mount_point_provider)
     return NULL;
-  return mount_point_provider->CreateFileSystemOperation(
-      origin_url, file_system_type, file_path, this);
+  return mount_point_provider->CreateFileSystemOperation(url, this);
 }
 
 webkit_blob::FileStreamReader* FileSystemContext::CreateFileStreamReader(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset) {
-  GURL origin_url;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-  FilePath file_path;
-  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &file_path))
+  if (!url.is_valid())
     return NULL;
   FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(file_system_type);
+      GetMountPointProvider(url.type());
   if (!mount_point_provider)
     return NULL;
   return mount_point_provider->CreateFileStreamReader(url, offset, this);

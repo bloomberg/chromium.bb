@@ -435,23 +435,21 @@ FilePath SandboxMountPointProvider::GetPathForPermissionsCheck(
 
 FileSystemOperationInterface*
 SandboxMountPointProvider::CreateFileSystemOperation(
-    const GURL& origin_url,
-    FileSystemType file_system_type,
-    const FilePath& virtual_path,
+    const FileSystemURL& url,
     FileSystemContext* context) const {
   return new FileSystemOperation(context);
 }
 
 webkit_blob::FileStreamReader*
 SandboxMountPointProvider::CreateFileStreamReader(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
   return new FileSystemFileStreamReader(context, url, offset);
 }
 
 fileapi::FileStreamWriter* SandboxMountPointProvider::CreateFileStreamWriter(
-    const GURL& url,
+    const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
   return new SandboxFileStreamWriter(context, url, offset);
@@ -571,9 +569,9 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   FileSystemUsageCache::Delete(usage_file_path);
 
   FileSystemOperationContext context(file_system_context);
-  FileSystemPath path(origin_url, type, FilePath());
+  FileSystemURL url(origin_url, type, FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      sandbox_file_util_->CreateFileEnumerator(&context, path, true));
+      sandbox_file_util_->CreateFileEnumerator(&context, url, true));
 
   FilePath file_path_each;
   int64 usage = 0;

@@ -24,7 +24,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_path.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -105,10 +105,10 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     TestRequestHelper(url, false);
   }
 
-  FileSystemPath CreatePath(const FilePath& file_path) {
-    return FileSystemPath(GURL("http://remote"),
-                          fileapi::kFileSystemTypeTemporary,
-                          file_path);
+  FileSystemURL CreateURL(const FilePath& file_path) {
+    return FileSystemURL(GURL("http://remote"),
+                         fileapi::kFileSystemTypeTemporary,
+                         file_path);
   }
 
   FileSystemOperationContext* NewOperationContext() {
@@ -123,7 +123,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->CreateDirectory(
         context.get(),
-        CreatePath(path),
+        CreateURL(path),
         false /* exclusive */,
         false /* recursive */));
   }
@@ -132,14 +132,14 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     FilePath path = FilePath().AppendASCII(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->EnsureFileExists(
-        context.get(), CreatePath(path), NULL));
+        context.get(), CreateURL(path), NULL));
   }
 
   void TruncateFile(const base::StringPiece file_name, int64 length) {
     FilePath path = FilePath().AppendASCII(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->Truncate(
-        context.get(), CreatePath(path), length));
+        context.get(), CreateURL(path), length));
   }
 
   PlatformFileError GetFileInfo(const FilePath& path,
@@ -147,7 +147,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
                    FilePath* platform_file_path) {
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     return file_util()->GetFileInfo(context.get(),
-                                    CreatePath(path),
+                                    CreateURL(path),
                                     file_info, platform_file_path);
   }
 
