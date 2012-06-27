@@ -11,7 +11,6 @@
 #include "content/common/url_schemes.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
-#include "media/base/media.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor_setup.h"
 
@@ -23,7 +22,6 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
-  media::InitializeMediaLibraryForTesting();
 
   scoped_ptr<ContentClient> client_for_init(CreateClientForInitialization());
   SetContentClient(client_for_init.get());
