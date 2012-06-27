@@ -20,6 +20,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/windows_version.h"
 #include "google_update/google_update_idl.h"
 #include "remoting/base/dispatch_win.h"
 #include "remoting/host/constants.h"
@@ -30,8 +31,11 @@ using base::win::ScopedVariant;
 
 namespace {
 
-// The COM elevation moniker for Omaha.
-const wchar_t kOmahaElevationMoniker[] =
+// ProgID of the per-machine Omaha COM server.
+const wchar_t kGoogleUpdate[] = L"GoogleUpdate.Update3WebMachine";
+
+// The COM elevation moniker for the per-machine Omaha COM server.
+const wchar_t kGoogleUpdateElevationMoniker[] =
     L"Elevation:Administrator!new:GoogleUpdate.Update3WebMachine";
 
 // The registry key where the configuration of Omaha is stored.
@@ -336,19 +340,33 @@ void DaemonInstallerWin::Done(HRESULT result) {
 scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
     HWND window_handle,
     CompletionCallback done) {
-  // Check if the machine instance of Omaha is available.
-  BIND_OPTS3 bind_options;
-  memset(&bind_options, 0, sizeof(bind_options));
-  bind_options.cbStruct = sizeof(bind_options);
-  bind_options.hwnd = GetTopLevelWindow(window_handle);
-  bind_options.dwClassContext = CLSCTX_LOCAL_SERVER;
-
+  HRESULT result = E_FAIL;
   ScopedComPtr<IDispatch> update3;
-  HRESULT result = ::CoGetObject(
-      kOmahaElevationMoniker,
-      &bind_options,
-      IID_IDispatch,
-      update3.ReceiveVoid());
+
+  // Check if the machine instance of Omaha is available. The COM elevation is
+  // supported on Vista+, so on XP/W2K3 we assume that we are running under
+  // a privileged user and get ACCESS_DENIED later if we are not.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    CLSID class_id;
+    result = CLSIDFromProgID(kGoogleUpdate, &class_id);
+    if (SUCCEEDED(result)) {
+      result = CoCreateInstance(class_id,
+                                NULL,
+                                CLSCTX_LOCAL_SERVER,
+                                IID_IDispatch,
+                                update3.ReceiveVoid());
+    }
+  } else {
+    BIND_OPTS3 bind_options;
+    memset(&bind_options, 0, sizeof(bind_options));
+    bind_options.cbStruct = sizeof(bind_options);
+    bind_options.hwnd = GetTopLevelWindow(window_handle);
+    bind_options.dwClassContext = CLSCTX_LOCAL_SERVER;
+    result = CoGetObject(kGoogleUpdateElevationMoniker,
+                         &bind_options,
+                         IID_IDispatch,
+                         update3.ReceiveVoid());
+  }
   if (SUCCEEDED(result)) {
     // The machine instance of Omaha is available and we successfully passed
     // the UAC prompt.
