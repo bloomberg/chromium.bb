@@ -14,7 +14,7 @@ var gLocalStream = null;
  * String which keeps track of what happened when we requested user media.
  * @private
  */
-var gRequestWebcamAndMicrophoneResult = null;
+var gRequestWebcamAndMicrophoneResult = 'not-called-yet';
 
 /**
  * This function asks permission to use the webcam and mic from the browser. It
@@ -37,14 +37,12 @@ function getUserMedia(requestVideo, requestAudio) {
 }
 
 /**
- * Must be called after calling getUserMedia. Returns either ok-got-stream
+ * Must be called after calling getUserMedia. Returns not-called-yet if we have
+ * not yet been called back by WebRTC. Otherwise it returns either ok-got-stream
  * or failed-with-error-x (where x is the error code from the error callback)
  * depending on which callback got called by WebRTC.
  */
 function obtainGetUserMediaResult() {
-  if (gRequestWebcamAndMicrophoneResult == null)
-    failTest('getUserMedia has not been called!');
-
   returnToPyAuto(gRequestWebcamAndMicrophoneResult);
 }
 

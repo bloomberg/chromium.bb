@@ -151,9 +151,9 @@ class WebRTCCallTest(pyauto.PyUITest):
 
     self.WaitForInfobarCount(1, tab_index=tab_index)
     self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)
+    self._WaitForGetUserMediaResult(tab_index=0)
 
-    result = self.ExecuteJavascript(
-        'obtainGetUserMediaResult()', tab_index=tab_index)
+    result = self._GetUserMediaResult(tab_index=0)
     self._AssertNoFailures(tab_index)
     return result
 
@@ -186,14 +186,20 @@ class WebRTCCallTest(pyauto.PyUITest):
     self.assertEquals('ok-disconnected', self.ExecuteJavascript(
         'disconnect()', tab_index=tab_index))
 
+  def _WaitForGetUserMediaResult(self, tab_index):
+    def HasResult():
+      return self._GetUserMediaResult(tab_index) != 'not-called-yet'
+    self.assertTrue(self.WaitUntil(HasResult),
+                    msg='Timed out while waiting for getUserMedia callback.')
+
+  def _GetUserMediaResult(self, tab_index):
+    return self.ExecuteJavascript(
+        'obtainGetUserMediaResult()', tab_index=tab_index)
+
   def _StartDetectingVideo(self, tab_index, video_element):
     self.assertEquals('ok-started', self.ExecuteJavascript(
         'startDetection("%s", "frame_buffer", 320, 240)' % video_element,
         tab_index=tab_index));
-
-  def _AssertNoFailures(self, tab_index):
-    self.assertEquals('ok-no-errors', self.ExecuteJavascript(
-        'getAnyTestFailures()', tab_index=tab_index))
 
   def _WaitForVideoToPlay(self):
     video_playing = self.WaitUntil(
@@ -201,6 +207,10 @@ class WebRTCCallTest(pyauto.PyUITest):
         expect_retval='video-playing')
     self.assertTrue(video_playing,
                     msg='Timed out while trying to detect video.')
+
+  def _AssertNoFailures(self, tab_index):
+    self.assertEquals('ok-no-errors', self.ExecuteJavascript(
+        'getAnyTestFailures()', tab_index=tab_index))
 
 
 if __name__ == '__main__':
