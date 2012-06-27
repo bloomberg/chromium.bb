@@ -56,6 +56,7 @@ class SpeechRecognitionEngine {
     std::string language;
     content::SpeechRecognitionGrammarArray grammars;
     bool filter_profanities;
+    uint32 max_hypotheses;
     std::string hardware_info;
     std::string origin_url;
     int audio_sample_rate;

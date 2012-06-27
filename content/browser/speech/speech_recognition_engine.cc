@@ -7,12 +7,14 @@
 namespace {
 const int kDefaultConfigSampleRate = 8000;
 const int kDefaultConfigBitsPerSample = 16;
+const uint32 kDefaultMaxHypotheses = 1;
 }  // namespace
 
 namespace speech {
 
 SpeechRecognitionEngine::Config::Config()
     : filter_profanities(false),
+      max_hypotheses(kDefaultMaxHypotheses),
       audio_sample_rate(kDefaultConfigSampleRate),
       audio_num_bits_per_sample(kDefaultConfigBitsPerSample) {
 }

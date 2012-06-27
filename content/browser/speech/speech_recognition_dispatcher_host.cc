@@ -83,6 +83,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
   config.is_one_shot = params.is_one_shot;
   config.language = params.language;
   config.grammars = params.grammars;
+  config.max_hypotheses = params.max_hypotheses;
   config.origin_url = params.origin_url;
   config.initial_context = context;
   config.url_request_context_getter = context_getter_.get();

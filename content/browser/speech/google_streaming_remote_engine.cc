@@ -35,9 +35,6 @@ using net::URLFetcher;
 
 namespace {
 
-// TODO(primiano): This shouldn't be a const, rather it should be taken from
-// maxNBest property (which is not yet implemented in WebKit).
-const int kMaxResults = 5;
 const char kDownstreamUrl[] = "/down?";
 const char kUpstreamUrl[] = "/up?";
 const int kAudioPacketIntervalMs = 100;
@@ -322,8 +319,6 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   std::vector<std::string> downstream_args;
   downstream_args.push_back("sky=" + GetWebserviceKey());
   downstream_args.push_back("pair=" + request_key);
-  downstream_args.push_back("maxresults=" + base::IntToString(kMaxResults));
-
   GURL downstream_url(GetWebserviceBaseURL() + std::string(kDownstreamUrl) +
                       JoinString(downstream_args, '&'));
   // TODO(primiano): /////////// Remove this after debug stage. /////////////
@@ -347,9 +342,12 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
       "lang=" + net::EscapeQueryParamValue(GetAcceptedLanguages(), true));
   upstream_args.push_back(
       config_.filter_profanities ? "pfilter=2" : "pfilter=0");
-  upstream_args.push_back("maxresults=" + base::IntToString(kMaxResults));
+  if (config_.max_hypotheses > 0U) {
+    upstream_args.push_back("maxresults=" +
+                            base::UintToString(config_.max_hypotheses));
+  }
+  // TODO(primiano) What is this client= parameter? Check with speech team.
   upstream_args.push_back("client=myapp.mycompany.com");
-  // TODO(primiano): Can we remove this feature sending audio HW information?
   if (!config_.hardware_info.empty()) {
     upstream_args.push_back(
         "xhw=" + net::EscapeQueryParamValue(config_.hardware_info, true));

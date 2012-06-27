@@ -37,9 +37,6 @@ const int kWebServiceStatusNoSpeech = 4;
 const int kWebServiceStatusNoMatch = 5;
 const speech::AudioEncoder::Codec kDefaultAudioCodec =
     speech::AudioEncoder::CODEC_FLAC;
-// TODO(satish): Remove this hardcoded value once the page is allowed to
-// set this via an attribute.
-const int kMaxResults = 6;
 
 bool ParseServerResponse(const std::string& response_body,
                          SpeechRecognitionResult* result,
@@ -198,7 +195,7 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
   if (!config_.hardware_info.empty())
     parts.push_back("xhw=" + net::EscapeQueryParamValue(config_.hardware_info,
                                                         true));
-  parts.push_back("maxresults=" + base::IntToString(kMaxResults));
+  parts.push_back("maxresults=" + base::UintToString(config_.max_hypotheses));
   parts.push_back(config_.filter_profanities ? "pfilter=2" : "pfilter=0");
 
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));

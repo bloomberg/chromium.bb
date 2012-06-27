@@ -73,6 +73,7 @@ void SpeechRecognitionDispatcher::start(
   }
   msg_params.language = UTF16ToUTF8(params.language());
   msg_params.is_one_shot = !params.continuous();
+  msg_params.max_hypotheses = static_cast<uint32>(params.maxAlternatives());
   msg_params.origin_url = params.origin().toString().utf8();
   msg_params.render_view_id = routing_id();
   msg_params.request_id = GetOrCreateIDForHandle(handle);

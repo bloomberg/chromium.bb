@@ -16,6 +16,10 @@ using content::SpeechRecognitionManager;
 using content::SpeechRecognitionSessionConfig;
 using content::SpeechRecognitionSessionContext;
 
+namespace {
+const uint32 kMaxHypothesesForSpeechInputTag = 6;
+}
+
 namespace speech {
 SpeechRecognitionManager* InputTagSpeechDispatcherHost::manager_for_tests_;
 
@@ -77,6 +81,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
     config.grammars.push_back(
         content::SpeechRecognitionGrammar(params.grammar));
   }
+  config.max_hypotheses = kMaxHypothesesForSpeechInputTag;
   config.origin_url = params.origin_url;
   config.initial_context = context;
   config.url_request_context_getter = url_request_context_getter_.get();

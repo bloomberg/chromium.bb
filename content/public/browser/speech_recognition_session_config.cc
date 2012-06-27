@@ -4,11 +4,16 @@
 
 #include "content/public/browser/speech_recognition_session_config.h"
 
+namespace {
+const uint32 kDefaultMaxHypotheses = 1;
+}
+
 namespace content {
 
 SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig()
     : is_one_shot(true),
       filter_profanities(false),
+      max_hypotheses(kDefaultMaxHypotheses),
       event_listener(NULL) {
 }
 
