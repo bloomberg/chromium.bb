@@ -18,6 +18,7 @@
 
   "chrome/browser/browser_resources.grd": {
     "includes": [500],
+    "structures": [750],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
     "includes": [1000],
