@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
@@ -509,7 +510,7 @@ bool BrowserWindowCocoa::PreHandleKeyboardEvent(
   if (id == -1)
     return false;
 
-  if (browser_->IsReservedCommandOrKey(id, event)) {
+  if (browser_->command_controller()->IsReservedCommandOrKey(id, event)) {
       return [BrowserWindowUtils handleKeyboardEvent:event.os_event
                                             inWindow:window()];
   }

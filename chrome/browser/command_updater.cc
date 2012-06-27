@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "chrome/browser/command_observer.h"
 
 CommandUpdater::CommandUpdaterDelegate::~CommandUpdaterDelegate() {
 }
@@ -40,18 +41,21 @@ bool CommandUpdater::SupportsCommand(int id) const {
   return commands_.find(id) != commands_.end();
 }
 
-void CommandUpdater::ExecuteCommand(int id) {
-  ExecuteCommandWithDisposition(id, CURRENT_TAB);
+bool CommandUpdater::ExecuteCommand(int id) {
+  return ExecuteCommandWithDisposition(id, CURRENT_TAB);
 }
 
-void CommandUpdater::ExecuteCommandWithDisposition(
+bool CommandUpdater::ExecuteCommandWithDisposition(
     int id,
     WindowOpenDisposition disposition) {
-  if (IsCommandEnabled(id))
+  if (SupportsCommand(id) && IsCommandEnabled(id)) {
     delegate_->ExecuteCommandWithDisposition(id, disposition);
+    return true;
+  }
+  return false;
 }
 
-CommandUpdater::CommandObserver::~CommandObserver() {
+CommandObserver::~CommandObserver() {
 }
 
 void CommandUpdater::UpdateCommandEnabled(int id, bool enabled) {

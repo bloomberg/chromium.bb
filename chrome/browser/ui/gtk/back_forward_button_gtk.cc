@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -90,7 +91,8 @@ void BackForwardButtonGtk::ShowBackForwardMenu(int button, guint32 event_time) {
 void BackForwardButtonGtk::OnClick(GtkWidget* widget) {
   weak_factory_.InvalidateWeakPtrs();
 
-  browser_->ExecuteCommandWithDisposition(
+  chrome::ExecuteCommandWithDisposition(
+      browser_,
       is_forward_ ? IDC_FORWARD : IDC_BACK,
       event_utils::DispositionForCurrentButtonPressEvent());
 }

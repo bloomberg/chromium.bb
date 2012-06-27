@@ -7,25 +7,32 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -34,9 +41,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/common/content_restriction.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -123,7 +132,80 @@ void ReloadInternal(Browser* browser,
     web_contents->GetController().Reload(true);
 }
 
+bool HasConstrainedWindow(const Browser* browser) {
+  TabContents* tab_contents = browser->GetActiveTabContents();
+  return tab_contents && tab_contents->constrained_window_tab_helper()->
+      constrained_window_count();
+}
+
+bool PrintPreviewShowing(const Browser* browser) {
+  TabContents* contents = browser->GetActiveTabContents();
+  printing::PrintPreviewTabController* controller =
+      printing::PrintPreviewTabController::GetInstance();
+  return controller && (controller->GetPrintPreviewForTab(contents) ||
+                        controller->is_creating_print_preview_tab());
+}
+
 }  // namespace
+
+bool IsCommandEnabled(Browser* browser, int command) {
+  return browser->command_controller()->command_updater()->IsCommandEnabled(
+      command);
+}
+
+bool SupportsCommand(Browser* browser, int command) {
+  return browser->command_controller()->command_updater()->SupportsCommand(
+      command);
+}
+
+bool ExecuteCommand(Browser* browser, int command) {
+  return browser->command_controller()->command_updater()->ExecuteCommand(
+      command);
+}
+
+bool ExecuteCommandWithDisposition(Browser* browser,
+                                   int command,
+                                   WindowOpenDisposition disposition) {
+  return browser->command_controller()->command_updater()->
+      ExecuteCommandWithDisposition(command, disposition);
+}
+
+void UpdateCommandEnabled(Browser* browser, int command, bool enabled) {
+  browser->command_controller()->command_updater()->UpdateCommandEnabled(
+      command, enabled);
+}
+
+void AddCommandObserver(Browser* browser,
+                        int command,
+                        CommandObserver* observer) {
+  browser->command_controller()->command_updater()->AddCommandObserver(
+      command, observer);
+}
+
+void RemoveCommandObserver(Browser* browser,
+                           int command,
+                           CommandObserver* observer) {
+  browser->command_controller()->command_updater()->RemoveCommandObserver(
+      command, observer);
+}
+
+int GetContentRestrictions(const Browser* browser) {
+  int content_restrictions = 0;
+  WebContents* current_tab = browser->GetActiveWebContents();
+  if (current_tab) {
+    content_restrictions = current_tab->GetContentRestrictions();
+    NavigationEntry* active_entry =
+        current_tab->GetController().GetActiveEntry();
+    // See comment in UpdateCommandsForTabState about why we call url().
+    if (!download_util::IsSavableURL(
+            active_entry ? active_entry->GetURL() : GURL()) ||
+        current_tab->ShowingInterstitialPage())
+      content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
+    if (current_tab->ShowingInterstitialPage())
+      content_restrictions |= content::CONTENT_RESTRICTION_PRINT;
+  }
+  return content_restrictions;
+}
 
 void NewEmptyWindow(Profile* profile) {
   bool incognito = profile->IsOffTheRecord();
@@ -175,7 +257,7 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   browser->window()->Show();
 }
 
-bool CanGoBack(Browser* browser) {
+bool CanGoBack(const Browser* browser) {
   return browser->GetActiveWebContents()->GetController().CanGoBack();
 }
 
@@ -194,7 +276,7 @@ void GoBack(Browser* browser, WindowOpenDisposition disposition) {
   }
 }
 
-bool CanGoForward(Browser* browser) {
+bool CanGoForward(const Browser* browser) {
   return browser->GetActiveWebContents()->GetController().CanGoForward();
 }
 
@@ -225,6 +307,10 @@ void Reload(Browser* browser, WindowOpenDisposition disposition) {
 void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("ReloadIgnoringCache"));
   ReloadInternal(browser, disposition, true);
+}
+
+bool CanReload(const Browser* browser) {
+  return !browser->is_devtools();
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
@@ -315,6 +401,20 @@ void CloseTab(Browser* browser) {
   browser->tab_strip_model()->CloseSelectedTabs();
 }
 
+void RestoreTab(Browser* browser) {
+  content::RecordAction(UserMetricsAction("RestoreTab"));
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser->profile());
+  if (service)
+    service->RestoreMostRecentEntry(browser->tab_restore_service_delegate());
+}
+
+bool CanRestoreTab(const Browser* browser) {
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(browser->profile());
+  return service && !service->entries().empty();
+}
+
 void SelectNextTab(Browser* browser) {
   content::RecordAction(UserMetricsAction("SelectNextTab"));
   browser->tab_strip_model()->SelectNextTab();
@@ -364,6 +464,11 @@ void SelectLastTab(Browser* browser) {
 void DuplicateTab(Browser* browser) {
   content::RecordAction(UserMetricsAction("Duplicate"));
   browser->DuplicateContentsAt(browser->active_index());
+}
+
+bool CanDuplicateTab(const Browser* browser) {
+  WebContents* contents = browser->GetActiveWebContents();
+  return contents && contents->GetController().GetLastCommittedEntry();
 }
 
 void WriteCurrentURLToClipboard(Browser* browser) {
@@ -422,6 +527,22 @@ void BookmarkCurrentPage(Browser* browser) {
   }
 }
 
+bool CanBookmarkCurrentPage(const Browser* browser) {
+  BookmarkModel* model = browser->profile()->GetBookmarkModel();
+  return browser_defaults::bookmarks_enabled &&
+      browser->profile()->GetPrefs()->GetBoolean(
+          prefs::kEditBookmarksEnabled) &&
+      model && model->IsLoaded() && browser->is_type_tabbed();
+}
+
+void BookmarkAllTabs(Browser* browser) {
+  BookmarkEditor::ShowBookmarkAllTabsDialog(browser);
+}
+
+bool CanBookmarkAllTabs(const Browser* browser) {
+  return browser->tab_count() > 1 && CanBookmarkCurrentPage(browser);
+}
+
 #if !defined(OS_WIN)
 void PinCurrentPageToStartScreen(Browser* browser) {
 }
@@ -433,6 +554,17 @@ void SavePage(Browser* browser) {
   if (current_tab && current_tab->GetContentsMimeType() == "application/pdf")
     content::RecordAction(UserMetricsAction("PDF.SavePage"));
   current_tab->OnSavePage();
+}
+
+bool CanSavePage(const Browser* browser) {
+  // LocalState can be NULL in tests.
+  if (g_browser_process->local_state() &&
+      !g_browser_process->local_state()->GetBoolean(
+      prefs::kAllowFileSelectionDialogs)) {
+    return false;
+  }
+  return !browser->is_devtools() &&
+      !(GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_SAVE);
 }
 
 void ShowFindBar(Browser* browser) {
@@ -473,8 +605,31 @@ void Print(Browser* browser) {
   }
 }
 
+bool CanPrint(const Browser* browser) {
+  // LocalState can be NULL in tests.
+  if (g_browser_process->local_state() &&
+      !g_browser_process->local_state()->GetBoolean(prefs::kPrintingEnabled)) {
+    return false;
+  }
+
+  // Do not print when a constrained window is showing. It's confusing.
+  return !(HasConstrainedWindow(browser) ||
+      GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT);
+}
+
 void AdvancedPrint(Browser* browser) {
   browser->GetActiveTabContents()->print_view_manager()->AdvancedPrintNow();
+}
+
+bool CanAdvancedPrint(const Browser* browser) {
+  // LocalState can be NULL in tests.
+  if (g_browser_process->local_state() &&
+      !g_browser_process->local_state()->GetBoolean(prefs::kPrintingEnabled)) {
+    return false;
+  }
+
+  // It is always possible to advanced print when print preview is visible.
+  return PrintPreviewShowing(browser) || CanPrint(browser);
 }
 
 void EmailPageLocation(Browser* browser) {
@@ -488,6 +643,11 @@ void EmailPageLocation(Browser* browser) {
   std::string mailto = std::string("mailto:?subject=Fwd:%20") +
       title + "&body=%0A%0A" + page_url;
   platform_util::OpenExternal(GURL(mailto));
+}
+
+bool CanEmailPageLocation(const Browser* browser) {
+  return browser->toolbar_model()->ShouldDisplayURL() &&
+      browser->GetActiveWebContents()->GetURL().is_valid();
 }
 
 void Cut(Browser* browser) {
@@ -754,6 +914,14 @@ void ViewSource(Browser* browser,
 
 void ViewSelectedSource(Browser* browser) {
   ViewSource(browser, browser->GetActiveTabContents());
+}
+
+bool CanViewSource(const Browser* browser) {
+  return browser->GetActiveWebContents()->GetController().CanViewSource();
+}
+
+bool CanCreateApplicationShortcuts(const Browser* browser) {
+  return web_app::IsValidUrl(browser->GetActiveWebContents()->GetURL());
 }
 
 }  // namespace chrome

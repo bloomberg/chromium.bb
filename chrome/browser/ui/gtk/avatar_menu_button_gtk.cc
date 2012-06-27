@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "ui/gfx/gtk_util.h"
@@ -67,7 +68,7 @@ void AvatarMenuButtonGtk::OnSizeAllocate(GtkWidget* widget,
 }
 
 void AvatarMenuButtonGtk::ShowAvatarBubble() {
-  DCHECK(browser_->command_updater()->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+  DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
   // Only show the avatar bubble if the avatar button is in the title bar.
   if (gtk_widget_get_parent_window(widget_.get()))
     new AvatarMenuBubbleGtk(browser_, widget_.get(), arrow_location_, NULL);

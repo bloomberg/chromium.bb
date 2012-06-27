@@ -9,9 +9,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_observer.h"
 
 @protocol CommandObserverProtocol;
+
+class CommandUpdater;
 
 // A C++ bridge class that handles listening for updates to commands and
 // passing them back to an object that supports the protocol delcared below.
@@ -21,7 +23,7 @@
 // bridge will handle automatically unregistering for updates, so there's no
 // need to do that manually.
 
-class CommandObserverBridge : public CommandUpdater::CommandObserver {
+class CommandObserverBridge : public CommandObserver {
  public:
   CommandObserverBridge(id<CommandObserverProtocol> observer,
                         CommandUpdater* commands);
@@ -31,7 +33,7 @@ class CommandObserverBridge : public CommandUpdater::CommandObserver {
   void ObserveCommand(int command);
 
  protected:
-  // Overridden from CommandUpdater::CommandObserver
+  // Overridden from CommandObserver
   virtual void EnabledStateChangedForCommand(int command,
                                              bool enabled) OVERRIDE;
 

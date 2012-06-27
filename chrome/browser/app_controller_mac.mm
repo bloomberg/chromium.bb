@@ -827,7 +827,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       // Create a new tab in an existing browser window (which we activate) if
       // possible.
       if (Browser* browser = ActivateBrowser(lastProfile)) {
-        browser->ExecuteCommand(IDC_NEW_TAB);
+        chrome::ExecuteCommand(browser, IDC_NEW_TAB);
         break;
       }
       // Else fall through to create new window.
@@ -835,10 +835,12 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       CreateBrowser(lastProfile);
       break;
     case IDC_FOCUS_LOCATION:
-      ActivateOrCreateBrowser(lastProfile)->ExecuteCommand(IDC_FOCUS_LOCATION);
+      chrome::ExecuteCommand(ActivateOrCreateBrowser(lastProfile),
+                             IDC_FOCUS_LOCATION);
       break;
     case IDC_FOCUS_SEARCH:
-      ActivateOrCreateBrowser(lastProfile)->ExecuteCommand(IDC_FOCUS_SEARCH);
+      chrome::ExecuteCommand(ActivateOrCreateBrowser(lastProfile),
+                             IDC_FOCUS_SEARCH);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
       CreateBrowser(lastProfile->GetOffTheRecordProfile());
@@ -847,7 +849,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       chrome::OpenWindowWithRestoredTabs(lastProfile);
       break;
     case IDC_OPEN_FILE:
-      CreateBrowser(lastProfile)->ExecuteCommand(IDC_OPEN_FILE);
+      chrome::ExecuteCommand(CreateBrowser(lastProfile), IDC_OPEN_FILE);
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.

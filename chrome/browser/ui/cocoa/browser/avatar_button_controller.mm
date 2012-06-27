@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -158,7 +159,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   if (menuController_)
     return;
 
-  DCHECK(browser_->command_updater()->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+  DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
 
   NSWindowController* wc =
       [browser_->window()->GetNativeWindow() windowController];

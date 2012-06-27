@@ -119,12 +119,12 @@ bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
-  bool enabled = browser_->command_updater()->IsCommandEnabled(command_id);
+  bool enabled = chrome::IsCommandEnabled(browser_, command_id);
   // Special handling for the contents of the Encoding submenu. On Mac OS,
   // instead of enabling/disabling the top-level menu item, the submenu's
   // contents get disabled, per Apple's HIG.
 #if defined(OS_MACOSX)
-  enabled &= browser_->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU);
+  enabled &= chrome::IsCommandEnabled(browser_, IDC_ENCODING_MENU);
 #endif
   return enabled;
 }
@@ -136,7 +136,7 @@ bool EncodingMenuModel::GetAcceleratorForCommandId(
 }
 
 void EncodingMenuModel::ExecuteCommand(int command_id) {
-  browser_->ExecuteCommand(command_id);
+  chrome::ExecuteCommand(browser_, command_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -342,7 +342,7 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
   if (command_id == IDC_HELP_PAGE_VIA_MENU)
     content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
 
-  browser_->ExecuteCommand(command_id);
+  chrome::ExecuteCommand(browser_, command_id);
 }
 
 bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
@@ -361,7 +361,7 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
   if (error)
     return true;
 
-  return browser_->command_updater()->IsCommandEnabled(command_id);
+  return chrome::IsCommandEnabled(browser_, command_id);
 }
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {

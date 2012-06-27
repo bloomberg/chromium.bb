@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_observer.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
@@ -46,7 +46,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public LocationBarView::Delegate,
                     public chrome::search::SearchModelObserver,
                     public content::NotificationObserver,
-                    public CommandUpdater::CommandObserver,
+                    public CommandObserver,
                     public views::ButtonListener {
  public:
   // The view class name.
@@ -128,7 +128,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // Overridden from chrome::search::SearchModelObserver:
   virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
 
-  // Overridden from CommandUpdater::CommandObserver:
+  // Overridden from CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
   // Overridden from views::ButtonListener:

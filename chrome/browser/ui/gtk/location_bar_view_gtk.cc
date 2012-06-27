@@ -38,6 +38,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -185,7 +186,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       tab_to_search_hint_leading_label_(NULL),
       tab_to_search_hint_icon_(NULL),
       tab_to_search_hint_trailing_label_(NULL),
-      command_updater_(browser->command_updater()),
+      command_updater_(browser->command_controller()->command_updater()),
       toolbar_model_(browser->toolbar_model()),
       browser_(browser),
       disposition_(CURRENT_TAB),
@@ -1240,7 +1241,7 @@ gboolean LocationBarViewGtk::OnZoomButtonPress(GtkWidget* widget,
 gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
                                                GdkEventButton* event) {
   if (event->button == 1) {
-    browser_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+    chrome::ExecuteCommand(browser_, IDC_BOOKMARK_PAGE);
     return TRUE;
   }
   return FALSE;
@@ -1250,7 +1251,7 @@ gboolean LocationBarViewGtk::OnChromeToMobileButtonPress(
     GtkWidget* widget,
     GdkEventButton* event) {
   if (event->button == 1) {
-    browser_->ExecuteCommand(IDC_CHROME_TO_MOBILE_PAGE);
+    chrome::ExecuteCommand(browser_, IDC_CHROME_TO_MOBILE_PAGE);
     return TRUE;
   }
   return FALSE;

@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -169,9 +170,8 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   for (CommandIDMenuItemMap::const_iterator it = id_to_menu_item_.begin();
        it != id_to_menu_item_.end(); ++it) {
     // Get the starting enabled state.
-    gtk_widget_set_sensitive(
-        it->second,
-        browser_->command_updater()->IsCommandEnabled(it->first));
+    gtk_widget_set_sensitive(it->second,
+                             chrome::IsCommandEnabled(browser_, it->first));
 
     // Set the accelerator for each menu item.
     AcceleratorsGtk* accelerators = AcceleratorsGtk::GetInstance();
@@ -186,7 +186,7 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
                                  GTK_ACCEL_VISIBLE);
     }
 
-    browser_->command_updater()->AddCommandObserver(it->first, this);
+    chrome::AddCommandObserver(browser_, it->first, this);
   }
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
@@ -202,7 +202,7 @@ GlobalMenuBar::~GlobalMenuBar() {
 void GlobalMenuBar::Disable() {
   for (CommandIDMenuItemMap::const_iterator it = id_to_menu_item_.begin();
        it != id_to_menu_item_.end(); ++it) {
-    browser_->command_updater()->RemoveCommandObserver(it->first, this);
+    chrome::RemoveCommandObserver(browser_, it->first, this);
   }
   id_to_menu_item_.clear();
 
@@ -308,5 +308,5 @@ void GlobalMenuBar::OnItemActivated(GtkWidget* sender) {
     return;
 
   int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(sender), "command-id"));
-  browser_->ExecuteCommandIfEnabled(id);
+  chrome::ExecuteCommand(browser_, id);
 }

@@ -33,6 +33,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -475,9 +477,10 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK(iter != accelerator_table_.end());
   int command_id = iter->second;
 
-  if (!browser_->block_command_execution())
+  chrome::BrowserCommandController* controller = browser_->command_controller();
+  if (!controller->block_command_execution())
     UpdateAcceleratorMetrics(accelerator, command_id);
-  return browser_->ExecuteCommandIfEnabled(command_id);
+  return chrome::ExecuteCommand(browser_.get(), command_id);
 }
 
 bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
@@ -1230,24 +1233,26 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     return false;
   }
 
+  chrome::BrowserCommandController* controller = browser_->command_controller();
+
   // Here we need to retrieve the command id (if any) associated to the
   // keyboard event. Instead of looking up the command id in the
   // |accelerator_table_| by ourselves, we block the command execution of
   // the |browser_| object then send the keyboard event to the
   // |focus_manager| as if we are activating an accelerator key.
   // Then we can retrieve the command id from the |browser_| object.
-  browser_->SetBlockCommandExecution(true);
+  controller->SetBlockCommandExecution(true);
   // If the |accelerator| is a non-browser shortcut (e.g. Ash shortcut), the
   // command execution cannot be blocked and true is returned. However, it is
   // okay as long as is_app() is false. See comments in this function.
   const bool processed = focus_manager->ProcessAccelerator(accelerator);
-  const int id = browser_->GetLastBlockedCommand(NULL);
-  browser_->SetBlockCommandExecution(false);
+  const int id = controller->GetLastBlockedCommand(NULL);
+  controller->SetBlockCommandExecution(false);
 
   // Executing the command may cause |this| object to be destroyed.
-  if (browser_->IsReservedCommandOrKey(id, event)) {
+  if (controller->IsReservedCommandOrKey(id, event)) {
     UpdateAcceleratorMetrics(accelerator, id);
-    return browser_->ExecuteCommandIfEnabled(id);
+    return chrome::ExecuteCommand(browser_.get(), id);
   }
 
   if (id != -1) {
@@ -1521,7 +1526,7 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
   if (command_id_from_app_command != -1)
     command_id = command_id_from_app_command;
 
-  return browser_->ExecuteCommandIfEnabled(command_id);
+  return chrome::ExecuteCommand(browser_.get(), command_id);
 }
 
 std::string BrowserView::GetWindowName() const {

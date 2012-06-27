@@ -46,6 +46,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -560,8 +561,7 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
 
     // If the browser has UI, simulate what a user would do.
     // Activate the tab and then click the encoding menu.
-    if (browser &&
-        browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU)) {
+    if (browser && chrome::IsCommandEnabled(browser, IDC_ENCODING_MENU)) {
       int selected_encoding_id =
           CharacterEncoding::GetCommandIdByCanonicalEncodingName(encoding_name);
       if (selected_encoding_id) {

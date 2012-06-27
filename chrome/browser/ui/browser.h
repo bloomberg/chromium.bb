@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_tab_helper_delegate.h"
@@ -26,8 +25,6 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
@@ -71,6 +68,7 @@ class TabStripModel;
 struct WebApplicationInfo;
 
 namespace chrome {
+class BrowserCommandController;
 namespace search {
 class SearchDelegate;
 class SearchModel;
@@ -109,11 +107,8 @@ class Browser : public TabStripModelDelegate,
                 public ZoomObserver,
                 public ExtensionTabHelperDelegate,
                 public content::PageNavigator,
-                public CommandUpdater::CommandUpdaterDelegate,
                 public content::NotificationObserver,
                 public SelectFileDialog::Listener,
-                public TabRestoreServiceObserver,
-                public ProfileSyncServiceObserver,
                 public InstantDelegate {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
@@ -272,10 +267,12 @@ class Browser : public TabStripModelDelegate,
   // is done.
   BrowserWindow* window() const { return window_; }
   ToolbarModel* toolbar_model() { return toolbar_model_.get(); }
+  const ToolbarModel* toolbar_model() const { return toolbar_model_.get(); }
+  chrome::BrowserCommandController* command_controller() {
+    return command_controller_.get();
+  }
   chrome::search::SearchModel* search_model() { return search_model_.get(); }
   const SessionID& session_id() const { return session_id_; }
-  CommandUpdater* command_updater() { return &command_updater_; }
-  bool block_command_execution() const { return block_command_execution_; }
   BrowserContentSettingBubbleModelDelegate*
       content_setting_bubble_model_delegate() {
     return content_setting_bubble_model_delegate_.get();
@@ -502,34 +499,6 @@ class Browser : public TabStripModelDelegate,
                               int active_match_ordinal,
                               bool final_update);
 
-  // Calls ExecuteCommandWithDisposition with CURRENT_TAB disposition.
-  void ExecuteCommand(int id);
-
-  // Calls ExecuteCommandWithDisposition with the given event flags.
-  void ExecuteCommand(int id, int event_flags);
-
-  // Executes a command if it's enabled.
-  // Returns true if the command is executed.
-  bool ExecuteCommandIfEnabled(int id);
-
-  // Returns true if |command_id| is a reserved command whose keyboard shortcuts
-  // should not be sent to the renderer or |event| was triggered by a key that
-  // we never want to send to the renderer.
-  bool IsReservedCommandOrKey(int command_id,
-                              const content::NativeWebKeyboardEvent& event);
-
-  // Sets if command execution shall be blocked. If |block| is true then
-  // following calls to ExecuteCommand() or ExecuteCommandWithDisposition()
-  // method will not execute the command, and the last blocked command will be
-  // recorded for retrieval.
-  void SetBlockCommandExecution(bool block);
-
-  // Gets the last blocked command after calling SetBlockCommandExecution(true).
-  // Returns the command id or -1 if there is no command blocked. The
-  // disposition type of the command will be stored in |*disposition| if it's
-  // not null.
-  int GetLastBlockedCommand(WindowOpenDisposition* disposition);
-
   // Called by browser::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(TabContents* contents,
@@ -541,15 +510,6 @@ class Browser : public TabStripModelDelegate,
   // Overridden from content::PageNavigator:
   virtual content::WebContents* OpenURL(
       const content::OpenURLParams& params) OVERRIDE;
-
-  // Overridden from CommandUpdater::CommandUpdaterDelegate:
-  virtual void ExecuteCommandWithDisposition(
-      int id,
-      WindowOpenDisposition disposition) OVERRIDE;
-
-  // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
   // Centralized method for creating a TabContents, configuring and
   // installing all its supporting objects and observers.
@@ -708,18 +668,6 @@ class Browser : public TabStripModelDelegate,
 
     // Change is the result of window toggling in/out of fullscreen mode.
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
-  };
-
-  enum FullScreenMode {
-    // Not in fullscreen mode.
-    FULLSCREEN_DISABLED,
-
-    // Fullscreen mode, occupying the whole screen.
-    FULLSCREEN_NORMAL,
-
-    // Fullscreen mode for metro snap, occupying the full height and 20% of
-    // the screen width.
-    FULLSCREEN_METRO_SNAP,
   };
 
   // Overridden from content::WebContentsDelegate:
@@ -887,9 +835,6 @@ class Browser : public TabStripModelDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
-
   // Overriden from InstantDelegate:
   virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
@@ -902,57 +847,8 @@ class Browser : public TabStripModelDelegate,
 
   // Command and state updating ///////////////////////////////////////////////
 
-  // Returns true if the regular Chrome UI (not the fullscreen one and
-  // not the single-tab one) is shown. Used for updating window command states
-  // only. Consider using SupportsWindowFeature if you need the mentioned
-  // functionality anywhere else.
-  bool IsShowingMainUI(bool is_fullscreen);
-
-  // Initialize state for all browser commands.
-  void InitCommandState();
-
-  // Update commands whose state depends on incognito mode availability.
-  void UpdateCommandsForIncognitoAvailability();
-
-  // Update commands whose state depends on the tab's state.
-  void UpdateCommandsForTabState();
-
-  // Updates commands when the content's restrictions change.
-  void UpdateCommandsForContentRestrictionState();
-
-  // Updates commands for enabling developer tools.
-  void UpdateCommandsForDevTools();
-
-  // Updates commands for bookmark editing.
-  void UpdateCommandsForBookmarkEditing();
-
-  // Updates commands that affect the bookmark bar.
-  void UpdateCommandsForBookmarkBar();
-
   // Set the preference that indicates that the home page has been changed.
   void MarkHomePageAsChanged(PrefService* pref_service);
-
-  // Update commands whose state depends on the type of fullscreen mode the
-  // window is in.
-  void UpdateCommandsForFullscreenMode(FullScreenMode fullscreen_mode);
-
-  // Update commands whose state depends on whether multiple profiles are
-  // allowed.
-  void UpdateCommandsForMultipleProfiles();
-
-  // Updates the printing command state.
-  void UpdatePrintingState(int content_restrictions);
-
-  // Updates the save-page-as command state.
-  void UpdateSaveAsState(int content_restrictions);
-
-  // Updates the open-file state (Mac Only).
-  void UpdateOpenFileState();
-
-  // Ask the Reload/Stop button to change its icon, and update the Stop command
-  // state.  |is_loading| is true if the current WebContents is loading.
-  // |force| is true if the button should change its icon immediately.
-  void UpdateReloadStopState(bool is_loading, bool force);
 
   // UI update coalescing and handling ////////////////////////////////////////
 
@@ -1075,11 +971,6 @@ class Browser : public TabStripModelDelegate,
   // If this browser should have instant one is created, otherwise does nothing.
   void CreateInstantIfNecessary();
 
-  // Retrieves the content restrictions for the currently selected tab.
-  // Returns 0 if no tab selected, which is equivalent to no content
-  // restrictions active.
-  int GetContentRestrictionsForSelectedTab();
-
   // Resets |bookmark_bar_state_| based on the active tab. Notifies the
   // BrowserWindow if necessary.
   void UpdateBookmarkBarState(BookmarkBarStateChangeReason reason);
@@ -1097,8 +988,6 @@ class Browser : public TabStripModelDelegate,
 
   PrefChangeRegistrar profile_pref_registrar_;
 
-  PrefChangeRegistrar local_pref_registrar_;
-
   // This Browser's type.
   const Type type_;
 
@@ -1109,9 +998,6 @@ class Browser : public TabStripModelDelegate,
   BrowserWindow* window_;
 
   scoped_ptr<TabStripModel> tab_strip_model_;
-
-  // The CommandUpdater that manages the browser window commands.
-  CommandUpdater command_updater_;
 
   // The application name that is also the name of the window to the shell.
   // This name should be set when:
@@ -1204,22 +1090,9 @@ class Browser : public TabStripModelDelegate,
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;
 
-  // Indicates if command execution is blocked.
-  bool block_command_execution_;
-
-  // Stores the last blocked command id when |block_command_execution_| is true.
-  int last_blocked_command_id_;
-
-  // Stores the disposition type of the last blocked command.
-  WindowOpenDisposition last_blocked_command_disposition_;
-
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
   // from a WebContents. Currently, only one pending action is allowed.
   WebAppAction pending_web_app_action_;
-
-  // The profile's tab restore service. The service is owned by the profile,
-  // and we install ourselves as an observer.
-  TabRestoreService* tab_restore_service_;
 
   // Helper which implements the ContentSettingBubbleModel interface.
   scoped_ptr<BrowserContentSettingBubbleModelDelegate>
@@ -1247,6 +1120,8 @@ class Browser : public TabStripModelDelegate,
   scoped_refptr<FullscreenController> fullscreen_controller_;
 
   scoped_ptr<ExtensionWindowController> extension_window_controller_;
+
+  scoped_ptr<chrome::BrowserCommandController> command_controller_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;

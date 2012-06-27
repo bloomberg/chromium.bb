@@ -13,6 +13,7 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/perf/perf_test.h"
@@ -232,7 +233,7 @@ void PageCycler::Finish() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   BrowserList::RemoveObserver(this);
   browser_->OnWindowClosing();
-  browser_->ExecuteCommand(IDC_EXIT);
+  chrome::ExecuteCommand(browser_, IDC_EXIT);
   Release();  // Balanced in PageCycler constructor;
               // (only one of Finish/Abort should be called).
 }

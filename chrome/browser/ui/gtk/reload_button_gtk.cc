@@ -192,7 +192,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
                               &ReloadButtonGtk::OnDoubleClickTimer);
 
     if (browser_)
-      browser_->ExecuteCommandWithDisposition(command, disposition);
+      chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
     ++testing_reload_count_;
   }
 }

@@ -634,10 +634,10 @@ void TestingAutomationProvider::Reload(int handle,
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
+    if (chrome::IsCommandEnabled(browser, IDC_RELOAD)) {
       new NavigationNotificationObserver(
           tab, this, reply_message, 1, false, false);
-      chrome::Reload(browser, CURRENT_TAB);
+      chrome::ExecuteCommand(browser, IDC_RELOAD);
       return;
     }
   }
@@ -678,15 +678,15 @@ void TestingAutomationProvider::ExecuteBrowserCommandAsync(int handle,
     return;
   }
   Browser* browser = browser_tracker_->GetResource(handle);
-  if (!browser->command_updater()->SupportsCommand(command)) {
+  if (!chrome::SupportsCommand(browser, command)) {
     LOG(WARNING) << "Browser does not support command: " << command;
     return;
   }
-  if (!browser->command_updater()->IsCommandEnabled(command)) {
+  if (!chrome::IsCommandEnabled(browser, command)) {
     LOG(WARNING) << "Browser command not enabled: " << command;
     return;
   }
-  browser->ExecuteCommand(command);
+  chrome::ExecuteCommand(browser, command);
   *success = true;
 }
 
@@ -702,12 +702,12 @@ void TestingAutomationProvider::ExecuteBrowserCommand(
   };
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser->command_updater()->SupportsCommand(command) &&
-        browser->command_updater()->IsCommandEnabled(command)) {
+    if (chrome::SupportsCommand(browser, command) &&
+        chrome::IsCommandEnabled(browser, command)) {
       // First check if we can handle the command without using an observer.
       for (size_t i = 0; i < arraysize(kSynchronousCommands); i++) {
         if (command == kSynchronousCommands[i]) {
-          browser->ExecuteCommand(command);
+          chrome::ExecuteCommand(browser, command);
           AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message,
                                                                true);
           Send(reply_message);
@@ -718,7 +718,7 @@ void TestingAutomationProvider::ExecuteBrowserCommand(
       // Use an observer if we have one, otherwise fail.
       if (ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
           this, browser, command, reply_message)) {
-        browser->ExecuteCommand(command);
+        chrome::ExecuteCommand(browser, command);
         return;
       }
     }
@@ -1369,8 +1369,7 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
   *menu_item_enabled = false;
   if (browser_tracker_->ContainsHandle(browser_handle)) {
     Browser* browser = browser_tracker_->GetResource(browser_handle);
-    *menu_item_enabled =
-        browser->command_updater()->IsCommandEnabled(message_num);
+    *menu_item_enabled = chrome::IsCommandEnabled(browser, message_num);
   }
 }
 
@@ -1622,10 +1621,10 @@ void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
+    if (chrome::IsCommandEnabled(browser, IDC_BACK)) {
       new NavigationNotificationObserver(tab, this, reply_message,
                                          number_of_navigations, false, false);
-      chrome::GoBack(browser, CURRENT_TAB);
+      chrome::ExecuteCommand(browser, IDC_BACK);
       return;
     }
   }
@@ -1640,10 +1639,10 @@ void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
+    if (chrome::IsCommandEnabled(browser, IDC_FORWARD)) {
       new NavigationNotificationObserver(tab, this, reply_message,
                                          number_of_navigations, false, false);
-      chrome::GoForward(browser, CURRENT_TAB);
+      chrome::ExecuteCommand(browser, IDC_FORWARD);
       return;
     }
   }

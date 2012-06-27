@@ -104,10 +104,10 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       window_(window) {
   wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
 
-  browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
-  browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
-  browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
+  chrome::AddCommandObserver(browser_, IDC_BACK, this);
+  chrome::AddCommandObserver(browser_, IDC_FORWARD, this);
+  chrome::AddCommandObserver(browser_, IDC_HOME, this);
+  chrome::AddCommandObserver(browser_, IDC_BOOKMARK_PAGE, this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
@@ -118,10 +118,10 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
-  browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
-  browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
-  browser_->command_updater()->RemoveCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->RemoveCommandObserver(IDC_BOOKMARK_PAGE, this);
+  chrome::RemoveCommandObserver(browser_, IDC_BACK, this);
+  chrome::RemoveCommandObserver(browser_, IDC_FORWARD, this);
+  chrome::RemoveCommandObserver(browser_, IDC_HOME, this);
+  chrome::RemoveCommandObserver(browser_, IDC_BOOKMARK_PAGE, this);
 
   offscreen_entry_.Destroy();
 
@@ -303,7 +303,7 @@ void BrowserToolbarGtk::ShowAppMenu() {
   wrench_menu_->PopupAsFromKeyEvent(wrench_menu_button_->widget());
 }
 
-// CommandUpdater::CommandObserver ---------------------------------------------
+// CommandObserver -------------------------------------------------------------
 
 void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
   GtkWidget* widget = NULL;

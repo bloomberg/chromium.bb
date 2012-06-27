@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -86,7 +87,7 @@ void LocaleChangeGuard::RevertLocaleChange() {
 
   Browser* browser = browser::FindTabbedBrowser(profile_, false);
   if (browser)
-    browser->ExecuteCommand(IDC_EXIT);
+    chrome::ExecuteCommand(browser, IDC_EXIT);
 }
 
 void LocaleChangeGuard::RevertLocaleChangeCallback(const ListValue* list) {

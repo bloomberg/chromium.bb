@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
@@ -150,7 +151,7 @@ const float kHideDuration = 0.7;
 - (BOOL) textView:(NSTextView*)textView
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
-  browser_->ExecuteCommand(IDC_FULLSCREEN);
+  chrome::ExecuteCommand(browser_, IDC_FULLSCREEN);
   return YES;
 }
 

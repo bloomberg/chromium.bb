@@ -10,6 +10,8 @@
 #include "base/hash_tables.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class CommandObserver;
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CommandUpdater class
@@ -48,28 +50,15 @@ class CommandUpdater {
 
   // Performs the action associated with this command ID using CURRENT_TAB
   // disposition.
-  // TODO(beng): get rid of this since it's effectively just a pass-thru and the
-  // call sites would be better off using more well defined delegate interfaces.
-  void ExecuteCommand(int id);
+  // Returns true if the command was executed (i.e. it is supported and is
+  // enabled).
+  bool ExecuteCommand(int id);
 
   // Performs the action associated with this command ID using the given
   // disposition.
-  // TODO(altimofeev): refactor the interface to provide more flexible and
-  // explicit way for passing command specific arguments. See
-  // NotificationDetails class for the possible implementation ideas.
-  void ExecuteCommandWithDisposition(int id, WindowOpenDisposition disposition);
-
-  // An Observer interface implemented by objects that want to be informed when
-  // the state of a particular command ID is modified.
-  class CommandObserver {
-   public:
-    // Notifies the observer that the enabled state has changed for the
-    // specified command id.
-    virtual void EnabledStateChangedForCommand(int id, bool enabled) = 0;
-
-   protected:
-    virtual ~CommandObserver();
-  };
+  // Returns true if the command was executed (i.e. it is supported and is
+  // enabled).
+  bool ExecuteCommandWithDisposition(int id, WindowOpenDisposition disposition);
 
   // Adds an observer to the state of a particular command. If the command does
   // not exist, it is created, initialized to false.

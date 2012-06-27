@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -331,6 +332,7 @@ void ChromeToMobileService::SnapshotFileCreated(
   // Track the set of temporary files to be deleted later.
   snapshots_.insert(path);
 
+  // TODO(jam): This is bad and should be replaced with some sort of context.
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
   if (success && browser && browser->GetActiveWebContents()) {
     // Generate the snapshot and have the observer be called back on completion.
@@ -473,10 +475,12 @@ void ChromeToMobileService::HandleSearchResponse() {
     if (!mobiles_.empty())
       LogMetric(DEVICES_AVAILABLE);
 
+    // TODO(jam): This is bad and should be replaced with some sort of context.
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
-    if (browser && browser->command_updater())
-      browser->command_updater()->UpdateCommandEnabled(
-          IDC_CHROME_TO_MOBILE_PAGE, !mobiles_.empty());
+    if (browser) {
+      browser->command_controller()->SendToMobileStateChanged(
+          !mobiles_.empty());
+    }
   }
 }
 

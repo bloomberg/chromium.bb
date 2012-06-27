@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -1179,20 +1180,22 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
     // 1. The logic is a little complicated.
     // 2. We should be careful not to introduce any accelerators that trigger
     //    customized code instead of browser commands.
-    browser_->SetBlockCommandExecution(true);
+    browser_->command_controller()->SetBlockCommandExecution(true);
     gtk_window_activate_key(window_, os_event);
     // We don't need to care about the WindowOpenDisposition value,
     // because all commands executed in this path use the default value.
-    id = browser_->GetLastBlockedCommand(NULL);
-    browser_->SetBlockCommandExecution(false);
+    id = browser_->command_controller()->GetLastBlockedCommand(NULL);
+    browser_->command_controller()->SetBlockCommandExecution(false);
   }
 
   if (id == -1)
     return false;
 
   // Executing the command may cause |this| object to be destroyed.
-  if (browser_->IsReservedCommandOrKey(id, event) && !event.match_edit_command)
-    return browser_->ExecuteCommandIfEnabled(id);
+  if (browser_->command_controller()->IsReservedCommandOrKey(id, event) &&
+      !event.match_edit_command) {
+    return chrome::ExecuteCommand(browser_.get(), id);
+  }
 
   // The |event| is a keyboard shortcut.
   DCHECK(is_keyboard_shortcut != NULL);
@@ -1217,7 +1220,7 @@ void BrowserWindowGtk::HandleKeyboardEvent(
   // gtk_window_activate_key() takes care of it automatically.
   int id = GetCustomCommandId(os_event);
   if (id != -1)
-    browser_->ExecuteCommandIfEnabled(id);
+    chrome::ExecuteCommand(browser_.get(), id);
   else
     gtk_window_activate_key(window_, os_event);
 }
@@ -2205,7 +2208,7 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
   BrowserWindowGtk* browser_window =
       GetBrowserWindowForNativeWindow(GTK_WINDOW(acceleratable));
   DCHECK(browser_window != NULL);
-  return browser_window->browser()->ExecuteCommandIfEnabled(command_id);
+  return chrome::ExecuteCommand(browser_window->browser(), command_id);
 }
 
 // Let the focused widget have first crack at the key event so we don't
@@ -2226,7 +2229,7 @@ gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
     if (command_id == -1)
       command_id = GetPreHandleCommandId(event);
 
-    if (command_id != -1 && browser_->ExecuteCommandIfEnabled(command_id))
+    if (command_id != -1 && chrome::ExecuteCommand(browser_.get(), command_id))
       return TRUE;
 
     // Propagate the key event to child widget first, so we don't override their

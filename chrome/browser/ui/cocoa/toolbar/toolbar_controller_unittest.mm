@@ -6,6 +6,9 @@
 
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -50,7 +53,8 @@ class ToolbarControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    CommandUpdater* updater = browser()->command_updater();
+    CommandUpdater* updater =
+        browser()->command_controller()->command_updater();
     // The default state for the commands is true, set a couple to false to
     // ensure they get picked up correct on initialization
     updater->UpdateCommandEnabled(IDC_BACK, false);
@@ -58,7 +62,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     bar_.reset(
         [[ToolbarController alloc] initWithModel:browser()->toolbar_model()
-                                        commands:browser()->command_updater()
+                                        commands:browser()->command_controller()->command_updater()
                                          profile:profile()
                                          browser:browser()
                                   resizeDelegate:resizeDelegate_.get()]);
@@ -88,7 +92,7 @@ TEST_VIEW(ToolbarControllerTest, [bar_ view])
 
 // Test the initial state that everything is sync'd up
 TEST_F(ToolbarControllerTest, InitialState) {
-  CommandUpdater* updater = browser()->command_updater();
+  CommandUpdater* updater = browser()->command_controller()->command_updater();
   CompareState(updater, [bar_ toolbarViews]);
 }
 
@@ -131,11 +135,11 @@ TEST_F(ToolbarControllerTest, NoLocationBar) {
 // Make some changes to the enabled state of a few of the buttons and ensure
 // that we're still in sync.
 TEST_F(ToolbarControllerTest, UpdateEnabledState) {
-  CommandUpdater* updater = browser()->command_updater();
-  EXPECT_FALSE(updater->IsCommandEnabled(IDC_BACK));
-  EXPECT_FALSE(updater->IsCommandEnabled(IDC_FORWARD));
-  updater->UpdateCommandEnabled(IDC_BACK, true);
-  updater->UpdateCommandEnabled(IDC_FORWARD, true);
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_BACK));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FORWARD));
+  chrome::UpdateCommandEnabled(browser(), IDC_BACK, true);
+  chrome::UpdateCommandEnabled(browser(), IDC_FORWARD, true);
+  CommandUpdater* updater = browser()->command_controller()->command_updater();
   CompareState(updater, [bar_ toolbarViews]);
 }
 

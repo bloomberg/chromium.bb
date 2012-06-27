@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/command_updater.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

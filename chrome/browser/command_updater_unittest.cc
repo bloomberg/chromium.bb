@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/command_observer.h"
 #include "chrome/browser/command_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +19,7 @@ class TestingCommandHandlerMock
 class CommandUpdaterTest : public testing::Test {
 };
 
-class TestingCommandObserverMock : public CommandUpdater::CommandObserver {
+class TestingCommandObserverMock : public CommandObserver {
  public:
   TestingCommandObserverMock() : enabled_(true) {}
 

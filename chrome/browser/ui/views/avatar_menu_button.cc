@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -159,7 +160,7 @@ void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
 }
 
 void AvatarMenuButton::ShowAvatarBubble() {
-  DCHECK(browser_->command_updater()->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+  DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
 
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);

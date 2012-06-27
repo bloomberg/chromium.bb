@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CHROME_TO_MOBILE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
+class CommandUpdater;
 class LocationBarView;
 
 namespace views {
@@ -19,14 +20,14 @@ class MouseEvent;
 
 // A Page Action image view for the Chrome To Mobile bubble.
 class ChromeToMobileView : public views::ImageView,
-                           public CommandUpdater::CommandObserver,
+                           public CommandObserver,
                            public TouchableLocationBarView {
  public:
   ChromeToMobileView(LocationBarView* location_bar_view,
                      CommandUpdater* command_updater);
   virtual ~ChromeToMobileView();
 
-  // CommandUpdater::CommandObserver overrides:
+  // CommandObserver overrides:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
   // TouchableLocationBarView.

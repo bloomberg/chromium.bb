@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -610,7 +611,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 // on the Mac. http://crbug.com/13148
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFile) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
 
   static const FilePath::CharType* kEmptyFile = FILE_PATH_LITERAL("empty.html");
   GURL file_url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
@@ -621,7 +623,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
 
   ASSERT_TRUE(test_server()->Start());
   GURL http_url(test_server()->GetURL(""));
@@ -631,7 +634,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
 
   net::TestServer test_server(net::TestServer::TYPE_HTTPS,
                               net::TestServer::kLocalhost,
@@ -644,7 +648,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
 
   net::TestServer test_server(net::TestServer::TYPE_FTP,
                               net::TestServer::kLocalhost,
@@ -657,7 +662,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
 
   // Urls that should not have shortcuts.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -1075,7 +1081,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
           &browser()->GetActiveWebContents()->GetController()));
   chrome::GoBack(browser(), CURRENT_TAB);
   back_nav_load_observer.Wait();
-  EXPECT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_FORWARD));
 
   ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -1084,13 +1092,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
   chrome::GoForward(browser(), CURRENT_TAB);
   // This check will happen before the navigation completes, since the browser
   // won't process the renderer's response until the Wait() call below.
-  EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_FORWARD));
   forward_nav_load_observer.Wait();
 }
 
 // Makes sure certain commands are disabled when Incognito mode is forced.
 IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
   // At the beginning, all commands are enabled.
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
@@ -1113,7 +1122,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
 
   // Create a new browser.
   Browser* new_browser = Browser::Create(browser()->profile());
-  CommandUpdater* new_command_updater = new_browser->command_updater();
+  CommandUpdater* new_command_updater =
+      new_browser->command_controller()->command_updater();
   // It should have Bookmarks & Settings commands disabled by default.
   EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
   EXPECT_FALSE(new_command_updater->IsCommandEnabled(
@@ -1128,7 +1138,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
 // not available.
 IN_PROC_BROWSER_TEST_F(BrowserTest,
                        NoNewIncognitoWindowWhenIncognitoIsDisabled) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
   // Set Incognito to DISABLED.
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);
@@ -1143,7 +1154,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 
   // Create a new browser.
   Browser* new_browser = Browser::Create(browser()->profile());
-  CommandUpdater* new_command_updater = new_browser->command_updater();
+  CommandUpdater* new_command_updater =
+      new_browser->command_controller()->command_updater();
   EXPECT_FALSE(new_command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
   EXPECT_TRUE(new_command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
@@ -1156,7 +1168,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 // circumstances even though normally they should stay enabled.
 IN_PROC_BROWSER_TEST_F(BrowserTest,
                        DisableExtensionsAndSettingsWhenIncognitoIsDisabled) {
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
   // Disable extensions. This should disable Extensions menu.
   browser()->profile()->GetExtensionService()->set_extensions_enabled(false);
   // Set Incognito to DISABLED.
@@ -1173,7 +1186,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   // as Extensions should be disabled.
   Browser* popup_browser = browser()->CreateWithParams(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
-  CommandUpdater* popup_command_updater = popup_browser->command_updater();
+  CommandUpdater* popup_command_updater =
+      popup_browser->command_controller()->command_updater();
   EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
   EXPECT_FALSE(popup_command_updater->IsCommandEnabled(IDC_OPTIONS));
   EXPECT_TRUE(popup_command_updater->IsCommandEnabled(
@@ -1188,7 +1202,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   // Create a popup browser.
   Browser* popup_browser = browser()->CreateWithParams(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
-  CommandUpdater* command_updater = popup_browser->command_updater();
+  CommandUpdater* command_updater =
+      popup_browser->command_controller()->command_updater();
   // OPTIONS and IMPORT_SETTINGS are disabled for a non-normal UI.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
@@ -1247,7 +1262,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   GURL url(test_server()->GetURL("empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  CommandUpdater* command_updater = browser()->command_updater();
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));

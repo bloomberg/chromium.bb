@@ -938,8 +938,7 @@ bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {
   if (command_id == kShowWindowDecorationsCommand)
     return true;
 
-  return browser_window_->browser()->command_updater()->
-      IsCommandEnabled(command_id);
+  return chrome::IsCommandEnabled(browser_window_->browser(), command_id);
 }
 
 bool BrowserTitlebar::IsCommandIdChecked(int command_id) const {
@@ -972,7 +971,7 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
     return;
   }
 
-  browser_window_->browser()->ExecuteCommand(command_id);
+  chrome::ExecuteCommand(browser_window_->browser(), command_id);
 }
 
 bool BrowserTitlebar::GetAcceleratorForCommandId(

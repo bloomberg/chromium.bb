@@ -284,8 +284,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
-  ASSERT_TRUE(browser()->command_updater()->SupportsCommand(IDC_SAVE_PAGE));
-  EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE));
+  EXPECT_FALSE(chrome::CanSavePage(browser()));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {

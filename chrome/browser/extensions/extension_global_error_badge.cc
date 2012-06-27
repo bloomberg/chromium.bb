@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -40,7 +41,7 @@ void ExtensionGlobalErrorBadge::ExecuteMenuItem(Browser* browser) {
   // a badge on the wrench menu in the future of this session.
   extension_service->extension_warnings()->SuppressBadgeForCurrentWarnings();
 
-  browser->ExecuteCommand(IDC_MANAGE_EXTENSIONS);
+  chrome::ExecuteCommand(browser, IDC_MANAGE_EXTENSIONS);
 }
 
 bool ExtensionGlobalErrorBadge::HasBubbleView() {

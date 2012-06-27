@@ -26,6 +26,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
@@ -320,7 +322,7 @@ enum {
     // Adds the toolbar to the content area.
     toolbarController_.reset([[ToolbarController alloc]
                                initWithModel:browser->toolbar_model()
-                                    commands:browser->command_updater()
+                                    commands:browser->command_controller()->command_updater()
                                      profile:browser->profile()
                                      browser:browser
                               resizeDelegate:self]);
@@ -1015,9 +1017,9 @@ enum {
   if (action == @selector(commandDispatch:) ||
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
-    if (browser_->command_updater()->SupportsCommand(tag)) {
+    if (chrome::SupportsCommand(browser_.get(), tag)) {
       // Generate return value (enabled state)
-      enable = browser_->command_updater()->IsCommandEnabled(tag);
+      enable = chrome::IsCommandEnabled(browser_.get(), tag);
       switch (tag) {
         case IDC_CLOSE_TAB:
           // Disable "close tab" if the receiving window is not tabbed.
@@ -1063,8 +1065,8 @@ enum {
           // enable/disable the submenu's contents (per Apple's HIG).
           EncodingMenuController encoding_controller;
           if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
-            enable &= browser_->command_updater()->IsCommandEnabled(
-                IDC_ENCODING_MENU) ? YES : NO;
+            enable &= chrome::IsCommandEnabled(browser_.get(),
+                                               IDC_ENCODING_MENU) ? YES : NO;
           }
       }
 
@@ -1094,7 +1096,7 @@ enum {
     targetController = [[sender window] windowController];
   DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
   DCHECK(targetController->browser_.get());
-  targetController->browser_->ExecuteCommand([sender tag]);
+  chrome::ExecuteCommand(targetController->browser_.get(), [sender tag]);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -1144,14 +1146,14 @@ enum {
       }
   }
   DCHECK(targetController->browser_.get());
-  targetController->browser_->ExecuteCommandWithDisposition(command,
-                                                            disposition);
+  chrome::ExecuteCommandWithDisposition(targetController->browser_.get(),
+                                        command, disposition);
 }
 
 // Called when another part of the internal codebase needs to execute a
 // command.
 - (void)executeCommand:(int)command {
-  browser_->ExecuteCommandIfEnabled(command);
+  chrome::ExecuteCommand(browser_.get(), command);
 }
 
 // StatusBubble delegate method: tell the status bubble the frame it should
@@ -1704,14 +1706,17 @@ enum {
     // TODO(pinkerton): figure out page-up, http://crbug.com/16305
   } else if (deltaY < -0.5) {
     // TODO(pinkerton): figure out page-down, http://crbug.com/16305
-    browser_->ExecuteCommand(IDC_TABPOSE);
+    chrome::ExecuteCommand(browser_.get(), IDC_TABPOSE);
   }
 
   // Ensure the command is valid first (ExecuteCommand() won't do that) and
   // then make it so.
-  if (browser_->command_updater()->IsCommandEnabled(command))
-    browser_->ExecuteCommandWithDisposition(command,
+  if (chrome::IsCommandEnabled(browser_.get(), command)) {
+    chrome::ExecuteCommandWithDisposition(
+        browser_.get(),
+        command,
         event_utils::WindowOpenDispositionFromNSEvent(event));
+  }
 }
 
 // Documented in 10.6+, but present starting in 10.5. Called repeatedly during
@@ -1741,9 +1746,11 @@ enum {
     command = IDC_ZOOM_MINUS;
   }
 
-  if (command && browser_->command_updater()->IsCommandEnabled(command)) {
+  if (command && chrome::IsCommandEnabled(browser_.get(), command)) {
     currentZoomStepDelta_ += (command == IDC_ZOOM_PLUS) ? 1 : -1;
-    browser_->ExecuteCommandWithDisposition(command,
+    chrome::ExecuteCommandWithDisposition(
+        browser_.get(),
+        command,
         event_utils::WindowOpenDispositionFromNSEvent(event));
   }
 }
@@ -1942,7 +1949,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (void)handleLionToggleFullscreen {
   DCHECK(base::mac::IsOSLionOrLater());
-  browser_->ExecuteCommand(IDC_FULLSCREEN);
+  chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
 }
 
 // On Lion, this method is called by either the Lion fullscreen button or the
@@ -1997,7 +2004,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // Called only by the presentation mode toggle button.
   DCHECK(base::mac::IsOSLionOrLater());
   enteredPresentationModeFromFullscreen_ = YES;
-  browser_->ExecuteCommand(IDC_PRESENTATION_MODE);
+  chrome::ExecuteCommand(browser_.get(), IDC_PRESENTATION_MODE);
 }
 
 // On Lion, this function is called by either the presentation mode toggle

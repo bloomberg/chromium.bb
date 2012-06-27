@@ -8,6 +8,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -28,7 +29,7 @@ bool SystemMenuModelDelegate::IsCommandIdChecked(int command_id) const {
 }
 
 bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {
-  return browser_->command_updater()->IsCommandEnabled(command_id);
+  return chrome::IsCommandEnabled(browser_, command_id);
 }
 
 bool SystemMenuModelDelegate::GetAcceleratorForCommandId(int command_id,
@@ -54,5 +55,5 @@ string16 SystemMenuModelDelegate::GetLabelForCommandId(int command_id) const {
 }
 
 void SystemMenuModelDelegate::ExecuteCommand(int command_id) {
-  browser_->ExecuteCommandIfEnabled(command_id);
+  chrome::ExecuteCommand(browser_, command_id);
 }

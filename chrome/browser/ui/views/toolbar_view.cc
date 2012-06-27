@@ -7,11 +7,13 @@
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -152,11 +154,11 @@ ToolbarView::ToolbarView(Browser* browser)
       profiles_menu_contents_(NULL) {
   set_id(VIEW_ID_TOOLBAR);
 
-  browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
-  browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
-  browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
-  browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->AddCommandObserver(IDC_LOAD_NEW_TAB_PAGE, this);
+  chrome::AddCommandObserver(browser_, IDC_BACK, this);
+  chrome::AddCommandObserver(browser_, IDC_FORWARD, this);
+  chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
+  chrome::AddCommandObserver(browser_, IDC_HOME, this);
+  chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   display_mode_ = browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       DISPLAYMODE_NORMAL : DISPLAYMODE_LOCATION;
@@ -220,7 +222,7 @@ void ToolbarView::Init(views::View* location_bar_parent,
       chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()));
   location_bar_ = new LocationBarView(
       browser_->profile(),
-      browser_->command_updater(),
+      browser_->command_controller()->command_updater(),
       model_,
       this,
       browser_->search_model(),
@@ -231,7 +233,8 @@ void ToolbarView::Init(views::View* location_bar_parent,
   // location_bar_->set_view_to_focus(location_bar_container_);
   location_bar_container_->SetLocationBarView(location_bar_);
 
-  reload_ = new ReloadButton(location_bar_, browser_->command_updater());
+  reload_ = new ReloadButton(location_bar_,
+                             browser_->command_controller()->command_updater());
   reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                        ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);
@@ -474,7 +477,7 @@ void ToolbarView::ModeChanged(const chrome::search::Mode& mode) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, CommandUpdater::CommandObserver implementation:
+// ToolbarView, CommandObserver implementation:
 
 void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
   // Special case the reload button at the NTP for extended instant.
@@ -516,7 +519,7 @@ void ToolbarView::ButtonPressed(views::Button* sender,
     // action.
     location_bar_->Revert();
   }
-  browser_->ExecuteCommandWithDisposition(command, disposition);
+  chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -700,7 +703,7 @@ void ToolbarView::Layout() {
     // Force the reload button to go into disabled mode to display the grey
     // circle and not the grey cross. The disabled reload state only exists for
     // ntp pages.
-    browser_->command_updater()->UpdateCommandEnabled(IDC_RELOAD, false);
+    chrome::UpdateCommandEnabled(browser_, IDC_RELOAD, false);
   } else {
     // Start the location bar animation.
     if (si_mode.animate && si_mode.is_search() &&
@@ -713,7 +716,7 @@ void ToolbarView::Layout() {
     } else {
       SetLocationBarContainerBounds(location_bar_bounds);
     }
-    browser_->command_updater()->UpdateCommandEnabled(IDC_RELOAD, true);
+    chrome::UpdateCommandEnabled(browser_, IDC_RELOAD, true);
   }
 
   browser_actions_->SetBounds(location_bar_bounds.right(), 0,

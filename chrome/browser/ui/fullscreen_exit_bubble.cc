@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,7 +109,7 @@ void FullscreenExitBubble::CheckMousePosition() {
 }
 
 void FullscreenExitBubble::ToggleFullscreen() {
-  browser_->ExecuteCommand(IDC_FULLSCREEN);
+  chrome::ExecuteCommand(browser_, IDC_FULLSCREEN);
 }
 
 void FullscreenExitBubble::Accept() {

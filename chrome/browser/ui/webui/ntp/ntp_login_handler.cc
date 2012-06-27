@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -141,8 +142,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     }
 #endif
   } else if (args->GetSize() == 4 &&
-             browser->command_updater()->IsCommandEnabled(
-                IDC_SHOW_AVATAR_MENU)) {
+             chrome::IsCommandEnabled(browser, IDC_SHOW_AVATAR_MENU)) {
     // The user is signed in, show the profiles menu.
     double x = 0;
     double y = 0;

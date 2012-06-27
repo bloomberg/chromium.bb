@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   ui_test_utils::WaitForLoadStop(tab2->web_contents());
 
   // Verify our assumption that there was no prior navigation.
-  EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_BACK));
+  EXPECT_FALSE(chrome::CanGoBack(browser()));
 
   // We should have an interstitial page showing.
   ASSERT_TRUE(tab2->web_contents()->GetInterstitialPage());

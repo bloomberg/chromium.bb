@@ -4,6 +4,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
@@ -37,20 +38,22 @@ TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
   // Select the second tab.
   browser()->ActivateTabAt(1, false);
 
+  CommandUpdater* updater = browser()->command_controller()->command_updater();
+
   // Navigate to the first tab using an accelerator.
-  browser()->ExecuteCommand(IDC_SELECT_TAB_0);
+  updater->ExecuteCommand(IDC_SELECT_TAB_0);
   ASSERT_EQ(0, browser()->active_index());
 
   // Navigate to the second tab using the next accelerators.
-  browser()->ExecuteCommand(IDC_SELECT_NEXT_TAB);
+  updater->ExecuteCommand(IDC_SELECT_NEXT_TAB);
   ASSERT_EQ(1, browser()->active_index());
 
   // Navigate back to the first tab using the previous accelerators.
-  browser()->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
+  updater->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
   ASSERT_EQ(0, browser()->active_index());
 
   // Navigate to the last tab using the select last accelerator.
-  browser()->ExecuteCommand(IDC_SELECT_LAST_TAB);
+  updater->ExecuteCommand(IDC_SELECT_LAST_TAB);
   ASSERT_EQ(2, browser()->active_index());
 }
 
@@ -68,7 +71,7 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
   size_t initial_window_count = BrowserList::size();
 
   // Duplicate the tab.
-  browser()->ExecuteCommand(IDC_DUPLICATE_TAB);
+  chrome::ExecuteCommand(browser(), IDC_DUPLICATE_TAB);
 
   // The duplicated tab should not end up in a new window.
   size_t window_count = BrowserList::size();
@@ -98,13 +101,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   browser()->OpenURL(OpenURLParams(
       url1, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
 
-  // TODO(beng): remove this once we can use TabContentses directly in testing
-  //             instead of the TestTabContents which causes this command not to
-  //             be enabled when the tab is added (and selected).
-  browser()->command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, true);
-
-  // Star it.
-  browser()->ExecuteCommand(IDC_BOOKMARK_PAGE);
+  chrome::BookmarkCurrentPage(browser());
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());

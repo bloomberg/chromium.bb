@@ -105,6 +105,13 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   EXPECT_FALSE(error->GetBubbleViewTitle().empty());
 
 #if defined(OS_CHROMEOS)
+  // TODO(altimofeev): Implement this in a way that doesn't involve subclassing
+  //                   Browser or using GMock on browser/ui types which is
+  //                   banned. Consider observing NOTIFICATION_APP_TERMINATING
+  //                   instead.
+  //                   http://crbug.com/134675
+#else
+#if defined(OS_CHROMEOS)
   if (error_state != GoogleServiceAuthError::NONE) {
     // In CrOS sign-in/sign-out is made to fix the error.
     EXPECT_CALL(*static_cast<BrowserMock*>(browser),
@@ -120,6 +127,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
     error->BubbleViewAcceptButtonPressed(browser);
     error->BubbleViewDidClose(browser);
   }
+#endif
 #endif
 }
 
