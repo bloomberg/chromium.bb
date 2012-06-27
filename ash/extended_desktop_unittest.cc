@@ -189,9 +189,6 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
   internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
   UpdateDisplay("0+0-700x500,0+0-500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  // Emulate virtual screen coordinate system.
-  root_windows[0]->SetBounds(gfx::Rect(0, 0, 700, 500));
-  root_windows[1]->SetBounds(gfx::Rect(700, 0, 500, 500));
 
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
@@ -241,62 +238,61 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
 TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
   internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
   UpdateDisplay("0+0-700x500,0+0-500x500");
+  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
+      internal::DisplayController::LEFT);
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  // Emulate virtual screen coordinate system.
-  root_windows[0]->SetBounds(gfx::Rect(500, 0, 700, 500));
-  root_windows[1]->SetBounds(gfx::Rect(0, 0, 500, 500));
 
-  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(100, 100)));
-  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(499, 100)));
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(500, 300)));
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(1200,300)));
+  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(-400, 100)));
+  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(-1, 100)));
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(0, 300)));
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(700,300)));
 
   // Zero origin.
-  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(0, 0)));
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(0, 0)));
 
   // Out of range point should return the primary root window
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(-100, 0)));
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(1201, 100)));
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(-600, 0)));
+  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(701, 100)));
   internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
 }
 
 TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
   internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
   UpdateDisplay("0+0-700x500,0+0-500x500");
+  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
+      internal::DisplayController::LEFT);
+
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  // Emulate virtual screen coordinate system.
-  root_windows[0]->SetBounds(gfx::Rect(500, 0, 700, 500));
-  root_windows[1]->SetBounds(gfx::Rect(0, 0, 500, 500));
 
   // Containing rect.
   EXPECT_EQ(root_windows[1],
-            Shell::GetRootWindowMatching(gfx::Rect(200, 10, 50, 50)));
+            Shell::GetRootWindowMatching(gfx::Rect(-300, 10, 50, 50)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(600, 10, 50, 50)));
+            Shell::GetRootWindowMatching(gfx::Rect(100, 10, 50, 50)));
 
   // Intersecting rect.
   EXPECT_EQ(root_windows[1],
-            Shell::GetRootWindowMatching(gfx::Rect(300, 0, 300, 300)));
+            Shell::GetRootWindowMatching(gfx::Rect(-200, 0, 300, 300)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(400, 0, 300, 300)));
+            Shell::GetRootWindowMatching(gfx::Rect(-100, 0, 300, 300)));
 
   // Zero origin.
-  EXPECT_EQ(root_windows[1],
+  EXPECT_EQ(root_windows[0],
             Shell::GetRootWindowMatching(gfx::Rect(0, 0, 0, 0)));
-  EXPECT_EQ(root_windows[1],
+  EXPECT_EQ(root_windows[0],
             Shell::GetRootWindowMatching(gfx::Rect(0, 0, 1, 1)));
 
   // Empty rect.
   EXPECT_EQ(root_windows[1],
-            Shell::GetRootWindowMatching(gfx::Rect(100, 100, 0, 0)));
+            Shell::GetRootWindowMatching(gfx::Rect(-400, 100, 0, 0)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(600, 100, 0, 0)));
+            Shell::GetRootWindowMatching(gfx::Rect(100, 100, 0, 0)));
 
   // Out of range rect should return the primary root window.
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(-100, -300, 50, 50)));
+            Shell::GetRootWindowMatching(gfx::Rect(-600, -300, 50, 50)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(0, 2000, 50, 50)));
+            Shell::GetRootWindowMatching(gfx::Rect(0, 1000, 50, 50)));
   internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
 }
 

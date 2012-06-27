@@ -67,7 +67,7 @@ gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
 }
 
 gfx::Display ScreenAsh::GetPrimaryDisplay() const {
-  return GetDisplayManager()->GetDisplayAt(0);
+  return *GetDisplayManager()->GetDisplayAt(0);
 }
 
 }  // namespace ash

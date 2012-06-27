@@ -30,7 +30,7 @@ class AURA_EXPORT SingleDisplayManager : public DisplayManager,
       const std::vector<gfx::Display>& display) OVERRIDE;
   virtual RootWindow* CreateRootWindowForDisplay(
       const gfx::Display& display) OVERRIDE;
-  virtual const gfx::Display& GetDisplayAt(size_t index) OVERRIDE;
+  virtual gfx::Display* GetDisplayAt(size_t index) OVERRIDE;
 
   virtual size_t GetNumDisplays() const OVERRIDE;
 

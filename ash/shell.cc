@@ -328,7 +328,9 @@ aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
   for (RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     aura::RootWindow* root_window = *iter;
-    if (root_window->bounds().Contains(point))
+    const gfx::Display& display =
+        gfx::Screen::GetDisplayNearestWindow(root_window);
+    if (display.bounds().Contains(point))
       return root_window;
   }
   // Fallback to the primary window if there is no root window containing
@@ -348,7 +350,9 @@ aura::RootWindow* Shell::GetRootWindowMatching(const gfx::Rect& rect) {
   for (RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     aura::RootWindow* root_window = *iter;
-    gfx::Rect intersect = root_window->bounds().Intersect(rect);
+    const gfx::Display& display =
+        gfx::Screen::GetDisplayNearestWindow(root_window);
+    gfx::Rect intersect = display.bounds().Intersect(rect);
     int area = intersect.width() * intersect.height();
     if (area > max) {
       max = area;

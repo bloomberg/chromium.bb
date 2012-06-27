@@ -51,18 +51,18 @@ DisplayController::~DisplayController() {
 void DisplayController::InitPrimaryDisplay() {
   aura::DisplayManager* display_manager =
       aura::Env::GetInstance()->display_manager();
-  const gfx::Display& display = display_manager->GetDisplayAt(0);
-  DCHECK_EQ(0, display.id());
-  aura::RootWindow* root = AddRootWindowForDisplay(display);
-  root->SetHostBounds(display.bounds_in_pixel());
+  const gfx::Display* display = display_manager->GetDisplayAt(0);
+  DCHECK_EQ(0, display->id());
+  aura::RootWindow* root = AddRootWindowForDisplay(*display);
+  root->SetHostBounds(display->bounds_in_pixel());
 }
 
 void DisplayController::InitSecondaryDisplays() {
   aura::DisplayManager* display_manager =
       aura::Env::GetInstance()->display_manager();
   for (size_t i = 1; i < display_manager->GetNumDisplays(); ++i) {
-    const gfx::Display& display = display_manager->GetDisplayAt(i);
-    aura::RootWindow* root = AddRootWindowForDisplay(display);
+    const gfx::Display* display = display_manager->GetDisplayAt(i);
+    aura::RootWindow* root = AddRootWindowForDisplay(*display);
     Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   }
 }
@@ -116,6 +116,7 @@ DisplayController::GetAllRootWindowControllers() {
 void DisplayController::SetSecondaryDisplayLayout(
     SecondaryDisplayLayout layout) {
   secondary_display_layout_ = layout;
+  UpdateDisplayBoundsForLayout();
 }
 
 bool DisplayController::WarpMouseCursorIfNecessary(
@@ -191,6 +192,7 @@ bool DisplayController::WarpMouseCursorIfNecessary(
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
+  UpdateDisplayBoundsForLayout();
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
@@ -202,6 +204,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   }
   aura::RootWindow* root = AddRootWindowForDisplay(display);
   Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
+  UpdateDisplayBoundsForLayout();
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
@@ -238,9 +241,10 @@ void DisplayController::SetExtendedDesktopEnabled(bool enabled) {
 
 // static
 bool DisplayController::IsVirtualScreenCoordinatesEnabled() {
-  return virtual_screen_coordinates_enabled ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshVirtualScreenCoordinates);
+  return IsExtendedDesktopEnabled() &&
+      (virtual_screen_coordinates_enabled ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshVirtualScreenCoordinates));
 }
 
 // static
@@ -263,6 +267,40 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
     root->ConfineCursorToWindow();
   }
   return root;
+}
+
+void DisplayController::UpdateDisplayBoundsForLayout() {
+  if (!IsVirtualScreenCoordinatesEnabled() ||
+      gfx::Screen::GetNumDisplays() <= 1) {
+    return;
+  }
+  DCHECK_EQ(2, gfx::Screen::GetNumDisplays());
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  const gfx::Rect& primary_bounds = display_manager->GetDisplayAt(0)->bounds();
+  gfx::Display* secondary_display = display_manager->GetDisplayAt(1);
+  const gfx::Rect& secondary_bounds = secondary_display->bounds();
+  gfx::Point new_secondary_origin = primary_bounds.origin();
+
+  // TODO(oshima|mukai): Implement more flexible layout.
+  switch (secondary_display_layout_) {
+    case TOP:
+      new_secondary_origin.Offset(0, -secondary_bounds.height());
+      break;
+    case RIGHT:
+      new_secondary_origin.Offset(primary_bounds.width(), 0);
+      break;
+    case BOTTOM:
+      new_secondary_origin.Offset(0, primary_bounds.height());
+      break;
+    case LEFT:
+      new_secondary_origin.Offset(-secondary_bounds.width(), 0);
+      break;
+  }
+  gfx::Insets insets = secondary_display->GetWorkAreaInsets();
+  secondary_display->set_bounds(
+      gfx::Rect(new_secondary_origin, secondary_bounds.size()));
+  secondary_display->UpdateWorkAreaFromInsets(insets);
 }
 
 }  // namespace internal

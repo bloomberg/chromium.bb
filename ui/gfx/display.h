@@ -75,9 +75,8 @@ class UI_EXPORT Display {
   gfx::Size GetSizeInPixel() const;
 
 #if defined(USE_AURA)
-  // TODO(oshima): |bounds()| on ash is not screen's coordinate and
-  // this is an workaround for this. This will be removed when ash
-  // has true multi display support. crbug.com/119268.
+  // TODO(oshima|skuhne): Eliminate the use of bounds_in_pixel in events_x.cc
+  // and remove bounds_in_pixel from gfx::Display.
   // Returns the display's bounds in pixel coordinates.
   const Rect& bounds_in_pixel() const { return bounds_in_pixel_; }
 #endif

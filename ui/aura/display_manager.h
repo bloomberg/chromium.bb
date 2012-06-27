@@ -68,7 +68,7 @@ class AURA_EXPORT DisplayManager {
       const gfx::Display& display) = 0;
 
   // Returns the display at |index|. The display at 0 is considered "primary".
-  virtual const gfx::Display& GetDisplayAt(size_t index) = 0;
+  virtual gfx::Display* GetDisplayAt(size_t index) = 0;
 
   virtual size_t GetNumDisplays() const = 0;
 

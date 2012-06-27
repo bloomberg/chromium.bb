@@ -379,6 +379,7 @@
         'accelerators/accelerator_table_unittest.cc',
         'accelerators/nested_dispatcher_controller_unittest.cc',
         'dip_unittest.cc',
+        'display/display_controller_unittest.cc',
         'display/multi_display_manager_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
         'extended_desktop_unittest.cc',

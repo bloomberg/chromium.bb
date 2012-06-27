@@ -104,10 +104,10 @@ void DisplayOptionsHandler::SendDisplayInfo() {
 
   base::ListValue displays;
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    const gfx::Display& display = display_manager->GetDisplayAt(i);
-    const gfx::Rect& bounds = display.bounds();
+    const gfx::Display* display = display_manager->GetDisplayAt(i);
+    const gfx::Rect& bounds = display->bounds();
     base::DictionaryValue* js_display = new base::DictionaryValue();
-    js_display->SetDouble("id", display.id());
+    js_display->SetDouble("id", display->id());
     js_display->SetDouble("x", bounds.x());
     js_display->SetDouble("y", bounds.y());
     js_display->SetDouble("width", bounds.width());

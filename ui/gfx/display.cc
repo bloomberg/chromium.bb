@@ -78,9 +78,6 @@ void Display::SetScaleAndBounds(
 #if defined(USE_AURA)
   bounds_in_pixel_ = bounds_in_pixel;
 #endif
-  // TODO(oshima): For m19, work area/display bounds that chrome/webapps sees
-  // has (0, 0) origin because it's simpler and enough. Fix this when
-  // real multi display support is implemented.
   bounds_ = gfx::Rect(
       bounds_in_pixel.size().Scale(1.0f / device_scale_factor_));
   UpdateWorkAreaFromInsets(insets);

@@ -54,8 +54,8 @@ RootWindow* SingleDisplayManager::CreateRootWindowForDisplay(
   return root_window_;
 }
 
-const gfx::Display& SingleDisplayManager::GetDisplayAt(size_t index) {
-  return display_;
+gfx::Display* SingleDisplayManager::GetDisplayAt(size_t index) {
+  return &display_;
 }
 
 size_t SingleDisplayManager::GetNumDisplays() const {

@@ -98,8 +98,8 @@ TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
   UpdateDisplay("0+0-500x500,0+501-400x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1 1 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
-  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
   EXPECT_EQ("0,0 500x500", changed()[0].bounds().ToString());
   EXPECT_EQ("0,0 400x400", added()[0].bounds().ToString());
   EXPECT_EQ("0,501 400x400", added()[0].bounds_in_pixel().ToString());
@@ -113,7 +113,7 @@ TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
   // Change primary.
   UpdateDisplay("0+0-1000x600");
   EXPECT_EQ("1 0 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
   EXPECT_EQ("0,0 1000x600", changed()[0].bounds().ToString());
   reset();
 
@@ -121,7 +121,7 @@ TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
   UpdateDisplay("0+0-1000x600,1001+0-600x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
   EXPECT_EQ("0,0 600x400", added()[0].bounds().ToString());
   EXPECT_EQ("1001,0 600x400", added()[0].bounds_in_pixel().ToString());
   reset();
@@ -130,7 +130,7 @@ TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
   UpdateDisplay("0+0-800x300");
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1 0 1", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0)->id(), changed()[0].id());
   EXPECT_EQ("0,0 800x300", changed()[0].bounds().ToString());
   reset();
 
@@ -142,7 +142,7 @@ TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
   EXPECT_FALSE(root_window_destroyed());
   // Display configuration stays the same
   EXPECT_EQ("0,0 800x300",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
+            display_manager()->GetDisplayAt(0)->bounds().ToString());
   reset();
 
   // Connect to display again
@@ -164,11 +164,11 @@ TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
   UpdateDisplay("0+0-1000x600,1000+0-600x400");
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 1000x600",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
+            display_manager()->GetDisplayAt(0)->bounds().ToString());
   EXPECT_EQ("0,0 600x400",
-            display_manager()->GetDisplayAt(1).bounds().ToString());
+            display_manager()->GetDisplayAt(1)->bounds().ToString());
   EXPECT_EQ("1000,0 600x400",
-            display_manager()->GetDisplayAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   reset();
 
   aura::DisplayManager::set_use_fullscreen_host_window(false);

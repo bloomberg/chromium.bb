@@ -96,6 +96,8 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // map.
   aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);
 
+  void UpdateDisplayBoundsForLayout();
+
   std::map<int, aura::RootWindow*> root_windows_;
 
   SecondaryDisplayLayout secondary_display_layout_;

@@ -51,7 +51,7 @@ gfx::Display DisplayManager::CreateDisplayFromSpec(const std::string& spec) {
 RootWindow* DisplayManager::CreateRootWindowForPrimaryDisplay() {
   DisplayManager* manager = aura::Env::GetInstance()->display_manager();
   RootWindow* root =
-      manager->CreateRootWindowForDisplay(manager->GetDisplayAt(0));
+      manager->CreateRootWindowForDisplay(*manager->GetDisplayAt(0));
   if (use_fullscreen_host_window_)
     root->ConfineCursorToWindow();
   return root;

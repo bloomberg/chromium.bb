@@ -49,7 +49,7 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
       const std::vector<gfx::Display>& displays) OVERRIDE;
   virtual aura::RootWindow* CreateRootWindowForDisplay(
       const gfx::Display& display) OVERRIDE;
-  virtual const gfx::Display& GetDisplayAt(size_t index) OVERRIDE;
+  virtual gfx::Display* GetDisplayAt(size_t index) OVERRIDE;
 
   virtual size_t GetNumDisplays() const OVERRIDE;
   virtual const gfx::Display& GetDisplayNearestPoint(
