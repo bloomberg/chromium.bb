@@ -127,12 +127,15 @@ void BackingStoreAura::ScrollBackingStore(int dx, int dy,
                                           const gfx::Rect& clip_rect,
                                           const gfx::Size& view_size) {
   gfx::Rect pixel_rect = clip_rect.Scale(device_scale_factor_);
-  int x = std::min(pixel_rect.x(), pixel_rect.x() - dx);
-  int y = std::min(pixel_rect.y(), pixel_rect.y() - dy);
-  int w = pixel_rect.width() + abs(dx);
-  int h = pixel_rect.height() + abs(dy);
+  int pixel_dx = dx * device_scale_factor_;
+  int pixel_dy = dy * device_scale_factor_;
+
+  int x = std::min(pixel_rect.x(), pixel_rect.x() - pixel_dx);
+  int y = std::min(pixel_rect.y(), pixel_rect.y() - pixel_dy);
+  int w = pixel_rect.width() + abs(pixel_dx);
+  int h = pixel_rect.height() + abs(pixel_dy);
   SkIRect rect = SkIRect::MakeXYWH(x, y, w, h);
-  bitmap_.scrollRect(&rect, dx, dy);
+  bitmap_.scrollRect(&rect, pixel_dx, pixel_dy);
 }
 
 bool BackingStoreAura::CopyFromBackingStore(const gfx::Rect& rect,
