@@ -6,23 +6,22 @@
 #define CHROMEOS_MONITOR_OUTPUT_CONFIGURATOR_H_
 #pragma once
 
-#include <X11/Xlib.h>
-#include <X11/extensions/dpms.h>
-#include <X11/extensions/Xrandr.h>
-
-// Xlib defines Status as int which causes our include of dbus/bus.h to fail
-// when it tries to name an enum Status.  Thus, we need to undefine it (note
-// that this will cause a problem if code needs to use the Status type).
-// RootWindow causes similar problems in that there is a Chromium type with that
-// name.
-#undef Status
-#undef RootWindow
-
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chromeos/chromeos_export.h"
+
+// Forward declarations for Xlib and Xrandr.
+// This is so unused X definitions don't pollute the namespace.
+typedef unsigned long XID;
+typedef XID Window;
+typedef XID RROutput;
+typedef XID RRCrtc;
+typedef XID RRMode;
+
+struct _XRRScreenResources;
+typedef _XRRScreenResources XRRScreenResources;
 
 namespace chromeos {
 

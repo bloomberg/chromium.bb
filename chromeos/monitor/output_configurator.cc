@@ -4,6 +4,18 @@
 
 #include "chromeos/monitor/output_configurator.h"
 
+#include <X11/Xlib.h>
+#include <X11/extensions/dpms.h>
+#include <X11/extensions/Xrandr.h>
+
+// Xlib defines Status as int which causes our include of dbus/bus.h to fail
+// when it tries to name an enum Status.  Thus, we need to undefine it (note
+// that this will cause a problem if code needs to use the Status type).
+// RootWindow causes similar problems in that there is a Chromium type with that
+// name.
+#undef Status
+#undef RootWindow
+
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
