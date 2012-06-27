@@ -355,18 +355,11 @@ void WaitForLoadStop(WebContents* tab) {
   load_stop_observer.Wait();
 }
 
-Browser* WaitForNewBrowser() {
-  WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::NotificationService::AllSources());
-  observer.Wait();
-  return content::Source<Browser>(observer.source()).ptr();
-}
-
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
   if (new_browser == NULL) {
-    new_browser = WaitForNewBrowser();
+    BrowserAddedObserver observer;
+    new_browser = observer.WaitForSingleNewBrowser();
     // The new browser should never be in |excluded_browsers|.
     DCHECK(!ContainsKey(excluded_browsers, new_browser));
   }

@@ -117,11 +117,6 @@ void WaitForNewTab(Browser* browser);
 // currently loading.  Otherwise returns immediately.
 void WaitForLoadStop(content::WebContents* tab);
 
-// Waits for a new browser to be created, returning the browser.
-// TODO(dubroy): Remove this race hazard (http://crbug.com/119521).
-// Use BrowserAddedObserver instead.
-Browser* WaitForNewBrowser();
-
 // Opens |url| in an incognito browser window with the incognito profile of
 // |profile|, blocking until the navigation finishes. This will create a new
 // browser if a browser with the incognito profile does not exist.
