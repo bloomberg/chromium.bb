@@ -59,6 +59,8 @@ using content::WebContents;
 
 namespace {
 
+const int kPlaceholderLeftSpacing = 11;
+
 // Textfield for autocomplete that intercepts events that are necessary
 // for OmniboxViewViews.
 class AutocompleteTextfield : public views::Textfield {
@@ -234,6 +236,11 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false) {
+  if (chrome::search::IsInstantExtendedAPIEnabled(
+          location_bar_view_->profile())) {
+    set_background(views::Background::CreateSolidBackground(
+        chrome::search::kOmniboxBackgroundColor));
+  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -432,6 +439,12 @@ bool OmniboxViewViews::IsLocationEntryFocusableInRootView() const {
 // OmniboxViewViews, views::View implementation:
 void OmniboxViewViews::Layout() {
   gfx::Insets insets = GetInsets();
+  insets += gfx::Insets(0,
+                        (location_bar_view_->search_model() &&
+                         location_bar_view_->search_model()->mode().is_ntp()) ?
+                            kPlaceholderLeftSpacing : 0,
+                        0,
+                        0);
   textfield_->SetBounds(insets.left(), insets.top(),
                         width() - insets.width(),
                         height() - insets.height());

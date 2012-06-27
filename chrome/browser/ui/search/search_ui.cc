@@ -13,6 +13,8 @@ namespace search {
 
 const SkColor kNTPBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 const SkColor kNTPPlaceholderTextColor = SkColorSetRGB(0xBB, 0xBB, 0xBB);
+const SkColor kOmniboxBackgroundColor =
+    SkColorSetARGB(128, 255, 255, 255);
 const SkColor kResultsSeparatorColor = SkColorSetRGB(226, 226, 226);
 const SkColor kSearchBackgroundColor = SK_ColorWHITE;
 

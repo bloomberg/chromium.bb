@@ -23,6 +23,9 @@ extern const SkColor kNTPBackgroundColor;
 // Color for the placeholder text on NTP.
 extern const SkColor kNTPPlaceholderTextColor;
 
+// Color for the omnibox background
+extern const SkColor kOmniboxBackgroundColor;
+
 // Color for the separator between results and the page.
 extern const SkColor kResultsSeparatorColor;
 
