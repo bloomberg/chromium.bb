@@ -77,6 +77,8 @@ class WallpaperImageSource::WallpaperEncodingOperation
   friend class base::RefCountedThreadSafe<
       WallpaperImageSource::WallpaperEncodingOperation>;
 
+  ~WallpaperEncodingOperation() {}
+
   base::CancellationFlag cancel_flag_;
 
   // ID of original request.

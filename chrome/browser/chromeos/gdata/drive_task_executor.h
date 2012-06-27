@@ -20,8 +20,6 @@ class GDataFileProto;
 // for opening the document in that app directly.
 class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
  public:
-  virtual ~DriveTaskExecutor();
-
   // FileTaskExecutor overrides
   virtual bool ExecuteAndNotify(
       const std::vector<GURL>& file_urls,
@@ -34,6 +32,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   DriveTaskExecutor(Profile* profile,
                     const std::string& app_id,
                     const std::string& action_id);
+  virtual ~DriveTaskExecutor();
 
   void OnFileEntryFetched(base::PlatformFileError error,
                           scoped_ptr<GDataFileProto> file_proto);

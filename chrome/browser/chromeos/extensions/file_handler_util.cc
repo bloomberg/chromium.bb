@@ -352,8 +352,6 @@ bool GetDefaultTask(
 
 class ExtensionTaskExecutor : public FileTaskExecutor {
  public:
-  virtual ~ExtensionTaskExecutor();
-
   // FileTaskExecutor overrides.
   virtual bool ExecuteAndNotify(const std::vector<GURL>& file_urls,
                        const FileTaskFinishedCallback& done) OVERRIDE;
@@ -366,6 +364,7 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
                         const GURL source_url,
                         const std::string& extension_id,
                         const std::string& action_id);
+  virtual ~ExtensionTaskExecutor();
 
   struct FileDefinition {
     FileDefinition();
