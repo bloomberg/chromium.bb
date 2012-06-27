@@ -12,7 +12,7 @@
 #include "base/string_split.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/layer_animator.h"
@@ -30,7 +30,7 @@ std::vector<gfx::Display> CreateDisplaysFromString(
   base::SplitString(specs, ',', &parts);
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
-    displays.push_back(aura::DisplayManager::CreateDisplayFromSpec(*iter));
+    displays.push_back(aura::MonitorManager::CreateMonitorFromSpec(*iter));
   }
   return displays;
 }
@@ -72,20 +72,20 @@ void AshTestBase::TearDown() {
   ui::TextInputTestSupport::Shutdown();
 }
 
-void AshTestBase::ChangeDisplayConfig(float scale,
+void AshTestBase::ChangeMonitorConfig(float scale,
                                       const gfx::Rect& bounds_in_pixel) {
   gfx::Display display = gfx::Display(gfx::Screen::GetPrimaryDisplay().id());
   display.SetScaleAndBounds(scale, bounds_in_pixel);
   std::vector<gfx::Display> displays;
   displays.push_back(display);
-  aura::Env::GetInstance()->display_manager()->OnNativeDisplaysChanged(
+  aura::Env::GetInstance()->monitor_manager()->OnNativeMonitorsChanged(
       displays);
 }
 
-void AshTestBase::UpdateDisplay(const std::string& display_specs) {
+void AshTestBase::UpdateMonitor(const std::string& display_specs) {
   std::vector<gfx::Display> displays = CreateDisplaysFromString(display_specs);
-  aura::Env::GetInstance()->display_manager()->
-      OnNativeDisplaysChanged(displays);
+  aura::Env::GetInstance()->monitor_manager()->
+      OnNativeMonitorsChanged(displays);
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

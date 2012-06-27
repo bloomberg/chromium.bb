@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/compositor_setup.h"
 
@@ -54,7 +54,7 @@ void OpenAsh() {
 #endif
 
   if (use_fullscreen) {
-    aura::DisplayManager::set_use_fullscreen_host_window(true);
+    aura::MonitorManager::set_use_fullscreen_host_window(true);
 #if defined(OS_CHROMEOS)
     aura::RootWindow::set_hide_host_cursor(true);
     // Hide the mouse cursor completely at boot.

@@ -83,7 +83,7 @@ class DragDropController;
 class FocusCycler;
 class KeyRewriterEventFilter;
 class MagnificationController;
-class DisplayController;
+class MonitorController;
 class MouseCursorEventFilter;
 class PanelLayoutManager;
 class PartialScreenshotEventFilter;
@@ -219,11 +219,11 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // Rotates focus through containers that can receive focus.
   void RotateFocus(Direction direction);
 
-  // Sets the work area insets of the display that contains |window|,
+  // Sets the work area insets of the monitor that contains |window|,
   // this notifies observers too.
   // TODO(sky): this no longer really replicates what happens and is unreliable.
   // Remove this.
-  void SetDisplayWorkAreaInsets(aura::Window* window,
+  void SetMonitorWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
 
   // Called when the user logs in.
@@ -279,8 +279,8 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   internal::FocusCycler* focus_cycler() {
     return focus_cycler_.get();
   }
-  internal::DisplayController* display_controller() {
-    return display_controller_.get();
+  internal::MonitorController* monitor_controller() {
+    return monitor_controller_.get();
   }
 
   ShellDelegate* delegate() { return delegate_.get(); }
@@ -346,8 +346,8 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
     browser_context_ = browser_context;
   }
 
-  // Initializes the root window to be used for a secondary display.
-  void InitRootWindowForSecondaryDisplay(aura::RootWindow* root);
+  // Initializes the root window to be used for a secondary monitor.
+  void InitRootWindowForSecondaryMonitor(aura::RootWindow* root);
 
 #if defined(OS_CHROMEOS)
   chromeos::OutputConfigurator* output_configurator() {
@@ -429,7 +429,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
-  scoped_ptr<internal::DisplayController> display_controller_;
+  scoped_ptr<internal::MonitorController> monitor_controller_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<internal::MagnificationController> magnification_controller_;
   scoped_ptr<aura::FocusManager> focus_manager_;

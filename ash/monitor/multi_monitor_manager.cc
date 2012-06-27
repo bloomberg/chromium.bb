@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/multi_display_manager.h"
+#include "ash/monitor/multi_monitor_manager.h"
 
 #include <string>
 #include <vector>
@@ -36,46 +36,46 @@ using aura::Window;
 using std::string;
 using std::vector;
 
-DEFINE_WINDOW_PROPERTY_KEY(int, kDisplayIdKey, -1);
+DEFINE_WINDOW_PROPERTY_KEY(int, kMonitorIdKey, -1);
 
-MultiDisplayManager::MultiDisplayManager() {
+MultiMonitorManager::MultiMonitorManager() {
   Init();
 }
 
-MultiDisplayManager::~MultiDisplayManager() {
+MultiMonitorManager::~MultiMonitorManager() {
 }
 
 // static
-void MultiDisplayManager::AddRemoveDisplay() {
-  MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager());
-  manager->AddRemoveDisplayImpl();
+void MultiMonitorManager::AddRemoveMonitor() {
+  MultiMonitorManager* manager = static_cast<MultiMonitorManager*>(
+      aura::Env::GetInstance()->monitor_manager());
+  manager->AddRemoveMonitorImpl();
 }
 
-void MultiDisplayManager::CycleDisplay() {
-  MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager());
-  manager->CycleDisplayImpl();
+void MultiMonitorManager::CycleMonitor() {
+  MultiMonitorManager* manager = static_cast<MultiMonitorManager*>(
+      aura::Env::GetInstance()->monitor_manager());
+  manager->CycleMonitorImpl();
 }
 
-  void MultiDisplayManager::ToggleDisplayScale() {
-  MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager());
-  manager->ScaleDisplayImpl();
+  void MultiMonitorManager::ToggleMonitorScale() {
+  MultiMonitorManager* manager = static_cast<MultiMonitorManager*>(
+      aura::Env::GetInstance()->monitor_manager());
+  manager->ScaleMonitorImpl();
 }
 
-void MultiDisplayManager::OnNativeDisplaysChanged(
+void MultiMonitorManager::OnNativeMonitorsChanged(
     const std::vector<gfx::Display>& new_displays) {
   size_t min = std::min(displays_.size(), new_displays.size());
 
-  // For m19, we only care about 1st display as primary, and
-  // don't differentiate the rest of displays as all secondary
-  // displays have the same content. ID for primary display stays the same
-  // because we never remove it, we don't update IDs for other displays
+  // For m19, we only care about 1st monitor as primary, and
+  // don't differentiate the rest of monitors as all secondary
+  // monitors have the same content. ID for primary monitor stays the same
+  // because we never remove it, we don't update IDs for other monitors
   // , for now, because they're the same.
   // TODO(oshima): Fix this so that we can differentiate outputs
-  // and keep a content on one display stays on the same display
-  // when a display is added or removed.
+  // and keep a content on one monitor stays on the same monitor
+  // when a monitor is added or removed.
   for (size_t i = 0; i < min; ++i) {
     gfx::Display& current_display = displays_[i];
     const gfx::Display& new_display = new_displays[i];
@@ -89,7 +89,7 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
   }
 
   if (displays_.size() < new_displays.size()) {
-    // New displays added
+    // New monitors added
     for (size_t i = min; i < new_displays.size(); ++i) {
       const gfx::Display& new_display = new_displays[i];
       displays_.push_back(gfx::Display(new_display.id()));
@@ -102,8 +102,8 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
       NotifyDisplayAdded(display);
     }
   } else {
-    // Displays are removed. We keep the display for the primary
-    // display (at index 0) because it needs the display information
+    // Monitors are removed. We keep the monitor for the primary
+    // monitor (at index 0) because it needs the monitor information
     // even if it doesn't exit.
     while (displays_.size() > new_displays.size() && displays_.size() > 1) {
       Displays::reverse_iterator iter = displays_.rbegin();
@@ -113,45 +113,45 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
   }
 }
 
-RootWindow* MultiDisplayManager::CreateRootWindowForDisplay(
+RootWindow* MultiMonitorManager::CreateRootWindowForMonitor(
     const gfx::Display& display) {
   RootWindow* root_window = new RootWindow(display.bounds_in_pixel());
   // No need to remove RootWindowObserver because
-  // the DisplayManager object outlives RootWindow objects.
+  // the MonitorManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);
-  root_window->SetProperty(kDisplayIdKey, display.id());
+  root_window->SetProperty(kMonitorIdKey, display.id());
   root_window->Init();
   return root_window;
 }
 
-const gfx::Display& MultiDisplayManager::GetDisplayAt(size_t index) {
+const gfx::Display& MultiMonitorManager::GetDisplayAt(size_t index) {
   return index < displays_.size() ? displays_[index] : GetInvalidDisplay();
 }
 
-size_t MultiDisplayManager::GetNumDisplays() const {
+size_t MultiMonitorManager::GetNumDisplays() const {
   return displays_.size();
 }
 
-const gfx::Display& MultiDisplayManager::GetDisplayNearestWindow(
+const gfx::Display& MultiMonitorManager::GetDisplayNearestWindow(
     const Window* window) const {
   if (!window) {
-    MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
+    MultiMonitorManager* manager = const_cast<MultiMonitorManager*>(this);
     return manager->GetDisplayAt(0);
   }
   const RootWindow* root = window->GetRootWindow();
-  MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
+  MultiMonitorManager* manager = const_cast<MultiMonitorManager*>(this);
   return root ? manager->FindDisplayForRootWindow(root) : GetInvalidDisplay();
 }
 
-const gfx::Display& MultiDisplayManager::GetDisplayNearestPoint(
+const gfx::Display& MultiMonitorManager::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   // TODO(oshima): For m19, mouse is constrained within
   // the primary window.
-  MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
+  MultiMonitorManager* manager = const_cast<MultiMonitorManager*>(this);
   return manager->GetDisplayAt(0);
 }
 
-void MultiDisplayManager::OnRootWindowResized(const aura::RootWindow* root,
+void MultiMonitorManager::OnRootWindowResized(const aura::RootWindow* root,
                                               const gfx::Size& old_size) {
   if (!use_fullscreen_host_window()) {
     gfx::Display& display = FindDisplayForRootWindow(root);
@@ -160,7 +160,7 @@ void MultiDisplayManager::OnRootWindowResized(const aura::RootWindow* root,
   }
 }
 
-bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
+bool MultiMonitorManager::UpdateWorkAreaOfMonitorNearestWindow(
     const aura::Window* window,
     const gfx::Insets& insets) {
   const RootWindow* root = window->GetRootWindow();
@@ -170,23 +170,23 @@ bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
   return old_work_area != display.work_area();
 }
 
-void MultiDisplayManager::Init() {
-  // TODO(oshima): Move this logic to DisplayChangeObserver.
+void MultiMonitorManager::Init() {
+  // TODO(oshima): Move this logic to MonitorChangeObserver.
   const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAuraHostWindowSize);
   vector<string> parts;
   base::SplitString(size_str, ',', &parts);
   for (vector<string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
-    displays_.push_back(CreateDisplayFromSpec(*iter));
+    displays_.push_back(CreateMonitorFromSpec(*iter));
   }
   if (displays_.empty())
-    displays_.push_back(CreateDisplayFromSpec("" /* default */));
+    displays_.push_back(CreateMonitorFromSpec("" /* default */));
   // Force the 1st display to be the primary display (id == 0).
   displays_[0].set_id(0);
 }
 
-void MultiDisplayManager::AddRemoveDisplayImpl() {
+void MultiMonitorManager::AddRemoveMonitorImpl() {
   std::vector<gfx::Display> new_displays;
   if (displays_.size() > 1) {
     // Remove if there is more than one display.
@@ -196,13 +196,13 @@ void MultiDisplayManager::AddRemoveDisplayImpl() {
   } else {
     // Add if there is only one display.
     new_displays.push_back(displays_[0]);
-    new_displays.push_back(CreateDisplayFromSpec("50+50-1280x768"));
+    new_displays.push_back(CreateMonitorFromSpec("50+50-1280x768"));
   }
   if (new_displays.size())
-    OnNativeDisplaysChanged(new_displays);
+    OnNativeMonitorsChanged(new_displays);
 }
 
-void MultiDisplayManager::CycleDisplayImpl() {
+void MultiMonitorManager::CycleMonitorImpl() {
   if (displays_.size() > 1) {
     std::vector<gfx::Display> new_displays;
     for (Displays::const_iterator iter = displays_.begin() + 1;
@@ -211,11 +211,11 @@ void MultiDisplayManager::CycleDisplayImpl() {
       new_displays.push_back(display);
     }
     new_displays.push_back(displays_.front());
-    OnNativeDisplaysChanged(new_displays);
+    OnNativeMonitorsChanged(new_displays);
   }
 }
 
-void MultiDisplayManager::ScaleDisplayImpl() {
+void MultiMonitorManager::ScaleMonitorImpl() {
   if (displays_.size() > 0) {
     std::vector<gfx::Display> new_displays;
     for (Displays::const_iterator iter = displays_.begin();
@@ -227,13 +227,13 @@ void MultiDisplayManager::ScaleDisplayImpl() {
                             display.size().Scale(factor)));
       new_displays.push_back(display);
     }
-    OnNativeDisplaysChanged(new_displays);
+    OnNativeMonitorsChanged(new_displays);
   }
 }
 
-gfx::Display& MultiDisplayManager::FindDisplayForRootWindow(
+gfx::Display& MultiMonitorManager::FindDisplayForRootWindow(
     const aura::RootWindow* root_window) {
-  int id = root_window->GetProperty(kDisplayIdKey);
+  int id = root_window->GetProperty(kMonitorIdKey);
   for (Displays::iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     if ((*iter).id() == id)

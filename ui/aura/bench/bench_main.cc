@@ -14,7 +14,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/single_display_manager.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -282,11 +282,11 @@ int main(int argc, char** argv) {
 
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
-  aura::SingleDisplayManager* manager = new aura::SingleDisplayManager;
+  aura::SingleMonitorManager* manager = new aura::SingleMonitorManager;
   manager->set_use_fullscreen_host_window(true);
-  aura::Env::GetInstance()->SetDisplayManager(manager);
+  aura::Env::GetInstance()->SetMonitorManager(manager);
   scoped_ptr<aura::RootWindow> root_window(
-      aura::DisplayManager::CreateRootWindowForPrimaryDisplay());
+      aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
 
   // add layers
   ColoredLayer background(SK_ColorRED);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/multi_display_manager.h"
+#include "ash/monitor/multi_monitor_manager.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -20,29 +20,29 @@ namespace test {
 using std::vector;
 using std::string;
 
-class MultiDisplayManagerTest : public test::AshTestBase,
+class MultiMonitorManagerTest : public test::AshTestBase,
                                 public aura::DisplayObserver,
                                 public aura::WindowObserver {
  public:
-  MultiDisplayManagerTest()
+  MultiMonitorManagerTest()
       : removed_count_(0U),
         root_window_destroyed_(false) {
   }
-  virtual ~MultiDisplayManagerTest() {}
+  virtual ~MultiMonitorManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    display_manager()->AddObserver(this);
+    monitor_manager()->AddObserver(this);
     Shell::GetPrimaryRootWindow()->AddObserver(this);
   }
   virtual void TearDown() OVERRIDE {
     Shell::GetPrimaryRootWindow()->RemoveObserver(this);
-    display_manager()->RemoveObserver(this);
+    monitor_manager()->RemoveObserver(this);
     AshTestBase::TearDown();
   }
 
-  aura::DisplayManager* display_manager() {
-    return aura::Env::GetInstance()->display_manager();
+  aura::MonitorManager* monitor_manager() {
+    return aura::Env::GetInstance()->monitor_manager();
   }
   const vector<gfx::Display>& changed() const { return changed_; }
   const vector<gfx::Display>& added() const { return added_; }
@@ -86,101 +86,101 @@ class MultiDisplayManagerTest : public test::AshTestBase,
   size_t removed_count_;
   bool root_window_destroyed_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiDisplayManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(MultiMonitorManagerTest);
 };
 
-TEST_F(MultiDisplayManagerTest, NativeDisplayTest) {
-  aura::DisplayManager::set_use_fullscreen_host_window(true);
+TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
+  aura::MonitorManager::set_use_fullscreen_host_window(true);
 
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
 
   // Update primary and add seconary.
-  UpdateDisplay("0+0-500x500,0+501-400x400");
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  UpdateMonitor("0+0-500x500,0+501-400x400");
+  EXPECT_EQ(2U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("1 1 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
-  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
+  EXPECT_EQ(monitor_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ(monitor_manager()->GetDisplayAt(1).id(), added()[0].id());
   EXPECT_EQ("0,0 500x500", changed()[0].bounds().ToString());
   EXPECT_EQ("0,0 400x400", added()[0].bounds().ToString());
   EXPECT_EQ("0,501 400x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Delete secondary.
-  UpdateDisplay("0+0-500x500");
+  UpdateMonitor("0+0-500x500");
   EXPECT_EQ("0 0 1", GetCountSummary());
   reset();
 
   // Change primary.
-  UpdateDisplay("0+0-1000x600");
+  UpdateMonitor("0+0-1000x600");
   EXPECT_EQ("1 0 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ(monitor_manager()->GetDisplayAt(0).id(), changed()[0].id());
   EXPECT_EQ("0,0 1000x600", changed()[0].bounds().ToString());
   reset();
 
   // Add secondary.
-  UpdateDisplay("0+0-1000x600,1001+0-600x400");
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  UpdateMonitor("0+0-1000x600,1001+0-600x400");
+  EXPECT_EQ(2U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
+  EXPECT_EQ(monitor_manager()->GetDisplayAt(1).id(), added()[0].id());
   EXPECT_EQ("0,0 600x400", added()[0].bounds().ToString());
   EXPECT_EQ("1001,0 600x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Secondary removed, primary changed.
-  UpdateDisplay("0+0-800x300");
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  UpdateMonitor("0+0-800x300");
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("1 0 1", GetCountSummary());
-  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ(monitor_manager()->GetDisplayAt(0).id(), changed()[0].id());
   EXPECT_EQ("0,0 800x300", changed()[0].bounds().ToString());
   reset();
 
   // # of display can go to zero when screen is off.
   const vector<gfx::Display> empty;
-  display_manager()->OnNativeDisplaysChanged(empty);
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  monitor_manager()->OnNativeMonitorsChanged(empty);
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 0", GetCountSummary());
   EXPECT_FALSE(root_window_destroyed());
-  // Display configuration stays the same
+  // Monitor configuration stays the same
   EXPECT_EQ("0,0 800x300",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
+            monitor_manager()->GetDisplayAt(0).bounds().ToString());
   reset();
 
-  // Connect to display again
-  UpdateDisplay("100+100-500x400");
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  // Connect to monitor again
+  UpdateMonitor("100+100-500x400");
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("1 0 0", GetCountSummary());
   EXPECT_FALSE(root_window_destroyed());
   EXPECT_EQ("0,0 500x400", changed()[0].bounds().ToString());
   EXPECT_EQ("100,100 500x400", changed()[0].bounds_in_pixel().ToString());
   reset();
 
-  // Go back to zero and wake up with multiple displays.
-  display_manager()->OnNativeDisplaysChanged(empty);
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  // Go back to zero and wake up with multiple monitors.
+  monitor_manager()->OnNativeMonitorsChanged(empty);
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
   EXPECT_FALSE(root_window_destroyed());
   reset();
 
   // Add secondary.
-  UpdateDisplay("0+0-1000x600,1000+0-600x400");
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  UpdateMonitor("0+0-1000x600,1000+0-600x400");
+  EXPECT_EQ(2U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 1000x600",
-            display_manager()->GetDisplayAt(0).bounds().ToString());
+            monitor_manager()->GetDisplayAt(0).bounds().ToString());
   EXPECT_EQ("0,0 600x400",
-            display_manager()->GetDisplayAt(1).bounds().ToString());
+            monitor_manager()->GetDisplayAt(1).bounds().ToString());
   EXPECT_EQ("1000,0 600x400",
-            display_manager()->GetDisplayAt(1).bounds_in_pixel().ToString());
+            monitor_manager()->GetDisplayAt(1).bounds_in_pixel().ToString());
   reset();
 
-  aura::DisplayManager::set_use_fullscreen_host_window(false);
+  aura::MonitorManager::set_use_fullscreen_host_window(false);
 }
 
 // Test in emulation mode (use_fullscreen_host_window=false)
-TEST_F(MultiDisplayManagerTest, EmulatorTest) {
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+TEST_F(MultiMonitorManagerTest, EmulatorTest) {
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
 
-  internal::MultiDisplayManager::AddRemoveDisplay();
+  internal::MultiMonitorManager::AddRemoveMonitor();
   // Update primary and add seconary.
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(2U, monitor_manager()->GetNumDisplays());
 #if defined(OS_WIN)
   // TODO(oshima): Windows receives resize event for some reason.
   EXPECT_EQ("1 1 0", GetCountSummary());
@@ -189,22 +189,22 @@ TEST_F(MultiDisplayManagerTest, EmulatorTest) {
 #endif
   reset();
 
-  internal::MultiDisplayManager::CycleDisplay();
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  internal::MultiMonitorManager::CycleMonitor();
+  EXPECT_EQ(2U, monitor_manager()->GetNumDisplays());
   // Observer gets called twice in this mode because
-  // it gets notified both from |OnNativeDisplayChagned|
+  // it gets notified both from |OnNativeMonitorChagned|
   // and from |RootWindowObserver|, which is the consequence of
   // |SetHostSize()|.
   EXPECT_EQ("4 0 0", GetCountSummary());
   reset();
 
-  internal::MultiDisplayManager::AddRemoveDisplay();
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  internal::MultiMonitorManager::AddRemoveMonitor();
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 1", GetCountSummary());
   reset();
 
-  internal::MultiDisplayManager::CycleDisplay();
-  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  internal::MultiMonitorManager::CycleMonitor();
+  EXPECT_EQ(1U, monitor_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 0", GetCountSummary());
   reset();
 }
@@ -216,19 +216,19 @@ TEST_F(MultiDisplayManagerTest, EmulatorTest) {
 #define MAYBE_TestDeviceScaleOnlyChange DISABLED_TestDeviceScaleOnlyChange
 #endif
 
-TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
-  aura::DisplayManager::set_use_fullscreen_host_window(true);
-  UpdateDisplay("0+0-1000x600");
+TEST_F(MultiMonitorManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
+  aura::MonitorManager::set_use_fullscreen_host_window(true);
+  UpdateMonitor("0+0-1000x600");
   EXPECT_EQ(1,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
   EXPECT_EQ("1000x600",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  UpdateDisplay("0+0-1000x600*2");
+  UpdateMonitor("0+0-1000x600*2");
   EXPECT_EQ(2,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
   EXPECT_EQ("500x300",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  aura::DisplayManager::set_use_fullscreen_host_window(false);
+  aura::MonitorManager::set_use_fullscreen_host_window(false);
 }
 
 }  // namespace test

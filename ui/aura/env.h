@@ -17,11 +17,11 @@ namespace aura {
 class CursorManager;
 class EnvObserver;
 class EventFilter;
-class DisplayManager;
+class MonitorManager;
 class Window;
 
 namespace internal {
-class DisplayChangeObserverX11;
+class MonitorChangeObserverX11;
 }
 
 #if !defined(OS_MACOSX)
@@ -56,10 +56,10 @@ class AURA_EXPORT Env {
     stacking_client_ = stacking_client;
   }
 
-  // Gets/sets DisplayManager. The DisplayManager's ownership is
+  // Gets/sets MonitorManager. The MonitorManager's ownership is
   // transfered.
-  DisplayManager* display_manager() { return display_manager_.get(); }
-  void SetDisplayManager(DisplayManager* display_manager);
+  MonitorManager* monitor_manager() { return monitor_manager_.get(); }
+  void SetMonitorManager(MonitorManager* monitor_manager);
 
   // Env takes ownership of the EventFilter.
   EventFilter* event_filter() { return event_filter_.get(); }
@@ -92,12 +92,12 @@ class AURA_EXPORT Env {
   int mouse_button_flags_;
   bool is_touch_down_;
   client::StackingClient* stacking_client_;
-  scoped_ptr<DisplayManager> display_manager_;
+  scoped_ptr<MonitorManager> monitor_manager_;
   scoped_ptr<EventFilter> event_filter_;
   CursorManager cursor_manager_;
 
 #if defined(USE_X11)
-  scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;
+  scoped_ptr<internal::MonitorChangeObserverX11> monitor_change_observer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Env);

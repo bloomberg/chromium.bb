@@ -66,9 +66,9 @@ gfx::Font GetDefaultFont() {
 int GetMaxWidth(int x, int y) {
   // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
   // out a way to merge.
-  gfx::Rect display_bounds =
+  gfx::Rect monitor_bounds =
       gfx::Screen::GetDisplayNearestPoint(gfx::Point(x, y)).bounds();
-  return (display_bounds.width() + 1) / 2;
+  return (monitor_bounds.width() + 1) / 2;
 }
 
 // Creates a widget of type TYPE_TOOLTIP
@@ -155,22 +155,22 @@ class TooltipController::Tooltip {
                            tooltip_height);
 
     tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
-    gfx::Rect display_bounds =
+    gfx::Rect monitor_bounds =
         gfx::Screen::GetDisplayNearestPoint(tooltip_rect.origin()).bounds();
 
     // If tooltip is out of bounds on the x axis, we simply shift it
     // horizontally by the offset.
-    if (tooltip_rect.right() > display_bounds.right()) {
-      int h_offset = tooltip_rect.right() - display_bounds.right();
+    if (tooltip_rect.right() > monitor_bounds.right()) {
+      int h_offset = tooltip_rect.right() - monitor_bounds.right();
       tooltip_rect.Offset(-h_offset, 0);
     }
 
     // If tooltip is out of bounds on the y axis, we flip it to appear above the
     // mouse cursor instead of below.
-    if (tooltip_rect.bottom() > display_bounds.bottom())
+    if (tooltip_rect.bottom() > monitor_bounds.bottom())
       tooltip_rect.set_y(mouse_pos.y() - tooltip_height);
 
-    widget_->SetBounds(tooltip_rect.AdjustToFit(display_bounds));
+    widget_->SetBounds(tooltip_rect.AdjustToFit(monitor_bounds));
   }
 
 };

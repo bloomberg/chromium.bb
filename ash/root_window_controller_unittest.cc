@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/monitor/monitor_controller.h"
+#include "ash/monitor/multi_monitor_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -67,15 +67,15 @@ class RootWindowControllerTest : public test::AshTestBase {
   virtual ~RootWindowControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    internal::DisplayController::SetExtendedDesktopEnabled(true);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(true);
+    internal::MonitorController::SetExtendedDesktopEnabled(true);
+    internal::MonitorController::SetVirtualScreenCoordinatesEnabled(true);
     AshTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
-    internal::DisplayController::SetExtendedDesktopEnabled(false);
-    internal::DisplayController::SetVirtualScreenCoordinatesEnabled(false);
+    internal::MonitorController::SetExtendedDesktopEnabled(false);
+    internal::MonitorController::SetVirtualScreenCoordinatesEnabled(false);
   }
 
  private:
@@ -83,7 +83,7 @@ class RootWindowControllerTest : public test::AshTestBase {
 };
 
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
-  UpdateDisplay("0+0-600x600,600+0-500x500");
+  UpdateMonitor("0+0-600x600,600+0-500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
   root_windows[0]->SetBounds(gfx::Rect(0, 0, 600, 600));
@@ -114,12 +114,12 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("500x500", fullscreen->GetWindowScreenBounds().size().ToString());
 #endif
 
-  UpdateDisplay("0+0-600x600");
+  UpdateMonitor("0+0-600x600");
 
   EXPECT_EQ(root_windows[0], normal->GetNativeView()->GetRootWindow());
   EXPECT_EQ("100x100", normal->GetWindowScreenBounds().size().ToString());
 
-  // Maximized area on primary display has 2px (given as
+  // Maximized area on primary monitor has 2px (given as
   // kAutoHideSize in shelf_layout_manager.cc) inset at the bottom.
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
   EXPECT_EQ("600x598", maximized->GetWindowScreenBounds().size().ToString());
@@ -133,7 +133,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
-  UpdateDisplay("0+0-500x500,500+0-500x500");
+  UpdateMonitor("0+0-500x500,500+0-500x500");
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
@@ -154,7 +154,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
   generator_1st.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
 
-  UpdateDisplay("0+0-500x500");
+  UpdateMonitor("0+0-500x500");
   EXPECT_EQ(root_windows[0], modal->GetNativeView()->GetRootWindow());
   EXPECT_TRUE(wm::IsActiveWindow(modal->GetNativeView()));
   generator_1st.ClickLeftButton();

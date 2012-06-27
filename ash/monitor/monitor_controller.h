@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_CONTROLLER_H_
-#define ASH_DISPLAY_DISPLAY_CONTROLLER_H_
+#ifndef ASH_MONITOR_MONITOR_CONTROLLER_H_
+#define ASH_MONITOR_MONITOR_CONTROLLER_H_
 #pragma once
 
 #include <map>
@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/display_observer.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/monitor_manager.h"
 
 namespace aura {
 class Display;
@@ -24,12 +24,12 @@ namespace ash {
 namespace internal {
 class RootWindowController;
 
-// DisplayController owns and maintains RootWindows for each attached
+// MonitorController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
-// TODO(oshima): Rename DisplayXXX to DisplayXXX.
-class ASH_EXPORT DisplayController : public aura::DisplayObserver {
+// TODO(oshima): Rename MonitorXXX to DisplayXXX.
+class ASH_EXPORT MonitorController : public aura::DisplayObserver {
  public:
-  // Layout options where the secondary display should be positioned.
+  // Layout options where the secondary monitor should be positioned.
   enum SecondaryDisplayLayout {
     TOP,
     RIGHT,
@@ -37,8 +37,8 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
     LEFT
   };
 
-  DisplayController();
-  virtual ~DisplayController();
+  MonitorController();
+  virtual ~MonitorController();
 
   // Initializes primary display.
   void InitPrimaryDisplay();
@@ -100,10 +100,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   SecondaryDisplayLayout secondary_display_layout_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayController);
+  DISALLOW_COPY_AND_ASSIGN(MonitorController);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_DISPLAY_CONTROLLER_H_
+#endif  // ASH_MONITOR_MONITOR_CONTROLLER_H_

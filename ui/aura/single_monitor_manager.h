@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SINGLE_DISPLAY_MANAGER_H_
-#define UI_AURA_SINGLE_DISPLAY_MANAGER_H_
+#ifndef UI_AURA_SINGLE_MONITOR_MANAGER_H_
+#define UI_AURA_SINGLE_MONITOR_MANAGER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display.h"
 
@@ -18,17 +18,17 @@ class Rect;
 
 namespace aura {
 
-// A display manager assuming there is one display.
-class AURA_EXPORT SingleDisplayManager : public DisplayManager,
+// A monitor manager assuming there is one monitor.
+class AURA_EXPORT SingleMonitorManager : public MonitorManager,
                                          public WindowObserver {
  public:
-  SingleDisplayManager();
-  virtual ~SingleDisplayManager();
+  SingleMonitorManager();
+  virtual ~SingleMonitorManager();
 
-  // DisplayManager overrides:
-  virtual void OnNativeDisplaysChanged(
+  // MonitorManager overrides:
+  virtual void OnNativeMonitorsChanged(
       const std::vector<gfx::Display>& display) OVERRIDE;
-  virtual RootWindow* CreateRootWindowForDisplay(
+  virtual RootWindow* CreateRootWindowForMonitor(
       const gfx::Display& display) OVERRIDE;
   virtual const gfx::Display& GetDisplayAt(size_t index) OVERRIDE;
 
@@ -52,9 +52,9 @@ class AURA_EXPORT SingleDisplayManager : public DisplayManager,
   RootWindow* root_window_;
   gfx::Display display_;
 
-  DISALLOW_COPY_AND_ASSIGN(SingleDisplayManager);
+  DISALLOW_COPY_AND_ASSIGN(SingleMonitorManager);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_SINGLE_DISPLAY_MANAGER_H_
+#endif  // UI_AURA_SINGLE_MONITOR_MANAGER_H_

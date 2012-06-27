@@ -14,7 +14,7 @@ namespace ash {
 class ASH_EXPORT ShellObserver {
  public:
   // Invoked after the screen's work area insets changes.
-  virtual void OnDisplayWorkAreaInsetsChanged() {}
+  virtual void OnMonitorWorkAreaInsetsChanged() {}
 
   // Invoked when the user logs in.
   virtual void OnLoginStateChanged(user::LoginStatus status) {}

@@ -135,7 +135,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns the window's bounds in screen coordinates. In ash, this is
   // effectively screen bounds.
   //
-  // TODO(oshima): Fix this to return screen's coordinate for multi-display
+  // TODO(oshima): Fix this to return screen's coordinate for multi-monitor
   // support.
   gfx::Rect GetBoundsInRootWindow() const;
 

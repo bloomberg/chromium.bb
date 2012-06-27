@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/display/output_configurator.h"
+#include "chromeos/monitor/output_configurator.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/dpms.h>
@@ -37,15 +37,15 @@ const float kPixelsToMmScale = kMmInInch / kDpi96;
 
 // The DPI threshold to detech high density screen.
 // Higher DPI than this will use device_scale_factor=2
-// Should be kept in sync with display_change_observer_x11.cc
+// Should be kept in sync with monitor_change_observer_x11.cc
 const unsigned int kHighDensityDIPThreshold = 160;
 
 // Prefixes for the built-in displays.
 const char kInternal_LVDS[] = "LVDS";
 const char kInternal_eDP[] = "eDP";
 
-// Gap between screens so cursor at bottom of active display doesn't partially
-// appear on top of inactive display. Higher numbers guard against larger
+// Gap between screens so cursor at bottom of active monitor doesn't partially
+// appear on top of inactive monitor. Higher numbers guard against larger
 // cursors, but also waste more memory. We will double this gap for screens
 // with a device_scale_factor of 2. While this gap will not guard against all
 // possible cursors in X, it should handle the ones we actually use. See

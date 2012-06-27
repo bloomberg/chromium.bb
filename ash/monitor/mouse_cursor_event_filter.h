@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_MOUSE_CURSOR_EVENT_FILTER_H
-#define ASH_DISPLAY_MOUSE_CURSOR_EVENT_FILTER_H
+#ifndef ASH_MONITOR_MOUSE_CURSOR_EVENT_FILTER_H
+#define ASH_MONITOR_MOUSE_CURSOR_EVENT_FILTER_H
 #pragma once
 
 #include "ash/ash_export.h"
@@ -12,13 +12,13 @@
 
 namespace ash {
 namespace internal {
-class DisplayController;
+class MonitorController;
 
 // An event filter that controls mouse location in extended desktop
 // environment.
 class ASH_EXPORT MouseCursorEventFilter : public aura::EventFilter {
  public:
-  MouseCursorEventFilter(DisplayController* display_controller);
+  MouseCursorEventFilter(MonitorController* monitor_controller);
   virtual ~MouseCursorEventFilter();
 
   // Overridden from aura::EventFilter:
@@ -33,7 +33,7 @@ class ASH_EXPORT MouseCursorEventFilter : public aura::EventFilter {
       aura::GestureEvent* event) OVERRIDE;
 
  private:
-  DisplayController* display_controller_;
+  MonitorController* monitor_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseCursorEventFilter);
 };
@@ -41,4 +41,4 @@ class ASH_EXPORT MouseCursorEventFilter : public aura::EventFilter {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_MOUSE_CURSOR_EVENT_FILTER_H
+#endif  // ASH_MONITOR_MOUSE_CURSOR_EVENT_FILTER_H

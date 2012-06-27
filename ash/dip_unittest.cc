@@ -28,7 +28,7 @@ namespace ash {
 typedef ash::test::AshTestBase DIPTest;
 
 #if defined(OS_WIN)
-// Windows/Aura doesn't have DIP support in display yet.
+// Windows/Aura doesn't have DIP support in monitor yet.
 #define MAYBE_WorkArea DISABLED_WorkArea
 #else
 #define MAYBE_WorkArea WorkArea
@@ -36,7 +36,7 @@ typedef ash::test::AshTestBase DIPTest;
 
 // Test if the WM sets correct work area under different density.
 TEST_F(DIPTest, MAYBE_WorkArea) {
-  ChangeDisplayConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
+  ChangeMonitorConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(root);
@@ -46,7 +46,7 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
   EXPECT_EQ("0,0 1000x852", work_area.ToString());
   EXPECT_EQ("0,0,48,0", display.bounds().InsetsFrom(work_area).ToString());
 
-  ChangeDisplayConfig(2.0f, gfx::Rect(0, 0, 2000, 1800));
+  ChangeMonitorConfig(2.0f, gfx::Rect(0, 0, 2000, 1800));
 
   const gfx::Display display_2x = gfx::Screen::GetDisplayNearestWindow(root);
 

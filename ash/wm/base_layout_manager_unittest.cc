@@ -29,7 +29,7 @@ class BaseLayoutManagerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(
+    Shell::GetInstance()->SetMonitorWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(1, 2, 3, 4));
     Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
@@ -53,7 +53,7 @@ TEST_F(BaseLayoutManagerTest, Maximize) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  // Maximized window fills the work area, not the whole display.
+  // Maximized window fills the work area, not the whole monitor.
   EXPECT_EQ(ScreenAsh::GetMaximizedWindowBounds(window.get()).ToString(),
             window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
@@ -93,7 +93,7 @@ TEST_F(BaseLayoutManagerTest, Fullscreen) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  // Fullscreen window fills the whole display.
+  // Fullscreen window fills the whole monitor.
   EXPECT_EQ(
       gfx::Screen::GetDisplayNearestWindow(window.get()).bounds().ToString(),
       window->bounds().ToString());
@@ -105,12 +105,12 @@ TEST_F(BaseLayoutManagerTest, Fullscreen) {
 TEST_F(BaseLayoutManagerTest, FullscreenRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  // Fullscreen window fills the whole display.
+  // Fullscreen window fills the whole monitor.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(
       gfx::Screen::GetDisplayNearestWindow(window.get()).bounds().ToString(),
       window->bounds().ToString());
-  // Enlarge the root window.  We should still match the display size.
+  // Enlarge the root window.  We should still match the monitor size.
   Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
   EXPECT_EQ(
       gfx::Screen::GetDisplayNearestWindow(window.get()).bounds().ToString(),

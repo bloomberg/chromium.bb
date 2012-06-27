@@ -8,7 +8,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -16,8 +16,8 @@
 namespace ash {
 
 namespace {
-aura::DisplayManager* GetDisplayManager() {
-  return aura::Env::GetInstance()->display_manager();
+aura::MonitorManager* GetMonitorManager() {
+  return aura::Env::GetInstance()->monitor_manager();
 }
 }  // namespace
 
@@ -55,19 +55,19 @@ gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
 }
 
 int ScreenAsh::GetNumDisplays() {
-  return GetDisplayManager()->GetNumDisplays();
+  return GetMonitorManager()->GetNumDisplays();
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
-  return GetDisplayManager()->GetDisplayNearestWindow(window);
+  return GetMonitorManager()->GetDisplayNearestWindow(window);
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
-  return GetDisplayManager()->GetDisplayNearestPoint(point);
+  return GetMonitorManager()->GetDisplayNearestPoint(point);
 }
 
 gfx::Display ScreenAsh::GetPrimaryDisplay() const {
-  return GetDisplayManager()->GetDisplayAt(0);
+  return GetMonitorManager()->GetDisplayAt(0);
 }
 
 }  // namespace ash

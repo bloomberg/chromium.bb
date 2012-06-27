@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DISPLAY_MANAGER_H_
-#define UI_AURA_DISPLAY_MANAGER_H_
+#ifndef UI_AURA_MONITOR_MANAGER_H_
+#define UI_AURA_MONITOR_MANAGER_H_
 #pragma once
 
 #include <string>
@@ -24,11 +24,11 @@ class DisplayObserver;
 class RootWindow;
 class Window;
 
-// DisplayManager creates, deletes and updates Display objects when
-// display configuration changes, and notifies DisplayObservers about
+// MonitorManager creates, deletes and updates Monitor objects when
+// monitor configuration changes, and notifies DisplayObservers about
 // the change. This is owned by Env and its lifetime is longer than
 // any windows.
-class AURA_EXPORT DisplayManager {
+class AURA_EXPORT MonitorManager {
  public:
   static void set_use_fullscreen_host_window(bool use_fullscreen) {
     use_fullscreen_host_window_ = use_fullscreen;
@@ -37,34 +37,34 @@ class AURA_EXPORT DisplayManager {
     return use_fullscreen_host_window_;
   }
 
-  // Creates a display from string spec. 100+200-1440x800 creates display
+  // Creates a monitor from string spec. 100+200-1440x800 creates monitor
   // whose size is 1440x800 at the location (100, 200) in screen's coordinates.
   // The location can be omitted and be just "1440x800", which creates
-  // display at the origin of the screen. An empty string creates
-  // the display with default size.
+  // monitor at the origin of the screen. An empty string creates
+  // the monitor with default size.
   //  The device scale factor can be specified by "*", like "1280x780*2",
   // or will use the value of |gfx::Display::GetForcedDeviceScaleFactor()| if
   // --force-device-scale-factor is specified.
-  static gfx::Display CreateDisplayFromSpec(const std::string& spec);
+  static gfx::Display CreateMonitorFromSpec(const std::string& spec);
 
-  // A utility function to create a root window for primary display.
-  static RootWindow* CreateRootWindowForPrimaryDisplay();
+  // A utility function to create a root window for primary monitor.
+  static RootWindow* CreateRootWindowForPrimaryMonitor();
 
-  DisplayManager();
-  virtual ~DisplayManager();
+  MonitorManager();
+  virtual ~MonitorManager();
 
   // Adds/removes DisplayObservers.
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
 
-  // Called when display configuration has changed. The new display
-  // configurations is passed as a vector of Display object, which
-  // contains each display's new infomration.
-  virtual void OnNativeDisplaysChanged(
+  // Called when monitor configuration has changed. The new monitor
+  // configurations is passed as a vector of Monitor object, which
+  // contains each monitor's new infomration.
+  virtual void OnNativeMonitorsChanged(
       const std::vector<gfx::Display>& display) = 0;
 
-  // Create a root window for given |display|.
-  virtual RootWindow* CreateRootWindowForDisplay(
+  // Create a root window for given |monitor|.
+  virtual RootWindow* CreateRootWindowForMonitor(
       const gfx::Display& display) = 0;
 
   // Returns the display at |index|. The display at 0 is considered "primary".
@@ -76,7 +76,7 @@ class AURA_EXPORT DisplayManager {
   virtual const gfx::Display& GetDisplayNearestWindow(
       const Window* window) const = 0;
 
-  // Returns the display object nearest given |pint|.
+  // Returns the monitor object nearest given |pint|.
   virtual const gfx::Display& GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
 
@@ -88,14 +88,14 @@ class AURA_EXPORT DisplayManager {
 
  private:
   // If set before the RootWindow is created, the host window will cover the
-  // entire display.  Note that this can still be overridden via the
+  // entire monitor.  Note that this can still be overridden via the
   // switches::kAuraHostWindowSize flag.
   static bool use_fullscreen_host_window_;
 
   ObserverList<DisplayObserver> observers_;
-  DISALLOW_COPY_AND_ASSIGN(DisplayManager);
+  DISALLOW_COPY_AND_ASSIGN(MonitorManager);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_DISPLAY_MANAGER_H_
+#endif  // UI_AURA_MONITOR_MANAGER_H_

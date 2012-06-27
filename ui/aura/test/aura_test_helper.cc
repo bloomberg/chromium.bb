@@ -8,10 +8,10 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/root_window_capture_client.h"
-#include "ui/aura/single_display_manager.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
@@ -43,8 +43,8 @@ AuraTestHelper::~AuraTestHelper() {
 
 void AuraTestHelper::SetUp() {
   setup_called_ = true;
-  Env::GetInstance()->SetDisplayManager(new SingleDisplayManager);
-  root_window_.reset(aura::DisplayManager::CreateRootWindowForPrimaryDisplay());
+  Env::GetInstance()->SetMonitorManager(new SingleMonitorManager);
+  root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
 

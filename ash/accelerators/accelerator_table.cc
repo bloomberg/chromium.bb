@@ -123,10 +123,10 @@ const AcceleratorData kAcceleratorData[] = {
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, DISPLAY_CYCLE },
-  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN, DISPLAY_ADD_REMOVE },
+  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, MONITOR_CYCLE },
+  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN, MONITOR_ADD_REMOVE },
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    DISPLAY_TOGGLE_SCALE },
+    MONITOR_TOGGLE_SCALE },
 #if !defined(NDEBUG)
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_LAYER_HIERARCHY },

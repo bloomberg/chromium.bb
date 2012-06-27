@@ -129,7 +129,7 @@ gfx::Rect SnapSizer::GetTargetBoundsForPercent(int percent_index) const {
 }
 
 bool SnapSizer::AlongEdge(int x) const {
-  // TODO: need to support multi-display.
+  // TODO: need to support multi-monitor.
   gfx::Rect area(gfx::Screen::GetDisplayNearestWindow(window_).bounds());
   return (x <= area.x()) || (x >= area.right() - 1);
 }

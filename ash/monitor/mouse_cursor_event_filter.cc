@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/monitor/mouse_cursor_event_filter.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/monitor/monitor_controller.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -13,9 +13,9 @@ namespace ash {
 namespace internal {
 
 MouseCursorEventFilter::MouseCursorEventFilter(
-    DisplayController* display_controller)
-    : display_controller_(display_controller) {
-  DCHECK(display_controller_);
+    MonitorController* monitor_controller)
+    : monitor_controller_(monitor_controller) {
+  DCHECK(monitor_controller_);
 }
 
 MouseCursorEventFilter::~MouseCursorEventFilter() {
@@ -33,7 +33,7 @@ bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
   aura::RootWindow* current_root = target->GetRootWindow();
   gfx::Point location_in_root(event->location());
   aura::Window::ConvertPointToWindow(target, current_root, &location_in_root);
-  return display_controller_->WarpMouseCursorIfNecessary(
+  return monitor_controller_->WarpMouseCursorIfNecessary(
       current_root, location_in_root);
 }
 
