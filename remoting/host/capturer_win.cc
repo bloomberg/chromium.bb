@@ -599,12 +599,13 @@ void CapturerGdi::CaptureCursor() {
   cursor_proto->set_height(height);
   cursor_proto->set_hotspot_x(hotspot_x);
   cursor_proto->set_hotspot_y(hotspot_y);
-  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
 
   // Record the last cursor image that we sent to the client.
   last_cursor_.reset(new uint8[data_size]);
   memcpy(last_cursor_.get(), cursor_dst_data, data_size);
   last_cursor_size_ = SkISize::Make(width, height);
+
+  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
 }
 
 SkISize CapturerGdi::GetScreenSize() {
