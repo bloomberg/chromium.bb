@@ -249,7 +249,7 @@ readonly UPSTREAM_REV=${UPSTREAM_REV:-d48386c01ff6}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
-readonly GOLD_REV=5679aa00b40c
+readonly GOLD_REV=0eca3559e64e
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-158408}
