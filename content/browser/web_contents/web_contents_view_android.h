@@ -6,26 +6,40 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/common/context_menu_params.h"
 
 namespace content {
-class WebContents;
+class ContentViewImpl;
 }
 
+// Android-specific implementation of the WebContentsView.
 class WebContentsViewAndroid
     : public content::WebContentsView,
       public content::RenderViewHostDelegateView {
  public:
-  explicit WebContentsViewAndroid(content::WebContents* web_contents);
+  WebContentsViewAndroid(WebContentsImpl* web_contents,
+                         content::WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewAndroid();
+
+  // Sets the interface to the view system. ContentViewImpl is owned
+  // by its Java ContentView counterpart, whose lifetime is managed
+  // by the UI frontend.
+  void SetContentView(content::ContentViewImpl* content_view);
+
+  // Can retun NULL.
+  // Do not store the returned pointer, as it may become invalid.
+  content::ContentViewImpl* GetContentView() const;
 
   // WebContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual content::RenderWidgetHostView* CreateViewForWidget(
       content::RenderWidgetHost* render_widget_host) OVERRIDE;
-
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
@@ -39,6 +53,7 @@ class WebContentsViewAndroid
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
   virtual bool IsDoingDrag() const OVERRIDE;
   virtual void CancelDragAndCloseTab() OVERRIDE;
   virtual WebDropData* GetDropData() const OVERRIDE;
@@ -66,7 +81,13 @@ class WebContentsViewAndroid
 
  private:
   // The WebContents whose contents we display.
-  content::WebContents* web_contents_;
+  WebContentsImpl* web_contents_;
+
+  // ContentViewImpl is our interface to the view system.
+  content::ContentViewImpl* content_view_;
+
+  // Interface for extensions to WebContentsView. Used to show the context menu.
+  scoped_ptr<content::WebContentsViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };

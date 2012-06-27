@@ -604,6 +604,7 @@
     'browser/renderer_host/render_widget_host_view_base.cc',
     'browser/renderer_host/render_widget_host_view_base.h',
     'browser/renderer_host/render_widget_host_view_android.cc',
+    'browser/renderer_host/render_widget_host_view_android.h',
     'browser/renderer_host/render_widget_host_view_aura.cc',
     'browser/renderer_host/render_widget_host_view_aura.h',
     'browser/renderer_host/render_widget_host_view_gtk.cc',

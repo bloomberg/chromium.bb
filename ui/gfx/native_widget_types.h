@@ -88,7 +88,9 @@ typedef struct _GdkRegion GdkRegion;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 #elif defined(OS_ANDROID)
-class ChromeView;
+namespace content {
+class ContentView;
+}
 #endif
 class SkBitmap;
 
@@ -119,8 +121,8 @@ typedef GdkRegion* NativeRegion;
 typedef GdkEvent* NativeEvent;
 #elif defined(OS_ANDROID)
 typedef void* NativeCursor;
-typedef ChromeView* NativeView;
-typedef ChromeView* NativeWindow;
+typedef content::ContentView* NativeView;
+typedef content::ContentView* NativeWindow;
 typedef void* NativeRegion;
 typedef jobject NativeEvent;
 #endif

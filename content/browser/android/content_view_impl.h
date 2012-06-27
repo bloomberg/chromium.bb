@@ -9,11 +9,15 @@
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
+#include "base/process.h"
 #include "content/public/browser/android/content_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 class ContentViewClient;
+class RenderWidgetHostViewAndroid;
 
 namespace content {
 
@@ -58,8 +62,33 @@ class ContentViewImpl : public ContentView,
   void ClearHistory(JNIEnv* env, jobject obj);
 
   // --------------------------------------------------------------------------
+  // Public methods that call to Java via JNI
+  // --------------------------------------------------------------------------
+
+  void OnTabCrashed(const base::ProcessHandle handle);
+
+  void SetTitle(const string16& title);
+
+  bool HasFocus();
+
+  void OnSelectionChanged(const std::string& text);
+
+  void OnSelectionBoundsChanged(int startx,
+                                int starty,
+                                base::i18n::TextDirection start_dir,
+                                int endx,
+                                int endy,
+                                base::i18n::TextDirection end_dir);
+
+  void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
+                                           bool activated,
+                                           bool force);
+
+  // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------
+
+  gfx::Rect GetBounds() const;
 
   WebContents* web_contents() const { return web_contents_; }
   void LoadUrl(const GURL& url, int page_transition);
@@ -68,6 +97,7 @@ class ContentViewImpl : public ContentView,
       int page_transition,
       const std::string& user_agent_override);
 
+  // --------------------------------------------------------------------------
  private:
   // NotificationObserver implementation.
   virtual void Observe(int type,

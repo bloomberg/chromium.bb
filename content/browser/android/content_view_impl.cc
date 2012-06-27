@@ -215,6 +215,55 @@ static jint Init(JNIEnv* env, jobject obj,
   return reinterpret_cast<jint>(view);
 }
 
+// --------------------------------------------------------------------------
+// Public methods that call to Java via JNI
+// --------------------------------------------------------------------------
+
+void ContentViewImpl::OnTabCrashed(const base::ProcessHandle handle) {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+void ContentViewImpl::SetTitle(const string16& title) {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+bool ContentViewImpl::HasFocus() {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+  return false;
+}
+
+void ContentViewImpl::OnSelectionChanged(const std::string& text) {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+void ContentViewImpl::OnSelectionBoundsChanged(
+    int startx,
+    int starty,
+    base::i18n::TextDirection start_dir,
+    int endx,
+    int endy,
+    base::i18n::TextDirection end_dir) {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+void ContentViewImpl::OnAcceleratedCompositingStateChange(
+    RenderWidgetHostViewAndroid* rwhva, bool activated, bool force) {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+// --------------------------------------------------------------------------
+// Methods called from Java via JNI
+// --------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------
+// Methods called from native code
+// --------------------------------------------------------------------------
+
+gfx::Rect ContentViewImpl::GetBounds() const {
+  NOTIMPLEMENTED() << "not upstreamed yet";
+  return gfx::Rect();
+}
+
 // ----------------------------------------------------------------------------
 
 bool RegisterContentView(JNIEnv* env) {
