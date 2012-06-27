@@ -68,6 +68,7 @@ void ColorChooserAura::OnColorChooserDialogClosed() {
 void ColorChooserAura::End() {
   if (widget_ && widget_->IsVisible()) {
     widget_->Close();
+    tab_ = NULL;
     view_ = NULL;
     widget_ = NULL;
   }
