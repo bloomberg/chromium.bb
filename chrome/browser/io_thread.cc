@@ -612,7 +612,6 @@ void IOThread::InitSystemRequestContextOnIOThread() {
       globals_->system_server_bound_cert_service.get();
   system_params.transport_security_state =
       globals_->transport_security_state.get();
-  system_params.ssl_host_info_factory = NULL;
   system_params.proxy_service = globals_->system_proxy_service.get();
   system_params.ssl_config_service = globals_->ssl_config_service.get();
   system_params.http_auth_handler_factory =

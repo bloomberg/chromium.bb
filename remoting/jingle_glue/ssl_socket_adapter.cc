@@ -68,7 +68,7 @@ int SSLSocketAdapter::BeginSSL() {
   ssl_socket_.reset(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           transport_socket_, net::HostPortPair(hostname_, 443), ssl_config,
-          NULL /* ssl_host_info */, context));
+          context));
 
   int result = ssl_socket_->Connect(
       base::Bind(&SSLSocketAdapter::OnConnected, base::Unretained(this)));

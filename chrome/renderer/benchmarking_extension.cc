@@ -29,9 +29,9 @@ class BenchmarkingWrapper : public v8::Extension {
         "if (typeof(chrome.benchmarking) == 'undefined') {"
         "  chrome.benchmarking = {};"
         "};"
-        "chrome.benchmarking.clearCache = function(preserve_ssl_entries) {"
+        "chrome.benchmarking.clearCache = function() {"
         "  native function ClearCache();"
-        "  ClearCache(preserve_ssl_entries);"
+        "  ClearCache();"
         "};"
         "chrome.benchmarking.clearHostResolverCache = function() {"
         "  native function ClearHostResolverCache();"
@@ -109,12 +109,8 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> ClearCache(const v8::Arguments& args) {
-    bool preserve_ssl_host_entries = false;
-    if (args.Length() && args[0]->IsBoolean())
-      preserve_ssl_host_entries = args[0]->BooleanValue();
     int rv;
-    content::RenderThread::Get()->Send(new ChromeViewHostMsg_ClearCache(
-        preserve_ssl_host_entries, &rv));
+    content::RenderThread::Get()->Send(new ChromeViewHostMsg_ClearCache(&rv));
     WebCache::clear();
     return v8::Undefined();
   }

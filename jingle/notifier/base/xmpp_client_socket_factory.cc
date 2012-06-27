@@ -49,7 +49,7 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
   // TODO(rkn): context.server_bound_cert_service is NULL because the
   // ServerBoundCertService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
-      transport_socket, host_and_port, ssl_config_, NULL, context);
+      transport_socket, host_and_port, ssl_config_, context);
 }
 
 

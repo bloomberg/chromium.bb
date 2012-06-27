@@ -33,7 +33,7 @@ class ChromeBenchmarkingMessageFilter : public content::BrowserMessageFilter {
 
   // Message handlers.
   void OnCloseCurrentConnections();
-  void OnClearCache(bool preserve_ssl_host_info, IPC::Message* reply_msg);
+  void OnClearCache(IPC::Message* reply_msg);
   void OnClearHostResolverCache(int* result);
   void OnEnableSpdy(bool enable);
   void OnSetCacheMode(bool enabled);

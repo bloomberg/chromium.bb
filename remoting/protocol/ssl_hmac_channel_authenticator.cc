@@ -106,7 +106,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     context.cert_verifier = cert_verifier_.get();
     socket_.reset(
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-            socket.release(), host_and_port, ssl_config, NULL, context));
+            socket.release(), host_and_port, ssl_config, context));
 
     result = socket_->Connect(
         base::Bind(&SslHmacChannelAuthenticator::OnConnected,

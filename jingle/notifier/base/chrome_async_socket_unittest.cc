@@ -123,7 +123,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     return mock_client_socket_factory_->CreateSSLClientSocket(
-        transport_socket, host_and_port, ssl_config_, NULL, context);
+        transport_socket, host_and_port, ssl_config_, context);
   }
 
  private:

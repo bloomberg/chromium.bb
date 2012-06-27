@@ -55,7 +55,6 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   // transport_security_state is NULL because it's not thread safe.
   session_params.transport_security_state = NULL;
   session_params.proxy_service = request_context->proxy_service();
-  session_params.ssl_host_info_factory = NULL;
   session_params.ssl_config_service = request_context->ssl_config_service();
   session_params.http_auth_handler_factory =
       request_context->http_auth_handler_factory();

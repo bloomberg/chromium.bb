@@ -132,7 +132,7 @@ void PepperTCPSocket::SSLHandshake(
   net::SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = manager_->GetCertVerifier();
   socket_.reset(factory->CreateSSLClientSocket(
-      handle, host_port_pair, manager_->ssl_config(), NULL, ssl_context));
+      handle, host_port_pair, manager_->ssl_config(), ssl_context));
   if (!socket_.get()) {
     LOG(WARNING) << "Failed to create an SSL client socket.";
     OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);

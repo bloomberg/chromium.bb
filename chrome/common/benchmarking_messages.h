@@ -25,11 +25,8 @@ IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_SetCacheMode,
 
 // Message sent from the renderer to the browser to request that the browser
 // clear the cache.  Used for debugging/testing.
-// |preserve_ssl_host_info| controls whether clearing the cache will preserve
-// persisted SSL information stored in the cache.
 // |result| is the returned status from the operation.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_ClearCache,
-                            bool /* preserve_ssl_host_info */,
+IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_ClearCache,
                             int /* result */)
 
 // Message sent from the renderer to the browser to request that the browser
