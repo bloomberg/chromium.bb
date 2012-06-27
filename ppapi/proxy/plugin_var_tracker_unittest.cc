@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,10 @@ PP_Var MakeObject(int32 object_id) {
   return ret;
 }
 
-// A Deallocate() function for PPP_Class that just writes 1 to the given
-// pointer so we know when Deallocate was called.
+// A Deallocate() function for PPP_Class that just increments the integer
+// referenced by the pointer so we know how often Deallocate was called.
 void MarkOnDeallocate(void* object) {
-  *static_cast<int*>(object) = 1;
+  (*static_cast<int*>(object))++;
 }
 
 // A class that just implements MarkOnDeallocate on destruction.
@@ -203,11 +203,11 @@ TEST_F(PluginVarTrackerTest, PluginObjectInstanceDeleted) {
   // we won't get a destroy call.
   object = NULL;
   var_tracker().ReleaseVar(plugin_var);
-  EXPECT_FALSE(deallocate_called);
+  EXPECT_EQ(0, deallocate_called);
 
   // Synthesize an instance destuction, this should call Deallocate.
   var_tracker().DidDeleteInstance(pp_instance);
-  EXPECT_TRUE(deallocate_called);
+  EXPECT_EQ(1, deallocate_called);
 }
 
 // Tests what happens when a plugin keeps a ref to a plugin-implemented
@@ -229,16 +229,16 @@ TEST_F(PluginVarTrackerTest, PluginObjectLeaked) {
                                                &mark_on_deallocate_class,
                                                user_data);
 
-  // Destroy the innstance. This should not call deallocate since the plugin
+  // Destroy the instance. This should not call deallocate since the plugin
   // still has a ref.
   var_tracker().DidDeleteInstance(pp_instance);
-  EXPECT_FALSE(deallocate_called);
+  EXPECT_EQ(0, deallocate_called);
 
   // Release the plugin ref to the var. Since the instance is gone this should
   // call deallocate.
   object = NULL;
   var_tracker().ReleaseVar(plugin_var);
-  EXPECT_TRUE(deallocate_called);
+  EXPECT_EQ(1, deallocate_called);
 }
 
 }  // namespace proxy

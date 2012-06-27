@@ -341,6 +341,8 @@ void PPP_Class_Proxy::OnMsgConstruct(
 void PPP_Class_Proxy::OnMsgDeallocate(int64 ppp_class, int64 object) {
   if (!ValidateUserData(ppp_class, object, NULL))
     return;
+  PluginGlobals::Get()->plugin_var_tracker()->PluginImplementedObjectDestroyed(
+      ToUserData(object));
   CallWhileUnlocked(ToPPPClass(ppp_class)->Deallocate, ToUserData(object));
 }
 
