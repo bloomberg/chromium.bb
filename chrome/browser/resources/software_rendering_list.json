@@ -1,0 +1,610 @@
+// Determines whether certain gpu-related features are blacklisted or not.
+// A valid software_rendering_list.json file are in the format of
+// {
+//   "version": "x.y",
+//   "entries": [
+//     { // entry 1
+//     },
+//     ...
+//     { // entry n
+//     }
+//   ]
+// }
+//
+// Each entry contains the following fields (fields are optional unless
+// specifically described as mandatory below):
+// 1. "id" is an integer.  0 is reserved.  This field is mandatory.
+// 2. "os" contains "type" and an optional "version". "type" could be "macosx",
+//    "linux", "win", "chromeos", or "any".  "any" is the same as not specifying
+//    "os".
+//    "version" is a VERSION structure (defined below).
+// 3. "vendor_id" is a string.  0 is reserved.
+// 4. "device_id" is an array of strings.  0 is reserved.
+// 5. "multi_gpu_style" is a string, valid values include "optimus", and
+//    "amd_switchable".
+// 6. "driver_vendor" is a STRING structure (defined below).
+// 7. "driver_version" is a VERSION structure (defined below).
+// 8. "driver_date" is a VERSION structure (defined below).
+//    The version is interpreted as "year.month.day".
+// 9. "gl_vendor" is a STRING structure (defined below).
+// 10. "gl_renderer" is a STRING structure (defined below).
+// 11. "perf_graphics" is a FLOAT structure (defined below).
+// 12. "perf_gaming" is a FLOAT structure (defined below).
+// 13. "perf_overall" is a FLOAT structure (defined below).
+// 14. "exceptions" is a list of entries.
+// 15. "blacklist" is a list of gpu feature strings, valid values include
+//     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
+//     "multisampling", and "all".
+//     This field is mandatory.
+// 16. "description" has the description of the entry.
+// 17. "webkit_bugs" is an array of associated webkit bug numbers.
+// 18. "cr_bugs" is an array of associated webkit bug numbers.
+// 19. "browser_version" is a VERSION structure (defined below).  If this
+//     condition is not satisfied, the entry will be ignored.  If it is not
+//     present, then the entry applies to all versions of the browser.
+// 20. "disabled" is a boolean. If it is present, the entry will be skipped.
+//     This can not be used in exceptions.
+//
+// VERSION includes "op", "style", "number", and "number2".  "op" can be any of
+// the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"
+// is optional and can be "lexical" or "numerical"; if it's not specified, it
+// defaults to "numerical".  "number2" is only used if "op" is "between".
+// "number" is used for all "op" values except "any". "number" and "number2"
+// are in the format of x, x.x, x.x.x, etc.
+// Only "driver_version" supports lexical style if the format is major.minor;
+// in that case, major is still numerical, but minor is lexical. 
+//
+// STRING includes "op" and "value".  "op" can be any of the following values:
+// "contains", "beginwith", "endwith", "=".  "value" is a string.
+//
+// FLOAT includes "op" "value", and "value2".  "op" can be any of the
+// following values: "=", "<", "<=", ">", ">=", "any", "between".  "value2" is
+// only used if "op" is "between".  "value" is used for all "op" values except
+// "any". "value" and "value2" are valid float numbers.
+
+{
+  "name": "software rendering list",
+  // Please update the version number whenever you change this file.
+  "version": "2.0",
+  "entries": [
+    {
+      "id": 1,
+      "description": "ATI Radeon X1900 is not compatible with WebGL on the Mac.",
+      "webkit_bugs": [47028],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x7249"],
+      "blacklist": [
+        "webgl",
+        "flash_3d",
+        "flash_stage3d"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "GL driver is software rendered. Accelerated compositing is disabled.",
+      "cr_bugs": [59302],
+      "os": {
+        "type": "linux"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "software"
+      },
+      "blacklist": [
+        "accelerated_compositing"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL.",
+      "os": {
+        "type": "any"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x27AE"],
+      "blacklist": [
+        "webgl",
+        "flash_3d",
+        "flash_stage3d"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "ATI/AMD cards with older or third-party drivers in Linux are crash-prone.",
+      "cr_bugs": [71381, 76428, 73910, 101225],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "exceptions": [
+        {
+          "driver_vendor": {
+            "op": "contains",
+            "value": "AMD"
+          },
+          "driver_version": {
+            "op": ">=",
+            "style": "lexical",
+            "number": "8.92"
+          }
+        }
+      ],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "NVIDIA GeForce FX Go5200 is assumed to be buggy.",
+      "cr_bugs": [72938],
+      "os": {
+        "type": "any"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0324"],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 10,
+      "description": "NVIDIA GeForce 7300 GT on Mac does not support WebGL.",
+      "cr_bugs": [73794],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0393"],
+      "blacklist": [
+        "webgl",
+        "flash_3d",
+        "flash_stage3d"
+      ]
+    },
+    {
+      "id": 12,
+      "description": "Drivers older than 2009-01 on Windows are assumed to be buggy.",
+      "cr_bugs": [72979, 89802],
+      "os": {
+        "type": "win"
+      },
+      "driver_date": {
+        "op": "<",
+        "number": "2009.1"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086",
+          "device_id": ["0x29a2"],
+          "driver_version": {
+            "op": ">=",
+            "number": "7.15.10.1624"
+          }
+        }
+      ],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 13,
+      "description": "ATI drivers older than 10.6 on Windows XP are assumed to be buggy.",
+      "cr_bugs": [74212],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "<",
+        "number": "8.741"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 14,
+      "description": "NVIDIA drivers older than 257.21 on Windows XP are assumed to be buggy.",
+      "cr_bugs": [74212],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "number": "6.14.12.5721"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 15,
+      "description": "Intel drivers older than 14.42.7.5294 on Windows XP are assumed to be buggy.",
+      "cr_bugs": [74212],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "number": "6.14.10.5294"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 16,
+      "description": "Multisampling is buggy in ATI cards on older MacOSX.",
+      "cr_bugs": [67752, 83153],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.7.2"
+        }
+      },
+      "vendor_id": "0x1002",
+      "blacklist": [
+        "multisampling"
+      ]
+    },
+    {
+      "id": 17,
+      "description": "Intel mesa drivers are crash-prone.",
+      "cr_bugs": [76703],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "exceptions": [
+        {
+          "device_id": ["0x0102", "0x0106", "0x0112", "0x0116", "0x0122", "0x0126", "0x010a", "0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
+          "driver_version": {
+            "op": ">=",
+            "number": "8.0"
+          }
+        },
+        {
+          "device_id": ["0xa001", "0xa002", "0xa011", "0xa012", "0x29a2", "0x2992", "0x2982", "0x2972", "0x2a02", "0x2a12", "0x2a42", "0x2e02", "0x2e12", "0x2e22", "0x2e32", "0x2e42", "0x2e92"],
+          "driver_version": {
+            "op": ">",
+            "number": "8.0.2"
+          }
+        },
+        {
+          "device_id": ["0x0042", "0x0046"],
+          "driver_version": {
+            "op": ">=",
+            "number": "8.0.2"
+          }
+        }
+      ],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 18,
+      "description": "NVIDIA Quadro FX 1500 is buggy.",
+      "cr_bugs": [84701],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x029e"],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 19,
+      "description": "GPU acceleration is no longer supported in Leopard.",
+      "cr_bugs": [87157, 130495],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "number": "10.5"
+        }
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 20,
+      "description": "NVIDIA driver 260.19.06 on linux is crash-prone.",
+      "cr_bugs": [82232, 82541],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "driver_version": {
+        "op": "=",
+        "number": "260.19.6"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 21,
+      "description": "NVIDIA driver 195.36.24 on linux is buggy for certain Quadro FX series cards.",
+      "cr_bugs": [87680,90091],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x00cd", "0x00ce"],
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "driver_version": {
+        "op": "=",
+        "number": "195.36.24"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 22,
+      "description": "NVIDIA linux drivers older than 195.36.24 are assumed to be buggy.",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "driver_version": {
+        "op": "<",
+        "number": "195.36.24"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 23,
+      "description": "Mesa drivers in linux older than 7.11 are assumed to be buggy.",
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": {
+        "op": "=",
+        "value": "Mesa"
+      },
+      "driver_version": {
+        "op": "<",
+        "number": "7.11"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 24,
+      "description": "Accelerated 2d canvas is unstable in Linux at the moment.",
+      "os": {
+        "type": "linux"
+      },
+      "blacklist": [
+        "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 27,
+      "description": "ATI/AMD cards with older drivers in Linux are crash-prone.",
+      "cr_bugs": [95934, 94973],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ATI"
+      },
+      "exceptions": [
+        {
+          "driver_vendor": {
+            "op": "contains",
+            "value": "AMD"
+          },
+          "driver_version": {
+            "op": ">=",
+            "number": "8.92"
+          }
+        }
+      ],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 28,
+      "description": "ATI/AMD cards with third-party drivers in Linux are crash-prone.",
+      "cr_bugs": [95934, 94973],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "X.Org"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "AMD"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 29,
+      "description": "ATI/AMD cards with third-party drivers in Linux are crash-prone.",
+      "cr_bugs": [95934, 94973],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "X.Org"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "ATI"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 30,
+      "description": "NVIDIA cards with nouveau drivers in Linux are crash-prone.",
+      "cr_bugs": [94103],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "nouveau"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 32,
+      "description": "Accelerated 2d canvas is disabled on Windows systems with low perf stats.",
+      "cr_bugs": [116350],
+      "os": {
+        "type": "win"
+      },
+      "perf_overall": {
+        "op": "<",
+        "value": "3.5"
+      },
+      "blacklist": [
+        "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 33,
+      "description": "Multisampling is buggy in Intel IvyBridge.",
+      "cr_bugs": [116370],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
+      "blacklist": [
+          "multisampling"
+      ]
+    },
+    {
+      "id": 34,
+      "description": "S3 Trio (used in Virtual PC) is not compatible.",
+      "cr_bugs": [119948],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x5333",
+      "device_id": ["0x8811"],
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 35,
+      "description": "Stage3D is not supported on Linux.",
+      "cr_bugs": [129848],
+      "os": {
+        "type": "linux"
+      },
+      "blacklist": [
+        "flash_stage3d"
+      ]
+    },
+    {
+      "id": 36,
+      "description": "Stage3D is not supported on ChromeOS.",
+      "cr_bugs": [129848],
+      "os": {
+        "type": "chromeos"
+      },
+      "blacklist": [
+        "flash_stage3d"
+      ]
+    },
+    {
+      "id": 37,
+      "description": "Drivers are unreliable for Optimus on Linux.",
+      "cr_bugs": [131308],
+      "os": {
+        "type": "linux"
+      },
+      "multi_gpu_style": "optimus",
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 38,
+      "description": "Accelerated 2D canvas is unstable for NVidia GeForce 9400M on Lion.",
+      "cr_bugs": [130495],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "number": "10.7"
+        }
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0863"],
+      "blacklist": [
+        "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 39,
+      "description": "ATI drivers on Windows XP cause BSODs when using 3D in Flash",
+      "cr_bugs": [130505],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "vendor_id": "0x1002",
+      "blacklist": [
+        "flash_3d",
+        "flash_stage3d"
+      ]
+    }
+  ]
+}
