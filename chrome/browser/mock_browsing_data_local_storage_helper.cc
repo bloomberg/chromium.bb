@@ -8,9 +8,8 @@
 #include "base/logging.h"
 
 MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
-  Profile* profile)
-  : BrowsingDataLocalStorageHelper(profile),
-    profile_(profile) {
+    Profile* profile)
+    : BrowsingDataLocalStorageHelper(profile) {
 }
 
 MockBrowsingDataLocalStorageHelper::~MockBrowsingDataLocalStorageHelper() {

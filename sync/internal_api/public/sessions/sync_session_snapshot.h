@@ -74,7 +74,6 @@ class SyncSessionSnapshot {
 
  private:
   ModelNeutralState model_neutral_state_;
-  int64 num_server_changes_remaining_;
   bool is_share_usable_;
   syncable::ModelTypeSet initial_sync_ended_;
   syncable::ModelTypePayloadMap download_progress_markers_;

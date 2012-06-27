@@ -30,8 +30,7 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
         unlimited_usage_(0),
         available_space_(0),
         error_on_evict_origin_data_(false),
-        error_on_get_usage_and_quota_(false),
-        test_(test) {}
+        error_on_get_usage_and_quota_(false) {}
 
   virtual void EvictOriginData(
       const GURL& origin,
@@ -135,7 +134,6 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   bool error_on_evict_origin_data_;
   bool error_on_get_usage_and_quota_;
 
-  QuotaTemporaryStorageEvictorTest *test_;
   base::Closure task_for_get_usage_and_quota_;
 };
 

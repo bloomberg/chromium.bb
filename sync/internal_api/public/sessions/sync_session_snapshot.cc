@@ -11,8 +11,7 @@ namespace csync {
 namespace sessions {
 
 SyncSessionSnapshot::SyncSessionSnapshot()
-    : num_server_changes_remaining_(0),
-      is_share_usable_(false),
+    : is_share_usable_(false),
       has_more_to_sync_(false),
       is_silenced_(false),
       num_encryption_conflicts_(0),

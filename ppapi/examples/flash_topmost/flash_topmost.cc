@@ -109,8 +109,6 @@ class MyInstance : public pp::Instance {
 
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
 
-  int32_t timer_interval_;
-
   // Painting stuff.
   pp::Size size_;
   pp::Graphics2D device_context_;

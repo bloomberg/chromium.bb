@@ -48,8 +48,6 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
  private:
   virtual ~MockBrowsingDataFileSystemHelper();
 
-  Profile* profile_;
-
   base::Callback<void(const std::list<FileSystemInfo>&)> callback_;
 
   // Stores which filesystems exist.

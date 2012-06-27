@@ -99,7 +99,6 @@ class FileSystemTestOriginHelper {
   const GURL origin_;
   const FileSystemType type_;
   FileSystemFileUtil* file_util_;
-  int64 initial_usage_size_;
 };
 
 }  // namespace fileapi

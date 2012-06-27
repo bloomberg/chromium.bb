@@ -45,8 +45,6 @@ class MockBrowsingDataLocalStorageHelper
  private:
   virtual ~MockBrowsingDataLocalStorageHelper();
 
-  Profile* profile_;
-
   base::Callback<void(const std::list<LocalStorageInfo>&)> callback_;
 
   std::map<const GURL, bool> origins_;

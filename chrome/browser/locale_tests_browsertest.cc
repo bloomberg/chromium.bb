@@ -55,7 +55,9 @@ class ScopedLocale {
 
  private:
   std::string locale_;
+#if defined(OS_LINUX)
   const char* old_locale_;
+#endif
 };
 
 // A base class for tests used in this file. This class over-writes the system

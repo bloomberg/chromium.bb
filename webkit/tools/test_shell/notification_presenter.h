@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,6 @@ class TestNotificationPresenter : public WebKit::WebNotificationPresenter {
       WebKit::WebNotificationPermissionCallback* callback);
 
  private:
-  // Non-owned pointer.  The NotificationPresenter is owned by the test shell.
-  TestShell* shell_;
-
   // List of allowed origins.
   std::set<std::string> allowed_origins_;
 

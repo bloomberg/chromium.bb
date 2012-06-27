@@ -7,8 +7,7 @@
 #include "chrome/browser/mock_browsing_data_file_system_helper.h"
 
 MockBrowsingDataFileSystemHelper::MockBrowsingDataFileSystemHelper(
-    Profile* profile)
-    : profile_(profile) {
+    Profile* profile) {
 }
 
 MockBrowsingDataFileSystemHelper::~MockBrowsingDataFileSystemHelper() {

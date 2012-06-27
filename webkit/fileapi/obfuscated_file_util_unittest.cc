@@ -345,7 +345,6 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     scoped_ptr<FileSystemOperationContext> context_;
     FileSystemTestOriginHelper* test_helper_;
-    int64 growth_;
     int64 expected_usage_;
   };
 

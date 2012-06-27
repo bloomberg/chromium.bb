@@ -258,8 +258,6 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   PictureBufferById picture_buffers_by_id_;
   base::TimeTicks initialize_done_ticks_;
   base::TimeTicks last_frame_delivered_ticks_;
-  int frame_width_;
-  int frame_height_;
   int profile_;
 };
 
@@ -287,8 +285,6 @@ EglRenderingVDAClient::EglRenderingVDAClient(
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0),
-      frame_width_(frame_width),
-      frame_height_(frame_height),
       profile_(profile) {
   CHECK_GT(num_NALUs_per_decode, 0);
   CHECK_GT(num_in_flight_decodes, 0);

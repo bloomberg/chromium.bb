@@ -46,8 +46,6 @@ class MockBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
  private:
   virtual ~MockBrowsingDataDatabaseHelper();
 
-  Profile* profile_;
-
   base::Callback<void(const std::list<DatabaseInfo>&)> callback_;
 
   // Stores which databases exist.

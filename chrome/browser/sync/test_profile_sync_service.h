@@ -116,7 +116,6 @@ class TestProfileSyncService : public ProfileSyncService {
   // Set to true when a mock data type manager is being used and the configure
   // step is performed synchronously.
   bool synchronous_sync_configuration_;
-  bool set_expect_resume_expectations_;
 
   base::Closure callback_;
   bool set_initial_sync_ended_on_init_;

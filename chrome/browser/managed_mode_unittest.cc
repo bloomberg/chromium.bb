@@ -76,8 +76,7 @@ class BrowserFixture {
   BrowserFixture(FakeManagedMode* managed_mode,
                  TestingProfile* profile)
       : browser_(Browser::TYPE_TABBED, profile),
-        window_(&browser_),
-        managed_mode_(managed_mode) {
+        window_(&browser_) {
     browser_.SetWindowForTesting(&window_);
   }
 
@@ -91,7 +90,6 @@ class BrowserFixture {
  private:
   Browser browser_;
   StrictMock<MockBrowserWindow> window_;
-  FakeManagedMode* managed_mode_;
 };
 
 class MockCallback : public base::RefCountedThreadSafe<MockCallback> {

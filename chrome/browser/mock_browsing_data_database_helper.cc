@@ -8,8 +8,7 @@
 
 MockBrowsingDataDatabaseHelper::MockBrowsingDataDatabaseHelper(
     Profile* profile)
-    : BrowsingDataDatabaseHelper(profile),
-      profile_(profile) {
+    : BrowsingDataDatabaseHelper(profile) {
 }
 
 MockBrowsingDataDatabaseHelper::~MockBrowsingDataDatabaseHelper() {

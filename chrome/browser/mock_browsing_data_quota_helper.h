@@ -30,7 +30,6 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
 
   FetchResultCallback callback_;
   std::list<QuotaInfo> response_;
-  Profile* profile_;
 };
 
 #endif  // CHROME_BROWSER_MOCK_BROWSING_DATA_QUOTA_HELPER_H_
