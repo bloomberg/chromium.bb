@@ -138,9 +138,9 @@ bool TypedUrlModelAssociator::ShouldIgnoreUrl(
   return true;
 }
 
-SyncError TypedUrlModelAssociator::AssociateModels() {
+csync::SyncError TypedUrlModelAssociator::AssociateModels() {
   ClearErrorStats();
-  SyncError error = DoAssociateModels();
+  csync::SyncError error = DoAssociateModels();
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlModelAssociationErrors",
                            GetErrorPercentage());
   ClearErrorStats();
@@ -156,12 +156,12 @@ int TypedUrlModelAssociator::GetErrorPercentage() const {
   return num_db_accesses_ ? (100 * num_db_errors_ / num_db_accesses_) : 0;
 }
 
-SyncError TypedUrlModelAssociator::DoAssociateModels() {
+csync::SyncError TypedUrlModelAssociator::DoAssociateModels() {
   DVLOG(1) << "Associating TypedUrl Models";
-  SyncError error;
+  csync::SyncError error;
   DCHECK(expected_loop_ == MessageLoop::current());
   if (IsAbortPending())
-    return SyncError();
+    return csync::SyncError();
   history::URLRows typed_urls;
   ++num_db_accesses_;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
@@ -177,7 +177,7 @@ SyncError TypedUrlModelAssociator::DoAssociateModels() {
   for (history::URLRows::iterator ix = typed_urls.begin();
        ix != typed_urls.end();) {
     if (IsAbortPending())
-      return SyncError();
+      return csync::SyncError();
     DCHECK_EQ(0U, visit_vectors.count(ix->id()));
     if (!FixupURLAndGetVisits(&(*ix), &(visit_vectors[ix->id()])) ||
         ShouldIgnoreUrl(*ix, visit_vectors[ix->id()])) {
@@ -209,7 +209,7 @@ SyncError TypedUrlModelAssociator::DoAssociateModels() {
     for (history::URLRows::iterator ix = typed_urls.begin();
          ix != typed_urls.end(); ++ix) {
       if (IsAbortPending())
-        return SyncError();
+        return csync::SyncError();
       std::string tag = ix->url().spec();
       // Empty URLs should be filtered out by ShouldIgnoreUrl() previously.
       DCHECK(!tag.empty());
@@ -296,7 +296,7 @@ SyncError TypedUrlModelAssociator::DoAssociateModels() {
     int64 sync_child_id = typed_url_root.GetFirstChildId();
     while (sync_child_id != csync::kInvalidId) {
       if (IsAbortPending())
-        return SyncError();
+        return csync::SyncError();
       csync::ReadNode sync_child_node(&trans);
       if (sync_child_node.InitByIdLookup(sync_child_id) !=
               csync::BaseNode::INIT_OK) {
@@ -357,7 +357,7 @@ SyncError TypedUrlModelAssociator::DoAssociateModels() {
            it != obsolete_nodes.end();
            ++it) {
           if (IsAbortPending())
-            return SyncError();
+            return csync::SyncError();
         csync::WriteNode sync_node(&trans);
         if (sync_node.InitByIdLookup(*it) != csync::BaseNode::INIT_OK) {
           return error_handler_->CreateAndUploadError(
@@ -459,8 +459,8 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
   return true;
 }
 
-SyncError TypedUrlModelAssociator::DisassociateModels() {
-  return SyncError();
+csync::SyncError TypedUrlModelAssociator::DisassociateModels() {
+  return csync::SyncError();
 }
 
 void TypedUrlModelAssociator::AbortAssociation() {

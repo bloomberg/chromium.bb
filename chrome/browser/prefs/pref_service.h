@@ -29,13 +29,16 @@ class PrefNotifier;
 class PrefNotifierImpl;
 class PrefStore;
 class PrefValueStore;
-class SyncableService;
 
 namespace content {
 class NotificationObserver;
 }
 
-namespace policy{
+namespace csync {
+class SyncableService;
+}
+
+namespace policy {
 class PolicyService;
 }
 
@@ -318,9 +321,9 @@ class PrefService : public base::NonThreadSafe {
 
   PrefInitializationStatus GetInitializationStatus() const;
 
-  // SyncableService getter.
-  // TODO(zea): Have PrefService implement SyncableService directly.
-  SyncableService* GetSyncableService();
+  // csync::SyncableService getter.
+  // TODO(zea): Have PrefService implement csync::SyncableService directly.
+  csync::SyncableService* GetSyncableService();
 
   // Tell our PrefValueStore to update itself using |command_line|.
   // Do not call this after having derived an incognito or per tab pref service.

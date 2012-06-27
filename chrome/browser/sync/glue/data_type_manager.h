@@ -59,14 +59,14 @@ class DataTypeManager {
                     TypeSet requested_types);
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types,
-                    const std::list<SyncError>& failed_data_types,
+                    const std::list<csync::SyncError>& failed_data_types,
                     syncable::ModelTypeSet waiting_to_start);
     ~ConfigureResult();
     ConfigureStatus status;
     TypeSet requested_types;
 
     // These types encountered a failure in association.
-    std::list<SyncError> failed_data_types;
+    std::list<csync::SyncError> failed_data_types;
 
     // List of types that failed to start association with in our alloted
     // time period(see kDataTypeLoadWaitTimeInSeconds). We move

@@ -28,8 +28,8 @@ class ThemeModelAssociator : public AssociatorInterface {
   static syncable::ModelType model_type() { return syncable::THEMES; }
 
   // AssociatorInterface implementation.
-  virtual SyncError AssociateModels() OVERRIDE;
-  virtual SyncError DisassociateModels() OVERRIDE;
+  virtual csync::SyncError AssociateModels() OVERRIDE;
+  virtual csync::SyncError DisassociateModels() OVERRIDE;
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
   virtual void AbortAssociation() OVERRIDE {
     // No implementation needed, this associator runs on the main

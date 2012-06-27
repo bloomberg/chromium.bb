@@ -103,7 +103,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock service_;
   scoped_ptr<FakeGenericChangeProcessor> change_processor_;
-  FakeSyncableService syncable_service_;
+  csync::FakeSyncableService syncable_service_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
 };
@@ -161,7 +161,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
-      SyncError(FROM_HERE, "Error", syncable::SEARCH_ENGINES));
+      csync::SyncError(FROM_HERE, "Error", syncable::SEARCH_ENGINES));
 
   Start();
   EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());

@@ -14,17 +14,18 @@
 namespace extensions {
 
 SettingSyncData::SettingSyncData(
-    const SyncChange& sync_change) {
+    const csync::SyncChange& sync_change) {
   Init(sync_change.change_type(), sync_change.sync_data());
 }
 
 SettingSyncData::SettingSyncData(
-    const SyncData& sync_data) {
-  Init(SyncChange::ACTION_INVALID, sync_data);
+    const csync::SyncData& sync_data) {
+  Init(csync::SyncChange::ACTION_INVALID, sync_data);
 }
 
 void SettingSyncData::Init(
-    SyncChange::SyncChangeType change_type, const SyncData& sync_data) {
+    csync::SyncChange::SyncChangeType change_type,
+    const csync::SyncData& sync_data) {
   DCHECK(!internal_.get());
   sync_pb::EntitySpecifics specifics = sync_data.GetSpecifics();
   // The data must only be either extension or app specfics.
@@ -42,7 +43,7 @@ void SettingSyncData::Init(
 }
 
 void SettingSyncData::InitFromExtensionSettingSpecifics(
-    SyncChange::SyncChangeType change_type,
+    csync::SyncChange::SyncChangeType change_type,
     const sync_pb::ExtensionSettingSpecifics& specifics) {
   DCHECK(!internal_.get());
   scoped_ptr<Value> value(
@@ -60,7 +61,7 @@ void SettingSyncData::InitFromExtensionSettingSpecifics(
 }
 
 SettingSyncData::SettingSyncData(
-    SyncChange::SyncChangeType change_type,
+    csync::SyncChange::SyncChangeType change_type,
     const std::string& extension_id,
     const std::string& key,
     scoped_ptr<Value> value)
@@ -68,7 +69,7 @@ SettingSyncData::SettingSyncData(
 
 SettingSyncData::~SettingSyncData() {}
 
-SyncChange::SyncChangeType SettingSyncData::change_type() const {
+csync::SyncChange::SyncChangeType SettingSyncData::change_type() const {
   return internal_->change_type_;
 }
 
@@ -85,7 +86,7 @@ const Value& SettingSyncData::value() const {
 }
 
 SettingSyncData::Internal::Internal(
-    SyncChange::SyncChangeType change_type,
+    csync::SyncChange::SyncChangeType change_type,
     const std::string& extension_id,
     const std::string& key,
     scoped_ptr<Value> value)

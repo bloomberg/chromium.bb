@@ -1013,7 +1013,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
   NavigateAndCommitActiveTab(GURL("http://bar2"));
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
-  SyncError error;
+  csync::SyncError error;
   std::string local_tag = model_associator_->GetCurrentMachineTag();
 
   error = model_associator_->DisassociateModels();
@@ -1044,7 +1044,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
   NavigateAndCommitActiveTab(GURL("http://bar2"));
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
-  SyncError error;
+  csync::SyncError error;
   std::string local_tag = model_associator_->GetCurrentMachineTag();
 
   error = model_associator_->DisassociateModels();
@@ -1076,7 +1076,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
   NavigateAndCommitActiveTab(GURL("http://bar2"));
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
-  SyncError error;
+  csync::SyncError error;
 
   error = model_associator_->DisassociateModels();
   ASSERT_FALSE(error.IsSet());
@@ -1109,7 +1109,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   std::string local_tag = model_associator_->GetCurrentMachineTag();
-  SyncError error;
+  csync::SyncError error;
 
   error = model_associator_->DisassociateModels();
   ASSERT_FALSE(error.IsSet());
@@ -1182,7 +1182,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedLocalHeader) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   std::string local_tag = model_associator_->GetCurrentMachineTag();
-  SyncError error;
+  csync::SyncError error;
 
   error = model_associator_->DisassociateModels();
   ASSERT_FALSE(error.IsSet());

@@ -929,7 +929,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   sync_entries.push_back(sync_entry);
 
   EXPECT_CALL(error_handler_, CreateAndUploadError(_, _, _)).
-              WillOnce(Return(SyncError(FROM_HERE,
+              WillOnce(Return(csync::SyncError(FROM_HERE,
                                         "Unit test",
                                         syncable::TYPED_URLS)));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));

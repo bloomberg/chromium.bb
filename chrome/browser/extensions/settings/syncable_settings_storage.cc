@@ -121,7 +121,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Clear() {
 void SyncableSettingsStorage::SyncResultIfEnabled(
     const ValueStore::WriteResult& result) {
   if (sync_processor_.get() && !result->changes().empty()) {
-    SyncError error = sync_processor_->SendChanges(result->changes());
+    csync::SyncError error = sync_processor_->SendChanges(result->changes());
     if (error.IsSet())
       StopSyncing();
   }
@@ -129,7 +129,7 @@ void SyncableSettingsStorage::SyncResultIfEnabled(
 
 // Sync-related methods.
 
-SyncError SyncableSettingsStorage::StartSyncing(
+csync::SyncError SyncableSettingsStorage::StartSyncing(
     const DictionaryValue& sync_state,
     scoped_ptr<SettingsSyncProcessor> sync_processor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -140,7 +140,7 @@ SyncError SyncableSettingsStorage::StartSyncing(
 
   ReadResult maybe_settings = delegate_->Get();
   if (maybe_settings->HasError()) {
-    return SyncError(
+    return csync::SyncError(
         FROM_HERE,
         std::string("Failed to get settings: ") + maybe_settings->error(),
         sync_processor_->type());
@@ -153,7 +153,7 @@ SyncError SyncableSettingsStorage::StartSyncing(
     return OverwriteLocalSettingsWithSync(sync_state, settings);
 }
 
-SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
+csync::SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
     const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -163,16 +163,16 @@ SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
   }
 
   if (changes.empty())
-    return SyncError();
+    return csync::SyncError();
 
-  SyncError error = sync_processor_->SendChanges(changes);
+  csync::SyncError error = sync_processor_->SendChanges(changes);
   if (error.IsSet())
     StopSyncing();
 
   return error;
 }
 
-SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
+csync::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     const DictionaryValue& sync_state, const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Treat this as a list of changes to sync and use ProcessSyncChanges.
@@ -191,7 +191,7 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
         // Sync value is different, update local setting with new value.
         changes.push_back(
             SettingSyncData(
-                SyncChange::ACTION_UPDATE,
+                csync::SyncChange::ACTION_UPDATE,
                 extension_id_,
                 it.key(),
                 sync_value.Pass()));
@@ -200,7 +200,7 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
       // Not synced, delete local setting.
       changes.push_back(
           SettingSyncData(
-              SyncChange::ACTION_DELETE,
+              csync::SyncChange::ACTION_DELETE,
               extension_id_,
               it.key(),
               scoped_ptr<Value>(new DictionaryValue())));
@@ -214,14 +214,14 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     CHECK(new_sync_state->RemoveWithoutPathExpansion(key, &value));
     changes.push_back(
         SettingSyncData(
-            SyncChange::ACTION_ADD,
+            csync::SyncChange::ACTION_ADD,
             extension_id_,
             key,
             scoped_ptr<Value>(value)));
   }
 
   if (changes.empty())
-    return SyncError();
+    return csync::SyncError();
 
   return ProcessSyncChanges(changes);
 }
@@ -231,19 +231,19 @@ void SyncableSettingsStorage::StopSyncing() {
   sync_processor_.reset();
 }
 
-SyncError SyncableSettingsStorage::ProcessSyncChanges(
+csync::SyncError SyncableSettingsStorage::ProcessSyncChanges(
     const SettingSyncDataList& sync_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!sync_changes.empty()) << "No sync changes for " << extension_id_;
 
   if (!sync_processor_.get()) {
-    return SyncError(
+    return csync::SyncError(
         FROM_HERE,
         std::string("Sync is inactive for ") + extension_id_,
         syncable::UNSPECIFIED);
   }
 
-  std::vector<SyncError> errors;
+  std::vector<csync::SyncError> errors;
   ValueStoreChangeList changes;
 
   for (SettingSyncDataList::const_iterator it = sync_changes.begin();
@@ -257,7 +257,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
     {
       ReadResult maybe_settings = Get(it->key());
       if (maybe_settings->HasError()) {
-        errors.push_back(SyncError(
+        errors.push_back(csync::SyncError(
             FROM_HERE,
             std::string("Error getting current sync state for ") +
                 extension_id_ + "/" + key + ": " + maybe_settings->error(),
@@ -270,10 +270,10 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
       }
     }
 
-    SyncError error;
+    csync::SyncError error;
 
     switch (it->change_type()) {
-      case SyncChange::ACTION_ADD:
+      case csync::SyncChange::ACTION_ADD:
         if (!current_value.get()) {
           error = OnSyncAdd(key, value.DeepCopy(), &changes);
         } else {
@@ -286,7 +286,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
         }
         break;
 
-      case SyncChange::ACTION_UPDATE:
+      case csync::SyncChange::ACTION_UPDATE:
         if (current_value.get()) {
           error = OnSyncUpdate(
               key, current_value.release(), value.DeepCopy(), &changes);
@@ -298,7 +298,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
         }
         break;
 
-      case SyncChange::ACTION_DELETE:
+      case csync::SyncChange::ACTION_DELETE:
         if (current_value.get()) {
           error = OnSyncDelete(key, current_value.release(), &changes);
         } else {
@@ -326,27 +326,27 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
       ValueStoreChange::ToJson(changes));
 
   // TODO(kalman): Something sensible with multiple errors.
-  return errors.empty() ? SyncError() : errors[0];
+  return errors.empty() ? csync::SyncError() : errors[0];
 }
 
-SyncError SyncableSettingsStorage::OnSyncAdd(
+csync::SyncError SyncableSettingsStorage::OnSyncAdd(
     const std::string& key,
     Value* new_value,
     ValueStoreChangeList* changes) {
   DCHECK(new_value);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
   if (result->HasError()) {
-    return SyncError(
+    return csync::SyncError(
         FROM_HERE,
         std::string("Error pushing sync add to local settings: ") +
             result->error(),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, NULL, new_value));
-  return SyncError();
+  return csync::SyncError();
 }
 
-SyncError SyncableSettingsStorage::OnSyncUpdate(
+csync::SyncError SyncableSettingsStorage::OnSyncUpdate(
     const std::string& key,
     Value* old_value,
     Value* new_value,
@@ -355,31 +355,31 @@ SyncError SyncableSettingsStorage::OnSyncUpdate(
   DCHECK(new_value);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
   if (result->HasError()) {
-    return SyncError(
+    return csync::SyncError(
         FROM_HERE,
         std::string("Error pushing sync update to local settings: ") +
             result->error(),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, old_value, new_value));
-  return SyncError();
+  return csync::SyncError();
 }
 
-SyncError SyncableSettingsStorage::OnSyncDelete(
+csync::SyncError SyncableSettingsStorage::OnSyncDelete(
     const std::string& key,
     Value* old_value,
     ValueStoreChangeList* changes) {
   DCHECK(old_value);
   WriteResult result = delegate_->Remove(key);
   if (result->HasError()) {
-    return SyncError(
+    return csync::SyncError(
         FROM_HERE,
         std::string("Error pushing sync remove to local settings: ") +
             result->error(),
         sync_processor_->type());
   }
   changes->push_back(ValueStoreChange(key, old_value, NULL));
-  return SyncError();
+  return csync::SyncError();
 }
 
 }  // namespace extensions

@@ -119,14 +119,14 @@ class SessionModelAssociator
   // |error| gets set if any association error occurred.
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
-  bool AssociateWindows(bool reload_tabs, SyncError* error);
+  bool AssociateWindows(bool reload_tabs, csync::SyncError* error);
 
   // Loads and reassociates the local tabs referenced in |tabs|.
   // |error| gets set if any association error occurred.
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
   bool AssociateTabs(const std::vector<SyncedTabDelegate*>& tabs,
-                     SyncError* error);
+                     csync::SyncError* error);
 
   // Reassociates a single tab with the sync model. Will check if the tab
   // already is associated with a sync node and allocate one if necessary.
@@ -134,13 +134,13 @@ class SessionModelAssociator
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
   bool AssociateTab(const SyncedTabDelegate& tab,
-                    SyncError* error);
+                    csync::SyncError* error);
 
   // Load any foreign session info stored in sync db and update the sync db
   // with local client data. Processes/reuses any sync nodes owned by this
   // client and creates any further sync nodes needed to store local header and
   // tab info.
-  virtual SyncError AssociateModels() OVERRIDE;
+  virtual csync::SyncError AssociateModels() OVERRIDE;
 
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
@@ -150,7 +150,7 @@ class SessionModelAssociator
 
   // Clear local sync data buffers. Does not delete sync nodes to avoid
   // tombstones. TODO(zea): way to eventually delete orphaned nodes.
-  virtual SyncError DisassociateModels() OVERRIDE;
+  virtual csync::SyncError DisassociateModels() OVERRIDE;
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.
@@ -395,21 +395,21 @@ class SessionModelAssociator
   // Updates the server data based upon the current client session.  If no node
   // corresponding to this machine exists in the sync model, one is created.
   // Returns true on success, false if association failed.
-  bool UpdateSyncModelDataFromClient(SyncError* error);
+  bool UpdateSyncModelDataFromClient(csync::SyncError* error);
 
   // Pulls the current sync model from the sync database and returns true upon
   // update of the client model. Will associate any foreign sessions as well as
   // keep track of any local tab nodes, adding them to our free tab node pool.
   bool UpdateAssociationsFromSyncModel(const csync::ReadNode& root,
                                        csync::WriteTransaction* trans,
-                                       SyncError* error);
+                                       csync::SyncError* error);
 
   // Fills a tab sync node with data from a WebContents object. Updates
   // |tab_link| with the current url if it's valid and triggers a favicon
   // load if the url has changed.
   // Returns true on success, false if we need to reassociate due to corruption.
   bool WriteTabContentsToSyncModel(TabLink* tab_link,
-                                   SyncError* error);
+                                   csync::SyncError* error);
 
   // Decrements the favicon usage counters for the favicon used by |page_url|.
   // Deletes the favicon and associated pages from the favicon usage maps

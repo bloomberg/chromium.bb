@@ -13,7 +13,9 @@
 #include "googleurl/src/gurl.h"
 #include "sync/api/sync_change.h"
 
+namespace csync {
 class SyncData;
+}
 
 namespace sync_pb {
 class ExtensionSpecifics;
@@ -27,16 +29,17 @@ class Extension;
 class ExtensionSyncData {
  public:
   ExtensionSyncData();
-  explicit ExtensionSyncData(const SyncData& sync_data);
-  explicit ExtensionSyncData(const SyncChange& sync_change);
+  explicit ExtensionSyncData(const csync::SyncData& sync_data);
+  explicit ExtensionSyncData(const csync::SyncChange& sync_change);
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
                     bool incognito_enabled);
   ~ExtensionSyncData();
 
   // Retrieve sync data from this class.
-  SyncData GetSyncData() const;
-  SyncChange GetSyncChange(SyncChange::SyncChangeType change_type) const;
+  csync::SyncData GetSyncData() const;
+  csync::SyncChange GetSyncChange(
+      csync::SyncChange::SyncChangeType change_type) const;
 
   // Convert an ExtensionSyncData back out to a sync structure.
   void PopulateExtensionSpecifics(sync_pb::ExtensionSpecifics* specifics) const;
@@ -65,7 +68,7 @@ class ExtensionSyncData {
 
  private:
   // Populate this class from sync inputs.
-  void PopulateFromSyncData(const SyncData& sync_data);
+  void PopulateFromSyncData(const csync::SyncData& sync_data);
 
   std::string id_;
   bool uninstalled_;

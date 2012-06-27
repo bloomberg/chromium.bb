@@ -65,13 +65,16 @@ class HistoryExtensionEventRouter;
 class GURL;
 class PendingExtensionManager;
 class Profile;
-class SyncData;
-class SyncErrorFactory;
 class Version;
 
 namespace chromeos {
 class ExtensionBluetoothEventRouter;
 class ExtensionInputMethodEventRouter;
+}
+
+namespace csync {
+class SyncData;
+class SyncErrorFactory;
 }
 
 namespace extensions {
@@ -88,7 +91,7 @@ class WebNavigationEventRouter;
 
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
-class ExtensionServiceInterface : public SyncableService {
+class ExtensionServiceInterface : public csync::SyncableService {
  public:
   // A function that returns true if the given extension should be
   // included and false if it should be filtered out.  Identical to
@@ -417,17 +420,18 @@ class ExtensionService
 
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
-  // SyncableService implementation.
-  virtual SyncError MergeDataAndStartSyncing(
+  // csync::SyncableService implementation.
+  virtual csync::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const csync::SyncDataList& initial_sync_data,
+      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
-  virtual SyncError ProcessSyncChanges(
+  virtual csync::SyncDataList GetAllSyncData(
+      syncable::ModelType type) const OVERRIDE;
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
 
   // Gets the sync data for the given extension, assuming that the extension is
   // syncable.
@@ -614,7 +618,7 @@ class ExtensionService
 
   AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
 
-  // Specialization of SyncableService::AsWeakPtr.
+  // Specialization of csync::SyncableService::AsWeakPtr.
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
  private:

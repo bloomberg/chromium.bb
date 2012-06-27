@@ -58,10 +58,10 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // AssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual SyncError AssociateModels() OVERRIDE;
+  virtual csync::SyncError AssociateModels() OVERRIDE;
 
   // Clears all associations.
-  virtual SyncError DisassociateModels() OVERRIDE;
+  virtual csync::SyncError DisassociateModels() OVERRIDE;
 
   // Called from the main thread, to abort the currently active model
   // association (for example, if we are shutting down).
@@ -173,7 +173,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
  private:
 
   // Helper routine that actually does the work of associating models.
-  SyncError DoAssociateModels();
+  csync::SyncError DoAssociateModels();
 
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, because it contains invalid data or is import-only.

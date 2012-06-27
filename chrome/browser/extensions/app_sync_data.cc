@@ -13,16 +13,16 @@ namespace extensions {
 
 AppSyncData::AppSyncData() : notifications_disabled_(false) {}
 
-AppSyncData::AppSyncData(const SyncData& sync_data)
+AppSyncData::AppSyncData(const csync::SyncData& sync_data)
     : notifications_disabled_(false) {
   PopulateFromSyncData(sync_data);
 }
 
-AppSyncData::AppSyncData(const SyncChange& sync_change)
+AppSyncData::AppSyncData(const csync::SyncChange& sync_change)
     : notifications_disabled_(false) {
   PopulateFromSyncData(sync_change.sync_data());
   extension_sync_data_.set_uninstalled(
-      sync_change.change_type() == SyncChange::ACTION_DELETE);
+      sync_change.change_type() == csync::SyncChange::ACTION_DELETE);
 }
 
 AppSyncData::AppSyncData(const Extension& extension,
@@ -41,18 +41,18 @@ AppSyncData::AppSyncData(const Extension& extension,
 
 AppSyncData::~AppSyncData() {}
 
-SyncData AppSyncData::GetSyncData() const {
+csync::SyncData AppSyncData::GetSyncData() const {
   sync_pb::EntitySpecifics specifics;
   PopulateAppSpecifics(specifics.mutable_app());
 
-  return SyncData::CreateLocalData(extension_sync_data_.id(),
+  return csync::SyncData::CreateLocalData(extension_sync_data_.id(),
                                    extension_sync_data_.name(),
                                    specifics);
 }
 
-SyncChange AppSyncData::GetSyncChange(SyncChange::SyncChangeType change_type)
-    const {
-  return SyncChange(change_type, GetSyncData());
+csync::SyncChange AppSyncData::GetSyncChange(
+    csync::SyncChange::SyncChangeType change_type) const {
+  return csync::SyncChange(change_type, GetSyncData());
 }
 
 void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
@@ -92,7 +92,7 @@ void AppSyncData::PopulateFromAppSpecifics(
   page_ordinal_ = StringOrdinal(specifics.page_ordinal());
 }
 
-void AppSyncData::PopulateFromSyncData(const SyncData& sync_data) {
+void AppSyncData::PopulateFromSyncData(const csync::SyncData& sync_data) {
   PopulateFromAppSpecifics(sync_data.GetSpecifics().app());
 }
 

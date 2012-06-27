@@ -43,12 +43,12 @@ class SettingsFrontend {
 
   virtual ~SettingsFrontend();
 
-  typedef base::Callback<void(SyncableService*)> SyncableServiceCallback;
+  typedef base::Callback<void(csync::SyncableService*)> SyncableServiceCallback;
   typedef base::Callback<void(ValueStore*)> StorageCallback;
 
   // Must only be called from the FILE thread. |type| should be either
   // APP_SETTINGS or EXTENSION_SETTINGS.
-  SyncableService* GetBackendForSync(syncable::ModelType type) const;
+  csync::SyncableService* GetBackendForSync(syncable::ModelType type) const;
 
   // Runs |callback| on the FILE thread with the storage area for
   // |extension_id|.  If there is no extension with that ID, the storage area

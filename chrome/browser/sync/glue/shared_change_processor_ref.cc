@@ -14,13 +14,13 @@ SharedChangeProcessorRef::SharedChangeProcessorRef(
 
 SharedChangeProcessorRef::~SharedChangeProcessorRef() {}
 
-SyncError SharedChangeProcessorRef::ProcessSyncChanges(
+csync::SyncError SharedChangeProcessorRef::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const csync::SyncChangeList& change_list) {
   return change_processor_->ProcessSyncChanges(from_here, change_list);
 }
 
-SyncError SharedChangeProcessorRef::CreateAndUploadError(
+csync::SyncError SharedChangeProcessorRef::CreateAndUploadError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   return change_processor_->CreateAndUploadError(from_here, message);

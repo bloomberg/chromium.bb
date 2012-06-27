@@ -11,7 +11,9 @@
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 
+namespace {
 class SyncableService;
+}
 
 namespace browser_sync {
 
@@ -41,10 +43,10 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   // Overrides of NonFrontendDataTypeController methods.
   virtual void StartDone(DataTypeController::StartResult result,
                          DataTypeController::State new_state,
-                         const SyncError& error) OVERRIDE;
+                         const csync::SyncError& error) OVERRIDE;
   virtual void StartDoneImpl(DataTypeController::StartResult result,
                              DataTypeController::State new_state,
-                             const SyncError& error) OVERRIDE;
+                             const csync::SyncError& error) OVERRIDE;
 
  private:
   // This overrides the same method in |NonFrontendDataTypeController|.
@@ -91,7 +93,7 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   // DataType's thread.
   // Lifetime: it gets set in StartAssociation() and released in
   // StopLocalService().
-  base::WeakPtr<SyncableService> local_service_;
+  base::WeakPtr<csync::SyncableService> local_service_;
 };
 
 }  // namespace browser_sync

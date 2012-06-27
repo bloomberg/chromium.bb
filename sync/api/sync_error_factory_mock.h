@@ -10,6 +10,8 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace csync {
+
 class SyncErrorFactoryMock : public SyncErrorFactory {
  public:
   SyncErrorFactoryMock();
@@ -19,5 +21,7 @@ class SyncErrorFactoryMock : public SyncErrorFactory {
       const tracked_objects::Location& location,
       const std::string& message));
 };
+
+}  // namespace csync
 
 #endif  // SYNC_API_SYNC_ERROR_FACTORY_MOCK_H_

@@ -94,7 +94,7 @@ static void CreateModelAssociator(base::WaitableEvent* startup,
   // test to finish.
   *associator = new TestTypedUrlModelAssociator(startup, aborted);
   // AssociateModels should be aborted and should return false.
-  SyncError error = (*associator)->AssociateModels();
+  csync::SyncError error = (*associator)->AssociateModels();
 
   // TODO(lipalani): crbug.com/122690 fix this when fixing abort.
   // EXPECT_TRUE(error.IsSet());

@@ -13,12 +13,12 @@ bool DataTypeController::IsUnrecoverableResult(StartResult result) {
   return (result == UNRECOVERABLE_ERROR);
 }
 
-SyncError DataTypeController::CreateAndUploadError(
+csync::SyncError DataTypeController::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message,
     syncable::ModelType type) {
   ChromeReportUnrecoverableError();
-  return SyncError(location, message, type);
+  return csync::SyncError(location, message, type);
 }
 
 void DataTypeController::RecordUnrecoverableError(

@@ -86,7 +86,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   void SetUpDBSyncableService() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     DCHECK(!db_syncable_service_.get());
-    db_syncable_service_.reset(new FakeSyncableService());
+    db_syncable_service_.reset(new csync::FakeSyncableService());
   }
 
   // Used by TearDown().
@@ -120,7 +120,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   StrictMock<DataTypeErrorHandlerMock> error_handler_;
 
   // Used only on DB thread.
-  scoped_ptr<FakeSyncableService> db_syncable_service_;
+  scoped_ptr<csync::FakeSyncableService> db_syncable_service_;
 };
 
 // Simply connect the shared change processor.  It should succeed, and

@@ -57,7 +57,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Stops all data types.
   void FinishStop();
   void Abort(ConfigureStatus status,
-             const SyncError& error);
+             const csync::SyncError& error);
 
   // If there's a pending reconfigure, processes it and returns true.
   // Otherwise, returns false.
@@ -115,7 +115,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Collects the list of errors resulting from failing to start a type. This
   // would eventually be sent to the listeners after all the types have
   // been given a chance to start.
-  std::list<SyncError> failed_datatypes_info_;
+  std::list<csync::SyncError> failed_datatypes_info_;
   ModelAssociationManager model_association_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);

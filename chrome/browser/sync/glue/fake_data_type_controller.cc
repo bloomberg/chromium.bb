@@ -28,7 +28,7 @@ void FakeDataTypeController::LoadModels(
   }
 
   if (model_load_delayed_ == false) {
-    model_load_callback.Run(type(), SyncError());
+    model_load_callback.Run(type(), csync::SyncError());
     state_ = MODEL_LOADED;
   } else {
     model_load_callback_ = model_load_callback;
@@ -57,7 +57,7 @@ void FakeDataTypeController::FinishStart(StartResult result) {
   }
 
   // Set |state_| first below since the callback may call state().
-  SyncError error;
+  csync::SyncError error;
   if (result <= OK_FIRST_RUN) {
     state_ = RUNNING;
   } else if (result == ASSOCIATION_FAILED) {
@@ -76,7 +76,7 @@ void FakeDataTypeController::Stop() {
   state_ = NOT_RUNNING;
   // The DTM still expects |last_start_callback_| to be called back.
   if (!last_start_callback_.is_null()) {
-    SyncError error(FROM_HERE, "Fake error", type_);
+    csync::SyncError error(FROM_HERE, "Fake error", type_);
     last_start_callback_.Run(ABORTED, error);
   }
 }
@@ -117,7 +117,7 @@ void FakeDataTypeController::SetDelayModelLoad() {
 
 void FakeDataTypeController::SimulateModelLoadFinishing() {
   ModelLoadCallback model_load_callback = model_load_callback_;
-  model_load_callback.Run(type(), SyncError());
+  model_load_callback.Run(type(), csync::SyncError());
 }
 
 }  // namespace browser_sync

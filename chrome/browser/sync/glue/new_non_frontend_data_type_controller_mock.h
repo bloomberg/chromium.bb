@@ -40,13 +40,13 @@ class NewNonFrontendDataTypeControllerMock
   MOCK_METHOD0(StartAssociation, void());
   MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD2(StartFailed, void(StartResult result,
-                                 const SyncError& error));
+                                 const csync::SyncError& error));
   MOCK_METHOD3(StartDone, void(DataTypeController::StartResult result,
                                DataTypeController::State new_state,
-                               const SyncError& error));
+                               const csync::SyncError& error));
   MOCK_METHOD3(StartDoneImpl, void(DataTypeController::StartResult result,
                                    DataTypeController::State new_state,
-                                   const SyncError& error));
+                                   const csync::SyncError& error));
   MOCK_METHOD0(StopModels, void());
   MOCK_METHOD0(StopAssociationAsync, bool());
   MOCK_METHOD0(StopAssociation, void());
@@ -59,7 +59,7 @@ class NewNonFrontendDataTypeControllerMock
 
   // NewNonFrontendDataTypeController mocks.
   MOCK_CONST_METHOD0(GetWeakPtrToSyncableService,
-                     base::WeakPtr<SyncableService>());
+                     base::WeakPtr<csync::SyncableService>());
 
  protected:
   virtual ~NewNonFrontendDataTypeControllerMock();

@@ -197,7 +197,7 @@ void DataTypeManagerImpl::DownloadReady(
     std::string error_msg =
         "Configuration failed for types " +
         syncable::ModelTypeSetToString(failed_configuration_types);
-    SyncError error(FROM_HERE, error_msg,
+    csync::SyncError error(FROM_HERE, error_msg,
                     failed_configuration_types.First().Get());
     Abort(UNRECOVERABLE_ERROR, error);
     return;
@@ -212,7 +212,7 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   if (result.status == ABORTED || result.status == UNRECOVERABLE_ERROR) {
     Abort(result.status, result.failed_data_types.size() >= 1 ?
                          result.failed_data_types.front() :
-                         SyncError());
+                         csync::SyncError());
     return;
   }
 
@@ -274,7 +274,7 @@ void DataTypeManagerImpl::Stop() {
     // If Stop() is called while waiting for download, cancel all
     // outstanding tasks.
     weak_ptr_factory_.InvalidateWeakPtrs();
-    Abort(ABORTED, SyncError());
+    Abort(ABORTED, csync::SyncError());
     return;
   }
 
@@ -291,10 +291,10 @@ void DataTypeManagerImpl::FinishStop() {
 }
 
 void DataTypeManagerImpl::Abort(ConfigureStatus status,
-                                const SyncError& error) {
+                                const csync::SyncError& error) {
   DCHECK_NE(OK, status);
   FinishStop();
-  std::list<SyncError> error_list;
+  std::list<csync::SyncError> error_list;
   if (error.IsSet())
     error_list.push_back(error);
   ConfigureResult result(status,

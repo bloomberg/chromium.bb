@@ -29,10 +29,10 @@ class AssociatorInterface {
   // should be identical and corresponding. Returns true on
   // success. On failure of this step, we should abort the sync
   // operation and report an error to the user.
-  virtual SyncError AssociateModels() = 0;
+  virtual csync::SyncError AssociateModels() = 0;
 
   // Clears all the associations between the chrome and sync models.
-  virtual SyncError DisassociateModels() = 0;
+  virtual csync::SyncError DisassociateModels() = 0;
 
   // The has_nodes out parameter is set to true if the sync model has
   // nodes other than the permanent tagged nodes.  The method may

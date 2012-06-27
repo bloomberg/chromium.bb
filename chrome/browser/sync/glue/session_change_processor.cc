@@ -240,7 +240,7 @@ void SessionChangeProcessor::Observe(
 
   if (reassociation_needed) {
     LOG(WARNING) << "Reassociation of local models triggered.";
-    SyncError error;
+    csync::SyncError error;
     error = session_model_associator_->DisassociateModels();
     error = session_model_associator_->AssociateModels();
     if (error.IsSet()) {

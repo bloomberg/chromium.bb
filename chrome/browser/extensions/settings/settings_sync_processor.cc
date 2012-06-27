@@ -17,7 +17,7 @@ namespace extensions {
 SettingsSyncProcessor::SettingsSyncProcessor(
     const std::string& extension_id,
     syncable::ModelType type,
-    SyncChangeProcessor* sync_processor)
+    csync::SyncChangeProcessor* sync_processor)
     : extension_id_(extension_id),
       type_(type),
       sync_processor_(sync_processor),
@@ -42,12 +42,12 @@ void SettingsSyncProcessor::Init(const DictionaryValue& initial_state) {
   initialized_ = true;
 }
 
-SyncError SettingsSyncProcessor::SendChanges(
+csync::SyncError SettingsSyncProcessor::SendChanges(
     const ValueStoreChangeList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(initialized_) << "Init not called";
 
-  SyncChangeList sync_changes;
+  csync::SyncChangeList sync_changes;
   std::set<std::string> added_keys;
   std::set<std::string> deleted_keys;
 
@@ -79,9 +79,9 @@ SyncError SettingsSyncProcessor::SendChanges(
   }
 
   if (sync_changes.empty())
-    return SyncError();
+    return csync::SyncError();
 
-  SyncError error =
+  csync::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
   if (error.IsSet())
     return error;
@@ -92,7 +92,7 @@ SyncError SettingsSyncProcessor::SendChanges(
     synced_keys_.erase(*i);
   }
 
-  return SyncError();
+  return csync::SyncError();
 }
 
 void SettingsSyncProcessor::NotifyChanges(const ValueStoreChangeList& changes) {

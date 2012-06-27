@@ -18,14 +18,16 @@
 #include "chrome/browser/value_store/leveldb_value_store.h"
 #include "sync/api/syncable_service.h"
 
+namespace csync {
 class SyncErrorFactory;
+}
 
 namespace extensions {
 
 // Manages ValueStore objects for extensions, including routing
 // changes from sync to them.
 // Lives entirely on the FILE thread.
-class SettingsBackend : public SyncableService {
+class SettingsBackend : public csync::SyncableService {
  public:
   // |storage_factory| is use to create leveldb storage areas.
   // |base_path| is the base of the extension settings directory, so the
@@ -46,16 +48,17 @@ class SettingsBackend : public SyncableService {
   // Deletes all setting data for an extension. Call on the FILE thread.
   void DeleteStorage(const std::string& extension_id);
 
-  // SyncableService implementation.
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
-  virtual SyncError MergeDataAndStartSyncing(
+  // csync::SyncableService implementation.
+  virtual csync::SyncDataList GetAllSyncData(
+      syncable::ModelType type) const OVERRIDE;
+  virtual csync::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
-  virtual SyncError ProcessSyncChanges(
+      const csync::SyncDataList& initial_sync_data,
+      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
  private:
@@ -96,10 +99,10 @@ class SettingsBackend : public SyncableService {
   syncable::ModelType sync_type_;
 
   // Current sync processor, if any.
-  scoped_ptr<SyncChangeProcessor> sync_processor_;
+  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
 
   // Current sync error handler if any.
-  scoped_ptr<SyncErrorFactory> sync_error_factory_;
+  scoped_ptr<csync::SyncErrorFactory> sync_error_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsBackend);
 };

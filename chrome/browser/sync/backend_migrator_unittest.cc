@@ -77,7 +77,7 @@ class SyncBackendMigratorTest : public testing::Test {
       DataTypeManager::ConfigureResult result(status, requested_types);
       migrator_->OnConfigureDone(result);
     } else {
-      std::list<SyncError> errors;
+      std::list<csync::SyncError> errors;
       DataTypeManager::ConfigureResult result(
           status,
           requested_types,

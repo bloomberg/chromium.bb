@@ -4,9 +4,12 @@
 
 #include "sync/api/sync_error_factory_mock.h"
 
+namespace csync {
+
 SyncErrorFactoryMock::SyncErrorFactoryMock() {
 }
 
 SyncErrorFactoryMock::~SyncErrorFactoryMock() {
 }
 
+}  // namespace csync

@@ -8,6 +8,8 @@
 
 #include "sync/api/syncable_service.h"
 
+namespace csync {
+
 class SyncErrorFactory;
 
 // A fake SyncableService that can return arbitrary values and maintains the
@@ -44,5 +46,7 @@ class FakeSyncableService : public SyncableService {
   bool syncing_;
   syncable::ModelType type_;
 };
+
+}  // namespace csync
 
 #endif  // SYNC_API_FAKE_SYNCABLE_SERVICE_H_

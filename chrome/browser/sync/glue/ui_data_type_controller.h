@@ -18,10 +18,16 @@
 class Profile;
 class ProfileSyncService;
 class ProfileSyncComponentsFactory;
+
+namespace base {
+class TimeDelta;
+}
+
+namespace csync {
 class SyncableService;
 class SyncError;
+}
 
-namespace base { class TimeDelta; }
 namespace browser_sync {
 
 // Implementation for datatypes that reside on the (UI thread). This is the same
@@ -73,7 +79,7 @@ class UIDataTypeController : public DataTypeController {
   virtual void OnModelLoaded() OVERRIDE;
 
   // Helper methods for cleaning up state and invoking the start callback.
-  virtual void StartFailed(StartResult result, const SyncError& error);
+  virtual void StartFailed(StartResult result, const csync::SyncError& error);
   virtual void StartDone(StartResult result);
 
   // Record association time.
@@ -104,7 +110,7 @@ class UIDataTypeController : public DataTypeController {
   //
   // Note: we use refcounting here primarily so that we can keep a uniform
   // SyncableService API, whether the datatype lives on the UI thread or not
-  // (a SyncableService takes ownership of its SyncChangeProcessor when
+  // (a csync::SyncableService takes ownership of its SyncChangeProcessor when
   // MergeDataAndStartSyncing is called). This will help us eventually merge the
   // two datatype controller implementations (for ui and non-ui thread
   // datatypes).
@@ -112,7 +118,7 @@ class UIDataTypeController : public DataTypeController {
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object.
-  base::WeakPtr<SyncableService> local_service_;
+  base::WeakPtr<csync::SyncableService> local_service_;
 
  private:
    // Associate the sync model with the service's model, then start syncing.

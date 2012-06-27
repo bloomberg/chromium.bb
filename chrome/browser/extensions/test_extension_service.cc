@@ -73,30 +73,30 @@ void TestExtensionService::CheckForUpdatesSoon() {
   ADD_FAILURE();
 }
 
-SyncError TestExtensionService::MergeDataAndStartSyncing(
+csync::SyncError TestExtensionService::MergeDataAndStartSyncing(
     syncable::ModelType type,
-    const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor,
-    scoped_ptr<SyncErrorFactory> sync_error_factory) {
+    const csync::SyncDataList& initial_sync_data,
+    scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+    scoped_ptr<csync::SyncErrorFactory> sync_error_factory) {
   ADD_FAILURE();
-  return SyncError();
+  return csync::SyncError();
 }
 
 void TestExtensionService::StopSyncing(syncable::ModelType type) {
   ADD_FAILURE();
 }
 
-SyncDataList TestExtensionService::GetAllSyncData(
+csync::SyncDataList TestExtensionService::GetAllSyncData(
     syncable::ModelType type) const {
   ADD_FAILURE();
-  return SyncDataList();
+  return csync::SyncDataList();
 }
 
-SyncError TestExtensionService::ProcessSyncChanges(
+csync::SyncError TestExtensionService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const csync::SyncChangeList& change_list) {
   ADD_FAILURE();
-  return SyncError();
+  return csync::SyncError();
 }
 
 bool TestExtensionService::is_ready() {

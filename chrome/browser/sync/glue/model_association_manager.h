@@ -97,11 +97,11 @@ class ModelAssociationManager {
   // Callback passed to each data type controller on starting association. This
   // callback will be invoked when the model association is done.
   void TypeStartCallback(DataTypeController::StartResult result,
-                         const SyncError& error);
+                         const csync::SyncError& error);
 
   // Callback that will be invoked when the models finish loading. This callback
   // will be passed to |LoadModels| function.
-  void ModelLoadCallback(syncable::ModelType type, SyncError error);
+  void ModelLoadCallback(syncable::ModelType type, csync::SyncError error);
 
   // Calls the |LoadModels| method on the next controller waiting to start.
   void LoadModelForNextType();
@@ -114,14 +114,14 @@ class ModelAssociationManager {
   // do the book keeping and do the UMA reporting.
   void AppendToFailedDatatypesAndLogError(
       DataTypeController::StartResult result,
-      const SyncError& error);
+      const csync::SyncError& error);
 
   syncable::ModelTypeSet GetTypesWaitingToLoad();
 
 
   State state_;
   syncable::ModelTypeSet desired_types_;
-  std::list<SyncError> failed_datatypes_info_;
+  std::list<csync::SyncError> failed_datatypes_info_;
   std::map<syncable::ModelType, int> start_order_;
 
   // This illustration explains the movement of one DTC through various lists.

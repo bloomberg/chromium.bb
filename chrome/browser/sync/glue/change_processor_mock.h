@@ -31,7 +31,7 @@ class ChangeProcessorMock
                      void(const tracked_objects::Location&,
                           const std::string&));
   MOCK_METHOD3(CreateAndUploadError,
-                   SyncError(const tracked_objects::Location&,
+                   csync::SyncError(const tracked_objects::Location&,
                              const std::string&,
                              syncable::ModelType));
 

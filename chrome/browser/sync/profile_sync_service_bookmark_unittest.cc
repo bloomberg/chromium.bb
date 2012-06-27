@@ -364,7 +364,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         profile_.GetBookmarkModel(),
         test_user_share_.user_share(),
         &mock_error_handler_));
-    SyncError error = model_associator_->AssociateModels();
+    csync::SyncError error = model_associator_->AssociateModels();
     EXPECT_FALSE(error.IsSet());
     MessageLoop::current()->RunAllPending();
 
@@ -378,7 +378,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void StopSync() {
     change_processor_->Stop();
     change_processor_.reset();
-    SyncError error = model_associator_->DisassociateModels();
+    csync::SyncError error = model_associator_->DisassociateModels();
     EXPECT_FALSE(error.IsSet());
     model_associator_.reset();
 

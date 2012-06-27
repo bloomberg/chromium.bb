@@ -17,9 +17,15 @@
 class Profile;
 class ProfileSyncService;
 class ProfileSyncComponentsFactory;
-class SyncError;
 
-namespace base { class TimeDelta; }
+namespace base {
+class TimeDelta;
+}
+
+namespace csync {
+class SyncError;
+}
+
 namespace browser_sync {
 
 class AssociatorInterface;
@@ -33,7 +39,7 @@ class ChangeProcessor;
 //    syncable::ModelType type() const
 //    void CreateSyncComponents();
 // NOTE: This class is deprecated! New sync datatypes should be using the
-// SyncableService API and the UIDataTypeController instead.
+// csync::SyncableService API and the UIDataTypeController instead.
 // TODO(zea): Delete this once all types are on the new API.
 class FrontendDataTypeController : public DataTypeController {
  public:
@@ -83,7 +89,7 @@ class FrontendDataTypeController : public DataTypeController {
   virtual void CleanUpState();
 
   // Helper methods for cleaning up state an running the start callback.
-  virtual void StartFailed(StartResult result, const SyncError& error);
+  virtual void StartFailed(StartResult result, const csync::SyncError& error);
   virtual void FinishStart(StartResult result);
 
   // Record association time.

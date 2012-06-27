@@ -15,6 +15,8 @@
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace csync {
+
 void SyncData::ImmutableSyncEntityTraits::InitializeWrapper(
     Wrapper* wrapper) {
   *wrapper = new sync_pb::SyncEntity();
@@ -138,3 +140,5 @@ std::string SyncData::ToString() const {
 void PrintTo(const SyncData& sync_data, std::ostream* os) {
   *os << sync_data.ToString();
 }
+
+}  // namespace csync

@@ -41,7 +41,7 @@ ThemeModelAssociator::ThemeModelAssociator(
 
 ThemeModelAssociator::~ThemeModelAssociator() {}
 
-SyncError ThemeModelAssociator::AssociateModels() {
+csync::SyncError ThemeModelAssociator::AssociateModels() {
   csync::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   csync::ReadNode root(&trans);
   if (root.InitByTagLookup(kThemesTag) != csync::BaseNode::INIT_OK) {
@@ -83,12 +83,12 @@ SyncError ThemeModelAssociator::AssociateModels() {
     GetThemeSpecificsFromCurrentTheme(profile, &theme_specifics);
     node.SetThemeSpecifics(theme_specifics);
   }
-  return SyncError();
+  return csync::SyncError();
 }
 
-SyncError ThemeModelAssociator::DisassociateModels() {
+csync::SyncError ThemeModelAssociator::DisassociateModels() {
   // We don't maintain any association state, so nothing to do.
-  return SyncError();
+  return csync::SyncError();
 }
 
 bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {

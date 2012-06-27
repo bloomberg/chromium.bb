@@ -30,7 +30,7 @@ void NewNonFrontendDataTypeController::LoadModels(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!model_load_callback.is_null());
   if (state() != NOT_RUNNING) {
-    model_load_callback.Run(type(), SyncError(FROM_HERE,
+    model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
                                               "Model already running",
                                               type()));
     return;
@@ -63,7 +63,7 @@ void NewNonFrontendDataTypeController::OnModelLoaded() {
 
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), SyncError());
+  model_load_callback.Run(type(), csync::SyncError());
 }
 
 void NewNonFrontendDataTypeController::StartAssociating(
@@ -75,7 +75,8 @@ void NewNonFrontendDataTypeController::StartAssociating(
 
   set_start_callback(start_callback);
   if (!StartAssociationAsync()) {
-    SyncError error(FROM_HERE, "Failed to post StartAssociation", type());
+    csync::SyncError error(
+        FROM_HERE, "Failed to post StartAssociation", type());
     StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
     // StartDoneImpl should have called ClearSharedChangeProcessor();
     DCHECK(!shared_change_processor_.get());
@@ -92,7 +93,7 @@ void NewNonFrontendDataTypeController::Stop() {
   }
 
   // Disconnect the change processor. At this point, the
-  // SyncableService can no longer interact with the Syncer, even if
+  // csync::SyncableService can no longer interact with the Syncer, even if
   // it hasn't finished MergeDataAndStartSyncing.
   ClearSharedChangeProcessor();
 
@@ -104,7 +105,7 @@ void NewNonFrontendDataTypeController::Stop() {
       return;  // The datatype was never activated, we're done.
     case ASSOCIATING:
       set_state(STOPPING);
-      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      StartDoneImpl(ABORTED, NOT_RUNNING, csync::SyncError());
       // We continue on to deactivate the datatype and stop the local service.
       break;
     case DISABLED:
@@ -141,7 +142,7 @@ NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
 void NewNonFrontendDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state,
-    const SyncError& error) {
+    const csync::SyncError& error) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -155,7 +156,7 @@ void NewNonFrontendDataTypeController::StartDone(
 void NewNonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
     DataTypeController::State new_state,
-    const SyncError& error) {
+    const csync::SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If we failed to start up, and we haven't been stopped yet, we need to
   // ensure we clean up the local service and shared change processor properly.
@@ -171,7 +172,7 @@ void NewNonFrontendDataTypeController::AbortModelStarting() {
   StopModels();
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), SyncError(FROM_HERE,
+  model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
                                             "ABORTED",
                                             type()));
 }
@@ -200,7 +201,7 @@ void NewNonFrontendDataTypeController::
   DCHECK(shared_change_processor.get());
 
   // Connect |shared_change_processor| to the syncer and get the
-  // SyncableService associated with type().
+  // csync::SyncableService associated with type().
   // Note that it's possible the shared_change_processor has already been
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
@@ -209,26 +210,26 @@ void NewNonFrontendDataTypeController::
                                                     this,
                                                     type());
   if (!local_service_.get()) {
-    SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
+    csync::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
   if (!shared_change_processor->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, SyncError());
+    StartFailed(NEEDS_CRYPTO, csync::SyncError());
     return;
   }
 
   bool sync_has_nodes = false;
   if (!shared_change_processor->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    csync::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  SyncError error;
-  SyncDataList initial_sync_data;
+  csync::SyncError error;
+  csync::SyncDataList initial_sync_data;
   error = shared_change_processor->GetSyncData(&initial_sync_data);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
@@ -238,9 +239,9 @@ void NewNonFrontendDataTypeController::
   error = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
-      scoped_ptr<SyncChangeProcessor>(
+      scoped_ptr<csync::SyncChangeProcessor>(
           new SharedChangeProcessorRef(shared_change_processor)),
-      scoped_ptr<SyncErrorFactory>(
+      scoped_ptr<csync::SyncErrorFactory>(
           new SharedChangeProcessorRef(shared_change_processor)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
@@ -255,7 +256,7 @@ void NewNonFrontendDataTypeController::
   // doesn't start trying to push changes from its thread before we activate
   // the datatype.
   shared_change_processor->ActivateDataType(model_safe_group());
-  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
+  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, csync::SyncError());
 }
 
 void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {

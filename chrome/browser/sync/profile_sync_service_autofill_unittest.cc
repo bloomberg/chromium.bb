@@ -251,7 +251,7 @@ class WebDataServiceFake : public WebDataService {
 ACTION_P(MakeAutocompleteSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
-    return base::WeakPtr<SyncableService>();
+    return base::WeakPtr<csync::SyncableService>();
   return wds->GetAutocompleteSyncableService()->AsWeakPtr();
 }
 
@@ -267,7 +267,7 @@ ACTION(MakeSharedChangeProcessor) {
 ACTION_P(MakeAutofillProfileSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
-    return base::WeakPtr<SyncableService>();;
+    return base::WeakPtr<csync::SyncableService>();;
   return wds->GetAutofillProfileSyncableService()->AsWeakPtr();
 }
 

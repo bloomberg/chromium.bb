@@ -56,13 +56,13 @@ class PasswordModelAssociator
   // PerDataTypeAssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual SyncError AssociateModels() OVERRIDE;
+  virtual csync::SyncError AssociateModels() OVERRIDE;
 
   // Delete all password nodes.
   bool DeleteAllNodes(csync::WriteTransaction* trans);
 
   // Clears all associations.
-  virtual SyncError DisassociateModels() OVERRIDE;
+  virtual csync::SyncError DisassociateModels() OVERRIDE;
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
@@ -95,7 +95,7 @@ class PasswordModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  SyncError WriteToPasswordStore(const PasswordVector* new_passwords,
+  csync::SyncError WriteToPasswordStore(const PasswordVector* new_passwords,
                                  const PasswordVector* updated_passwords,
                                  const PasswordVector* deleted_passwords);
 

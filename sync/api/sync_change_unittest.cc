@@ -13,7 +13,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using csync::EntitySpecificsToValue;
+namespace csync {
 
 // Ordered list of SyncChange's.
 typedef std::vector<SyncChange> SyncChangeList;
@@ -128,3 +128,5 @@ TEST_F(SyncChangeTest, SyncerChanges) {
 }
 
 }  // namespace
+
+}  // namespace csync

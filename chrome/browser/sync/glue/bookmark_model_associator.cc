@@ -213,11 +213,11 @@ void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
       id_map_.find(bookmark_model_->mobile_node()->id()) != id_map_.end());
 }
 
-SyncError BookmarkModelAssociator::DisassociateModels() {
+csync::SyncError BookmarkModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
   dirty_associations_sync_ids_.clear();
-  return SyncError();
+  return csync::SyncError();
 }
 
 int64 BookmarkModelAssociator::GetSyncIdFromChromeId(const int64& node_id) {
@@ -331,12 +331,12 @@ bool BookmarkModelAssociator::NodesMatch(
   return true;
 }
 
-SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
+csync::SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
     const BookmarkNode* permanent_node, const std::string&tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
   int64 sync_id = GetSyncIdFromChromeId(permanent_node->id());
   if (sync_id != csync::kInvalidId)
-    return SyncError();
+    return csync::SyncError();
   if (!GetSyncIdForTaggedNode(tag, &sync_id))
     return unrecoverable_error_handler_->CreateAndUploadError(
         FROM_HERE,
@@ -344,7 +344,7 @@ SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
         model_type());
 
   Associate(permanent_node, sync_id);
-  return SyncError();
+  return csync::SyncError();
 }
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
@@ -357,13 +357,13 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-SyncError BookmarkModelAssociator::AssociateModels() {
+csync::SyncError BookmarkModelAssociator::AssociateModels() {
   scoped_ptr<ScopedAssociationUpdater> association_updater(
       new ScopedAssociationUpdater(bookmark_model_));
   // Try to load model associations from persisted associations first. If that
   // succeeds, we don't need to run the complex model matching algorithm.
   if (LoadAssociations())
-    return SyncError();
+    return csync::SyncError();
 
   DisassociateModels();
 
@@ -372,7 +372,7 @@ SyncError BookmarkModelAssociator::AssociateModels() {
   return BuildAssociations();
 }
 
-SyncError BookmarkModelAssociator::BuildAssociations() {
+csync::SyncError BookmarkModelAssociator::BuildAssociations() {
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each sync node for the current sync parent node, find the best
@@ -390,7 +390,7 @@ SyncError BookmarkModelAssociator::BuildAssociations() {
   // This algorithm will not do well if the folder name has changes but the
   // children under them are all the same.
 
-  SyncError error;
+  csync::SyncError error;
   DCHECK(bookmark_model_->IsLoaded());
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
@@ -521,7 +521,7 @@ SyncError BookmarkModelAssociator::BuildAssociations() {
     }
   }
 
-  return SyncError();
+  return csync::SyncError();
 }
 
 void BookmarkModelAssociator::PostPersistAssociationsTask() {

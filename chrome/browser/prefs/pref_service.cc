@@ -920,7 +920,7 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
   user_pref_store_->SetValue(path, owned_value.release());
 }
 
-SyncableService* PrefService::GetSyncableService() {
+csync::SyncableService* PrefService::GetSyncableService() {
   return pref_sync_associator_.get();
 }
 

@@ -19,6 +19,8 @@ class EntitySpecifics;
 class SyncEntity;
 }  // namespace sync_pb
 
+namespace csync {
+
 typedef syncable::ModelType SyncDataType;
 
 // A light-weight container for immutable sync data. Pass-by-value and storage
@@ -117,5 +119,7 @@ class SyncData {
 
 // gmock printer helper.
 void PrintTo(const SyncData& sync_data, std::ostream* os);
+
+}  // namespace csync
 
 #endif  // SYNC_API_SYNC_DATA_H_

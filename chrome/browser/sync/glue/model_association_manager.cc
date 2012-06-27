@@ -262,7 +262,7 @@ bool ModelAssociationManager::GetControllersNeedingStart(
 
 void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
     DataTypeController::StartResult result,
-    const SyncError& error) {
+    const csync::SyncError& error) {
   failed_datatypes_info_.push_back(error);
   LOG(ERROR) << "Failed to associate models for "
              << syncable::ModelTypeToString(error.type());
@@ -273,7 +273,7 @@ void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
 
 void ModelAssociationManager::TypeStartCallback(
     DataTypeController::StartResult result,
-    const SyncError& error) {
+    const csync::SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT_END0("sync", "ModelAssociation");
 
@@ -330,7 +330,7 @@ void ModelAssociationManager::TypeStartCallback(
       break;
   }
 
-  std::list<SyncError> errors;
+  std::list<csync::SyncError> errors;
   errors.push_back(error);
 
   // Put our state to idle.
@@ -372,7 +372,7 @@ void ModelAssociationManager::LoadModelForNextType() {
 }
 
 void ModelAssociationManager::ModelLoadCallback(
-    syncable::ModelType type, SyncError error) {
+    syncable::ModelType type, csync::SyncError error) {
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
           << syncable::ModelTypeToString(type);
   if (state_ == CONFIGURING) {

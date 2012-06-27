@@ -20,15 +20,16 @@ ExtensionSyncData::ExtensionSyncData()
       incognito_enabled_(false) {
 }
 
-ExtensionSyncData::ExtensionSyncData(const SyncData& sync_data)
+ExtensionSyncData::ExtensionSyncData(const csync::SyncData& sync_data)
     : uninstalled_(false),
       enabled_(false),
       incognito_enabled_(false) {
   PopulateFromSyncData(sync_data);
 }
 
-ExtensionSyncData::ExtensionSyncData(const SyncChange& sync_change)
-    : uninstalled_(sync_change.change_type() == SyncChange::ACTION_DELETE),
+ExtensionSyncData::ExtensionSyncData(const csync::SyncChange& sync_change)
+    : uninstalled_(
+        sync_change.change_type() == csync::SyncChange::ACTION_DELETE),
       enabled_(false),
       incognito_enabled_(false) {
   PopulateFromSyncData(sync_change.sync_data());
@@ -48,16 +49,16 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
 
 ExtensionSyncData::~ExtensionSyncData() {}
 
-SyncData ExtensionSyncData::GetSyncData() const {
+csync::SyncData ExtensionSyncData::GetSyncData() const {
   sync_pb::EntitySpecifics specifics;
   PopulateExtensionSpecifics(specifics.mutable_extension());
 
-  return SyncData::CreateLocalData(id_, name_, specifics);
+  return csync::SyncData::CreateLocalData(id_, name_, specifics);
 }
 
-SyncChange ExtensionSyncData::GetSyncChange(
-    SyncChange::SyncChangeType change_type) const {
-  return SyncChange(change_type, GetSyncData());
+csync::SyncChange ExtensionSyncData::GetSyncChange(
+    csync::SyncChange::SyncChangeType change_type) const {
+  return csync::SyncChange(change_type, GetSyncData());
 }
 
 void ExtensionSyncData::PopulateExtensionSpecifics(
@@ -99,7 +100,7 @@ void ExtensionSyncData::set_uninstalled(bool uninstalled) {
   uninstalled_ = uninstalled;
 }
 
-void ExtensionSyncData::PopulateFromSyncData(const SyncData& sync_data) {
+void ExtensionSyncData::PopulateFromSyncData(const csync::SyncData& sync_data) {
   const sync_pb::EntitySpecifics& entity_specifics = sync_data.GetSpecifics();
 
   if (entity_specifics.has_extension()) {

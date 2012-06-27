@@ -621,9 +621,9 @@ void ProfileSyncService::DisableBrokenDatatype(
   // passed onto the change processor.
   DeactivateDataType(type);
 
-  SyncError error(from_here, message, type);
+  csync::SyncError error(from_here, message, type);
 
-  std::list<SyncError> errors;
+  std::list<csync::SyncError> errors;
   errors.push_back(error);
 
   // Update this before posting a task. So if a configure happens before
@@ -1418,7 +1418,7 @@ void ProfileSyncService::Observe(int type,
         // error representing it.
         DCHECK_EQ(result->failed_data_types.size(),
                   static_cast<unsigned int>(1));
-        SyncError error = result->failed_data_types.front();
+        csync::SyncError error = result->failed_data_types.front();
         DCHECK(error.IsSet());
         std::string message =
           "Sync configuration failed with status " +

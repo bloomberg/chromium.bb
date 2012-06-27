@@ -16,6 +16,8 @@
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
+namespace csync {
+
 class SyncErrorFactory;
 
 typedef std::vector<SyncData> SyncDataList;
@@ -61,5 +63,7 @@ class SyncableService : public SyncChangeProcessor,
  protected:
   virtual ~SyncableService();
 };
+
+}  // namespace csync
 
 #endif  // SYNC_API_SYNCABLE_SERVICE_H_

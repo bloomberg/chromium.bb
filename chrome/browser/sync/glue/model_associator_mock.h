@@ -22,8 +22,8 @@ class ModelAssociatorMock : public AssociatorInterface {
   ModelAssociatorMock();
   virtual ~ModelAssociatorMock();
 
-  MOCK_METHOD0(AssociateModels, SyncError());
-  MOCK_METHOD0(DisassociateModels, SyncError());
+  MOCK_METHOD0(AssociateModels, csync::SyncError());
+  MOCK_METHOD0(DisassociateModels, csync::SyncError());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool* has_nodes));
   MOCK_METHOD0(AbortAssociation, void());
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());

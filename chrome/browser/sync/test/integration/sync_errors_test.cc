@@ -16,7 +16,7 @@
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
 
-class SyncErrorTest : public SyncTest{
+class SyncErrorTest : public SyncTest {
  public:
   SyncErrorTest() : SyncTest(SINGLE_CLIENT) {}
   virtual ~SyncErrorTest() {}

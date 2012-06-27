@@ -19,10 +19,13 @@
 
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;
+
+namespace csync {
 class SyncData;
 class SyncableService;
 
-typedef std::vector<SyncData> SyncDataList;
+typedef std::vector<csync::SyncData> SyncDataList;
+}  // namespace
 
 namespace browser_sync {
 
@@ -54,10 +57,10 @@ class SharedChangeProcessor
 
   // Connect to the Syncer and prepare to handle changes for |type|. Will
   // create and store a new GenericChangeProcessor and return a weak pointer to
-  // the SyncableService associated with |type|.
+  // the csync::SyncableService associated with |type|.
   // Note: If this SharedChangeProcessor has been disconnected, or the
-  // SyncableService was not alive, will return a null weak pointer.
-  virtual base::WeakPtr<SyncableService> Connect(
+  // csync::SyncableService was not alive, will return a null weak pointer.
+  virtual base::WeakPtr<csync::SyncableService> Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
@@ -75,10 +78,10 @@ class SharedChangeProcessor
 
   // GenericChangeProcessor stubs (with disconnect support).
   // Should only be called on the same thread the datatype resides.
-  virtual SyncError GetSyncData(SyncDataList* current_sync_data);
-  virtual SyncError ProcessSyncChanges(
+  virtual csync::SyncError GetSyncData(csync::SyncDataList* current_sync_data);
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list);
+      const csync::SyncChangeList& change_list);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
@@ -87,7 +90,7 @@ class SharedChangeProcessor
   // Does nothing if |disconnected_| is true.
   virtual void ActivateDataType(csync::ModelSafeGroup model_safe_group);
 
-  virtual SyncError CreateAndUploadError(
+  virtual csync::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message);
 

@@ -22,7 +22,7 @@
 
 using content::BrowserThread;
 
-typedef std::map<std::string, SyncData> SyncDataMap;
+typedef std::map<std::string, csync::SyncData> SyncDataMap;
 
 namespace {
 
@@ -54,9 +54,9 @@ void RemoveByGuid(AppNotificationList* list, const std::string& guid) {
     list->erase(iter);
 }
 
-void PopulateGuidToSyncDataMap(const SyncDataList& sync_data,
+void PopulateGuidToSyncDataMap(const csync::SyncDataList& sync_data,
                                SyncDataMap* data_map) {
-  for (SyncDataList::const_iterator iter = sync_data.begin();
+  for (csync::SyncDataList::const_iterator iter = sync_data.begin();
        iter != sync_data.end(); ++iter) {
     (*data_map)[iter->GetSpecifics().app_notification().guid()] = *iter;
   }
@@ -178,12 +178,12 @@ void AppNotificationManager::Observe(
   ClearAll(*content::Details<const std::string>(details).ptr());
 }
 
-SyncDataList AppNotificationManager::GetAllSyncData(
+csync::SyncDataList AppNotificationManager::GetAllSyncData(
     syncable::ModelType type) const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(loaded());
   DCHECK_EQ(syncable::APP_NOTIFICATIONS, type);
-  SyncDataList data;
+  csync::SyncDataList data;
   for (NotificationMap::const_iterator iter = notifications_->begin();
       iter != notifications_->end(); ++iter) {
 
@@ -202,9 +202,9 @@ SyncDataList AppNotificationManager::GetAllSyncData(
   return data;
 }
 
-SyncError AppNotificationManager::ProcessSyncChanges(
+csync::SyncError AppNotificationManager::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const csync::SyncChangeList& change_list) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(loaded());
   if (!models_associated_) {
@@ -215,12 +215,12 @@ SyncError AppNotificationManager::ProcessSyncChanges(
 
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
-  SyncError error;
-  for (SyncChangeList::const_iterator iter = change_list.begin();
+  csync::SyncError error;
+  for (csync::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
-    SyncData sync_data = iter->sync_data();
+    csync::SyncData sync_data = iter->sync_data();
     DCHECK_EQ(syncable::APP_NOTIFICATIONS, sync_data.GetDataType());
-    SyncChange::SyncChangeType change_type = iter->change_type();
+    csync::SyncChange::SyncChangeType change_type = iter->change_type();
 
     scoped_ptr<AppNotification> new_notif(CreateNotificationFromSyncData(
         sync_data));
@@ -235,12 +235,12 @@ SyncError AppNotificationManager::ProcessSyncChanges(
       error = sync_error_factory_->CreateAndUploadError(
           FROM_HERE,
           "ProcessSyncChanges received a local only notification" +
-              SyncChange::ChangeTypeToString(change_type));
+              csync::SyncChange::ChangeTypeToString(change_type));
       continue;
     }
 
     switch (change_type) {
-      case SyncChange::ACTION_ADD:
+      case csync::SyncChange::ACTION_ADD:
         if (!existing_notif) {
           Add(new_notif.release());
         } else {
@@ -249,7 +249,7 @@ SyncError AppNotificationManager::ProcessSyncChanges(
                       << "\nItem in ADD change: " << new_notif->ToString();
         }
         break;
-      case SyncChange::ACTION_DELETE:
+      case csync::SyncChange::ACTION_DELETE:
         if (existing_notif) {
           Remove(new_notif->extension_id(), new_notif->guid());
         } else {
@@ -260,7 +260,7 @@ SyncError AppNotificationManager::ProcessSyncChanges(
                       << "Item in DELETE change: " << new_notif->ToString();
         }
         break;
-      case SyncChange::ACTION_UPDATE:
+      case csync::SyncChange::ACTION_UPDATE:
         // Although app notifications are immutable from the model perspective,
         // sync can send UPDATE changes due to encryption / meta-data changes.
         // So ignore UPDATE changes when the exitsing and new notification
@@ -283,11 +283,11 @@ SyncError AppNotificationManager::ProcessSyncChanges(
   return error;
 }
 
-SyncError AppNotificationManager::MergeDataAndStartSyncing(
+csync::SyncError AppNotificationManager::MergeDataAndStartSyncing(
     syncable::ModelType type,
-    const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor,
-    scoped_ptr<SyncErrorFactory> sync_error_factory) {
+    const csync::SyncDataList& initial_sync_data,
+    scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+    scoped_ptr<csync::SyncErrorFactory> sync_error_factory) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // AppNotificationDataTypeController ensures that modei is fully should before
   // this method is called by waiting until the load notification is received
@@ -308,9 +308,9 @@ SyncError AppNotificationManager::MergeDataAndStartSyncing(
   PopulateGuidToSyncDataMap(GetAllSyncData(syncable::APP_NOTIFICATIONS),
                             &local_data_map);
 
-  for (SyncDataList::const_iterator iter = initial_sync_data.begin();
+  for (csync::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
-    const SyncData& sync_data = *iter;
+    const csync::SyncData& sync_data = *iter;
     DCHECK_EQ(syncable::APP_NOTIFICATIONS, sync_data.GetDataType());
     scoped_ptr<AppNotification> sync_notif(CreateNotificationFromSyncData(
         sync_data));
@@ -334,13 +334,14 @@ SyncError AppNotificationManager::MergeDataAndStartSyncing(
   }
 
   // TODO(munjal): crbug.com/10059. Work with Lingesh/Antony to resolve.
-  SyncChangeList new_changes;
+  csync::SyncChangeList new_changes;
   for (SyncDataMap::const_iterator iter = local_data_map.begin();
       iter != local_data_map.end(); ++iter) {
-    new_changes.push_back(SyncChange(SyncChange::ACTION_ADD, iter->second));
+    new_changes.push_back(
+        csync::SyncChange(csync::SyncChange::ACTION_ADD, iter->second));
   }
 
-  SyncError error;
+  csync::SyncError error;
   if (new_changes.size() > 0)
     error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   models_associated_ = !error.IsSet();
@@ -490,9 +491,10 @@ void AppNotificationManager::SyncAddChange(const AppNotification& notif) {
 
   // TODO(munjal): crbug.com/10059. Work with Lingesh/Antony to resolve.
 
-  SyncChangeList changes;
-  SyncData sync_data = CreateSyncDataFromNotification(notif);
-  changes.push_back(SyncChange(SyncChange::ACTION_ADD, sync_data));
+  csync::SyncChangeList changes;
+  csync::SyncData sync_data = CreateSyncDataFromNotification(notif);
+  changes.push_back(
+      csync::SyncChange(csync::SyncChange::ACTION_ADD, sync_data));
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -504,9 +506,10 @@ void AppNotificationManager::SyncRemoveChange(const AppNotification& notif) {
     return;
   }
 
-  SyncChangeList changes;
-  SyncData sync_data = CreateSyncDataFromNotification(notif);
-  changes.push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
+  csync::SyncChangeList changes;
+  csync::SyncData sync_data = CreateSyncDataFromNotification(notif);
+  changes.push_back(
+      csync::SyncChange(csync::SyncChange::ACTION_DELETE, sync_data));
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -518,22 +521,22 @@ void AppNotificationManager::SyncClearAllChange(
   if (!models_associated_ || processing_syncer_changes_)
     return;
 
-  SyncChangeList changes;
+  csync::SyncChangeList changes;
   for (AppNotificationList::const_iterator iter = list.begin();
       iter != list.end(); ++iter) {
     const AppNotification& notif = *iter->get();
     // Skip notifications marked as local.
     if (notif.is_local())
       continue;
-    changes.push_back(SyncChange(
-        SyncChange::ACTION_DELETE,
+    changes.push_back(csync::SyncChange(
+        csync::SyncChange::ACTION_DELETE,
         CreateSyncDataFromNotification(notif)));
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
 // static
-SyncData AppNotificationManager::CreateSyncDataFromNotification(
+csync::SyncData AppNotificationManager::CreateSyncDataFromNotification(
     const AppNotification& notification) {
   DCHECK(!notification.is_local());
   sync_pb::EntitySpecifics specifics;
@@ -547,13 +550,13 @@ SyncData AppNotificationManager::CreateSyncDataFromNotification(
   notif_specifics->set_link_text(notification.link_text());
   notif_specifics->set_link_url(notification.link_url().spec());
   notif_specifics->set_title(notification.title());
-  return SyncData::CreateLocalData(
+  return csync::SyncData::CreateLocalData(
       notif_specifics->guid(), notif_specifics->app_id(), specifics);
 }
 
 // static
 AppNotification* AppNotificationManager::CreateNotificationFromSyncData(
-    const SyncData& sync_data) {
+    const csync::SyncData& sync_data) {
   sync_pb::AppNotification specifics =
       sync_data.GetSpecifics().app_notification();
 

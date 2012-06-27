@@ -12,7 +12,9 @@
 #include "chrome/browser/value_store/value_store_change.h"
 #include "sync/api/sync_error.h"
 
+namespace csync {
 class SyncChangeProcessor;
+}  // namespace csync
 
 namespace extensions {
 
@@ -26,14 +28,14 @@ class SettingsSyncProcessor {
  public:
   SettingsSyncProcessor(const std::string& extension_id,
                         syncable::ModelType type,
-                        SyncChangeProcessor* sync_processor);
+                        csync::SyncChangeProcessor* sync_processor);
   ~SettingsSyncProcessor();
 
   // Initializes this with the initial state of sync.
   void Init(const DictionaryValue& initial_state);
 
   // Sends |changes| to sync.
-  SyncError SendChanges(const ValueStoreChangeList& changes);
+  csync::SyncError SendChanges(const ValueStoreChangeList& changes);
 
   // Informs this that |changes| have been receieved from sync. No action will
   // be taken, but this must be notified for internal bookkeeping.
@@ -49,7 +51,7 @@ class SettingsSyncProcessor {
   const syncable::ModelType type_;
 
   // The sync processor used to send changes to sync.
-  SyncChangeProcessor* const sync_processor_;
+  csync::SyncChangeProcessor* const sync_processor_;
 
   // Whether Init() has been called.
   bool initialized_;

@@ -177,7 +177,7 @@ class ProfileSyncServicePreferenceTest
   int64 WriteSyncedValue(const std::string& name,
                          const Value& value,
                          csync::WriteNode* node) {
-    SyncData sync_data;
+    csync::SyncData sync_data;
     if (!PrefModelAssociator::CreatePrefSyncData(name,
                                                  value,
                                                  &sync_data)) {
@@ -253,7 +253,7 @@ TEST_F(ProfileSyncServicePreferenceTest, CreatePrefSyncData) {
 
   const PrefService::Preference* pref =
       prefs_->FindPreference(prefs::kHomePage);
-  SyncData sync_data;
+  csync::SyncData sync_data;
   EXPECT_TRUE(PrefModelAssociator::CreatePrefSyncData(pref->name(),
       *pref->GetValue(), &sync_data));
   EXPECT_EQ(std::string(prefs::kHomePage), sync_data.GetTag());

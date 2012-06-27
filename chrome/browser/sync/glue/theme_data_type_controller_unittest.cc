@@ -59,7 +59,7 @@ class SyncThemeDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels()).
-        WillRepeatedly(Return(SyncError()));
+        WillRepeatedly(Return(csync::SyncError()));
   }
 
   void SetActivateExpectations() {
@@ -69,7 +69,7 @@ class SyncThemeDataTypeControllerTest : public testing::Test {
   void SetStopExpectations() {
     EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels()).
-                WillOnce(Return(SyncError()));
+                WillOnce(Return(csync::SyncError()));
   }
 
   void PumpLoop() {
@@ -132,7 +132,8 @@ TEST_F(SyncThemeDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, AssociateModels()).
-      WillRepeatedly(Return(SyncError(FROM_HERE, "Error", syncable::THEMES)));
+      WillRepeatedly(
+          Return(csync::SyncError(FROM_HERE, "Error", syncable::THEMES)));
 
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));

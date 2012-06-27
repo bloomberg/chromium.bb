@@ -16,10 +16,12 @@
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "sync/api/sync_change_processor.h"
 
+namespace csync {
 class SyncData;
 class SyncableService;
 
-typedef std::vector<SyncData> SyncDataList;
+typedef std::vector<csync::SyncData> SyncDataList;
+}  // namespace csync
 
 namespace browser_sync {
 
@@ -34,13 +36,14 @@ namespace browser_sync {
 // As a rule, the GenericChangeProcessor is not thread safe, and should only
 // be used on the same thread in which it was created.
 class GenericChangeProcessor : public ChangeProcessor,
-                               public SyncChangeProcessor,
+                               public csync::SyncChangeProcessor,
                                public base::NonThreadSafe {
  public:
   // Create a change processor and connect it to the syncer.
-  GenericChangeProcessor(DataTypeErrorHandler* error_handler,
-                         const base::WeakPtr<SyncableService>& local_service,
-                         csync::UserShare* user_share);
+  GenericChangeProcessor(
+      DataTypeErrorHandler* error_handler,
+      const base::WeakPtr<csync::SyncableService>& local_service,
+      csync::UserShare* user_share);
   virtual ~GenericChangeProcessor();
 
   // ChangeProcessor interface.
@@ -52,17 +55,17 @@ class GenericChangeProcessor : public ChangeProcessor,
   // |local_service_| by way of its ProcessSyncChanges method.
   virtual void CommitChangesFromSyncModel() OVERRIDE;
 
-  // SyncChangeProcessor implementation.
-  virtual SyncError ProcessSyncChanges(
+  // csync::SyncChangeProcessor implementation.
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
 
   // Fills |current_sync_data| with all the syncer data for the specified type.
-  virtual SyncError GetSyncDataForType(syncable::ModelType type,
-                                       SyncDataList* current_sync_data);
+  virtual csync::SyncError GetSyncDataForType(syncable::ModelType type,
+                                       csync::SyncDataList* current_sync_data);
 
   // Generic versions of AssociatorInterface methods. Called by
-  // SyncableServiceAdapter or the DataTypeController.
+  // csync::SyncableServiceAdapter or the DataTypeController.
   virtual bool SyncModelHasUserCreatedNodes(syncable::ModelType type,
                                             bool* has_nodes);
   virtual bool CryptoReadyIfNecessary(syncable::ModelType type);
@@ -77,13 +80,13 @@ class GenericChangeProcessor : public ChangeProcessor,
 
  private:
   // The SyncableService this change processor will forward changes on to.
-  const base::WeakPtr<SyncableService> local_service_;
+  const base::WeakPtr<csync::SyncableService> local_service_;
 
   // The current list of changes received from the syncer. We buffer because
   // we must ensure no syncapi transaction is held when we pass it on to
   // |local_service_|.
   // Set in ApplyChangesFromSyncModel, consumed in CommitChangesFromSyncModel.
-  SyncChangeList syncer_changes_;
+  csync::SyncChangeList syncer_changes_;
 
   // Our handle to the sync model. Unlike normal ChangeProcessors, we need to
   // be able to access the sync model before the change processor begins

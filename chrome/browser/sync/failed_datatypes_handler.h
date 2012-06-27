@@ -29,7 +29,7 @@ class FailedDatatypesHandler {
   // Called with the result of sync configuration. The types with errors
   // are obtained from the |result|.
   bool UpdateFailedDatatypes(
-      const std::list<SyncError>& errors,
+      const std::list<csync::SyncError>& errors,
       FailureType failure_type);
 
   // Called when the user has chosen a new set of datatypes to sync. We clear
@@ -47,10 +47,10 @@ class FailedDatatypesHandler {
 
  private:
   // List of dataypes that failed at startup.
-  std::list<SyncError> startup_errors_;
+  std::list<csync::SyncError> startup_errors_;
 
   // List of datatypes that failed at runtime.
-  std::list<SyncError> runtime_errors_;
+  std::list<csync::SyncError> runtime_errors_;
 
   ProfileSyncService* service_;
 

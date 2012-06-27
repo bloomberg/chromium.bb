@@ -16,6 +16,8 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
+namespace csync {
+
 // Sync errors are used for debug purposes and handled internally and/or
 // exposed through Chrome's "about:sync" internal page. They are considered
 // unrecoverable for the datatype creating them, and should only be used as
@@ -81,5 +83,7 @@ class SyncError {
 
 // gmock printer helper.
 void PrintTo(const SyncError& sync_error, std::ostream* os);
+
+}  // namespace csync
 
 #endif  // SYNC_API_SYNC_ERROR_H_

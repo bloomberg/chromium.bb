@@ -14,23 +14,23 @@
 
 namespace browser_sync {
 
-// A SyncChangeProcessor stub for interacting with a refcounted
+// A csync::SyncChangeProcessor stub for interacting with a refcounted
 // SharedChangeProcessor.
-class SharedChangeProcessorRef : public SyncChangeProcessor,
-                                 public SyncErrorFactory {
+class SharedChangeProcessorRef : public csync::SyncChangeProcessor,
+                                 public csync::SyncErrorFactory {
  public:
   SharedChangeProcessorRef(
       const scoped_refptr<browser_sync::SharedChangeProcessor>&
           change_processor);
   virtual ~SharedChangeProcessorRef();
 
-  // SyncChangeProcessor implementation.
-  virtual SyncError ProcessSyncChanges(
+  // csync::SyncChangeProcessor implementation.
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
 
-  // SyncErrorFactory implementation.
-  virtual SyncError CreateAndUploadError(
+  // csync::SyncErrorFactory implementation.
+  virtual csync::SyncError CreateAndUploadError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 

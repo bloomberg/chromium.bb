@@ -7,6 +7,8 @@
 #include "base/location.h"
 #include "sync/api/sync_error_factory.h"
 
+namespace csync {
+
 FakeSyncableService::FakeSyncableService()
     : syncing_(false),
       type_(syncable::UNSPECIFIED) {}
@@ -56,3 +58,5 @@ SyncError FakeSyncableService::ProcessSyncChanges(
     const SyncChangeList& change_list) {
   return process_sync_changes_error_;
 }
+
+}  // namespace csync

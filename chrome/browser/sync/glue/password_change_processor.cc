@@ -232,7 +232,7 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
     return;
   ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
-  SyncError error = model_associator_->WriteToPasswordStore(
+  csync::SyncError error = model_associator_->WriteToPasswordStore(
       &new_passwords_,
       &updated_passwords_,
       &deleted_passwords_);

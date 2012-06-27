@@ -12,7 +12,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 
 class CrxInstaller;
+
+namespace csync {
 class SyncErrorFactory;
+}
 
 namespace extensions {
 class Extension;
@@ -49,16 +52,17 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void CheckAdminBlacklist() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
-  virtual SyncError MergeDataAndStartSyncing(
+  virtual csync::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const csync::SyncDataList& initial_sync_data,
+      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
-  virtual SyncError ProcessSyncChanges(
+  virtual csync::SyncDataList GetAllSyncData(
+      syncable::ModelType type) const OVERRIDE;
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
 
   virtual bool is_ready() OVERRIDE;
 

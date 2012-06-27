@@ -29,9 +29,12 @@ class PrefService;
 class Profile;
 class SearchHostToURLsMap;
 class SearchTermsData;
+class TemplateURLServiceObserver;
+
+namespace csync {
 class SyncData;
 class SyncErrorFactory;
-class TemplateURLServiceObserver;
+}
 
 namespace extensions {
 class Extension;
@@ -65,13 +68,13 @@ struct URLVisitedDetails;
 class TemplateURLService : public WebDataServiceConsumer,
                            public ProfileKeyedService,
                            public content::NotificationObserver,
-                           public SyncableService {
+                           public csync::SyncableService {
  public:
   typedef std::map<std::string, std::string> QueryTerms;
   typedef std::vector<TemplateURL*> TemplateURLVector;
   // Type for a static function pointer that acts as a time source.
   typedef base::Time(TimeProvider)();
-  typedef std::map<std::string, SyncData> SyncDataMap;
+  typedef std::map<std::string, csync::SyncData> SyncDataMap;
 
   // Struct used for initializing the data store with fake data.
   // Each initializer is mapped to a TemplateURL.
@@ -262,25 +265,26 @@ class TemplateURLService : public WebDataServiceConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // SyncableService implementation.
+  // csync::SyncableService implementation.
 
   // Returns all syncable TemplateURLs from this model as SyncData. This should
   // include every search engine and no Extension keywords.
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
+  virtual csync::SyncDataList GetAllSyncData(
+      syncable::ModelType type) const OVERRIDE;
   // Process new search engine changes from Sync, merging them into our local
   // data. This may send notifications if local search engines are added,
   // updated or removed.
-  virtual SyncError ProcessSyncChanges(
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
   // Merge initial search engine data from Sync and push any local changes up
   // to Sync. This may send notifications if local search engines are added,
   // updated or removed.
-  virtual SyncError MergeDataAndStartSyncing(
+  virtual csync::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const csync::SyncDataList& initial_sync_data,
+      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
   // Processes a local TemplateURL change for Sync. |turl| is the TemplateURL
@@ -289,13 +293,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // associated with Sync, or if this is triggered by a Sync change, then this
   // does nothing.
   void ProcessTemplateURLChange(const TemplateURL* turl,
-                                SyncChange::SyncChangeType type);
+                                csync::SyncChange::SyncChangeType type);
 
   Profile* profile() const { return profile_; }
 
   // Returns a SyncData with a sync representation of the search engine data
   // from |turl|.
-  static SyncData CreateSyncDataFromTemplateURL(const TemplateURL& turl);
+  static csync::SyncData CreateSyncDataFromTemplateURL(const TemplateURL& turl);
 
   // Creates a new heap-allocated TemplateURL* which is populated by overlaying
   // |sync_data| atop |existing_turl|.  |existing_turl| may be NULL; if not it
@@ -308,11 +312,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
       Profile* profile,
       TemplateURL* existing_turl,
-      const SyncData& sync_data,
-      SyncChangeList* change_list);
+      const csync::SyncData& sync_data,
+      csync::SyncChangeList* change_list);
 
-  // Returns a map mapping Sync GUIDs to pointers to SyncData.
-  static SyncDataMap CreateGUIDToSyncDataMap(const SyncDataList& sync_data);
+  // Returns a map mapping Sync GUIDs to pointers to csync::SyncData.
+  static SyncDataMap CreateGUIDToSyncDataMap(
+      const csync::SyncDataList& sync_data);
 
 #if defined(UNIT_TEST)
   // Set a different time provider function, such as
@@ -534,7 +539,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   //   * Otherwise |sync_turl| is better.
   // Then resolves the conflict:
   //   * If the "worse" entry is |sync_turl|, and it is replaceable, add a
-  //     SyncChange to delete it, and return false.
+  //     csync::SyncChange to delete it, and return false.
   //   * If the "worse" entry is |local_turl|, and it is replaceable, remove it
   //     from the service and return true.
   //   * Otherwise, uniquify the keyword of the "worse" entry.  If it is
@@ -552,7 +557,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // extension- vs. non-extension-based TemplateURLs with the same keyword.
   bool ResolveSyncKeywordConflict(TemplateURL* sync_turl,
                                   TemplateURL* local_turl,
-                                  SyncChangeList* change_list);
+                                  csync::SyncChangeList* change_list);
 
   // Returns a TemplateURL from the service that has the same keyword and search
   // URL as |sync_turl|, if it exists.
@@ -567,7 +572,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // newer, so the caller must release it if need be.
   void MergeSyncAndLocalURLDuplicates(TemplateURL* sync_turl,
                                       TemplateURL* local_turl,
-                                      SyncChangeList* change_list);
+                                      csync::SyncChangeList* change_list);
 
   // Checks a newly added TemplateURL from Sync by its sync_guid and sets it as
   // the default search provider if we were waiting for it.
@@ -652,11 +657,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // true, we ignore any local search engine changes, since we triggered them.
   bool processing_syncer_changes_;
 
-  // Sync's SyncChange handler. We push all our changes through this.
-  scoped_ptr<SyncChangeProcessor> sync_processor_;
+  // Sync's csync::SyncChange handler. We push all our changes through this.
+  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
 
   // Sync's error handler. We use it to create a sync error.
-  scoped_ptr<SyncErrorFactory> sync_error_factory_;
+  scoped_ptr<csync::SyncErrorFactory> sync_error_factory_;
 
   // Whether or not we are waiting on the default search provider to come in
   // from Sync. This is to facilitate the fact that changes to the value of

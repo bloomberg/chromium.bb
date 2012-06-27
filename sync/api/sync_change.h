@@ -12,6 +12,8 @@
 
 #include "sync/api/sync_data.h"
 
+namespace csync {
+
 // A SyncChange object reflects a change to a piece of synced data. The change
 // can be either a delete, add, or an update. All data relevant to the change
 // is encapsulated within the SyncChange, which, once created, is immutable.
@@ -63,5 +65,7 @@ class SyncChange {
 
 // gmock printer helper.
 void PrintTo(const SyncChange& sync_change, std::ostream* os);
+
+}  // namespace csync
 
 #endif  // SYNC_API_SYNC_CHANGE_H_

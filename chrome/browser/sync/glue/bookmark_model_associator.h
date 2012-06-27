@@ -58,9 +58,9 @@ class BookmarkModelAssociator
   // node.  After successful completion, the models should be identical and
   // corresponding. Returns true on success.  On failure of this step, we
   // should abort the sync operation and report an error to the user.
-  virtual SyncError AssociateModels() OVERRIDE;
+  virtual csync::SyncError AssociateModels() OVERRIDE;
 
-  virtual SyncError DisassociateModels() OVERRIDE;
+  virtual csync::SyncError DisassociateModels() OVERRIDE;
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
@@ -118,14 +118,14 @@ class BookmarkModelAssociator
 
   // Matches up the bookmark model and the sync model to build model
   // associations.
-  SyncError BuildAssociations();
+  csync::SyncError BuildAssociations();
 
   // Associate a top-level node of the bookmark model with a permanent node in
   // the sync domain.  Such permanent nodes are identified by a tag that is
   // well known to the server and the client, and is unique within a particular
   // user's share.  For example, "other_bookmarks" is the tag for the Other
   // Bookmarks folder.  The sync nodes are server-created.
-  SyncError AssociateTaggedPermanentNode(
+  csync::SyncError AssociateTaggedPermanentNode(
       const BookmarkNode* permanent_node,
       const std::string& tag) WARN_UNUSED_RESULT;
 

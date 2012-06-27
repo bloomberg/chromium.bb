@@ -25,7 +25,10 @@
 
 class PerfTimer;
 class Profile;
+
+namespace csync {
 class SyncErrorFactory;
+}
 
 // This class keeps track of notifications for installed apps.
 class AppNotificationManager
@@ -33,7 +36,7 @@ class AppNotificationManager
           AppNotificationManager,
           content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver,
-      public SyncableService {
+      public csync::SyncableService {
  public:
   static const unsigned int kMaxNotificationPerApp;
   explicit AppNotificationManager(Profile* profile);
@@ -61,21 +64,22 @@ class AppNotificationManager
 
   bool loaded() const { return notifications_.get() != NULL; }
 
-  // SyncableService implementation.
+  // csync::SyncableService implementation.
 
-  // Returns all syncable notifications from this model as SyncData.
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
+  // Returns all syncable notifications from this model as csync::SyncData.
+  virtual csync::SyncDataList GetAllSyncData(
+      syncable::ModelType type) const OVERRIDE;
   // Process notifications related changes from Sync, merging them into
   // our model.
-  virtual SyncError ProcessSyncChanges(
+  virtual csync::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+      const csync::SyncChangeList& change_list) OVERRIDE;
   // Associate and merge sync data model with our data model.
-  virtual SyncError MergeDataAndStartSyncing(
+  virtual csync::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor,
-      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const csync::SyncDataList& initial_sync_data,
+      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
+      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
  private:
@@ -146,11 +150,11 @@ class AppNotificationManager
   // Sends changes to syncer to remove all notifications in the given list.
   void SyncClearAllChange(const AppNotificationList& list);
 
-  // Converters from AppNotification to SyncData and vice versa.
-  static SyncData CreateSyncDataFromNotification(
+  // Converters from AppNotification to csync::SyncData and vice versa.
+  static csync::SyncData CreateSyncDataFromNotification(
       const AppNotification& notification);
   static AppNotification* CreateNotificationFromSyncData(
-      const SyncData& sync_data);
+      const csync::SyncData& sync_data);
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
@@ -160,10 +164,10 @@ class AppNotificationManager
   scoped_ptr<AppNotificationStorage> storage_;
 
   // Sync change processor we use to push all our changes.
-  scoped_ptr<SyncChangeProcessor> sync_processor_;
+  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
 
   // Sync error handler that we use to create errors from.
-  scoped_ptr<SyncErrorFactory> sync_error_factory_;
+  scoped_ptr<csync::SyncErrorFactory> sync_error_factory_;
 
   // Whether the sync model is associated with the local model.
   // In other words, whether we are ready to apply sync changes.

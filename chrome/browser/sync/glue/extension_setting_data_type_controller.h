@@ -14,7 +14,10 @@
 class Profile;
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;
+
+namespace csync {
 class SyncableService;
+}
 
 namespace extensions {
 class SettingsFrontend;

@@ -209,7 +209,7 @@ browser_sync::GenericChangeProcessor*
     ProfileSyncComponentsFactoryImpl::CreateGenericChangeProcessor(
         ProfileSyncService* profile_sync_service,
         browser_sync::DataTypeErrorHandler* error_handler,
-        const base::WeakPtr<SyncableService>& local_service) {
+        const base::WeakPtr<csync::SyncableService>& local_service) {
   csync::UserShare* user_share = profile_sync_service->GetUserShare();
   return new GenericChangeProcessor(error_handler,
                                     local_service,
@@ -221,10 +221,10 @@ browser_sync::SharedChangeProcessor* ProfileSyncComponentsFactoryImpl::
   return new SharedChangeProcessor();
 }
 
-base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
+base::WeakPtr<csync::SyncableService> ProfileSyncComponentsFactoryImpl::
     GetSyncableServiceForType(syncable::ModelType type) {
   if (!profile_) {  // For tests.
-     return base::WeakPtr<SyncableService>();
+     return base::WeakPtr<csync::SyncableService>();
   }
   switch (type) {
     case syncable::PREFERENCES:
@@ -232,7 +232,7 @@ base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncable::AUTOFILL:
     case syncable::AUTOFILL_PROFILE: {
       if (!web_data_service_.get())
-        return base::WeakPtr<SyncableService>();
+        return base::WeakPtr<csync::SyncableService>();
       if (type == syncable::AUTOFILL) {
         return web_data_service_->GetAutocompleteSyncableService()->AsWeakPtr();
       } else {
@@ -254,14 +254,14 @@ base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
           app_notification_manager()->AsWeakPtr();
     default:
       // The following datatypes still need to be transitioned to the
-      // SyncableService API:
+      // csync::SyncableService API:
       // Bookmarks
       // Passwords
       // Sessions
       // Themes
       // Typed URLs
       NOTREACHED();
-      return base::WeakPtr<SyncableService>();
+      return base::WeakPtr<csync::SyncableService>();
   }
 }
 

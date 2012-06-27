@@ -263,7 +263,7 @@ SettingsFrontend::~SettingsFrontend() {
   observers_->RemoveObserver(profile_observer_.get());
 }
 
-SyncableService* SettingsFrontend::GetBackendForSync(
+csync::SyncableService* SettingsFrontend::GetBackendForSync(
     syncable::ModelType type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::map<settings_namespace::Namespace, BackendWrappers>::const_iterator

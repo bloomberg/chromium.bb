@@ -185,7 +185,7 @@ bool SessionModelAssociator::InitSyncNodeFromChromeId(
 }
 
 bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
-                                              SyncError* error) {
+                                              csync::SyncError* error) {
   DCHECK(CalledOnValidThread());
   std::string local_tag = GetCurrentMachineTag();
   sync_pb::SessionSpecifics specifics;
@@ -300,7 +300,7 @@ bool SessionModelAssociator::ShouldSyncWindow(
 
 bool SessionModelAssociator::AssociateTabs(
     const std::vector<SyncedTabDelegate*>& tabs,
-    SyncError* error) {
+    csync::SyncError* error) {
   DCHECK(CalledOnValidThread());
   for (std::vector<SyncedTabDelegate*>::const_iterator i = tabs.begin();
        i != tabs.end();
@@ -313,7 +313,7 @@ bool SessionModelAssociator::AssociateTabs(
 }
 
 bool SessionModelAssociator::AssociateTab(const SyncedTabDelegate& tab,
-                                          SyncError* error) {
+                                          csync::SyncError* error) {
   DCHECK(CalledOnValidThread());
   int64 sync_id;
   SessionID::id_type tab_id = tab.GetSessionId();
@@ -364,8 +364,9 @@ bool SessionModelAssociator::AssociateTab(const SyncedTabDelegate& tab,
   return WriteTabContentsToSyncModel(tab_link, error);
 }
 
-bool SessionModelAssociator::WriteTabContentsToSyncModel(TabLink* tab_link,
-                                                         SyncError* error) {
+bool SessionModelAssociator::WriteTabContentsToSyncModel(
+    TabLink* tab_link,
+    csync::SyncError* error) {
   DCHECK(CalledOnValidThread());
   const SyncedTabDelegate& tab = *(tab_link->tab());
   const SyncedWindowDelegate& window =
@@ -728,9 +729,9 @@ void SessionModelAssociator::Disassociate(int64 sync_id) {
   NOTIMPLEMENTED();
 }
 
-SyncError SessionModelAssociator::AssociateModels() {
+csync::SyncError SessionModelAssociator::AssociateModels() {
   DCHECK(CalledOnValidThread());
-  SyncError error;
+  csync::SyncError error;
 
   // Ensure that we disassociated properly, otherwise memory might leak.
   DCHECK(synced_session_tracker_.Empty());
@@ -806,7 +807,7 @@ SyncError SessionModelAssociator::AssociateModels() {
   return error;
 }
 
-SyncError SessionModelAssociator::DisassociateModels() {
+csync::SyncError SessionModelAssociator::DisassociateModels() {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Disassociating local session " << GetCurrentMachineTag();
   synced_session_tracker_.Clear();
@@ -825,7 +826,7 @@ SyncError SessionModelAssociator::DisassociateModels() {
       chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
       content::Source<Profile>(sync_service_->profile()),
       content::NotificationService::NoDetails());
-  return SyncError();
+  return csync::SyncError();
 }
 
 void SessionModelAssociator::InitializeCurrentMachineTag(
@@ -900,7 +901,7 @@ void SessionModelAssociator::InitializeCurrentSessionName() {
 bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
     const csync::ReadNode& root,
     csync::WriteTransaction* trans,
-    SyncError* error) {
+    csync::SyncError* error) {
   DCHECK(CalledOnValidThread());
   DCHECK(tab_pool_.empty());
   DCHECK_EQ(local_session_syncid_, csync::kInvalidId);
@@ -1325,7 +1326,8 @@ void SessionModelAssociator::LoadForeignTabFavicon(
   synced_favicon_pages_[navigation_url.spec()] = favicon_source.spec();
 }
 
-bool SessionModelAssociator::UpdateSyncModelDataFromClient(SyncError* error) {
+bool SessionModelAssociator::UpdateSyncModelDataFromClient(
+    csync::SyncError* error) {
   DCHECK(CalledOnValidThread());
 
   // Associate all open windows and their tabs.

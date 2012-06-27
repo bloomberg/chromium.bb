@@ -206,7 +206,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
         WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*change_processor_, GetSyncData(_)).
-        WillOnce(Return(SyncError()));
+        WillOnce(Return(csync::SyncError()));
     EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   }
 
@@ -250,11 +250,11 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   // Must be destroyed after new_non_frontend_dtc_.
-  FakeSyncableService syncable_service_;
+  csync::FakeSyncableService syncable_service_;
   scoped_refptr<NewNonFrontendDataTypeControllerFake> new_non_frontend_dtc_;
   scoped_refptr<NewNonFrontendDataTypeControllerMock> dtc_mock_;
   scoped_refptr<SharedChangeProcessorMock> change_processor_;
-  scoped_ptr<SyncChangeProcessor> saved_change_processor_;
+  scoped_ptr<csync::SyncChangeProcessor> saved_change_processor_;
 };
 
 TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartOk) {
@@ -276,7 +276,7 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartFirstRun) {
   EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
-      WillOnce(Return(SyncError()));
+      WillOnce(Return(csync::SyncError()));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
@@ -316,13 +316,13 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
-      WillOnce(Return(SyncError()));
+      WillOnce(Return(csync::SyncError()));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
   syncable_service_.set_merge_data_and_start_syncing_error(
-      SyncError(FROM_HERE, "Sync Error", new_non_frontend_dtc_->type()));
+      csync::SyncError(FROM_HERE, "Sync Error", new_non_frontend_dtc_->type()));
   Start();
   WaitForDTC();
   EXPECT_EQ(DataTypeController::DISABLED, new_non_frontend_dtc_->state());
@@ -381,7 +381,9 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
           SetArgumentPointee<0>(true),
           Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
-      WillOnce(Return(SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
+      WillOnce(
+          Return(
+              csync::SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
   EXPECT_CALL(*change_processor_, Disconnect()).
       WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));
@@ -418,7 +420,7 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, FLAKY_StartAfterSyncShutdown) {
   Mock::VerifyAndClearExpectations(dtc_mock_);
 
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
-      WillOnce(Return(base::WeakPtr<SyncableService>()));
+      WillOnce(Return(base::WeakPtr<csync::SyncableService>()));
   new_non_frontend_dtc_->UnblockBackendTasks();
   EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
   WaitForDTC();

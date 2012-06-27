@@ -11,7 +11,8 @@
 namespace browser_sync {
 
 FakeGenericChangeProcessor::FakeGenericChangeProcessor()
-    : GenericChangeProcessor(NULL, base::WeakPtr<SyncableService>(), NULL),
+    : GenericChangeProcessor(
+        NULL, base::WeakPtr<csync::SyncableService>(), NULL),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true),
       crypto_ready_if_necessary_(true),
@@ -20,11 +21,11 @@ FakeGenericChangeProcessor::FakeGenericChangeProcessor()
 FakeGenericChangeProcessor::~FakeGenericChangeProcessor() {}
 
 void FakeGenericChangeProcessor::set_process_sync_changes_error(
-    const SyncError& error) {
+    const csync::SyncError& error) {
   process_sync_changes_error_ = error;
 }
 void FakeGenericChangeProcessor::set_get_sync_data_for_type_error(
-    const SyncError& error) {
+    const csync::SyncError& error) {
   get_sync_data_for_type_error_ = error;
 }
 void FakeGenericChangeProcessor::set_sync_model_has_user_created_nodes(
@@ -40,14 +41,14 @@ void FakeGenericChangeProcessor::set_crypto_ready_if_necessary(
   crypto_ready_if_necessary_ = crypto_ready;
 }
 
-SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
+csync::SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const csync::SyncChangeList& change_list) {
   return process_sync_changes_error_;
 }
 
-SyncError FakeGenericChangeProcessor::GetSyncDataForType(
-    syncable::ModelType type, SyncDataList* current_sync_data) {
+csync::SyncError FakeGenericChangeProcessor::GetSyncDataForType(
+    syncable::ModelType type, csync::SyncDataList* current_sync_data) {
   type_ = type;
   return get_sync_data_for_type_error_;
 }

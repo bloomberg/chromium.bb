@@ -53,7 +53,7 @@ bool PasswordDataTypeController::StartModels() {
   password_store_ = PasswordStoreFactory::GetForProfile(
       profile(), Profile::EXPLICIT_ACCESS);
   if (!password_store_.get()) {
-    SyncError error(
+    csync::SyncError error(
         FROM_HERE,
         "PasswordStore not initialized, password datatype controller aborting.",
         type());

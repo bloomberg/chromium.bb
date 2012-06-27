@@ -18,7 +18,9 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
+namespace csync {
 class SyncError;
+}
 
 namespace browser_sync {
 
@@ -61,10 +63,11 @@ class DataTypeController
     MAX_START_RESULT
   };
 
-  typedef base::Callback<void(StartResult, const SyncError&)> StartCallback;
+  typedef base::Callback<void(StartResult,
+                              const csync::SyncError&)> StartCallback;
 
   typedef base::Callback<void(syncable::ModelType,
-                              SyncError)> ModelLoadCallback;
+                              csync::SyncError)> ModelLoadCallback;
 
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;
@@ -107,7 +110,7 @@ class DataTypeController
 
   // Partial implementation of DataTypeErrorHandler.
   // This is thread safe.
-  virtual SyncError CreateAndUploadError(
+  virtual csync::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message,
       syncable::ModelType type) OVERRIDE;

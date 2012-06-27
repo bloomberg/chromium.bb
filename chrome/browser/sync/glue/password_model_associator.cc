@@ -47,8 +47,8 @@ PasswordModelAssociator::PasswordModelAssociator(
 
 PasswordModelAssociator::~PasswordModelAssociator() {}
 
-SyncError PasswordModelAssociator::AssociateModels() {
-  SyncError error;
+csync::SyncError PasswordModelAssociator::AssociateModels() {
+  csync::SyncError error;
   DCHECK(expected_loop_ == MessageLoop::current());
   {
     base::AutoLock lock(abort_association_pending_lock_);
@@ -87,7 +87,7 @@ SyncError PasswordModelAssociator::AssociateModels() {
              passwords.begin();
          ix != passwords.end(); ++ix) {
       if (IsAbortPending()) {
-        return SyncError();
+        return csync::SyncError();
       }
       std::string tag = MakeTag(**ix);
 
@@ -197,10 +197,10 @@ bool PasswordModelAssociator::DeleteAllNodes(
   return true;
 }
 
-SyncError PasswordModelAssociator::DisassociateModels() {
+csync::SyncError PasswordModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
-  return SyncError();
+  return csync::SyncError();
 }
 
 bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
@@ -292,7 +292,7 @@ bool PasswordModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-SyncError PasswordModelAssociator::WriteToPasswordStore(
+csync::SyncError PasswordModelAssociator::WriteToPasswordStore(
     const PasswordVector* new_passwords,
     const PasswordVector* updated_passwords,
     const PasswordVector* deleted_passwords) {
@@ -322,7 +322,7 @@ SyncError PasswordModelAssociator::WriteToPasswordStore(
     // we use internal password store interfaces to make changes synchronously.
     password_store_->PostNotifyLoginsChanged();
   }
-  return SyncError();
+  return csync::SyncError();
 }
 
 // static
