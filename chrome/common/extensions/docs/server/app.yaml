@@ -1,8 +1,8 @@
-application: chromeextensionsdocs
-version: 1-2-2
+application: chrome-apps-doc
+version: 1-2-4
 runtime: python
 api_version: 1
 
 handlers:
 - url: /.*
-  script: chromeextensionsdocs.py
+  script: main.py

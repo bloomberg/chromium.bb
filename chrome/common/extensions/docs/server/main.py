@@ -138,6 +138,23 @@ class MainPage(webapp.RequestHandler):
     if len(self.path) > 0 and self.path[-1] == '':
       self.path.pop()
 
+    # Temporary hacks for apps.
+    # TODO(aa): Remove once the apps content percolates through Chrome's release
+    # process more.
+    if self.path == ['apps'] or self.path == ['trunk', 'apps']:
+      self.redirect('/trunk/apps/about_apps.html')
+      return False
+
+    # TODO(aa): Remove once we have a homepage for developer.chrome.com.
+    if (self.path == [] and
+        self.request.url.startswith('http://developer.chrome.com')):
+      self.redirect('http://developers.google.com/chrome')
+      return False
+
+    # TODO(aa): Remove this soon.
+    if len(self.path) > 1 and self.path[1] == 'apps':
+      return False
+
     return self.redirectToIndexIfNecessary()
 
 

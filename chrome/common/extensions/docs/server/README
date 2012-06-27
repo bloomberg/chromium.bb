@@ -1,5 +1,6 @@
 This directory contains the App Engine server code that hosts the Chrome
-Extensions documentation at http://code.google.com/chrome/extensions
+Extensions and Apps documentation at http://code.google.com/chrome/extensions
+and http://developer.chrome.com/
 
 --------------------------------------------------------------------------------
 Running the server locally
@@ -19,8 +20,9 @@ Running the server locally
 --------------------------------------------------------------------------------
 Deploying the server to code.google.com:
 
-You will need to have access to the appropriate appspot.com app. Contact
-aa@chromium.org or kurrik@chromium.org to obtain access.
+You will need to have access to the http://chrome-apps-doc.appspot.com app.
+Contact aa@chromium.org, erikkay@chromium.org, mihaip@chromium.org, or
+miket@chromium.org to obtain access.
 
 Once you have access:
 
