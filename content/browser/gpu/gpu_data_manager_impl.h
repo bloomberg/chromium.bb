@@ -46,13 +46,17 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   void AddLogMessage(Value* msg);
 
-  // Inserting disable-feature switches into renderer process command-line
-  // in correspondence to preliminary gpu feature flags.
+  // Insert disable-feature switches corresponding to preliminary gpu feature
+  // flags into the renderer process command line.
   void AppendRendererCommandLine(CommandLine* command_line);
 
-  // Inserting switches into gpu process command-line: kUseGL,
+  // Insert switches into gpu process command line: kUseGL,
   // kDisableGLMultisampling.
   void AppendGpuCommandLine(CommandLine* command_line);
+
+  // Insert switches into plugin process command line:
+  // kDisableCoreAnimationPlugins.
+  void AppendPluginCommandLine(CommandLine* command_line);
 
   // This gets called when switching GPU might have happened.
   void HandleGpuSwitch();
