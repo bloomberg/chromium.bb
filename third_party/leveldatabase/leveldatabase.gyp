@@ -105,6 +105,7 @@
         'src/include/leveldb/comparator.h',
         'src/include/leveldb/db.h',
         'src/include/leveldb/env.h',
+        'src/include/leveldb/filter_policy.h',
         'src/include/leveldb/iterator.h',
         'src/include/leveldb/options.h',
         'src/include/leveldb/slice.h',
@@ -120,6 +121,8 @@
         'src/table/block.h',
         'src/table/block_builder.cc',
         'src/table/block_builder.h',
+        'src/table/filter_block.cc',
+        'src/table/filter_block.h',
         'src/table/format.cc',
         'src/table/format.h',
         'src/table/iterator.cc',
@@ -132,6 +135,7 @@
         'src/table/two_level_iterator.h',
         'src/util/arena.cc',
         'src/util/arena.h',
+        'src/util/bloom.cc',
         'src/util/cache.cc',
         'src/util/coding.cc',
         'src/util/coding.h',
@@ -139,6 +143,7 @@
         'src/util/crc32c.cc',
         'src/util/crc32c.h',
         'src/util/env.cc',
+        'src/util/filter_policy.cc',
         'src/util/hash.cc',
         'src/util/hash.h',
         'src/util/logging.cc',
@@ -181,6 +186,16 @@
       ],
       'sources': [
         'src/util/arena_test.cc',
+      ],
+    },
+    {
+      'target_name': 'leveldb_bloom_test',
+      'type': 'executable',
+      'dependencies': [
+        'leveldb_testutil',
+      ],
+      'sources': [
+        'src/util/bloom_test.cc',
       ],
     },
     {
@@ -271,6 +286,16 @@
       ],
       'sources': [
         'src/db/filename_test.cc',
+      ],
+    },
+    {
+      'target_name': 'leveldb_filter_block_test',
+      'type': 'executable',
+      'dependencies': [
+        'leveldb_testutil',
+      ],
+      'sources': [
+        'src/table/filter_block_test.cc',
       ],
     },
     {
