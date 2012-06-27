@@ -80,8 +80,7 @@ namespace browser {
 void ShowExtensionInstalledBubble(
     const Extension* extension,
     Browser* browser,
-    const SkBitmap& icon,
-    Profile* profile) {
+    const SkBitmap& icon) {
   ExtensionInstalledBubble::Show(extension, browser, icon);
 }
 

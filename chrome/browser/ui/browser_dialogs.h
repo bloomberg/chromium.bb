@@ -10,7 +10,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class Profile;
 class SkBitmap;
 class TabContents;
 class TabModalConfirmDialogDelegate;
@@ -40,10 +39,8 @@ void ShowAboutIPCDialog();
 
 #endif  // IPC_MESSAGE_LOG_ENABLED
 
-// Creates and shows an HTML dialog with the given delegate and profile.
-// The window is automatically destroyed when it is closed. |browser| can be
-// NULL if the profile used is not incognito, otherwise the window will be
-// closed if the browser is closed.
+// Creates and shows an HTML dialog with the given delegate and context.
+// The window is automatically destroyed when it is closed.
 // Returns the created window.
 //
 // Make sure to use the returned window only when you know it is safe
@@ -61,8 +58,7 @@ void ShowCollectedCookiesDialog(TabContents* tab_contents);
 // icon of the extension.
 void ShowExtensionInstalledBubble(const extensions::Extension* extension,
                                   Browser* browser,
-                                  const SkBitmap& icon,
-                                  Profile* profile);
+                                  const SkBitmap& icon);
 
 // Shows or hide the hung renderer dialog for the given WebContents.
 // We need to pass the WebContents to the dialog, because multiple tabs can hang

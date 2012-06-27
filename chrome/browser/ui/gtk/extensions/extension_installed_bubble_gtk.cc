@@ -57,8 +57,7 @@ namespace browser {
 void ShowExtensionInstalledBubble(
     const Extension* extension,
     Browser* browser,
-    const SkBitmap& icon,
-    Profile* profile) {
+    const SkBitmap& icon) {
   ExtensionInstalledBubbleGtk::Show(extension, browser, icon);
 }
 

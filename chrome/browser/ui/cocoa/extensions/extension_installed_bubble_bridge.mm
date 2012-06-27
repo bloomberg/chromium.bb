@@ -12,7 +12,6 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -29,12 +28,8 @@ using extensions::BundleInstaller;
 // page action icons, show an infobar instead of a popup bubble.
 static void ShowGenericExtensionInstalledInfoBar(
     const extensions::Extension* new_extension,
-    const SkBitmap& icon,
-    Profile* profile) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  if (!browser)
-    return;
-
+    Browser* browser,
+    const SkBitmap& icon) {
   TabContents* tab_contents = browser->GetActiveTabContents();
   if (!tab_contents)
     return;
@@ -57,8 +52,7 @@ namespace browser {
 void ShowExtensionInstalledBubble(
     const extensions::Extension* extension,
     Browser* browser,
-    const SkBitmap& icon,
-    Profile* profile) {
+    const SkBitmap& icon) {
   if ((extension->browser_action()) || !extension->omnibox_keyword().empty() ||
       (extension->page_action() &&
       !extension->page_action()->default_icon_path().empty())) {
@@ -74,7 +68,7 @@ void ShowExtensionInstalledBubble(
     // If the extension is of type GENERIC, meaning it doesn't have a UI
     // surface to display for this window, launch infobar instead of popup
     // bubble, because we have no guaranteed wrench menu button to point to.
-    ShowGenericExtensionInstalledInfoBar(extension, icon, profile);
+    ShowGenericExtensionInstalledInfoBar(extension, browser, icon);
   }
 }
 

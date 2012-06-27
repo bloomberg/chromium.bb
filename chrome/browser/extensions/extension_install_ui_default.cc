@@ -138,8 +138,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
     return;
   }
 
-  browser::ShowExtensionInstalledBubble(extension, browser, *icon,
-                                        current_profile);
+  browser::ShowExtensionInstalledBubble(extension, browser, *icon);
 }
 
 void ExtensionInstallUIDefault::OnInstallFailure(
