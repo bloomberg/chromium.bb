@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_permission_set.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -38,13 +37,13 @@ PermissionsUpdater::PermissionsUpdater(Profile* profile)
 PermissionsUpdater::~PermissionsUpdater() {}
 
 void PermissionsUpdater::AddPermissions(
-    const Extension* extension, const ExtensionPermissionSet* permissions) {
-  scoped_refptr<const ExtensionPermissionSet> existing(
+    const Extension* extension, const PermissionSet* permissions) {
+  scoped_refptr<const PermissionSet> existing(
       extension->GetActivePermissions());
-  scoped_refptr<ExtensionPermissionSet> total(
-      ExtensionPermissionSet::CreateUnion(existing, permissions));
-  scoped_refptr<ExtensionPermissionSet> added(
-      ExtensionPermissionSet::CreateDifference(total.get(), existing));
+  scoped_refptr<PermissionSet> total(
+      PermissionSet::CreateUnion(existing, permissions));
+  scoped_refptr<PermissionSet> added(
+      PermissionSet::CreateDifference(total.get(), existing));
 
   UpdateActivePermissions(extension, total.get());
 
@@ -55,13 +54,13 @@ void PermissionsUpdater::AddPermissions(
 }
 
 void PermissionsUpdater::RemovePermissions(
-    const Extension* extension, const ExtensionPermissionSet* permissions) {
-  scoped_refptr<const ExtensionPermissionSet> existing(
+    const Extension* extension, const PermissionSet* permissions) {
+  scoped_refptr<const PermissionSet> existing(
       extension->GetActivePermissions());
-  scoped_refptr<ExtensionPermissionSet> total(
-      ExtensionPermissionSet::CreateDifference(existing, permissions));
-  scoped_refptr<ExtensionPermissionSet> removed(
-      ExtensionPermissionSet::CreateDifference(existing, total.get()));
+  scoped_refptr<PermissionSet> total(
+      PermissionSet::CreateDifference(existing, permissions));
+  scoped_refptr<PermissionSet> removed(
+      PermissionSet::CreateDifference(existing, total.get()));
 
   // We update the active permissions, and not the granted permissions, because
   // the extension, not the user, removed the permissions. This allows the
@@ -85,7 +84,7 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
 }
 
 void PermissionsUpdater::UpdateActivePermissions(
-    const Extension* extension, const ExtensionPermissionSet* permissions) {
+    const Extension* extension, const PermissionSet* permissions) {
   GetExtensionPrefs()->SetActivePermissions(extension->id(), permissions);
   extension->SetActivePermissions(permissions);
 }
@@ -93,7 +92,7 @@ void PermissionsUpdater::UpdateActivePermissions(
 void PermissionsUpdater::DispatchEvent(
     const std::string& extension_id,
     const char* event_name,
-    const ExtensionPermissionSet* changed_permissions) {
+    const PermissionSet* changed_permissions) {
   if (!profile_ || !profile_->GetExtensionEventRouter())
     return;
 
@@ -110,7 +109,7 @@ void PermissionsUpdater::DispatchEvent(
 void PermissionsUpdater::NotifyPermissionsUpdated(
     EventType event_type,
     const Extension* extension,
-    const ExtensionPermissionSet* changed) {
+    const PermissionSet* changed) {
   if (!changed || changed->IsEmpty())
     return;
 

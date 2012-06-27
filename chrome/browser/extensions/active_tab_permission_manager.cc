@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -38,7 +38,7 @@ ActiveTabPermissionManager::ActiveTabPermissionManager(
 ActiveTabPermissionManager::~ActiveTabPermissionManager() {}
 
 void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
-  if (!extension->HasAPIPermission(ExtensionAPIPermission::kActiveTab))
+  if (!extension->HasAPIPermission(extensions::APIPermission::kActiveTab))
     return;
 
   if (active_urls_.is_empty())

@@ -134,6 +134,9 @@ using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::UnloadedExtensionInfo;
+using extensions::PermissionMessage;
+using extensions::PermissionMessages;
+using extensions::PermissionSet;
 
 namespace errors = extension_manifest_errors;
 
@@ -903,15 +906,15 @@ void ExtensionService::RecordPermissionMessagesHistogram(
   base::Histogram* counter = base::LinearHistogram::FactoryGet(
       histogram,
       1,
-      ExtensionPermissionMessage::kEnumBoundary,
-      ExtensionPermissionMessage::kEnumBoundary + 1,
+      PermissionMessage::kEnumBoundary,
+      PermissionMessage::kEnumBoundary + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
 
-  ExtensionPermissionMessages permissions = e->GetPermissionMessages();
+  PermissionMessages permissions = e->GetPermissionMessages();
   if (permissions.empty()) {
-    counter->Add(ExtensionPermissionMessage::kNone);
+    counter->Add(PermissionMessage::kNone);
   } else {
-    for (ExtensionPermissionMessages::iterator it = permissions.begin();
+    for (PermissionMessages::iterator it = permissions.begin();
          it != permissions.end(); ++it)
       counter->Add(it->id());
   }
@@ -1957,7 +1960,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   // If the extension has used the optional permissions API, it will have a
   // custom set of active permissions defined in the extension prefs. Here,
   // we update the extension's active permissions based on the prefs.
-  scoped_refptr<ExtensionPermissionSet> active_permissions =
+  scoped_refptr<PermissionSet> active_permissions =
       extension_prefs()->GetActivePermissions(extension->id());
 
   if (active_permissions.get()) {
@@ -1965,18 +1968,18 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     // extension's manifest.
     //  a) active permissions must be a subset of optional + default permissions
     //  b) active permissions must contains all default permissions
-    scoped_refptr<ExtensionPermissionSet> total_permissions =
-        ExtensionPermissionSet::CreateUnion(
+    scoped_refptr<PermissionSet> total_permissions =
+        PermissionSet::CreateUnion(
             extension->required_permission_set(),
             extension->optional_permission_set());
 
     // Make sure the active permissions contain no more than optional + default.
-    scoped_refptr<ExtensionPermissionSet> adjusted_active =
-        ExtensionPermissionSet::CreateIntersection(
+    scoped_refptr<PermissionSet> adjusted_active =
+        PermissionSet::CreateIntersection(
             total_permissions.get(), active_permissions.get());
 
     // Make sure the active permissions contain the default permissions.
-    adjusted_active = ExtensionPermissionSet::CreateUnion(
+    adjusted_active = PermissionSet::CreateUnion(
             extension->required_permission_set(), adjusted_active.get());
 
     extensions::PermissionsUpdater perms_updater(profile());
@@ -2017,7 +2020,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   if (!extension->CanSilentlyIncreasePermissions()) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
-    scoped_refptr<ExtensionPermissionSet> granted_permissions =
+    scoped_refptr<PermissionSet> granted_permissions =
         extension_prefs_->GetGrantedPermissions(extension->id());
     CHECK(granted_permissions.get());
 

@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
@@ -92,6 +92,7 @@ using extensions::MiscellaneousBindings;
 using extensions::MediaGalleryCustomBindings;
 using extensions::PageActionsCustomBindings;
 using extensions::PageCaptureCustomBindings;
+using extensions::PermissionSet;
 using extensions::SendRequestNatives;
 using extensions::SetIconNatives;
 using extensions::TTSCustomBindings;
@@ -790,7 +791,7 @@ void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
-  if (extension->HasAPIPermission(ExtensionAPIPermission::kManagement)) {
+  if (extension->HasAPIPermission(extensions::APIPermission::kManagement)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
         WebString::fromUTF8(chrome::kChromeUIScheme),
@@ -833,27 +834,27 @@ void ExtensionDispatcher::AddOrRemoveOriginPermissions(
 void ExtensionDispatcher::OnUpdatePermissions(
     int reason_id,
     const std::string& extension_id,
-    const ExtensionAPIPermissionSet& apis,
+    const extensions::APIPermissionSet& apis,
     const URLPatternSet& explicit_hosts,
     const URLPatternSet& scriptable_hosts) {
   const Extension* extension = extensions_.GetByID(extension_id);
   if (!extension)
     return;
 
-  scoped_refptr<const ExtensionPermissionSet> delta =
-      new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
-  scoped_refptr<const ExtensionPermissionSet> old_active =
+  scoped_refptr<const PermissionSet> delta =
+      new PermissionSet(apis, explicit_hosts, scriptable_hosts);
+  scoped_refptr<const PermissionSet> old_active =
       extension->GetActivePermissions();
   UpdatedExtensionPermissionsInfo::Reason reason =
       static_cast<UpdatedExtensionPermissionsInfo::Reason>(reason_id);
 
-  const ExtensionPermissionSet* new_active = NULL;
+  const PermissionSet* new_active = NULL;
   switch (reason) {
     case UpdatedExtensionPermissionsInfo::ADDED:
-      new_active = ExtensionPermissionSet::CreateUnion(old_active, delta);
+      new_active = PermissionSet::CreateUnion(old_active, delta);
       break;
     case UpdatedExtensionPermissionsInfo::REMOVED:
-      new_active = ExtensionPermissionSet::CreateDifference(old_active, delta);
+      new_active = PermissionSet::CreateDifference(old_active, delta);
       break;
   }
 

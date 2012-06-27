@@ -16,7 +16,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/string_ordinal.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -25,8 +25,12 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using extensions::APIPermission;
+using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::ExtensionList;
+using extensions::OAuth2Scopes;
+using extensions::PermissionSet;
 
 namespace {
 
@@ -168,10 +172,10 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   virtual void Initialize() {
     extension_id_ = prefs_.AddExtensionAndReturnId("test");
 
-    api_perm_set1_.insert(ExtensionAPIPermission::kTab);
-    api_perm_set1_.insert(ExtensionAPIPermission::kBookmark);
+    api_perm_set1_.insert(APIPermission::kTab);
+    api_perm_set1_.insert(APIPermission::kBookmark);
 
-    api_perm_set2_.insert(ExtensionAPIPermission::kHistory);
+    api_perm_set2_.insert(APIPermission::kHistory);
 
     scopes_set1_.insert("scope1");
 
@@ -192,7 +196,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     AddPattern(&shost_perm_set2_, "http://somesite.com/*");
     AddPattern(&shost_perm_set2_, "http://example.com/*");
 
-    ExtensionAPIPermissionSet expected_apis = api_perm_set1_;
+    APIPermissionSet expected_apis = api_perm_set1_;
 
     AddPattern(&ehost_permissions_, "http://*.google.com/*");
     AddPattern(&ehost_permissions_, "http://example.com/*");
@@ -207,18 +211,18 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     scope_permissions_.insert("scope2");
     scope_permissions_.insert("scope3");
 
-    ExtensionAPIPermissionSet empty_set;
+    APIPermissionSet empty_set;
     URLPatternSet empty_extent;
-    ExtensionOAuth2Scopes empty_scopes;
-    scoped_refptr<ExtensionPermissionSet> permissions;
-    scoped_refptr<ExtensionPermissionSet> granted_permissions;
+    OAuth2Scopes empty_scopes;
+    scoped_refptr<PermissionSet> permissions;
+    scoped_refptr<PermissionSet> granted_permissions;
 
     // Make sure both granted api and host permissions start empty.
     granted_permissions =
         prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(granted_permissions->IsEmpty());
 
-    permissions = new ExtensionPermissionSet(
+    permissions = new PermissionSet(
         api_perm_set1_, empty_extent, empty_extent);
 
     // Add part of the api permissions.
@@ -233,7 +237,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     granted_permissions = NULL;
 
     // Add part of the explicit host permissions.
-    permissions = new ExtensionPermissionSet(
+    permissions = new PermissionSet(
         empty_set, ehost_perm_set1_, empty_extent);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
     granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
@@ -247,7 +251,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_EQ(empty_scopes, granted_permissions->scopes());
 
     // Add part of the scriptable host permissions.
-    permissions = new ExtensionPermissionSet(
+    permissions = new PermissionSet(
         empty_set, empty_extent, shost_perm_set1_);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
     granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
@@ -265,7 +269,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
 
     // Add part of the oauth2 scopes.
-    permissions = new ExtensionPermissionSet(
+    permissions = new PermissionSet(
         empty_set, empty_extent, empty_extent, scopes_set1_);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
     granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
@@ -279,7 +283,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_EQ(scopes_set1_, granted_permissions->scopes());
 
     // Add the rest of the permissions.
-    permissions = new ExtensionPermissionSet(
+    permissions = new PermissionSet(
         api_perm_set2_, ehost_perm_set2_, shost_perm_set2_, scopes_set2_);
 
     std::set_union(expected_apis.begin(), expected_apis.end(),
@@ -303,7 +307,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   }
 
   virtual void Verify() {
-    scoped_refptr<ExtensionPermissionSet> permissions(
+    scoped_refptr<PermissionSet> permissions(
         prefs()->GetGrantedPermissions(extension_id_));
     EXPECT_TRUE(permissions.get());
     EXPECT_FALSE(permissions->HasEffectiveFullAccess());
@@ -318,19 +322,19 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
  private:
   std::string extension_id_;
-  ExtensionAPIPermissionSet api_perm_set1_;
-  ExtensionAPIPermissionSet api_perm_set2_;
+  APIPermissionSet api_perm_set1_;
+  APIPermissionSet api_perm_set2_;
   URLPatternSet ehost_perm_set1_;
   URLPatternSet ehost_perm_set2_;
   URLPatternSet shost_perm_set1_;
   URLPatternSet shost_perm_set2_;
-  ExtensionOAuth2Scopes scopes_set1_;
-  ExtensionOAuth2Scopes scopes_set2_;
+  OAuth2Scopes scopes_set1_;
+  OAuth2Scopes scopes_set2_;
 
-  ExtensionAPIPermissionSet api_permissions_;
+  APIPermissionSet api_permissions_;
   URLPatternSet ehost_permissions_;
   URLPatternSet shost_permissions_;
-  ExtensionOAuth2Scopes scope_permissions_;
+  OAuth2Scopes scope_permissions_;
   URLPatternSet effective_permissions_;
 };
 TEST_F(ExtensionPrefsGrantedPermissions, GrantedPermissions) {}
@@ -341,10 +345,10 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
   virtual void Initialize() {
     extension_id_ = prefs_.AddExtensionAndReturnId("test");
 
-    ExtensionAPIPermissionSet api_perms;
-    api_perms.insert(ExtensionAPIPermission::kTab);
-    api_perms.insert(ExtensionAPIPermission::kBookmark);
-    api_perms.insert(ExtensionAPIPermission::kHistory);
+    APIPermissionSet api_perms;
+    api_perms.insert(APIPermission::kTab);
+    api_perms.insert(APIPermission::kBookmark);
+    api_perms.insert(APIPermission::kHistory);
 
     URLPatternSet ehosts;
     AddPattern(&ehosts, "http://*.google.com/*");
@@ -355,14 +359,14 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
     AddPattern(&shosts, "https://*.google.com/*");
     AddPattern(&shosts, "http://reddit.com/r/test/*");
 
-    ExtensionOAuth2Scopes scopes;
+    OAuth2Scopes scopes;
     scopes.insert("my-new-scope");
 
-    active_perms_ = new ExtensionPermissionSet(
+    active_perms_ = new PermissionSet(
         api_perms, ehosts, shosts, scopes);
 
     // Make sure the active permissions start empty.
-    scoped_refptr<ExtensionPermissionSet> active(
+    scoped_refptr<PermissionSet> active(
         prefs()->GetActivePermissions(extension_id_));
     EXPECT_TRUE(active->IsEmpty());
 
@@ -377,14 +381,14 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
   }
 
   virtual void Verify() {
-    scoped_refptr<ExtensionPermissionSet> permissions(
+    scoped_refptr<PermissionSet> permissions(
         prefs()->GetActivePermissions(extension_id_));
     EXPECT_EQ(*active_perms_, *permissions);
   }
 
  private:
   std::string extension_id_;
-  scoped_refptr<ExtensionPermissionSet> active_perms_;
+  scoped_refptr<PermissionSet> active_perms_;
 };
 TEST_F(ExtensionPrefsActivePermissions, SetAndGetActivePermissions) {}
 

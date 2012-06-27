@@ -8,8 +8,13 @@
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/url_pattern_set.h"
+
+using extensions::APIPermission;
+using extensions::PermissionSet;
+using extensions::PermissionsInfo;
 
 namespace extensions {
 
@@ -26,12 +31,12 @@ const char kUnknownPermissionError[] =
 
 }  // namespace
 
-scoped_ptr<Permissions> PackPermissionSet(const ExtensionPermissionSet* set) {
+scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   Permissions* permissions(new Permissions());
 
   permissions->permissions.reset(new std::vector<std::string>());
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
-  for (ExtensionAPIPermissionSet::const_iterator i = set->apis().begin();
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
+  for (APIPermissionSet::const_iterator i = set->apis().begin();
        i != set->apis().end(); ++i) {
     permissions->permissions->push_back(info->GetByID(*i)->name());
   }
@@ -44,15 +49,15 @@ scoped_ptr<Permissions> PackPermissionSet(const ExtensionPermissionSet* set) {
   return scoped_ptr<Permissions>(permissions);
 }
 
-scoped_refptr<ExtensionPermissionSet> UnpackPermissionSet(
+scoped_refptr<PermissionSet> UnpackPermissionSet(
     const Permissions& permissions, std::string* error) {
-  ExtensionAPIPermissionSet apis;
+  APIPermissionSet apis;
   std::vector<std::string>* permissions_list = permissions.permissions.get();
   if (permissions_list) {
-    ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+    PermissionsInfo* info = PermissionsInfo::GetInstance();
     for (std::vector<std::string>::iterator it = permissions_list->begin();
         it != permissions_list->end(); ++it) {
-      ExtensionAPIPermission* permission = info->GetByName(*it);
+      APIPermission* permission = info->GetByName(*it);
       if (!permission) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             kUnknownPermissionError, *it);
@@ -79,8 +84,8 @@ scoped_refptr<ExtensionPermissionSet> UnpackPermissionSet(
     }
   }
 
-  return scoped_refptr<ExtensionPermissionSet>(
-      new ExtensionPermissionSet(apis, origins, URLPatternSet()));
+  return scoped_refptr<PermissionSet>(
+      new PermissionSet(apis, origins, URLPatternSet()));
 }
 
 }  // namespace permissions_api

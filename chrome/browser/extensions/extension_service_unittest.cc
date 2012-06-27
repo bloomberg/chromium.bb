@@ -96,7 +96,10 @@ using content::BrowserThread;
 using content::DOMStorageContext;
 using content::IndexedDBContext;
 using content::PluginService;
+using extensions::APIPermission;
+using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::PermissionSet;
 
 namespace keys = extension_manifest_keys;
 
@@ -1466,12 +1469,12 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 
   ExtensionPrefs* prefs = service_->extension_prefs();
 
-  ExtensionAPIPermissionSet expected_api_perms;
+  APIPermissionSet expected_api_perms;
   URLPatternSet expected_host_perms;
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
-  scoped_refptr<ExtensionPermissionSet> known_perms(
+  scoped_refptr<PermissionSet> known_perms(
       prefs->GetGrantedPermissions(permissions_crx));
   EXPECT_FALSE(known_perms.get());
 
@@ -1482,7 +1485,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   EXPECT_EQ(permissions_crx, extension->id());
 
   // Verify that the valid API permissions have been recognized.
-  expected_api_perms.insert(ExtensionAPIPermission::kTab);
+  expected_api_perms.insert(APIPermission::kTab);
 
   AddPattern(&expected_host_perms, "http://*.google.com/*");
   AddPattern(&expected_host_perms, "https://*.google.com/*");
@@ -1518,12 +1521,12 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
   EXPECT_EQ(1u, service_->extensions()->size());
   ExtensionPrefs* prefs = service_->extension_prefs();
 
-  scoped_refptr<ExtensionPermissionSet> permissions(
+  scoped_refptr<PermissionSet> permissions(
       prefs->GetGrantedPermissions(extension->id()));
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
   EXPECT_FALSE(permissions->apis().empty());
-  EXPECT_TRUE(permissions->HasAPIPermission(ExtensionAPIPermission::kPlugin));
+  EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kPlugin));
 
   // Full access implies full host access too...
   EXPECT_TRUE(permissions->HasEffectiveAccessToAllHosts());
@@ -1550,10 +1553,10 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 
   ExtensionPrefs* prefs = service_->extension_prefs();
 
-  ExtensionAPIPermissionSet expected_api_permissions;
+  APIPermissionSet expected_api_permissions;
   URLPatternSet expected_host_permissions;
 
-  expected_api_permissions.insert(ExtensionAPIPermission::kTab);
+  expected_api_permissions.insert(APIPermission::kTab);
   AddPattern(&expected_host_permissions, "http://*.google.com/*");
   AddPattern(&expected_host_permissions, "https://*.google.com/*");
   AddPattern(&expected_host_permissions, "http://*.google.com.hk/*");
@@ -1582,7 +1585,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_TRUE(service_->IsExtensionEnabled(extension_id));
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  scoped_refptr<ExtensionPermissionSet> current_perms(
+  scoped_refptr<PermissionSet> current_perms(
       prefs->GetGrantedPermissions(extension_id));
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
@@ -1603,7 +1606,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 
   ListValue* api_permissions = new ListValue();
   api_permissions->Append(
-      Value::CreateIntegerValue(ExtensionAPIPermission::kTab));
+      Value::CreateIntegerValue(APIPermission::kTab));
   SetPref(extension_id, "granted_permissions.api",
           api_permissions, "granted_permissions.api");
   SetPrefStringSet(
@@ -2086,7 +2089,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   ASSERT_EQ(1u, service_->extensions()->size());
   const std::string id1 = extension->id();
   EXPECT_TRUE(extension->HasAPIPermission(
-      ExtensionAPIPermission::kUnlimitedStorage));
+      APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
                   extension->GetFullLaunchURL()));
   const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
@@ -2099,7 +2102,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   ASSERT_EQ(2u, service_->extensions()->size());
   const std::string id2 = extension->id();
   EXPECT_TRUE(extension->HasAPIPermission(
-      ExtensionAPIPermission::kUnlimitedStorage));
+      APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
                   extension->GetFullLaunchURL()));
   const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
@@ -2456,12 +2459,12 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_TRUE(service_->extensions()->Contains(good2));
 
   // Make sure the granted permissions have been setup.
-  scoped_refptr<ExtensionPermissionSet> permissions(
+  scoped_refptr<PermissionSet> permissions(
       service_->extension_prefs()->GetGrantedPermissions(good1));
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
   EXPECT_FALSE(permissions->apis().empty());
-  EXPECT_TRUE(permissions->HasAPIPermission(ExtensionAPIPermission::kPlugin));
+  EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kPlugin));
 
   // We should be able to reload the extension without getting another prompt.
   loaded_.clear();
@@ -3380,7 +3383,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   ASSERT_EQ(1u, service_->extensions()->size());
   const std::string id1 = extension->id();
   EXPECT_TRUE(extension->HasAPIPermission(
-      ExtensionAPIPermission::kUnlimitedStorage));
+      APIPermission::kUnlimitedStorage));
   const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
@@ -3393,7 +3396,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   ASSERT_EQ(2u, service_->extensions()->size());
   const std::string id2 = extension->id();
   EXPECT_TRUE(extension->HasAPIPermission(
-      ExtensionAPIPermission::kUnlimitedStorage));
+      APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
                   extension->GetFullLaunchURL()));
   const GURL origin2(extension->GetFullLaunchURL().GetOrigin());

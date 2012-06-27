@@ -498,7 +498,8 @@ bool ChromeRenderViewObserver::IsExperimentalWebFeatureAllowed(
   if (!extension)
     return false;
   return (extension_dispatcher_->IsExtensionActive(extension->id()) &&
-          extension->HasAPIPermission(ExtensionAPIPermission::kExperimental));
+          extension->HasAPIPermission(
+            extensions::APIPermission::kExperimental));
 }
 
 bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,

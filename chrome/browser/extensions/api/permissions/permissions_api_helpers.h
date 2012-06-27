@@ -14,9 +14,11 @@ namespace base {
 class DictionaryValue;
 }
 
-class ExtensionPermissionSet;
+
 
 namespace extensions {
+
+class PermissionSet;
 
 namespace api {
 namespace permissions {
@@ -28,11 +30,11 @@ namespace permissions_api_helpers {
 
 // Converts the permission |set| to a permissions object.
 scoped_ptr<api::permissions::Permissions> PackPermissionSet(
-    const ExtensionPermissionSet* set);
+    const PermissionSet* set);
 
 // Creates a permission set from |permissions|. Returns NULL if the permissions
 // cannot be converted to a permission set, in which case |error| will be set.
-scoped_refptr<ExtensionPermissionSet> UnpackPermissionSet(
+scoped_refptr<PermissionSet> UnpackPermissionSet(
     const api::permissions::Permissions& permissions, std::string* error);
 
 }  // namespace permissions_api_helpers

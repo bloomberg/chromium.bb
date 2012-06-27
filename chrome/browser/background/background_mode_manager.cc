@@ -313,7 +313,7 @@ void BackgroundModeManager::Observe(
         UpdatedExtensionPermissionsInfo* info =
             content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
         if (info->permissions->HasAPIPermission(
-                ExtensionAPIPermission::kBackground) &&
+                extensions::APIPermission::kBackground) &&
             info->reason == UpdatedExtensionPermissionsInfo::ADDED) {
           // Turned on background permission, so treat this as a new install.
           OnBackgroundAppInstalled(info->extension);

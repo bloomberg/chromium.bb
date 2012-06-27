@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -25,8 +26,13 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::APIPermission;
+using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::ExtensionInfo;
+using extensions::OAuth2Scopes;
+using extensions::PermissionsInfo;
+using extensions::PermissionSet;
 
 namespace {
 
@@ -132,7 +138,7 @@ const char kBrowserActionPinned[] = "browser_action_pinned";
 const char kPrefActivePermissions[] = "active_permissions";
 const char kPrefGrantedPermissions[] = "granted_permissions";
 
-// The preference names for ExtensionPermissionSet values.
+// The preference names for PermissionSet values.
 const char kPrefAPIs[] = "api";
 const char kPrefExplicitHosts[] = "explicit_host";
 const char kPrefScriptableHosts[] = "scriptable_host";
@@ -468,22 +474,22 @@ void ExtensionPrefs::SetExtensionPrefURLPatternSet(
   UpdateExtensionPref(extension_id, pref_key, new_value.ToValue().release());
 }
 
-ExtensionPermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
+PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
     const std::string& extension_id,
     const std::string& pref_key) {
   if (!GetExtensionPref(extension_id))
     return NULL;
 
   // Retrieve the API permissions.
-  ExtensionAPIPermissionSet apis;
+  APIPermissionSet apis;
   const ListValue* api_values = NULL;
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   if (ReadExtensionPrefList(extension_id, api_pref, &api_values)) {
-    ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+    PermissionsInfo* info = PermissionsInfo::GetInstance();
     for (size_t i = 0; i < api_values->GetSize(); ++i) {
       std::string permission_name;
       if (api_values->GetString(i, &permission_name)) {
-        ExtensionAPIPermission *permission = info->GetByName(permission_name);
+        APIPermission *permission = info->GetByName(permission_name);
         if (permission)
           apis.insert(permission->id());
       }
@@ -503,7 +509,7 @@ ExtensionPermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
       &scriptable_hosts, UserScript::kValidUserScriptSchemes);
 
   // Retrieve the oauth2 scopes.
-  ExtensionOAuth2Scopes scopes;
+  OAuth2Scopes scopes;
   const ListValue* scope_values = NULL;
   std::string scope_pref = JoinPrefs(pref_key, kPrefScopes);
   if (ReadExtensionPrefList(extension_id, scope_pref, &scope_values)) {
@@ -514,22 +520,22 @@ ExtensionPermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
     }
   }
 
-  return new ExtensionPermissionSet(
+  return new PermissionSet(
       apis, explicit_hosts, scriptable_hosts, scopes);
 }
 
 void ExtensionPrefs::SetExtensionPrefPermissionSet(
     const std::string& extension_id,
     const std::string& pref_key,
-    const ExtensionPermissionSet* new_value) {
+    const PermissionSet* new_value) {
   // Set the API permissions.
   ListValue* api_values = new ListValue();
-  ExtensionAPIPermissionSet apis = new_value->apis();
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  APIPermissionSet apis = new_value->apis();
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
-  for (ExtensionAPIPermissionSet::const_iterator i = apis.begin();
+  for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    ExtensionAPIPermission* perm = info->GetByID(*i);
+    APIPermission* perm = info->GetByID(*i);
     if (perm)
       api_values->Append(Value::CreateStringValue(perm->name()));
   }
@@ -550,10 +556,10 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
   }
 
   // Set the oauth2 scopes.
-  ExtensionOAuth2Scopes scopes = new_value->scopes();
+  OAuth2Scopes scopes = new_value->scopes();
   if (!scopes.empty()) {
     ListValue* scope_values = new ListValue();
-    for (ExtensionOAuth2Scopes::iterator i = scopes.begin();
+    for (OAuth2Scopes::iterator i = scopes.begin();
          i != scopes.end(); ++i) {
       scope_values->Append(Value::CreateStringValue(*i));
     }
@@ -853,7 +859,7 @@ void ExtensionPrefs::SetActiveBit(const std::string& extension_id,
 }
 
 void ExtensionPrefs::MigratePermissions(const ExtensionIdSet& extension_ids) {
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
   for (ExtensionIdSet::const_iterator ext_id =
        extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
 
@@ -882,7 +888,7 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdSet& extension_ids) {
         new_apis = new ListValue();
 
       std::string plugin_name = info->GetByID(
-          ExtensionAPIPermission::kPlugin)->name();
+          APIPermission::kPlugin)->name();
       new_apis->Append(Value::CreateStringValue(plugin_name));
       UpdateExtensionPref(*ext_id, granted_apis, new_apis);
     }
@@ -906,7 +912,7 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdSet& extension_ids) {
   }
 }
 
-ExtensionPermissionSet* ExtensionPrefs::GetGrantedPermissions(
+PermissionSet* ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));
   return ReadExtensionPrefPermissionSet(extension_id, kPrefGrantedPermissions);
@@ -914,23 +920,23 @@ ExtensionPermissionSet* ExtensionPrefs::GetGrantedPermissions(
 
 void ExtensionPrefs::AddGrantedPermissions(
     const std::string& extension_id,
-    const ExtensionPermissionSet* permissions) {
+    const PermissionSet* permissions) {
   CHECK(Extension::IdIsValid(extension_id));
 
-  scoped_refptr<ExtensionPermissionSet> granted_permissions(
+  scoped_refptr<PermissionSet> granted_permissions(
       GetGrantedPermissions(extension_id));
 
   // The new granted permissions are the union of the already granted
   // permissions and the newly granted permissions.
-  scoped_refptr<ExtensionPermissionSet> new_perms(
-      ExtensionPermissionSet::CreateUnion(
+  scoped_refptr<PermissionSet> new_perms(
+      PermissionSet::CreateUnion(
           permissions, granted_permissions.get()));
 
   SetExtensionPrefPermissionSet(
       extension_id, kPrefGrantedPermissions, new_perms.get());
 }
 
-ExtensionPermissionSet* ExtensionPrefs::GetActivePermissions(
+PermissionSet* ExtensionPrefs::GetActivePermissions(
     const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));
   return ReadExtensionPrefPermissionSet(extension_id, kPrefActivePermissions);
@@ -938,7 +944,7 @@ ExtensionPermissionSet* ExtensionPrefs::GetActivePermissions(
 
 void ExtensionPrefs::SetActivePermissions(
     const std::string& extension_id,
-    const ExtensionPermissionSet* permissions) {
+    const PermissionSet* permissions) {
   SetExtensionPrefPermissionSet(
       extension_id, kPrefActivePermissions, permissions);
 }

@@ -232,7 +232,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   std::string error;
   if (!extension ||
       !extension->HasAPIPermission(
-          ExtensionAPIPermission::kAppNotifications) ||
+        extensions::APIPermission::kAppNotifications) ||
       !process_map->Contains(extension->id(), process->GetID()))
     error = kPermissionError;
 

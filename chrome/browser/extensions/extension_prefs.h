@@ -251,24 +251,24 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // Returns the granted permission set for the extension with |extension_id|,
   // and NULL if no preferences were found for |extension_id|.
   // This passes ownership of the returned set to the caller.
-  ExtensionPermissionSet* GetGrantedPermissions(
+  extensions::PermissionSet* GetGrantedPermissions(
       const std::string& extension_id);
 
   // Adds |permissions| to the granted permissions set for the extension with
   // |extension_id|. The new granted permissions set will be the union of
   // |permissions| and the already granted permissions.
   void AddGrantedPermissions(const std::string& extension_id,
-                             const ExtensionPermissionSet* permissions);
+                             const extensions::PermissionSet* permissions);
 
   // Gets the active permission set for the specified extension. This may
   // differ from the permissions in the manifest due to the optional
   // permissions API. This passes ownership of the set to the caller.
-  ExtensionPermissionSet* GetActivePermissions(
+  extensions::PermissionSet* GetActivePermissions(
       const std::string& extension_id);
 
   // Sets the active |permissions| for the extension with |extension_id|.
   void SetActivePermissions(const std::string& extension_id,
-                            const ExtensionPermissionSet* permissions);
+                            const extensions::PermissionSet* permissions);
 
   // Returns the list of events that the given extension has registered for.
   std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
@@ -492,16 +492,17 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
                                      const URLPatternSet& new_value);
 
   // Interprets |pref_key| in |extension_id|'s preferences as an
-  // ExtensionPermissionSet, and passes ownership of the set to the caller.
-  ExtensionPermissionSet* ReadExtensionPrefPermissionSet(
+  // PermissionSet, and passes ownership of the set to the caller.
+  extensions::PermissionSet* ReadExtensionPrefPermissionSet(
       const std::string& extension_id,
       const std::string& pref_key);
 
   // Converts the |new_value| to its value and sets the |pref_key| pref
   // belonging to |extension_id|.
-  void SetExtensionPrefPermissionSet(const std::string& extension_id,
-                                     const std::string& pref_key,
-                                     const ExtensionPermissionSet* new_value);
+  void SetExtensionPrefPermissionSet(
+      const std::string& extension_id,
+      const std::string& pref_key,
+      const extensions::PermissionSet* new_value);
 
   // Returns a dictionary for extension |id|'s prefs or NULL if it doesn't
   // exist.

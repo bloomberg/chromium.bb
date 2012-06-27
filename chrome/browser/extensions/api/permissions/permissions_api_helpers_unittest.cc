@@ -6,7 +6,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/common/extensions/api/permissions.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,6 +14,9 @@
 using extensions::permissions_api_helpers::PackPermissionSet;
 using extensions::permissions_api_helpers::UnpackPermissionSet;
 using extensions::api::permissions::Permissions;
+using extensions::APIPermission;
+using extensions::APIPermissionSet;
+using extensions::PermissionSet;
 
 namespace {
 
@@ -24,17 +27,17 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 }  // namespace
 
-// Tests that we can convert ExtensionPermissionSets to and from values.
+// Tests that we can convert PermissionSets to and from values.
 TEST(ExtensionPermissionsAPIHelpers, Pack) {
-  ExtensionAPIPermissionSet apis;
-  apis.insert(ExtensionAPIPermission::kTab);
-  apis.insert(ExtensionAPIPermission::kWebRequest);
+  APIPermissionSet apis;
+  apis.insert(APIPermission::kTab);
+  apis.insert(APIPermission::kWebRequest);
   URLPatternSet hosts;
   AddPattern(&hosts, "http://a.com/*");
   AddPattern(&hosts, "http://b.com/*");
 
-  scoped_refptr<ExtensionPermissionSet> permission_set =
-      new ExtensionPermissionSet(apis, hosts, URLPatternSet());
+  scoped_refptr<PermissionSet> permission_set =
+      new PermissionSet(apis, hosts, URLPatternSet());
 
   // Pack the permission set to value and verify its contents.
   scoped_ptr<Permissions> permissions(PackPermissionSet(permission_set));
@@ -61,7 +64,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 
   // Unpack the value back to a permission set and make sure its equal to the
   // original one.
-  scoped_refptr<ExtensionPermissionSet> from_value;
+  scoped_refptr<PermissionSet> from_value;
   std::string error;
   Permissions permissions_object;
   EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
@@ -72,7 +75,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 }
 
 // Tests various error conditions and edge cases when unpacking values
-// into ExtensionPermissionSets.
+// into PermissionSets.
 TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   scoped_ptr<ListValue> apis(new ListValue());
   apis->Append(Value::CreateStringValue("tabs"));
@@ -80,7 +83,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   origins->Append(Value::CreateStringValue("http://a.com/*"));
 
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
-  scoped_refptr<ExtensionPermissionSet> permissions;
+  scoped_refptr<PermissionSet> permissions;
   std::string error;
 
   // Origins shouldn't have to be present.
@@ -89,7 +92,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     value->Set("permissions", apis->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, &error);
-    EXPECT_TRUE(permissions->HasAPIPermission(ExtensionAPIPermission::kTab));
+    EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kTab));
     EXPECT_TRUE(permissions);
     EXPECT_TRUE(error.empty());
   }

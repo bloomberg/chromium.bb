@@ -1353,7 +1353,7 @@ void UpdateTabFunction::PopulateResult() {
   if (!has_callback())
     return;
 
-  if (GetExtension()->HasAPIPermission(ExtensionAPIPermission::kTab)) {
+  if (GetExtension()->HasAPIPermission(extensions::APIPermission::kTab)) {
     result_.reset(
         ExtensionTabUtil::CreateTabValue(tab_contents_->web_contents()));
   } else {

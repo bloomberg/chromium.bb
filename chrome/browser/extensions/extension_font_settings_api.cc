@@ -30,6 +30,8 @@
 #include "ui/gfx/platform_font_win.h"
 #endif
 
+using extensions::APIPermission;
+
 namespace fonts = extensions::api::experimental_font_settings;
 
 namespace {
@@ -210,7 +212,7 @@ void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
       profile_,
       kOnFontChanged,
       &args,
-      ExtensionAPIPermission::kExperimental,
+      APIPermission::kExperimental,
       incognito,
       pref_name);
 }
@@ -234,7 +236,7 @@ void ExtensionFontSettingsEventRouter::OnFontPrefChanged(
       profile_,
       event_name,
       &args,
-      ExtensionAPIPermission::kExperimental,
+      APIPermission::kExperimental,
       incognito,
       pref_name);
 }

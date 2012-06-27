@@ -47,6 +47,7 @@
 #endif
 
 using content::BrowserThread;
+using extensions::APIPermission;
 using WebKit::WebCache;
 using WebKit::WebSecurityOrigin;
 
@@ -496,7 +497,7 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_view_id,
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(
     const GURL& origin, bool* allowed) {
   *allowed = extension_info_map_->SecurityOriginHasAPIPermission(
-      origin, render_process_id_, ExtensionAPIPermission::kClipboardRead);
+      origin, render_process_id_, APIPermission::kClipboardRead);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
@@ -505,7 +506,7 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
   // for compatibility.
   *allowed = (origin.SchemeIs(chrome::kExtensionScheme) ||
       extension_info_map_->SecurityOriginHasAPIPermission(
-          origin, render_process_id_, ExtensionAPIPermission::kClipboardWrite));
+          origin, render_process_id_, APIPermission::kClipboardWrite));
 }
 
 void ChromeRenderMessageFilter::OnGetCookies(

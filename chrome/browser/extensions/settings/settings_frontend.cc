@@ -303,7 +303,7 @@ void SettingsFrontend::RunWithStorage(
   // storage is allowed to be unlimited).
   bool is_unlimited =
       settings_namespace == settings_namespace::LOCAL &&
-      extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage);
+      extension->HasAPIPermission(APIPermission::kUnlimitedStorage);
 
   scoped_refptr<BackendWrapper> backend;
   if (extension->is_app()) {

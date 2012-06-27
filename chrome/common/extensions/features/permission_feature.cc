@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/features/permission_feature.h"
 
-#include "chrome/common/extensions/extension_permission_set.h"
-
 namespace extensions {
 
 PermissionFeature::PermissionFeature() {

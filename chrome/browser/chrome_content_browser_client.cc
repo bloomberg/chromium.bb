@@ -135,6 +135,7 @@ using content::QuotaPermissionContext;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::APIPermission;
 using extensions::Extension;
 using webkit_glue::WebPreferences;
 
@@ -509,7 +510,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   // page, we want to give each instance its own process to improve
   // responsiveness.
   if (extension->GetType() == Extension::TYPE_HOSTED_APP) {
-    if (!extension->HasAPIPermission(ExtensionAPIPermission::kBackground) ||
+    if (!extension->HasAPIPermission(APIPermission::kBackground) ||
         !extension->allow_background_js_access()) {
       return false;
     }
@@ -1171,7 +1172,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
           source_origin));
   if (extension &&
-      extension->HasAPIPermission(ExtensionAPIPermission::kNotification)) {
+      extension->HasAPIPermission(APIPermission::kNotification)) {
     RenderViewHost* rvh =
         RenderViewHost::FromID(render_process_id, render_view_id);
     if (rvh)
@@ -1198,7 +1199,7 @@ WebKit::WebNotificationPresenter::Permission
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   if (io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
         source_origin, render_process_id,
-        ExtensionAPIPermission::kNotification))
+        APIPermission::kNotification))
     return WebKit::WebNotificationPresenter::PermissionAllowed;
 
   // Fall back to the regular notification preferences, which works on an
@@ -1280,7 +1281,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     if (!map->SecurityOriginHasAPIPermission(
             source_origin,
             render_process_id,
-            ExtensionAPIPermission::kBackground)) {
+            APIPermission::kBackground)) {
       return false;
     }
 
@@ -1589,7 +1590,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   if (!extension)
     return false;
 
-  if (extension->HasAPIPermission(ExtensionAPIPermission::kSocket))
+  if (extension->HasAPIPermission(APIPermission::kSocket))
     return true;
 
   return false;

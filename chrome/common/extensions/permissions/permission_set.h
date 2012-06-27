@@ -1,0 +1,205 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSION_SET_H_
+#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSION_SET_H_
+#pragma once
+
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
+#include "base/string16.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/permission_message.h"
+#include "chrome/common/extensions/url_pattern_set.h"
+
+namespace extensions {
+
+class Extension;
+
+typedef std::set<std::string> OAuth2Scopes;
+
+// The PermissionSet is an immutable class that encapsulates an
+// extension's permissions. The class exposes set operations for combining and
+// manipulating the permissions.
+class PermissionSet
+    : public base::RefCountedThreadSafe<PermissionSet> {
+ public:
+  // Creates an empty permission set (e.g. default permissions).
+  PermissionSet();
+
+  // Creates a new permission set based on the |extension| manifest data, and
+  // the api and host permissions (|apis| and |hosts|). The effective hosts
+  // of the newly created permission set will be inferred from the |extension|
+  // manifest, |apis| and |hosts|.
+  PermissionSet(const extensions::Extension* extension,
+                         const APIPermissionSet& apis,
+                         const URLPatternSet& explicit_hosts,
+                         const OAuth2Scopes& scopes);
+
+
+  // Creates a new permission set based on the specified data.
+  PermissionSet(const APIPermissionSet& apis,
+                         const URLPatternSet& explicit_hosts,
+                         const URLPatternSet& scriptable_hosts);
+
+  // Creates a new permission set that has oauth scopes in it.
+  PermissionSet(const APIPermissionSet& apis,
+                         const URLPatternSet& explicit_hosts,
+                         const URLPatternSet& scriptable_hosts,
+                         const OAuth2Scopes& scopes);
+
+  // Creates a new permission set containing only oauth scopes.
+  explicit PermissionSet(const OAuth2Scopes& scopes);
+
+  // Creates a new permission set equal to |set1| - |set2|, passing ownership of
+  // the new set to the caller.
+  static PermissionSet* CreateDifference(
+      const PermissionSet* set1, const PermissionSet* set2);
+
+  // Creates a new permission set equal to the intersection of |set1| and
+  // |set2|, passing ownership of the new set to the caller.
+  static PermissionSet* CreateIntersection(
+      const PermissionSet* set1, const PermissionSet* set2);
+
+  // Creates a new permission set equal to the union of |set1| and |set2|.
+  // Passes ownership of the new set to the caller.
+  static PermissionSet* CreateUnion(
+      const PermissionSet* set1, const PermissionSet* set2);
+
+  bool operator==(const PermissionSet& rhs) const;
+
+  // Returns true if |set| is a subset of this.
+  bool Contains(const PermissionSet& set) const;
+
+  // Gets the API permissions in this set as a set of strings.
+  std::set<std::string> GetAPIsAsStrings() const;
+
+  // Gets the API permissions in this set, plus any that have implicit access
+  // (such as APIs that require no permissions, or APIs with functions that
+  // require no permissions).
+  // TODO(kalman): return scoped_ptr to avoid copying.
+  std::set<std::string> GetAPIsWithAnyAccessAsStrings() const;
+
+  // Returns whether this namespace has any functions which the extension has
+  // permission to use.  For example, even though the extension may not have
+  // the "tabs" permission, "tabs.create" requires no permissions so
+  // HasAnyAPIPermission("tabs") will return true.
+  bool HasAnyAccessToAPI(const std::string& api_name) const;
+
+  // Gets a list of the distinct hosts for displaying to the user.
+  // NOTE: do not use this for comparing permissions, since this disgards some
+  // information.
+  std::set<std::string> GetDistinctHostsForDisplay() const;
+
+  // Gets the localized permission messages that represent this set.
+  PermissionMessages GetPermissionMessages() const;
+
+  // Gets the localized permission messages that represent this set (represented
+  // as strings).
+  std::vector<string16> GetWarningMessages() const;
+
+  // Returns true if this is an empty set (e.g., the default permission set).
+  bool IsEmpty() const;
+
+  // Returns true if the set has the specified API permission.
+  bool HasAPIPermission(APIPermission::ID permission) const;
+
+  // Returns true if the permissions in this set grant access to the specified
+  // |function_name|.
+  bool HasAccessToFunction(const std::string& function_name) const;
+
+  // Returns true if this includes permission to access |origin|.
+  bool HasExplicitAccessToOrigin(const GURL& origin) const;
+
+  // Returns true if this permission set includes access to script |url|.
+  bool HasScriptableAccessToURL(const GURL& url) const;
+
+  // Returns true if this permission set includes effective access to all
+  // origins.
+  bool HasEffectiveAccessToAllHosts() const;
+
+  // Returns true if this permission set includes effective access to |url|.
+  bool HasEffectiveAccessToURL(const GURL& url) const;
+
+  // Returns ture if this permission set effectively represents full access
+  // (e.g. native code).
+  bool HasEffectiveFullAccess() const;
+
+  // Returns true if |permissions| has a greater privilege level than this
+  // permission set (e.g., this permission set has less permissions).
+  bool HasLessPrivilegesThan(const PermissionSet* permissions) const;
+
+  const APIPermissionSet& apis() const { return apis_; }
+
+  const URLPatternSet& effective_hosts() const { return effective_hosts_; }
+
+  const URLPatternSet& explicit_hosts() const { return explicit_hosts_; }
+
+  const URLPatternSet& scriptable_hosts() const { return scriptable_hosts_; }
+
+  const OAuth2Scopes& scopes() const { return scopes_; }
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, HasLessHostPrivilegesThan);
+  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetWarningMessages_AudioVideo);
+  friend class base::RefCountedThreadSafe<PermissionSet>;
+
+  ~PermissionSet();
+
+  static std::set<std::string> GetDistinctHosts(
+      const URLPatternSet& host_patterns,
+      bool include_rcd,
+      bool exclude_file_scheme);
+
+  // Initializes the set based on |extension|'s manifest data.
+  void InitImplicitExtensionPermissions(const extensions::Extension* extension);
+
+  // Initializes the effective host permission based on the data in this set.
+  void InitEffectiveHosts();
+
+  // Gets the permission messages for the API permissions.
+  std::set<PermissionMessage> GetSimplePermissionMessages() const;
+
+  // Returns true if |permissions| has an elevated API privilege level than
+  // this set.
+  bool HasLessAPIPrivilegesThan(
+      const PermissionSet* permissions) const;
+
+  // Returns true if |permissions| has more host permissions compared to this
+  // set.
+  bool HasLessHostPrivilegesThan(
+      const PermissionSet* permissions) const;
+
+  // Returns true if |permissions| has more oauth2 scopes compared to this set.
+  bool HasLessScopesThan(const PermissionSet* permissions) const;
+
+  // The api list is used when deciding if an extension can access certain
+  // extension APIs and features.
+  APIPermissionSet apis_;
+
+  // The list of hosts that can be accessed directly from the extension.
+  // TODO(jstritar): Rename to "hosts_"?
+  URLPatternSet explicit_hosts_;
+
+  // The list of hosts that can be scripted by content scripts.
+  // TODO(jstritar): Rename to "user_script_hosts_"?
+  URLPatternSet scriptable_hosts_;
+
+  // The list of hosts this effectively grants access to.
+  URLPatternSet effective_hosts_;
+
+  // A set of oauth2 scopes that are used by the identity API to create OAuth2
+  // tokens for accessing the Google Account of the signed-in sync account.
+  OAuth2Scopes scopes_;
+};
+
+}  // namespace extensions
+
+#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_PERMISSION_SET_H_

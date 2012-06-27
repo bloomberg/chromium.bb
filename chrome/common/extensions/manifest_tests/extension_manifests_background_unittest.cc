@@ -24,7 +24,8 @@ TEST_F(ExtensionManifestTest, BackgroundPermission) {
 
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("background_permission_alias.json");
-  EXPECT_TRUE(extension->HasAPIPermission(ExtensionAPIPermission::kBackground));
+  EXPECT_TRUE(extension->HasAPIPermission(
+        extensions::APIPermission::kBackground));
 }
 
 TEST_F(ExtensionManifestTest, BackgroundScripts) {

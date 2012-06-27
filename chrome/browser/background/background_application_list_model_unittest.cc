@@ -98,7 +98,7 @@ void AddBackgroundPermission(ExtensionService* service,
 
   static scoped_refptr<Extension> temporary =
       CreateExtension(GenerateUniqueExtensionName(), true);
-  scoped_refptr<const ExtensionPermissionSet> permissions =
+  scoped_refptr<const extensions::PermissionSet> permissions =
       temporary->GetActivePermissions();
   extensions::PermissionsUpdater(service->profile()).AddPermissions(
       extension, permissions.get());

@@ -28,8 +28,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
+using extensions::APIPermission;
 using extensions::Extension;
 using extensions::ExtensionList;
+using extensions::PermissionSet;
 using extensions::UnloadedExtensionInfo;
 using extensions::UpdatedExtensionPermissionsInfo;
 
@@ -274,7 +276,7 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
   //    manifest.
 
   // Not a background app if we don't have the background permission.
-  if (!extension.HasAPIPermission(ExtensionAPIPermission::kBackground))
+  if (!extension.HasAPIPermission(APIPermission::kBackground))
     return false;
 
   // Extensions and packaged apps with background permission are always treated
@@ -363,8 +365,8 @@ void BackgroundApplicationListModel::OnExtensionUnloaded(
 void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
     const Extension* extension,
     UpdatedExtensionPermissionsInfo::Reason reason,
-    const ExtensionPermissionSet* permissions) {
-  if (permissions->HasAPIPermission(ExtensionAPIPermission::kBackground)) {
+    const PermissionSet* permissions) {
+  if (permissions->HasAPIPermission(APIPermission::kBackground)) {
     switch (reason) {
       case UpdatedExtensionPermissionsInfo::ADDED:
         DCHECK(IsBackgroundApp(*extension, profile_));

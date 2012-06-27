@@ -8,7 +8,7 @@
 #include "base/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/view_type.h"
@@ -122,7 +122,7 @@ struct ExtensionMsg_Loaded_Params {
   FilePath path;
 
   // The extension's active permissions.
-  ExtensionAPIPermissionSet apis;
+  extensions::APIPermissionSet apis;
   URLPatternSet explicit_hosts;
   URLPatternSet scriptable_hosts;
 
@@ -152,8 +152,8 @@ struct ParamTraits<URLPatternSet> {
 };
 
 template <>
-struct ParamTraits<ExtensionAPIPermission::ID> {
-  typedef ExtensionAPIPermission::ID param_type;
+struct ParamTraits<extensions::APIPermission::ID> {
+  typedef extensions::APIPermission::ID param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -247,7 +247,7 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_SetTabId,
 IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
                      int /* UpdateExtensionPermissionsInfo::REASON */,
                      std::string /* extension_id */,
-                     ExtensionAPIPermissionSet /* permissions */,
+                     extensions::APIPermissionSet /* permissions */,
                      URLPatternSet /* explicit_hosts */,
                      URLPatternSet /* scriptable_hosts */)
 

@@ -43,6 +43,7 @@ using content::RenderViewHost;
 using content::ResourceDispatcherHost;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::APIPermission;
 
 namespace {
 const int kDefaultWidth = 512;
@@ -155,14 +156,14 @@ void ShellWindow::RequestMediaAccessPermission(
   content::MediaStreamDeviceMap::const_iterator iter =
       request->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
   if (iter != request->devices.end() &&
-      extension()->HasAPIPermission(ExtensionAPIPermission::kAudioCapture) &&
+      extension()->HasAPIPermission(APIPermission::kAudioCapture) &&
       !iter->second.empty()) {
     devices.push_back(iter->second[0]);
   }
 
   iter = request->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
   if (iter != request->devices.end() &&
-      extension()->HasAPIPermission(ExtensionAPIPermission::kVideoCapture) &&
+      extension()->HasAPIPermission(APIPermission::kVideoCapture) &&
       !iter->second.empty()) {
     devices.push_back(iter->second[0]);
   }

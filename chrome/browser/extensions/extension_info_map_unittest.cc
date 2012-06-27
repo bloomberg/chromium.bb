@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
 using content::BrowserThread;
+using extensions::APIPermission;
 using extensions::Extension;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
@@ -149,21 +150,21 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   const Extension* match = info_map->extensions().GetExtensionOrAppByURL(
       ExtensionURLInfo(app_origin, app->GetResourceURL("a.html")));
   EXPECT_TRUE(match &&
-      match->HasAPIPermission(ExtensionAPIPermission::kNotification));
+      match->HasAPIPermission(APIPermission::kNotification));
   match = info_map->extensions().GetExtensionOrAppByURL(
       ExtensionURLInfo(app_origin, app_url));
   EXPECT_TRUE(match &&
-      match->HasAPIPermission(ExtensionAPIPermission::kNotification));
+      match->HasAPIPermission(APIPermission::kNotification));
   EXPECT_FALSE(match &&
-      match->HasAPIPermission(ExtensionAPIPermission::kTab));
+      match->HasAPIPermission(APIPermission::kTab));
 
   // The extension should have the tabs permission.
   match = info_map->extensions().GetExtensionOrAppByURL(
       ExtensionURLInfo(app_origin, extension->GetResourceURL("a.html")));
   EXPECT_TRUE(match &&
-      match->HasAPIPermission(ExtensionAPIPermission::kTab));
+      match->HasAPIPermission(APIPermission::kTab));
   EXPECT_FALSE(match &&
-      match->HasAPIPermission(ExtensionAPIPermission::kNotification));
+      match->HasAPIPermission(APIPermission::kNotification));
 
   // Random URL should not have any permissions.
   GURL evil_url("http://evil.com/a.html");

@@ -25,7 +25,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -180,7 +180,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     OAuth2Info();
     ~OAuth2Info();
 
-    ExtensionOAuth2Scopes GetScopesAsSet();
+    OAuth2Scopes GetScopesAsSet();
 
     std::string client_id;
     std::vector<std::string> scopes;
@@ -432,10 +432,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // from |manifest_|.
   bool ParsePermissions(const char* key,
                         string16* error,
-                        ExtensionAPIPermissionSet* api_permissions,
+                        APIPermissionSet* api_permissions,
                         URLPatternSet* host_permissions);
 
-  bool HasAPIPermission(ExtensionAPIPermission::ID permission) const;
+  bool HasAPIPermission(APIPermission::ID permission) const;
   bool HasAPIPermission(const std::string& function_name) const;
 
   const URLPatternSet& GetEffectiveHostPermissions() const;
@@ -464,7 +464,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns the full list of permission messages that this extension
   // should display at install time.
-  ExtensionPermissionMessages GetPermissionMessages() const;
+  PermissionMessages GetPermissionMessages() const;
 
   // Returns the full list of permission messages that this extension
   // should display at install time. The messages are returned as strings
@@ -472,10 +472,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   std::vector<string16> GetPermissionMessageStrings() const;
 
   // Sets the active |permissions|.
-  void SetActivePermissions(const ExtensionPermissionSet* permissions) const;
+  void SetActivePermissions(const PermissionSet* permissions) const;
 
   // Gets the extension's active permission set.
-  scoped_refptr<const ExtensionPermissionSet> GetActivePermissions() const;
+  scoped_refptr<const PermissionSet> GetActivePermissions() const;
 
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;
@@ -638,10 +638,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
-  const ExtensionPermissionSet* optional_permission_set() const {
+  const PermissionSet* optional_permission_set() const {
     return optional_permission_set_.get();
   }
-  const ExtensionPermissionSet* required_permission_set() const {
+  const PermissionSet* required_permission_set() const {
     return required_permission_set_.get();
   }
   // Appends |new_warnings| to install_warnings().
@@ -713,11 +713,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   class RuntimeData {
    public:
     RuntimeData();
-    explicit RuntimeData(const ExtensionPermissionSet* active);
+    explicit RuntimeData(const PermissionSet* active);
     ~RuntimeData();
 
-    void SetActivePermissions(const ExtensionPermissionSet* active);
-    scoped_refptr<const ExtensionPermissionSet> GetActivePermissions() const;
+    void SetActivePermissions(const PermissionSet* active);
+    scoped_refptr<const PermissionSet> GetActivePermissions() const;
 
     const URLPatternSet* GetTabSpecificHostPermissions(int tab_id) const;
     void SetTabSpecificHostPermissions(int tab_id,
@@ -727,7 +727,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
    private:
     friend class base::RefCountedThreadSafe<RuntimeData>;
 
-    scoped_refptr<const ExtensionPermissionSet> active_permissions_;
+    scoped_refptr<const PermissionSet> active_permissions_;
 
     typedef std::map<int, linked_ptr<const URLPatternSet> >
         TabHostPermissionsMap;
@@ -764,7 +764,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // extension from the manifest.
 
   bool CheckMinimumChromeVersion(string16* error);
-  bool LoadAppIsolation(const ExtensionAPIPermissionSet& api_permissions,
+  bool LoadAppIsolation(const APIPermissionSet& api_permissions,
                         string16* error);
 
   bool LoadRequiredFeatures(string16* error);
@@ -780,7 +780,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadLaunchContainer(string16* error);
   bool LoadLaunchURL(string16* error);
 
-  bool LoadSharedFeatures(const ExtensionAPIPermissionSet& api_permissions,
+  bool LoadSharedFeatures(const APIPermissionSet& api_permissions,
                           string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
@@ -798,26 +798,26 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadOptionsPage(string16* error);
   bool LoadBackgroundScripts(string16* error);
   bool LoadBackgroundScripts(const std::string& key, string16* error);
-  bool LoadBackgroundPage(const ExtensionAPIPermissionSet& api_permissions,
+  bool LoadBackgroundPage(const APIPermissionSet& api_permissions,
                           string16* error);
   bool LoadBackgroundPage(const std::string& key,
-                          const ExtensionAPIPermissionSet& api_permissions,
+                          const APIPermissionSet& api_permissions,
                           string16* error);
   bool LoadBackgroundPersistent(
-      const ExtensionAPIPermissionSet& api_permissions,
+      const APIPermissionSet& api_permissions,
       string16* error);
   bool LoadBackgroundAllowJSAccess(
-      const ExtensionAPIPermissionSet& api_permissions,
+      const APIPermissionSet& api_permissions,
       string16* error);
   // Parses a single action in the manifest.
   bool LoadWebIntentAction(const std::string& action_name,
                            const base::DictionaryValue& intent_service,
                            string16* error);
   bool LoadWebIntentServices(string16* error);
-  bool LoadExtensionFeatures(const ExtensionAPIPermissionSet& api_permissions,
+  bool LoadExtensionFeatures(const APIPermissionSet& api_permissions,
                              string16* error);
   bool LoadDevToolsPage(string16* error);
-  bool LoadInputComponents(const ExtensionAPIPermissionSet& api_permissions,
+  bool LoadInputComponents(const APIPermissionSet& api_permissions,
                            string16* error);
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
@@ -893,7 +893,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Checks whether the host |pattern| is allowed for this extension, given API
   // permissions |permissions|.
   bool CanSpecifyHostPermission(const URLPattern& pattern,
-      const ExtensionAPIPermissionSet& permissions) const;
+      const APIPermissionSet& permissions) const;
 
   // Check that platform app features are valid. Called after InitFromValue.
   bool CheckPlatformAppFeatures(std::string* utf8_error);
@@ -944,10 +944,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   mutable RuntimeData runtime_data_;
 
   // The set of permissions the extension can request at runtime.
-  scoped_refptr<const ExtensionPermissionSet> optional_permission_set_;
+  scoped_refptr<const PermissionSet> optional_permission_set_;
 
   // The extension's required / default set of permissions.
-  scoped_refptr<const ExtensionPermissionSet> required_permission_set_;
+  scoped_refptr<const PermissionSet> required_permission_set_;
 
   // Any warnings that occurred when trying to create/parse the extension.
   InstallWarningVector install_warnings_;
@@ -1175,11 +1175,11 @@ struct UpdatedExtensionPermissionsInfo {
   // The permissions that have changed. For Reason::ADDED, this would contain
   // only the permissions that have added, and for Reason::REMOVED, this would
   // only contain the removed permissions.
-  const ExtensionPermissionSet* permissions;
+  const PermissionSet* permissions;
 
   UpdatedExtensionPermissionsInfo(
       const Extension* extension,
-      const ExtensionPermissionSet* permissions,
+      const PermissionSet* permissions,
       Reason reason);
 };
 

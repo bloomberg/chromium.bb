@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using extensions::APIPermission;
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     CookieSettings* cookie_settings)
@@ -70,19 +71,19 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
       !extension->HasAPIPermission(
-          ExtensionAPIPermission::kUnlimitedStorage) &&
+          APIPermission::kUnlimitedStorage) &&
       !extension->HasAPIPermission(
-          ExtensionAPIPermission::kFileBrowserHandler)) {
+          APIPermission::kFileBrowserHandler)) {
     return;
   }
   {
     base::AutoLock locker(lock_);
     if (NeedsProtection(extension))
       protected_apps_.Add(extension);
-    if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
+    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage))
       unlimited_extensions_.Add(extension);
     if (extension->HasAPIPermission(
-            ExtensionAPIPermission::kFileBrowserHandler)) {
+            APIPermission::kFileBrowserHandler)) {
       file_handler_extensions_.Add(extension);
     }
   }
@@ -94,19 +95,19 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
       !extension->HasAPIPermission(
-          ExtensionAPIPermission::kUnlimitedStorage) &&
+          APIPermission::kUnlimitedStorage) &&
       !extension->HasAPIPermission(
-          ExtensionAPIPermission::kFileBrowserHandler)) {
+          APIPermission::kFileBrowserHandler)) {
     return;
   }
   {
     base::AutoLock locker(lock_);
     if (extension->is_hosted_app() && !extension->from_bookmark())
       protected_apps_.Remove(extension);
-    if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
+    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage))
       unlimited_extensions_.Remove(extension);
     if (extension->HasAPIPermission(
-            ExtensionAPIPermission::kFileBrowserHandler)) {
+            APIPermission::kFileBrowserHandler)) {
       file_handler_extensions_.Remove(extension);
     }
   }

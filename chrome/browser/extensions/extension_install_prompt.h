@@ -22,7 +22,6 @@
 
 class Browser;
 class ExtensionInstallUI;
-class ExtensionPermissionSet;
 class MessageLoop;
 class InfoBarDelegate;
 
@@ -34,6 +33,7 @@ namespace extensions {
 class BundleInstaller;
 class Extension;
 class ExtensionWebstorePrivateApiTest;
+class PermissionSet;
 }  // namespace extensions
 
 // Displays all the UI around extension installation.
@@ -159,8 +159,9 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
   // should be installed.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmBundleInstall(extensions::BundleInstaller* bundle,
-                                    const ExtensionPermissionSet* permissions);
+  virtual void ConfirmBundleInstall(
+      extensions::BundleInstaller* bundle,
+      const extensions::PermissionSet* permissions);
 
   // This is called by the inline installer to verify whether the inline
   // install from the webstore should proceed.
@@ -199,7 +200,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmPermissions(Delegate* delegate,
                                   const extensions::Extension* extension,
-                                  const ExtensionPermissionSet* permissions);
+                                  const extensions::PermissionSet* permissions);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const extensions::Extension* extension,
@@ -245,7 +246,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
   const extensions::BundleInstaller* bundle_;
 
   // The permissions being prompted for.
-  scoped_refptr<const ExtensionPermissionSet> permissions_;
+  scoped_refptr<const extensions::PermissionSet> permissions_;
 
   // The object responsible for doing the UI specific actions.
   scoped_ptr<ExtensionInstallUI> install_ui_;

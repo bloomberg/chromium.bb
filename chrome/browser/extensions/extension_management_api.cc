@@ -44,6 +44,7 @@ using content::BrowserThread;
 using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
 using extensions::Extension;
+using extensions::PermissionMessages;
 
 namespace events = extension_event_names;
 namespace keys = extension_management_api_constants;
@@ -195,9 +196,9 @@ bool GetPermissionWarningsByIdFunction::RunImpl() {
     return false;
   }
 
-  ExtensionPermissionMessages warnings = extension->GetPermissionMessages();
+  PermissionMessages warnings = extension->GetPermissionMessages();
   ListValue* result = new ListValue();
-  for (ExtensionPermissionMessages::const_iterator i = warnings.begin();
+  for (PermissionMessages::const_iterator i = warnings.begin();
        i < warnings.end(); ++i)
     result->Append(Value::CreateStringValue(i->message()));
   result_.reset(result);
@@ -319,9 +320,9 @@ void GetPermissionWarningsByManifestFunction::OnParseSuccess(
     return;
   }
 
-  ExtensionPermissionMessages warnings = extension->GetPermissionMessages();
+  PermissionMessages warnings = extension->GetPermissionMessages();
   ListValue* result = new ListValue();
-  for (ExtensionPermissionMessages::const_iterator i = warnings.begin();
+  for (PermissionMessages::const_iterator i = warnings.begin();
        i < warnings.end(); ++i)
     result->Append(Value::CreateStringValue(i->message()));
   result_.reset(result);

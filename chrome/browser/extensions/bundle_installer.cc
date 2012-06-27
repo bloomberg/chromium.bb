@@ -255,9 +255,9 @@ void BundleInstaller::ShowPrompt() {
     return;
   }
 
-  scoped_refptr<ExtensionPermissionSet> permissions;
+  scoped_refptr<PermissionSet> permissions;
   for (size_t i = 0; i < dummy_extensions_.size(); ++i) {
-    permissions = ExtensionPermissionSet::CreateUnion(
+    permissions = PermissionSet::CreateUnion(
           permissions, dummy_extensions_[i]->required_permission_set());
   }
 

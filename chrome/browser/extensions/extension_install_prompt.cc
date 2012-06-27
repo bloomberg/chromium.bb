@@ -40,6 +40,7 @@
 
 using extensions::BundleInstaller;
 using extensions::Extension;
+using extensions::PermissionSet;
 
 static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // The regular install prompt depends on what's being installed.
@@ -254,7 +255,7 @@ ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 
 void ExtensionInstallPrompt::ConfirmBundleInstall(
     extensions::BundleInstaller* bundle,
-    const ExtensionPermissionSet* permissions) {
+    const PermissionSet* permissions) {
   DCHECK(ui_loop_ == MessageLoop::current());
   bundle_ = bundle;
   permissions_ = permissions;
@@ -330,7 +331,7 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
 void ExtensionInstallPrompt::ConfirmPermissions(
     Delegate* delegate,
     const Extension* extension,
-    const ExtensionPermissionSet* permissions) {
+    const PermissionSet* permissions) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   permissions_ = permissions;

@@ -613,7 +613,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
                     UTF8ToUTF16(requesting_frame.spec())),
                 requesting_frame));
     if (extension &&
-        extension->HasAPIPermission(ExtensionAPIPermission::kGeolocation)) {
+        extension->HasAPIPermission(extensions::APIPermission::kGeolocation)) {
       // Make sure the extension is in the calling process.
       if (extension_service->process_map()->Contains(
               extension->id(), render_process_id)) {

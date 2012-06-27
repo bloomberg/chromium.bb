@@ -447,7 +447,7 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
         new StringValue((*extension)->devtools_url().spec()));
     extension_info->Set("name", new StringValue((*extension)->name()));
     bool allow_experimental = (*extension)->HasAPIPermission(
-        ExtensionAPIPermission::kExperimental);
+        extensions::APIPermission::kExperimental);
     extension_info->Set("exposeExperimentalAPIs",
         new base::FundamentalValue(allow_experimental));
     results.Append(extension_info);

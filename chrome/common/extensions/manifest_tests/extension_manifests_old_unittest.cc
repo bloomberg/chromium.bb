@@ -14,5 +14,5 @@ TEST_F(ExtensionManifestTest, OldUnlimitedStoragePermission) {
       "old_unlimited_storage.json", extensions::Extension::INTERNAL,
       extensions::Extension::NO_FLAGS);
   EXPECT_TRUE(extension->HasAPIPermission(
-      ExtensionAPIPermission::kUnlimitedStorage));
+      extensions::APIPermission::kUnlimitedStorage));
 }

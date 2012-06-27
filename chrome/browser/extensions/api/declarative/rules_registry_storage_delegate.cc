@@ -178,7 +178,7 @@ void RulesRegistryStorageDelegate::Inner::Observe(
     // TODO(mpcomplete): This API check should generalize to any use of
     // declarative rules, not just webRequest.
     if (extension->HasAPIPermission(
-            ExtensionAPIPermission::kDeclarativeWebRequest)) {
+            APIPermission::kDeclarativeWebRequest)) {
       ReadFromStorage(extension->id());
     }
   } else if (type == chrome::NOTIFICATION_EXTENSIONS_READY) {

@@ -124,7 +124,7 @@ void ExtensionInfoMap::UnregisterAllExtensionsInProcess(int process_id) {
 
 bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
     const GURL& origin, int process_id,
-    ExtensionAPIPermission::ID permission) const {
+    extensions::APIPermission::ID permission) const {
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     const std::string& id = origin.host();
     return extensions_.GetByID(id)->HasAPIPermission(permission) &&

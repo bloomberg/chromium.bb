@@ -146,7 +146,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetBoolean("is_webstore",
       extension->id() == extension_misc::kWebStoreAppId);
 
-  if (extension->HasAPIPermission(ExtensionAPIPermission::kAppNotifications)) {
+  if (extension->HasAPIPermission(
+        extensions::APIPermission::kAppNotifications)) {
     value->SetBoolean("notifications_disabled",
                       prefs->IsAppNotificationDisabled(extension->id()));
   }

@@ -1577,7 +1577,7 @@ bool WebRequestAddEventListener::RunImpl() {
           (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
            ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
        !extension->HasAPIPermission(
-           ExtensionAPIPermission::kWebRequestBlocking)) {
+           extensions::APIPermission::kWebRequestBlocking)) {
     error_ = keys::kBlockingPermissionRequired;
     return false;
   }

@@ -37,6 +37,7 @@
 #include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
@@ -281,8 +282,8 @@ Extension::TtsVoice::~TtsVoice() {}
 Extension::OAuth2Info::OAuth2Info() {}
 Extension::OAuth2Info::~OAuth2Info() {}
 
-ExtensionOAuth2Scopes Extension::OAuth2Info::GetScopesAsSet() {
-  ExtensionOAuth2Scopes result;
+OAuth2Scopes Extension::OAuth2Info::GetScopesAsSet() {
+  OAuth2Scopes result;
   std::copy(scopes.begin(), scopes.end(),
             std::inserter(result, result.begin()));
   return result;
@@ -1306,7 +1307,7 @@ bool Extension::LoadLaunchContainer(string16* error) {
 }
 
 bool Extension::LoadSharedFeatures(
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   if (!LoadDescription(error) ||
       !LoadHomepageURL(error) ||
@@ -1787,7 +1788,7 @@ bool Extension::LoadBackgroundScripts(const std::string& key, string16* error) {
 }
 
 bool Extension::LoadBackgroundPage(
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   if (is_platform_app()) {
     return LoadBackgroundPage(
@@ -1804,7 +1805,7 @@ bool Extension::LoadBackgroundPage(
 
 bool Extension::LoadBackgroundPage(
     const std::string& key,
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   base::Value* background_page_value = NULL;
   if (!manifest_->Get(key, &background_page_value))
@@ -1826,7 +1827,7 @@ bool Extension::LoadBackgroundPage(
     background_url_ = GURL(background_str);
 
     // Make sure "background" permission is set.
-    if (!api_permissions.count(ExtensionAPIPermission::kBackground)) {
+    if (!api_permissions.count(APIPermission::kBackground)) {
       *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
       return false;
     }
@@ -1851,7 +1852,7 @@ bool Extension::LoadBackgroundPage(
 }
 
 bool Extension::LoadBackgroundPersistent(
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   if (is_platform_app()) {
     background_page_is_persistent_ = false;
@@ -1876,7 +1877,7 @@ bool Extension::LoadBackgroundPersistent(
 }
 
 bool Extension::LoadBackgroundAllowJSAccess(
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   Value* allow_js_access = NULL;
   if (!manifest_->Get(keys::kBackgroundAllowJsAccess, &allow_js_access))
@@ -2053,7 +2054,7 @@ bool Extension::LoadWebIntentServices(string16* error) {
   return true;
 }
 bool Extension::LoadExtensionFeatures(
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
@@ -2089,7 +2090,7 @@ bool Extension::LoadDevToolsPage(string16* error) {
 }
 
 bool Extension::LoadInputComponents(
-    const ExtensionAPIPermissionSet& api_permissions,
+    const APIPermissionSet& api_permissions,
     string16* error) {
   if (!manifest_->HasKey(keys::kInputComponents))
     return true;
@@ -2715,7 +2716,7 @@ bool Extension::LoadContentSecurityPolicy(string16* error) {
 }
 
 bool Extension::LoadAppIsolation(
-    const ExtensionAPIPermissionSet& api_permissions, string16* error) {
+    const APIPermissionSet& api_permissions, string16* error) {
   // Platform apps always get isolated storage.
   if (is_platform_app()) {
     is_storage_isolated_ = true;
@@ -2724,7 +2725,7 @@ bool Extension::LoadAppIsolation(
 
   // Other apps only get it if it is requested _and_ experimental APIs are
   // enabled.
-  if (!api_permissions.count(ExtensionAPIPermission::kExperimental) ||
+  if (!api_permissions.count(APIPermission::kExperimental) ||
       !is_app()) {
     return true;
   }
@@ -3066,9 +3067,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   base::AutoLock auto_lock(runtime_data_lock_);
 
   // Initialize permissions with an empty, default permission set.
-  runtime_data_.SetActivePermissions(new ExtensionPermissionSet());
-  optional_permission_set_ = new ExtensionPermissionSet();
-  required_permission_set_ = new ExtensionPermissionSet();
+  runtime_data_.SetActivePermissions(new PermissionSet());
+  optional_permission_set_ = new PermissionSet();
+  required_permission_set_ = new PermissionSet();
 
   creation_flags_ = flags;
 
@@ -3096,7 +3097,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (is_app() && !LoadAppFeatures(error))
     return false;
 
-  ExtensionAPIPermissionSet api_permissions;
+  APIPermissionSet api_permissions;
   URLPatternSet host_permissions;
   if (!ParsePermissions(keys::kPermissions,
                         error,
@@ -3109,9 +3110,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   // appWindow API to platform apps, with no dependency on any permissions.
   // See http://crbug.com/120069.
   if (is_platform_app())
-    api_permissions.insert(ExtensionAPIPermission::kAppWindow);
+    api_permissions.insert(APIPermission::kAppWindow);
 
-  ExtensionAPIPermissionSet optional_api_permissions;
+  APIPermissionSet optional_api_permissions;
   URLPatternSet optional_host_permissions;
   if (!ParsePermissions(keys::kOptionalPermissions,
                         error,
@@ -3137,11 +3138,11 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
-  runtime_data_.SetActivePermissions(new ExtensionPermissionSet(
+  runtime_data_.SetActivePermissions(new PermissionSet(
       this, api_permissions, host_permissions, oauth2_info_.GetScopesAsSet()));
-  required_permission_set_ = new ExtensionPermissionSet(
+  required_permission_set_ = new PermissionSet(
       this, api_permissions, host_permissions, oauth2_info_.GetScopesAsSet());
-  optional_permission_set_ = new ExtensionPermissionSet(
+  optional_permission_set_ = new PermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
 
   return true;
@@ -3301,7 +3302,7 @@ GURL Extension::GetIconURL(int size,
 
 bool Extension::ParsePermissions(const char* key,
                                  string16* error,
-                                 ExtensionAPIPermissionSet* api_permissions,
+                                 APIPermissionSet* api_permissions,
                                  URLPatternSet* host_permissions) {
   if (manifest_->HasKey(key)) {
     ListValue* permissions = NULL;
@@ -3319,17 +3320,17 @@ bool Extension::ParsePermissions(const char* key,
         return false;
       }
 
-      // NOTE: We need to get the ExtensionAPIPermission before the Feature
+      // NOTE: We need to get the APIPermission before the Feature
       // object because the feature system does not know about aliases.
-      ExtensionAPIPermission* permission =
-          ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
+      APIPermission* permission =
+          PermissionsInfo::GetInstance()->GetByName(permission_str);
       if (permission) {
         extensions::SimpleFeatureProvider* permission_features =
             extensions::SimpleFeatureProvider::GetPermissionFeatures();
         extensions::Feature* feature =
             permission_features->GetFeature(permission->name());
 
-        // The feature should exist since we just got an ExtensionAPIPermission
+        // The feature should exist since we just got an APIPermission
         // for it. The two systems should be updated together whenever a
         // permission is added.
         CHECK(feature);
@@ -3350,7 +3351,7 @@ bool Extension::ParsePermissions(const char* key,
           continue;
         }
 
-        if (permission->id() == ExtensionAPIPermission::kExperimental) {
+        if (permission->id() == APIPermission::kExperimental) {
           if (!CanSpecifyExperimentalPermission()) {
             *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
             return false;
@@ -3407,7 +3408,7 @@ bool Extension::CanSilentlyIncreasePermissions() const {
 }
 
 bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
-    const ExtensionAPIPermissionSet& permissions) const {
+    const APIPermissionSet& permissions) const {
   if (!pattern.match_all_urls() &&
       pattern.MatchesScheme(chrome::kChromeUIScheme)) {
     // Regular extensions are only allowed access to chrome://favicon.
@@ -3416,7 +3417,7 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
 
     // Experimental extensions are also allowed chrome://thumb.
     if (pattern.host() == chrome::kChromeUIThumbnailHost) {
-      return permissions.find(ExtensionAPIPermission::kExperimental) !=
+      return permissions.find(APIPermission::kExperimental) !=
           permissions.end();
     }
 
@@ -3432,7 +3433,7 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern,
 }
 
 bool Extension::HasAPIPermission(
-    ExtensionAPIPermission::ID permission) const {
+    APIPermission::ID permission) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->HasAPIPermission(permission);
 }
@@ -3472,10 +3473,10 @@ bool Extension::HasFullPermissions() const {
   return runtime_data_.GetActivePermissions()->HasEffectiveFullAccess();
 }
 
-ExtensionPermissionMessages Extension::GetPermissionMessages() const {
+PermissionMessages Extension::GetPermissionMessages() const {
   base::AutoLock auto_lock(runtime_data_lock_);
   if (IsTrustedId(id()))
-    return ExtensionPermissionMessages();
+    return PermissionMessages();
   else
     return runtime_data_.GetActivePermissions()->GetPermissionMessages();
 }
@@ -3489,12 +3490,12 @@ std::vector<string16> Extension::GetPermissionMessageStrings() const {
 }
 
 void Extension::SetActivePermissions(
-    const ExtensionPermissionSet* permissions) const {
+    const PermissionSet* permissions) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   runtime_data_.SetActivePermissions(permissions);
 }
 
-scoped_refptr<const ExtensionPermissionSet>
+scoped_refptr<const PermissionSet>
     Extension::GetActivePermissions() const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions();
@@ -3808,7 +3809,7 @@ bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
 
 bool Extension::CheckConflictingFeatures(std::string* utf8_error) {
   if (has_lazy_background_page() &&
-      HasAPIPermission(ExtensionAPIPermission::kWebRequest)) {
+      HasAPIPermission(APIPermission::kWebRequest)) {
     *utf8_error = errors::kWebRequestConflictsWithLazyBackground;
     return false;
   }
@@ -3819,17 +3820,17 @@ bool Extension::CheckConflictingFeatures(std::string* utf8_error) {
 ExtensionInfo::~ExtensionInfo() {}
 
 Extension::RuntimeData::RuntimeData() {}
-Extension::RuntimeData::RuntimeData(const ExtensionPermissionSet* active)
+Extension::RuntimeData::RuntimeData(const PermissionSet* active)
     : active_permissions_(active) {}
 Extension::RuntimeData::~RuntimeData() {}
 
-scoped_refptr<const ExtensionPermissionSet>
+scoped_refptr<const PermissionSet>
     Extension::RuntimeData::GetActivePermissions() const {
   return active_permissions_;
 }
 
 void Extension::RuntimeData::SetActivePermissions(
-    const ExtensionPermissionSet* active) {
+    const PermissionSet* active) {
   active_permissions_ = active;
 }
 
@@ -3863,7 +3864,7 @@ UnloadedExtensionInfo::UnloadedExtensionInfo(
 
 UpdatedExtensionPermissionsInfo::UpdatedExtensionPermissionsInfo(
     const Extension* extension,
-    const ExtensionPermissionSet* permissions,
+    const PermissionSet* permissions,
     Reason reason)
     : reason(reason),
       extension(extension),

@@ -70,7 +70,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // |origin| in |process_id| with |permission|.
   bool SecurityOriginHasAPIPermission(
       const GURL& origin, int process_id,
-      ExtensionAPIPermission::ID permission) const;
+      extensions::APIPermission::ID permission) const;
 
   ExtensionsQuotaService* GetQuotaService();
 

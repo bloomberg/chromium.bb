@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 
 class Profile;
@@ -38,7 +38,7 @@ void DispatchEventToExtensions(
     Profile* profile,
     const std::string& event_name,
     base::ListValue* args,
-    ExtensionAPIPermission::ID permission,
+    extensions::APIPermission::ID permission,
     bool incognito,
     const std::string& browser_pref);
 

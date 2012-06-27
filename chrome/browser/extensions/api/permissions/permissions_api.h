@@ -11,9 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 
-class ExtensionPermissionSet;
 class ExtensionService;
 
 // chrome.permissions.contains
@@ -76,7 +75,7 @@ class RequestPermissionsFunction : public AsyncExtensionFunction,
 
  private:
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_refptr<ExtensionPermissionSet> requested_permissions_;
+  scoped_refptr<extensions::PermissionSet> requested_permissions_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PERMISSIONS_PERMISSIONS_API_H_

@@ -28,7 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -48,6 +48,7 @@
 #endif
 
 using content::UserMetricsAction;
+using extensions::APIPermission;
 
 namespace {
 
@@ -188,7 +189,7 @@ bool HasProtectedStorage(const extensions::Extension& app, Profile* profile) {
 
 // Returns true whenever the |extension| is hosted and has |permission|.
 // Must have the AppFilter signature.
-template <ExtensionAPIPermission::ID permission>
+template <APIPermission::ID permission>
 bool HostedAppHasPermission(
     const extensions::Extension& extension, Profile* /*profile*/) {
     return extension.is_hosted_app() && extension.HasAPIPermission(permission);
@@ -743,7 +744,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
   ListValue exceptions;
   AddExceptionsGrantedByHostedApps(
       profile,
-      HostedAppHasPermission<ExtensionAPIPermission::kGeolocation>,
+      HostedAppHasPermission<APIPermission::kGeolocation>,
       &exceptions);
 
   for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
@@ -796,7 +797,7 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 
   ListValue exceptions;
   AddExceptionsGrantedByHostedApps(profile,
-      HostedAppHasPermission<ExtensionAPIPermission::kNotification>,
+      HostedAppHasPermission<APIPermission::kNotification>,
       &exceptions);
 
   for (ContentSettingsForOneType::const_iterator i =

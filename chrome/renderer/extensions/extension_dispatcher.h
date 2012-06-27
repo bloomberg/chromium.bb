@@ -150,7 +150,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   void OnActivateExtension(const std::string& extension_id);
   void OnUpdatePermissions(int reason_id,
                            const std::string& extension_id,
-                           const ExtensionAPIPermissionSet& apis,
+                           const extensions::APIPermissionSet& apis,
                            const URLPatternSet& explicit_hosts,
                            const URLPatternSet& scriptable_hosts);
   void OnUpdateTabSpecificPermissions(int page_id,
