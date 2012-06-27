@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,28 +69,6 @@ HRESULT Bho::FinalConstruct() {
 void Bho::FinalRelease() {
 }
 
-namespace {
-
-// Allows Ready Mode to disable Chrome Frame by deactivating User Agent
-// modification and X-UA-Compatible header/tag detection.
-class ReadyModeDelegateImpl : public ready_mode::Delegate {
- public:
-  ReadyModeDelegateImpl() {}
-
-  // ready_mode::Delegate implementation
-  virtual void DisableChromeFrame();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ReadyModeDelegateImpl);
-};  // class ReadyModeDelegateImpl
-
-void ReadyModeDelegateImpl::DisableChromeFrame() {
-  HttpNegotiatePatch::set_modify_user_agent(false);
-  ProtocolSinkWrap::set_ignore_xua(true);
-}
-
-}  // namespace
-
 STDMETHODIMP Bho::SetSite(IUnknown* site) {
   HRESULT hr = S_OK;
   if (site) {
@@ -99,8 +77,6 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     if (web_browser2) {
       hr = DispEventAdvise(web_browser2, &DIID_DWebBrowserEvents2);
       DCHECK(SUCCEEDED(hr)) << "DispEventAdvise failed. Error: " << hr;
-
-      ready_mode::Configure(new ReadyModeDelegateImpl(), web_browser2);
     }
 
     if (g_patch_helper.state() == PatchHelper::PATCH_IBROWSER) {
