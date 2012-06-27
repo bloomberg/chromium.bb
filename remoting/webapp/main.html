@@ -227,7 +227,7 @@ found in the LICENSE file.
               <td class="table-label">
                 <label for="daemon-pin-entry"
                        i18n-content="ASK_PIN_DIALOG_LABEL"
-                       class="box-spacer"></label>
+                       class="editbox-label"></label>
               </td>
               <td>
                 <input id="daemon-pin-entry"
@@ -238,20 +238,18 @@ found in the LICENSE file.
             <tr>
               <td class="table-label">
                 <label for="daemon-pin-confirm"
-                       i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
+                       i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"
+                       class="editbox-label"></label>
               </td>
               <td>
                 <input id="daemon-pin-confirm" type="password">
               </td>
             <tr>
           </table>
-          <div id="usagestats-consent"
-               hidden>
-            <input id="usagestats-consent-checkbox" type="checkbox">
-            <label id="usagestats-consent-label"
-                   for="usagestats-consent-checkbox">
-              <span i18n-content="HOST_SETUP_CRASH_REPORTING_MESSAGE">
-              </span>
+          <div id="usagestats-consent" hidden>
+            <label class="checkbox-label">
+              <input id="usagestats-consent-checkbox" type="checkbox">
+              <span i18n-content="HOST_SETUP_CRASH_REPORTING_MESSAGE"></span>
             </label>
           </div>
           <div id="daemon-pin-error-div" class="message centered" hidden>
@@ -411,7 +409,8 @@ found in the LICENSE file.
               <div class="box">
                 <div class="box-spacer"></div>
                 <label for="access-code-entry"
-                       i18n-content="ACCESS_CODE">
+                       i18n-content="ACCESS_CODE"
+                       class="editbox-label">
                 </label>
                 <input id="access-code-entry"
                        type="text"
@@ -447,7 +446,9 @@ found in the LICENSE file.
                class="message"></div>
           <div>
             <form id="pin-form" action="">
-              <label for="pin-entry" i18n-content="PIN"></label>
+              <label for="pin-entry"
+                     i18n-content="PIN"
+                     class="editbox-label"></label>
               <input id="pin-entry"
                      type="password"
                      autofocus="autofocus"

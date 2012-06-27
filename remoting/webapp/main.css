@@ -181,7 +181,8 @@ button[disabled], button[disabled]:hover, button[disabled]:active {
 /*------------------------------------------------------------------
 Component: Text Field
 ------------------------------------------------------------------*/
-input {
+input[type=text],
+input[type=password] {
     height: 29px;
     padding-__MSG_@@bidi_start_edge__: 8px;
     color: #333;
@@ -190,20 +191,17 @@ input {
     vertical-align: top;
     -webkit-border-radius: 1px;
 }
-input:hover {
+input[type=text]:hover,
+input[type=password]:hover {
     border: 1px solid #b9b9b9;
     border-top: 1px solid #a0a0a0;
     -webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.1);
 }
-input:focus {
+input[type=text]:focus,
+input[type=password]:focus {
     -webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.3);
     outline: none;
     border: 1px solid #4d90fe;
-}
-
-label {
-  line-height: 29px;
-  font-weight: bold;
 }
 
 /*------------------------------------------------------------------
@@ -318,6 +316,11 @@ section {
 .section-row:first-child,
 .section-row.no-non-local-hosts {
   border-top: none;
+}
+
+.editbox-label {
+  line-height: 29px;
+  font-weight: bold;
 }
 
 .error-state {
@@ -475,19 +478,17 @@ button {
   margin-bottom: 8px;
 }
 
-#ask-pin-form #usagestats-consent-checkbox {
-  /*
-   * TODO(alexeypa): 'float' is overkill for such a simple layout. Find
-   * a simpler way to express it. See: http://crbug.com/134063
-   */
-  float: left;
-  height: auto;
-  vertical-align: top;
+.checkbox-label {
+  display: block;
+  padding-__MSG_@@bidi_start_edge__: 20px;
 }
 
-#ask-pin-form #usagestats-consent-label {
-  font-weight: normal;
-  line-height: normal;
+.checkbox-label input[type=checkbox] {
+  float: __MSG_@@bidi_start_edge__;
+  margin-__MSG_@@bidi_start_edge__: -20px;
+  margin-__MSG_@@bidi_end_edge__: 0;
+  width: 20px;
+  margin-top: 2px;
 }
 
 #current-email {
