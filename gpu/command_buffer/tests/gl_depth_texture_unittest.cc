@@ -180,6 +180,7 @@ TEST_F(DepthTextureTest, RenderTo) {
 
         EXPECT_EQ(actual[0], actual[1]);
         EXPECT_EQ(actual[1], actual[2]);
+        EXPECT_EQ(0xFF, actual[3]);
 
         if (xx > 0) {
           EXPECT_GT(actual[0], left[0]);
