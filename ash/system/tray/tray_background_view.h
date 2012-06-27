@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
 #include "ash/system/tray/tray_views.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 
 namespace ash {
 namespace internal {

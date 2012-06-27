@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
 #include "ash/launcher/launcher_types.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/size.h"

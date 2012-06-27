@@ -8,7 +8,7 @@
 
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/base_export.h"
 #include "base/timer.h"
 #include "ui/views/widget/widget.h"

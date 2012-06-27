@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/controls/image_view.h"

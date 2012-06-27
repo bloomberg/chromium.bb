@@ -8,7 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_alignment_menu.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
 

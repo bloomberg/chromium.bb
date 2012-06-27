@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SHELF_AUTO_HIDE_BEHAVIOR_H_
-#define ASH_WM_SHELF_AUTO_HIDE_BEHAVIOR_H_
+#ifndef ASH_WM_SHELF_TYPES_H_
+#define ASH_WM_SHELF_TYPES_H_
 #pragma once
-
-// TODO(sky): rename this file to shelf_types.
 
 namespace ash {
 
@@ -29,4 +27,4 @@ enum ShelfAutoHideBehavior {
 
 }  // namespace ash
 
-#endif  // ASH_WM_SHELF_AUTO_HIDE_BEHAVIOR_H_
+#endif  // ASH_WM_SHELF_TYPES_H_

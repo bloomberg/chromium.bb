@@ -11,7 +11,7 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/observer_list.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/context_menu_controller.h"

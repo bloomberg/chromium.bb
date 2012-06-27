@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/string16.h"
 
 namespace views {

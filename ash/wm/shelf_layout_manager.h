@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer.h"

@@ -11,7 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
+#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
