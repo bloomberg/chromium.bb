@@ -815,10 +815,6 @@
     'all': [
       'media_stream_infobar',
       'webrtc_call',
-
-      # Disabled tests.
-      # ROAP issue: crbug.com/130531
-      '-webrtc_call.WebRTCCallTest.testSimpleWebRtcRoapCall',
     ],
   },
 
