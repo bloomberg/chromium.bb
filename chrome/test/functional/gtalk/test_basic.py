@@ -255,29 +255,36 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
 
   def _GetCurrentGtalkVersion(self):
     """Read current gtalk extension version from file."""
+    return self._GetGtalkVersion('current_version')
+
+  def _GetRCGtalkVersion(self):
+    """Read RC gtalk extension version from file"""
+    return self._GetGtalkVersion('rc_version')
+
+  def _GetGtalkVersion(self, version_type):
+    """Read gtalk version from file"""
     version_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions',
-                     'gtalk', 'current_version'))
+                     'gtalk', version_type))
     self.assertTrue(
         os.path.exists(version_path),
-        msg='Failed to find current version ' + version_path)
+        msg='Failed to find version ' + version_path)
     with open(version_path) as version_file:
       return version_file.read()
 
-  def testBasicFunctionality(self):
+  def _TestBasicFunctionality(self, version):
     """Run tests for basic functionality in GTalk with retries."""
-    current_version = self._GetCurrentGtalkVersion()
 
     # Since this test goes against prod servers, we'll retry to mitigate
     # flakiness due to network issues.
     RETRIES = 5
     for tries in range(RETRIES):
-      logging.info('Calling RunBasicFunctionalityTest. Try #%s/%s'
-          % (tries + 1, RETRIES))
+      logging.info('Calling RunBasicFunctionalityTest on %s. Try #%s/%s'
+          % (version, tries + 1, RETRIES))
       try:
-        self.RunBasicFunctionalityTest(current_version)
-        logging.info('RunBasicFunctionalityTest succeeded. Tries: %s'
-            % (tries + 1))
+        self.RunBasicFunctionalityTest(version)
+        logging.info('RunBasicFunctionalityTest on %s succeeded. Tries: %s'
+            % (version, tries + 1))
         break
       except Exception as e:
         logging.info("\n*** ERROR in RunBasicFunctionalityTest ***")
@@ -290,6 +297,15 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
         else:
           raise
 
+  def testCurrentVersion(self):
+    """Run basic functionality test on current version of gtalk extension"""
+    version = self._GetCurrentGtalkVersion()
+    self._TestBasicFunctionality(version)
+
+  def testRCVersion(self):
+    """Run basic functionality test on RC version of gtalk extension"""
+    version = self._GetRCGtalkVersion()
+    self._TestBasicFunctionality(version)
 
 if __name__ == '__main__':
   pyauto_gtalk.Main()
