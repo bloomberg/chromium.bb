@@ -1226,16 +1226,13 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   def _GetGSUtilArchiveDir(self):
     if self._options.remote_trybot:
-      current_time = datetime.datetime.utcnow()
-      return os.path.join(
-          self._REMOTE_TRYBOT_ARCHIVE_URL,
-          current_time.strftime('%Y_%m_%d'),
-          self._bot_id,
-          str(self._options.buildnumber))
+      gs_base = self._REMOTE_TRYBOT_ARCHIVE_URL
     elif self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
-      return 'gs://chromeos-image-archive/' + self._bot_id
+      gs_base = 'gs://chromeos-image-archive'
     else:
       return self._build_config['gs_path']
+
+    return '%s/%s' % (gs_base, self._bot_id)
 
   def GetGSUploadLocation(self):
     """Get the Google Storage location where we should upload artifacts."""
