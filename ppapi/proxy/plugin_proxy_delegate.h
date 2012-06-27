@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,9 @@ class PPAPI_PROXY_EXPORT PluginProxyDelegate {
   // Performs Windows-specific font caching in the browser for the given
   // LOGFONTW. Does nothing on non-Windows platforms.
   virtual void PreCacheFont(const void* logfontw) = 0;
+
+  // Sets the active url which is reported by breakpad.
+  virtual void SetActiveURL(const std::string& url) = 0;
 };
 
 }  // namespace proxy

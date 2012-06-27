@@ -237,6 +237,10 @@ void PluginProxyTestHarness::PluginDelegateMock::PreCacheFont(
     const void* logfontw) {
 }
 
+void PluginProxyTestHarness::PluginDelegateMock::SetActiveURL(
+    const std::string& url) {
+}
+
 // PluginProxyTest -------------------------------------------------------------
 
 PluginProxyTest::PluginProxyTest() {

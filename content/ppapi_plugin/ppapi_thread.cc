@@ -16,6 +16,7 @@
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
@@ -175,6 +176,10 @@ void PpapiThread::PreCacheFont(const void* logfontw) {
   Send(new ChildProcessHostMsg_PreCacheFont(
       *static_cast<const LOGFONTW*>(logfontw)));
 #endif
+}
+
+void PpapiThread::SetActiveURL(const std::string& url) {
+  content::GetContentClient()->SetActiveURL(GURL(url));
 }
 
 uint32 PpapiThread::Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) {

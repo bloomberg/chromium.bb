@@ -35,6 +35,7 @@ void TestFlash::RunTests(const std::string& filter) {
   RUN_TEST(GetDeviceID, filter);
   RUN_TEST(GetSettingInt, filter);
   RUN_TEST(GetSetting, filter);
+  RUN_TEST(SetCrashData, filter);
 }
 
 std::string TestFlash::TestSetInstanceAlwaysOnTop() {
@@ -172,6 +173,15 @@ std::string TestFlash::TestGetSetting() {
   result = Var(pp::PASS_REF,
                flash_interface_->GetSetting(0, PP_FLASHSETTING_STAGE3DENABLED));
   ASSERT_TRUE(result.is_undefined());
+
+  PASS();
+}
+
+std::string TestFlash::TestSetCrashData() {
+  pp::Var url("http://...");
+  ASSERT_TRUE(flash_interface_->SetCrashData(instance_->pp_instance(),
+                                             PP_FLASHCRASHKEY_URL,
+                                             url.pp_var()));
 
   PASS();
 }

@@ -64,6 +64,7 @@ class PpapiThread : public ChildThread,
   virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
   virtual std::string GetUILanguage() OVERRIDE;
   virtual void PreCacheFont(const void* logfontw) OVERRIDE;
+  virtual void SetActiveURL(const std::string& url) OVERRIDE;
 
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);

@@ -24,6 +24,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_Flash_12_5>() {
+  return PPB_FLASH_INTERFACE_12_5;
+}
+
 template <> const char* interface_name<PPB_Flash_12_4>() {
   return PPB_FLASH_INTERFACE_12_4;
 }
@@ -61,7 +65,10 @@ PPB_Flash flash_12_combined_interface;
 void InitializeCombinedInterface() {
   if (initialized_combined_interface)
     return;
-  if (has_interface<PPB_Flash_12_4>()) {
+  if (has_interface<PPB_Flash_12_5>()) {
+    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_5>(),
+           sizeof(PPB_Flash_12_5));
+  } else if (has_interface<PPB_Flash_12_4>()) {
     memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_4>(),
            sizeof(PPB_Flash_12_4));
   } else if (has_interface<PPB_Flash_12_3>()) {
@@ -86,7 +93,8 @@ namespace flash {
 
 // static
 bool Flash::IsAvailable() {
-  return has_interface<PPB_Flash_12_4>() ||
+  return has_interface<PPB_Flash_12_5>() ||
+         has_interface<PPB_Flash_12_4>() ||
          has_interface<PPB_Flash_12_3>() ||
          has_interface<PPB_Flash_12_2>() ||
          has_interface<PPB_Flash_12_1>() ||
@@ -246,6 +254,19 @@ Var Flash::GetSetting(const InstanceHandle& instance, PP_FlashSetting setting) {
   }
 
   return Var();
+}
+
+// static
+bool Flash::SetCrashData(const InstanceHandle& instance,
+                         PP_FlashCrashKey key,
+                         const pp::Var& value) {
+  InitializeCombinedInterface();
+  if (flash_12_combined_interface.SetCrashData) {
+    return PP_ToBool(
+        flash_12_combined_interface.SetCrashData(instance.pp_instance(),
+                                                 key, value.pp_var()));
+  }
+  return false;
 }
 
 // static

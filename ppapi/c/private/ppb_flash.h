@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Jun 14 16:38:53 2012. */
+/* From private/ppb_flash.idl modified Mon Jun 25 12:46:59 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -26,7 +26,8 @@
 #define PPB_FLASH_INTERFACE_12_2 "PPB_Flash;12.2"
 #define PPB_FLASH_INTERFACE_12_3 "PPB_Flash;12.3"
 #define PPB_FLASH_INTERFACE_12_4 "PPB_Flash;12.4"
-#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_4
+#define PPB_FLASH_INTERFACE_12_5 "PPB_Flash;12.5"
+#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_5
 
 /**
  * @file
@@ -82,6 +83,17 @@ typedef enum {
   PP_FLASHSETTING_NUMCORES = 5
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
+
+/**
+ * This enum provides keys for setting breakpad crash report data.
+ */
+typedef enum {
+  /**
+   * Specifies the document URL which contains the flash instance.
+   */
+  PP_FLASHCRASHKEY_URL = 1
+} PP_FlashCrashKey;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashCrashKey, 4);
 /**
  * @}
  */
@@ -94,7 +106,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
  * The <code>PPB_Flash</code> interface contains pointers to various functions
  * that are only needed to support Pepper Flash.
  */
-struct PPB_Flash_12_4 {
+struct PPB_Flash_12_5 {
   /**
    * Sets or clears the rendering hint that the given plugin instance is always
    * on top of page content. Somewhat more optimized painting can be used in
@@ -191,9 +203,16 @@ struct PPB_Flash_12_4 {
    * result in an undefined PP_Var return value.
    */
   struct PP_Var (*GetSetting)(PP_Instance instance, PP_FlashSetting setting);
+  /**
+   * Allows setting breakpad crash data which will be included in plugin crash
+   * reports. Returns PP_FALSE if crash data could not be set.
+   */
+  PP_Bool (*SetCrashData)(PP_Instance instance,
+                          PP_FlashCrashKey key,
+                          struct PP_Var value);
 };
 
-typedef struct PPB_Flash_12_4 PPB_Flash;
+typedef struct PPB_Flash_12_5 PPB_Flash;
 
 struct PPB_Flash_12_0 {
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
@@ -301,6 +320,36 @@ struct PPB_Flash_12_3 {
   void (*UpdateActivity)(PP_Instance instance);
   struct PP_Var (*GetDeviceID)(PP_Instance instance);
   int32_t (*GetSettingInt)(PP_Instance instance, PP_FlashSetting setting);
+};
+
+struct PPB_Flash_12_4 {
+  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
+  PP_Bool (*DrawGlyphs)(PP_Instance instance,
+                        PP_Resource pp_image_data,
+                        const struct PP_FontDescription_Dev* font_desc,
+                        uint32_t color,
+                        const struct PP_Point* position,
+                        const struct PP_Rect* clip,
+                        const float transformation[3][3],
+                        PP_Bool allow_subpixel_aa,
+                        uint32_t glyph_count,
+                        const uint16_t glyph_indices[],
+                        const struct PP_Point glyph_advances[]);
+  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
+  int32_t (*Navigate)(PP_Resource request_info,
+                      const char* target,
+                      PP_Bool from_user_action);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
+  struct PP_Var (*GetCommandLineArgs)(PP_Module module);
+  void (*PreloadFontWin)(const void* logfontw);
+  PP_Bool (*IsRectTopmost)(PP_Instance instance, const struct PP_Rect* rect);
+  int32_t (*InvokePrinting)(PP_Instance instance);
+  void (*UpdateActivity)(PP_Instance instance);
+  struct PP_Var (*GetDeviceID)(PP_Instance instance);
+  int32_t (*GetSettingInt)(PP_Instance instance, PP_FlashSetting setting);
+  struct PP_Var (*GetSetting)(PP_Instance instance, PP_FlashSetting setting);
 };
 /**
  * @}

@@ -144,6 +144,15 @@ PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting) {
   return enter.functions()->GetFlashAPI()->GetSetting(instance, setting);
 }
 
+PP_Bool SetCrashData(PP_Instance instance,
+                     PP_FlashCrashKey key,
+                     PP_Var value) {
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return PP_FALSE;
+  return enter.functions()->GetFlashAPI()->SetCrashData(instance, key, value);
+}
+
 const PPB_Flash_12_0 g_ppb_flash_12_0_thunk = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
@@ -222,6 +231,25 @@ const PPB_Flash_12_4 g_ppb_flash_12_4_thunk = {
   &GetSetting
 };
 
+const PPB_Flash_12_5 g_ppb_flash_12_5_thunk = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs,
+  &GetProxyForURL,
+  &Navigate,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs,
+  &PreLoadFontWin,
+  &IsRectTopmost,
+  &InvokePrinting,
+  &UpdateActivity,
+  &GetDeviceID,
+  &GetSettingInt,
+  &GetSetting,
+  &SetCrashData
+};
+
 }  // namespace
 
 const PPB_Flash_12_0* GetPPB_Flash_12_0_Thunk() {
@@ -242,6 +270,10 @@ const PPB_Flash_12_3* GetPPB_Flash_12_3_Thunk() {
 
 const PPB_Flash_12_4* GetPPB_Flash_12_4_Thunk() {
   return &g_ppb_flash_12_4_thunk;
+}
+
+const PPB_Flash_12_5* GetPPB_Flash_12_5_Thunk() {
+  return &g_ppb_flash_12_5_thunk;
 }
 
 }  // namespace thunk

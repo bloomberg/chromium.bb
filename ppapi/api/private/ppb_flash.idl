@@ -12,7 +12,8 @@ label Chrome {
   M19 = 12.1,
   M20_0 = 12.2,
   M20_1 = 12.3,
-  M21 = 12.4
+  M21 = 12.4,
+  M22 = 12.5
 };
 
 [assert_size(4)]
@@ -62,6 +63,17 @@ enum PP_FlashSetting {
    * Specifies the number of CPU cores that are present on the system.
    */
   PP_FLASHSETTING_NUMCORES = 5
+};
+
+/**
+ * This enum provides keys for setting breakpad crash report data.
+ */
+[assert_size(4)]
+enum PP_FlashCrashKey {
+  /**
+   * Specifies the document URL which contains the flash instance.
+   */
+  PP_FLASHCRASHKEY_URL = 1
 };
 
 /**
@@ -202,4 +214,13 @@ interface PPB_Flash {
    */
   [version=12.4]
   PP_Var GetSetting(PP_Instance instance, PP_FlashSetting setting);
+
+  /**
+   * Allows setting breakpad crash data which will be included in plugin crash
+   * reports. Returns PP_FALSE if crash data could not be set.
+   */
+  [version=12.5]
+  PP_Bool SetCrashData([in] PP_Instance instance,
+                       [in] PP_FlashCrashKey key,
+                       [in] PP_Var value);
 };

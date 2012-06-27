@@ -32,6 +32,7 @@ class TestFlash : public TestCase {
   std::string TestGetDeviceID();
   std::string TestGetSettingInt();
   std::string TestGetSetting();
+  std::string TestSetCrashData();
 
   void QuitMessageLoopTask(int32_t);
 

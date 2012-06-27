@@ -22,7 +22,10 @@ PROXIED_IFACE(PPB_Flash,
               PPB_Flash_12_3)
 PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_INTERFACE_12_4,
-              PPB_Flash_12_4)
+            PPB_Flash_12_4)
+PROXIED_IFACE(PPB_Flash,
+              PPB_FLASH_INTERFACE_12_5,
+              PPB_Flash_12_5)
 
 PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY,

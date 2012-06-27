@@ -254,6 +254,14 @@ PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
   return PP_MakeUndefined();
 }
 
+PP_Bool PPB_Flash_Impl::SetCrashData(PP_Instance instance,
+                                     PP_FlashCrashKey key,
+                                     PP_Var value) {
+  // Not implemented in process.
+  return PP_FALSE;
+}
+
+
 PP_Bool PPB_Flash_Impl::IsClipboardFormatAvailable(
     PP_Instance instance,
     PP_Flash_Clipboard_Type clipboard_type,

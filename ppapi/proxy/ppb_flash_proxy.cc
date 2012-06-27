@@ -307,6 +307,21 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
   return PP_MakeUndefined();
 }
 
+PP_Bool PPB_Flash_Proxy::SetCrashData(PP_Instance instance,
+                                      PP_FlashCrashKey key,
+                                      PP_Var value) {
+  switch (key) {
+    case PP_FLASHCRASHKEY_URL:
+      StringVar *url_string_var(StringVar::FromPPVar(value));
+      if (!url_string_var)
+        return PP_FALSE;
+      std::string url_string(url_string_var->value());
+      PluginGlobals::Get()->plugin_proxy_delegate()->SetActiveURL(url_string);
+      return PP_TRUE;
+  }
+  return PP_FALSE;
+}
+
 PP_Bool PPB_Flash_Proxy::IsClipboardFormatAvailable(
     PP_Instance instance,
     PP_Flash_Clipboard_Type clipboard_type,

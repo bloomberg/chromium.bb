@@ -60,6 +60,9 @@ class Flash {
   static Var GetDeviceID(const InstanceHandle& instance);
   static Var GetSetting(const InstanceHandle& instance,
                         PP_FlashSetting setting);
+  static bool SetCrashData(const InstanceHandle& instance,
+                           PP_FlashCrashKey key,
+                           const pp::Var& value);
 
   // PPB_Flash_Print.
   static bool InvokePrinting(const InstanceHandle& instance);
