@@ -127,46 +127,41 @@ const FilePath::CharType kExtensionKeyFileExtension[] = FPL(".pem");
 const FilePath::CharType kAndroidCacheFilename[] = FPL("AndroidCache");
 #endif
 const FilePath::CharType kArchivedHistoryFilename[] = FPL("Archived History");
+const FilePath::CharType kBookmarksFileName[] = FPL("Bookmarks");
 const FilePath::CharType kCacheDirname[] = FPL("Cache");
+const FilePath::CharType kCookieFilename[] = FPL("Cookies");
 const FilePath::CharType kCRLSetFilename[] =
     FPL("Certificate Revocation Lists");
-const FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
-const FilePath::CharType kOffTheRecordMediaCacheDirname[] =
-    FPL("Incognito Media Cache");
-const FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
-const FilePath::CharType kCookieFilename[] = FPL("Cookies");
-const FilePath::CharType kOBCertFilename[] = FPL("Origin Bound Certs");
-const FilePath::CharType kExtensionsCookieFilename[] = FPL("Extension Cookies");
-const FilePath::CharType kIsolatedAppStateDirname[] = FPL("Isolated Apps");
-const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
-const FilePath::CharType kHistoryFilename[] = FPL("History");
-const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
-const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
-const FilePath::CharType kSafeBrowsingBaseFilename[] = FPL("Safe Browsing");
-const FilePath::CharType kSingletonCookieFilename[] = FPL("SingletonCookie");
-const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");
-const FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
-const FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
-const FilePath::CharType kNewTabThumbnailsFilename[] = FPL("Top Thumbnails");
-const FilePath::CharType kTopSitesFilename[] = FPL("Top Sites");
-const wchar_t kUserDataDirname[] = L"User Data";
-const FilePath::CharType kWebDataFilename[] = FPL("Web Data");
-const FilePath::CharType kBookmarksFileName[] = FPL("Bookmarks");
-const FilePath::CharType kHistoryBookmarksFileName[] =
-    FPL("Bookmarks From History");
 const FilePath::CharType kCustomDictionaryFileName[] =
     FPL("Custom Dictionary.txt");
-const FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
+const FilePath::CharType kExtensionsCookieFilename[] = FPL("Extension Cookies");
+const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
+const FilePath::CharType kHistoryBookmarksFileName[] =
+    FPL("Bookmarks From History");
+const FilePath::CharType kHistoryFilename[] = FPL("History");
+const FilePath::CharType kIsolatedAppStateDirname[] = FPL("Isolated Apps");
 const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
-const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
-const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
-const FilePath::CharType kReadmeFilename[] = FPL("README");
+const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
+const FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const FilePath::CharType kManagedModePolicyFilename[] =
     FPL("Managed Mode Settings");
-
-#if defined(OS_CHROMEOS)
-const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");
-#endif  // defined(OS_CHROMEOS)
+const FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
+const FilePath::CharType kNewTabThumbnailsFilename[] = FPL("Top Thumbnails");
+const FilePath::CharType kOBCertFilename[] = FPL("Origin Bound Certs");
+const FilePath::CharType kOffTheRecordMediaCacheDirname[] =
+    FPL("Incognito Media Cache");
+const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
+const FilePath::CharType kReadmeFilename[] = FPL("README");
+const FilePath::CharType kSafeBrowsingBaseFilename[] = FPL("Safe Browsing");
+const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
+const FilePath::CharType kSingletonCookieFilename[] = FPL("SingletonCookie");
+const FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
+const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");
+const FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
+const FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
+const FilePath::CharType kTopSitesFilename[] = FPL("Top Sites");
+const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
+const FilePath::CharType kWebDataFilename[] = FPL("Web Data");
 
 // File name of the Pepper Flash plugin on different platforms.
 const FilePath::CharType kPepperFlashPluginFilename[] =
@@ -177,6 +172,13 @@ const FilePath::CharType kPepperFlashPluginFilename[] =
 #else  // OS_LINUX, etc.
     FPL("libpepflashplayer.so");
 #endif
+
+// directory names
+const wchar_t kUserDataDirname[] = L"User Data";
+
+#if defined(OS_CHROMEOS)
+const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");
+#endif  // defined(OS_CHROMEOS)
 
 // We don't enable record mode in the released product because users could
 // potentially be tricked into running a product in record mode without

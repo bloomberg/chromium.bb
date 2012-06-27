@@ -57,44 +57,46 @@ extern const FilePath::CharType kExtensionKeyFileExtension[];
 extern const FilePath::CharType kAndroidCacheFilename[];
 #endif
 extern const FilePath::CharType kArchivedHistoryFilename[];
-extern const FilePath::CharType kCacheDirname[];
-extern const FilePath::CharType kCRLSetFilename[];
-extern const FilePath::CharType kMediaCacheDirname[];
-extern const FilePath::CharType kOffTheRecordMediaCacheDirname[];
-extern const FilePath::CharType kThemePackFilename[];
-extern const FilePath::CharType kCookieFilename[];
-extern const FilePath::CharType kOBCertFilename[];
-extern const FilePath::CharType kExtensionsCookieFilename[];
-extern const FilePath::CharType kIsolatedAppStateDirname[];
-extern const FilePath::CharType kFaviconsFilename[];
-extern const FilePath::CharType kHistoryFilename[];
-extern const FilePath::CharType kLocalStateFilename[];
-extern const FilePath::CharType kPreferencesFilename[];
-extern const FilePath::CharType kSafeBrowsingBaseFilename[];
-extern const FilePath::CharType kSingletonCookieFilename[];
-extern const FilePath::CharType kSingletonSocketFilename[];
-extern const FilePath::CharType kSingletonLockFilename[];
-extern const FilePath::CharType kThumbnailsFilename[];
-extern const FilePath::CharType kNewTabThumbnailsFilename[];
-extern const FilePath::CharType kTopSitesFilename[];
-extern const wchar_t kUserDataDirname[];
-extern const FilePath::CharType kWebDataFilename[];
 extern const FilePath::CharType kBookmarksFileName[];
-extern const FilePath::CharType kHistoryBookmarksFileName[];
+extern const FilePath::CharType kCacheDirname[];
+extern const FilePath::CharType kCookieFilename[];
+extern const FilePath::CharType kCRLSetFilename[];
 extern const FilePath::CharType kCustomDictionaryFileName[];
-extern const FilePath::CharType kLoginDataFileName[];
+extern const FilePath::CharType kExtensionsCookieFilename[];
+extern const FilePath::CharType kFaviconsFilename[];
+extern const FilePath::CharType kHistoryBookmarksFileName[];
+extern const FilePath::CharType kHistoryFilename[];
+extern const FilePath::CharType kIsolatedAppStateDirname[];
 extern const FilePath::CharType kJumpListIconDirname[];
-extern const FilePath::CharType kWebAppDirname[];
-extern const FilePath::CharType kServiceStateFileName[];
-extern const FilePath::CharType kReadmeFilename[];
+extern const FilePath::CharType kLocalStateFilename[];
+extern const FilePath::CharType kLoginDataFileName[];
 extern const FilePath::CharType kManagedModePolicyFilename[];
+extern const FilePath::CharType kMediaCacheDirname[];
+extern const FilePath::CharType kNewTabThumbnailsFilename[];
+extern const FilePath::CharType kOBCertFilename[];
+extern const FilePath::CharType kOffTheRecordMediaCacheDirname[];
+extern const FilePath::CharType kPreferencesFilename[];
+extern const FilePath::CharType kReadmeFilename[];
+extern const FilePath::CharType kSafeBrowsingBaseFilename[];
+extern const FilePath::CharType kServiceStateFileName[];
+extern const FilePath::CharType kSingletonCookieFilename[];
+extern const FilePath::CharType kSingletonLockFilename[];
+extern const FilePath::CharType kSingletonSocketFilename[];
+extern const FilePath::CharType kThemePackFilename[];
+extern const FilePath::CharType kThumbnailsFilename[];
+extern const FilePath::CharType kTopSitesFilename[];
+extern const FilePath::CharType kWebAppDirname[];
+extern const FilePath::CharType kWebDataFilename[];
+
+// File name of the Pepper Flash plugin on different platforms.
+extern const FilePath::CharType kPepperFlashPluginFilename[];
+
+// directory names
+extern const wchar_t kUserDataDirname[];
 
 #if defined(OS_CHROMEOS)
 extern const FilePath::CharType kGDataCacheDirname[];
 #endif  // defined(OS_CHROMEOS)
-
-// File name of the Pepper Flash plugin on different platforms.
-extern const FilePath::CharType kPepperFlashPluginFilename[];
 
 extern const bool kRecordModeEnabled;
 
