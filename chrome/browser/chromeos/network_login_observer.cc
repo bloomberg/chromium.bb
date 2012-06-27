@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/network_login_observer.h"
 
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "ui/views/widget/widget.h"
@@ -12,12 +11,10 @@
 
 namespace chromeos {
 
-NetworkLoginObserver::NetworkLoginObserver(NetworkLibrary* netlib) {
-  netlib->AddNetworkManagerObserver(this);
+NetworkLoginObserver::NetworkLoginObserver() {
 }
 
 NetworkLoginObserver::~NetworkLoginObserver() {
-  CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {

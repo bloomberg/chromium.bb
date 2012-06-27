@@ -62,7 +62,8 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       is_locked_(false),
       sim_operation_(SIM_OPERATION_NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(notify_manager_weak_factory_(this)) {
-  network_login_observer_.reset(new NetworkLoginObserver(this));
+  network_login_observer_.reset(new NetworkLoginObserver());
+  AddNetworkManagerObserver(network_login_observer_.get());
 }
 
 NetworkLibraryImplBase::~NetworkLibraryImplBase() {
