@@ -441,7 +441,10 @@ bool TestingAutomationProvider::OnMessageReceived(
         GoForwardBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
-                                    SendJSONRequest)
+                                    SendJSONRequestWithBrowserIndex)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        AutomationMsg_SendJSONRequestWithBrowserHandle,
+        SendJSONRequestWithBrowserHandle)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabCountToBecome,
                                     WaitForTabCountToBecome)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForInfoBarCount,
@@ -1664,441 +1667,472 @@ void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {
   }
 }
 
-void TestingAutomationProvider::SendJSONRequest(int handle,
-                                                const std::string& json_request,
-                                                IPC::Message* reply_message) {
-  std::string error;
-  scoped_ptr<Value> values(base::JSONReader::ReadAndReturnError(json_request,
-      base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
-  if (!error.empty()) {
-    AutomationJSONReply(this, reply_message).SendError(error);
-    return;
-  }
-
-  // Make sure input is a dict with a string command.
-  std::string command;
-  DictionaryValue* dict_value = NULL;
-  if (values->GetType() != Value::TYPE_DICTIONARY) {
-    AutomationJSONReply(this, reply_message).SendError("not a dict");
-    return;
-  }
-  // Ownership remains with "values" variable.
-  dict_value = static_cast<DictionaryValue*>(values.get());
-  if (!dict_value->GetStringASCII(std::string("command"), &command)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("no command key in dict or not a string command");
-    return;
-  }
-
+void TestingAutomationProvider::BuildJSONHandlerMaps() {
   // Map json commands to their handlers.
-  std::map<std::string, JsonHandler> handler_map;
-  handler_map["WaitForAllTabsToStopLoading"] =
+  handler_map_["WaitForAllTabsToStopLoading"] =
       &TestingAutomationProvider::WaitForAllViewsToStopLoading;
-  handler_map["GetIndicesFromTab"] =
+  handler_map_["GetIndicesFromTab"] =
       &TestingAutomationProvider::GetIndicesFromTab;
-  handler_map["NavigateToURL"] =
+  handler_map_["NavigateToURL"] =
       &TestingAutomationProvider::NavigateToURL;
-  handler_map["WaitUntilNavigationCompletes"] =
+  handler_map_["WaitUntilNavigationCompletes"] =
       &TestingAutomationProvider::WaitUntilNavigationCompletes;
-  handler_map["GetLocalStatePrefsInfo"] =
+  handler_map_["GetLocalStatePrefsInfo"] =
       &TestingAutomationProvider::GetLocalStatePrefsInfo;
-  handler_map["SetLocalStatePrefs"] =
+  handler_map_["SetLocalStatePrefs"] =
       &TestingAutomationProvider::SetLocalStatePrefs;
-  handler_map["GetPrefsInfo"] = &TestingAutomationProvider::GetPrefsInfo;
-  handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
-  handler_map["ExecuteJavascript"] =
+  handler_map_["GetPrefsInfo"] = &TestingAutomationProvider::GetPrefsInfo;
+  handler_map_["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
+  handler_map_["ExecuteJavascript"] =
       &TestingAutomationProvider::ExecuteJavascriptJSON;
-  handler_map["AddDomEventObserver"] =
+  handler_map_["AddDomEventObserver"] =
       &TestingAutomationProvider::AddDomEventObserver;
-  handler_map["RemoveEventObserver"] =
+  handler_map_["RemoveEventObserver"] =
       &TestingAutomationProvider::RemoveEventObserver;
-  handler_map["GetNextEvent"] =
+  handler_map_["GetNextEvent"] =
       &TestingAutomationProvider::GetNextEvent;
-  handler_map["ClearEventQueue"] =
+  handler_map_["ClearEventQueue"] =
       &TestingAutomationProvider::ClearEventQueue;
-  handler_map["ExecuteJavascriptInRenderView"] =
+  handler_map_["ExecuteJavascriptInRenderView"] =
       &TestingAutomationProvider::ExecuteJavascriptInRenderView;
-  handler_map["GoForward"] =
+  handler_map_["GoForward"] =
       &TestingAutomationProvider::GoForward;
-  handler_map["GoBack"] =
+  handler_map_["GoBack"] =
       &TestingAutomationProvider::GoBack;
-  handler_map["Reload"] =
+  handler_map_["Reload"] =
       &TestingAutomationProvider::ReloadJSON;
-  handler_map["CaptureEntirePage"] =
+  handler_map_["CaptureEntirePage"] =
       &TestingAutomationProvider::CaptureEntirePageJSON;
-  handler_map["GetCookies"] =
+  handler_map_["GetCookies"] =
       &TestingAutomationProvider::GetCookiesJSON;
-  handler_map["DeleteCookie"] =
+  handler_map_["DeleteCookie"] =
       &TestingAutomationProvider::DeleteCookieJSON;
-  handler_map["SetCookie"] =
+  handler_map_["SetCookie"] =
       &TestingAutomationProvider::SetCookieJSON;
-  handler_map["GetTabIds"] =
+  handler_map_["GetTabIds"] =
       &TestingAutomationProvider::GetTabIds;
-  handler_map["GetViews"] =
+  handler_map_["GetViews"] =
       &TestingAutomationProvider::GetViews;
-  handler_map["IsTabIdValid"] =
+  handler_map_["IsTabIdValid"] =
       &TestingAutomationProvider::IsTabIdValid;
-  handler_map["DoesAutomationObjectExist"] =
+  handler_map_["DoesAutomationObjectExist"] =
       &TestingAutomationProvider::DoesAutomationObjectExist;
-  handler_map["CloseTab"] =
+  handler_map_["CloseTab"] =
       &TestingAutomationProvider::CloseTabJSON;
-  handler_map["SetViewBounds"] =
+  handler_map_["SetViewBounds"] =
       &TestingAutomationProvider::SetViewBounds;
-  handler_map["MaximizeView"] =
+  handler_map_["MaximizeView"] =
       &TestingAutomationProvider::MaximizeView;
-  handler_map["WebkitMouseMove"] =
+  handler_map_["WebkitMouseMove"] =
       &TestingAutomationProvider::WebkitMouseMove;
-  handler_map["WebkitMouseClick"] =
+  handler_map_["WebkitMouseClick"] =
       &TestingAutomationProvider::WebkitMouseClick;
-  handler_map["WebkitMouseDrag"] =
+  handler_map_["WebkitMouseDrag"] =
       &TestingAutomationProvider::WebkitMouseDrag;
-  handler_map["WebkitMouseButtonUp"] =
+  handler_map_["WebkitMouseButtonUp"] =
       &TestingAutomationProvider::WebkitMouseButtonUp;
-  handler_map["WebkitMouseButtonDown"] =
+  handler_map_["WebkitMouseButtonDown"] =
       &TestingAutomationProvider::WebkitMouseButtonDown;
-  handler_map["WebkitMouseDoubleClick"] =
+  handler_map_["WebkitMouseDoubleClick"] =
       &TestingAutomationProvider::WebkitMouseDoubleClick;
-  handler_map["DragAndDropFilePaths"] =
+  handler_map_["DragAndDropFilePaths"] =
       &TestingAutomationProvider::DragAndDropFilePaths;
-  handler_map["SendWebkitKeyEvent"] =
+  handler_map_["SendWebkitKeyEvent"] =
       &TestingAutomationProvider::SendWebkitKeyEvent;
-  handler_map["SendOSLevelKeyEventToTab"] =
+  handler_map_["SendOSLevelKeyEventToTab"] =
       &TestingAutomationProvider::SendOSLevelKeyEventToTab;
-  handler_map["ProcessWebMouseEvent"] =
+  handler_map_["ProcessWebMouseEvent"] =
       &TestingAutomationProvider::ProcessWebMouseEvent;
-  handler_map["ActivateTab"] =
+  handler_map_["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
-  handler_map["GetAppModalDialogMessage"] =
+  handler_map_["GetAppModalDialogMessage"] =
       &TestingAutomationProvider::GetAppModalDialogMessage;
-  handler_map["AcceptOrDismissAppModalDialog"] =
+  handler_map_["AcceptOrDismissAppModalDialog"] =
       &TestingAutomationProvider::AcceptOrDismissAppModalDialog;
-  handler_map["GetChromeDriverAutomationVersion"] =
+  handler_map_["GetChromeDriverAutomationVersion"] =
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
-  handler_map["IsPageActionVisible"] =
+  handler_map_["IsPageActionVisible"] =
       &TestingAutomationProvider::IsPageActionVisible;
-  handler_map["CreateNewAutomationProvider"] =
+  handler_map_["CreateNewAutomationProvider"] =
       &TestingAutomationProvider::CreateNewAutomationProvider;
-  handler_map["GetBrowserInfo"] =
+  handler_map_["GetBrowserInfo"] =
       &TestingAutomationProvider::GetBrowserInfo;
-  handler_map["OpenNewBrowserWindowWithNewProfile"] =
+  handler_map_["OpenNewBrowserWindowWithNewProfile"] =
       &TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile;
-  handler_map["GetMultiProfileInfo"] =
+  handler_map_["GetMultiProfileInfo"] =
       &TestingAutomationProvider::GetMultiProfileInfo;
-  handler_map["OpenProfileWindow"] =
+  handler_map_["OpenProfileWindow"] =
       &TestingAutomationProvider::OpenProfileWindow;
-  handler_map["GetProcessInfo"] =
+  handler_map_["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
-  handler_map["GetPolicyDefinitionList"] =
+  handler_map_["GetPolicyDefinitionList"] =
       &TestingAutomationProvider::GetPolicyDefinitionList;
-  handler_map["RefreshPolicies"] =
+  handler_map_["RefreshPolicies"] =
       &TestingAutomationProvider::RefreshPolicies;
-  handler_map["InstallExtension"] =
+  handler_map_["InstallExtension"] =
       &TestingAutomationProvider::InstallExtension;
-  handler_map["GetExtensionsInfo"] =
+  handler_map_["GetExtensionsInfo"] =
       &TestingAutomationProvider::GetExtensionsInfo;
-  handler_map["UninstallExtensionById"] =
+  handler_map_["UninstallExtensionById"] =
       &TestingAutomationProvider::UninstallExtensionById;
-  handler_map["SetExtensionStateById"] =
+  handler_map_["SetExtensionStateById"] =
       &TestingAutomationProvider::SetExtensionStateById;
-  handler_map["TriggerPageActionById"] =
+  handler_map_["TriggerPageActionById"] =
       &TestingAutomationProvider::TriggerPageActionById;
-  handler_map["TriggerBrowserActionById"] =
+  handler_map_["TriggerBrowserActionById"] =
       &TestingAutomationProvider::TriggerBrowserActionById;
-  handler_map["UpdateExtensionsNow"] =
+  handler_map_["UpdateExtensionsNow"] =
       &TestingAutomationProvider::UpdateExtensionsNow;
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-  handler_map["HeapProfilerDump"] =
+  handler_map_["HeapProfilerDump"] =
       &TestingAutomationProvider::HeapProfilerDump;
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-  handler_map["OverrideGeoposition"] =
+  handler_map_["OverrideGeoposition"] =
       &TestingAutomationProvider::OverrideGeoposition;
-  handler_map["AppendSwitchASCIIToCommandLine"] =
+  handler_map_["AppendSwitchASCIIToCommandLine"] =
       &TestingAutomationProvider::AppendSwitchASCIIToCommandLine;
-  handler_map["SimulateAsanMemoryBug"] =
+  handler_map_["SimulateAsanMemoryBug"] =
       &TestingAutomationProvider::SimulateAsanMemoryBug;
 
 #if defined(OS_CHROMEOS)
-  handler_map["AcceptOOBENetworkScreen"] =
+  handler_map_["AcceptOOBENetworkScreen"] =
       &TestingAutomationProvider::AcceptOOBENetworkScreen;
-  handler_map["AcceptOOBEEula"] = &TestingAutomationProvider::AcceptOOBEEula;
-  handler_map["CancelOOBEUpdate"] =
+  handler_map_["AcceptOOBEEula"] = &TestingAutomationProvider::AcceptOOBEEula;
+  handler_map_["CancelOOBEUpdate"] =
       &TestingAutomationProvider::CancelOOBEUpdate;
-  handler_map["PickUserImage"] = &TestingAutomationProvider::PickUserImage;
-  handler_map["SkipToLogin"] = &TestingAutomationProvider::SkipToLogin;
-  handler_map["GetOOBEScreenInfo"] =
+  handler_map_["PickUserImage"] = &TestingAutomationProvider::PickUserImage;
+  handler_map_["SkipToLogin"] = &TestingAutomationProvider::SkipToLogin;
+  handler_map_["GetOOBEScreenInfo"] =
       &TestingAutomationProvider::GetOOBEScreenInfo;
 
-  handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
-  handler_map["ShowCreateAccountUI"] =
+  handler_map_["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
+  handler_map_["ShowCreateAccountUI"] =
       &TestingAutomationProvider::ShowCreateAccountUI;
-  handler_map["ExecuteJavascriptInOOBEWebUI"] =
+  handler_map_["ExecuteJavascriptInOOBEWebUI"] =
       &TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI;
-  handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
-  handler_map["SubmitLoginForm"] = &TestingAutomationProvider::SubmitLoginForm;
-  handler_map["AddLoginEventObserver"] =
+  handler_map_["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
+  handler_map_["SubmitLoginForm"] =
+      &TestingAutomationProvider::SubmitLoginForm;
+  handler_map_["AddLoginEventObserver"] =
       &TestingAutomationProvider::AddLoginEventObserver;
-  handler_map["SignOut"] = &TestingAutomationProvider::SignOut;
+  handler_map_["SignOut"] = &TestingAutomationProvider::SignOut;
 
-  handler_map["LockScreen"] = &TestingAutomationProvider::LockScreen;
-  handler_map["UnlockScreen"] = &TestingAutomationProvider::UnlockScreen;
-  handler_map["SignoutInScreenLocker"] =
+  handler_map_["LockScreen"] = &TestingAutomationProvider::LockScreen;
+  handler_map_["UnlockScreen"] = &TestingAutomationProvider::UnlockScreen;
+  handler_map_["SignoutInScreenLocker"] =
       &TestingAutomationProvider::SignoutInScreenLocker;
 
-  handler_map["GetBatteryInfo"] = &TestingAutomationProvider::GetBatteryInfo;
+  handler_map_["GetBatteryInfo"] = &TestingAutomationProvider::GetBatteryInfo;
 
-  handler_map["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
-  handler_map["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
-  handler_map["ToggleNetworkDevice"] =
+  handler_map_["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
+  handler_map_["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
+  handler_map_["ToggleNetworkDevice"] =
       &TestingAutomationProvider::ToggleNetworkDevice;
-  handler_map["ConnectToCellularNetwork"] =
+  handler_map_["ConnectToCellularNetwork"] =
       &TestingAutomationProvider::ConnectToCellularNetwork;
-  handler_map["DisconnectFromCellularNetwork"] =
+  handler_map_["DisconnectFromCellularNetwork"] =
       &TestingAutomationProvider::DisconnectFromCellularNetwork;
-  handler_map["ConnectToWifiNetwork"] =
+  handler_map_["ConnectToWifiNetwork"] =
       &TestingAutomationProvider::ConnectToWifiNetwork;
-  handler_map["ConnectToHiddenWifiNetwork"] =
+  handler_map_["ConnectToHiddenWifiNetwork"] =
       &TestingAutomationProvider::ConnectToHiddenWifiNetwork;
-  handler_map["DisconnectFromWifiNetwork"] =
+  handler_map_["DisconnectFromWifiNetwork"] =
       &TestingAutomationProvider::DisconnectFromWifiNetwork;
-  handler_map["ForgetWifiNetwork"] =
+  handler_map_["ForgetWifiNetwork"] =
       &TestingAutomationProvider::ForgetWifiNetwork;
 
-  handler_map["AddPrivateNetwork"] =
+  handler_map_["AddPrivateNetwork"] =
       &TestingAutomationProvider::AddPrivateNetwork;
-  handler_map["GetPrivateNetworkInfo"] =
+  handler_map_["GetPrivateNetworkInfo"] =
       &TestingAutomationProvider::GetPrivateNetworkInfo;
-  handler_map["ConnectToPrivateNetwork"] =
+  handler_map_["ConnectToPrivateNetwork"] =
       &TestingAutomationProvider::ConnectToPrivateNetwork;
-  handler_map["DisconnectFromPrivateNetwork"] =
+  handler_map_["DisconnectFromPrivateNetwork"] =
       &TestingAutomationProvider::DisconnectFromPrivateNetwork;
 
-  handler_map["IsEnterpriseDevice"] =
+  handler_map_["IsEnterpriseDevice"] =
       &TestingAutomationProvider::IsEnterpriseDevice;
-  handler_map["GetEnterprisePolicyInfo"] =
+  handler_map_["GetEnterprisePolicyInfo"] =
       &TestingAutomationProvider::GetEnterprisePolicyInfo;
-  handler_map["EnrollEnterpriseDevice"] =
+  handler_map_["EnrollEnterpriseDevice"] =
       &TestingAutomationProvider::EnrollEnterpriseDevice;
 
-  handler_map["EnableSpokenFeedback"] =
+  handler_map_["EnableSpokenFeedback"] =
       &TestingAutomationProvider::EnableSpokenFeedback;
-  handler_map["IsSpokenFeedbackEnabled"] =
+  handler_map_["IsSpokenFeedbackEnabled"] =
       &TestingAutomationProvider::IsSpokenFeedbackEnabled;
 
-  handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
-  handler_map["SetTimezone"] = &TestingAutomationProvider::SetTimezone;
+  handler_map_["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
+  handler_map_["SetTimezone"] = &TestingAutomationProvider::SetTimezone;
 
-  handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
-  handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
-  handler_map["SetReleaseTrack"] = &TestingAutomationProvider::SetReleaseTrack;
+  handler_map_["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
+  handler_map_["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
+  handler_map_["SetReleaseTrack"] =
+      &TestingAutomationProvider::SetReleaseTrack;
 
-  handler_map["GetVolumeInfo"] = &TestingAutomationProvider::GetVolumeInfo;
-  handler_map["SetVolume"] = &TestingAutomationProvider::SetVolume;
-  handler_map["SetMute"] = &TestingAutomationProvider::SetMute;
+  handler_map_["GetVolumeInfo"] = &TestingAutomationProvider::GetVolumeInfo;
+  handler_map_["SetVolume"] = &TestingAutomationProvider::SetVolume;
+  handler_map_["SetMute"] = &TestingAutomationProvider::SetMute;
 
-  handler_map["OpenCrosh"] = &TestingAutomationProvider::OpenCrosh;
+  handler_map_["OpenCrosh"] = &TestingAutomationProvider::OpenCrosh;
 
 #endif  // defined(OS_CHROMEOS)
 
-  std::map<std::string, BrowserJsonHandler> browser_handler_map;
-  browser_handler_map["DisablePlugin"] =
+  browser_handler_map_["DisablePlugin"] =
       &TestingAutomationProvider::DisablePlugin;
-  browser_handler_map["EnablePlugin"] =
+  browser_handler_map_["EnablePlugin"] =
       &TestingAutomationProvider::EnablePlugin;
-  browser_handler_map["GetPluginsInfo"] =
+  browser_handler_map_["GetPluginsInfo"] =
       &TestingAutomationProvider::GetPluginsInfo;
 
-  browser_handler_map["GetNavigationInfo"] =
+  browser_handler_map_["GetNavigationInfo"] =
       &TestingAutomationProvider::GetNavigationInfo;
 
-  browser_handler_map["PerformActionOnInfobar"] =
+  browser_handler_map_["PerformActionOnInfobar"] =
       &TestingAutomationProvider::PerformActionOnInfobar;
 
-  browser_handler_map["GetHistoryInfo"] =
+  browser_handler_map_["GetHistoryInfo"] =
       &TestingAutomationProvider::GetHistoryInfo;
-  browser_handler_map["AddHistoryItem"] =
+  browser_handler_map_["AddHistoryItem"] =
       &TestingAutomationProvider::AddHistoryItem;
 
-  browser_handler_map["GetOmniboxInfo"] =
+  browser_handler_map_["GetOmniboxInfo"] =
       &TestingAutomationProvider::GetOmniboxInfo;
-  browser_handler_map["SetOmniboxText"] =
+  browser_handler_map_["SetOmniboxText"] =
       &TestingAutomationProvider::SetOmniboxText;
-  browser_handler_map["OmniboxAcceptInput"] =
+  browser_handler_map_["OmniboxAcceptInput"] =
       &TestingAutomationProvider::OmniboxAcceptInput;
-  browser_handler_map["OmniboxMovePopupSelection"] =
+  browser_handler_map_["OmniboxMovePopupSelection"] =
       &TestingAutomationProvider::OmniboxMovePopupSelection;
 
-  browser_handler_map["GetInstantInfo"] =
+  browser_handler_map_["GetInstantInfo"] =
       &TestingAutomationProvider::GetInstantInfo;
 
-  browser_handler_map["LoadSearchEngineInfo"] =
+  browser_handler_map_["LoadSearchEngineInfo"] =
       &TestingAutomationProvider::LoadSearchEngineInfo;
-  browser_handler_map["GetSearchEngineInfo"] =
+  browser_handler_map_["GetSearchEngineInfo"] =
       &TestingAutomationProvider::GetSearchEngineInfo;
-  browser_handler_map["AddOrEditSearchEngine"] =
+  browser_handler_map_["AddOrEditSearchEngine"] =
       &TestingAutomationProvider::AddOrEditSearchEngine;
-  browser_handler_map["PerformActionOnSearchEngine"] =
+  browser_handler_map_["PerformActionOnSearchEngine"] =
       &TestingAutomationProvider::PerformActionOnSearchEngine;
 
 #if defined(ENABLE_PROTECTOR_SERVICE)
-  browser_handler_map["GetProtectorState"] =
+  browser_handler_map_["GetProtectorState"] =
       &TestingAutomationProvider::GetProtectorState;
-  browser_handler_map["PerformProtectorAction"] =
+  browser_handler_map_["PerformProtectorAction"] =
       &TestingAutomationProvider::PerformProtectorAction;
 #endif
 
-  browser_handler_map["SetWindowDimensions"] =
+  browser_handler_map_["SetWindowDimensions"] =
       &TestingAutomationProvider::SetWindowDimensions;
 
-  browser_handler_map["GetDownloadsInfo"] =
+  browser_handler_map_["GetDownloadsInfo"] =
       &TestingAutomationProvider::GetDownloadsInfo;
-  browser_handler_map["WaitForAllDownloadsToComplete"] =
+  browser_handler_map_["WaitForAllDownloadsToComplete"] =
       &TestingAutomationProvider::WaitForAllDownloadsToComplete;
-  browser_handler_map["PerformActionOnDownload"] =
+  browser_handler_map_["PerformActionOnDownload"] =
       &TestingAutomationProvider::PerformActionOnDownload;
 
-  browser_handler_map["GetInitialLoadTimes"] =
+  browser_handler_map_["GetInitialLoadTimes"] =
       &TestingAutomationProvider::GetInitialLoadTimes;
 
-  browser_handler_map["SaveTabContents"] =
+  browser_handler_map_["SaveTabContents"] =
       &TestingAutomationProvider::SaveTabContents;
 
-  browser_handler_map["ImportSettings"] =
+  browser_handler_map_["ImportSettings"] =
       &TestingAutomationProvider::ImportSettings;
 
-  browser_handler_map["AddSavedPassword"] =
+  browser_handler_map_["AddSavedPassword"] =
       &TestingAutomationProvider::AddSavedPassword;
-  browser_handler_map["RemoveSavedPassword"] =
+  browser_handler_map_["RemoveSavedPassword"] =
       &TestingAutomationProvider::RemoveSavedPassword;
-  browser_handler_map["GetSavedPasswords"] =
+  browser_handler_map_["GetSavedPasswords"] =
       &TestingAutomationProvider::GetSavedPasswords;
 
-  browser_handler_map["ClearBrowsingData"] =
+  browser_handler_map_["ClearBrowsingData"] =
       &TestingAutomationProvider::ClearBrowsingData;
 
-  browser_handler_map["GetBlockedPopupsInfo"] =
+  browser_handler_map_["GetBlockedPopupsInfo"] =
       &TestingAutomationProvider::GetBlockedPopupsInfo;
-  browser_handler_map["UnblockAndLaunchBlockedPopup"] =
+  browser_handler_map_["UnblockAndLaunchBlockedPopup"] =
       &TestingAutomationProvider::UnblockAndLaunchBlockedPopup;
 
   // SetTheme() implemented using InstallExtension().
-  browser_handler_map["GetThemeInfo"] =
+  browser_handler_map_["GetThemeInfo"] =
       &TestingAutomationProvider::GetThemeInfo;
 
-  browser_handler_map["FindInPage"] = &TestingAutomationProvider::FindInPage;
+  browser_handler_map_["FindInPage"] = &TestingAutomationProvider::FindInPage;
 
-  browser_handler_map["SelectTranslateOption"] =
+  browser_handler_map_["SelectTranslateOption"] =
       &TestingAutomationProvider::SelectTranslateOption;
-  browser_handler_map["GetTranslateInfo"] =
+  browser_handler_map_["GetTranslateInfo"] =
       &TestingAutomationProvider::GetTranslateInfo;
 
-  browser_handler_map["GetAutofillProfile"] =
+  browser_handler_map_["GetAutofillProfile"] =
       &TestingAutomationProvider::GetAutofillProfile;
-  browser_handler_map["FillAutofillProfile"] =
+  browser_handler_map_["FillAutofillProfile"] =
       &TestingAutomationProvider::FillAutofillProfile;
-  browser_handler_map["SubmitAutofillForm"] =
+  browser_handler_map_["SubmitAutofillForm"] =
       &TestingAutomationProvider::SubmitAutofillForm;
-  browser_handler_map["AutofillTriggerSuggestions"] =
+  browser_handler_map_["AutofillTriggerSuggestions"] =
       &TestingAutomationProvider::AutofillTriggerSuggestions;
-  browser_handler_map["AutofillHighlightSuggestion"] =
+  browser_handler_map_["AutofillHighlightSuggestion"] =
       &TestingAutomationProvider::AutofillHighlightSuggestion;
-  browser_handler_map["AutofillAcceptSelection"] =
+  browser_handler_map_["AutofillAcceptSelection"] =
       &TestingAutomationProvider::AutofillAcceptSelection;
 
-  browser_handler_map["GetAllNotifications"] =
+  browser_handler_map_["GetAllNotifications"] =
       &TestingAutomationProvider::GetAllNotifications;
-  browser_handler_map["CloseNotification"] =
+  browser_handler_map_["CloseNotification"] =
       &TestingAutomationProvider::CloseNotification;
-  browser_handler_map["WaitForNotificationCount"] =
+  browser_handler_map_["WaitForNotificationCount"] =
       &TestingAutomationProvider::WaitForNotificationCount;
 
-  browser_handler_map["SignInToSync"] =
+  browser_handler_map_["SignInToSync"] =
       &TestingAutomationProvider::SignInToSync;
-  browser_handler_map["GetSyncInfo"] = &TestingAutomationProvider::GetSyncInfo;
-  browser_handler_map["AwaitFullSyncCompletion"] =
+  browser_handler_map_["GetSyncInfo"] =
+      &TestingAutomationProvider::GetSyncInfo;
+  browser_handler_map_["AwaitFullSyncCompletion"] =
       &TestingAutomationProvider::AwaitFullSyncCompletion;
-  browser_handler_map["AwaitSyncRestart"] =
+  browser_handler_map_["AwaitSyncRestart"] =
       &TestingAutomationProvider::AwaitSyncRestart;
-  browser_handler_map["EnableSyncForDatatypes"] =
+  browser_handler_map_["EnableSyncForDatatypes"] =
       &TestingAutomationProvider::EnableSyncForDatatypes;
-  browser_handler_map["DisableSyncForDatatypes"] =
+  browser_handler_map_["DisableSyncForDatatypes"] =
       &TestingAutomationProvider::DisableSyncForDatatypes;
 
-  browser_handler_map["GetNTPInfo"] =
+  browser_handler_map_["GetNTPInfo"] =
       &TestingAutomationProvider::GetNTPInfo;
-  browser_handler_map["RemoveNTPMostVisitedThumbnail"] =
+  browser_handler_map_["RemoveNTPMostVisitedThumbnail"] =
       &TestingAutomationProvider::RemoveNTPMostVisitedThumbnail;
-  browser_handler_map["RestoreAllNTPMostVisitedThumbnails"] =
+  browser_handler_map_["RestoreAllNTPMostVisitedThumbnails"] =
       &TestingAutomationProvider::RestoreAllNTPMostVisitedThumbnails;
 
-  browser_handler_map["KillRendererProcess"] =
+  browser_handler_map_["KillRendererProcess"] =
       &TestingAutomationProvider::KillRendererProcess;
 
-  browser_handler_map["LaunchApp"] = &TestingAutomationProvider::LaunchApp;
-  browser_handler_map["SetAppLaunchType"] =
+  browser_handler_map_["LaunchApp"] = &TestingAutomationProvider::LaunchApp;
+  browser_handler_map_["SetAppLaunchType"] =
       &TestingAutomationProvider::SetAppLaunchType;
 
-  browser_handler_map["GetV8HeapStats"] =
+  browser_handler_map_["GetV8HeapStats"] =
       &TestingAutomationProvider::GetV8HeapStats;
-  browser_handler_map["GetFPS"] =
+  browser_handler_map_["GetFPS"] =
       &TestingAutomationProvider::GetFPS;
 
-  browser_handler_map["IsFullscreenForBrowser"] =
+  browser_handler_map_["IsFullscreenForBrowser"] =
       &TestingAutomationProvider::IsFullscreenForBrowser;
-  browser_handler_map["IsFullscreenForTab"] =
+  browser_handler_map_["IsFullscreenForTab"] =
       &TestingAutomationProvider::IsFullscreenForTab;
-  browser_handler_map["IsMouseLocked"] =
+  browser_handler_map_["IsMouseLocked"] =
       &TestingAutomationProvider::IsMouseLocked;
-  browser_handler_map["IsMouseLockPermissionRequested"] =
+  browser_handler_map_["IsMouseLockPermissionRequested"] =
       &TestingAutomationProvider::IsMouseLockPermissionRequested;
-  browser_handler_map["IsFullscreenPermissionRequested"] =
+  browser_handler_map_["IsFullscreenPermissionRequested"] =
       &TestingAutomationProvider::IsFullscreenPermissionRequested;
-  browser_handler_map["IsFullscreenBubbleDisplayed"] =
+  browser_handler_map_["IsFullscreenBubbleDisplayed"] =
       &TestingAutomationProvider::IsFullscreenBubbleDisplayed;
-  browser_handler_map["IsFullscreenBubbleDisplayingButtons"] =
+  browser_handler_map_["IsFullscreenBubbleDisplayingButtons"] =
       &TestingAutomationProvider::IsFullscreenBubbleDisplayingButtons;
-  browser_handler_map["AcceptCurrentFullscreenOrMouseLockRequest"] =
+  browser_handler_map_["AcceptCurrentFullscreenOrMouseLockRequest"] =
       &TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest;
-  browser_handler_map["DenyCurrentFullscreenOrMouseLockRequest"] =
+  browser_handler_map_["DenyCurrentFullscreenOrMouseLockRequest"] =
       &TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest;
 
 #if defined(OS_CHROMEOS)
-  browser_handler_map["CaptureProfilePhoto"] =
+  browser_handler_map_["CaptureProfilePhoto"] =
       &TestingAutomationProvider::CaptureProfilePhoto;
-  browser_handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
-  browser_handler_map["GetProxySettings"] =
+  browser_handler_map_["GetTimeInfo"] =
+      &TestingAutomationProvider::GetTimeInfo;
+  browser_handler_map_["GetProxySettings"] =
       &TestingAutomationProvider::GetProxySettings;
-  browser_handler_map["SetProxySettings"] =
+  browser_handler_map_["SetProxySettings"] =
       &TestingAutomationProvider::SetProxySettings;
 #endif  // defined(OS_CHROMEOS)
+}
 
-  // Look for command in handlers that take a Browser handle.
-  if (browser_handler_map.find(std::string(command)) !=
-             browser_handler_map.end()) {
-    Browser* browser = NULL;
-    // Get Browser object associated with handle.
-    if (!browser_tracker_->ContainsHandle(handle) ||
-        !(browser = browser_tracker_->GetResource(handle))) {
-      // Browser not found; attempt to fallback to non-Browser handlers.
-      if (handler_map.find(std::string(command)) != handler_map.end())
-        (this->*handler_map[command])(dict_value, reply_message);
-      else
-        AutomationJSONReply(this, reply_message).SendError(
-            "No browser object.");
+scoped_ptr<DictionaryValue> TestingAutomationProvider::ParseJSONRequestCommand(
+    const std::string& json_request,
+    std::string* command,
+    std::string* error) {
+  scoped_ptr<DictionaryValue> dict_value;
+  scoped_ptr<Value> values(base::JSONReader::ReadAndReturnError(json_request,
+      base::JSON_ALLOW_TRAILING_COMMAS, NULL, error));
+  if (values.get()) {
+    // Make sure input is a dict with a string command.
+    if (values->GetType() != Value::TYPE_DICTIONARY) {
+      *error = "Command dictionary is not a dictionary.";
     } else {
-      (this->*browser_handler_map[command])(browser, dict_value, reply_message);
+      dict_value.reset(static_cast<DictionaryValue*>(values.release()));
+      if (!dict_value->GetStringASCII("command", command)) {
+        *error = "Command key string missing from dictionary.";
+        dict_value.reset(NULL);
+      }
     }
-  // Look for command in handlers that don't take a Browser handle.
-  } else if (handler_map.find(std::string(command)) != handler_map.end()) {
-    (this->*handler_map[command])(dict_value, reply_message);
-  // Command has no handlers for it.
+  }
+  return dict_value.Pass();
+}
+
+void TestingAutomationProvider::SendJSONRequestWithBrowserHandle(
+    int handle,
+    const std::string& json_request,
+    IPC::Message* reply_message) {
+  Browser* browser = NULL;
+  if (browser_tracker_->ContainsHandle(handle))
+    browser = browser_tracker_->GetResource(handle);
+  if (browser) {
+    SendJSONRequest(browser, json_request, reply_message);
   } else {
-    std::string error_string = "Unknown command. Options: ";
+    AutomationJSONReply(this, reply_message).SendError(
+        "The browser window does not exist.");
+  }
+}
+
+void TestingAutomationProvider::SendJSONRequestWithBrowserIndex(
+    int index,
+    const std::string& json_request,
+    IPC::Message* reply_message) {
+  Browser* browser = index < 0 ? NULL : automation_util::GetBrowserAt(index);
+  if (!browser && index >= 0) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Browser window with index=%d does not exist.", index));
+  } else {
+    SendJSONRequest(browser, json_request, reply_message);
+  }
+}
+
+void TestingAutomationProvider::SendJSONRequest(Browser* browser,
+                                                const std::string& json_request,
+                                                IPC::Message* reply_message) {
+  std::string command, error_string;
+  scoped_ptr<DictionaryValue> dict_value(
+      ParseJSONRequestCommand(json_request, &command, &error_string));
+  if (!dict_value.get() || command.empty()) {
+    AutomationJSONReply(this, reply_message).SendError(error_string);
+    return;
+  }
+
+  if (handler_map_.empty() || browser_handler_map_.empty())
+    BuildJSONHandlerMaps();
+
+  // Look for command in handlers that take a Browser.
+  if (browser_handler_map_.find(std::string(command)) !=
+      browser_handler_map_.end() && browser) {
+    (this->*browser_handler_map_[command])(browser, dict_value.get(),
+                                           reply_message);
+  // Look for command in handlers that don't take a Browser.
+  } else if (handler_map_.find(std::string(command)) != handler_map_.end()) {
+    (this->*handler_map_[command])(dict_value.get(), reply_message);
+  // Command has no handler.
+  } else {
+    error_string = "Unknown command. Options: ";
     for (std::map<std::string, JsonHandler>::const_iterator it =
-         handler_map.begin(); it != handler_map.end(); ++it) {
+         handler_map_.begin(); it != handler_map_.end(); ++it) {
       error_string += it->first + ", ";
     }
     for (std::map<std::string, BrowserJsonHandler>::const_iterator it =
-         browser_handler_map.begin(); it != browser_handler_map.end(); ++it) {
+         browser_handler_map_.begin(); it != browser_handler_map_.end(); ++it) {
       error_string += it->first + ", ";
     }
     AutomationJSONReply(this, reply_message).SendError(error_string);
