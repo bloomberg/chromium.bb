@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,6 +46,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -92,8 +93,10 @@ bool ScreenshotTimestampComp(const std::string& filepath1,
 void GetSavedScreenshots(std::vector<std::string>* saved_screenshots) {
   saved_screenshots->clear();
 
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+      ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
   FeedbackUI::GetMostRecentScreenshots(
-      download_util::GetDefaultDownloadDirectory(),
+      download_prefs->download_path(),
       saved_screenshots,
       kMaxSavedScreenshots);
 }

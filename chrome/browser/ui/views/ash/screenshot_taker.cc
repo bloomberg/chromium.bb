@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -17,7 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -86,20 +87,10 @@ FilePath GetScreenshotPath(const FilePath& base_directory,
 }
 
 // |is_logged_in| is used only for ChromeOS.  Otherwise it is always true.
-void SaveScreenshot(bool is_logged_in,
+void SaveScreenshot(const FilePath& screenshot_directory,
                     bool use_24hour_clock,
                     scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  FilePath screenshot_directory;
-  if (is_logged_in) {
-    screenshot_directory = download_util::GetDefaultDownloadDirectory();
-  } else {
-    if (!file_util::GetTempDir(&screenshot_directory)) {
-      LOG(ERROR) << "Failed to find temporary directory.";
-      return;
-    }
-  }
 
   FilePath screenshot_path = GetScreenshotPath(
       screenshot_directory, use_24hour_clock);
@@ -143,13 +134,26 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
   is_logged_in = chromeos::UserManager::Get()->IsUserLoggedIn();
 #endif
 
+  FilePath screenshot_directory;
+  if (is_logged_in) {
+    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+        ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
+    screenshot_directory = download_prefs->download_path();
+  } else {
+    if (!file_util::GetTempDir(&screenshot_directory)) {
+      LOG(ERROR) << "Failed to find temporary directory.";
+      return;
+    }
+  }
+
   bool use_24hour_clock = ShouldUse24HourClock();
 
   if (browser::GrabWindowSnapshot(window, &png_data->data(), rect)) {
     DisplayVisualFeedback(rect);
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveScreenshot, is_logged_in, use_24hour_clock, png_data));
+        base::Bind(&SaveScreenshot, screenshot_directory, use_24hour_clock,
+                   png_data));
   } else {
     LOG(ERROR) << "Failed to grab the window screenshot";
   }
