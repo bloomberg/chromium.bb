@@ -51,11 +51,13 @@ DEPENDENCIES = {
   'missing_trailing_slash': [],
   'no_run': [
     'no_run.isolate',
+    os.path.join('files1', 'subdir', '42.txt'),
     os.path.join('files1', 'test_file1.txt'),
     os.path.join('files1', 'test_file2.txt'),
   ],
   'non_existent': [],
   'symlink_full': [
+    os.path.join('files1', 'subdir', '42.txt'),
     os.path.join('files1', 'test_file1.txt'),
     os.path.join('files1', 'test_file2.txt'),
     # files2 is a symlink to files1.
@@ -74,6 +76,7 @@ DEPENDENCIES = {
   ],
   'with_flag': [
     'with_flag.py',
+    os.path.join('files1', 'subdir', '42.txt'),
     os.path.join('files1', 'test_file1.txt'),
     os.path.join('files1', 'test_file2.txt'),
   ],

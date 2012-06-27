@@ -12,15 +12,20 @@ def main():
   assert len(sys.argv) == 1
 
   expected = {
+    os.path.join('subdir', '42.txt'):
+        'the answer to life the universe and everything\n',
     'test_file1.txt': 'Foo\n',
     'test_file2.txt': 'Bar\n',
   }
 
   root = 'files2'
-  actual = dict(
-      (filename, open(os.path.join(root, filename), 'rb').read())
-      for filename in (os.listdir(root))
-      if os.path.isfile(os.path.join(root, filename)))
+  actual = {}
+  for relroot, dirnames, filenames in os.walk(root):
+    for filename in filenames:
+      fullpath = os.path.join(relroot, filename)
+      actual[fullpath[len(root)+1:]] = open(fullpath, 'rb').read()
+    if '.svn' in dirnames:
+      dirnames.remove('.svn')
 
   if actual != expected:
     print 'Failure'

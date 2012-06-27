@@ -12,25 +12,27 @@ def main():
   assert len(sys.argv) == 2
   mode = sys.argv[1]
   assert mode in ('run', 'trace')
-  files = sorted(os.listdir('files1'))
-  tree = {
+  expected = {
+    os.path.join('subdir', '42.txt'):
+        'the answer to life the universe and everything\n',
     'test_file1.txt': 'Foo\n',
     'test_file2.txt': 'Bar\n',
   }
 
-  # Ignore .svn directory which happens to be there with --mode=trace
-  # from a svn checkout. The file shouldn't be there when --mode=run is used.
-  if mode == 'trace' and '.svn' in files:
-    files.remove('.svn')
+  root = 'files1'
+  actual = {}
+  for relroot, dirnames, filenames in os.walk(root):
+    for filename in filenames:
+      fullpath = os.path.join(relroot, filename)
+      actual[fullpath[len(root)+1:]] = open(fullpath, 'rb').read()
+    if mode == 'trace' and '.svn' in dirnames:
+      dirnames.remove('.svn')
 
-  if files != sorted(tree):
-    print '%s != %s' % (files, sorted(tree))
-    return 2
-  for k, v in tree.iteritems():
-    content = open(os.path.join('files1', k), 'rb').read()
-    if v != content:
-      print '%s: %r != %r' % (k, v, content)
-      return 3
+  if actual != expected:
+    print 'Failure'
+    print actual
+    print expected
+    return 1
 
   root_dir = os.path.dirname(os.path.abspath(__file__))
   parent_dir, base = os.path.split(root_dir)

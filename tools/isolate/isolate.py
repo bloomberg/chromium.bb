@@ -96,19 +96,21 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
     # this code blows up.
     pointed = os.readlink(os.path.join(indir, symlink_relfile))
     # Override infile with the new destination.
-    symlink_infile = normpath(
+    dest_infile = normpath(
         os.path.join(indir, os.path.dirname(symlink_relfile), pointed, rest))
-    if not symlink_infile.startswith(indir):
+    if os.path.isdir(dest_infile):
+      dest_infile += os.path.sep
+    if not dest_infile.startswith(indir):
       raise run_test_from_archive.MappingError(
           'Can\'t map symlink reference %s->%s outside of %s' %
-          (symlink_relfile, symlink_infile, indir))
-    if infile.startswith(symlink_infile):
+          (symlink_relfile, dest_infile, indir))
+    if infile.startswith(dest_infile):
       raise run_test_from_archive.MappingError(
           'Can\'t map recursive symlink reference %s->%s' %
-          (symlink_relfile, symlink_infile))
-    logging.info('Found symlink: %s -> %s' % (symlink_relfile, symlink_infile))
-    out = expand_directory_and_symlink(
-        indir, symlink_infile[len(indir)+1:], blacklist)
+          (symlink_relfile, dest_infile))
+    dest_relfile = dest_infile[len(indir)+1:]
+    logging.info('Found symlink: %s -> %s' % (symlink_relfile, dest_relfile))
+    out = expand_directory_and_symlink(indir, dest_relfile, blacklist)
     # Add the symlink itself.
     out.append(symlink_relfile)
     return out
