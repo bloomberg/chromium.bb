@@ -165,6 +165,10 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // that pairing is permanent or temporary.
   virtual bool IsPaired() const;
 
+  // Indicates whether the device is visible to the adapter, this is not
+  // mutually exclusive to being paired.
+  bool IsVisible() const { return visible_; }
+
   // Indicates whether the device is bonded to the adapter, bonding is
   // formed by pairing and exchanging high-security link keys so that
   // connections may be encrypted.
@@ -309,6 +313,13 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // Sets the dbus object path for the device to |object_path|, indicating
   // that the device has gone from being discovered to paired or bonded.
   void SetObjectPath(const dbus::ObjectPath& object_path);
+
+  // Removes the dbus object path from the device, indicating that the
+  // device is no longer paired or bonded, but perhaps still visible.
+  void RemoveObjectPath();
+
+  // Sets whether the device is visible to the owning adapter to |visible|.
+  void SetVisible(bool visible) { visible_ = visible; }
 
   // Updates device information from the properties in |properties|, device
   // state properties such as |paired_| and |connected_| are ignored unless
@@ -545,20 +556,8 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // the request failed before a reply was returned from the device.
   virtual void Cancel() OVERRIDE;
 
-  // Creates a new BluetoothDevice object bound to the information of the
-  // dbus object path |object_path| and the adapter |adapter|, representing
-  // a paired device, with initial properties set from |properties|.
-  static BluetoothDevice* CreateBound(
-      BluetoothAdapter* adapter,
-      const dbus::ObjectPath& object_path,
-      const BluetoothDeviceClient::Properties* properties);
-
-  // Creates a new BluetoothDevice object not bound to a dbus object path,
-  // but bound to the adapter |adapter|, representing a discovered or unpaired
-  // device, with initial properties set from |properties|.
-  static BluetoothDevice* CreateUnbound(
-      BluetoothAdapter* adapter,
-      const BluetoothDeviceClient::Properties* properties);
+  // Creates a new BluetoothDevice object bound to the adapter |adapter|.
+  static BluetoothDevice* Create(BluetoothAdapter* adapter);
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.
@@ -583,6 +582,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
 
   // Tracked device state, updated by the adapter managing the lifecyle of
   // the device.
+  bool visible_;
   bool bonded_;
   bool connected_;
 

@@ -40,6 +40,7 @@ BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
   : weak_ptr_factory_(this),
     adapter_(adapter),
     bluetooth_class_(0),
+    visible_(false),
     bonded_(false),
     connected_(false),
     pairing_delegate_(NULL),
@@ -52,6 +53,11 @@ BluetoothDevice::~BluetoothDevice() {
 void BluetoothDevice::SetObjectPath(const dbus::ObjectPath& object_path) {
   DCHECK(object_path_ == dbus::ObjectPath(""));
   object_path_ = object_path;
+}
+
+void BluetoothDevice::RemoveObjectPath() {
+  DCHECK(object_path_ != dbus::ObjectPath(""));
+  object_path_ = dbus::ObjectPath("");
 }
 
 void BluetoothDevice::Update(
@@ -762,23 +768,8 @@ void BluetoothDevice::Cancel() {
 
 
 // static
-BluetoothDevice* BluetoothDevice::CreateBound(
-    BluetoothAdapter* adapter,
-    const dbus::ObjectPath& object_path,
-    const BluetoothDeviceClient::Properties* properties) {
-  BluetoothDevice* device = new BluetoothDevice(adapter);
-  device->SetObjectPath(object_path);
-  device->Update(properties, true);
-  return device;
-}
-
-// static
-BluetoothDevice* BluetoothDevice::CreateUnbound(
-    BluetoothAdapter* adapter,
-    const BluetoothDeviceClient::Properties* properties) {
-  BluetoothDevice* device = new BluetoothDevice(adapter);
-  device->Update(properties, false);
-  return device;
+BluetoothDevice* BluetoothDevice::Create(BluetoothAdapter* adapter) {
+  return new BluetoothDevice(adapter);
 }
 
 }  // namespace chromeos

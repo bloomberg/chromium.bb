@@ -1373,6 +1373,12 @@ cr.define('options', function() {
         if (index != undefined)
           $('bluetooth-unpaired-devices-list').deleteItemAtIndex(index);
         list = $('bluetooth-paired-devices-list');
+      } else {
+        // Test to see if the device is currently in the paired list, in which
+        // case it should be removed from that list.
+        var index = $('bluetooth-paired-devices-list').find(device.address);
+        if (index != undefined)
+          $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
       }
       list.appendDevice(device);
 
