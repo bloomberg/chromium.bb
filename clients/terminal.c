@@ -40,6 +40,7 @@
 
 static int option_fullscreen;
 static char *option_font = "mono";
+static int option_font_size = 14;
 static char *option_term = "xterm";
 static char *option_shell;
 
@@ -2421,7 +2422,7 @@ terminal_create(struct display *display, int fullscreen)
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);
-	cairo_set_font_size(cr, 14);
+	cairo_set_font_size(cr, option_font_size);
 	cairo_select_font_face (cr, option_font,
 				CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_BOLD);
@@ -2511,6 +2512,7 @@ terminal_run(struct terminal *terminal, const char *path)
 
 static const struct config_key terminal_config_keys[] = {
 	{ "font", CONFIG_KEY_STRING, &option_font },
+	{ "font-size", CONFIG_KEY_INTEGER, &option_font_size },
 	{ "term", CONFIG_KEY_STRING, &option_term },
 };
 
