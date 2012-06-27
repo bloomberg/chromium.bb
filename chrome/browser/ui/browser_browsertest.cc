@@ -1459,7 +1459,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisallowFileUrlUniversalAccessTest) {
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-#if !defined(OS_MACOSX)
 class KioskModeTest : public BrowserTest {
  public:
   KioskModeTest() {}
@@ -1474,7 +1473,6 @@ IN_PROC_BROWSER_TEST_F(KioskModeTest, EnableKioskModeTest) {
   ASSERT_TRUE(browser()->window()->IsFullscreen());
   ASSERT_FALSE(browser()->window()->IsFullscreenBubbleVisible());
 }
-#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 // This test verifies that Chrome can be launched with a user-data-dir path

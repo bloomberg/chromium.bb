@@ -555,13 +555,11 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
 
   toggled_into_fullscreen_ = !window_->IsFullscreen();
 
- // In kiosk mode, we always want to be fullscreen. When the browser first
- // starts we're not yet fullscreen, so let the initial toggle go through.
-#if !defined(OS_MACOSX)  // Kiosk mode not available on Mac.
+  // In kiosk mode, we always want to be fullscreen. When the browser first
+  // starts we're not yet fullscreen, so let the initial toggle go through.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) &&
-      window_->IsFullscreen())
+      !toggled_into_fullscreen_)
     return;
-#endif
 
   GURL url;
   if (for_tab) {

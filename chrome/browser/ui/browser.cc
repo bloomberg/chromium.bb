@@ -3521,11 +3521,9 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
-#if !defined(OS_MACOSX)
   // In kiosk mode, we want to always hide the status bubble.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return NULL;
-#endif
   return window_ ? window_->GetStatusBubble() : NULL;
 }
 

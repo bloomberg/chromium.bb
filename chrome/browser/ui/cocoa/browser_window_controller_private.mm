@@ -31,6 +31,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -682,7 +683,10 @@ willPositionSheet:(NSWindow*)sheet
 
   if (presentationMode) {
     BOOL fullscreen_for_tab = browser_->IsFullscreenForTabOrPending();
+    BOOL kiosk_mode =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     BOOL showDropdown = !fullscreen_for_tab &&
+        !kiosk_mode &&
         (forceDropdown || [self floatingBarHasFocus]);
     NSView* contentView = [[self window] contentView];
     presentationModeController_.reset(

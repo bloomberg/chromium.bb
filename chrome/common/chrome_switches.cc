@@ -792,6 +792,13 @@ const char kInstantURL[]                    = "instant-url";
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
 
+// Enable Kiosk mode.
+const char kKioskMode[]                     = "kiosk";
+
+// Print automatically in kiosk mode. |kKioskMode| must be set as well.
+// See http://crbug.com/31395.
+const char kKioskModePrinting[]             = "kiosk-printing";
+
 // Comma-separated list of directories with component extensions to load.
 const char kLoadComponentExtension[]        = "load-component-extension";
 
@@ -1436,15 +1443,6 @@ const char kRelauncherProcess[]             = "relauncher";
 // Uses mock keychain for testing purposes, which prevents blocking dialogs
 // from causing timeouts.
 const char kUseMockKeychain[]               = "use-mock-keychain";
-#endif
-
-#if !defined(OS_MACOSX)
-// Enables Kiosk mode.
-const char kKioskMode[]                     = "kiosk";
-
-// Print automatically in kiosk mode. |kKioskMode| must be set as well.
-// See http://crbug.com/31395.
-const char kKioskModePrinting[]             = "kiosk-printing";
 #endif
 
 #if defined(OS_WIN)

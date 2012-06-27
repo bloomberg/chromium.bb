@@ -214,6 +214,8 @@ extern const char kImportFromFile[];
 extern const char kIncognito[];
 extern const char kInstantURL[];
 extern const char kKeepAliveForTest[];
+extern const char kKioskMode[];
+extern const char kKioskModePrinting[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
 extern const char kLoadOpencryptoki[];
@@ -400,11 +402,6 @@ extern const char kEnableExposeForTabs[];
 extern const char kKeychainReauthorize[];
 extern const char kRelauncherProcess[];
 extern const char kUseMockKeychain[];
-#endif
-
-#if !defined(OS_MACOSX)
-extern const char kKioskMode[];
-extern const char kKioskModePrinting[];
 #endif
 
 #if defined(OS_WIN)
