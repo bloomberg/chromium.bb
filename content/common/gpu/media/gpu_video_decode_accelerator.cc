@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
@@ -36,19 +37,11 @@
 
 using gpu::gles2::TextureManager;
 
-static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<GpuCommandBufferStub> stub) {
-  if (!stub) {
-    DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
-    return false;
-  }
-
-  if (!stub->decoder()->MakeCurrent()) {
+static bool MakeDecoderContextCurrent(gpu::gles2::GLES2Decoder* decoder) {
+  bool success = decoder->MakeCurrent();
+  if (!success)
     DLOG(ERROR) << "Failed to MakeCurrent()";
-    return false;
-  }
-
-  return true;
+  return success;
 }
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
@@ -58,25 +51,18 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     : sender_(sender),
       init_done_msg_(NULL),
       host_route_id_(host_route_id),
-      stub_(stub->AsWeakPtr()),
+      stub_(stub),
       video_decode_accelerator_(NULL) {
-  if (!stub_)
-    return;
-  stub_->AddDestructionObserver(this);
   make_context_current_ =
-      base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
+      base::Bind(&MakeDecoderContextCurrent, stub_->decoder());
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
-  if (stub_)
-    stub_->RemoveDestructionObserver(this);
   if (video_decode_accelerator_)
     video_decode_accelerator_->Destroy();
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
-  if (!stub_ || !video_decode_accelerator_)
-    return false;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Decode, OnDecode)
@@ -148,8 +134,6 @@ void GpuVideoDecodeAccelerator::Initialize(
   DCHECK(!init_done_msg_);
   DCHECK(init_done_msg);
   init_done_msg_ = init_done_msg;
-  if (!stub_)
-    return;
 
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
@@ -212,6 +196,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
       const std::vector<gfx::Size>& sizes) {
+  DCHECK(stub_ && stub_->decoder());  // Ensure already Initialize()'d.
   gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
   gpu::gles2::TextureManager* texture_manager =
       command_decoder->GetContextGroup()->texture_manager();
@@ -288,18 +273,6 @@ void GpuVideoDecodeAccelerator::NotifyFlushDone() {
 void GpuVideoDecodeAccelerator::NotifyResetDone() {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ResetDone(host_route_id_)))
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
-}
-
-void GpuVideoDecodeAccelerator::OnWillDestroyStub(GpuCommandBufferStub* stub) {
-  DCHECK_EQ(stub, stub_.get());
-  if (video_decode_accelerator_) {
-    video_decode_accelerator_->Destroy();
-    video_decode_accelerator_ = NULL;
-  }
-  if (stub_) {
-    stub_->RemoveDestructionObserver(this);
-    stub_.reset();
-  }
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
