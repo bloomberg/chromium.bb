@@ -119,13 +119,13 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
     // Combine recency, popularity, and topicality scores into one.
     // Example of how this functions: Suppose the omnibox has one
-    // input term.  Suppose we have a URL that has 4 typed visits with
+    // input term.  Suppose we have a URL that has 8 typed visits with
     // the most recent being within a day and the omnibox input term
     // has a single URL hostname hit at a word boundary.  Then this
-    // URL will score 1400 ( = 4 * 350), which is exactly the value of
+    // URL will score 1300 ( = 8 * 162.5), which is exactly the value of
     // search what you type.  That is, it's the boundary of what might
     // end up being inlined.
-    raw_score = 350 * topicality_score * recency_score * popularity_score;
+    raw_score = 162.5 * topicality_score * recency_score * popularity_score;
     raw_score =
         (raw_score <= kint32max) ? static_cast<int>(raw_score) : kint32max;
   } else {  // "old" scoring
