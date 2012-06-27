@@ -397,15 +397,10 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
     logger::write("\n", 1);
   }
 
-#if defined(__ANDROID__)
-  const pid_t child = clone(
-      ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
-      &thread_arg);
-#else
   const pid_t child = sys_clone(
       ThreadEntry, stack, CLONE_FILES | CLONE_FS | CLONE_UNTRACED,
       &thread_arg, NULL, NULL, NULL);
-#endif
+
   int r, status;
   // Allow the child to ptrace us
   sys_prctl(PR_SET_PTRACER, child);
