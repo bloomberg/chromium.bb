@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "ipc/ipc_descriptors.h"
+#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -264,7 +265,7 @@ void SetServiceEnabledExpectations(MockServiceIPCServer* server) {
   server->SetServiceEnabledExpectations();
 }
 
-MULTIPROCESS_TEST_MAIN(CloudPrintMockService_StartEnabledWaitForQuit) {
+MULTIPROCESS_IPC_TEST_MAIN(CloudPrintMockService_StartEnabledWaitForQuit) {
   return CloudPrintMockService_Main(
       base::Bind(&SetServiceEnabledExpectations));
 }
@@ -273,7 +274,7 @@ void SetServiceWillBeDisabledExpectations(MockServiceIPCServer* server) {
   server->SetWillBeDisabledExpectations();
 }
 
-MULTIPROCESS_TEST_MAIN(CloudPrintMockService_StartEnabledExpectDisabled) {
+MULTIPROCESS_IPC_TEST_MAIN(CloudPrintMockService_StartEnabledExpectDisabled) {
   return CloudPrintMockService_Main(
       base::Bind(&SetServiceWillBeDisabledExpectations));
 }

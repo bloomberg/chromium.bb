@@ -28,6 +28,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
@@ -402,7 +403,7 @@ TEST_F(IPCChannelTest, MAYBE_SendMessageInChannelConnected) {
   base::CloseProcessHandle(process_handle);
 }
 
-MULTIPROCESS_TEST_MAIN(RunTestClient) {
+MULTIPROCESS_IPC_TEST_MAIN(RunTestClient) {
   MessageLoopForIO main_message_loop;
   MyChannelListener channel_listener;
 
@@ -572,7 +573,7 @@ TEST_F(IPCChannelTest, Performance) {
 }
 
 // This message loop bounces all messages back to the sender
-MULTIPROCESS_TEST_MAIN(RunReflector) {
+MULTIPROCESS_IPC_TEST_MAIN(RunReflector) {
   MessageLoopForIO main_message_loop;
   IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_CLIENT, NULL);
   ChannelReflectorListener channel_reflector_listener(&chan);

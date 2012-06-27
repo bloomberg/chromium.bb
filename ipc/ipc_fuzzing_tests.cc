@@ -11,6 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -246,7 +247,7 @@ class FuzzerClientListener : public SimpleListener {
 
 // Runs the fuzzing server child mode. Returns when the preset number
 // of messages have been received.
-MULTIPROCESS_TEST_MAIN(RunFuzzServer) {
+MULTIPROCESS_IPC_TEST_MAIN(RunFuzzServer) {
   MessageLoopForIO main_message_loop;
   FuzzerServerListener listener;
   IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_CLIENT, &listener);

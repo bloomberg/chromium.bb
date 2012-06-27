@@ -19,12 +19,14 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/global_descriptors_posix.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/rand_util.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "crypto/nss_util.h"
+#include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 
 namespace {
@@ -39,8 +41,9 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   // don't need zygote FD any more
   if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
-  // Set up browser descriptor as expected by Chrome on fd 3
-  // The zygote takes care of putting the sandbox IPC channel on fd 5
+  // Set up browser descriptor on fd 3 and IPC as expected by Chrome.
+  base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
+      kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
   int zfd = dup2(child_fds[kNaClBrowserFDIndex], kNaClBrowserDescriptor);
   if (zfd != kNaClBrowserDescriptor) {
     LOG(ERROR) << "Could not initialize kNaClBrowserDescriptor";

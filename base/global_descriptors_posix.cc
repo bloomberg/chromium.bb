@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,7 @@ int GlobalDescriptors::MaybeGet(Key key) const {
       return i->second;
   }
 
-  // In order to make unittests pass, we define a default mapping from keys to
-  // descriptors by adding a fixed offset:
-  return kBaseDescriptor + key;
+  return -1;
 }
 
 void GlobalDescriptors::Set(Key key, int fd) {

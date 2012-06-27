@@ -18,6 +18,7 @@ extern "C" {
 #include "base/message_loop.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_multiprocess_test.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_POSIX)
@@ -132,7 +133,7 @@ int TestDescriptorClient(ino_t expected_inode_num) {
 // ---------------------------------------------------------------------------
 #if defined(OS_MACOSX)
 // TODO(port): Make this test cross-platform.
-MULTIPROCESS_TEST_MAIN(RunTestDescriptorClientSandboxed) {
+MULTIPROCESS_IPC_TEST_MAIN(RunTestDescriptorClientSandboxed) {
   struct stat st;
   const int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
@@ -177,7 +178,7 @@ TEST_F(IPCChannelTest, DescriptorTestSandboxed) {
 }
 #endif  // defined(OS_MACOSX)
 
-MULTIPROCESS_TEST_MAIN(RunTestDescriptorClient) {
+MULTIPROCESS_IPC_TEST_MAIN(RunTestDescriptorClient) {
   struct stat st;
   const int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);

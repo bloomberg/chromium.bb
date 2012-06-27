@@ -33,6 +33,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'ipc',
+        'test_support_ipc',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
@@ -83,8 +84,11 @@
       'dependencies': [
         'ipc',
         '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'ipc_multiprocess_test.cc',
+        'ipc_multiprocess_test.h',
         'ipc_test_sink.cc',
         'ipc_test_sink.h',
       ],

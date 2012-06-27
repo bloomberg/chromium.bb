@@ -15,6 +15,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -263,7 +264,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
 };
 
 // Entry function in child process.
-MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
+MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
   MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
