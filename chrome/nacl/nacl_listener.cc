@@ -138,6 +138,9 @@ class BrowserValidationDBProxy : public NaClValidationDB {
 
 NaClListener::NaClListener() : shutdown_event_(true, false),
                                io_thread_("NaCl_IOThread"),
+#if defined(OS_LINUX)
+                               prereserved_sandbox_size_(0),
+#endif
                                main_loop_(NULL) {
   io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
 #if defined(OS_WIN)
@@ -260,6 +263,9 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
 #if defined(OS_WIN)
   args->broker_duplicate_handle_func = BrokerDuplicateHandle;
   args->attach_debug_exception_handler_func = AttachDebugExceptionHandler;
+#endif
+#if defined(OS_LINUX)
+  args->prereserved_sandbox_size = prereserved_sandbox_size_;
 #endif
   NaClChromeMainStart(args);
   NOTREACHED();

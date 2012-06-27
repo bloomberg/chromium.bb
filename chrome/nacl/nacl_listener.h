@@ -30,6 +30,12 @@ class NaClListener : public IPC::Listener {
 
   bool Send(IPC::Message* msg);
 
+#if defined(OS_LINUX)
+  void set_prereserved_sandbox_size(size_t prereserved_sandbox_size) {
+    prereserved_sandbox_size_ = prereserved_sandbox_size;
+  }
+#endif
+
  private:
   void OnMsgStart(const nacl::NaClStartParams& params);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -42,6 +48,10 @@ class NaClListener : public IPC::Listener {
 
   base::WaitableEvent shutdown_event_;
   base::Thread io_thread_;
+
+#if defined(OS_LINUX)
+  size_t prereserved_sandbox_size_;
+#endif
 
   // Used to identify what thread we're on.
   MessageLoop* main_loop_;

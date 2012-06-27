@@ -26,17 +26,15 @@
 #include "chrome/nacl/nacl_listener.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
 namespace {
-
-bool g_suid_sandbox_active;
 
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
 // Note: this code doesn't attempt to support SELINUX or the SECCOMP sandbox.
-void BecomeNaClLoader(const std::vector<int>& child_fds) {
+void BecomeNaClLoader(const std::vector<int>& child_fds,
+                      size_t prereserved_sandbox_size) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // don't need zygote FD any more
   if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
@@ -51,13 +49,15 @@ void BecomeNaClLoader(const std::vector<int>& child_fds) {
 
   MessageLoopForIO main_message_loop;
   NaClListener listener;
+  listener.set_prereserved_sandbox_size(prereserved_sandbox_size);
   listener.Listen();
   _exit(0);
 }
 
 // Some of this code was lifted from
 // content/browser/zygote_main_linux.cc:ForkWithRealPid()
-void HandleForkRequest(const std::vector<int>& child_fds) {
+void HandleForkRequest(const std::vector<int>& child_fds,
+                       size_t prereserved_sandbox_size) {
   VLOG(1) << "nacl_helper: forking";
   pid_t childpid = fork();
   if (childpid < 0) {
@@ -95,7 +95,7 @@ void HandleForkRequest(const std::vector<int>& child_fds) {
     if (HANDLE_EINTR(close(child_fds[kNaClParentFDIndex])) != 0)
       LOG(ERROR) << "close(child_fds[kNaClParentFDIndex]) failed";
     if (validack) {
-      BecomeNaClLoader(child_fds);
+      BecomeNaClLoader(child_fds, prereserved_sandbox_size);
     } else {
       LOG(ERROR) << "Failed to synch with zygote";
     }
@@ -142,7 +142,7 @@ static const char kNaClHelperRDebug[] = "r_debug";
  * Hereafter, if someone attaches a debugger (or examines a core dump),
  * the debugger will find all the symbols in the normal way.
  */
-static void check_r_debug(char *argv0) {
+static void CheckRDebug(char *argv0) {
   std::string r_debug_switch_value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kNaClHelperRDebug);
   if (!r_debug_switch_value.empty()) {
@@ -187,13 +187,20 @@ int main(int argc, char *argv[]) {
   crypto::LoadNSSLibraries();
 #endif
   std::vector<int> empty; // for SendMsg() calls
+  size_t prereserved_sandbox_size = 0;
 
-  check_r_debug(argv[0]);
-
-  g_suid_sandbox_active = (NULL != getenv("SBX_D"));
+  CheckRDebug(argv[0]);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kNaClHelperAtZero)) {
-    g_nacl_prereserved_sandbox_addr = (void *) (uintptr_t) 0x10000;
+    // TODO(arbenson): Once nacl_bootstrap passes the amount of prereserved
+    // memory, change this to set g_prereserved_sandbox_size to that amount.
+#if defined(ARCH_CPU_X86)
+    // On x86-32, nacl_bootstrap has reserved 1 GB
+    prereserved_sandbox_size = 0x40000000;
+#elif defined(ARCH_CPU_ARMEL)
+    // On ARM, nacl_bootstrap has reserved 1 GB plus an 8 KB guard
+    prereserved_sandbox_size = 0x40002000;
+#endif
   }
 
   // Send the zygote a message to let it know we are ready to help
@@ -217,7 +224,7 @@ int main(int argc, char *argv[]) {
     if (msglen == sizeof(kNaClForkRequest) - 1 &&
         memcmp(buf, kNaClForkRequest, msglen) == 0) {
       if (kNaClParentFDIndex + 1 == fds.size()) {
-        HandleForkRequest(fds);
+        HandleForkRequest(fds, prereserved_sandbox_size);
         continue;  // fork succeeded. Note: child does not return
       } else {
         LOG(ERROR) << "nacl_helper: unexpected number of fds, got "
