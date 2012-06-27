@@ -9,18 +9,17 @@
 #include "chrome_frame/crash_reporting/vectored_handler.h"
 #include "chrome_frame/crash_reporting/nt_loader.h"
 
-#if defined(_M_IX86)
+#if !defined(_M_IX86)
+#error only x86 is supported for now.
+#endif
+
 #ifndef EXCEPTION_CHAIN_END
 #define EXCEPTION_CHAIN_END ((struct _EXCEPTION_REGISTRATION_RECORD*)-1)
+#if !defined(_WIN32_WINNT_WIN8)
 typedef struct _EXCEPTION_REGISTRATION_RECORD {
   struct _EXCEPTION_REGISTRATION_RECORD* Next;
   PVOID Handler;
 } EXCEPTION_REGISTRATION_RECORD;
-#endif  // EXCEPTION_CHAIN_END
-#else
-#error only x86 is supported for now.
-#endif
-
 // VEH handler flags settings.
 // These are grabbed from winnt.h for PocketPC.
 // Only EXCEPTION_NONCONTINUABLE in defined in "regular" winnt.h
@@ -38,7 +37,8 @@ typedef struct _EXCEPTION_REGISTRATION_RECORD {
 #define IS_UNWINDING(Flag)  (((Flag) & EXCEPTION_UNWIND) != 0)
 #define IS_DISPATCHING(Flag)  (((Flag) & EXCEPTION_UNWIND) == 0)
 #define IS_TARGET_UNWIND(Flag)  ((Flag) & EXCEPTION_TARGET_UNWIND)
-// End of grabbed section
+#endif  // !defined(_WIN32_WINNT_WIN8)
+#endif  // EXCEPTION_CHAIN_END
 
 template <typename E>
 VectoredHandlerT<E>::VectoredHandlerT(E* api) : exceptions_seen_(0), api_(api) {
