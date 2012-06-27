@@ -12,6 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "net/base/net_log.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request.h"
 
 namespace extension_web_request_api_helpers {
 
@@ -543,6 +544,8 @@ namespace {
 // modified/canceled by extensions, e.g. because it is targeted to the webstore
 // to check for updates, extension blacklisting, etc.
 bool IsSensitiveURL(const GURL& url) {
+  // TODO(battre) Merge this, CanExtensionAccessURL of web_request_api.cc and
+  // Extension::CanExecuteScriptOnPage into one function.
   bool is_webstore_gallery_url =
       StartsWithASCII(url.spec(), extension_urls::kGalleryBrowsePrefix, true);
   bool sensitive_chrome_url = false;
@@ -581,8 +584,17 @@ bool HasWebRequestScheme(const GURL& url) {
 
 }  // namespace
 
-bool HideRequestForURL(const GURL& url) {
-  return IsSensitiveURL(url) || !HasWebRequestScheme(url);
+bool HideRequest(net::URLRequest* request) {
+  const GURL& url = request->url();
+  const GURL& first_party_url = request->first_party_for_cookies();
+  bool hide = false;
+  if (first_party_url.is_valid()) {
+    hide = IsSensitiveURL(first_party_url) ||
+           !HasWebRequestScheme(first_party_url);
+  }
+  if (!hide)
+    hide = IsSensitiveURL(url) || !HasWebRequestScheme(url);
+  return hide;
 }
 
 #define ARRAYEND(array) (array + arraysize(array))

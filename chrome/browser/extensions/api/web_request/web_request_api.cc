@@ -473,7 +473,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     const net::CompletionCallback& callback,
     GURL* new_url) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return net::OK;
 
   if (IsPageLoad(request))
@@ -531,7 +531,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return net::OK;
 
   bool initialize_blocked_requests = false;
@@ -582,7 +582,7 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return;
 
   if (GetAndSetSignaled(request->identifier(), kOnSendHeaders))
@@ -615,7 +615,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return net::OK;
 
   bool initialize_blocked_requests = false;
@@ -679,7 +679,7 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
     net::AuthCredentials* credentials) {
   // No profile means that this is for authentication challenges in the
   // system context. Skip in that case. Also skip sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   int extra_info_spec = 0;
@@ -724,7 +724,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     net::URLRequest* request,
     const GURL& new_location) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return;
 
   if (GetAndSetSignaled(request->identifier(), kOnBeforeRedirect))
@@ -769,7 +769,7 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return;
 
   // OnResponseStarted is even triggered, when the request was cancelled.
@@ -812,7 +812,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
@@ -861,7 +861,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     net::URLRequest* request,
     bool started) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || helpers::HideRequestForURL(request->url()))
+  if (!profile || helpers::HideRequest(request))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),

@@ -29,6 +29,7 @@ class Value;
 
 namespace net {
 class BoundNetLog;
+class URLRequest;
 }
 
 namespace extension_web_request_api_helpers {
@@ -168,8 +169,8 @@ bool MergeOnAuthRequiredResponses(
     std::set<std::string>* conflicting_extensions,
     const net::BoundNetLog* net_log);
 
-// Returns true if requests for |url| shall not be reported to extensions.
-bool HideRequestForURL(const GURL& url);
+// Returns true if the request shall not be reported to extensions.
+bool HideRequest(net::URLRequest* request);
 
 // Returns whether |type| is a ResourceType that is handled by the web request
 // API.

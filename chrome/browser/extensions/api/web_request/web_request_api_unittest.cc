@@ -1488,6 +1488,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
+  MessageLoopForIO message_loop;
+  TestURLRequestContext context;
   const char* sensitive_urls[] = {
       "http://www.google.com/chrome",
       "https://www.google.com/chrome",
@@ -1508,12 +1510,25 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   const char* non_sensitive_urls[] = {
       "http://www.google.com/"
   };
+  // Check that requests are rejected based on the destination
   for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
-    EXPECT_TRUE(helpers::HideRequestForURL(GURL(sensitive_urls[i])))
-        << sensitive_urls[i];
+    GURL sensitive_url(sensitive_urls[i]);
+    TestURLRequest request(sensitive_url, NULL, &context);
+    EXPECT_TRUE(helpers::HideRequest(&request)) << sensitive_urls[i];
   }
+  // Check that requests are accepted if they don't touch sensitive urls.
   for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
-    EXPECT_FALSE(helpers::HideRequestForURL(GURL(non_sensitive_urls[i])))
-        << non_sensitive_urls[i];
+    GURL non_sensitive_url(non_sensitive_urls[i]);
+    TestURLRequest request(non_sensitive_url, NULL, &context);
+    EXPECT_FALSE(helpers::HideRequest(&request)) << non_sensitive_urls[i];
+  }
+  // Check that requests are rejected if their first party url is sensitive.
+  ASSERT_GE(arraysize(non_sensitive_urls), 1u);
+  GURL non_sensitive_url(non_sensitive_urls[0]);
+  for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
+    TestURLRequest request(non_sensitive_url, NULL, &context);
+    GURL sensitive_url(sensitive_urls[i]);
+    request.set_first_party_for_cookies(sensitive_url);
+    EXPECT_TRUE(helpers::HideRequest(&request)) << sensitive_urls[i];
   }
 }
