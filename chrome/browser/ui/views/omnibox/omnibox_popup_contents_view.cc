@@ -4,42 +4,18 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
-#if defined(OS_WIN)
-#include <commctrl.h>
-#include <dwmapi.h>
-#include <objidl.h>
-#endif
-
-#include "base/compiler_specific.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/inline_omnibox_popup_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
-#include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/text_button.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
-#include "ui/views/painter.h"
-#include "ui/views/widget/widget.h"
-#include "unicode/ubidi.h"
 
 #if defined(OS_WIN)
+#include <dwmapi.h>
+
 #include "base/win/scoped_gdi_object.h"
 #if !defined(USE_AURA)
 #include "ui/views/widget/native_widget_win.h"
