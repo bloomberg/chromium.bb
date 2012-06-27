@@ -586,6 +586,12 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
 }
 
+#if defined(OS_WIN)
+// Flaky on Windows: crbug.com/134918
+#define MAYBE_NavigationCancelsShouldClassifyUrl FLAKY_NavigationCancelsShouldClassifyUrl
+#else
+#define MAYBE_NavigationCancelsShouldClassifyUrl NavigationCancelsShouldClassifyUrl
+#endif
 TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
   // Test that canceling pending should classify requests works as expected.
 
