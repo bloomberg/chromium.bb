@@ -302,6 +302,7 @@ bool InputMethodEngineImpl::SetCandidates(
   std::vector<input_method::IBusEngineController::Candidate> ibus_candidates;
 
   candidate_ids_.clear();
+  candidate_indexes_.clear();
   for (std::vector<Candidate>::const_iterator ix = candidates.begin();
        ix != candidates.end(); ++ix) {
     ibus_candidates.push_back(input_method::IBusEngineController::Candidate());
