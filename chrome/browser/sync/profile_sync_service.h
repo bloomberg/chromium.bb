@@ -405,16 +405,21 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Used by ProfileSyncServiceHarness.  May return NULL.
   browser_sync::BackendMigrator* GetBackendMigratorForTest();
 
-  // Get the current routing information for all enabled model types.
-  // If a model type is not enabled (that is, if the syncer should not
-  // be trying to sync it), it is not in this map.
+  // TODO(sync): This is only used in tests.  Can we remove it?
+  void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out) const;
+
+  // Returns a ListValue indicating the status of all registered types.
   //
-  // TODO(akalin): This function is used by
-  // sync_ui_util::ConstructAboutInformation() and by some test
-  // classes.  Figure out a different way to expose this info and
-  // remove this function.
-  void GetModelSafeRoutingInfo(
-      csync::ModelSafeRoutingInfo* out) const;
+  // The format is:
+  // [ {"name": <name>, "value": <value>, "status": <status> }, ... ]
+  // where <name> is a type's name, <value> is a string providing details for
+  // the type's status, and <status> is one of "error", "warning" or "ok"
+  // dpending on the type's current status.
+  //
+  // This function is used by sync_ui_util.cc to help populate the about:sync
+  // page.  It returns a ListValue rather than a DictionaryValye in part to make
+  // it easier to iterate over its elements when constructing that page.
+  Value* GetTypeStatusMap() const;
 
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
@@ -517,7 +522,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   SyncGlobalError* sync_global_error() { return sync_global_error_.get(); }
 
-  virtual const FailedDatatypesHandler& failed_datatypes_handler();
+  // TODO(sync): This is only used in tests.  Can we remove it?
+  const FailedDatatypesHandler& failed_datatypes_handler() const;
 
   browser_sync::DataTypeManager::ConfigureStatus configure_status() {
     return configure_status_;

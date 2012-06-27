@@ -36,21 +36,21 @@ class FailedDatatypesHandler {
   // the current list of failed types and retry them once more.
   void OnUserChoseDatatypes();
 
+  // Returns a list of all the errors this class has recorded.
+  std::vector<csync::SyncError> GetAllErrors() const;
+
   // Returns the types that are failing.
   syncable::ModelTypeSet GetFailedTypes() const;
 
+ private:
   // Returns if there are any failed types.
   bool AnyFailedDatatype() const;
 
-  // Gets the error string giving more info about each type that is failing.
-  std::string GetErrorString() const;
-
- private:
   // List of dataypes that failed at startup.
-  std::list<csync::SyncError> startup_errors_;
+  std::vector<csync::SyncError> startup_errors_;
 
   // List of datatypes that failed at runtime.
-  std::list<csync::SyncError> runtime_errors_;
+  std::vector<csync::SyncError> runtime_errors_;
 
   ProfileSyncService* service_;
 

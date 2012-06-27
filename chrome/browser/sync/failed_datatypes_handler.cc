@@ -16,9 +16,9 @@ FailedDatatypesHandler::~FailedDatatypesHandler() {
 }
 
 syncable::ModelTypeSet GetTypesFromErrorsList(
-    const std::list<csync::SyncError>& errors) {
+    const std::vector<csync::SyncError>& errors) {
   syncable::ModelTypeSet result;
-  for (std::list<csync::SyncError>::const_iterator it = errors.begin();
+  for (std::vector<csync::SyncError>::const_iterator it = errors.begin();
        it != errors.end(); ++it) {
     DCHECK(!result.Has(it->type()));
     result.Put(it->type());
@@ -56,36 +56,14 @@ void FailedDatatypesHandler::OnUserChoseDatatypes() {
   runtime_errors_.clear();
 }
 
-std::string GetErrorStringFromErrors(
-    const std::list<csync::SyncError>& errors) {
-  std::string message;
-  for (std::list<csync::SyncError>::const_iterator it = errors.begin();
-       it != errors.end(); ++it) {
-    if (it != errors.begin()) {
-      message += ", ";
-    }
-    message += std::string(syncable::ModelTypeToString(it->type())) + " " +
-        it->location().ToString() + ": " + it->message();
+std::vector<csync::SyncError> FailedDatatypesHandler::GetAllErrors() const {
+  std::vector<csync::SyncError> result;
+
+  if (AnyFailedDatatype()) {
+    result.insert(result.end(), startup_errors_.begin(), startup_errors_.end());
+    result.insert(result.end(), runtime_errors_.begin(), runtime_errors_.end());
   }
-  return message;
-
-}
-
-std::string FailedDatatypesHandler::GetErrorString() const {
-  std::string message;
-
-  if (!startup_errors_.empty()) {
-    message = "Sync configuration failed when starting ";
-    message += GetErrorStringFromErrors(startup_errors_);
-    message += ". ";
-  }
-
-  if (!runtime_errors_.empty()) {
-    message += "The following errors were encountered at runtime: ";
-    message += GetErrorStringFromErrors(runtime_errors_);
-    message += ".";
-  }
-  return message;
+  return result;
 }
 
 bool FailedDatatypesHandler::AnyFailedDatatype() const {

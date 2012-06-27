@@ -29,16 +29,24 @@ table.aboutDetails tr:nth-child(odd) {
   background: #eff3ff;
 }
 
-table#routingInfo tr:nth-child(odd) {
-  background: #ccffcc;
-}
-
 div#aboutInfo div.section > td#detail {
   width: 50%;
 }
 
 div#aboutInfo div.section > td#value {
   width: 50%;
+}
+
+table#typeInfo tr.error {
+ background: #ffcccc;
+}
+
+table#typeInfo tr.warning {
+ background: #ffffcc;
+}
+
+table#typeInfo tr.ok {
+ background: #ccffcc;
 }
 
 @-webkit-keyframes highlight1 {
@@ -76,11 +84,11 @@ table.aboutDetails tr[highlighted]:nth-child(odd) {
   </div>
 
   <div class="section">
-    <h2>Routing Info</h2>
-    <table id="routingInfo">
-      <tr jsselect="routing_info">
-        <td jscontent="model_type"/>
-        <td jscontent="group"/>
+    <h2>Type Info</h2>
+    <table id="typeInfo">
+      <tr jsselect="type_status" jsvalues="class:$this.status">
+        <td jscontent="name"/>
+        <td jscontent="value"/>
       </tr>
     </table>
   </div>
@@ -89,17 +97,6 @@ table.aboutDetails tr[highlighted]:nth-child(odd) {
     <p>
       <span class="err" jscontent="unrecoverable_error_message"></span>
     </p>
-  </div>
-
-  <div class="section" jsdisplay="failed_data_types_detected">
-    <p>
-      <span class="err" jscontent="failed_data_types"></span>
-    </p>
-  </div>
-
-  <div class="section" jsdisplay="throttled_data_types">
-    <h2>Throttled Types</h2>
-    <span jscontent="throttled_data_types"></span>
   </div>
 
   <div class="section" jsdisplay="actionable_error_detected">

@@ -733,18 +733,9 @@ void ConstructAboutInformation(ProfileSyncService* service,
           full_status.sync_protocol_error.url);
       sync_ui_util::AddStringSyncDetails(actionable_error, "Error Description",
           full_status.sync_protocol_error.error_description);
-   } else {
-     strings->Set("actionable_error_detected",
-                  base::Value::CreateBooleanValue(false));
-   }
-
-    const FailedDatatypesHandler& failed_datatypes_handler =
-        service->failed_datatypes_handler();
-    if (failed_datatypes_handler.AnyFailedDatatype()) {
-      strings->Set("failed_data_types_detected",
-                   new base::FundamentalValue(true));
-      strings->SetString("failed_data_types",
-          failed_datatypes_handler.GetErrorString());
+    } else {
+      strings->Set("actionable_error_detected",
+                   base::Value::CreateBooleanValue(false));
     }
 
     if (service->HasUnrecoverableError()) {
@@ -758,18 +749,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
           ": " + service->unrecoverable_error_message();
       strings->SetString("unrecoverable_error_message",
                          unrecoverable_error_message);
-    } else if (service->sync_initialized()) {
-      csync::ModelSafeRoutingInfo routes;
-      service->GetModelSafeRoutingInfo(&routes);
-      ListValue* routing_info = new ListValue();
-      strings->Set("routing_info", routing_info);
-      csync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
-      for (; it != routes.end(); ++it) {
-        DictionaryValue* val = new DictionaryValue;
-        val->SetString("model_type", ModelTypeToString(it->first));
-        val->SetString("group", csync::ModelSafeGroupToString(it->second));
-        routing_info->Append(val);
-      }
+    }
+
+    if (service->sync_initialized()) {
+      strings->Set("type_status", service->GetTypeStatusMap());
     }
   }
 }

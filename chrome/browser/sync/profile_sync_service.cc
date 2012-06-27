@@ -72,9 +72,12 @@ using csync::JsBackend;
 using csync::JsController;
 using csync::JsEventDetails;
 using csync::JsEventHandler;
+using csync::ModelSafeRoutingInfo;
+using csync::SyncCredentials;
 using csync::SyncProtocolError;
 using csync::WeakHandle;
-using csync::SyncCredentials;
+using syncable::ModelType;
+using syncable::ModelTypeSet;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -1244,6 +1247,73 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
   }
 }
 
+Value* ProfileSyncService::GetTypeStatusMap() const {
+  ListValue* result = new ListValue();
+
+  if (!backend_.get() || !backend_initialized_) {
+    return result;
+  }
+
+  std::vector<csync::SyncError> errors =
+      failed_datatypes_handler_.GetAllErrors();
+  std::map<ModelType, csync::SyncError> error_map;
+  for (std::vector<csync::SyncError>::iterator it = errors.begin();
+       it != errors.end(); ++it) {
+    error_map[it->type()] = *it;
+  }
+
+  ModelTypeSet active_types;
+  ModelTypeSet passive_types;
+  ModelSafeRoutingInfo routing_info;
+  backend_->GetModelSafeRoutingInfo(&routing_info);
+  for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
+       it != routing_info.end(); ++it) {
+    if (it->second == csync::GROUP_PASSIVE) {
+      passive_types.Put(it->first);
+    } else {
+      active_types.Put(it->first);
+    }
+  }
+
+  SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
+  ModelTypeSet &throttled_types(detailed_status.throttled_types);
+
+  ModelTypeSet registered = GetRegisteredDataTypes();
+  for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
+    ModelType type = it.Get();
+    DictionaryValue* type_status = new DictionaryValue();
+
+    result->Append(type_status);
+    type_status->SetString("name", ModelTypeToString(type));
+
+    if (error_map.find(type) != error_map.end()) {
+      const csync::SyncError &error = error_map.find(type)->second;
+      DCHECK(error.IsSet());
+      std::string error_text = "Error: " + error.location().ToString() +
+          ", " + error.message();
+      type_status->SetString("status", "error");
+      type_status->SetString("value", error_text);
+    } else if (throttled_types.Has(type) && passive_types.Has(type)) {
+      type_status->SetString("status", "warning");
+      type_status->SetString("value", "Passive, Throttled");
+    } else if (passive_types.Has(type)) {
+      type_status->SetString("status", "warning");
+      type_status->SetString("value", "Passive");
+    } else if (throttled_types.Has(type)) {
+      type_status->SetString("status", "warning");
+      type_status->SetString("value", "Throttled");
+    } else if (active_types.Has(type)) {
+      type_status->SetString("status", "ok");
+      type_status->SetString("value", "Active: " +
+                             ModelSafeGroupToString(routing_info[type]));
+    } else {
+      type_status->SetString("status", "warning");
+      type_status->SetString("value", "Disabled by User");
+    }
+  }
+  return result;
+}
+
 void ProfileSyncService::ActivateDataType(
     syncable::ModelType type, csync::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
@@ -1624,7 +1694,8 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
   }
 }
 
-const FailedDatatypesHandler& ProfileSyncService::failed_datatypes_handler() {
+const FailedDatatypesHandler& ProfileSyncService::failed_datatypes_handler()
+    const {
   return failed_datatypes_handler_;
 }
 
