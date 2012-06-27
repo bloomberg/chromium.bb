@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -684,6 +685,18 @@ TEST(ExtensionTest, ExtraFlags) {
   extension = LoadManifest("app", "manifest.json", Extension::NO_FLAGS);
   EXPECT_FALSE(extension->from_bookmark());
   EXPECT_FALSE(extension->from_webstore());
+}
+
+TEST(ExtensionTest, BrowserActionSynthesizesCommand) {
+  scoped_refptr<Extension> extension;
+
+  extension = LoadManifest("api_test/browser_action/synthesized",
+                           "manifest.json");
+  // An extension with a browser action but no extension command specified
+  // should get a command assigned to it.
+  const extensions::Command* command = extension->browser_action_command();
+  ASSERT_TRUE(command != NULL);
+  ASSERT_EQ(ui::VKEY_UNKNOWN, command->accelerator().key_code());
 }
 
 // Base class for testing the CanExecuteScriptOnPage and CanCaptureVisiblePage

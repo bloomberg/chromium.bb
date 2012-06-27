@@ -1498,6 +1498,17 @@ bool Extension::LoadCommands(string16* error) {
       }
     }
   }
+
+  if (manifest_->HasKey(keys::kBrowserAction) &&
+      !browser_action_command_.get()) {
+    // If the extension defines a browser action, but no command for it, then
+    // we synthesize a generic one, so the user can configure a shortcut for it.
+    // No keyboard shortcut will be assigned to it, until the user selects one.
+    browser_action_command_.reset(
+        new extensions::Command(
+            values::kBrowserActionKeybindingEvent, string16(), ""));
+  }
+
   return true;
 }
 
