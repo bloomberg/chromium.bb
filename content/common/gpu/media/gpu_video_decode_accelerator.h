@@ -10,16 +10,16 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
+#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
 
-class GpuCommandBufferStub;
-
 class GpuVideoDecodeAccelerator
     : public IPC::Listener,
       public IPC::Sender,
-      public media::VideoDecodeAccelerator::Client {
+      public media::VideoDecodeAccelerator::Client,
+      public GpuCommandBufferStub::DestructionObserver {
  public:
   // Each of the arguments to the constructor must outlive this object.
   // |stub->decoder()| will be made current around any operation that touches
@@ -43,6 +43,9 @@ class GpuVideoDecodeAccelerator
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
+
+  // GpuCommandBufferStub::DestructionObserver implementation.
+  virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) OVERRIDE;
 
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message) OVERRIDE;
@@ -79,7 +82,7 @@ class GpuVideoDecodeAccelerator
   int32 host_route_id_;
 
   // Unowned pointer to the underlying GpuCommandBufferStub.
-  GpuCommandBufferStub* stub_;
+  base::WeakPtr<GpuCommandBufferStub> stub_;
 
   // Pointer to the underlying VideoDecodeAccelerator.
   scoped_refptr<media::VideoDecodeAccelerator> video_decode_accelerator_;

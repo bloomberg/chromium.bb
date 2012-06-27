@@ -395,24 +395,28 @@ void VaapiH264Decoder::Reset() {
 }
 
 void VaapiH264Decoder::Destroy() {
-  VAStatus va_res;
-
   if (state_ == kUninitialized)
     return;
 
+  VAStatus va_res;
+  bool destroy_surfaces = false;
   switch (state_) {
     case kDecoding:
     case kAfterReset:
     case kError:
-      DestroyVASurfaces();
+      destroy_surfaces = true;
       // fallthrough
     case kInitialized:
       if (!make_context_current_.Run())
         break;
+      if (destroy_surfaces)
+        DestroyVASurfaces();
       va_res = VAAPI_DestroyConfig(va_display_, va_config_id_);
       VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
-      va_res = VAAPI_Terminate(va_display_);
-      VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
+      // TODO(fischman,posciak): call vaTerminate when we figure out why it
+      // crashes.
+      // va_res = VAAPI_Terminate(va_display_);
+      // VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
       // fallthrough
     case kUninitialized:
       break;
@@ -577,8 +581,6 @@ bool VaapiH264Decoder::CreateVASurfaces() {
   DCHECK_NE(pic_width_, -1);
   DCHECK_NE(pic_height_, -1);
   DCHECK_EQ(state_, kInitialized);
-  if (!make_context_current_.Run())
-    return false;
 
   // Allocate VASurfaces in driver.
   VAStatus va_res = VAAPI_CreateSurfaces(va_display_, pic_width_,
@@ -588,7 +590,6 @@ bool VaapiH264Decoder::CreateVASurfaces() {
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateSurfaces failed", false);
 
   DCHECK(decode_surfaces_.empty());
-
   // And create a context associated with them.
   va_res = VAAPI_CreateContext(va_display_, va_config_id_,
                                pic_width_, pic_height_, VA_PROGRESSIVE,
@@ -602,9 +603,6 @@ bool VaapiH264Decoder::CreateVASurfaces() {
 void VaapiH264Decoder::DestroyVASurfaces() {
   DCHECK(state_ == kDecoding || state_ == kError || state_ == kAfterReset);
   decode_surfaces_.clear();
-
-  if (!make_context_current_.Run())
-    return;
 
   VAStatus va_res = VAAPI_DestroyContext(va_display_, va_context_id_);
   VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
@@ -718,9 +716,6 @@ VaapiH264Decoder::DecodeSurface* VaapiH264Decoder::UnassignSurfaceFromPoC(
 
 // Fill a VAPictureParameterBufferH264 to be later sent to the HW decoder.
 bool VaapiH264Decoder::SendPPS() {
-  if (!make_context_current_.Run())
-    return false;
-
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   DCHECK(pps);
 
@@ -818,9 +813,6 @@ bool VaapiH264Decoder::SendPPS() {
 
 // Fill a VAIQMatrixBufferH264 to be later sent to the HW decoder.
 bool VaapiH264Decoder::SendIQMatrix() {
-  if (!make_context_current_.Run())
-    return false;
-
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   DCHECK(pps);
 
@@ -867,9 +859,6 @@ bool VaapiH264Decoder::SendIQMatrix() {
 }
 
 bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
-  if (!make_context_current_.Run())
-    return false;
-
   const H264PPS* pps = parser_.GetPPS(slice_hdr->pic_parameter_set_id);
   DCHECK(pps);
 
@@ -971,11 +960,7 @@ bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
   return true;
 }
 
-bool VaapiH264Decoder::SendSliceData(const uint8* ptr, size_t size)
-{
-    if (!make_context_current_.Run())
-      return false;
-
+bool VaapiH264Decoder::SendSliceData(const uint8* ptr, size_t size) {
     // Can't help it, blame libva...
     void* non_const_ptr = const_cast<uint8*>(ptr);
 
@@ -1008,8 +993,6 @@ bool VaapiH264Decoder::QueueSlice(H264SliceHeader* slice_hdr) {
 bool VaapiH264Decoder::DecodePicture() {
   DCHECK(!frame_ready_at_hw_);
   DCHECK(curr_pic_.get());
-  if (!make_context_current_.Run())
-    return false;
 
   static const size_t kMaxVABuffers = 32;
   DCHECK_LE(pending_va_bufs_.size(), kMaxVABuffers);

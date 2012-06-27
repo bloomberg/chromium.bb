@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
