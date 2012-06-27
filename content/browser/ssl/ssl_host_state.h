@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,9 @@ class CONTENT_EXPORT SSLHostState
 
   // Records that |cert| is not permitted to be used for |host| in the future.
   void AllowCertForHost(net::X509Certificate* cert, const std::string& host);
+
+  // Clear all allow/deny preferences.
+  void Clear();
 
   // Queries whether |cert| is allowed or denied for |host|.
   net::CertPolicy::Judgment QueryPolicy(

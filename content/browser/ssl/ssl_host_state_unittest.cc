@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,4 +151,14 @@ TEST_F(SSLHostStateTest, QueryPolicy) {
             net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
             net::CertPolicy::DENIED);
+
+  state.Clear();
+
+  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
+            net::CertPolicy::UNKNOWN);
+  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
+            net::CertPolicy::UNKNOWN);
+  EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
+            net::CertPolicy::UNKNOWN);
+
 }

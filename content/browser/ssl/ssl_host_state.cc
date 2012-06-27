@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,12 @@ void SSLHostState::AllowCertForHost(net::X509Certificate* cert,
   DCHECK(CalledOnValidThread());
 
   cert_policy_for_host_[host].Allow(cert);
+}
+
+void SSLHostState::Clear() {
+  DCHECK(CalledOnValidThread());
+
+  cert_policy_for_host_.clear();
 }
 
 net::CertPolicy::Judgment SSLHostState::QueryPolicy(
