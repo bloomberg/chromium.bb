@@ -566,7 +566,8 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
     // To give a more "launchy" experience when using the NTP launcher, we close
     // it automatically.
-    Browser* browser = browser::FindLastActiveWithProfile(profile);
+    Browser* browser = browser::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
     WebContents* old_contents = NULL;
     if (browser)
       old_contents = browser->GetActiveWebContents();
@@ -639,10 +640,8 @@ void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
   if (!extension)
     return;
 
-  Browser* browser = browser::FindLastActiveWithProfile(
-      extension_service_->profile());
-  if (!browser)
-    return;
+  Browser* browser = browser::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
   browser->window()->ShowCreateChromeAppShortcutsDialog(
       browser->profile(), extension);
 }
