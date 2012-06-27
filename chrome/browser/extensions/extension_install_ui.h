@@ -50,12 +50,8 @@ class ExtensionInstallUI {
   // in tests.
   static void DisableFailureUIForTests();
 
-  Browser* browser() { return browser_; }
-
  protected:
   ExtensionInstallUI();
-
-  Browser* browser_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

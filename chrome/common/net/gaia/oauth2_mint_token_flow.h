@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/common/net/gaia/oauth2_api_call_flow.h"
 
 class GoogleServiceAuthError;
@@ -28,7 +27,7 @@ class URLRequestContextGetter;
 
 // IssueAdvice: messages to show to the user to get a user's approval.
 // The structure is as follows:
-// * Description 1
+// * Descritpion 1
 //   - Detail 1.1
 //   - Details 1.2
 // * Description 2
@@ -115,10 +114,6 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
 
   virtual void Start() OVERRIDE;
 
-  // Starts the flow, and deletes |this| when done. Useful when the caller
-  // does not care about the response (|delegate_| is NULL).
-  void FireAndForget();
-
  protected:
   // Implementation of template methods in OAuth2ApiCallFlow.
   virtual GURL CreateApiCallUrl() OVERRIDE;
@@ -143,7 +138,7 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
       ProcessMintAccessTokenFailure);
 
   void ReportSuccess(const std::string& access_token);
-  void ReportIssueAdviceSuccess(const IssueAdviceInfo& issue_advice);
+  void ReportSuccess(const IssueAdviceInfo& issue_advice);
   void ReportFailure(const GoogleServiceAuthError& error);
 
   static bool ParseIssueAdviceResponse(
@@ -154,10 +149,6 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   net::URLRequestContextGetter* context_;
   Delegate* delegate_;
   Parameters parameters_;
-  // If true, |this| owns itself and will delete itself after reporting
-  // success or failure.
-  bool delete_when_done_;
-  base::WeakPtrFactory<OAuth2MintTokenFlow> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2MintTokenFlow);
 };

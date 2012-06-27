@@ -129,8 +129,7 @@ WebstoreInstaller::Approval::Approval()
     : profile(NULL),
       use_app_installed_bubble(false),
       skip_post_install_ui(false),
-      skip_install_dialog(false),
-      record_oauth2_grant(false) {
+      skip_install_dialog(false) {
 }
 
 scoped_ptr<WebstoreInstaller::Approval>

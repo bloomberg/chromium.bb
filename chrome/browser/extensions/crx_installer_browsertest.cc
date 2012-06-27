@@ -13,17 +13,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
-#include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 class SkBitmap;
-
-using extensions::Extension;
 
 namespace {
 
@@ -33,24 +29,22 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
   explicit MockInstallPrompt(Browser* browser) :
       ExtensionInstallPrompt(browser),
-      confirmation_requested_(false),
-      extension_(NULL) {}
+      did_succeed_(false),
+      confirmation_requested_(false) {}
 
-  bool did_succeed() const { return !!extension_; }
-  const Extension* extension() const { return extension_; }
+  bool did_succeed() const { return did_succeed_; }
   bool confirmation_requested() const { return confirmation_requested_; }
   const string16& error() const { return error_; }
-  void set_record_oauth2_grant(bool record) { record_oauth2_grant_ = record; }
 
   // Overriding some of the ExtensionInstallUI API.
   void ConfirmInstall(Delegate* delegate,
-                      const Extension* extension) {
+                      const extensions::Extension* extension) {
     confirmation_requested_ = true;
     delegate->InstallUIProceed();
   }
-  void OnInstallSuccess(const Extension* extension,
+  void OnInstallSuccess(const extensions::Extension* extension,
                         SkBitmap* icon) {
-    extension_ = extension;
+    did_succeed_ = true;
     MessageLoopForUI::current()->Quit();
   }
   void OnInstallFailure(const CrxInstallerError& error) {
@@ -59,9 +53,9 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   }
 
  private:
+  bool did_succeed_;
   bool confirmation_requested_;
   string16 error_;
-  const Extension* extension_;
 };
 
 }  // namespace
@@ -69,27 +63,25 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
 class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
  public:
   // Installs a crx from |crx_relpath| (a path relative to the extension test
-  // data dir) with expected id |id|. Returns the installer.
-  scoped_refptr<CrxInstaller> InstallWithPrompt(
-      const std::string& ext_relpath,
-      const std::string& id,
-      MockInstallPrompt* mock_install_prompt) {
+  // data dir) with expected id |id|. Returns whether a confirmation prompt
+  // happened or not.
+  bool DidWhitelistInstallPrompt(const std::string& ext_relpath,
+                                 const std::string& id) {
     ExtensionService* service = browser()->profile()->GetExtensionService();
+    MockInstallPrompt* mock_install_prompt = new MockInstallPrompt(browser());
     FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
 
     std::string error;
     base::DictionaryValue* parsed_manifest =
         extension_file_util::LoadManifest(ext_path, &error);
     if (!parsed_manifest)
-      return scoped_refptr<CrxInstaller>();
+      return false;
 
-    scoped_ptr<WebstoreInstaller::Approval> approval;
-    if (!id.empty()) {
-      approval = WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          browser()->profile(),
-          id,
-          scoped_ptr<base::DictionaryValue>(parsed_manifest));
-    }
+    scoped_ptr<WebstoreInstaller::Approval> approval(
+        WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+            browser()->profile(),
+            id,
+            scoped_ptr<base::DictionaryValue>(parsed_manifest)));
 
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service,
@@ -101,28 +93,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     ui_test_utils::RunMessageLoop();
 
     EXPECT_TRUE(mock_install_prompt->did_succeed());
-    return installer;
-  }
-
-  // Installs an extension and checks that it has scopes granted IFF
-  // |record_oauth2_grant| is true.
-  void CheckHasEmptyScopesAfterInstall(const std::string& ext_relpath,
-                                       bool record_oauth2_grant) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-
-    ExtensionService* service = browser()->profile()->GetExtensionService();
-
-    MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
-    mock_prompt->set_record_oauth2_grant(record_oauth2_grant);
-    scoped_refptr<CrxInstaller> installer =
-        InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
-
-    scoped_refptr<extensions::PermissionSet> permissions =
-        service->extension_prefs()->GetGrantedPermissions(
-            mock_prompt->extension()->id());
-    ASSERT_TRUE(permissions.get());
-    EXPECT_NE(record_oauth2_grant, permissions->scopes().empty());
+    return mock_install_prompt->confirmation_requested();
   }
 };
 
@@ -136,10 +107,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
 
   // Even whitelisted extensions with NPAPI should not prompt.
-  MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
-  scoped_refptr<CrxInstaller> installer =
-      InstallWithPrompt("uitest/plugins", id, mock_prompt);
-  EXPECT_FALSE(mock_prompt->confirmation_requested());
+  EXPECT_FALSE(DidWhitelistInstallPrompt("uitest/plugins", id));
   EXPECT_TRUE(service->GetExtensionById(id, false));
 }
 
@@ -163,8 +131,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   EXPECT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
@@ -203,18 +171,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   LOG(ERROR) << "PackAndInstallExtension: Extension install";
   EXPECT_TRUE(mock_prompt->confirmation_requested());
   LOG(ERROR) << "PackAndInstallExtension: Extension install confirmed";
-}
-
-// Tests that scopes are only granted if |record_oauth2_grant_| on the prompt is
-// true.
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, GrantScopes) {
-  EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall("browsertest/scopes",
-                                                          true));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotGrantScopes) {
-  EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall("browsertest/scopes",
-                                                          false));
 }
 
 // Off-store install cannot yet be disabled on Aura.

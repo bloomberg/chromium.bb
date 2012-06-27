@@ -231,10 +231,6 @@ const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
 
-// For the experimental identity API, do not grant scopes unless the user has
-// explicitly approved them.
-const char kDemandUserScopeApproval[]        = "demand-user-scope-approval";
-
 // Specifies the URL at which to fetch configuration policy from the device
 // management backend. Specifying this switch turns on managed policy from the
 // device management backend.

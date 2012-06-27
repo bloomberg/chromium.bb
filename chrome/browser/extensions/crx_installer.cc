@@ -99,8 +99,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS),
       off_store_install_allow_reason_(OffStoreInstallDisallowed),
-      did_handle_successfully_(true),
-      record_oauth2_grant_(false) {
+      did_handle_successfully_(true) {
   if (!approval)
     return;
 
@@ -115,7 +114,6 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
     approved_ = true;
     expected_manifest_.reset(approval->parsed_manifest->DeepCopy());
     expected_id_ = approval->extension_id;
-    record_oauth2_grant_ = approval->record_oauth2_grant;
   }
 }
 
@@ -589,15 +587,12 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     client_->OnInstallSuccess(extension_.get(), install_icon_.get());
   }
 
-  if (client_ && !approved_)
-    record_oauth2_grant_ = client_->record_oauth2_grant();
-
   // We update the extension's granted permissions if the user already approved
   // the install (client_ is non NULL), or we are allowed to install this
   // silently.
   if (client_ || allow_silent_install_) {
     PermissionsUpdater perms_updater(profile());
-    perms_updater.GrantActivePermissions(extension_, record_oauth2_grant_);
+    perms_updater.GrantActivePermissions(extension_);
   }
 
   // Tell the frontend about the installation and hand off ownership of

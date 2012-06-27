@@ -85,9 +85,6 @@ class WebstoreInstaller : public content::NotificationObserver,
     // so there's no need to show it again.
     bool skip_install_dialog;
 
-    // Whether we should record an oauth2 grant for the extensions.
-    bool record_oauth2_grant;
-
    private:
     Approval();
   };

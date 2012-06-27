@@ -947,8 +947,7 @@ void AppLauncherHandler::InstallUIProceed() {
   if (!extension)
     return;
 
-  extension_service_->GrantPermissionsAndEnableExtension(
-      extension, extension_install_ui_->record_oauth2_grant());
+  extension_service_->GrantPermissionsAndEnableExtension(extension);
 
   // We bounce this off the NTP so the browser can update the apps icon.
   // If we don't launch the app asynchronously, then the app's disabled

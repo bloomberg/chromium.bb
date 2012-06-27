@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_install_ui.h"
-ExtensionInstallUI::ExtensionInstallUI() : browser_(NULL) {
+ExtensionInstallUI::ExtensionInstallUI() {
 }
 
 ExtensionInstallUI::~ExtensionInstallUI() {

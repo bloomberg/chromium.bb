@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
@@ -35,8 +34,6 @@ class GetAuthTokenFunction : public AsyncExtensionFunction,
   // OAuth2MintTokenFlow::Delegate implementation:
   virtual void OnMintTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnIssueAdviceSuccess(
-      const IssueAdviceInfo& issue_advice) OVERRIDE;
 
   scoped_ptr<OAuth2MintTokenFlow> flow_;
 };

@@ -406,7 +406,6 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
           profile(), id_, parsed_manifest_.Pass()));
   approval->use_app_installed_bubble = use_app_installed_bubble_;
-  approval->record_oauth2_grant = install_prompt_->record_oauth2_grant();
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
   SetResult(ERROR_NONE);

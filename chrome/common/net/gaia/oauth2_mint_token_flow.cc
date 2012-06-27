@@ -108,9 +108,7 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(
           "", std::vector<std::string>()),
       context_(context),
       delegate_(delegate),
-      parameters_(parameters),
-      delete_when_done_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      parameters_(parameters) {
 }
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
@@ -126,50 +124,37 @@ void OAuth2MintTokenFlow::Start() {
     if (g_interceptor_for_tests->DoIntercept(this, &auth_token, &error)) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&OAuth2MintTokenFlow::ReportSuccess,
-                     weak_factory_.GetWeakPtr(), auth_token));
+          base::Bind(&OAuth2MintTokenFlow::Delegate::OnMintTokenSuccess,
+                     base::Unretained(delegate_), auth_token));
     } else {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&OAuth2MintTokenFlow::ReportFailure,
-                     weak_factory_.GetWeakPtr(), error));
+          base::Bind(&OAuth2MintTokenFlow::Delegate::OnMintTokenFailure,
+                     base::Unretained(delegate_), error));
     }
     return;
   }
 
-
   OAuth2ApiCallFlow::Start();
 }
 
-void OAuth2MintTokenFlow::FireAndForget() {
-  delete_when_done_ = true;
-  Start();
-}
-
 void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token) {
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnMintTokenSuccess(access_token);
-
-  if (delete_when_done_)
-    delete this;
+  }
 }
 
-void OAuth2MintTokenFlow::ReportIssueAdviceSuccess(
-    const IssueAdviceInfo& issue_advice) {
-  if (delegate_)
+void OAuth2MintTokenFlow::ReportSuccess(const IssueAdviceInfo& issue_advice) {
+  if (delegate_) {
     delegate_->OnIssueAdviceSuccess(issue_advice);
-
-  if (delete_when_done_)
-    delete this;
+  }
 }
 
 void OAuth2MintTokenFlow::ReportFailure(
     const GoogleServiceAuthError& error) {
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnMintTokenFailure(error);
-
-  if (delete_when_done_)
-    delete this;
+  }
 }
 
 GURL OAuth2MintTokenFlow::CreateApiCallUrl() {
@@ -216,7 +201,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   if (issue_advice == kIssueAdviceValueConsent) {
     IssueAdviceInfo issue_advice;
     if (ParseIssueAdviceResponse(dict, &issue_advice))
-      ReportIssueAdviceSuccess(issue_advice);
+      ReportSuccess(issue_advice);
     else
       ReportFailure(GoogleServiceAuthError::FromConnectionError(101));
   } else {
@@ -226,8 +211,6 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
     else
       ReportFailure(GoogleServiceAuthError::FromConnectionError(101));
   }
-
-  // |this| may be deleted!
 }
 
 void OAuth2MintTokenFlow::ProcessApiCallFailure(

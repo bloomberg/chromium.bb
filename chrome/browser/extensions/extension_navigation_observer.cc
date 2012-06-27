@@ -96,8 +96,7 @@ void ExtensionNavigationObserver::InstallUIProceed() {
   extension_install_prompt_.reset();
 
   // Grant permissions, re-enable the extension, and then reload the tab.
-  extension_service->GrantPermissionsAndEnableExtension(
-      extension, extension_install_prompt_->record_oauth2_grant());
+  extension_service->GrantPermissionsAndEnableExtension(extension);
   nav_controller->Reload(true);
 }
 
