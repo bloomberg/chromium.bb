@@ -505,6 +505,13 @@
             'shell/android/shell_view.cc',
             'shell/android/shell_view.h',
           ],
+          'conditions': [
+            ['android_build_type==1', {
+              'ldflags': [
+                '-lgabi++',  # For rtti
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'content_shell_apk',
