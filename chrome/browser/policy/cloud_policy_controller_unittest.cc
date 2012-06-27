@@ -40,6 +40,7 @@ class MockDeviceTokenFetcher : public DeviceTokenFetcher {
   MOCK_METHOD0(FetchToken, void());
   MOCK_METHOD0(SetUnmanagedState, void());
   MOCK_METHOD0(SetSerialNumberInvalidState, void());
+  MOCK_METHOD0(SetMissingLicensesState, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceTokenFetcher);
@@ -265,6 +266,20 @@ TEST_F(CloudPolicyControllerTest, InvalidSerialNumber) {
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER));
   EXPECT_CALL(*token_fetcher_.get(), SetSerialNumberInvalidState()).Times(1);
+  CreateNewController();
+  loop_.RunAllPending();
+}
+
+// If the backend reports that the domain has run out of licenses, the
+// controller should instruct the token fetcher not to fetch a new token
+// (which will in turn set and persist the correct 'missing licenses' state).
+TEST_F(CloudPolicyControllerTest, MissingLicenses) {
+  data_store_->SetupForTesting("device_token", "device_id",
+                               "who@what.com", "auth", true);
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+      .WillOnce(service_.FailJob(DM_STATUS_MISSING_LICENSES));
+  EXPECT_CALL(*token_fetcher_.get(), SetMissingLicensesState()).Times(1);
   CreateNewController();
   loop_.RunAllPending();
 }

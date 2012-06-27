@@ -275,6 +275,11 @@ INSTANTIATE_TEST_CASE_P(
             net::URLRequestStatus::SUCCESS,
             412,
             PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DM_STATUS_MISSING_LICENSES,
+            net::URLRequestStatus::SUCCESS,
+            402,
+            PROTO_STRING(kResponseEmpty)),
         // TODO(pastarmovj): Remove once DM server is deployed.
         FailedRequestParams(
             DM_STATUS_SERVICE_ACTIVATION_PENDING,

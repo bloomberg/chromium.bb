@@ -16129,6 +16129,9 @@ Battery full
       <message name="IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR" desc="Error message to show when the user used to re-enroll the device does not belong to the domain that the device was originally enrolled into.">
         This user account does not belong to the domain that the device is enrolled to.  If you want to enroll to a different domain you need to go through device recovery first.
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR" desc="Error message to show when the domain the device is trying to enroll into has expired or exhausted licenses.">
+        You do not have enough software licenses to enroll this device. Please contact sales to purchase more. If you believe you're seeing this message in error, please contact support.
+      </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
         Enterprise enrollment
       </message>

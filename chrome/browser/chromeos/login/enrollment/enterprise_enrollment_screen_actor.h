@@ -17,6 +17,20 @@ namespace chromeos {
 // Interface class for the enterprise enrollment screen actor.
 class EnterpriseEnrollmentScreenActor {
  public:
+  // Enumeration of the possible errors that can occur during enrollment.
+  enum EnrollmentError {
+    ACCOUNT_ERROR,
+    SERIAL_NUMBER_ERROR,
+    ENROLLMENT_MODE_ERROR,
+    FATAL_AUTH_ERROR,
+    FATAL_ERROR,
+    AUTO_ENROLLMENT_ERROR,
+    NETWORK_ERROR,
+    LOCKBOX_TIMEOUT_ERROR,
+    DOMAIN_MISMATCH_ERROR,
+    MISSING_LICENSES_ERROR,
+  };
+
   // This defines the interface for controllers which will be called back when
   // something happens on the UI.
   class Controller {
@@ -65,15 +79,9 @@ class EnterpriseEnrollmentScreenActor {
 
   // Show an authentication error.
   virtual void ShowAuthError(const GoogleServiceAuthError& error) = 0;
-  virtual void ShowAccountError() = 0;
-  virtual void ShowSerialNumberError() = 0;
-  virtual void ShowEnrollmentModeError() = 0;
-  virtual void ShowFatalAuthError() = 0;
-  virtual void ShowFatalEnrollmentError() = 0;
-  virtual void ShowAutoEnrollmentError() = 0;
-  virtual void ShowNetworkEnrollmentError() = 0;
-  virtual void ShowLockboxTimeoutError() = 0;
-  virtual void ShowDomainMismatchError() = 0;
+
+  // Show non-authentication error.
+  virtual void ShowEnrollmentError(EnrollmentError error_code) = 0;
 
   // Used for testing only.
   virtual void SubmitTestCredentials(const std::string& email,

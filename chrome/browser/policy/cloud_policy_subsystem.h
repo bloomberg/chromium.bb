@@ -49,6 +49,7 @@ class CloudPolicySubsystem
     BAD_SERIAL_NUMBER,     // The serial number of the device is not valid.
     AUTO_ENROLLMENT_ERROR, // Auto-enrollment is not supported.
     BAD_ENROLLMENT_MODE,   // The enrollment mode was not recognized.
+    MISSING_LICENSES,      // There are no valid licenses for this domain left.
   };
 
   class Observer {

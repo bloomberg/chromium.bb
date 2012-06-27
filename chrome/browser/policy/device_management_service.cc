@@ -57,6 +57,7 @@ const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
 const int kSuccess = 200;
 const int kInvalidArgument = 400;
 const int kInvalidAuthCookieOrDMToken = 401;
+const int kMissingLicenses = 402;
 const int kDeviceManagementNotAllowed = 403;
 const int kInvalidURL = 404; // This error is not coming from the GFE.
 const int kInvalidSerialNumber = 405;
@@ -337,6 +338,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(
       return;
     case kInvalidAuthCookieOrDMToken:
       ReportError(DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID);
+      return;
+    case kMissingLicenses:
+      ReportError(DM_STATUS_MISSING_LICENSES);
       return;
     case kDeviceManagementNotAllowed:
       ReportError(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED);

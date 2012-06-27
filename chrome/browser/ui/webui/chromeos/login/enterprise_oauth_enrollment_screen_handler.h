@@ -42,15 +42,7 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void Hide() OVERRIDE;
   virtual void ShowConfirmationScreen() OVERRIDE;
   virtual void ShowAuthError(const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void ShowAccountError() OVERRIDE;
-  virtual void ShowSerialNumberError() OVERRIDE;
-  virtual void ShowEnrollmentModeError() OVERRIDE;
-  virtual void ShowFatalAuthError() OVERRIDE;
-  virtual void ShowFatalEnrollmentError() OVERRIDE;
-  virtual void ShowAutoEnrollmentError() OVERRIDE;
-  virtual void ShowNetworkEnrollmentError() OVERRIDE;
-  virtual void ShowLockboxTimeoutError() OVERRIDE;
-  virtual void ShowDomainMismatchError() OVERRIDE;
+  virtual void ShowEnrollmentError(EnrollmentError error_code) OVERRIDE;
   virtual void SubmitTestCredentials(const std::string& email,
                                      const std::string& password) OVERRIDE;
 

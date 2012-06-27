@@ -157,6 +157,7 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
     case DM_STATUS_SERVICE_DEVICE_NOT_FOUND:
     case DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
     case DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
+    case DM_STATUS_MISSING_LICENSES:
       // Need a re-registration, no use in retrying.
       return;
   }

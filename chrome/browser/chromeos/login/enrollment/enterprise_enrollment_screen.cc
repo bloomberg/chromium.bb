@@ -119,10 +119,16 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
       case policy::CloudPolicySubsystem::UNENROLLED:
         switch (error_details) {
           case policy::CloudPolicySubsystem::BAD_SERIAL_NUMBER:
-            actor_->ShowSerialNumberError();
+            actor_->ShowEnrollmentError(
+                EnterpriseEnrollmentScreenActor::SERIAL_NUMBER_ERROR);
             break;
           case policy::CloudPolicySubsystem::BAD_ENROLLMENT_MODE:
-            actor_->ShowEnrollmentModeError();
+            actor_->ShowEnrollmentError(
+                EnterpriseEnrollmentScreenActor::ENROLLMENT_MODE_ERROR);
+            break;
+          case policy::CloudPolicySubsystem::MISSING_LICENSES:
+            actor_->ShowEnrollmentError(
+                EnterpriseEnrollmentScreenActor::MISSING_LICENSES_ERROR);
             break;
           default:  // Still working...
             return;
@@ -130,13 +136,16 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
         break;
       case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
       case policy::CloudPolicySubsystem::LOCAL_ERROR:
-        actor_->ShowFatalEnrollmentError();
+        actor_->ShowEnrollmentError(
+            EnterpriseEnrollmentScreenActor::FATAL_ERROR);
         break;
       case policy::CloudPolicySubsystem::UNMANAGED:
-        actor_->ShowAccountError();
+        actor_->ShowEnrollmentError(
+            EnterpriseEnrollmentScreenActor::ACCOUNT_ERROR);
         break;
       case policy::CloudPolicySubsystem::NETWORK_ERROR:
-        actor_->ShowNetworkEnrollmentError();
+        actor_->ShowEnrollmentError(
+            EnterpriseEnrollmentScreenActor::NETWORK_ERROR);
         break;
       case policy::CloudPolicySubsystem::TOKEN_FETCHED:
         if (!is_auto_enrollment_ ||
@@ -150,7 +159,8 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
                      << "not supported for non-enterprise enrollment modes.";
           policy::AutoEnrollmentClient::CancelAutoEnrollment();
           is_auto_enrollment_ = false;
-          actor_->ShowAutoEnrollmentError();
+          actor_->ShowEnrollmentError(
+              EnterpriseEnrollmentScreenActor::AUTO_ENROLLMENT_ERROR);
           // Set the error state to something distinguishable in the logs.
           state = policy::CloudPolicySubsystem::LOCAL_ERROR;
           error_details = policy::CloudPolicySubsystem::AUTO_ENROLLMENT_ERROR;
@@ -203,18 +213,21 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
             base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
       } else {
-        actor_->ShowLockboxTimeoutError();
+        actor_->ShowEnrollmentError(
+            EnterpriseEnrollmentScreenActor::LOCKBOX_TIMEOUT_ERROR);
       }
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR: {
-      actor_->ShowFatalEnrollmentError();
+      actor_->ShowEnrollmentError(
+          EnterpriseEnrollmentScreenActor::FATAL_ERROR);
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_WRONG_USER: {
       LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
                  << "has been locked already!";
-      actor_->ShowFatalEnrollmentError();
+      actor_->ShowEnrollmentError(
+          EnterpriseEnrollmentScreenActor::FATAL_ERROR);
       return;
     }
   }
@@ -236,8 +249,10 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
         connector->GetEnterpriseDomain() != gaia::ExtractDomainName(user_)) {
       LOG(ERROR) << "Trying to re-enroll to a different domain than "
                  << connector->GetEnterpriseDomain();
-      if (is_showing_)
-        actor_->ShowDomainMismatchError();
+      if (is_showing_) {
+        actor_->ShowEnrollmentError(
+            EnterpriseEnrollmentScreenActor::DOMAIN_MISMATCH_ERROR);
+      }
       return;
     }
     // Make sure the device policy subsystem is in a clean slate.
@@ -253,8 +268,10 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
     return;
   }
   NOTREACHED();
-  if (is_showing_)
-    actor_->ShowFatalEnrollmentError();
+  if (is_showing_) {
+    actor_->ShowEnrollmentError(
+        EnterpriseEnrollmentScreenActor::FATAL_ERROR);
+  }
 }
 
 }  // namespace chromeos

@@ -77,6 +77,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER,
   // Service error: The device id used for registration is already taken.
   DM_STATUS_SERVICE_DEVICE_ID_CONFLICT,
+  // Service error: The licenses have expired or have been exhausted.
+  DM_STATUS_MISSING_LICENSES,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
 };

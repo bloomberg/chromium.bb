@@ -45,6 +45,9 @@ enum MetricToken {
   kMetricTokenFetchDeviceIdConflict,
   // DM server reported that the serial number we try to register is invalid.
   kMetricTokenFetchInvalidSerialNumber,
+  // DM server reported that the licenses for the domain have expired or been
+  // exhausted.
+  kMetricMissingLicenses,
 
   kMetricTokenSize  // Must be the last.
 };
@@ -147,6 +150,9 @@ enum MetricEnrollment {
   // The username used to re-enroll the device does not belong to the domain
   // that the device was initially enrolled to.
   kMetricEnrollmentWrongUserError,
+  // DM server reported that the licenses for the domain has expired or been
+  // exhausted.
+  kMetricMissingLicensesError,
 
   kMetricEnrollmentSize  // Must be the last.
 };

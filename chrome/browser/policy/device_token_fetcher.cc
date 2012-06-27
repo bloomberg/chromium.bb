@@ -60,6 +60,9 @@ void SampleErrorStatus(DeviceManagementStatus status) {
     case DM_STATUS_RESPONSE_DECODING_ERROR:
       sample = kMetricTokenFetchBadResponse;
       break;
+    case DM_STATUS_MISSING_LICENSES:
+      sample = kMetricMissingLicenses;
+      break;
     case DM_STATUS_TEMPORARY_UNAVAILABLE:
     case DM_STATUS_SERVICE_ACTIVATION_PENDING:
     case DM_STATUS_SERVICE_POLICY_NOT_FOUND:
@@ -133,6 +136,10 @@ void DeviceTokenFetcher::SetUnmanagedState() {
 
 void DeviceTokenFetcher::SetSerialNumberInvalidState() {
   SetState(STATE_BAD_SERIAL);
+}
+
+void DeviceTokenFetcher::SetMissingLicensesState() {
+  SetState(STATE_MISSING_LICENSES);
 }
 
 void DeviceTokenFetcher::Reset() {
@@ -248,6 +255,9 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
     case DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
       SetSerialNumberInvalidState();
       return;
+    case DM_STATUS_MISSING_LICENSES:
+      SetMissingLicensesState();
+      return;
     case DM_STATUS_REQUEST_INVALID:
     case DM_STATUS_HTTP_STATUS_ERROR:
     case DM_STATUS_RESPONSE_DECODING_ERROR:
@@ -287,6 +297,11 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
     case STATE_BAD_ENROLLMENT_MODE:
       notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
                         CloudPolicySubsystem::BAD_ENROLLMENT_MODE,
+                        PolicyNotifier::TOKEN_FETCHER);
+      break;
+    case STATE_MISSING_LICENSES:
+      notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
+                        CloudPolicySubsystem::MISSING_LICENSES,
                         PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_UNMANAGED:
@@ -345,6 +360,7 @@ void DeviceTokenFetcher::DoWork() {
     case STATE_TOKEN_AVAILABLE:
     case STATE_BAD_SERIAL:
     case STATE_BAD_ENROLLMENT_MODE:
+    case STATE_MISSING_LICENSES:
       break;
     case STATE_UNMANAGED:
     case STATE_ERROR:

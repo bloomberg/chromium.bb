@@ -169,85 +169,79 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::REQUEST_CANCELED:
       LOG(ERROR) << "Auth error " << error.state();
-      ShowFatalAuthError();
+      ShowEnrollmentError(FATAL_AUTH_ERROR);
       return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       LOG(ERROR) << "Account error " << error.state();
-      ShowAccountError();
+      ShowEnrollmentError(ACCOUNT_ERROR);
       return;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       LOG(WARNING) << "Network error " << error.state();
-      ShowNetworkEnrollmentError();
+      ShowEnrollmentError(NETWORK_ERROR);
       return;
   }
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
   NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowAccountError() {
-  UMAFailure(policy::kMetricEnrollmentNotSupported);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
-  NotifyObservers(false);
-}
+void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentError(
+    EnrollmentError error_code) {
+  switch (error_code) {
+    case ACCOUNT_ERROR:
+      UMAFailure(policy::kMetricEnrollmentNotSupported);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
+      break;
+    case SERIAL_NUMBER_ERROR:
+      UMAFailure(policy::kMetricEnrollmentInvalidSerialNumber);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR, true);
+      break;
+    case ENROLLMENT_MODE_ERROR:
+      UMAFailure(policy::kMetricEnrollmentInvalidEnrollmentMode);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_MODE_ERROR, false);
+      break;
+    case FATAL_AUTH_ERROR:
+      UMAFailure(policy::kMetricEnrollmentLoginFailed);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR, false);
+      break;
+    case AUTO_ENROLLMENT_ERROR: {
+      UMAFailure(policy::kMetricEnrollmentAutoEnrollmentNotSupported);
+      // The reason for showing this error is that we have been trying to
+      // auto-enroll and this failed, so we have to verify whether
+      // auto-enrollment is on, and if so switch it off, update the UI
+      // accordingly and show the error message.
+      std::string user;
+      is_auto_enrollment_ = controller_ && controller_->IsAutoEnrollment(&user);
+      base::FundamentalValue value(is_auto_enrollment_);
+      web_ui()->CallJavascriptFunction(
+          "oobe.OAuthEnrollmentScreen.setIsAutoEnrollment", value);
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowSerialNumberError() {
-  UMAFailure(policy::kMetricEnrollmentInvalidSerialNumber);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR, true);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentModeError() {
-  UMAFailure(policy::kMetricEnrollmentInvalidEnrollmentMode);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_MODE_ERROR, false);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalAuthError() {
-  UMAFailure(policy::kMetricEnrollmentLoginFailed);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR, false);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowFatalEnrollmentError() {
-  UMAFailure(policy::kMetricEnrollmentOtherFailed);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR, false);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowAutoEnrollmentError() {
-  UMAFailure(policy::kMetricEnrollmentAutoEnrollmentNotSupported);
-  // The reason for showing this error is that we have been trying to
-  // auto-enroll and this failed, so we have to verify whether auto-enrollment
-  // is on, and if so switch it off, update the UI accordingly and show the
-  // error message.
-  std::string user;
-  is_auto_enrollment_ = controller_ && controller_->IsAutoEnrollment(&user);
-  base::FundamentalValue value(is_auto_enrollment_);
-  web_ui()->CallJavascriptFunction(
-      "oobe.OAuthEnrollmentScreen.setIsAutoEnrollment", value);
-
-  ShowError(IDS_ENTERPRISE_AUTO_ENROLLMENT_ERROR, false);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowNetworkEnrollmentError() {
-  UMAFailure(policy::kMetricEnrollmentNetworkFailed);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR, true);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowLockboxTimeoutError() {
-  UMAFailure(policy::kMetricLockboxTimeoutError);
-  ShowError(IDS_ENTERPRISE_LOCKBOX_TIMEOUT_ERROR, true);
-  NotifyObservers(false);
-}
-
-void EnterpriseOAuthEnrollmentScreenHandler::ShowDomainMismatchError() {
-  UMAFailure(policy::kMetricEnrollmentWrongUserError);
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, true);
+      ShowError(IDS_ENTERPRISE_AUTO_ENROLLMENT_ERROR, false);
+      break;
+    }
+    case NETWORK_ERROR:
+      UMAFailure(policy::kMetricEnrollmentNetworkFailed);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_NETWORK_ENROLLMENT_ERROR, true);
+      break;
+    case LOCKBOX_TIMEOUT_ERROR:
+      UMAFailure(policy::kMetricLockboxTimeoutError);
+      ShowError(IDS_ENTERPRISE_LOCKBOX_TIMEOUT_ERROR, true);
+      break;
+    case DOMAIN_MISMATCH_ERROR:
+      UMAFailure(policy::kMetricEnrollmentWrongUserError);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, true);
+      break;
+    case MISSING_LICENSES_ERROR:
+      UMAFailure(policy::kMetricMissingLicensesError);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, true);
+      break;
+    case FATAL_ERROR:
+    default:
+      UMAFailure(policy::kMetricEnrollmentOtherFailed);
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR, false);
+  }
   NotifyObservers(false);
 }
 
@@ -310,7 +304,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
     const GoogleServiceAuthError& error) {
-  ShowFatalAuthError();
+  ShowEnrollmentError(FATAL_AUTH_ERROR);
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthGetAccessTokenSuccess(

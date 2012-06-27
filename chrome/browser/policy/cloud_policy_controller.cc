@@ -95,6 +95,7 @@ void SampleErrorStatus(DeviceManagementStatus status) {
     case DM_STATUS_TEMPORARY_UNAVAILABLE:
     case DM_STATUS_SERVICE_ACTIVATION_PENDING:
     case DM_STATUS_HTTP_STATUS_ERROR:
+    case DM_STATUS_MISSING_LICENSES:
       sample = kMetricPolicyFetchServerFailed;
       break;
   }
@@ -217,6 +218,11 @@ void CloudPolicyController::OnPolicyFetchCompleted(
       VLOG(1) << "The device is no longer enlisted for the domain.";
       token_fetcher_->SetSerialNumberInvalidState();
       SetState(STATE_TOKEN_ERROR);
+      return;
+    case DM_STATUS_MISSING_LICENSES:
+      VLOG(1) << "There are no valid licenses for this domain left.";
+      token_fetcher_->SetMissingLicensesState();
+      SetState(STATE_TOKEN_UNMANAGED);
       return;
     case DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
       VLOG(1) << "The device is no longer managed.";

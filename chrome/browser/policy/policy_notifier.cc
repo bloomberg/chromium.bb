@@ -50,7 +50,8 @@ void PolicyNotifier::RecomputeState() {
     error_details_ = CloudPolicySubsystem::NO_DETAILS;
   } else if (s[TOKEN_FETCHER] == CloudPolicySubsystem::UNENROLLED &&
              (e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_SERIAL_NUMBER ||
-              e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_ENROLLMENT_MODE)) {
+              e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_ENROLLMENT_MODE ||
+              e[TOKEN_FETCHER] == CloudPolicySubsystem::MISSING_LICENSES)) {
     state_ = s[TOKEN_FETCHER];
     error_details_ = e[TOKEN_FETCHER];
   } else if (s[TOKEN_FETCHER] == CloudPolicySubsystem::NETWORK_ERROR) {
