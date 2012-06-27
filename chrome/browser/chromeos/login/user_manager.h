@@ -202,10 +202,11 @@ class UserManager {
 
   // Tries to load user image from disk; if successful, sets it for the user,
   // and updates Local State.
-  virtual void SaveUserWallpaperFromFile(const std::string& username,
-                                         const FilePath& path,
-                                         ash::WallpaperLayout layout,
-                                         WallpaperDelegate* delegate) = 0;
+  virtual void SaveUserWallpaperFromFile(
+      const std::string& username,
+      const FilePath& path,
+      ash::WallpaperLayout layout,
+      base::WeakPtr<WallpaperDelegate> delegate) = 0;
 
   // Sets profile image as user image for |username|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user

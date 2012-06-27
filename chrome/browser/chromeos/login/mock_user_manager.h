@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -50,10 +51,11 @@ class MockUserManager : public UserManager {
       ash::WallpaperLayout));
   MOCK_METHOD2(SaveUserImageFromFile, void(const std::string&,
                                            const FilePath&));
-  MOCK_METHOD4(SaveUserWallpaperFromFile, void(const std::string&,
-                                               const FilePath&,
-                                               ash::WallpaperLayout,
-                                               WallpaperDelegate*));
+  MOCK_METHOD4(SaveUserWallpaperFromFile, void(
+      const std::string&,
+      const FilePath&,
+      ash::WallpaperLayout,
+      base::WeakPtr<WallpaperDelegate>));
   MOCK_METHOD1(SaveUserImageFromProfileImage, void(const std::string&));
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));

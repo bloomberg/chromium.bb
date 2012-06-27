@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
@@ -82,10 +83,11 @@ class UserManagerImpl : public UserManager,
       ash::WallpaperLayout layout) OVERRIDE;
   virtual void SaveUserImageFromFile(const std::string& username,
                                      const FilePath& path) OVERRIDE;
-  virtual void SaveUserWallpaperFromFile(const std::string& username,
-                                         const FilePath& path,
-                                         ash::WallpaperLayout layout,
-                                         WallpaperDelegate* delegate) OVERRIDE;
+  virtual void SaveUserWallpaperFromFile(
+      const std::string& username,
+      const FilePath& path,
+      ash::WallpaperLayout layout,
+      base::WeakPtr<WallpaperDelegate> delegate) OVERRIDE;
   virtual void SaveUserImageFromProfileImage(
       const std::string& username) OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
@@ -202,7 +204,7 @@ class UserManagerImpl : public UserManager,
   void SaveUserWallpaperInternal(const std::string& username,
                                  ash::WallpaperLayout layout,
                                  User::WallpaperType type,
-                                 WallpaperDelegate* delegate,
+                                 base::WeakPtr<WallpaperDelegate> delegate,
                                  const UserImage& user_image);
 
   // Sets desktop background to custom wallpaper and loads wallpaper thumbnail
@@ -216,12 +218,12 @@ class UserManagerImpl : public UserManager,
                                         const UserImage& user_image);
 
   // Updates the custom wallpaper thumbnail in wallpaper picker UI.
-  void OnThumbnailUpdated(WallpaperDelegate* delegate);
+  void OnThumbnailUpdated(base::WeakPtr<WallpaperDelegate> delegate);
 
   // Generates a 128x80 thumbnail and saves it to local file system.
   void GenerateUserWallpaperThumbnail(const std::string& username,
                                       User::WallpaperType type,
-                                      WallpaperDelegate* delegate,
+                                      base::WeakPtr<WallpaperDelegate> delegate,
                                       const SkBitmap& wallpaper);
 
   // Saves image to file with specified path and sends LOGIN_USER_IMAGE_CHANGED

@@ -649,10 +649,11 @@ void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
                  base::Unretained(this), username));
 }
 
-void UserManagerImpl::SaveUserWallpaperFromFile(const std::string& username,
-                                                const FilePath& path,
-                                                ash::WallpaperLayout layout,
-                                                WallpaperDelegate* delegate) {
+void UserManagerImpl::SaveUserWallpaperFromFile(
+    const std::string& username,
+    const FilePath& path,
+    ash::WallpaperLayout layout,
+    base::WeakPtr<WallpaperDelegate> delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // For wallpapers, save the image without resizing.
   image_loader_->Start(
@@ -1237,11 +1238,12 @@ void UserManagerImpl::SaveUserImageInternal(const std::string& username,
                  username, user_image, image_path, image_index, image_url));
 }
 
-void UserManagerImpl::SaveUserWallpaperInternal(const std::string& username,
-                                                ash::WallpaperLayout layout,
-                                                User::WallpaperType type,
-                                                WallpaperDelegate* delegate,
-                                                const UserImage& user_image) {
+void UserManagerImpl::SaveUserWallpaperInternal(
+    const std::string& username,
+    ash::WallpaperLayout layout,
+    User::WallpaperType type,
+    base::WeakPtr<WallpaperDelegate> delegate,
+    const UserImage& user_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const SkBitmap& wallpaper = user_image.image();
@@ -1296,7 +1298,8 @@ void UserManagerImpl::OnCustomWallpaperThumbnailLoaded(
     user->SetWallpaperThumbnail(wallpaper);
 }
 
-void UserManagerImpl::OnThumbnailUpdated(WallpaperDelegate* delegate) {
+void UserManagerImpl::OnThumbnailUpdated(
+    base::WeakPtr<WallpaperDelegate> delegate) {
   if (delegate)
     delegate->SetCustomWallpaperThumbnail();
 }
@@ -1304,7 +1307,7 @@ void UserManagerImpl::OnThumbnailUpdated(WallpaperDelegate* delegate) {
 void UserManagerImpl::GenerateUserWallpaperThumbnail(
     const std::string& username,
     User::WallpaperType type,
-    WallpaperDelegate* delegate,
+    base::WeakPtr<WallpaperDelegate> delegate,
     const SkBitmap& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SkBitmap thumbnail =
