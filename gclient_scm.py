@@ -353,27 +353,28 @@ class GitWrapper(SCMWrapper):
       else:
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
-    # Update the remotes first so we have all the refs.
-    backoff_time = 5
-    for _ in range(10):
-      try:
-        remote_output = scm.GIT.Capture(
-            ['remote'] + verbose + ['update'],
-            cwd=self.checkout_path)
-        break
-      except subprocess2.CalledProcessError, e:
-        # Hackish but at that point, git is known to work so just checking for
-        # 502 in stderr should be fine.
-        if '502' in e.stderr:
-          print(str(e))
-          print('Sleeping %.1f seconds and retrying...' % backoff_time)
-          time.sleep(backoff_time)
-          backoff_time *= 1.3
-          continue
-        raise
+    if not scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=revision):
+      # Update the remotes first so we have all the refs.
+      backoff_time = 5
+      for _ in range(10):
+        try:
+          remote_output = scm.GIT.Capture(
+              ['remote'] + verbose + ['update'],
+              cwd=self.checkout_path)
+          break
+        except subprocess2.CalledProcessError, e:
+          # Hackish but at that point, git is known to work so just checking for
+          # 502 in stderr should be fine.
+          if '502' in e.stderr:
+            print(str(e))
+            print('Sleeping %.1f seconds and retrying...' % backoff_time)
+            time.sleep(backoff_time)
+            backoff_time *= 1.3
+            continue
+          raise
 
-    if verbose:
-      print(remote_output.strip())
+      if verbose:
+        print(remote_output.strip())
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
