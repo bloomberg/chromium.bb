@@ -64,7 +64,7 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
   if (service_weak_.get()) {
     extensions::PermissionsUpdater perms_updater(service_weak_->profile());
-    perms_updater.GrantActivePermissions(extension_);
+    perms_updater.GrantActivePermissions(extension_, false);
     service_weak_->OnExtensionInstalled(
         extension_, false, StringOrdinal());  // Not from web store.
   }
@@ -237,7 +237,7 @@ void UnpackedInstaller::OnLoaded(
   }
 
   PermissionsUpdater perms_updater(service_weak_->profile());
-  perms_updater.GrantActivePermissions(extension);
+  perms_updater.GrantActivePermissions(extension, false);
   service_weak_->OnExtensionInstalled(extension,
                                       false,  // Not from web store.
                                       StringOrdinal());

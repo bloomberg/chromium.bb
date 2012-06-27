@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -37,7 +38,8 @@ class PermissionSet;
 }  // namespace extensions
 
 // Displays all the UI around extension installation.
-class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
+class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
+                               public OAuth2MintTokenFlow::Delegate {
  public:
   enum PromptType {
     UNSET_PROMPT_TYPE = -1,
@@ -62,6 +64,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
     void SetInlineInstallWebstoreData(const std::string& localized_user_count,
                                       double average_rating,
                                       int rating_count);
+    void SetOAuthIssueAdvice(const IssueAdviceInfo& issue_advice);
 
     PromptType type() const { return type_; }
     void set_type(PromptType type) { type_ = type; }
@@ -87,6 +90,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
     string16 GetUserCount() const;
     size_t GetPermissionCount() const;
     string16 GetPermission(size_t index) const;
+    size_t GetOAuthIssueCount() const;
+    const IssueAdviceInfoEntry& GetOAuthIssue(size_t index) const;
 
     // Populated for BUNDLE_INSTALL_PROMPT.
     const extensions::BundleInstaller* bundle() const { return bundle_; }
@@ -108,6 +113,10 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
     std::vector<string16> permissions_;
+
+    // Descriptions and details for OAuth2 permissions to display to the user.
+    // These correspond to permission scopes.
+    IssueAdviceInfo oauth_issue_advice_;
 
     // The extension or bundle being installed.
     const extensions::Extension* extension_;
@@ -154,6 +163,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
   virtual ~ExtensionInstallPrompt();
 
   ExtensionInstallUI* install_ui() const { return install_ui_.get(); }
+
+  bool record_oauth2_grant() const { return record_oauth2_grant_; }
 
   // This is called by the bundle installer to verify whether the bundle
   // should be installed.
@@ -214,9 +225,17 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
+  // Returns true if extension scopes should be approved without asking the
+  // user. This is controlled by a flag; before the identity api is taken out
+  // of experimental the flag should be removed and this should always be false.
+  static bool ShouldAutomaticallyApproveScopes();
+
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class WebstoreInlineInstallUnpackFailureTest;
+
+  // Whether or not we should record the oauth2 grant upon successful install.
+  bool record_oauth2_grant_;
 
  private:
   friend class GalleryInstallApiTestObserver;
@@ -229,6 +248,15 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
   void LoadImageIfNeeded();
+
+  // Starts fetching warnings for OAuth2 scopes, if there are any.
+  void FetchOAuthIssueAdviceIfNeeded();
+
+  // OAuth2MintTokenFlow::Delegate implementation:
+  virtual void OnIssueAdviceSuccess(
+      const IssueAdviceInfo& issue_advice) OVERRIDE;
+  virtual void OnMintTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
@@ -259,6 +287,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
 
   // The type of prompt we are going to show.
   PromptType prompt_type_;
+
+  scoped_ptr<OAuth2MintTokenFlow> token_flow_;
 
   // Keeps track of extension images being loaded on the File thread for the
   // purpose of showing the install UI.

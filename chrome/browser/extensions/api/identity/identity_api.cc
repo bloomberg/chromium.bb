@@ -5,7 +5,9 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +22,8 @@ namespace {
 const char kInvalidClientId[] = "Invalid OAuth2 Client ID.";
 const char kInvalidScopes[] = "Invalid OAuth2 scopes.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
+const char kAuthFailure[] = "OAuth2 request failed: ";
+const char kGrantRevoked[] = "OAuth2 not granted or revoked.";
 
 }  // namespace
 
@@ -52,7 +56,9 @@ bool GetAuthTokenFunction::RunImpl() {
           extension->id(),
           oauth2_info.client_id,
           oauth2_info.scopes,
-          OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE)));
+          ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() ?
+              OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE :
+              OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)));
   flow_->Start();
 
   return true;
@@ -66,7 +72,26 @@ void GetAuthTokenFunction::OnMintTokenSuccess(const std::string& access_token) {
 
 void GetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
-  error_ = error.ToString();
+  error_ = std::string(kAuthFailure) + error.ToString();
+  SendResponse(false);
+  Release();  // Balanced in RunImpl.
+}
+
+void GetAuthTokenFunction::OnIssueAdviceSuccess(
+    const IssueAdviceInfo& issue_advice) {
+  // Existing grant was revoked and we used NO_FORCE, so we got info back
+  // instead.
+  error_ = kGrantRevoked;
+
+  // Remove the oauth2 scopes from the extension's granted permissions, if
+  // revoked server-side.
+  scoped_refptr<PermissionSet> scopes =
+      new PermissionSet(GetExtension()->GetActivePermissions()->scopes());
+  profile()->GetExtensionService()->extension_prefs()->RemoveGrantedPermissions(
+      GetExtension()->id(), scopes);
+
+  // TODO(estade): need to prompt the user for scope permissions.
+
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }

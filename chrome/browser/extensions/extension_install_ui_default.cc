@@ -87,10 +87,11 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
 }  // namespace
 
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Browser* browser)
-    : browser_(browser),
-      skip_post_install_ui_(false),
+    : skip_post_install_ui_(false),
       previous_using_native_theme_(false),
       use_app_installed_bubble_(false) {
+  browser_ = browser;
+
   // Remember the current theme in case the user presses undo.
   if (browser) {
     Profile* profile = browser->profile();

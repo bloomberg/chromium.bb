@@ -260,6 +260,10 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   void AddGrantedPermissions(const std::string& extension_id,
                              const extensions::PermissionSet* permissions);
 
+  // As above, but subtracts the given |permissions| from the granted set.
+  void RemoveGrantedPermissions(const std::string& extension_id,
+                                const extensions::PermissionSet* permissions);
+
   // Gets the active permission set for the specified extension. This may
   // differ from the permissions in the manifest due to the optional
   // permissions API. This passes ownership of the set to the caller.

@@ -12,15 +12,19 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
 using content::RenderProcessHost;
 using extensions::permissions_api_helpers::PackPermissionSet;
+using extensions::PermissionSet;
 
 namespace extensions {
 
@@ -48,7 +52,7 @@ void PermissionsUpdater::AddPermissions(
   UpdateActivePermissions(extension, total.get());
 
   // Update the granted permissions so we don't auto-disable the extension.
-  GrantActivePermissions(extension);
+  GrantActivePermissions(extension, false);
 
   NotifyPermissionsUpdated(ADDED, extension, added.get());
 }
@@ -70,7 +74,8 @@ void PermissionsUpdater::RemovePermissions(
   NotifyPermissionsUpdated(REMOVED, extension, removed.get());
 }
 
-void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
+void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
+                                                bool record_oauth2_grant) {
   CHECK(extension);
 
   // We only maintain the granted permissions prefs for INTERNAL and LOAD
@@ -79,14 +84,36 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
       extension->location() != Extension::INTERNAL)
     return;
 
-  GetExtensionPrefs()->AddGrantedPermissions(
-      extension->id(), extension->GetActivePermissions());
+  scoped_refptr<const PermissionSet> permissions =
+      extension->GetActivePermissions();
+  if (record_oauth2_grant) {
+    RecordOAuth2Grant(extension);
+  } else {
+    scoped_refptr<PermissionSet> scopes =
+        new PermissionSet(permissions->scopes());
+    permissions = PermissionSet::CreateDifference(permissions, scopes);
+  }
+
+  GetExtensionPrefs()->AddGrantedPermissions(extension->id(), permissions);
 }
 
 void PermissionsUpdater::UpdateActivePermissions(
     const Extension* extension, const PermissionSet* permissions) {
   GetExtensionPrefs()->SetActivePermissions(extension->id(), permissions);
   extension->SetActivePermissions(permissions);
+}
+
+void PermissionsUpdater::RecordOAuth2Grant(const Extension* extension) {
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  OAuth2MintTokenFlow* flow = new OAuth2MintTokenFlow(
+      profile_->GetRequestContext(), NULL, OAuth2MintTokenFlow::Parameters(
+          token_service->GetOAuth2LoginRefreshToken(),
+          extension->id(),
+          extension->oauth2_info().client_id,
+          extension->oauth2_info().scopes,
+          OAuth2MintTokenFlow::MODE_RECORD_GRANT));
+  // |flow| will delete itself.
+  flow->FireAndForget();
 }
 
 void PermissionsUpdater::DispatchEvent(

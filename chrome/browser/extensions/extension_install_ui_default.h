@@ -40,8 +40,6 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
       const std::string& previous_theme_id,
       bool previous_using_native_theme);
 
-  Browser* browser_;
-
   // Whether or not to show the default UI after completing the installation.
   bool skip_post_install_ui_;
 

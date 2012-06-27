@@ -337,6 +337,9 @@ class CrxInstaller
   // still consider the installation 'handled'.
   bool did_handle_successfully_;
 
+  // Whether we should record an oauth2 grant upon successful install.
+  bool record_oauth2_grant_;
+
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
 

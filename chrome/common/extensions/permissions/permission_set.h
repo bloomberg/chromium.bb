@@ -43,7 +43,6 @@ class PermissionSet
                          const URLPatternSet& explicit_hosts,
                          const OAuth2Scopes& scopes);
 
-
   // Creates a new permission set based on the specified data.
   PermissionSet(const APIPermissionSet& apis,
                          const URLPatternSet& explicit_hosts,
