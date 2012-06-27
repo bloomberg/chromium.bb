@@ -120,7 +120,7 @@ void BaseLayoutManager::OnRootWindowResized(const aura::RootWindow* root,
 /////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, ash::ShellObserver overrides:
 
-void BaseLayoutManager::OnMonitorWorkAreaInsetsChanged() {
+void BaseLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   AdjustWindowSizesForScreenChange();
 }
 
@@ -222,8 +222,8 @@ void BaseLayoutManager::MaybeAnimateToBounds(aura::Window* window,
 }
 
 void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
-  // If a user plugs an external monitor into a laptop running Aura the
-  // monitor size will change.  Maximized windows need to resize to match.
+  // If a user plugs an external display into a laptop running Aura the
+  // display size will change.  Maximized windows need to resize to match.
   // We also do this when developers running Aura on a desktop manually resize
   // the host window.
   // We also need to do this when the work area insets changes.
@@ -238,10 +238,10 @@ void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
           window, gfx::Screen::GetDisplayNearestWindow(window).bounds());
     } else {
       // The work area may be smaller than the full screen.
-      gfx::Rect monitor_rect =
+      gfx::Rect display_rect =
           gfx::Screen::GetDisplayNearestWindow(window).work_area();
-      // Put as much of the window as possible within the monitor area.
-      window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
+      // Put as much of the window as possible within the display area.
+      window->SetBounds(window->bounds().AdjustToFit(display_rect));
     }
   }
 }

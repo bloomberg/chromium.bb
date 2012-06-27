@@ -36,16 +36,16 @@ class AshTestBase : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Change the primary monitor's configuration to use |bounds|
+  // Change the primary display's configuration to use |bounds|
   // and |scale|.
-  void ChangeMonitorConfig(float scale, const gfx::Rect& bounds);
+  void ChangeDisplayConfig(float scale, const gfx::Rect& bounds);
 
   // Update the display configuration as given in |display_specs|.  The
   // format of |display_spec| is a list of comma separated spec for
   // each displays. Please refer to the comment in
-  // | aura::MonitorManager::CreateMonitorFromSpec| for the format of
+  // | aura::DisplayManager::CreateDisplayFromSpec| for the format of
   // the display spec.
-  void UpdateMonitor(const std::string& display_specs);
+  void UpdateDisplay(const std::string& display_specs);
 
  protected:
   void RunAllPendingInMessageLoop();

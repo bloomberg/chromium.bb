@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_MONITOR_OBSERVER_H_
-#define UI_AURA_MONITOR_OBSERVER_H_
+#ifndef UI_AURA_DISPLAY_OBSERVER_H_
+#define UI_AURA_DISPLAY_OBSERVER_H_
 #pragma once
 
 #include "ui/aura/aura_export.h"
@@ -20,7 +20,7 @@ class AURA_EXPORT DisplayObserver {
   // Called when the |display|'s bound has changed.
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) = 0;
 
-  // Called when |new_monitor| has been added.
+  // Called when |new_display| has been added.
   virtual void OnDisplayAdded(const gfx::Display& new_display) = 0;
 
   // Called when |old_display| has been removed.
@@ -32,4 +32,4 @@ class AURA_EXPORT DisplayObserver {
 
 }  // namespace aura
 
-#endif  // UI_AURA_MONITOR_OBSERVER_H_
+#endif  // UI_AURA_DISPLAY_OBSERVER_H_

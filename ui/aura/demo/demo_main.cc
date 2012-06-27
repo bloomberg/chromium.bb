@@ -12,7 +12,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/single_display_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -120,9 +120,9 @@ int main(int argc, char** argv) {
   // Create the message-loop here before creating the root window.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
-  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
+  aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
   scoped_ptr<aura::RootWindow> root_window(
-      aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
+      aura::DisplayManager::CreateRootWindowForPrimaryDisplay());
   scoped_ptr<DemoStackingClient> stacking_client(new DemoStackingClient(
       root_window.get()));
 

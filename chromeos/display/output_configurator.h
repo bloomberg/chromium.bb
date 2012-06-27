@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_MONITOR_OUTPUT_CONFIGURATOR_H_
-#define CHROMEOS_MONITOR_OUTPUT_CONFIGURATOR_H_
+#ifndef CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
+#define CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -42,7 +42,7 @@ struct CachedOutputDescription {
   unsigned long mm_height;
 };
 
-// Used to describe the state of a multi-monitor configuration.
+// Used to describe the state of a multi-display configuration.
 enum State {
   STATE_INVALID,
   STATE_HEADLESS,
@@ -162,4 +162,4 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_MONITOR_OUTPUT_CONFIGURATOR_H_
+#endif  // CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_

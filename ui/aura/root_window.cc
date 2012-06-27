@@ -19,7 +19,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
-#include "ui/aura/monitor_manager.h"
+#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
@@ -64,9 +64,9 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
     filters->push_back(Env::GetInstance()->event_filter());
 }
 
-float GetDeviceScaleFactorFromMonitor(const aura::Window* window) {
-  MonitorManager* monitor_manager = Env::GetInstance()->monitor_manager();
-  return monitor_manager->GetDisplayNearestWindow(window).device_scale_factor();
+float GetDeviceScaleFactorFromDisplay(const aura::Window* window) {
+  DisplayManager* display_manager = Env::GetInstance()->display_manager();
+  return display_manager->GetDisplayNearestWindow(window).device_scale_factor();
 }
 
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
@@ -154,7 +154,7 @@ RootWindow* RootWindow::GetForAcceleratedWidget(
 }
 
 void RootWindow::Init() {
-  compositor()->SetScaleAndSize(GetDeviceScaleFactorFromMonitor(this),
+  compositor()->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this),
                                 host_->GetBounds().size());
   Window::Init(ui::LAYER_NOT_DRAWN);
   last_mouse_location_ =
@@ -390,8 +390,8 @@ bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
 void RootWindow::OnHostResized(const gfx::Size& size_in_pixel) {
   DispatchHeldMouseMove();
   // The compositor should have the same size as the native root window host.
-  // Get the latest scale from monitor because it might have been changed.
-  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromMonitor(this),
+  // Get the latest scale from display because it might have been changed.
+  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this),
                                size_in_pixel);
   gfx::Size old(bounds().size());
   // The layer, and all the observers should be notified of the

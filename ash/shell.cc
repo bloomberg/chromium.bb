@@ -17,10 +17,10 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/monitor/monitor_controller.h"
-#include "ash/monitor/mouse_cursor_event_filter.h"
-#include "ash/monitor/multi_monitor_manager.h"
-#include "ash/monitor/secondary_monitor_view.h"
+#include "ash/display/display_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/multi_display_manager.h"
+#include "ash/display/secondary_display_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell_context_menu.h"
@@ -73,7 +73,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/monitor_manager.h"
+#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
@@ -97,7 +97,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/monitor/output_configurator.h"
+#include "chromeos/display/output_configurator.h"
 #include "ui/aura/dispatcher_linux.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -223,7 +223,7 @@ Shell::~Shell() {
   app_list_controller_.reset();
 
   // Destroy all child windows including widgets.
-  monitor_controller_->CloseChildWindows();
+  display_controller_->CloseChildWindows();
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
@@ -241,7 +241,7 @@ Shell::~Shell() {
   visibility_controller_.reset();
 
   // This also deletes all RootWindows.
-  monitor_controller_.reset();
+  display_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_
@@ -268,8 +268,8 @@ Shell::~Shell() {
 // static
 Shell* Shell::CreateInstance(ShellDelegate* delegate) {
   CHECK(!instance_);
-  aura::Env::GetInstance()->SetMonitorManager(
-      new internal::MultiMonitorManager());
+  aura::Env::GetInstance()->SetDisplayManager(
+      new internal::MultiDisplayManager());
   instance_ = new Shell(delegate);
   instance_->Init();
   return instance_;
@@ -299,13 +299,13 @@ internal::RootWindowController* Shell::GetPrimaryRootWindowController() {
 
 // static
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
-  return Shell::GetInstance()->monitor_controller()->
+  return Shell::GetInstance()->display_controller()->
       GetAllRootWindowControllers();
 }
 
 // static
 aura::RootWindow* Shell::GetPrimaryRootWindow() {
-  return GetInstance()->monitor_controller()->GetPrimaryRootWindow();
+  return GetInstance()->display_controller()->GetPrimaryRootWindow();
 }
 
 // static
@@ -315,7 +315,7 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
 
 // static
 aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
-  if (!internal::MonitorController::IsVirtualScreenCoordinatesEnabled())
+  if (!internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
     return GetPrimaryRootWindow();
   RootWindowList root_windows = GetAllRootWindows();
   for (RootWindowList::const_iterator iter = root_windows.begin();
@@ -331,7 +331,7 @@ aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
 
 // static
 aura::RootWindow* Shell::GetRootWindowMatching(const gfx::Rect& rect) {
-  if (!internal::MonitorController::IsVirtualScreenCoordinatesEnabled())
+  if (!internal::DisplayController::IsVirtualScreenCoordinatesEnabled())
     return GetPrimaryRootWindow();
   if (rect.IsEmpty())
     return GetRootWindowAt(rect.origin());
@@ -354,7 +354,7 @@ aura::RootWindow* Shell::GetRootWindowMatching(const gfx::Rect& rect) {
 
 // static
 Shell::RootWindowList Shell::GetAllRootWindows() {
-  return Shell::GetInstance()->monitor_controller()->
+  return Shell::GetInstance()->display_controller()->
       GetAllRootWindows();
 }
 
@@ -390,9 +390,9 @@ void Shell::Init() {
   activation_controller_.reset(
       new internal::ActivationController(focus_manager_.get()));
 
-  monitor_controller_.reset(new internal::MonitorController);
-  monitor_controller_->InitPrimaryDisplay();
-  aura::RootWindow* root_window = monitor_controller_->GetPrimaryRootWindow();
+  display_controller_.reset(new internal::DisplayController);
+  display_controller_->InitPrimaryDisplay();
+  aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
   active_root_window_ = root_window;
 
 #if !defined(OS_MACOSX)
@@ -457,9 +457,9 @@ void Shell::Init() {
   magnification_controller_.reset(
       internal::MagnificationController::CreateInstance());
 
-  if (internal::MonitorController::IsExtendedDesktopEnabled()) {
+  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
     mouse_cursor_filter_.reset(
-        new internal::MouseCursorEventFilter(monitor_controller_.get()));
+        new internal::MouseCursorEventFilter(display_controller_.get()));
     AddEnvEventFilter(mouse_cursor_filter_.get());
   }
 
@@ -511,7 +511,7 @@ void Shell::Init() {
   power_button_controller_.reset(new PowerButtonController);
   AddShellObserver(power_button_controller_.get());
 
-  monitor_controller_->InitSecondaryDisplays();
+  display_controller_->InitSecondaryDisplays();
 
   if (initially_hide_cursor_)
     aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
@@ -580,15 +580,15 @@ void Shell::RotateFocus(Direction direction) {
                              internal::FocusCycler::BACKWARD);
 }
 
-void Shell::SetMonitorWorkAreaInsets(Window* contains,
+void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  internal::MultiMonitorManager* monitor_manager =
-      static_cast<internal::MultiMonitorManager*>(
-          aura::Env::GetInstance()->monitor_manager());
-  if (!monitor_manager->UpdateWorkAreaOfMonitorNearestWindow(contains, insets))
+  internal::MultiDisplayManager* display_manager =
+      static_cast<internal::MultiDisplayManager*>(
+          aura::Env::GetInstance()->display_manager());
+  if (!display_manager->UpdateWorkAreaOfDisplayNearestWindow(contains, insets))
     return;
   FOR_EACH_OBSERVER(ShellObserver, observers_,
-                    OnMonitorWorkAreaInsetsChanged());
+                    OnDisplayWorkAreaInsetsChanged());
 }
 
 void Shell::OnLoginStateChanged(user::LoginStatus status) {
@@ -671,9 +671,9 @@ int Shell::GetGridSize() const {
       workspace_manager()->grid_size();
 }
 
-void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
+void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   root->set_focus_manager(focus_manager_.get());
-  if (internal::MonitorController::IsExtendedDesktopEnabled()) {
+  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
     internal::RootWindowController* controller =
         new internal::RootWindowController(root);
     controller->CreateContainers();
@@ -687,11 +687,11 @@ void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
     root->SetFocusWhenShown(false);
     root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
     aura::Window* container = new aura::Window(NULL);
-    container->SetName("SecondaryMonitorContainer");
+    container->SetName("SecondaryDisplayContainer");
     container->Init(ui::LAYER_NOT_DRAWN);
     root->AddChild(container);
     container->SetLayoutManager(new internal::BaseLayoutManager(root));
-    CreateSecondaryMonitorWidget(container);
+    CreateSecondaryDisplayWidget(container);
     container->Show();
     root->layout_manager()->OnWindowResized();
     root->ShowRootWindow();

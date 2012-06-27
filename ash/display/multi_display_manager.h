@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MONITOR_MULTI_MONITOR_MANAGER_H_
-#define ASH_MONITOR_MULTI_MONITOR_MANAGER_H_
+#ifndef ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
+#define ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
 #pragma once
 
 #include <vector>
@@ -11,7 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "ui/aura/monitor_manager.h"
+#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 
@@ -23,31 +23,31 @@ class Display;
 namespace ash {
 namespace internal {
 
-// MultiMonitorManager maintains the current monitor configurations,
+// MultiDisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
 // This is exported for unittest.
 //
 // TODO(oshima): gfx::Screen needs to return translated coordinates
 // if the root window is translated. crbug.com/119268.
-class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
+class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
                                        public aura::RootWindowObserver {
  public:
-  MultiMonitorManager();
-  virtual ~MultiMonitorManager();
+  MultiDisplayManager();
+  virtual ~MultiDisplayManager();
 
-  // Used to emulate monitor change when run in a desktop environment instead
+  // Used to emulate display change when run in a desktop environment instead
   // of on a device.
-  static void AddRemoveMonitor();
-  static void CycleMonitor();
-  static void ToggleMonitorScale();
+  static void AddRemoveDisplay();
+  static void CycleDisplay();
+  static void ToggleDisplayScale();
 
-  bool UpdateWorkAreaOfMonitorNearestWindow(const aura::Window* window,
+  bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
 
-  // MonitorManager overrides:
-  virtual void OnNativeMonitorsChanged(
+  // DisplayManager overrides:
+  virtual void OnNativeDisplaysChanged(
       const std::vector<gfx::Display>& displays) OVERRIDE;
-  virtual aura::RootWindow* CreateRootWindowForMonitor(
+  virtual aura::RootWindow* CreateRootWindowForDisplay(
       const gfx::Display& display) OVERRIDE;
   virtual const gfx::Display& GetDisplayAt(size_t index) OVERRIDE;
 
@@ -66,19 +66,19 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
   typedef std::vector<gfx::Display> Displays;
 
   void Init();
-  void AddRemoveMonitorImpl();
-  void CycleMonitorImpl();
-  void ScaleMonitorImpl();
+  void AddRemoveDisplayImpl();
+  void CycleDisplayImpl();
+  void ScaleDisplayImpl();
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
 
   Displays displays_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiMonitorManager);
+  DISALLOW_COPY_AND_ASSIGN(MultiDisplayManager);
 };
 
-extern const aura::WindowProperty<int>* const kMonitorIdKey;
+extern const aura::WindowProperty<int>* const kDisplayIdKey;
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_MONITOR_MULTI_MONITOR_MANAGER_H_
+#endif  // ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_

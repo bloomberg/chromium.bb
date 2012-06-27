@@ -286,7 +286,7 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
   if (bounds->y() > max_y)
     bounds->set_y(max_y);
 
-  // Don't allow dragging above the top of the monitor.
+  // Don't allow dragging above the top of the display.
   if (bounds->y() <= work_area.y())
     bounds->set_y(work_area.y());
 
@@ -419,8 +419,8 @@ void WorkspaceWindowResizer::RestackWindows() {
 
 WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
-  // TODO: this likely only wants total monitor area, not the area of a single
-  // monitor.
+  // TODO: this likely only wants total display area, not the area of a single
+  // display.
   gfx::Rect area(
       gfx::Screen::GetDisplayNearestWindow(details_.window).bounds());
   if (location.x() <= area.x())

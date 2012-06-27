@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/monitor_change_observer_x11.h"
+#include "ui/aura/display_change_observer_x11.h"
 
 #include <algorithm>
 #include <map>
@@ -14,7 +14,7 @@
 #include "base/message_pump_aurax11.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor_manager.h"
+#include "ui/aura/display_manager.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 
@@ -30,7 +30,7 @@ namespace {
 // please update the bug (crosbug.com/31628) first and make sure that the
 // driver will use the same value.
 // This value also has to be kept in sync with the value in
-// chromeos/monitor/output_configurator.cc. See crbug.com/130188
+// chromeos/display/output_configurator.cc. See crbug.com/130188
 const unsigned int kHighDensityDIPThreshold = 160;
 
 // 1 inch in mm.
@@ -51,7 +51,7 @@ bool CompareDisplayY(const gfx::Display& lhs, const gfx::Display& rhs) {
 
 }  // namespace
 
-MonitorChangeObserverX11::MonitorChangeObserverX11()
+DisplayChangeObserverX11::DisplayChangeObserverX11()
     : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       xrandr_event_base_(0) {
@@ -61,21 +61,21 @@ MonitorChangeObserverX11::MonitorChangeObserverX11()
       AddDispatcherForRootWindow(this);
 }
 
-MonitorChangeObserverX11::~MonitorChangeObserverX11() {
+DisplayChangeObserverX11::~DisplayChangeObserverX11() {
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
       RemoveDispatcherForRootWindow(this);
 }
 
-bool MonitorChangeObserverX11::Dispatch(const base::NativeEvent& event) {
+bool DisplayChangeObserverX11::Dispatch(const base::NativeEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     NotifyDisplayChange();
   }
   return true;
 }
 
-void MonitorChangeObserverX11::NotifyDisplayChange() {
-  if (!MonitorManager::use_fullscreen_host_window())
-    return;  // Use the default monitor that monitor manager determined.
+void DisplayChangeObserverX11::NotifyDisplayChange() {
+  if (!DisplayManager::use_fullscreen_host_window())
+    return;  // Use the default display that display manager determined.
 
   XRRScreenResources* screen_resources =
       XRRGetScreenResources(xdisplay_, x_root_window_);
@@ -112,7 +112,7 @@ void MonitorChangeObserverX11::NotifyDisplayChange() {
     // Mirrored monitors have the same y coordinates.
     if (y_coords.find(crtc_info->y) != y_coords.end())
       continue;
-    // TODO(oshima): Create unique ID for the monitor.
+    // TODO(oshima): Create unique ID for the display.
     displays.push_back(gfx::Display(
         0,
         gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height)));
@@ -144,7 +144,7 @@ void MonitorChangeObserverX11::NotifyDisplayChange() {
        iter != displays.end(); ++iter, ++id)
     (*iter).set_id(id);
 
-  Env::GetInstance()->monitor_manager()->OnNativeMonitorsChanged(displays);
+  Env::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
 }
 
 }  // namespace internal

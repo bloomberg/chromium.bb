@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/monitor/monitor_controller.h"
+#include "ash/display/display_controller.h"
 
 #include "ash/ash_switches.h"
-#include "ash/monitor/multi_monitor_manager.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -26,13 +26,13 @@ bool extended_desktop_enabled = false;
 bool virtual_screen_coordinates_enabled = false;
 }
 
-MonitorController::MonitorController()
+DisplayController::DisplayController()
     : secondary_display_layout_(RIGHT) {
-  aura::Env::GetInstance()->monitor_manager()->AddObserver(this);
+  aura::Env::GetInstance()->display_manager()->AddObserver(this);
 }
 
-MonitorController::~MonitorController() {
-  aura::Env::GetInstance()->monitor_manager()->RemoveObserver(this);
+DisplayController::~DisplayController() {
+  aura::Env::GetInstance()->display_manager()->RemoveObserver(this);
   // Delete all root window controllers, which deletes root window
   // from the last so that the primary root window gets deleted last.
   for (std::map<int, aura::RootWindow*>::const_reverse_iterator it =
@@ -48,31 +48,31 @@ MonitorController::~MonitorController() {
   }
 }
 
-void MonitorController::InitPrimaryDisplay() {
-  aura::MonitorManager* monitor_manager =
-      aura::Env::GetInstance()->monitor_manager();
-  const gfx::Display& display = monitor_manager->GetDisplayAt(0);
+void DisplayController::InitPrimaryDisplay() {
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  const gfx::Display& display = display_manager->GetDisplayAt(0);
   DCHECK_EQ(0, display.id());
   aura::RootWindow* root = AddRootWindowForDisplay(display);
   root->SetHostBounds(display.bounds_in_pixel());
 }
 
-void MonitorController::InitSecondaryDisplays() {
-  aura::MonitorManager* monitor_manager =
-      aura::Env::GetInstance()->monitor_manager();
-  for (size_t i = 1; i < monitor_manager->GetNumDisplays(); ++i) {
-    const gfx::Display& display = monitor_manager->GetDisplayAt(i);
+void DisplayController::InitSecondaryDisplays() {
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  for (size_t i = 1; i < display_manager->GetNumDisplays(); ++i) {
+    const gfx::Display& display = display_manager->GetDisplayAt(i);
     aura::RootWindow* root = AddRootWindowForDisplay(display);
-    Shell::GetInstance()->InitRootWindowForSecondaryMonitor(root);
+    Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   }
 }
 
-aura::RootWindow* MonitorController::GetPrimaryRootWindow() {
+aura::RootWindow* DisplayController::GetPrimaryRootWindow() {
   DCHECK(!root_windows_.empty());
   return root_windows_[0];
 }
 
-void MonitorController::CloseChildWindows() {
+void DisplayController::CloseChildWindows() {
   for (std::map<int, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {
     aura::RootWindow* root_window = it->second;
@@ -89,7 +89,7 @@ void MonitorController::CloseChildWindows() {
   }
 }
 
-std::vector<aura::RootWindow*> MonitorController::GetAllRootWindows() {
+std::vector<aura::RootWindow*> DisplayController::GetAllRootWindows() {
   std::vector<aura::RootWindow*> windows;
   for (std::map<int, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {
@@ -101,7 +101,7 @@ std::vector<aura::RootWindow*> MonitorController::GetAllRootWindows() {
 }
 
 std::vector<internal::RootWindowController*>
-MonitorController::GetAllRootWindowControllers() {
+DisplayController::GetAllRootWindowControllers() {
   std::vector<internal::RootWindowController*> controllers;
   for (std::map<int, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {
@@ -113,12 +113,12 @@ MonitorController::GetAllRootWindowControllers() {
   return controllers;
 }
 
-void MonitorController::SetSecondaryDisplayLayout(
+void DisplayController::SetSecondaryDisplayLayout(
     SecondaryDisplayLayout layout) {
   secondary_display_layout_ = layout;
 }
 
-bool MonitorController::WarpMouseCursorIfNecessary(
+bool DisplayController::WarpMouseCursorIfNecessary(
     aura::Window* current_root,
     const gfx::Point& location_in_root) {
   if (root_windows_.size() < 2)
@@ -189,11 +189,11 @@ bool MonitorController::WarpMouseCursorIfNecessary(
   return false;
 }
 
-void MonitorController::OnDisplayBoundsChanged(const gfx::Display& display) {
+void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
 }
 
-void MonitorController::OnDisplayAdded(const gfx::Display& display) {
+void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   if (root_windows_.empty()) {
     DCHECK_EQ(0, display.id());
     root_windows_[display.id()] = Shell::GetPrimaryRootWindow();
@@ -201,15 +201,15 @@ void MonitorController::OnDisplayAdded(const gfx::Display& display) {
     return;
   }
   aura::RootWindow* root = AddRootWindowForDisplay(display);
-  Shell::GetInstance()->InitRootWindowForSecondaryMonitor(root);
+  Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
 }
 
-void MonitorController::OnDisplayRemoved(const gfx::Display& display) {
+void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   aura::RootWindow* root = root_windows_[display.id()];
   DCHECK(root);
-  // Primary monitor should never be removed by MonitorManager.
+  // Primary display should never be removed by DisplayManager.
   DCHECK(root != Shell::GetPrimaryRootWindow());
-  // Monitor for root window will be deleted when the Primary RootWindow
+  // Display for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
   if (root != Shell::GetPrimaryRootWindow()) {
     root_windows_.erase(display.id());
@@ -225,40 +225,40 @@ void MonitorController::OnDisplayRemoved(const gfx::Display& display) {
 }
 
 // static
-bool MonitorController::IsExtendedDesktopEnabled(){
+bool DisplayController::IsExtendedDesktopEnabled(){
   return extended_desktop_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshExtendedDesktop);
 }
 
 // static
-void MonitorController::SetExtendedDesktopEnabled(bool enabled) {
+void DisplayController::SetExtendedDesktopEnabled(bool enabled) {
   extended_desktop_enabled = enabled;
 }
 
 // static
-bool MonitorController::IsVirtualScreenCoordinatesEnabled() {
+bool DisplayController::IsVirtualScreenCoordinatesEnabled() {
   return virtual_screen_coordinates_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshVirtualScreenCoordinates);
 }
 
 // static
-void MonitorController::SetVirtualScreenCoordinatesEnabled(bool enabled) {
+void DisplayController::SetVirtualScreenCoordinatesEnabled(bool enabled) {
   virtual_screen_coordinates_enabled = enabled;
 }
 
-aura::RootWindow* MonitorController::AddRootWindowForDisplay(
+aura::RootWindow* DisplayController::AddRootWindowForDisplay(
     const gfx::Display& display) {
-  aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
-      CreateRootWindowForMonitor(display);
+  aura::RootWindow* root = aura::Env::GetInstance()->display_manager()->
+      CreateRootWindowForDisplay(display);
   root_windows_[display.id()] = root;
   // Confine the cursor within the window if
   // 1) Extended desktop is enabled or
-  // 2) the display is primary monitor and the host window
+  // 2) the display is primary display and the host window
   // is set to be fullscreen (this is old behavior).
   if (IsExtendedDesktopEnabled() ||
-      (aura::MonitorManager::use_fullscreen_host_window() &&
+      (aura::DisplayManager::use_fullscreen_host_window() &&
        display.id() == 0)) {
     root->ConfineCursorToWindow();
   }

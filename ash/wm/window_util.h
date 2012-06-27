@@ -56,7 +56,7 @@ ASH_EXPORT void MinimizeWindow(aura::Window* window);
 // Restores |window|, which must not be NULL.
 ASH_EXPORT void RestoreWindow(aura::Window* window);
 
-// Moves the window to the center of the monitor.
+// Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 
 }  // namespace wm
