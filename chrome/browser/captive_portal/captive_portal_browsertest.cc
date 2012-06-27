@@ -1734,7 +1734,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, ReloadTimeout) {
 
 // Checks the case where there are two windows, and there's an SSL timeout in
 // the background one.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoWindows) {
+// Disabled:  http://crbug.com/134357
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   Browser* browser2 = Browser::Create(browser()->profile());
   // Navigate the new browser window so it'll be shown and we can pick the
   // active window.
