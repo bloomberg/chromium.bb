@@ -101,12 +101,14 @@ ModelAssociationManager::~ModelAssociationManager() {
 
 void ModelAssociationManager::Initialize(
     syncable::ModelTypeSet desired_types) {
-  DCHECK_EQ(state_, IDLE);
+  // TODO(tim): Bug 134550.  CHECKing to ensure no reentrancy on dev channel.
+  // Remove this.
+  CHECK_EQ(state_, IDLE);
   needs_start_.clear();
   needs_stop_.clear();
   failed_datatypes_info_.clear();
   desired_types_ = desired_types;
-  state_ = INITIAILIZED_TO_CONFIGURE;
+  state_ = INITIALIZED_TO_CONFIGURE;
 
   DVLOG(1) << "ModelAssociationManager: Initializing";
 
@@ -154,14 +156,14 @@ void ModelAssociationManager::Initialize(
 }
 
 void ModelAssociationManager::StartAssociationAsync() {
-  DCHECK_EQ(state_, INITIAILIZED_TO_CONFIGURE);
+  DCHECK_EQ(state_, INITIALIZED_TO_CONFIGURE);
   state_ = CONFIGURING;
   DVLOG(1) << "ModelAssociationManager: Going to start model association";
   LoadModelForNextType();
 }
 
 void ModelAssociationManager::ResetForReconfiguration() {
-  DCHECK_EQ(state_, INITIAILIZED_TO_CONFIGURE);
+  DCHECK_EQ(state_, INITIALIZED_TO_CONFIGURE);
   state_ = IDLE;
   DVLOG(1) << "ModelAssociationManager: Reseting for reconfiguration";
   needs_start_.clear();
@@ -170,7 +172,7 @@ void ModelAssociationManager::ResetForReconfiguration() {
 }
 
 void ModelAssociationManager::StopDisabledTypes() {
-  DCHECK_EQ(state_, INITIAILIZED_TO_CONFIGURE);
+  DCHECK_EQ(state_, INITIALIZED_TO_CONFIGURE);
   DVLOG(1) << "ModelAssociationManager: Stopping disabled types.";
   // Stop requested data types.
   for (size_t i = 0; i < needs_stop_.size(); ++i) {
@@ -211,7 +213,7 @@ void ModelAssociationManager::Stop() {
 
   // Now continue stopping any types that have already started.
   DCHECK(state_ == IDLE ||
-         state_ == INITIAILIZED_TO_CONFIGURE);
+         state_ == INITIALIZED_TO_CONFIGURE);
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second;
@@ -416,13 +418,18 @@ void ModelAssociationManager::ModelLoadCallback(
     }
     NOTREACHED();
     return;
-  } else {
+  } else if (state_ == IDLE) {
     DVLOG(1) << "ModelAssociationManager: Models loaded after configure cycle"
             << "Informing DTM";
     // This datatype finished loading after the deadline imposed by the
     // originating configuration cycle. Inform the DataTypeManager that the
     // type has loaded, so that association may begin.
     result_processor_->OnTypesLoaded();
+  } else {
+    // If we're not IDLE or CONFIGURING, we're being invoked as part of an abort
+    // process (possibly a reconfiguration, or disabling of a broken data type).
+    DVLOG(1) << "ModelAssociationManager: ModelLoadCallback occurred while "
+             << "not IDLE or CONFIGURING. Doing nothing.";
   }
 
 }
@@ -502,4 +509,3 @@ base::OneShotTimer<ModelAssociationManager>*
 }
 
 }  // namespace browser_sync
-

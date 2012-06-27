@@ -80,7 +80,7 @@ class ModelAssociationManager {
  private:
   enum State {
     // This is the state after |Initialize| is called.
-    INITIAILIZED_TO_CONFIGURE,
+    INITIALIZED_TO_CONFIGURE,
     // Starting a new configuration.
     CONFIGURING,
     // A stop command was issued.

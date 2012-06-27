@@ -211,6 +211,76 @@ TEST_F(ModelAssociationManagerTest, TypeReturnUnrecoverableError) {
       DataTypeController::UNRECOVERABLE_ERROR);
 }
 
+TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
+  controllers_[syncable::BOOKMARKS] =
+      new FakeDataTypeController(syncable::BOOKMARKS);
+  controllers_[syncable::THEMES] =
+      new FakeDataTypeController(syncable::THEMES);
+
+  GetController(controllers_, syncable::BOOKMARKS)->SetDelayModelLoad();
+  ModelAssociationManager model_association_manager(&controllers_,
+                                                    &result_processor_);
+  syncable::ModelTypeSet types(syncable::BOOKMARKS, syncable::THEMES);
+
+  syncable::ModelTypeSet expected_types_waiting_to_load;
+  expected_types_waiting_to_load.Put(syncable::BOOKMARKS);
+  DataTypeManager::ConfigureResult expected_result_partially_done(
+      DataTypeManager::PARTIAL_SUCCESS,
+      types,
+      std::list<csync::SyncError>(),
+      expected_types_waiting_to_load);
+
+  model_association_manager.Initialize(types);
+  model_association_manager.StopDisabledTypes();
+
+  model_association_manager.StartAssociationAsync();
+
+  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+              WillOnce(VerifyResult(expected_result_partially_done));
+
+  base::OneShotTimer<ModelAssociationManager>* timer =
+      model_association_manager.GetTimerForTesting();
+
+  base::Closure task = timer->user_task();
+  timer->Stop();
+  task.Run();  // Bookmark load times out here.
+
+  // Apps finishes associating here.
+  GetController(controllers_, syncable::THEMES)->FinishStart(
+      DataTypeController::OK);
+
+  // At this point, BOOKMARKS is still waiting to load (as evidenced by
+  // expected_result_partially_done). If we schedule another Initialize (which
+  // could happen in practice due to reconfiguration), this should abort
+  // BOOKMARKS. Aborting will call ModelLoadCallback, but the
+  // ModelAssociationManager should be smart enough to know that this is not due
+  // to the type having completed loading.
+  EXPECT_CALL(result_processor_, OnTypesLoaded()).Times(0);
+
+  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+            DataTypeController::MODEL_STARTING);
+
+  model_association_manager.Initialize(types);
+  EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+
+  DataTypeManager::ConfigureResult expected_result_done(
+      DataTypeManager::OK,
+      types,
+      std::list<csync::SyncError>(),
+      syncable::ModelTypeSet());
+  EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
+              WillOnce(VerifyResult(expected_result_done));
+
+  model_association_manager.StopDisabledTypes();
+  model_association_manager.StartAssociationAsync();
+
+  GetController(controllers_,
+                syncable::BOOKMARKS)->SimulateModelLoadFinishing();
+  GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
+      DataTypeController::OK);
+}
+
 // Start 2 types. One of which timeout loading. Ensure that type is
 // fully configured eventually.
 TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
@@ -281,4 +351,3 @@ TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
 
 
 }  // namespace browser_sync
-
