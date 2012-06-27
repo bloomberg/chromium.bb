@@ -1,6 +1,8 @@
 include_rules = [
   "+jingle/notifier/base",
-  "+net",
+  "+net/base/host_port_pair.h",
+  "+net/base/host_resolver.h",
+  "+net/url_request/url_request_test_util.h",
   "+sync/notifier",
   "+sync/internal_api/public/syncable",
 ]

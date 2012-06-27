@@ -43,19 +43,15 @@ Login::Login(Delegate* delegate,
                       try_ssltcp_first,
                       auth_mechanism) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  net::NetworkChangeNotifier::AddDNSObserver(this);
   ResetReconnectState();
 }
 
 Login::~Login() {
-  net::NetworkChangeNotifier::RemoveDNSObserver(this);
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void Login::StartConnection() {
-  DVLOG(1) << "Starting connection...";
+  VLOG(1) << "Starting connection...";
   single_attempt_.reset(new SingleLoginAttempt(login_settings_, this));
 }
 
@@ -91,22 +87,7 @@ void Login::OnSettingsExhausted() {
 }
 
 void Login::OnIPAddressChanged() {
-  DVLOG(1) << "Detected IP address change";
-  OnNetworkEvent();
-}
-
-void Login::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  DVLOG(1) << "Detected connection type change";
-  OnNetworkEvent();
-}
-
-void Login::OnDNSChanged(unsigned detail) {
-  DVLOG(1) << "Detected DNS change";
-  OnNetworkEvent();
-}
-
-void Login::OnNetworkEvent() {
+  VLOG(1) << "Detected IP address change";
   // Reconnect in 1 to 9 seconds (vary the time a little to try to
   // avoid spikey behavior on network hiccups).
   reconnect_interval_ = base::TimeDelta::FromSeconds(base::RandInt(1, 9));
@@ -124,8 +105,8 @@ void Login::TryReconnect() {
   DCHECK_GT(reconnect_interval_.InSeconds(), 0);
   single_attempt_.reset();
   reconnect_timer_.Stop();
-  DVLOG(1) << "Reconnecting in "
-           << reconnect_interval_.InSeconds() << " seconds";
+  VLOG(1) << "Reconnecting in "
+          << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
       FROM_HERE, reconnect_interval_, this, &Login::DoReconnect);
 }
@@ -137,7 +118,7 @@ void Login::DoReconnect() {
   reconnect_interval_ *= 2;
   if (reconnect_interval_ > kMaxReconnectInterval)
     reconnect_interval_ = kMaxReconnectInterval;
-  DVLOG(1) << "Reconnecting...";
+  VLOG(1) << "Reconnecting...";
   StartConnection();
 }
 

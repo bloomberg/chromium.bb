@@ -19,7 +19,6 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
-#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
@@ -28,10 +27,6 @@
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/notifier/sync_notifier_observer.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
-#endif
 
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.
@@ -179,9 +174,6 @@ class MyTestURLRequestContextGetter : public TestURLRequestContextGetter {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-#if defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool pool;
-#endif
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
   logging::InitLogging(
@@ -217,10 +209,6 @@ int main(int argc, char* argv[]) {
                 kNotificationMethodSwitch);
     return -1;
   }
-
-  // Set up objects that monitor the network.
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
 
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(
