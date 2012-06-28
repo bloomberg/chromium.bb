@@ -36,6 +36,7 @@
 
 #include "breakpad_googletest_includes.h"
 #include "common/linux/synth_elf.h"
+#include "common/using_std_string.h"
 
 using google_breakpad::synth_elf::ELF;
 using google_breakpad::synth_elf::StringTable;
@@ -44,7 +45,6 @@ using google_breakpad::test_assembler::Endianness;
 using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Label;
-using std::string;
 using ::testing::Test;
 
 class StringTableTest : public Test {

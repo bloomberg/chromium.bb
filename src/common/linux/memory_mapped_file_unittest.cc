@@ -41,11 +41,11 @@
 #include "common/linux/memory_mapped_file.h"
 #include "common/tests/auto_tempdir.h"
 #include "common/tests/file_utils.h"
+#include "common/using_std_string.h"
 
 using google_breakpad::AutoTempDir;
 using google_breakpad::MemoryMappedFile;
 using google_breakpad::WriteFile;
-using std::string;
 
 namespace {
 

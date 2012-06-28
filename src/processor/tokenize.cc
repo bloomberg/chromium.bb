@@ -32,9 +32,10 @@
 #include <string>
 #include <vector>
 
+#include "common/using_std_string.h"
+
 namespace google_breakpad {
 
-using std::string;
 using std::vector;
 
 bool Tokenize(char *line,

@@ -36,6 +36,7 @@
 #include <string>
 
 #include "breakpad_googletest_includes.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "processor/synth_minidump.h"
 #include "processor/synth_minidump_unittest_data.h"
@@ -54,7 +55,6 @@ using google_breakpad::SynthMinidump::Thread;
 using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Label;
-using std::string;
 
 TEST(Section, Simple) {
   Dump dump(0);

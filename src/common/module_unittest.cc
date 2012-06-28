@@ -42,9 +42,9 @@
 
 #include "breakpad_googletest_includes.h"
 #include "common/module.h"
+#include "common/using_std_string.h"
 
 using google_breakpad::Module;
-using std::string;
 using std::stringstream;
 using std::vector;
 using testing::ContainerEq;

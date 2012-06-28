@@ -43,13 +43,14 @@
 #include <string>
 #include <utility>
 
+#include "common/using_std_string.h"
+
 namespace google_breakpad {
 namespace synth_elf {
 
 using std::list;
 using std::map;
 using std::pair;
-using std::string;
 using test_assembler::Endianness;
 using test_assembler::kLittleEndian;
 using test_assembler::kUnsetEndian;

@@ -62,6 +62,7 @@
 #include "common/module.h"
 #include "common/stabs_reader.h"
 #include "common/stabs_to_module.h"
+#include "common/using_std_string.h"
 
 // This namespace contains helper functions.
 namespace {
@@ -235,7 +236,7 @@ class DumperLineToModule: public DwarfCUToModule::LineToModuleFunctor {
   dwarf2reader::ByteReader *byte_reader_;
 };
 
-static bool LoadDwarf(const std::string &dwarf_filename,
+static bool LoadDwarf(const string &dwarf_filename,
                       const ElfW(Ehdr) *elf_header,
                       const bool big_endian,
                       Module *module) {
@@ -253,8 +254,8 @@ static bool LoadDwarf(const std::string &dwarf_filename,
   const ElfW(Shdr) *section_names = sections + elf_header->e_shstrndx;
   for (int i = 0; i < num_sections; i++) {
     const ElfW(Shdr) *section = &sections[i];
-    std::string name = reinterpret_cast<const char *>(section_names->sh_offset +
-                                                      section->sh_name);
+    string name = reinterpret_cast<const char *>(section_names->sh_offset +
+                                                 section->sh_name);
     const char *contents = reinterpret_cast<const char *>(section->sh_offset);
     uint64 length = section->sh_size;
     file_context.section_map[name] = std::make_pair(contents, length);
@@ -292,7 +293,7 @@ static bool LoadDwarf(const std::string &dwarf_filename,
 // success, or false if we don't recognize HEADER's machine
 // architecture.
 static bool DwarfCFIRegisterNames(const ElfW(Ehdr) *elf_header,
-                                  std::vector<std::string> *register_names) {
+                                  std::vector<string> *register_names) {
   switch (elf_header->e_machine) {
     case EM_386:
       *register_names = DwarfCFIToModule::RegisterNames::I386();
@@ -308,7 +309,7 @@ static bool DwarfCFIRegisterNames(const ElfW(Ehdr) *elf_header,
   }
 }
 
-static bool LoadDwarfCFI(const std::string &dwarf_filename,
+static bool LoadDwarfCFI(const string &dwarf_filename,
                          const ElfW(Ehdr) *elf_header,
                          const char *section_name,
                          const ElfW(Shdr) *section,
@@ -319,7 +320,7 @@ static bool LoadDwarfCFI(const std::string &dwarf_filename,
                          Module *module) {
   // Find the appropriate set of register names for this file's
   // architecture.
-  std::vector<std::string> register_names;
+  std::vector<string> register_names;
   if (!DwarfCFIRegisterNames(elf_header, &register_names)) {
     fprintf(stderr, "%s: unrecognized ELF machine architecture '%d';"
             " cannot convert DWARF call frame information\n",
@@ -367,7 +368,7 @@ static bool LoadDwarfCFI(const std::string &dwarf_filename,
   return true;
 }
 
-bool LoadELF(const std::string &obj_file, MmapWrapper* map_wrapper,
+bool LoadELF(const string &obj_file, MmapWrapper* map_wrapper,
              ElfW(Ehdr) **elf_header) {
   int obj_fd = open(obj_file.c_str(), O_RDONLY);
   if (obj_fd < 0) {
@@ -416,9 +417,9 @@ bool ElfEndianness(const ElfW(Ehdr) *elf_header, bool *big_endian) {
 
 // Read the .gnu_debuglink and get the debug file name. If anything goes
 // wrong, return an empty string.
-static std::string ReadDebugLink(const ElfW(Shdr) *debuglink_section,
-                                 const std::string &obj_file,
-                                 const std::string &debug_dir) {
+static string ReadDebugLink(const ElfW(Shdr) *debuglink_section,
+                            const string &obj_file,
+                            const string &debug_dir) {
   char *debuglink = reinterpret_cast<char *>(debuglink_section->sh_offset);
   size_t debuglink_len = strlen(debuglink) + 5;  // '\0' + CRC32.
   debuglink_len = 4 * ((debuglink_len + 3) / 4);  // Round to nearest 4 bytes.
@@ -430,7 +431,7 @@ static std::string ReadDebugLink(const ElfW(Shdr) *debuglink_section,
     return "";
   }
 
-  std::string debuglink_path = debug_dir + "/" + debuglink;
+  string debuglink_path = debug_dir + "/" + debuglink;
   int debuglink_fd = open(debuglink_path.c_str(), O_RDONLY);
   if (debuglink_fd < 0) {
     fprintf(stderr, "Failed to open debug ELF file '%s' for '%s': %s\n",
@@ -453,13 +454,13 @@ static std::string ReadDebugLink(const ElfW(Shdr) *debuglink_section,
 //
 class LoadSymbolsInfo {
  public:
-  explicit LoadSymbolsInfo(const std::string &dbg_dir) :
+  explicit LoadSymbolsInfo(const string &dbg_dir) :
     debug_dir_(dbg_dir),
     has_loading_addr_(false) {}
 
   // Keeps track of which sections have been loaded so we don't accidentally
   // load it twice from two different files.
-  void LoadedSection(const std::string &section) {
+  void LoadedSection(const string &section) {
     if (loaded_sections_.count(section) == 0) {
       loaded_sections_.insert(section);
     } else {
@@ -470,7 +471,7 @@ class LoadSymbolsInfo {
 
   // We expect the ELF file and linked debug file to have the same preferred
   // loading address.
-  void set_loading_addr(ElfW(Addr) addr, const std::string &filename) {
+  void set_loading_addr(ElfW(Addr) addr, const string &filename) {
     if (!has_loading_addr_) {
       loading_addr_ = addr;
       loaded_file_ = filename;
@@ -487,35 +488,35 @@ class LoadSymbolsInfo {
   }
 
   // Setters and getters
-  const std::string &debug_dir() const {
+  const string &debug_dir() const {
     return debug_dir_;
   }
 
-  std::string debuglink_file() const {
+  string debuglink_file() const {
     return debuglink_file_;
   }
-  void set_debuglink_file(std::string file) {
+  void set_debuglink_file(string file) {
     debuglink_file_ = file;
   }
 
  private:
-  const std::string &debug_dir_;  // Directory with the debug ELF file.
+  const string &debug_dir_;  // Directory with the debug ELF file.
 
-  std::string debuglink_file_;  // Full path to the debug ELF file.
+  string debuglink_file_;  // Full path to the debug ELF file.
 
   bool has_loading_addr_;  // Indicate if LOADING_ADDR_ is valid.
 
   ElfW(Addr) loading_addr_;  // Saves the preferred loading address from the
                              // first call to LoadSymbols().
 
-  std::string loaded_file_;  // Name of the file loaded from the first call to
+  string loaded_file_;  // Name of the file loaded from the first call to
                              // LoadSymbols().
 
-  std::set<std::string> loaded_sections_;  // Tracks the Loaded ELF sections
+  std::set<string> loaded_sections_;  // Tracks the Loaded ELF sections
                                            // between calls to LoadSymbols().
 };
 
-static bool LoadSymbols(const std::string &obj_file,
+static bool LoadSymbols(const string &obj_file,
                         const bool big_endian,
                         ElfW(Ehdr) *elf_header,
                         const bool read_gnu_debug_link,
@@ -615,7 +616,7 @@ static bool LoadSymbols(const std::string &obj_file,
                               elf_header->e_shnum);
       if (gnu_debuglink_section) {
         if (!info->debug_dir().empty()) {
-          std::string debuglink_file =
+          string debuglink_file =
               ReadDebugLink(gnu_debuglink_section, obj_file, info->debug_dir());
           info->set_debuglink_file(debuglink_file);
         } else {
@@ -690,13 +691,13 @@ const char *ElfArchitecture(const ElfW(Ehdr) *elf_header) {
 
 // Format the Elf file identifier in IDENTIFIER as a UUID with the
 // dashes removed.
-std::string FormatIdentifier(unsigned char identifier[16]) {
+string FormatIdentifier(unsigned char identifier[16]) {
   char identifier_str[40];
   google_breakpad::FileID::ConvertIdentifierToString(
       identifier,
       identifier_str,
       sizeof(identifier_str));
-  std::string id_no_dash;
+  string id_no_dash;
   for (int i = 0; identifier_str[i] != '\0'; ++i)
     if (identifier_str[i] != '-')
       id_no_dash += identifier_str[i];
@@ -710,10 +711,10 @@ std::string FormatIdentifier(unsigned char identifier[16]) {
 
 // Return the non-directory portion of FILENAME: the portion after the
 // last slash, or the whole filename if there are no slashes.
-std::string BaseFileName(const std::string &filename) {
+string BaseFileName(const string &filename) {
   // Lots of copies!  basename's behavior is less than ideal.
   char *c_filename = strdup(filename.c_str());
-  std::string base = basename(c_filename);
+  string base = basename(c_filename);
   free(c_filename);
   return base;
 }
@@ -726,8 +727,8 @@ namespace google_breakpad {
 // Ideally obj_file would be const, but internally this code does write
 // to some ELF header fields to make its work simpler.
 bool WriteSymbolFileInternal(uint8_t* obj_file,
-                             const std::string &obj_filename,
-                             const std::string &debug_dir,
+                             const string &obj_filename,
+                             const string &debug_dir,
                              bool cfi,
                              std::ostream &sym_stream) {
   ElfW(Ehdr) *elf_header = reinterpret_cast<ElfW(Ehdr) *>(obj_file);
@@ -757,15 +758,15 @@ bool WriteSymbolFileInternal(uint8_t* obj_file,
   if (!ElfEndianness(elf_header, &big_endian))
     return false;
 
-  std::string name = BaseFileName(obj_filename);
-  std::string os = "Linux";
-  std::string id = FormatIdentifier(identifier);
+  string name = BaseFileName(obj_filename);
+  string os = "Linux";
+  string id = FormatIdentifier(identifier);
 
   LoadSymbolsInfo info(debug_dir);
   Module module(name, os, architecture, id);
   if (!LoadSymbols(obj_filename, big_endian, elf_header, !debug_dir.empty(),
                    &info, &module)) {
-    const std::string debuglink_file = info.debuglink_file();
+    const string debuglink_file = info.debuglink_file();
     if (debuglink_file.empty())
       return false;
 
@@ -810,8 +811,8 @@ bool WriteSymbolFileInternal(uint8_t* obj_file,
   return true;
 }
 
-bool WriteSymbolFile(const std::string &obj_file,
-                     const std::string &debug_dir,
+bool WriteSymbolFile(const string &obj_file,
+                     const string &debug_dir,
                      bool cfi,
                      std::ostream &sym_stream) {
   MmapWrapper map_wrapper;

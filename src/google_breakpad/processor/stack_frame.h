@@ -31,13 +31,13 @@
 #define GOOGLE_BREAKPAD_PROCESSOR_STACK_FRAME_H__
 
 #include <string>
+
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
 
 class CodeModule;
-
-using std::string;
 
 struct StackFrame {
   // Indicates how well the instruction pointer derived during

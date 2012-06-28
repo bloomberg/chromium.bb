@@ -45,6 +45,7 @@
 #include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/tests/auto_tempdir.h"
+#include "common/using_std_string.h"
 #include "third_party/lss/linux_syscall_support.h"
 #include "google_breakpad/processor/minidump.h"
 
@@ -130,7 +131,7 @@ TEST(ExceptionHandlerTest, ChildCrash) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = temp_dir.path() + "/" + filename +
+  const string minidump_filename = temp_dir.path() + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -204,7 +205,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemory) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = temp_dir.path() + "/" + filename +
+  const string minidump_filename = temp_dir.path() + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -329,7 +330,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = temp_dir.path() + "/" + filename +
+  const string minidump_filename = temp_dir.path() + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -454,7 +455,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = temp_dir.path() + "/" + filename +
+  const string minidump_filename = temp_dir.path() + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -555,7 +556,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = temp_dir.path() + "/" + filename +
+  const string minidump_filename = temp_dir.path() + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -767,7 +768,7 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
   ASSERT_NE(signal_fd, -1);
 
   AutoTempDir temp_dir;
-  std::string templ = temp_dir.path() + "/exception-handler-unittest";
+  string templ = temp_dir.path() + "/exception-handler-unittest";
   ASSERT_TRUE(WriteMinidump(templ.c_str(), crashing_pid, context,
                             kCrashContextSize));
   static const char b = 0;

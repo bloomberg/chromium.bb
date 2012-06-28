@@ -36,7 +36,9 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+
 #include "breakpad_googletest_includes.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "google_breakpad/processor/minidump.h"
 #include "processor/logging.h"
@@ -69,7 +71,6 @@ using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
 using std::ifstream;
 using std::istringstream;
-using std::string;
 using std::vector;
 using ::testing::Return;
 

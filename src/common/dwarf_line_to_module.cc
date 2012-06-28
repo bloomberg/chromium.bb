@@ -32,23 +32,26 @@
 // dwarf_line_to_module.cc: Implementation of DwarfLineToModule class.
 // See dwarf_line_to_module.h for details. 
 
-#include "common/dwarf_line_to_module.h"
-
 #include <stdio.h>
+
+#include <string>
+
+#include "common/dwarf_line_to_module.h"
+#include "common/using_std_string.h"
 
 // Trying to support Windows paths in a reasonable way adds a lot of
 // variations to test; it would be better to just put off dealing with
 // it until we actually have to deal with DWARF on Windows.
 
 // Return true if PATH is an absolute path, false if it is relative.
-static bool PathIsAbsolute(const std::string &path) {
+static bool PathIsAbsolute(const string &path) {
   return (path.size() >= 1 && path[0] == '/');
 }
 
 // If PATH is an absolute path, return PATH.  If PATH is a relative path,
 // treat it as relative to BASE and return the combined path.
-static std::string ExpandPath(const std::string &path,
-                              const std::string &base) {
+static string ExpandPath(const string &path,
+                         const string &base) {
   if (PathIsAbsolute(path))
     return path;
   return base + "/" + path;
@@ -56,14 +59,14 @@ static std::string ExpandPath(const std::string &path,
 
 namespace google_breakpad {
 
-void DwarfLineToModule::DefineDir(const std::string &name, uint32 dir_num) {
+void DwarfLineToModule::DefineDir(const string &name, uint32 dir_num) {
   // Directory number zero is reserved to mean the compilation
   // directory. Silently ignore attempts to redefine it.
   if (dir_num != 0)
     directories_[dir_num] = name;
 }
 
-void DwarfLineToModule::DefineFile(const std::string &name, int32 file_num,
+void DwarfLineToModule::DefineFile(const string &name, int32 file_num,
                                    uint32 dir_num, uint64 mod_time,
                                    uint64 length) {
   if (file_num == -1)
@@ -71,7 +74,7 @@ void DwarfLineToModule::DefineFile(const std::string &name, int32 file_num,
   else if (file_num > highest_file_number_)
     highest_file_number_ = file_num;
 
-  std::string full_name;
+  string full_name;
   if (dir_num != 0) {
     DirectoryTable::const_iterator directory_it = directories_.find(dir_num);
     if (directory_it != directories_.end()) {

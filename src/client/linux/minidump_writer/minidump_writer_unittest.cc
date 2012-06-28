@@ -44,6 +44,7 @@
 #include "common/linux/file_id.h"
 #include "common/linux/safe_readlink.h"
 #include "common/tests/auto_tempdir.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/processor/minidump.h"
 
 using namespace google_breakpad;
@@ -74,7 +75,7 @@ TEST(MinidumpWriterTest, Setup) {
   memset(&context, 0, sizeof(context));
 
   AutoTempDir temp_dir;
-  std::string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + "/minidump-writer-unittest";
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = 1;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
@@ -139,7 +140,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   context.tid = 1;
 
   AutoTempDir temp_dir;
-  std::string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + "/minidump-writer-unittest";
 
   // Add information about the mapped memory.
   MappingInfo info;
@@ -207,7 +208,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
 
   // mmap a file
   AutoTempDir temp_dir;
-  std::string tempfile = temp_dir.path() + "/minidump-writer-unittest-temp";
+  string tempfile = temp_dir.path() + "/minidump-writer-unittest-temp";
   int fd = open(tempfile.c_str(), O_RDWR | O_CREAT, 0);
   ASSERT_NE(-1, fd);
   unlink(tempfile.c_str());
@@ -242,7 +243,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   memset(&context, 0, sizeof(context));
   context.tid = 1;
 
-  std::string dumpfile = temp_dir.path() + "/minidump-writer-unittest";
+  string dumpfile = temp_dir.path() + "/minidump-writer-unittest";
 
   // Add information about the mapped memory. Report it as being larger than
   // it actually is.
@@ -303,7 +304,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
 
   // Copy binary to a temp file.
   AutoTempDir temp_dir;
-  std::string binpath = temp_dir.path() + "/linux-dumper-unittest-helper";
+  string binpath = temp_dir.path() + "/linux-dumper-unittest-helper";
   char cmdline[2 * PATH_MAX];
   sprintf(cmdline, "/bin/cp \"%s\" \"%s\"", helper_path.c_str(),
           binpath.c_str());
@@ -349,7 +350,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   ExceptionHandler::CrashContext context;
   memset(&context, 0, sizeof(context));
 
-  std::string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + "/minidump-writer-unittest";
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = 1;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child_pid, &context,

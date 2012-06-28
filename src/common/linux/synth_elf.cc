@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "common/using_std_string.h"
+
 namespace google_breakpad {
 namespace synth_elf {
 

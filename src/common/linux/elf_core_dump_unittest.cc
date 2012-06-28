@@ -39,6 +39,7 @@
 #include "common/linux/memory_mapped_file.h"
 #include "common/tests/file_utils.h"
 #include "common/linux/tests/crash_generator.h"
+#include "common/using_std_string.h"
 
 using google_breakpad::AutoTempDir;
 using google_breakpad::CrashGenerator;
@@ -47,7 +48,6 @@ using google_breakpad::MemoryMappedFile;
 using google_breakpad::MemoryRange;
 using google_breakpad::WriteFile;
 using std::set;
-using std::string;
 
 TEST(ElfCoreDumpTest, DefaultConstructor) {
   ElfCoreDump core;

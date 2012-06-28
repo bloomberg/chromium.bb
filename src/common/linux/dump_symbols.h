@@ -38,6 +38,8 @@
 #include <iostream>
 #include <string>
 
+#include "common/using_std_string.h"
+
 namespace google_breakpad {
 
 // Find all the debugging information in OBJ_FILE, an ELF executable
@@ -46,8 +48,8 @@ namespace google_breakpad {
 // If OBJ_FILE has been stripped but contains a .gnu_debuglink section,
 // then look for the debug file in DEBUG_DIR.
 // If CFI is set to false, then omit the CFI section.
-bool WriteSymbolFile(const std::string &obj_file,
-                     const std::string &debug_dir,
+bool WriteSymbolFile(const string &obj_file,
+                     const string &debug_dir,
                      bool cfi,
                      std::ostream &sym_stream);
 

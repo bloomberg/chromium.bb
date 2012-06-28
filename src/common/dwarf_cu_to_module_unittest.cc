@@ -37,9 +37,9 @@
 
 #include "breakpad_googletest_includes.h"
 #include "common/dwarf_cu_to_module.h"
+#include "common/using_std_string.h"
 
 using std::make_pair;
-using std::string;
 using std::vector;
 
 using dwarf2reader::AttributeList;

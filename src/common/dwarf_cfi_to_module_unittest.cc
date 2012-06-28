@@ -36,8 +36,8 @@
 
 #include "breakpad_googletest_includes.h"
 #include "common/dwarf_cfi_to_module.h"
+#include "common/using_std_string.h"
 
-using std::string;
 using std::vector;
 
 using google_breakpad::Module;

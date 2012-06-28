@@ -170,7 +170,7 @@ CrashGenerationServer::CrashGenerationServer(
   OnClientExitingCallback exit_callback,
   void* exit_context,
   bool generate_dumps,
-  const std::string* dump_path) :
+  const string* dump_path) :
     server_fd_(listen_fd),
     dump_callback_(dump_callback),
     dump_context_(dump_context),
@@ -384,7 +384,7 @@ CrashGenerationServer::ClientEvent(short revents)
     return true;
   }
 
-  std::string minidump_filename;
+  string minidump_filename;
   if (!MakeMinidumpFilename(minidump_filename))
     return true;
 
@@ -440,7 +440,7 @@ CrashGenerationServer::ControlEvent(short revents)
 }
 
 bool
-CrashGenerationServer::MakeMinidumpFilename(std::string& outFilename)
+CrashGenerationServer::MakeMinidumpFilename(string& outFilename)
 {
   GUID guid;
   char guidString[kGUIDStringLength+1];

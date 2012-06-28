@@ -3079,12 +3079,12 @@ bool MinidumpSystemInfo::Read(u_int32_t expected_size) {
 
 
 string MinidumpSystemInfo::GetOS() {
+  string os;
+
   if (!valid_) {
     BPLOG(ERROR) << "Invalid MinidumpSystemInfo for GetOS";
-    return NULL;
+    return os;
   }
-
-  string os;
 
   switch (system_info_.platform_id) {
     case MD_OS_WIN32_NT:

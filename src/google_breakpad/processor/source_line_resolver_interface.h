@@ -35,12 +35,12 @@
 #define GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
 
 #include <string>
+
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 #include "google_breakpad/processor/code_module.h"
 
 namespace google_breakpad {
-
-using std::string;
 
 struct StackFrame;
 struct WindowsFrameInfo;

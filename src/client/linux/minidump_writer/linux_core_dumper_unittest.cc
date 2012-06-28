@@ -30,11 +30,13 @@
 // linux_core_dumper_unittest.cc:
 // Unit tests for google_breakpad::LinuxCoreDumoer.
 
+#include <string>
+
 #include "breakpad_googletest_includes.h"
 #include "client/linux/minidump_writer/linux_core_dumper.h"
 #include "common/linux/tests/crash_generator.h"
+#include "common/using_std_string.h"
 
-using std::string;
 using namespace google_breakpad;
 
 TEST(LinuxCoreDumperTest, BuildProcPath) {

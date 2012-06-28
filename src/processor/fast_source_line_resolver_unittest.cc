@@ -43,6 +43,7 @@
 #include <string>
 
 #include "breakpad_googletest_includes.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/stack_frame.h"
 #include "google_breakpad/processor/memory_region.h"
@@ -52,7 +53,6 @@
 
 namespace {
 
-using std::string;
 using google_breakpad::SourceLineResolverBase;
 using google_breakpad::BasicSourceLineResolver;
 using google_breakpad::FastSourceLineResolver;

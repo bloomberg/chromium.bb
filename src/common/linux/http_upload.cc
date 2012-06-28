@@ -41,7 +41,7 @@ static size_t WriteCallback(void *ptr, size_t size,
   if (!userp)
     return 0;
 
-  std::string *response = reinterpret_cast<std::string *>(userp);
+  string *response = reinterpret_cast<string *>(userp);
   size_t real_size = size * nmemb;
   response->append(reinterpret_cast<char *>(ptr), real_size);
   return real_size;

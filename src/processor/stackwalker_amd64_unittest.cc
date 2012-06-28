@@ -37,6 +37,7 @@
 
 #include "breakpad_googletest_includes.h"
 #include "common/test_assembler.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"
@@ -54,7 +55,6 @@ using google_breakpad::SystemInfo;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Label;
 using google_breakpad::test_assembler::Section;
-using std::string;
 using std::vector;
 using testing::_;
 using testing::Return;

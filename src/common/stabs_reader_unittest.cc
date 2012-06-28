@@ -43,10 +43,12 @@
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <string>
 
 #include "breakpad_googletest_includes.h"
 #include "common/stabs_reader.h"
 #include "common/test_assembler.h"
+#include "common/using_std_string.h"
 
 using ::testing::Eq;
 using ::testing::InSequence;
@@ -61,7 +63,6 @@ using google_breakpad::test_assembler::Section;
 using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
 using std::map;
-using std::string;
 
 namespace {
 
@@ -218,10 +219,10 @@ class MockStabsReaderHandler: public StabsHandler {
   MOCK_METHOD3(StartCompilationUnit,
                bool(const char *, uint64_t, const char *));
   MOCK_METHOD1(EndCompilationUnit, bool(uint64_t));
-  MOCK_METHOD2(StartFunction, bool(const std::string &, uint64_t));
+  MOCK_METHOD2(StartFunction, bool(const string &, uint64_t));
   MOCK_METHOD1(EndFunction, bool(uint64_t));
   MOCK_METHOD3(Line, bool(uint64_t, const char *, int));
-  MOCK_METHOD2(Extern, bool(const std::string &, uint64_t));
+  MOCK_METHOD2(Extern, bool(const string &, uint64_t));
   void Warning(const char *format, ...) { MockWarning(format); }
   MOCK_METHOD1(MockWarning, void(const char *));
 };

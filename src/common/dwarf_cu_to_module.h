@@ -46,6 +46,7 @@
 #include "common/dwarf/bytereader.h"
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/dwarf/dwarf2reader.h"
+#include "common/using_std_string.h"
 
 namespace google_breakpad {
 

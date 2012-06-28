@@ -114,6 +114,7 @@
 #include <string>
 
 #include "common/test_assembler.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 #include "google_breakpad/common/minidump_format.h"
 
@@ -121,7 +122,6 @@ namespace google_breakpad {
 
 namespace SynthMinidump {
 
-using std::string;
 using test_assembler::Endianness;
 using test_assembler::kBigEndian;
 using test_assembler::kLittleEndian;

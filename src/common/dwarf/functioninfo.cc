@@ -39,14 +39,13 @@
 #include <memory>
 
 #include "common/dwarf/functioninfo.h"
-
 #include "common/dwarf/bytereader.h"
-
+#include "common/using_std_string.h"
 
 namespace dwarf2reader {
 
 CULineInfoHandler::CULineInfoHandler(std::vector<SourceFileInfo>* files,
-                                     std::vector<std::string>* dirs,
+                                     std::vector<string>* dirs,
                                      LineMap* linemap):linemap_(linemap),
                                                        files_(files),
                                                        dirs_(dirs) {
@@ -61,13 +60,13 @@ CULineInfoHandler::CULineInfoHandler(std::vector<SourceFileInfo>* files,
   files->push_back(s);
 }
 
-void CULineInfoHandler::DefineDir(const std::string& name, uint32 dir_num) {
+void CULineInfoHandler::DefineDir(const string& name, uint32 dir_num) {
   // These should never come out of order, actually
   assert(dir_num == dirs_->size());
   dirs_->push_back(name);
 }
 
-void CULineInfoHandler::DefineFile(const std::string& name,
+void CULineInfoHandler::DefineFile(const string& name,
                                    int32 file_num, uint32 dir_num,
                                    uint64 mod_time, uint64 length) {
   assert(dir_num >= 0);
@@ -75,7 +74,7 @@ void CULineInfoHandler::DefineFile(const std::string& name,
 
   // These should never come out of order, actually.
   if (file_num == (int32)files_->size() || file_num == -1) {
-    std::string dir = dirs_->at(dir_num);
+    string dir = dirs_->at(dir_num);
 
     SourceFileInfo s;
     s.lowpc = ULLONG_MAX;
@@ -149,7 +148,7 @@ bool CUFunctionInfoHandler::StartDIE(uint64 offset, enum DwarfTag tag,
 void CUFunctionInfoHandler::ProcessAttributeString(uint64 offset,
                                                    enum DwarfAttribute attr,
                                                    enum DwarfForm form,
-                                                   const std::string &data) {
+                                                   const string &data) {
   if (current_function_info_) {
     if (attr == DW_AT_name)
       current_function_info_->name = data;

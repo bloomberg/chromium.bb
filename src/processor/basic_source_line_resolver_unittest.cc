@@ -32,6 +32,7 @@
 #include <string>
 
 #include "breakpad_googletest_includes.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/stack_frame.h"
@@ -44,7 +45,6 @@
 
 namespace {
 
-using std::string;
 using google_breakpad::BasicSourceLineResolver;
 using google_breakpad::CFIFrameInfo;
 using google_breakpad::CodeModule;

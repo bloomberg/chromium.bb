@@ -126,7 +126,7 @@ pthread_mutex_t ExceptionHandler::handler_stack_mutex_ =
     PTHREAD_MUTEX_INITIALIZER;
 
 // Runs before crashing: normal context.
-ExceptionHandler::ExceptionHandler(const std::string &dump_path,
+ExceptionHandler::ExceptionHandler(const string &dump_path,
                                    FilterCallback filter,
                                    MinidumpCallback callback,
                                    void *callback_context,
@@ -139,7 +139,7 @@ ExceptionHandler::ExceptionHandler(const std::string &dump_path,
   Init(dump_path, -1);
 }
 
-ExceptionHandler::ExceptionHandler(const std::string &dump_path,
+ExceptionHandler::ExceptionHandler(const string &dump_path,
                                    FilterCallback filter,
                                    MinidumpCallback callback,
                                    void* callback_context,
@@ -158,7 +158,7 @@ ExceptionHandler::~ExceptionHandler() {
   UninstallHandlers();
 }
 
-void ExceptionHandler::Init(const std::string &dump_path,
+void ExceptionHandler::Init(const string &dump_path,
                             const int server_fd)
 {
   crash_handler_ = NULL;
@@ -469,7 +469,7 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
 }
 
 // static
-bool ExceptionHandler::WriteMinidump(const std::string &dump_path,
+bool ExceptionHandler::WriteMinidump(const string &dump_path,
                                      MinidumpCallback callback,
                                      void* callback_context) {
   ExceptionHandler eh(dump_path, NULL, callback, callback_context, false);
@@ -497,7 +497,7 @@ bool ExceptionHandler::WriteMinidump() {
 #endif  // !defined(__ARM_EABI__)
 }
 
-void ExceptionHandler::AddMappingInfo(const std::string& name,
+void ExceptionHandler::AddMappingInfo(const string& name,
                                       const u_int8_t identifier[sizeof(MDGUID)],
                                       uintptr_t start_address,
                                       size_t mapping_size,

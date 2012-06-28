@@ -32,11 +32,11 @@
 
 #include <assert.h>
 #include <string>
+
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
-
-using std::string;
 
 class Minidump;
 class ProcessState;

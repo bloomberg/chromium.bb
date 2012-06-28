@@ -43,6 +43,7 @@
 #endif
 #include "client/linux/crash_generation/crash_generation_client.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "processor/scoped_ptr.h"
 
@@ -127,7 +128,7 @@ class ExceptionHandler {
   // If install_handler is true, then a minidump will be written whenever
   // an unhandled exception occurs.  If it is false, minidumps will only
   // be written when WriteMinidump is called.
-  ExceptionHandler(const std::string &dump_path,
+  ExceptionHandler(const string &dump_path,
                    FilterCallback filter, MinidumpCallback callback,
                    void *callback_context,
                    bool install_handler);
@@ -137,7 +138,7 @@ class ExceptionHandler {
   // server_fd is invalid, in-process dump generation will be
   // used. See the above ctor for a description of the other
   // parameters.
-  ExceptionHandler(const std::string& dump_path,
+  ExceptionHandler(const string& dump_path,
                    FilterCallback filter, MinidumpCallback callback,
                    void* callback_context,
                    bool install_handler,
@@ -146,8 +147,8 @@ class ExceptionHandler {
   ~ExceptionHandler();
 
   // Get and set the minidump path.
-  std::string dump_path() const { return dump_path_; }
-  void set_dump_path(const std::string &dump_path) {
+  string dump_path() const { return dump_path_; }
+  void set_dump_path(const string &dump_path) {
     dump_path_ = dump_path;
     dump_path_c_ = dump_path_.c_str();
     UpdateNextID();
@@ -163,7 +164,7 @@ class ExceptionHandler {
 
   // Convenience form of WriteMinidump which does not require an
   // ExceptionHandler instance.
-  static bool WriteMinidump(const std::string &dump_path,
+  static bool WriteMinidump(const string &dump_path,
                             MinidumpCallback callback,
                             void *callback_context);
 
@@ -187,14 +188,14 @@ class ExceptionHandler {
   // Add information about a memory mapping. This can be used if
   // a custom library loader is used that maps things in a way
   // that the linux dumper can't handle by reading the maps file.
-  void AddMappingInfo(const std::string& name,
+  void AddMappingInfo(const string& name,
                       const u_int8_t identifier[sizeof(MDGUID)],
                       uintptr_t start_address,
                       size_t mapping_size,
                       size_t file_offset);
 
  private:
-  void Init(const std::string &dump_path,
+  void Init(const string &dump_path,
             const int server_fd);
   bool InstallHandlers();
   void UninstallHandlers();
@@ -216,9 +217,9 @@ class ExceptionHandler {
 
   scoped_ptr<CrashGenerationClient> crash_generation_client_;
 
-  std::string dump_path_;
-  std::string next_minidump_path_;
-  std::string next_minidump_id_;
+  string dump_path_;
+  string next_minidump_path_;
+  string next_minidump_id_;
 
   // Pointers to C-string representations of the above. These are set
   // when the above are set so we can avoid calling c_str during

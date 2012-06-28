@@ -1,4 +1,6 @@
-// Copyright (c) 2009, Google Inc.
+// -*- mode: C++ -*-
+
+// Copyright (c) 2012, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,52 +29,37 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <set>
-#include <string>
+// Original author: Ivan Penkov
 
-#include <dirent.h>
-#include <fcntl.h>
-#include <sys/types.h>
+// using_std_string.h: Allows building this code in environments where
+//                     global string (::string) exists.
+//
+// The problem:
+// -------------
+// Let's say you want to build this code in an environment where a global
+// string type is defined (i.e. ::string).  Now, let's suppose that ::string
+// is different that std::string and you'd like to have the option to easily
+// choose between the two string types.  Ideally you'd like to control which
+// string type is chosen by simply #defining an identifier.
+//
+// The solution:
+// -------------
+// #define HAS_GLOBAL_STRING somewhere in a global header file and then
+// globally replace std::string with string.  Then include this header
+// file everywhere where string is used.  If you want to revert back to
+// using std::string, simply remove the #define (HAS_GLOBAL_STRING).
 
-#include "client/linux/minidump_writer/directory_reader.h"
-#include "common/using_std_string.h"
-#include "breakpad_googletest_includes.h"
+#ifndef THIRD_PARTY_BREAKPAD_SRC_COMMON_USING_STD_STRING_H_
+#define THIRD_PARTY_BREAKPAD_SRC_COMMON_USING_STD_STRING_H_
 
-using namespace google_breakpad;
+#ifdef HAS_GLOBAL_STRING
+  typedef ::string google_breakpad_string;
+#else
+  using std::string;
+  typedef std::string google_breakpad_string;
+#endif
 
-namespace {
-typedef testing::Test DirectoryReaderTest;
-}
+// Inicates that type google_breakpad_string is defined
+#define HAS_GOOGLE_BREAKPAD_STRING
 
-TEST(DirectoryReaderTest, CompareResults) {
-  std::set<string> dent_set;
-
-  DIR *const dir = opendir("/proc/self");
-  ASSERT_TRUE(dir != NULL);
-
-  struct dirent* dent;
-  while ((dent = readdir(dir)))
-    dent_set.insert(dent->d_name);
-
-  closedir(dir);
-
-  const int fd = open("/proc/self", O_DIRECTORY | O_RDONLY);
-  ASSERT_GE(fd, 0);
-
-  DirectoryReader dir_reader(fd);
-  unsigned seen = 0;
-
-  const char* name;
-  while (dir_reader.GetNextEntry(&name)) {
-    ASSERT_TRUE(dent_set.find(name) != dent_set.end());
-    seen++;
-    dir_reader.PopEntry();
-  }
-
-  ASSERT_TRUE(dent_set.find("status") != dent_set.end());
-  ASSERT_TRUE(dent_set.find("stat") != dent_set.end());
-  ASSERT_TRUE(dent_set.find("cmdline") != dent_set.end());
-
-  ASSERT_EQ(dent_set.size(), seen);
-  close(fd);
-}
+#endif  // THIRD_PARTY_BREAKPAD_SRC_COMMON_USING_STD_STRING_H_

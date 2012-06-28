@@ -27,14 +27,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "common/convert_UTF.h"
-#include "processor/scoped_ptr.h"
-#include "common/string_conversion.h"
 #include <string.h>
+
+#include "common/convert_UTF.h"
+#include "common/string_conversion.h"
+#include "common/using_std_string.h"
+#include "processor/scoped_ptr.h"
 
 namespace google_breakpad {
 
-using std::string;
 using std::vector;
 
 void UTF8ToUTF16(const char *in, vector<u_int16_t> *out) {

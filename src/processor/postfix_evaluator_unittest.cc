@@ -38,6 +38,7 @@
 
 #include "processor/postfix_evaluator-inl.h"
 
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 #include "google_breakpad/processor/memory_region.h"
 #include "processor/logging.h"
@@ -47,7 +48,6 @@ namespace {
 
 
 using std::map;
-using std::string;
 using google_breakpad::MemoryRegion;
 using google_breakpad::PostfixEvaluator;
 

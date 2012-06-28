@@ -40,9 +40,9 @@
 
 #include <string>
 
-namespace google_breakpad {
+#include "common/using_std_string.h"
 
-using std::string;
+namespace google_breakpad {
 
 // An abstract base class for language-specific operations. We choose
 // an instance of a subclass of this when we find the CU's language.

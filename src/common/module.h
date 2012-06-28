@@ -44,12 +44,12 @@
 #include <string>
 #include <vector>
 
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
 
 using std::set;
-using std::string;
 using std::vector;
 using std::map;
 

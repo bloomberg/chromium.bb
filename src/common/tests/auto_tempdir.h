@@ -38,6 +38,7 @@
 #include <string>
 
 #include "breakpad_googletest_includes.h"
+#include "common/using_std_string.h"
 
 #if !defined(__ANDROID__)
 #define TEMPDIR "/tmp"
@@ -59,12 +60,12 @@ class AutoTempDir {
     DeleteRecursively(path_);
   }
 
-  const std::string& path() const {
+  const string& path() const {
     return path_;
   }
 
  private:
-  void DeleteRecursively(const std::string& path) {
+  void DeleteRecursively(const string& path) {
     // First remove any files in the dir
     DIR* dir = opendir(path.c_str());
     if (!dir)
@@ -74,7 +75,7 @@ class AutoTempDir {
     while ((entry = readdir(dir)) != NULL) {
       if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
         continue;
-      std::string entry_path = path + "/" + entry->d_name;
+      string entry_path = path + "/" + entry->d_name;
       struct stat stats;
       EXPECT_TRUE(lstat(entry_path.c_str(), &stats) == 0);
       if (S_ISDIR(stats.st_mode))
@@ -90,7 +91,7 @@ class AutoTempDir {
   AutoTempDir(const AutoTempDir&);
   AutoTempDir& operator=(const AutoTempDir&);
 
-  std::string path_;
+  string path_;
 };
 
 }  // namespace google_breakpad

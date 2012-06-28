@@ -60,12 +60,12 @@
 #include <vector>
 #include <string>
 
+#include "common/using_std_string.h"
 #include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
 
 using std::list;
-using std::string;
 using std::vector;
 
 namespace test_assembler {

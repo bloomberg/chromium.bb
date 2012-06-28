@@ -51,8 +51,8 @@
 #include "common/linux/file_id.h"
 #include "common/linux/safe_readlink.h"
 #include "common/memory.h"
+#include "common/using_std_string.h"
 
-using std::string;
 using namespace google_breakpad;
 
 namespace {

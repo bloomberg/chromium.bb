@@ -39,6 +39,7 @@
 #include <utility>
 
 #include "breakpad_googletest_includes.h"
+#include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/code_module.h"
@@ -79,7 +80,6 @@ using google_breakpad::ProcessState;
 using google_breakpad::scoped_ptr;
 using google_breakpad::SymbolSupplier;
 using google_breakpad::SystemInfo;
-using std::string;
 using ::testing::_;
 using ::testing::Mock;
 using ::testing::Ne;
@@ -165,8 +165,8 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
                                                  symbol_file);
   if (s == FOUND) {
     std::ifstream in(symbol_file->c_str());
-    std::getline(in, *symbol_data, std::string::traits_type::to_char_type(
-                     std::string::traits_type::eof()));
+    std::getline(in, *symbol_data, string::traits_type::to_char_type(
+                     string::traits_type::eof()));
     in.close();
   }
 

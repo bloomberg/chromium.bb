@@ -34,10 +34,10 @@
 #define GOOGLE_BREAKPAD_PROCESSOR_SYMBOL_SUPPLIER_H__
 
 #include <string>
+#include "common/using_std_string.h"
 
 namespace google_breakpad {
 
-using std::string;
 class CodeModule;
 struct SystemInfo;
 

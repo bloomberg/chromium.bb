@@ -41,8 +41,10 @@
 #include "processor/fast_source_line_resolver_types.h"
 
 #include <map>
+#include <string>
 #include <utility>
 
+#include "common/using_std_string.h"
 #include "processor/module_factory.h"
 #include "processor/scoped_ptr.h"
 
@@ -125,7 +127,7 @@ WindowsFrameInfo FastSourceLineResolver::CopyWFI(const char *raw) {
   u_int32_t max_stack_size = para_uint32[5];
   const char *boolean = reinterpret_cast<const char*>(para_uint32 + 6);
   bool allocates_base_pointer = (*boolean != 0);
-  std::string program_string = boolean + 1;
+  string program_string = boolean + 1;
 
   return WindowsFrameInfo(type,
                           prolog_size,

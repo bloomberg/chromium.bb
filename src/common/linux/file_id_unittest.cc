@@ -32,11 +32,14 @@
 #include <elf.h>
 #include <stdlib.h>
 
+#include <string>
+
 #include "common/linux/file_id.h"
 #include "common/linux/safe_readlink.h"
 #include "common/linux/synth_elf.h"
 #include "common/test_assembler.h"
 #include "common/tests/auto_tempdir.h"
+#include "common/using_std_string.h"
 #include "breakpad_googletest_includes.h"
 
 using namespace google_breakpad;
@@ -67,7 +70,7 @@ TEST(FileIDStripTest, StripSelf) {
 
   // copy our binary to a temp file, and strip it
   AutoTempDir temp_dir;
-  std::string templ = temp_dir.path() + "/file-id-unittest";
+  string templ = temp_dir.path() + "/file-id-unittest";
   char cmdline[4096];
   sprintf(cmdline, "cp \"%s\" \"%s\"", exe_name, templ.c_str());
   ASSERT_EQ(system(cmdline), 0);

@@ -80,12 +80,12 @@
 #include <string>
 #include <vector>
 
+#include "common/using_std_string.h"
 #include "google_breakpad/processor/symbol_supplier.h"
 
 namespace google_breakpad {
 
 using std::map;
-using std::string;
 using std::vector;
 
 class CodeModule;
