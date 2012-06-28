@@ -183,8 +183,18 @@ void ResourceTracker::RemoveResource(Resource* object) {
 }
 
 void ResourceTracker::LastPluginRefWasDeleted(Resource* object) {
-  PpapiGlobals::Get()->GetCallbackTrackerForInstance(object->pp_instance())->
-      PostAbortForResource(object->pp_resource());
+  // Bug http://crbug.com/134611 indicates that sometimes the resource tracker
+  // is null here. This should never be the case since if we have a resource in
+  // the tracker, it should always have a valid instance associated with it.
+  // As a result, we do some CHECKs here to see what types of problems the
+  // instance might have before dispatching.
+  //
+  // TODO(brettw) remove these checks when this bug is no longer relevant.
+  CHECK(object->pp_instance());
+  CallbackTracker* callback_tracker =
+      PpapiGlobals::Get()->GetCallbackTrackerForInstance(object->pp_instance());
+  CHECK(callback_tracker);
+  callback_tracker->PostAbortForResource(object->pp_resource());
   object->LastPluginRefWasDeleted();
 }
 
