@@ -152,7 +152,8 @@ class MainPage(webapp.RequestHandler):
       return False
 
     # TODO(aa): Remove this soon.
-    if len(self.path) > 1 and self.path[1] == 'apps':
+    if (len(self.path) > 1 and self.path[1] == 'apps' and
+        not self.request.url.startswith('http://localhost')):
       return False
 
     return self.redirectToIndexIfNecessary()
