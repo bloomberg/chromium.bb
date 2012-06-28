@@ -202,6 +202,10 @@ Widget::~Widget() {
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
   } else {
+    // Used in tracking http://crbug.com/134506 .
+#if defined(OS_CHROMEOS)
+    CHECK(native_widget_destroyed_);
+#endif
     DCHECK(native_widget_destroyed_)
         << "Destroying a widget with a live native widget. "
         << "Widget probably should use WIDGET_OWNS_NATIVE_WIDGET ownership.";
