@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,21 @@ pp::Point GetCenter(const pp::Rect& rect) {
 
 void TestInputEvent::RunTests(const std::string& filter) {
   RUN_TEST(Events, filter);
+
+// Like RUN_TEST, but does an exact match with the filter (which means it does
+// not run the test if filter is empty).
+#define RUN_TEST_EXACT_MATCH(name, test_filter) \
+  if (test_filter == #name) { \
+    set_callback_type(PP_OPTIONAL); \
+    instance_->LogTest(#name, CheckResourcesAndVars(Test##name())); \
+  }
+
+  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_1, filter);
+  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_2, filter);
+  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_3, filter);
+  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_4, filter);
+
+#undef RUN_TEST_EXACT_MATCH
 }
 
 TestInputEvent::TestInputEvent(TestingInstance* instance)
@@ -282,6 +297,64 @@ std::string TestInputEvent::TestEvents() {
   ASSERT_FALSE(
       SimulateInputEvent(CreateCharEvent(kSpaceString)));
 
+  PASS();
+}
+
+std::string TestInputEvent::TestAcceptTouchEvent_1() {
+  // The browser normally sends touch-events to the renderer only if the page
+  // has touch-event handlers. Since test-case.html does not have any
+  // touch-event handler, it would normally not receive any touch events from
+  // the browser. However, if a plugin in the page does accept touch events,
+  // then the browser should start sending touch-events to the page. In this
+  // test, the plugin simply registers for touch-events. The real test is to
+  // verify that the browser knows to send touch-events to the renderer.
+  // If the plugin is removed from the page, then there are no more touch-event
+  // handlers in the page, and browser stops sending touch-events. So to make
+  // it possible to test this properly, the plugin is not removed from the page
+  // at the end of the test.
+  instance_->set_remove_plugin(false);
+  input_event_interface_->RequestInputEvents(instance_->pp_instance(),
+                                             PP_INPUTEVENT_CLASS_MOUSE |
+                                             PP_INPUTEVENT_CLASS_WHEEL |
+                                             PP_INPUTEVENT_CLASS_KEYBOARD |
+                                             PP_INPUTEVENT_CLASS_TOUCH);
+  PASS();
+}
+
+std::string TestInputEvent::TestAcceptTouchEvent_2() {
+  // See comment in TestAcceptTouchEvent_1.
+  instance_->set_remove_plugin(false);
+  input_event_interface_->RequestInputEvents(instance_->pp_instance(),
+                                             PP_INPUTEVENT_CLASS_MOUSE |
+                                             PP_INPUTEVENT_CLASS_WHEEL |
+                                             PP_INPUTEVENT_CLASS_KEYBOARD |
+                                             PP_INPUTEVENT_CLASS_TOUCH);
+  input_event_interface_->ClearInputEventRequest(instance_->pp_instance(),
+                                                 PP_INPUTEVENT_CLASS_TOUCH);
+  PASS();
+}
+
+std::string TestInputEvent::TestAcceptTouchEvent_3() {
+  // See comment in TestAcceptTouchEvent_1.
+  instance_->set_remove_plugin(false);
+  input_event_interface_->RequestInputEvents(instance_->pp_instance(),
+                                             PP_INPUTEVENT_CLASS_MOUSE |
+                                             PP_INPUTEVENT_CLASS_WHEEL |
+                                             PP_INPUTEVENT_CLASS_KEYBOARD);
+  input_event_interface_->RequestFilteringInputEvents(instance_->pp_instance(),
+      PP_INPUTEVENT_CLASS_TOUCH);
+  PASS();
+}
+
+std::string TestInputEvent::TestAcceptTouchEvent_4() {
+  // See comment in TestAcceptTouchEvent_1.
+  instance_->set_remove_plugin(false);
+  input_event_interface_->RequestInputEvents(instance_->pp_instance(),
+                                             PP_INPUTEVENT_CLASS_MOUSE |
+                                             PP_INPUTEVENT_CLASS_WHEEL |
+                                             PP_INPUTEVENT_CLASS_KEYBOARD);
+  input_event_interface_->RequestInputEvents(instance_->pp_instance(),
+                                             PP_INPUTEVENT_CLASS_TOUCH);
   PASS();
 }
 

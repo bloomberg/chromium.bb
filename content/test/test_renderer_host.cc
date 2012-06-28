@@ -5,6 +5,7 @@
 #include "content/public/test/test_renderer_host.h"
 
 #include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
@@ -49,6 +50,12 @@ bool RenderViewHostTester::IsRenderViewHostSwappedOut(RenderViewHost* rvh) {
 bool RenderViewHostTester::TestOnMessageReceived(RenderViewHost* rvh,
                                                  const IPC::Message& msg) {
   return static_cast<RenderViewHostImpl*>(rvh)->OnMessageReceived(msg);
+}
+
+// static
+bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
+  RenderWidgetHostImpl* host_impl = RenderWidgetHostImpl::From(rvh);
+  return host_impl->has_touch_handler();
 }
 
 RenderViewHostTestEnabler::RenderViewHostTestEnabler()

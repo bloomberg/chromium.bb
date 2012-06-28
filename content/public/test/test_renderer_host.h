@@ -63,6 +63,9 @@ class RenderViewHostTester {
   static bool TestOnMessageReceived(RenderViewHost* rvh,
                                     const IPC::Message& msg);
 
+  // Returns whether the underlying web-page has any touch-event handlers.
+  static bool HasTouchEventHandler(RenderViewHost* rvh);
+
   virtual ~RenderViewHostTester() {}
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.

@@ -33,7 +33,8 @@ TestingInstance::TestingInstance(PP_Instance instance)
       number_tests_executed_(0),
       nacl_mode_(false),
       ssl_server_port_(-1),
-      websocket_port_(-1) {
+      websocket_port_(-1),
+      remove_plugin_(true) {
   callback_factory_.Initialize(this);
 }
 
@@ -179,7 +180,8 @@ void TestingInstance::ExecuteTests(int32_t unused) {
 
   // Declare we're done by setting a cookie to either "PASS" or the errors.
   ReportProgress(errors_.empty() ? "PASS" : errors_);
-  SendTestCommand("DidExecuteTests");
+  if (remove_plugin_)
+    SendTestCommand("DidExecuteTests");
   // Note, DidExecuteTests unloads the plugin. We can't really do anthing after
   // this point.
 }

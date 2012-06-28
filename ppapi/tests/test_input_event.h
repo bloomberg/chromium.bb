@@ -40,6 +40,10 @@ class TestInputEvent : public TestCase {
   bool AreEquivalentEvents(PP_Resource first, PP_Resource second);
 
   std::string TestEvents();
+  std::string TestAcceptTouchEvent_1();
+  std::string TestAcceptTouchEvent_2();
+  std::string TestAcceptTouchEvent_3();
+  std::string TestAcceptTouchEvent_4();
 
   const PPB_InputEvent* input_event_interface_;
   const PPB_MouseInputEvent* mouse_input_event_interface_;

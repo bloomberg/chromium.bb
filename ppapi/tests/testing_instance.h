@@ -99,6 +99,9 @@ pp::InstancePrivate {
   // evaluate to |true| or the test will fail.
   void AddPostCondition(const std::string& script);
 
+  // See doc for |remove_plugin_|.
+  void set_remove_plugin(bool remove) { remove_plugin_ = remove; }
+
  private:
   void ExecuteTests(int32_t unused);
 
@@ -159,6 +162,11 @@ pp::InstancePrivate {
 
   // WebSocket port.
   int websocket_port_;
+
+  // At the end of each set of tests, the plugin is removed from the web-page.
+  // However, for some tests, it is desirable to not remove the plguin from the
+  // page.
+  bool remove_plugin_;
 };
 
 #endif  // PPAPI_TESTS_TESTING_INSTANCE_H_

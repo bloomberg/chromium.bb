@@ -26,6 +26,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/test/gpu/test_switches.h"
 #include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
@@ -1116,6 +1117,30 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
 
   ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
   EXPECT_STREQ("PASS", observer.result().c_str());
+}
+
+// Tests that if a plugin accepts touch events, the browser knows to send touch
+// events to the renderer.
+IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
+  std::string positive_tests[] = { "InputEvent_AcceptTouchEvent_1",
+                                   "InputEvent_AcceptTouchEvent_3",
+                                   "InputEvent_AcceptTouchEvent_4"
+                                 };
+
+  for (size_t i = 0; i < arraysize(positive_tests); ++i) {
+    RenderViewHost* host = browser()->GetActiveWebContents()->
+        GetRenderViewHost();
+    RunTest(positive_tests[i]);
+    EXPECT_TRUE(content::RenderViewHostTester::HasTouchEventHandler(host));
+  }
+
+  std::string negative_tests[] = { "InputEvent_AcceptTouchEvent_2" };
+  for (size_t i = 0; i < arraysize(negative_tests); ++i) {
+    RenderViewHost* host = browser()->GetActiveWebContents()->
+        GetRenderViewHost();
+    RunTest(negative_tests[i]);
+    EXPECT_FALSE(content::RenderViewHostTester::HasTouchEventHandler(host));
+  }
 }
 
 TEST_PPAPI_IN_PROCESS(View_SizeChange);
