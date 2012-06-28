@@ -13,8 +13,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
 
-using content::ContentViewImpl;
-using content::RenderWidgetHostImpl;
+namespace content {
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
@@ -49,7 +48,7 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
   NOTIMPLEMENTED();
 }
 
-content::RenderWidgetHost*
+RenderWidgetHost*
 RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
   return host_;
 }
@@ -334,7 +333,7 @@ void RenderWidgetHostViewAndroid::SetContentView(
 }
 
 // static
-void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
+void RenderWidgetHostViewPort::GetDefaultScreenInfo(
     ::WebKit::WebScreenInfo* results) {
   DeviceInfo info;
   const int width = info.GetWidth();
@@ -353,9 +352,10 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
 // RenderWidgetHostView, public:
 
 // static
-content::RenderWidgetHostView*
-content::RenderWidgetHostView::CreateViewForWidget(
-    content::RenderWidgetHost* widget) {
+RenderWidgetHostView*
+RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost* widget) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(widget);
   return new RenderWidgetHostViewAndroid(rwhi, NULL);
 }
+
+} // namespace content

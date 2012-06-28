@@ -13,8 +13,6 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-using content::ContentViewImpl;
-
 namespace content {
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
@@ -25,11 +23,10 @@ WebContentsView* CreateWebContentsView(
   *render_view_host_delegate_view = rv;
   return rv;
 }
-}
 
 WebContentsViewAndroid::WebContentsViewAndroid(
     WebContentsImpl* web_contents,
-    content::WebContentsViewDelegate* delegate)
+    WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate) {
 }
@@ -49,15 +46,11 @@ void WebContentsViewAndroid::SetContentView(
   }
 }
 
-ContentViewImpl* WebContentsViewAndroid::GetContentView() const {
-  return content_view_;
-}
-
 void WebContentsViewAndroid::CreateView(const gfx::Size& initial_size) {
 }
 
-content::RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
-    content::RenderWidgetHost* render_widget_host) {
+RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
+    RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -72,8 +65,7 @@ content::RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
   // native view (i.e. ContentView) how to obtain a reference to this widget in
   // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
   // example of how this is achieved for InterstitialPages.
-  content::RenderWidgetHostImpl* rwhi =
-      content::RenderWidgetHostImpl::From(render_widget_host);
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
   return new RenderWidgetHostViewAndroid(rwhi, content_view_);
 }
 
@@ -106,13 +98,12 @@ void WebContentsViewAndroid::OnTabCrashed(base::TerminationStatus status,
 
 void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
   // TODO(klobag): Do we need to do anything else?
-  content::RenderWidgetHostView* rwhv =
-      web_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 }
 
-void WebContentsViewAndroid::RenderViewCreated(content::RenderViewHost* host) {
+void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewAndroid::Focus() {
@@ -170,8 +161,7 @@ gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
     return gfx::Rect();
 }
 
-void WebContentsViewAndroid::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+void WebContentsViewAndroid::ShowContextMenu(const ContextMenuParams& params) {
   if (delegate_.get())
     delegate_->ShowContextMenu(params);
 }
@@ -212,3 +202,5 @@ void WebContentsViewAndroid::TakeFocus(bool reverse) {
     return;
   web_contents_->GetRenderWidgetHostView()->Focus();
 }
+
+} // namespace content

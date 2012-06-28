@@ -17,9 +17,8 @@
 #include "ui/gfx/rect.h"
 
 class ContentViewClient;
-class RenderWidgetHostViewAndroid;
-
 namespace content {
+class RenderWidgetHostViewAndroid;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewImpl : public ContentView,
@@ -66,20 +65,15 @@ class ContentViewImpl : public ContentView,
   // --------------------------------------------------------------------------
 
   void OnTabCrashed(const base::ProcessHandle handle);
-
   void SetTitle(const string16& title);
-
   bool HasFocus();
-
   void OnSelectionChanged(const std::string& text);
-
   void OnSelectionBoundsChanged(int startx,
                                 int starty,
                                 base::i18n::TextDirection start_dir,
                                 int endx,
                                 int endy,
                                 base::i18n::TextDirection end_dir);
-
   void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
                                            bool activated,
                                            bool force);

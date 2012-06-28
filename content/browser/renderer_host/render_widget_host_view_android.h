@@ -12,24 +12,24 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/gfx/size.h"
 
-namespace content {
-class ContentViewImpl;
-struct NativeWebKeyboardEvent;
-class RenderWidgetHost;
-class RenderWidgetHostImpl;
-}
 struct ViewHostMsg_TextInputState_Params;
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
+namespace content {
+class ContentViewImpl;
+class RenderWidgetHost;
+class RenderWidgetHostImpl;
+struct NativeWebKeyboardEvent;
+
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewAndroid : public content::RenderWidgetHostViewBase {
+class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
  public:
-  RenderWidgetHostViewAndroid(content::RenderWidgetHostImpl* widget,
-                              content::ContentViewImpl* content_view);
+  RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
+                              ContentViewImpl* content_view);
   virtual ~RenderWidgetHostViewAndroid();
 
   // RenderWidgetHostView implementation.
@@ -38,7 +38,7 @@ class RenderWidgetHostViewAndroid : public content::RenderWidgetHostViewBase {
                            const gfx::Rect& pos) OVERRIDE;
   virtual void InitAsFullscreen(
       RenderWidgetHostView* reference_host_view) OVERRIDE;
-  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void WasRestored() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
@@ -102,20 +102,17 @@ class RenderWidgetHostViewAndroid : public content::RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 
-  void SetContentView(content::ContentViewImpl* content_view);
-
-  // Do not store the returned pointer, as it may become invalid.
-  content::ContentViewImpl* GetContentView() const { return content_view_; }
+  void SetContentView(ContentViewImpl* content_view);
 
  private:
   // The model object.
-  content::RenderWidgetHostImpl* host_;
+  RenderWidgetHostImpl* host_;
 
   // Whether or not this widget is hidden.
   bool is_hidden_;
 
   // ContentViewImpl is our interface to the view system.
-  content::ContentViewImpl* content_view_;
+  ContentViewImpl* content_view_;
 
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing is async.
@@ -123,5 +120,7 @@ class RenderWidgetHostViewAndroid : public content::RenderWidgetHostViewBase {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
+
+} // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_
