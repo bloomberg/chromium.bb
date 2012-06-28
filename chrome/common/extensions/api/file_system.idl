@@ -6,7 +6,12 @@
 
 namespace fileSystem {
   dictionary ChooseFileOptions {
-    // type can be 'openFile' or 'saveFile'. Default is 'openFile'.
+    // Valid types are 'openFile', 'openWritableFile' or 'saveFile'. Both
+    // 'openFile' and 'openWritableFile' will prompt the user to open an
+    // existing file, with 'openFile' returning a read-only FileEntry on
+    // success. 'saveFile' will prompt the user to choose an existing file or
+    // a new file, and will return a writable FileEntry. The default is
+    // 'openFile'.
     DOMString? type;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);

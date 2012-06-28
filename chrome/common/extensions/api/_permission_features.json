@@ -124,6 +124,10 @@
     "channel": "dev",
     "extension_types": ["platform_app"]
   },
+  "fileSystemWrite": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "geolocation": {
     "channel": "stable",
     "extension_types": [

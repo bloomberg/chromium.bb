@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 chrome.test.runTests([
-  function openFile() {
-    chrome.fileSystem.chooseFile(chrome.test.callbackPass(function(entry) {
-      checkEntry(entry, 'open_existing.txt', false, false);
-    }));
+  function saveFile() {
+    chrome.fileSystem.chooseFile({type: 'invalid'}, chrome.test.callbackFail(
+        'Unknown type',  function() {}));
   }
 ]);

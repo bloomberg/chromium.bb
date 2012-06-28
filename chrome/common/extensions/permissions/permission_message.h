@@ -47,6 +47,7 @@ class PermissionMessage {
     kAudioCapture,
     kVideoCapture,
     kDownloads,
+    kFileSystemWrite,
     kEnumBoundary
   };
 

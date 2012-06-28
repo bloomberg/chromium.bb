@@ -4383,6 +4383,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS" desc="Permission string for access to downloads.">
         Download files
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE" desc="Permission string for write access to the file system.">
+        Write to files that you have opened in the application
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">

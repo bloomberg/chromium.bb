@@ -1,8 +1,8 @@
 {
-  "name": "chrome.fileSystem save from background.",
+  "name": "chrome.fileSystem open existing file with write",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Test for chrome.fileSystem.chooseFile save from background.",
+  "description": "Test for chrome.fileSystem.chooseFile opening existing file.",
   "app": {
     "background": {
       "scripts": ["background.js"]

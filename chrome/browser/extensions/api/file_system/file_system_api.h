@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/ui/select_file_dialog.h"
 
 namespace extensions {
 
@@ -19,39 +20,33 @@ class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemPickerFunction : public AsyncExtensionFunction {
- public:
-  // Allow picker UI to be skipped in testing.
-  static void SkipPickerAndAlwaysSelectPathForTest(FilePath* path);
-  static void SkipPickerAndAlwaysCancelForTest();
-  static void StopSkippingPickerForTest();
-
+class FileSystemEntryFunction : public AsyncExtensionFunction {
  protected:
-  class FilePicker;
+  enum EntryType {
+    READ_ONLY,
+    WRITABLE
+  };
 
-  virtual ~FileSystemPickerFunction() {}
-  bool ShowPicker(const FilePath& suggested_path, bool for_save);
+  virtual ~FileSystemEntryFunction() {}
 
- private:
-  // FileSelected and FileSelectionCanceled are called by the file picker.
-  void FileSelected(const FilePath& path, bool for_save);
-  void FileSelectionCanceled();
+  bool HasFileSystemWritePermission();
 
-  // called on the FILE thread. This is only called when a file is being chosen
-  // to save. The function will ensure the file exists, creating it if
+  // Called on the FILE thread. This is called when a writable file entry is
+  // being returned. The function will ensure the file exists, creating it if
   // necessary, and also check that the file is not a link.
   void CheckWritableFile(const FilePath& path);
 
   // This will finish the choose file process. This is either called directly
   // from FileSelected, or from CreateFileIfNecessary. It is called on the UI
   // thread.
-  void RegisterFileSystemAndSendResponse(const FilePath& path, bool for_save);
+  void RegisterFileSystemAndSendResponse(const FilePath& path,
+                                         EntryType entry_type);
 
   // called on the UI thread if there is a problem checking a writable file.
   void HandleWritableFileError();
 };
 
-class FileSystemGetWritableFileEntryFunction : public FileSystemPickerFunction {
+class FileSystemGetWritableFileEntryFunction : public FileSystemEntryFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getWritableFileEntry");
 
@@ -60,13 +55,28 @@ class FileSystemGetWritableFileEntryFunction : public FileSystemPickerFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemChooseFileFunction : public FileSystemPickerFunction {
+class FileSystemChooseFileFunction : public FileSystemEntryFunction {
  public:
+  // Allow picker UI to be skipped in testing.
+  static void SkipPickerAndAlwaysSelectPathForTest(FilePath* path);
+  static void SkipPickerAndAlwaysCancelForTest();
+  static void StopSkippingPickerForTest();
+
   DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.chooseFile");
 
  protected:
+  class FilePicker;
+
   virtual ~FileSystemChooseFileFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  bool ShowPicker(const FilePath& suggested_path,
+                  SelectFileDialog::Type picker_type,
+                  EntryType entry_type);
+
+ private:
+  // FileSelected and FileSelectionCanceled are called by the file picker.
+  void FileSelected(const FilePath& path, EntryType entry_type);
+  void FileSelectionCanceled();
 };
 
 }  // namespace extensions

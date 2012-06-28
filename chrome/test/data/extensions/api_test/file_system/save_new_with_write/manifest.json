@@ -1,5 +1,5 @@
 {
-  "name": "chrome.fileSystem save new file",
+  "name": "chrome.fileSystem save new file with write",
   "version": "0.1",
   "manifest_version": 2,
   "description": "Test for chrome.fileSystem.chooseFile saving new file.",
@@ -10,6 +10,7 @@
   },
   "permissions": [
     "experimental",
-    "fileSystem"
+    "fileSystem",
+    "fileSystemWrite"
   ]
 }

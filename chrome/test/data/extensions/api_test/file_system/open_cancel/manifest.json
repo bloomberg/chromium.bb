@@ -10,7 +10,6 @@
   },
   "permissions": [
     "experimental",
-    "appWindow",
     "fileSystem"
   ]
 }

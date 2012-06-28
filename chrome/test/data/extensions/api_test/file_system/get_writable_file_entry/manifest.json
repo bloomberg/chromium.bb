@@ -1,8 +1,8 @@
 {
-  "name": "chrome.fileSystem save existing file",
+  "name": "chrome.fileSystem get writable file entry",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Test for chrome.fileSystem.chooseFile saving existing file.",
+  "description": "Test for chrome.fileSystem.getWritableFileEntry",
   "app": {
     "background": {
       "scripts": ["background.js"]

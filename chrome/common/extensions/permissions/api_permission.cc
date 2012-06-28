@@ -86,7 +86,6 @@ void APIPermission::RegisterAllPermissions(
     { kContextMenus, "contextMenus" },
     { kCookie, "cookies" },
     { kFileBrowserHandler, "fileBrowserHandler", kFlagCannotBeOptional },
-    { kFileSystem, "fileSystem" },
     { kHistory, "history", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
       PermissionMessage::kBrowsingHistory },
@@ -162,6 +161,10 @@ void APIPermission::RegisterAllPermissions(
     { kVideoCapture, "videoCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
       PermissionMessage::kVideoCapture },
+    { kFileSystem, "fileSystem" },
+    { kFileSystemWrite, "fileSystemWrite", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
+      PermissionMessage::kFileSystemWrite },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {
