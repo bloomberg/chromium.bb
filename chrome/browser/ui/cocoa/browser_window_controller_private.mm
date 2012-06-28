@@ -800,6 +800,14 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)showFullscreenExitBubbleIfNecessary {
+  // This method is called in response to
+  // |-updateFullscreenExitBubbleURL:bubbleType:|. If on Lion the system is
+  // transitioning, do not show the bubble because it will cause visual jank
+  // <http://crbug.com/130649>. This will be called again as part of
+  // |-windowDidEnterFullScreen:|, so arrange to do that work then instead.
+  if (enteringFullscreen_)
+    return;
+
   [presentationModeController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
 
   if (fullscreenBubbleType_ == FEB_TYPE_NONE ||
