@@ -21,6 +21,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -1048,11 +1049,14 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
     WebKit::WebMouseWheelEvent mouse_wheel_event =
         content::MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
     host_->ForwardWheelEvent(mouse_wheel_event);
+    content::RecordAction(content::UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
       event->type() == ui::ET_SCROLL_FLING_CANCEL) {
     WebKit::WebGestureEvent gesture_event =
         content::MakeWebGestureEvent(static_cast<aura::ScrollEvent*>(event));
     host_->ForwardGestureEvent(gesture_event);
+    if (event->type() == ui::ET_SCROLL_FLING_START)
+      content::RecordAction(content::UserMetricsAction("TrackpadScrollFling"));
   } else if (CanRendererHandleEvent(event)) {
     WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
@@ -1118,8 +1122,18 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     fling_cancel.type = WebKit::WebInputEvent::GestureFlingCancel;
     host_->ForwardGestureEvent(fling_cancel);
   }
-  if (gesture.type != WebKit::WebInputEvent::Undefined)
+  if (gesture.type != WebKit::WebInputEvent::Undefined) {
     host_->ForwardGestureEvent(gesture);
+
+    if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+        event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+        event->type() == ui::ET_GESTURE_SCROLL_END) {
+      content::RecordAction(content::UserMetricsAction("TouchscreenScroll"));
+    } else if (event->type() == ui::ET_SCROLL_FLING_START) {
+      content::RecordAction(
+          content::UserMetricsAction("TouchscreenScrollFling"));
+    }
+  }
 
   // If a gesture is not processed by the webpage, then WebKit processes it
   // (e.g. generates synthetic mouse events). So CONSUMED should be returned
