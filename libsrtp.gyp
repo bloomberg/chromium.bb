@@ -354,8 +354,8 @@
       ],
       'actions': [{
         'action_name': 'help',
-        'inputs': [''],
-        'outputs': [''],
+        'inputs': ['""'],
+        'outputs': ['""'],
         'action': [
           'python', '-c',
           'print "Please run srtp tests on the target, for example, on linux"; \
