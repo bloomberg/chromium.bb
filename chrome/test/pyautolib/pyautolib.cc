@@ -275,7 +275,7 @@ std::string PyUITestBase::_GetBookmarksAsJSON(int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
-    return NULL;
+    return std::string();
 
   std::string s;
   EXPECT_TRUE(browser_proxy->GetBookmarksAsJSON(&s));

@@ -1064,7 +1064,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     does not get updated as the bookmark model changes.
     """
     bookmarks_as_json = self._GetBookmarksAsJSON(windex)
-    if bookmarks_as_json == None:
+    if not bookmarks_as_json:
       raise JSONInterfaceError('Could not resolve browser proxy.')
     return bookmark_model.BookmarkModel(bookmarks_as_json)
 
