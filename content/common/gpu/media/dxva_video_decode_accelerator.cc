@@ -509,8 +509,18 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
   client_ = NULL;
 }
 
-bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile) {
+bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   DCHECK(CalledOnValidThread());
+
+  // TODO(ananta)
+  // H264PROFILE_HIGH video decoding is janky at times. Needs more
+  // investigation.
+  if (profile != media::H264PROFILE_BASELINE &&
+      profile != media::H264PROFILE_MAIN &&
+      profile != media::H264PROFILE_HIGH) {
+    RETURN_AND_NOTIFY_ON_FAILURE(false,
+        "Unsupported h264 profile", PLATFORM_FAILURE, false);
+  }
 
   RETURN_AND_NOTIFY_ON_FAILURE(pre_sandbox_init_done_,
       "PreSandbox initialization not completed", PLATFORM_FAILURE, false);
@@ -530,7 +540,13 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile) {
 
   RETURN_AND_NOTIFY_ON_FAILURE(
       SendMFTMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0),
-      "Failed to start decoder", PLATFORM_FAILURE, false);
+      "Send MFT_MESSAGE_NOTIFY_BEGIN_STREAMING notification failed",
+      PLATFORM_FAILURE, false);
+
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0),
+      "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
+      PLATFORM_FAILURE, false);
 
   state_ = kNormal;
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -556,17 +572,10 @@ void DXVAVideoDecodeAccelerator::Decode(
   }
   inputs_before_decode_++;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
-      SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0),
-      "Failed to create input sample", PLATFORM_FAILURE,);
-
   HRESULT hr = decoder_->ProcessInput(0, sample, 0);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to process input sample",
       PLATFORM_FAILURE,);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
-    SendMFTMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, 0),
-    "Failed to send eos message to MFT", PLATFORM_FAILURE,);
   state_ = kEosDrain;
 
   last_input_buffer_id_ = bitstream_buffer.id();
@@ -767,6 +776,12 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
 
   hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
   RETURN_ON_HR_FAILURE(hr, "Failed to set subtype", false);
+
+  // Not sure about this. msdn recommends setting this value on the input
+  // media type.
+  hr = media_type->SetUINT32(MF_MT_INTERLACE_MODE,
+                             MFVideoInterlace_MixedInterlaceOrProgressive);
+  RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
 
   hr = decoder_->SetInputType(0, media_type, 0);  // No flags
   RETURN_ON_HR_FAILURE(hr, "Failed to set decoder input type", false);
