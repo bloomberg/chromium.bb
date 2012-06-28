@@ -13,12 +13,12 @@
 
 #include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 // For invalidation::InvalidationListener::RegistrationState.
 #include "google/cacheinvalidation/include/invalidation-listener.h"
+#include "google/cacheinvalidation/include/types.h"
+#include "sync/notifier/invalidation_util.h"
 
 namespace csync {
 
@@ -55,9 +55,11 @@ class RegistrationManager : public base::NonThreadSafe {
     // The delay of the timer, which should be max(delay, 0).
     base::TimeDelta actual_delay;
   };
-  // Map from types with pending registrations to info about the
+  // Map of object IDs with pending registrations to info about the
   // pending registration.
-  typedef std::map<syncable::ModelType, PendingRegistrationInfo>
+  typedef std::map<invalidation::ObjectId,
+                   PendingRegistrationInfo,
+                   ObjectIdLessThan>
       PendingRegistrationMap;
 
   // Does not take ownership of |invalidation_client_|.
@@ -66,35 +68,22 @@ class RegistrationManager : public base::NonThreadSafe {
 
   virtual ~RegistrationManager();
 
-  // Registers all types included in the given set (that are not
-  // already disabled) and sets all other types to be unregistered.
-  void SetRegisteredTypes(syncable::ModelTypeSet types);
+  // Registers all object IDs included in the given set (that are not
+  // already disabled) and unregisters all other object IDs.
+  void SetRegisteredIds(const ObjectIdSet& ids);
 
-  // Marks the registration for the |model_type| lost and re-registers
+  // Marks the registration for the |id| lost and re-registers
   // it (unless it's disabled).
-  void MarkRegistrationLost(syncable::ModelType model_type);
+  void MarkRegistrationLost(const invalidation::ObjectId& id);
 
-  // Marks registrations lost for all enabled types and re-registers
-  // them.
+  // Marks registrations lost for all enabled object IDs and re-registers them.
   void MarkAllRegistrationsLost();
 
-  // Marks the registration for the |model_type| permanently lost and
-  // blocks any future registration attempts.
-  void DisableType(syncable::ModelType model_type);
+  // Marks the registration for the |id| permanently lost and blocks any future
+  // registration attempts.
+  void DisableId(const invalidation::ObjectId& id);
 
-  // The functions below should only be used in tests.
-
-  // Gets all currently-registered types.
-  syncable::ModelTypeSet GetRegisteredTypes() const;
-
-  // Gets all pending registrations and their next min delays.
-  PendingRegistrationMap GetPendingRegistrations() const;
-
-  // Run pending registrations immediately.
-  void FirePendingRegistrationsForTest();
-
-  // Calculate exponential backoff.  |jitter| must be Uniform[-1.0,
-  // 1.0].
+  // Calculate exponential backoff.  |jitter| must be Uniform[-1.0, 1.0].
   static double CalculateBackoff(double retry_interval,
                                  double initial_retry_interval,
                                  double min_retry_interval,
@@ -103,13 +92,25 @@ class RegistrationManager : public base::NonThreadSafe {
                                  double jitter,
                                  double max_jitter);
 
+  // The functions below should only be used in tests.
+
+  // Gets all currently registered ids.
+  ObjectIdSet GetRegisteredIdsForTest() const;
+
+  // Gets all pending registrations and their next min delays.
+  PendingRegistrationMap GetPendingRegistrationsForTest() const;
+
+  // Run pending registrations immediately.
+  void FirePendingRegistrationsForTest();
+
  protected:
   // Overrideable for testing purposes.
   virtual double GetJitter();
 
  private:
   struct RegistrationStatus {
-    RegistrationStatus();
+    RegistrationStatus(const invalidation::ObjectId& id,
+                       RegistrationManager* manager);
     ~RegistrationStatus();
 
     // Calls registration_manager->DoRegister(model_type). (needed by
@@ -120,10 +121,10 @@ class RegistrationManager : public base::NonThreadSafe {
     // Sets |enabled| to false and resets other variables.
     void Disable();
 
-    // The model type for which this is the status.
-    syncable::ModelType model_type;
+    // The object for which this is the status.
+    const invalidation::ObjectId id;
     // The parent registration manager.
-    RegistrationManager* registration_manager;
+    RegistrationManager* const registration_manager;
 
     // Whether this data type should be registered.  Set to false if
     // we get a non-transient registration failure.
@@ -142,29 +143,38 @@ class RegistrationManager : public base::NonThreadSafe {
     base::TimeDelta next_delay;
     // The actual timer for registration.
     base::OneShotTimer<RegistrationStatus> registration_timer;
-  };
 
-  // Does nothing if the given type is disabled.  Otherwise, if
+    DISALLOW_COPY_AND_ASSIGN(RegistrationStatus);
+  };
+  typedef std::map<invalidation::ObjectId,
+                   RegistrationStatus*,
+                   ObjectIdLessThan>
+      RegistrationStatusMap;
+
+  // Does nothing if the given id is disabled.  Otherwise, if
   // |is_retry| is not set, registers the given type immediately and
   // resets all backoff parameters.  If |is_retry| is set, registers
   // the given type at some point in the future and increases the
   // delay until the next retry.
-  void TryRegisterType(syncable::ModelType model_type,
-                       bool is_retry);
+  void TryRegisterId(const invalidation::ObjectId& id,
+                     bool is_retry);
 
-  // Registers the given type, which must be valid, immediately.
+  // Registers the given id, which must be valid, immediately.
   // Updates |last_registration| in the appropriate
   // RegistrationStatus.  Should only be called by
   // RegistrationStatus::DoRegister().
-  void DoRegisterType(syncable::ModelType model_type);
+  void DoRegisterId(const invalidation::ObjectId& id);
 
-  // Unregisters the given type, which must be valid.
-  void UnregisterType(syncable::ModelType model_type);
+  // Unregisters the given object ID.
+  void UnregisterId(const invalidation::ObjectId& id);
 
-  // Returns true iff the given type, which must be valid, is registered.
-  bool IsTypeRegistered(syncable::ModelType model_type) const;
+  // Gets all currently registered ids.
+  ObjectIdSet GetRegisteredIds() const;
 
-  RegistrationStatus registration_statuses_[syncable::MODEL_TYPE_COUNT];
+  // Returns true iff the given object ID is registered.
+  bool IsIdRegistered(const invalidation::ObjectId& id) const;
+
+  RegistrationStatusMap registration_statuses_;
   // Weak pointer.
   invalidation::InvalidationClient* invalidation_client_;
 

@@ -8,6 +8,7 @@
 #define SYNC_NOTIFIER_INVALIDATION_UTIL_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "sync/internal_api/public/syncable/model_type.h"
@@ -25,6 +26,8 @@ struct ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
                   const invalidation::ObjectId& rhs) const;
 };
+
+typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
 
 bool RealModelTypeToObjectId(syncable::ModelType model_type,
                              invalidation::ObjectId* object_id);

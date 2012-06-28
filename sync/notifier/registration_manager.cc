@@ -7,34 +7,36 @@
 #include <algorithm>
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace csync {
 
 RegistrationManager::PendingRegistrationInfo::PendingRegistrationInfo() {}
 
-RegistrationManager::RegistrationStatus::RegistrationStatus()
-    : model_type(syncable::UNSPECIFIED),
-      registration_manager(NULL),
+RegistrationManager::RegistrationStatus::RegistrationStatus(
+    const invalidation::ObjectId& id, RegistrationManager* manager)
+    : id(id),
+      registration_manager(manager),
       enabled(true),
-      state(invalidation::InvalidationListener::UNREGISTERED) {}
+      state(invalidation::InvalidationListener::UNREGISTERED) {
+  DCHECK(registration_manager);
+}
 
 RegistrationManager::RegistrationStatus::~RegistrationStatus() {}
 
 void RegistrationManager::RegistrationStatus::DoRegister() {
-  DCHECK_NE(model_type, syncable::UNSPECIFIED);
-  DCHECK(registration_manager);
   CHECK(enabled);
   // We might be called explicitly, so stop the timer manually and
   // reset the delay.
   registration_timer.Stop();
   delay = base::TimeDelta();
-  registration_manager->DoRegisterType(model_type);
+  registration_manager->DoRegisterId(id);
   DCHECK(!last_registration_request.is_null());
 }
 
@@ -56,113 +58,78 @@ RegistrationManager::RegistrationManager(
     invalidation::InvalidationClient* invalidation_client)
     : invalidation_client_(invalidation_client) {
   DCHECK(invalidation_client_);
-  // Initialize statuses.
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    RegistrationStatus* status = &registration_statuses_[model_type];
-    status->model_type = model_type;
-    status->registration_manager = this;
-  }
 }
 
 RegistrationManager::~RegistrationManager() {
   DCHECK(CalledOnValidThread());
+  STLDeleteValues(&registration_statuses_);
 }
 
-void RegistrationManager::SetRegisteredTypes(
-    syncable::ModelTypeSet types) {
+void RegistrationManager::SetRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
 
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    if (types.Has(model_type)) {
-      if (!IsTypeRegistered(model_type)) {
-        TryRegisterType(model_type, false /* is_retry */);
-      }
-    } else {
-      if (IsTypeRegistered(model_type)) {
-        UnregisterType(model_type);
-      }
+  const ObjectIdSet& old_ids = GetRegisteredIds();
+  const ObjectIdSet& to_register = ids;
+  ObjectIdSet to_unregister;
+  std::set_difference(old_ids.begin(), old_ids.end(),
+                      ids.begin(), ids.end(),
+                      std::inserter(to_unregister, to_unregister.begin()),
+                      ObjectIdLessThan());
+
+  for (ObjectIdSet::const_iterator it = to_unregister.begin();
+       it != to_unregister.end(); ++it) {
+    UnregisterId(*it);
+  }
+
+  for (ObjectIdSet::const_iterator it = to_register.begin();
+       it != to_register.end(); ++it) {
+    if (!ContainsKey(registration_statuses_, *it)) {
+      registration_statuses_.insert(
+          std::make_pair(*it, new RegistrationStatus(*it, this)));
+    }
+    if (!IsIdRegistered(*it)) {
+      TryRegisterId(*it, false /* is-retry */);
     }
   }
 }
 
 void RegistrationManager::MarkRegistrationLost(
-    syncable::ModelType model_type) {
+    const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
-  RegistrationStatus* status = &registration_statuses_[model_type];
-  if (!status->enabled) {
+  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  if (it == registration_statuses_.end()) {
+    DLOG(WARNING) << "Attempt to mark non-existent registration for "
+                  << ObjectIdToString(id) << " as lost";
     return;
   }
-  status->state = invalidation::InvalidationListener::UNREGISTERED;
-  bool is_retry = !status->last_registration_request.is_null();
-  TryRegisterType(model_type, is_retry);
+  if (!it->second->enabled) {
+    return;
+  }
+  it->second->state = invalidation::InvalidationListener::UNREGISTERED;
+  bool is_retry = !it->second->last_registration_request.is_null();
+  TryRegisterId(id, is_retry);
 }
 
 void RegistrationManager::MarkAllRegistrationsLost() {
   DCHECK(CalledOnValidThread());
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    if (IsTypeRegistered(model_type)) {
-      MarkRegistrationLost(model_type);
+  for (RegistrationStatusMap::const_iterator it =
+           registration_statuses_.begin();
+       it != registration_statuses_.end(); ++it) {
+    if (IsIdRegistered(it->first)) {
+      MarkRegistrationLost(it->first);
     }
   }
 }
 
-void RegistrationManager::DisableType(syncable::ModelType model_type) {
+void RegistrationManager::DisableId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
-  RegistrationStatus* status = &registration_statuses_[model_type];
-  LOG(INFO) << "Disabling " << syncable::ModelTypeToString(model_type);
-  status->Disable();
-}
-
-syncable::ModelTypeSet RegistrationManager::GetRegisteredTypes() const {
-  DCHECK(CalledOnValidThread());
-  syncable::ModelTypeSet registered_types;
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    if (IsTypeRegistered(model_type)) {
-      registered_types.Put(model_type);
-    }
+  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  if (it == registration_statuses_.end()) {
+    DLOG(WARNING) << "Attempt to disable non-existent registration for "
+                  << ObjectIdToString(id);
+    return;
   }
-  return registered_types;
-}
-
-RegistrationManager::PendingRegistrationMap
-    RegistrationManager::GetPendingRegistrations() const {
-  DCHECK(CalledOnValidThread());
-  PendingRegistrationMap pending_registrations;
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    const RegistrationStatus& status = registration_statuses_[model_type];
-    if (status.registration_timer.IsRunning()) {
-      pending_registrations[model_type].last_registration_request =
-          status.last_registration_request;
-      pending_registrations[model_type].registration_attempt =
-          status.last_registration_attempt;
-      pending_registrations[model_type].delay = status.delay;
-      pending_registrations[model_type].actual_delay =
-          status.registration_timer.GetCurrentDelay();
-    }
-  }
-  return pending_registrations;
-}
-
-void RegistrationManager::FirePendingRegistrationsForTest() {
-  DCHECK(CalledOnValidThread());
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    RegistrationStatus* status = &registration_statuses_[model_type];
-    if (status->registration_timer.IsRunning()) {
-      status->DoRegister();
-    }
-  }
+  it->second->Disable();
 }
 
 // static
@@ -184,6 +151,43 @@ double RegistrationManager::CalculateBackoff(
                   std::min(max_retry_interval, new_retry_interval));
 }
 
+ObjectIdSet RegistrationManager::GetRegisteredIdsForTest() const {
+  return GetRegisteredIds();
+}
+
+RegistrationManager::PendingRegistrationMap
+    RegistrationManager::GetPendingRegistrationsForTest() const {
+  DCHECK(CalledOnValidThread());
+  PendingRegistrationMap pending_registrations;
+  for (RegistrationStatusMap::const_iterator it =
+           registration_statuses_.begin();
+       it != registration_statuses_.end(); ++it) {
+    const invalidation::ObjectId& id = it->first;
+    RegistrationStatus* status = it->second;
+    if (status->registration_timer.IsRunning()) {
+      pending_registrations[id].last_registration_request =
+          status->last_registration_request;
+      pending_registrations[id].registration_attempt =
+          status->last_registration_attempt;
+      pending_registrations[id].delay = status->delay;
+      pending_registrations[id].actual_delay =
+          status->registration_timer.GetCurrentDelay();
+    }
+  }
+  return pending_registrations;
+}
+
+void RegistrationManager::FirePendingRegistrationsForTest() {
+  DCHECK(CalledOnValidThread());
+  for (RegistrationStatusMap::const_iterator it =
+           registration_statuses_.begin();
+       it != registration_statuses_.end(); ++it) {
+    if (it->second->registration_timer.IsRunning()) {
+      it->second->DoRegister();
+    }
+  }
+}
+
 double RegistrationManager::GetJitter() {
   // |jitter| lies in [-1.0, 1.0), which is low-biased, but only
   // barely.
@@ -192,10 +196,16 @@ double RegistrationManager::GetJitter() {
   return 2.0 * base::RandDouble() - 1.0;
 }
 
-void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
-                                          bool is_retry) {
+void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
+                                        bool is_retry) {
   DCHECK(CalledOnValidThread());
-  RegistrationStatus* status = &registration_statuses_[model_type];
+  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  if (it == registration_statuses_.end()) {
+    DLOG(FATAL) << "TryRegisterId called on " << ObjectIdToString(id)
+                << " which is not in the registration map";
+    return;
+  }
+  RegistrationStatus* status = it->second;
   if (!status->enabled) {
     // Disabled, so do nothing.
     return;
@@ -213,7 +223,7 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
         (status->delay <= base::TimeDelta()) ?
         base::TimeDelta() : status->delay;
     DVLOG(2) << "Registering "
-             << syncable::ModelTypeToString(model_type) << " in "
+             << ObjectIdToString(id) << " in "
              << delay.InMilliseconds() << " ms";
     status->registration_timer.Stop();
     status->registration_timer.Start(FROM_HERE,
@@ -229,47 +239,64 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
     status->next_delay =
         base::TimeDelta::FromSeconds(static_cast<int64>(next_delay_seconds));
     DVLOG(2) << "New next delay for "
-             << syncable::ModelTypeToString(model_type) << " is "
+             << ObjectIdToString(id) << " is "
              << status->next_delay.InSeconds() << " seconds";
   } else {
     DVLOG(2) << "Not a retry -- registering "
-             << syncable::ModelTypeToString(model_type) << " immediately";
+             << ObjectIdToString(id) << " immediately";
     status->delay = base::TimeDelta();
     status->next_delay = base::TimeDelta();
     status->DoRegister();
   }
 }
 
-void RegistrationManager::DoRegisterType(syncable::ModelType model_type) {
+void RegistrationManager::DoRegisterId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
-  invalidation::ObjectId object_id;
-  if (!RealModelTypeToObjectId(model_type, &object_id)) {
-    LOG(DFATAL) << "Invalid model type: " << model_type;
+  invalidation_client_->Register(id);
+  RegistrationStatusMap::const_iterator it = registration_statuses_.find(id);
+  if (it == registration_statuses_.end()) {
+    DLOG(FATAL) << "DoRegisterId called on " << ObjectIdToString(id)
+                << " which is not in the registration map";
     return;
   }
-  invalidation_client_->Register(object_id);
-  RegistrationStatus* status = &registration_statuses_[model_type];
-  status->state = invalidation::InvalidationListener::REGISTERED;
-  status->last_registration_request = base::Time::Now();
+  it->second->state = invalidation::InvalidationListener::REGISTERED;
+  it->second->last_registration_request = base::Time::Now();
 }
 
-void RegistrationManager::UnregisterType(syncable::ModelType model_type) {
+void RegistrationManager::UnregisterId(const invalidation::ObjectId& id) {
   DCHECK(CalledOnValidThread());
-  invalidation::ObjectId object_id;
-  if (!RealModelTypeToObjectId(model_type, &object_id)) {
-    LOG(DFATAL) << "Invalid model type: " << model_type;
+  invalidation_client_->Unregister(id);
+  RegistrationStatusMap::iterator it = registration_statuses_.find(id);
+  if (it == registration_statuses_.end()) {
+    DLOG(FATAL) << "UnregisterId called on " << ObjectIdToString(id)
+                << " which is not in the registration map";
     return;
   }
-  invalidation_client_->Unregister(object_id);
-  RegistrationStatus* status = &registration_statuses_[model_type];
-  status->state = invalidation::InvalidationListener::UNREGISTERED;
+  delete it->second;
+  registration_statuses_.erase(it);
 }
 
-bool RegistrationManager::IsTypeRegistered(
-    syncable::ModelType model_type) const {
+
+ObjectIdSet RegistrationManager::GetRegisteredIds() const {
   DCHECK(CalledOnValidThread());
-  return registration_statuses_[model_type].state ==
-      invalidation::InvalidationListener::REGISTERED;
+  ObjectIdSet ids;
+  for (RegistrationStatusMap::const_iterator it =
+           registration_statuses_.begin();
+       it != registration_statuses_.end(); ++it) {
+    if (IsIdRegistered(it->first)) {
+      ids.insert(it->first);
+    }
+  }
+  return ids;
+}
+
+bool RegistrationManager::IsIdRegistered(
+    const invalidation::ObjectId& id) const {
+  DCHECK(CalledOnValidThread());
+  RegistrationStatusMap::const_iterator it =
+      registration_statuses_.find(id);
+  return it != registration_statuses_.end() &&
+      it->second->state == invalidation::InvalidationListener::REGISTERED;
 }
 
 }  // namespace csync

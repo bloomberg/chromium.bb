@@ -12,20 +12,13 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace csync {
 namespace {
-
-syncable::ModelType ObjectIdToModelType(
-    const invalidation::ObjectId& object_id) {
-  syncable::ModelType model_type = syncable::UNSPECIFIED;
-  EXPECT_TRUE(ObjectIdToRealModelType(object_id, &model_type));
-  return model_type;
-}
 
 // Fake registration manager that lets you override jitter.
 class FakeRegistrationManager : public RegistrationManager {
@@ -53,20 +46,20 @@ class FakeRegistrationManager : public RegistrationManager {
 };
 
 // Fake invalidation client that just stores the currently-registered
-// model types.
+// object IDs.
 class FakeInvalidationClient : public invalidation::InvalidationClient {
  public:
   FakeInvalidationClient() {}
 
   virtual ~FakeInvalidationClient() {}
 
-  void LoseRegistration(syncable::ModelType model_type) {
-    EXPECT_TRUE(registered_types_.Has(model_type));
-    registered_types_.Remove(model_type);
+  void LoseRegistration(const invalidation::ObjectId& oid) {
+    EXPECT_TRUE(ContainsKey(registered_ids_, oid));
+    registered_ids_.erase(oid);
   }
 
   void LoseAllRegistrations() {
-    registered_types_.Clear();
+    registered_ids_.clear();
   }
 
   // invalidation::InvalidationClient implementation.
@@ -76,9 +69,8 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   virtual void Acknowledge(const invalidation::AckHandle& handle) {}
 
   virtual void Register(const invalidation::ObjectId& oid) {
-    syncable::ModelType model_type = ObjectIdToModelType(oid);
-    EXPECT_FALSE(registered_types_.Has(model_type));
-    registered_types_.Put(model_type);
+    EXPECT_FALSE(ContainsKey(registered_ids_, oid));
+    registered_ids_.insert(oid);
   }
 
   virtual void Register(const std::vector<invalidation::ObjectId>& oids) {
@@ -86,53 +78,53 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   }
 
   virtual void Unregister(const invalidation::ObjectId& oid) {
-    syncable::ModelType model_type = ObjectIdToModelType(oid);
-    EXPECT_TRUE(registered_types_.Has(model_type));
-    registered_types_.Remove(model_type);
+    EXPECT_TRUE(ContainsKey(registered_ids_, oid));
+    registered_ids_.erase(oid);
   }
 
   virtual void Unregister(const std::vector<invalidation::ObjectId>& oids) {
     // Unused for now.
   }
 
-  const syncable::ModelTypeSet GetRegisteredTypes() const {
-    return registered_types_;
+  const ObjectIdSet& GetRegisteredIdsForTest() const {
+    return registered_ids_;
   }
 
  private:
-  syncable::ModelTypeSet registered_types_;
+  ObjectIdSet registered_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationClient);
 };
 
-const syncable::ModelType kModelTypes[] = {
-  syncable::BOOKMARKS,
-  syncable::PREFERENCES,
-  syncable::THEMES,
-  syncable::AUTOFILL,
-  syncable::EXTENSIONS,
-};
-const size_t kModelTypeCount = arraysize(kModelTypes);
+size_t kObjectIdsCount = 5;
 
-syncable::ModelTypeSet FromPtr(
-    const syncable::ModelType* types, size_t count) {
-  syncable::ModelTypeSet type_set;
-  for (size_t i = 0; i < count; ++i) {
-    type_set.Put(types[i]);
-  }
-  return type_set;
+invalidation::ObjectId GetIdForIndex(size_t index) {
+  char name[2] = "a";
+  name[0] += static_cast<char>(index);
+  return invalidation::ObjectId(1 + index, name);
+}
+
+ObjectIdSet GetSequenceOfIdsStartingAt(size_t start, size_t count) {
+  ObjectIdSet ids;
+  for (size_t i = start; i < start + count; ++i)
+    ids.insert(GetIdForIndex(i));
+  return ids;
+}
+
+ObjectIdSet GetSequenceOfIds(size_t count) {
+  return GetSequenceOfIdsStartingAt(0, count);
 }
 
 void ExpectPendingRegistrations(
-    syncable::ModelTypeSet expected_pending_types,
+    const ObjectIdSet& expected_pending_ids,
     double expected_delay_seconds,
     const RegistrationManager::PendingRegistrationMap& pending_registrations) {
-  syncable::ModelTypeSet pending_types;
+  ObjectIdSet pending_ids;
   for (RegistrationManager::PendingRegistrationMap::const_iterator it =
            pending_registrations.begin(); it != pending_registrations.end();
        ++it) {
-    SCOPED_TRACE(syncable::ModelTypeToString(it->first));
-    pending_types.Put(it->first);
+    SCOPED_TRACE(ObjectIdToString(it->first));
+    pending_ids.insert(it->first);
     base::TimeDelta offset =
         it->second.last_registration_request -
         it->second.registration_attempt;
@@ -141,16 +133,16 @@ void ExpectPendingRegistrations(
             static_cast<int64>(expected_delay_seconds)) + offset;
     // TODO(akalin): Add base::PrintTo() for base::Time and
     // base::TimeDeltas.
-    EXPECT_EQ(it->second.delay, expected_delay)
-        << it->second.delay.InMicroseconds()
-        << ", " << expected_delay.InMicroseconds();
+    EXPECT_EQ(expected_delay, it->second.delay)
+        << expected_delay.InMicroseconds()
+        << ", " << it->second.delay.InMicroseconds();
     if (it->second.delay <= base::TimeDelta()) {
-      EXPECT_EQ(it->second.actual_delay, base::TimeDelta());
+      EXPECT_EQ(base::TimeDelta(), it->second.actual_delay);
     } else {
-      EXPECT_EQ(it->second.delay, it->second.actual_delay);
+      EXPECT_EQ(it->second.actual_delay, it->second.delay);
     }
   }
-  EXPECT_TRUE(pending_types.Equals(expected_pending_types));
+  EXPECT_EQ(expected_pending_ids, pending_ids);
 }
 
 class RegistrationManagerTest : public testing::Test {
@@ -160,38 +152,38 @@ class RegistrationManagerTest : public testing::Test {
 
   virtual ~RegistrationManagerTest() {}
 
-  void LoseRegistrations(syncable::ModelTypeSet types) {
-    for (syncable::ModelTypeSet::Iterator it = types.First();
-         it.Good(); it.Inc()) {
-      fake_invalidation_client_.LoseRegistration(it.Get());
-      fake_registration_manager_.MarkRegistrationLost(it.Get());
+  void LoseRegistrations(const ObjectIdSet& oids) {
+    for (ObjectIdSet::const_iterator it = oids.begin(); it != oids.end();
+         ++it) {
+      fake_invalidation_client_.LoseRegistration(*it);
+      fake_registration_manager_.MarkRegistrationLost(*it);
     }
   }
 
-  void DisableTypes(syncable::ModelTypeSet types) {
-    for (syncable::ModelTypeSet::Iterator it = types.First();
-         it.Good(); it.Inc()) {
-      fake_invalidation_client_.LoseRegistration(it.Get());
-      fake_registration_manager_.DisableType(it.Get());
+  void DisableIds(const ObjectIdSet& oids) {
+    for (ObjectIdSet::const_iterator it = oids.begin(); it != oids.end();
+         ++it) {
+      fake_invalidation_client_.LoseRegistration(*it);
+      fake_registration_manager_.DisableId(*it);
     }
   }
 
   // Used by MarkRegistrationLostBackoff* tests.
   void RunBackoffTest(double jitter) {
     fake_registration_manager_.SetJitter(jitter);
-    syncable::ModelTypeSet types = FromPtr(kModelTypes, kModelTypeCount);
-    fake_registration_manager_.SetRegisteredTypes(types);
+    ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
+    fake_registration_manager_.SetRegisteredIds(ids);
 
-    // Lose some types.
-    syncable::ModelTypeSet lost_types = FromPtr(kModelTypes, 2);
-    LoseRegistrations(lost_types);
+    // Lose some ids.
+    ObjectIdSet lost_ids = GetSequenceOfIds(2);
+    LoseRegistrations(lost_ids);
     ExpectPendingRegistrations(
-        lost_types, 0.0,
-        fake_registration_manager_.GetPendingRegistrations());
+        lost_ids, 0.0,
+        fake_registration_manager_.GetPendingRegistrationsForTest());
 
     // Trigger another failure to start delaying.
     fake_registration_manager_.FirePendingRegistrationsForTest();
-    LoseRegistrations(lost_types);
+    LoseRegistrations(lost_ids);
 
     double scaled_jitter =
         jitter * RegistrationManager::kRegistrationDelayMaxJitter;
@@ -201,31 +193,31 @@ class RegistrationManagerTest : public testing::Test {
         (1.0 + scaled_jitter);
     expected_delay = std::floor(expected_delay);
     ExpectPendingRegistrations(
-        lost_types, expected_delay,
-        fake_registration_manager_.GetPendingRegistrations());
+        lost_ids, expected_delay,
+        fake_registration_manager_.GetPendingRegistrationsForTest());
 
     // Trigger another failure.
     fake_registration_manager_.FirePendingRegistrationsForTest();
-    LoseRegistrations(lost_types);
+    LoseRegistrations(lost_ids);
     expected_delay *=
         RegistrationManager::kRegistrationDelayExponent + scaled_jitter;
     expected_delay = std::floor(expected_delay);
     ExpectPendingRegistrations(
-        lost_types, expected_delay,
-        fake_registration_manager_.GetPendingRegistrations());
+        lost_ids, expected_delay,
+        fake_registration_manager_.GetPendingRegistrationsForTest());
 
     // Trigger enough failures to hit the ceiling.
     while (expected_delay < RegistrationManager::kMaxRegistrationDelaySeconds) {
       fake_registration_manager_.FirePendingRegistrationsForTest();
-      LoseRegistrations(lost_types);
+      LoseRegistrations(lost_ids);
       expected_delay *=
           RegistrationManager::kRegistrationDelayExponent + scaled_jitter;
       expected_delay = std::floor(expected_delay);
     }
     ExpectPendingRegistrations(
-        lost_types,
+        lost_ids,
         RegistrationManager::kMaxRegistrationDelaySeconds,
-        fake_registration_manager_.GetPendingRegistrations());
+        fake_registration_manager_.GetPendingRegistrationsForTest());
   }
 
   FakeInvalidationClient fake_invalidation_client_;
@@ -238,21 +230,23 @@ class RegistrationManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RegistrationManagerTest);
 };
 
-TEST_F(RegistrationManagerTest, SetRegisteredTypes) {
-  syncable::ModelTypeSet types = FromPtr(kModelTypes, kModelTypeCount);
+// Basic test of SetRegisteredIds to make sure we properly register new IDs and
+// unregister any IDs no longer in the set.
+TEST_F(RegistrationManagerTest, SetRegisteredIds) {
+  ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount - 1);
 
-  EXPECT_TRUE(fake_registration_manager_.GetRegisteredTypes().Empty());
-  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredTypes().Empty());
+  EXPECT_TRUE(fake_registration_manager_.GetRegisteredIdsForTest().empty());
+  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredIdsForTest().empty());
 
-  fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_TRUE(fake_registration_manager_.GetRegisteredTypes().Equals(types));
-  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredTypes().Equals(types));
+  fake_registration_manager_.SetRegisteredIds(ids);
+  EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
+  EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 
-  types.Put(syncable::APPS);
-  types.Remove(syncable::BOOKMARKS);
-  fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_TRUE(fake_registration_manager_.GetRegisteredTypes().Equals(types));
-  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredTypes().Equals(types));
+  ids.insert(GetIdForIndex(kObjectIdsCount - 1));
+  ids.erase(GetIdForIndex(kObjectIdsCount - 2));
+  fake_registration_manager_.SetRegisteredIds(ids);
+  EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
+  EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 }
 
 int GetRoundedBackoff(double retry_interval, double jitter) {
@@ -293,32 +287,28 @@ TEST_F(RegistrationManagerTest, CalculateBackoff) {
   EXPECT_EQ(20, GetRoundedBackoff(13.0, +1.0));
 }
 
+// Losing a registration should queue automatic re-registration.
 TEST_F(RegistrationManagerTest, MarkRegistrationLost) {
-  syncable::ModelTypeSet types = FromPtr(kModelTypes, kModelTypeCount);
+  ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_TRUE(fake_registration_manager_.GetPendingRegistrations().empty());
+  fake_registration_manager_.SetRegisteredIds(ids);
+  EXPECT_TRUE(
+      fake_registration_manager_.GetPendingRegistrationsForTest().empty());
 
-  // Lose some types.
-  syncable::ModelTypeSet lost_types = FromPtr(
-      kModelTypes, 3);
-  syncable::ModelTypeSet non_lost_types = FromPtr(
-      kModelTypes + 3, kModelTypeCount - 3);
-  LoseRegistrations(lost_types);
+  // Lose some ids.
+  ObjectIdSet lost_ids = GetSequenceOfIds(3);
+  ObjectIdSet non_lost_ids = GetSequenceOfIdsStartingAt(3, kObjectIdsCount - 3);
+  LoseRegistrations(lost_ids);
   ExpectPendingRegistrations(
-      lost_types, 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
-  EXPECT_TRUE(
-      fake_registration_manager_.GetRegisteredTypes().Equals(non_lost_types));
-  EXPECT_TRUE(
-      fake_invalidation_client_.GetRegisteredTypes().Equals(non_lost_types));
+      lost_ids, 0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
+  EXPECT_EQ(non_lost_ids, fake_registration_manager_.GetRegisteredIdsForTest());
+  EXPECT_EQ(non_lost_ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 
   // Pretend we waited long enough to re-register.
   fake_registration_manager_.FirePendingRegistrationsForTest();
-  EXPECT_TRUE(
-      fake_registration_manager_.GetRegisteredTypes().Equals(types));
-  EXPECT_TRUE(
-      fake_invalidation_client_.GetRegisteredTypes().Equals(types));
+  EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
+  EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 }
 
 TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffLow) {
@@ -333,51 +323,51 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffHigh) {
   RunBackoffTest(+1.0);
 }
 
+// Exponential backoff on lost registrations should be reset to zero if
+// SetRegisteredIds is called.
 TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffReset) {
-  syncable::ModelTypeSet types = FromPtr(kModelTypes, kModelTypeCount);
+  ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredTypes(types);
+  fake_registration_manager_.SetRegisteredIds(ids);
 
-  // Lose some types.
-  syncable::ModelTypeSet lost_types = FromPtr(kModelTypes, 2);
-  LoseRegistrations(lost_types);
+  // Lose some ids.
+  ObjectIdSet lost_ids = GetSequenceOfIds(2);
+  LoseRegistrations(lost_ids);
   ExpectPendingRegistrations(
-      lost_types, 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
+      lost_ids, 0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 
   // Trigger another failure to start delaying.
   fake_registration_manager_.FirePendingRegistrationsForTest();
-  LoseRegistrations(lost_types);
+  LoseRegistrations(lost_ids);
   double expected_delay =
       RegistrationManager::kInitialRegistrationDelaySeconds;
   ExpectPendingRegistrations(
-      lost_types, expected_delay,
-      fake_registration_manager_.GetPendingRegistrations());
+      lost_ids, expected_delay,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 
-  // Set types again.
-  fake_registration_manager_.SetRegisteredTypes(types);
+  // Set ids again.
+  fake_registration_manager_.SetRegisteredIds(ids);
   ExpectPendingRegistrations(
-      syncable::ModelTypeSet(), 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
+      ObjectIdSet(),
+      0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 }
 
 TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
-  syncable::ModelTypeSet types = FromPtr(kModelTypes, kModelTypeCount);
+  ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredTypes(types);
+  fake_registration_manager_.SetRegisteredIds(ids);
 
   fake_invalidation_client_.LoseAllRegistrations();
   fake_registration_manager_.MarkAllRegistrationsLost();
 
-  syncable::ModelTypeSet expected_types;
-  EXPECT_TRUE(
-      fake_registration_manager_.GetRegisteredTypes().Equals(expected_types));
-  EXPECT_TRUE(
-      fake_invalidation_client_.GetRegisteredTypes().Equals(expected_types));
+  EXPECT_TRUE(fake_registration_manager_.GetRegisteredIdsForTest().empty());
+  EXPECT_TRUE(fake_invalidation_client_.GetRegisteredIdsForTest().empty());
 
   ExpectPendingRegistrations(
-      types, 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
+      ids, 0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 
   // Trigger another failure to start delaying.
   fake_registration_manager_.FirePendingRegistrationsForTest();
@@ -386,51 +376,49 @@ TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
   double expected_delay =
       RegistrationManager::kInitialRegistrationDelaySeconds;
   ExpectPendingRegistrations(
-      types, expected_delay,
-      fake_registration_manager_.GetPendingRegistrations());
+      ids, expected_delay,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 
   // Pretend we waited long enough to re-register.
   fake_registration_manager_.FirePendingRegistrationsForTest();
-  EXPECT_TRUE(
-      fake_registration_manager_.GetRegisteredTypes().Equals(types));
-  EXPECT_TRUE(
-      fake_invalidation_client_.GetRegisteredTypes().Equals(types));
+  EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
+  EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 }
 
-TEST_F(RegistrationManagerTest, DisableType) {
-  syncable::ModelTypeSet types = FromPtr(kModelTypes, kModelTypeCount);
+// IDs that are disabled should not be re-registered by SetRegisteredIds or
+// automatic re-registration if that registration is lost.
+TEST_F(RegistrationManagerTest, DisableId) {
+  ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_TRUE(fake_registration_manager_.GetPendingRegistrations().empty());
+  fake_registration_manager_.SetRegisteredIds(ids);
+  EXPECT_TRUE(
+      fake_registration_manager_.GetPendingRegistrationsForTest().empty());
 
-  // Disable some types.
-  syncable::ModelTypeSet disabled_types = FromPtr(
-      kModelTypes, 3);
-  syncable::ModelTypeSet enabled_types = FromPtr(
-      kModelTypes + 3, kModelTypeCount - 3);
-  DisableTypes(disabled_types);
+  // Disable some ids.
+  ObjectIdSet disabled_ids = GetSequenceOfIds(3);
+  ObjectIdSet enabled_ids = GetSequenceOfIdsStartingAt(3, kObjectIdsCount - 3);
+  DisableIds(disabled_ids);
   ExpectPendingRegistrations(
-      syncable::ModelTypeSet(), 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
-  EXPECT_TRUE(
-      fake_registration_manager_.GetRegisteredTypes().Equals(enabled_types));
-  EXPECT_TRUE(
-      fake_invalidation_client_.GetRegisteredTypes().Equals(enabled_types));
+      ObjectIdSet(),
+      0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
+  EXPECT_EQ(enabled_ids, fake_registration_manager_.GetRegisteredIdsForTest());
+  EXPECT_EQ(enabled_ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 
-  fake_registration_manager_.SetRegisteredTypes(types);
-  EXPECT_TRUE(
-      fake_registration_manager_.GetRegisteredTypes().Equals(enabled_types));
+  fake_registration_manager_.SetRegisteredIds(ids);
+  EXPECT_EQ(enabled_ids, fake_registration_manager_.GetRegisteredIdsForTest());
 
   fake_registration_manager_.MarkRegistrationLost(
-      disabled_types.First().Get());
+      *disabled_ids.begin());
   ExpectPendingRegistrations(
-      syncable::ModelTypeSet(), 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
+      ObjectIdSet(),
+      0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 
   fake_registration_manager_.MarkAllRegistrationsLost();
   ExpectPendingRegistrations(
-      enabled_types, 0.0,
-      fake_registration_manager_.GetPendingRegistrations());
+      enabled_ids, 0.0,
+      fake_registration_manager_.GetPendingRegistrationsForTest());
 }
 
 }  // namespace

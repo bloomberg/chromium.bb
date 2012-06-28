@@ -23,6 +23,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/state_writer.h"
 
@@ -146,6 +147,9 @@ class ChromeInvalidationClient
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
+  ObjectIdSet registered_ids_;
+  // TODO(dcheng): This is a mirror of the data in registered_ids_. It
+  // temporarily remains for convenience.
   syncable::ModelTypeSet registered_types_;
 
   // The states of the ticl and the push client (with

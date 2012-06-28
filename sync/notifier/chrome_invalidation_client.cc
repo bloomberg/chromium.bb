@@ -104,9 +104,21 @@ void ChromeInvalidationClient::UpdateCredentials(
 
 void ChromeInvalidationClient::RegisterTypes(syncable::ModelTypeSet types) {
   DCHECK(CalledOnValidThread());
+  // TODO(dcheng): Even though these fields are redundant, we keep both around
+  // for convenience while the conversion is still in process.
   registered_types_ = types;
+  registered_ids_.clear();
+  for (syncable::ModelTypeSet::Iterator it = types.First();
+       it.Good(); it.Inc()) {
+    invalidation::ObjectId id;
+    if (!RealModelTypeToObjectId(it.Get(), &id)) {
+      LOG(WARNING) << "Invalid model type: " << it.Get();
+      continue;
+    }
+    registered_ids_.insert(id);
+  }
   if (GetState() == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
-    registration_manager_->SetRegisteredTypes(registered_types_);
+    registration_manager_->SetRegisteredIds(registered_ids_);
   }
   // TODO(akalin): Clear invalidation versions for unregistered types.
 }
@@ -115,7 +127,7 @@ void ChromeInvalidationClient::Ready(
     invalidation::InvalidationClient* client) {
   ticl_state_ = NO_NOTIFICATION_ERROR;
   EmitStateChange();
-  registration_manager_->SetRegisteredTypes(registered_types_);
+  registration_manager_->SetRegisteredIds(registered_ids_);
 }
 
 void ChromeInvalidationClient::Invalidate(
@@ -222,15 +234,9 @@ void ChromeInvalidationClient::InformRegistrationStatus(
   DVLOG(1) << "InformRegistrationStatus: "
            << ObjectIdToString(object_id) << " " << new_state;
 
-  syncable::ModelType model_type;
-  if (!ObjectIdToRealModelType(object_id, &model_type)) {
-    LOG(WARNING) << "Could not get object id model type; ignoring";
-    return;
-  }
-
   if (new_state != InvalidationListener::REGISTERED) {
     // Let |registration_manager_| handle the registration backoff policy.
-    registration_manager_->MarkRegistrationLost(model_type);
+    registration_manager_->MarkRegistrationLost(object_id);
   }
 }
 
@@ -245,22 +251,16 @@ void ChromeInvalidationClient::InformRegistrationFailure(
            << "is_transient=" << is_transient
            << ", message=" << error_message;
 
-  syncable::ModelType model_type;
-  if (!ObjectIdToRealModelType(object_id, &model_type)) {
-    LOG(WARNING) << "Could not get object id model type; ignoring";
-    return;
-  }
-
   if (is_transient) {
     // We don't care about |unknown_hint|; we let
     // |registration_manager_| handle the registration backoff policy.
-    registration_manager_->MarkRegistrationLost(model_type);
+    registration_manager_->MarkRegistrationLost(object_id);
   } else {
     // Non-transient failures are permanent, so block any future
     // registration requests for |model_type|.  (This happens if the
     // server doesn't recognize the data type, which could happen for
     // brand-new data types.)
-    registration_manager_->DisableType(model_type);
+    registration_manager_->DisableId(object_id);
   }
 }
 
