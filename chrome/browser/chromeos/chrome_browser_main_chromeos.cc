@@ -292,13 +292,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
 
-int ChromeBrowserMainPartsChromeos::PreCreateThreads() {
-  // Set up field trial for low memory headroom settings.
-  SetupLowMemoryHeadroomFieldTrial();
-
-  return ChromeBrowserMainPartsLinux::PreCreateThreads();
-}
-
 // Threads are initialized MainMessageLoopStart and MainMessageLoopRun.
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
@@ -518,6 +511,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
 
+void ChromeBrowserMainPartsChromeos::SetupPlatformFieldTrials() {
+  SetupLowMemoryHeadroomFieldTrial();
+}
+
 void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   // Only enable this experiment on Canary and Dev, since it's possible
@@ -533,7 +530,7 @@ void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
     const base::FieldTrial::Probability kEnableProbability = 1;
     scoped_refptr<base::FieldTrial> trial =
         base::FieldTrialList::FactoryGetFieldTrial(
-            "LowMemoryMargin", kDivisor, "default", 2012, 6, 30, NULL);
+            "LowMemoryMargin", kDivisor, "default", 2012, 7, 30, NULL);
     int disable = trial->AppendGroup("off", kEnableProbability);
     int margin_0mb = trial->AppendGroup("0mb", kEnableProbability);
     int margin_25mb = trial->AppendGroup("25mb", kEnableProbability);

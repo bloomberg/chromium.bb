@@ -35,7 +35,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual int PreCreateThreads() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
 
   // Stages called from PreMainMessageLoopRun.
@@ -46,10 +45,12 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
+  virtual void SetupPlatformFieldTrials() OVERRIDE;
+
+ private:
   // Set up field trial for low memory headroom settings.
   void SetupLowMemoryHeadroomFieldTrial();
 
- private:
   scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;
   scoped_ptr<chromeos::OutputObserver> output_observer_;
   scoped_ptr<chromeos::ResumeObserver> resume_observer_;

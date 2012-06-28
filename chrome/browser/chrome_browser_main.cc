@@ -583,9 +583,10 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       browser_process_->variations_service();
   variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
-  SetupFieldTrials(metrics->recording_active(),
-                   local_state_->IsManagedPreference(
+  SetupFieldTrials(local_state_->IsManagedPreference(
                        prefs::kMaxConnectionsPerProxy));
+
+  SetupPlatformFieldTrials();
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
   // for posting tasks via base::Bind. Its deleted when it goes out of scope.
@@ -1075,8 +1076,7 @@ void ChromeBrowserMainParts::DisableNewTabFieldTrialIfNecesssary() {
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
-void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
-                                              bool proxy_policy_is_set) {
+void ChromeBrowserMainParts::SetupFieldTrials(bool proxy_policy_is_set) {
   // Note: make sure to call ConnectionFieldTrial() before
   // ProxyConnectionsFieldTrial().
   ConnectionFieldTrial();
@@ -1454,6 +1454,10 @@ void ChromeBrowserMainParts::RunPageCycler() {
         command_line->GetSwitchValuePath(switches::kRecordStats));
   }
   page_cycler->Run();
+}
+
+void ChromeBrowserMainParts::SetupPlatformFieldTrials() {
+  // Base class implementation of this does nothing.
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

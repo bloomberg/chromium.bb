@@ -81,6 +81,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Runs the PageCycler; called if the switch kVisitURLs is present.
   virtual void RunPageCycler();
 
+  // Override this in subclasses to initialize platform specific field trials.
+  virtual void SetupPlatformFieldTrials();
+
   // Displays a warning message that we can't find any locale data files.
   virtual void ShowMissingLocaleMessageBox() = 0;
 
@@ -144,8 +147,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   void SetupMetricsAndFieldTrials();
 
   // Add an invocation of your field trial init function to this method.
-  void SetupFieldTrials(bool metrics_recording_enabled,
-                        bool proxy_policy_is_set);
+  void SetupFieldTrials(bool proxy_policy_is_set);
 
   // Starts recording of metrics. This can only be called after we have a file
   // thread.
