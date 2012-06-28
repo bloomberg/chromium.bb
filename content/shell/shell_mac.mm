@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/cocoa_protocols.h"
 #import "base/memory/scoped_nsobject.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
+#include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
@@ -152,13 +154,20 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
-  NSRect initial_window_bounds = NSMakeRect(0, 0, width, height);
+  NSRect initial_window_bounds =
+      NSMakeRect(0, 0, width, height + kURLBarHeight);
+  NSRect content_rect = initial_window_bounds;
+  NSUInteger style_mask = NSTitledWindowMask |
+                          NSClosableWindowMask |
+                          NSMiniaturizableWindowMask |
+                          NSResizableWindowMask;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    content_rect = NSOffsetRect(initial_window_bounds, -10000, -10000);
+    style_mask = NSBorderlessWindowMask;
+  }
   window_ = [[UnderlayOpenGLHostingWindow alloc]
-      initWithContentRect:initial_window_bounds
-                styleMask:(NSTitledWindowMask |
-                           NSClosableWindowMask |
-                           NSMiniaturizableWindowMask |
-                           NSResizableWindowMask )
+      initWithContentRect:content_rect
+                styleMask:style_mask
                   backing:NSBackingStoreBuffered
                     defer:NO];
   [window_ setTitle:kWindowTitle];

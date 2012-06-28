@@ -19,7 +19,7 @@ IPC_MESSAGE_ROUTED3(ShellViewMsg_CaptureTextDump,
                     bool /* recursive */)
 
 // Tells the render view to capture an image of the page. The render view
-// responds with a ShelLViewHostMsg_ImageDump.
+// responds with a ShellViewHostMsg_ImageDump.
 IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureImageDump,
                     std::string /* expected pixel hash */)
 
