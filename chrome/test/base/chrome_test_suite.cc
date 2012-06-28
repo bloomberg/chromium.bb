@@ -165,14 +165,15 @@ void ChromeTestSuite::Initialize() {
   chrome_browser_application_mac::RegisterBrowserCrApp();
 #endif
 
-  content::ContentTestSuiteBase::Initialize();
-
   chrome::RegisterPathProvider();
-
   if (!browser_dir_.empty()) {
     PathService::Override(base::DIR_EXE, browser_dir_);
     PathService::Override(base::DIR_MODULE, browser_dir_);
   }
+
+  // Initialize after overriding paths as some content paths depend on correct
+  // values for DIR_EXE and DIR_MODULE.
+  content::ContentTestSuiteBase::Initialize();
 
 #if defined(OS_MACOSX)
   // Look in the framework bundle for resources.
