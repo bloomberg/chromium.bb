@@ -11,6 +11,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 
 namespace aura {
@@ -90,7 +91,10 @@ bool CompoundEventFilter::PreHandleKeyEvent(aura::Window* target,
 }
 
 bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                         aura::MouseEvent* event) {
+                                              aura::MouseEvent* event) {
+  WindowTracker window_tracker;
+  window_tracker.Add(target);
+
   // We must always update the cursor, otherwise the cursor can get stuck if an
   // event filter registered with us consumes the event.
   // It should also update the cursor for clicking and wheels for ChromeOS boot.
@@ -103,11 +107,14 @@ bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
     UpdateCursor(target, event);
   }
 
-  if (FilterMouseEvent(target, event))
+  if (FilterMouseEvent(target, event) ||
+      !window_tracker.Contains(target) ||
+      !target->GetRootWindow()) {
     return true;
+  }
 
-  if (event->type() == ui::ET_MOUSE_PRESSED
-      && GetActiveWindow(target) != target) {
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      GetActiveWindow(target) != target) {
     target->GetFocusManager()->SetFocusedWindow(
         FindFocusableWindowFor(target), event);
   }

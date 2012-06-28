@@ -4,8 +4,6 @@
 
 #include "ash/root_window_controller.h"
 
-#include <vector>
-
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -27,46 +25,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 
 namespace ash {
 namespace {
-
-// This class keeps track of whether or not an object has been deleted.
-class WindowLifeTracker : public aura::WindowObserver {
- public:
-  WindowLifeTracker() {}
-  virtual ~WindowLifeTracker() {
-    for (aura::Window::Windows::iterator iter = tracking_windows_.begin();
-         iter != tracking_windows_.end(); ++iter) {
-      (*iter)->RemoveObserver(this);
-    }
-  }
-
-  // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    aura::Window::Windows::iterator iter =
-        std::find(tracking_windows_.begin(), tracking_windows_.end(), window);
-    DCHECK(iter != tracking_windows_.end());
-    tracking_windows_.erase(iter);
-    window->RemoveObserver(this);
-  }
-
-  void TrackWindow(aura::Window* window) {
-    window->AddObserver(this);
-    tracking_windows_.push_back(window);
-  }
-
-  bool IsWindowAlive(aura::Window* window) {
-    aura::Window::Windows::iterator iter =
-        std::find(tracking_windows_.begin(), tracking_windows_.end(), window);
-    return iter != tracking_windows_.end();
-  }
-
- private:
-  std::vector<aura::Window*> tracking_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowLifeTracker);
-};
 
 // Creates a new window for use as a container.
 aura::Window* CreateContainer(int window_id,
@@ -304,18 +266,18 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   // Release capture if any.
   aura::client::GetCaptureClient(root_window_.get())->
       SetCapture(NULL);
-  WindowLifeTracker tracker;
+  aura::WindowTracker tracker;
   if (focused)
-    tracker.TrackWindow(focused);
+    tracker.Add(focused);
   if (active && focused != active)
-    tracker.TrackWindow(active);
+    tracker.Add(active);
 
   MoveAllWindows(root_window_.get(), dst);
 
   // Restore focused or active window if it's still alive.
-  if (focused && tracker.IsWindowAlive(focused) && dst->Contains(focused)) {
+  if (focused && tracker.Contains(focused) && dst->Contains(focused)) {
     dst->GetFocusManager()->SetFocusedWindow(focused, NULL);
-  } else if (active && tracker.IsWindowAlive(active) && dst->Contains(active)) {
+  } else if (active && tracker.Contains(active) && dst->Contains(active)) {
     activation_client->ActivateWindow(active);
   }
 }
