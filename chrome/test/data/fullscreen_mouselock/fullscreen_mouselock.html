@@ -46,10 +46,11 @@ function lockMouse1(callback) {
 }
 
 var lock_result1 = "";
-// In the pyAuto test the fullscreen is initiated, accepted and enters into a wait state
-// reading the value of lock_result1. One of the two asynchronous functions in the JS will
-// be executed. The pyAuto code waits for lock_result to return "success" or "failure".
-// Sample pyAuto code: lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
+// In the PyAuto test the fullscreen is initiated, accepted and enters into a
+// wait state reading the value of lock_result1. One of the two asynchronous
+// functions in the JS will be executed. The PyAuto code waits for lock_result
+// to return "success" or "failure". Sample PyAuto code:
+// lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
 function lockMouse1AndSetLockResult() {
   console.log("lockMouse1AndSetLockResult()");
   lock_result1 = "";
@@ -65,11 +66,20 @@ function lockMouse1AndSetLockResult() {
   );
 }
 
+// When mouse lock is initiated and accepted, PyAuto test will wait for the
+// lock_result to return "success" or "failure" to initiate the next action.
 function lockMouse2() {
   console.log("lockMouse2()");
   navigator.webkitPointer.lock(document.getElementById("lockTarget2"),
-                               function(){console.log("lock success")},
-                               function(){console.log("lock failed")});
+    function() {
+      console.log("lock success");
+      lock_result = "success"
+    },
+    function() {
+      console.log("lock failed")
+      lock_result = "failure"
+    }
+  );
 }
 
 function delayedLockMouse1() {
@@ -130,6 +140,11 @@ var polyFillMouseEventMovementFromVenderPrefix = function (e) {
                  e.msMovementY))));
 }
 
+var clicked_elem_ID = ""
+function clickElement(id) {
+  clicked_elem_ID = id;
+}
+
 function init() {
   moveHTMLCursorToCenter();
 
@@ -167,24 +182,53 @@ function init() {
     }
   });
 }
+
 </script>
 </head>
-<body onload="init()" title="This tooltip should not be shown if the mouse is locked.">
+<body onload="init()"
+  title="This tooltip should not be shown if the mouse is locked.">
   <div id="container">
-    <button id="enterFullscreen" onclick="enterFullscreen();">enterFullscreen() [f]</button><br>
-    <button id="exitFullscreen" onclick="exitFullscreen();">exitFullscreen() [x]</button><br>
-    <button id="lockMouse1" onclick="lockMouse1();">lockMouse1() [1]</button><br>
-    <button id="lockMouse2" onclick="lockMouse2();">lockMouse2() [2]</button><br>
-    <button id="delayedLockMouse1" onclick="delayedLockMouse1();">delayedLockMouse1() [d]</button><br>
-    <button id="spamLockMouse2" onclick="spamLockMouse2();">spamLockMouse2()</button><br>
-    <button id="unlockMouse" onclick="unlockMouse();">unlockMouse() [u]</button><br>
-    <button id="enterFullscreenAndLockMouse1" onclick="enterFullscreenAndLockMouse1()">enterFullscreenAndLockMouse1() [b]</button><br>
-    <button id="lockMouse1AndEnterFullscreen" onclick="lockMouse1AndEnterFullscreen()">lockMouse1AndEnterFullscreen() [B]</button><br>
+    <button id="enterFullscreen" onclick="enterFullscreen();">
+      enterFullscreen() [f]
+    </button><br>
+    <button id="exitFullscreen" onclick="exitFullscreen();">
+      exitFullscreen() [x]
+    </button><br>
+    <button id="lockMouse1" onclick="lockMouse1();">
+      lockMouse1() [1]
+    </button><br>
+    <button id="lockMouse2" onclick="lockMouse2();">
+      lockMouse2() [2]
+    </button><br>
+    <button id="delayedLockMouse1" onclick="delayedLockMouse1();">
+      delayedLockMouse1() [d]
+    </button><br>
+    <button id="spamLockMouse2" onclick="spamLockMouse2();">
+      spamLockMouse2()
+    </button><br>
+    <button id="unlockMouse" onclick="unlockMouse();">
+      unlockMouse() [u]
+    </button><br>
+    <button id="enterFullscreenAndLockMouse1"
+      onclick="enterFullscreenAndLockMouse1()">
+      enterFullscreenAndLockMouse1() [b]
+    </button><br>
+    <button id="lockMouse1AndEnterFullscreen"
+      onclick="lockMouse1AndEnterFullscreen()">
+      lockMouse1AndEnterFullscreen() [B]
+    </button><br>
     <div id="lockTarget1">lockTarget1</div>
     <div id="lockTarget2">lockTarget2</div>
     <form name="HTMLCursor" id="HTMLCursor">HTMLCursor</form>
     <form name="displaytext">...</form>
+    <p>The <a href="#anchor" name="anchor" id="anchor"
+      onclick="clickElement(this.id);">
+      anchor link
+    </a>
+    navigates to an anchor on this page. The browser should not exit tab
+    fullscreen or mouse lock.</p>
   </div>
-  This text is outside of the container that is made fullscreen. This text should not be visible when fullscreen.
+  <p>This text is outside of the container that is made fullscreen. This text
+  should not be visible when fullscreen.</p>
 </body>
 </html>

@@ -93,6 +93,11 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/132665
+      '-fullscreen_mouselock.FullscreenMouselockTest.testTabFSExitWhenNavBackToPrevPage',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testTabFSExitWhenNavToNewPage',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMLExitWhenNavBackToPrevPage',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMLExitWhenNavToNewPage',
       # crbug.com/131874
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
       # crbug.com/133315

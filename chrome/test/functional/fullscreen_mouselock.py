@@ -12,6 +12,8 @@ import time
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.keys import Keys
 from webdriver_pages import settings
 
@@ -143,6 +145,14 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(lambda: not self.IsFullscreenForTab()))
     self.assertTrue(self.WaitUntil(lambda: not self.IsMouseLocked()))
 
+  def _InitiateTabFullscreen(self):
+    """Helper function that initiates tab fullscreen."""
+    self.NavigateToURL(self.GetHttpURLForDataPath(
+        'fullscreen_mouselock', 'fullscreen_mouselock.html'))
+    # Initiate tab fullscreen.
+    self._driver.find_element_by_id('enterFullscreen').click()
+    self.assertTrue(self.WaitUntil(self.IsFullscreenForTab))
+
   def _AcceptFullscreenOrMouseLockRequest(self):
     """Helper function to accept fullscreen or mouse lock request."""
     self.AcceptCurrentFullscreenOrMouseLockRequest()
@@ -172,6 +182,32 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(self.IsMouseLockPermissionRequested))
     self.AcceptCurrentFullscreenOrMouseLockRequest()
     self.assertTrue(self.IsMouseLocked())
+
+  def _EnableAndReturnLockMouseResult(self):
+    """Helper function to enable and return mouse lock result."""
+    self.NavigateToURL(self.GetHttpURLForDataPath(
+        'fullscreen_mouselock', 'fullscreen_mouselock.html'))
+    self._driver.find_element_by_id('lockMouse2').click()
+    self.assertTrue(
+        self.WaitUntil(self.IsMouseLockPermissionRequested))
+    self.AcceptCurrentFullscreenOrMouseLockRequest()
+    # Waits until lock_result gets 'success' or 'failure'.
+    return self._driver.execute_script('return lock_result')
+
+  def _ClickAnchorLink(self):
+    """Clicks the anchor link until it's successfully clicked.
+
+    Clicks on the anchor link and compares the js |clicked_elem_ID| variabled
+    with the anchor id. Returns True if the link is clicked.
+    """
+    element_id = 'anchor'
+    # Catch WebDriverException: u'Element is not clickable at point (185.5,
+    # 669.5). Instead another element would receive the click.
+    try:
+      self._driver.find_element_by_id(element_id).click()
+    except WebDriverException:
+      return False
+    return self._driver.execute_script('return clicked_elem_ID') == element_id
 
   def testPrefsForFullscreenAllowed(self):
     """Verify prefs when fullscreen is allowed."""
@@ -374,6 +410,81 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(
         lambda: not self.IsFullscreenBubbleDisplayingButtons()),
                     msg='Mouse lock bubble did not clear when tab lost focus.')
+
+  def testTabFSExitWhenNavBackToPrevPage(self):
+    """Verify tab fullscreen exit when navigating back to previous page.
+
+    This test navigates to a new page while in tab fullscreen mode by using
+    GoBack() to navigate to the previous google.html page.
+    """
+    self.NavigateToURL(self.GetHttpURLForDataPath('google', 'google.html'))
+    self._InitiateTabFullscreen()
+    self.GetBrowserWindow().GetTab().GoBack()
+    self.assertFalse(
+        self.IsFullscreenForTab(),
+        msg='Tab fullscreen did not exit when navigating to a new page.')
+
+  def testTabFSExitWhenNavToNewPage(self):
+    """Verify tab fullscreen exit when navigating to a new website.
+
+    This test navigates to a new website while in tab fullscreen.
+    """
+    self._InitiateTabFullscreen()
+    self.NavigateToURL(self.GetHttpURLForDataPath('google', 'google.html'))
+    self.assertFalse(
+        self.IsFullscreenForTab(),
+        msg='Tab fullscreen did not exit when navigating to a new website.')
+
+  def testTabFSDoesNotExitForAnchorLinks(self):
+    """Verify tab fullscreen does not exit for anchor links.
+
+    Tab fullscreen should not exit when following a link to the same page such
+    as example.html#anchor.
+    """
+    self._InitiateTabFullscreen()
+    self.assertTrue(self.WaitUntil(self._ClickAnchorLink))
+    self.assertTrue(
+        self.WaitUntil(self.IsFullscreenForTab),
+        msg='Tab fullscreen should not exit when clicking on an anchor link.')
+
+  def testMLExitWhenNavBackToPrevPage(self):
+    """Verify mouse lock exit when navigating back to previous page.
+
+    This test navigates to a new page while mouse lock is activated by using
+    GoBack() to navigate to the previous google.html page.
+    """
+    self.NavigateToURL(self.GetHttpURLForDataPath('google', 'google.html'))
+    lock_result = self._EnableAndReturnLockMouseResult()
+    self.assertEqual(
+        lock_result, 'success', msg='Mouse is not locked.')
+    self.GetBrowserWindow().GetTab().GoBack()
+    self.assertFalse(
+        self.IsMouseLocked(),
+        msg='Mouse lock did not exit when navigating to the prev page.')
+
+  def testMLExitWhenNavToNewPage(self):
+    """Verify mouse lock exit when navigating to a new website."""
+    lock_result = self._EnableAndReturnLockMouseResult()
+    self.assertEqual(
+        lock_result, 'success', msg='Mouse is not locked.')
+    self.NavigateToURL(self.GetHttpURLForDataPath('google', 'google.html'))
+    self.assertFalse(
+        self.IsMouseLocked(),
+        msg='Mouse lock did not exit when navigating to a new website.')
+
+  def testMLDoesNotExitForAnchorLinks(self):
+    """Verify mouse lock does not exit for anchor links.
+
+    Mouse lock should not exist when following a link to the same page such as
+    example.html#anchor.
+    """
+    lock_result = self._EnableAndReturnLockMouseResult()
+    self.assertEqual(
+        lock_result, 'success', msg='Mouse is not locked.')
+    ActionChains(self._driver).move_to_element(
+        self._driver.find_element_by_id('anchor')).click().perform()
+    self.assertTrue(self.WaitUntil(self.IsMouseLocked),
+                    msg='Mouse lock broke when clicking on an anchor link.')
 
   def ExitTabFSToBrowserFS(self):
     """Verify exiting tab fullscreen leaves browser in browser fullscreen.
