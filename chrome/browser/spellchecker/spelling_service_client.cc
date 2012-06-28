@@ -72,7 +72,7 @@ bool SpellingServiceClient::RequestTextCheck(
     uloc_getLanguage(id, language, arraysize(language), &error);
     country = uloc_getISO3Country(id);
   }
-  if (!IsAvailable(profile, SPELLCHECK))
+  if (!IsAvailable(profile, type))
     return false;
 
   // Format the JSON request to be sent to the Spelling service.

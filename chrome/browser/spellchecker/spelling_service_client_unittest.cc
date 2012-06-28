@@ -33,10 +33,12 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
                          net::URLFetcherDelegate* d,
                          int version,
                          const std::string& text,
+                         const std::string& language,
                          int status,
                          const std::string& response)
       : net::TestURLFetcher(0, url, d),
         version_(base::StringPrintf("v%d", version)),
+        language_(language.empty() ? std::string("en") : language),
         text_(text) {
     set_response_code(status);
     SetResponseString(response);
@@ -66,10 +68,11 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     EXPECT_EQ(text_, text);
     std::string language;
     EXPECT_TRUE(value->GetString("params.language", &language));
-    EXPECT_EQ("en", language);
+    EXPECT_EQ(language_, language);
+    ASSERT_TRUE(GetExpectedCountry(language, &country_));
     std::string country;
     EXPECT_TRUE(value->GetString("params.origin_country", &country));
-    EXPECT_EQ("USA", country);
+    EXPECT_EQ(country_, country);
 
     net::TestURLFetcher::SetUploadData(upload_content_type, upload_content);
   }
@@ -82,7 +85,26 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
   }
 
  private:
+  bool GetExpectedCountry(const std::string& language, std::string* country) {
+    static const struct {
+      const char* language;
+      const char* country;
+    } kCountries[] = {
+      {"af", "ZAF"},
+      {"en", "USA"},
+    };
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCountries); ++i) {
+      if (!language.compare(kCountries[i].language)) {
+        country->assign(kCountries[i].country);
+        return true;
+      }
+    }
+    return false;
+  }
+
   std::string version_;
+  std::string language_;
+  std::string country_;
   std::string text_;
 };
 
@@ -100,9 +122,12 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   virtual ~TestingSpellingServiceClient() {
   }
 
-  void SetHTTPRequest(int type, const std::string& text) {
+  void SetHTTPRequest(int type,
+                      const std::string& text,
+                      const std::string& language) {
     request_type_ = type;
     request_text_ = text;
+    request_language_ = language;
   }
 
   void SetHTTPResponse(int status, const char* data) {
@@ -139,12 +164,14 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(0, url, this,
                                           request_type_, request_text_,
+                                          request_language_,
                                           response_status_, response_data_);
     return fetcher_;
   }
 
   int request_type_;
   std::string request_text_;
+  std::string request_language_;
   int response_status_;
   std::string response_data_;
   bool success_;
@@ -192,6 +219,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     const char* response_data;
     bool success;
     const char* corrected_text;
+    const char* language;
   } kTests[] = {
     {
       "",
@@ -200,6 +228,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "",
       false,
       "",
+      "af",
     }, {
       "chromebook",
       SpellingServiceClient::SUGGEST,
@@ -207,6 +236,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "{}",
       true,
       "chromebook",
+      "af",
     }, {
       "chrombook",
       SpellingServiceClient::SUGGEST,
@@ -225,12 +255,14 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "}",
       true,
       "chromebook",
+      "af",
     }, {
       "",
       SpellingServiceClient::SPELLCHECK,
       500,
       "",
       false,
+      "",
       "",
     }, {
       "I have been to USA.",
@@ -239,6 +271,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "{}",
       true,
       "I have been to USA.",
+      "",
     }, {
       "I have bean to USA.",
       SpellingServiceClient::SPELLCHECK,
@@ -257,19 +290,21 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "}",
       true,
       "I have been to USA.",
+      "",
     },
   };
 
   PrefService* pref = profile_.GetPrefs();
   pref->SetBoolean(prefs::kEnableSpellCheck, true);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-  pref->SetString(prefs::kSpellCheckDictionary, "");
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
-    client_.SetHTTPRequest(kTests[i].request_type, kTests[i].request_text);
+    client_.SetHTTPRequest(kTests[i].request_type, kTests[i].request_text,
+                           kTests[i].language);
     client_.SetHTTPResponse(kTests[i].response_status, kTests[i].response_data);
     client_.SetExpectedTextCheckResult(kTests[i].success,
                                        kTests[i].corrected_text);
+    pref->SetString(prefs::kSpellCheckDictionary, kTests[i].language);
     client_.RequestTextCheck(
         &profile_,
         0,
