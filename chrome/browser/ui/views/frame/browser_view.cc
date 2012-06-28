@@ -1835,7 +1835,10 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
   return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR) :
+      ThemeService::GetDefaultColor(
+          chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) ?
+              ThemeService::COLOR_SEARCH_SEPARATOR_LINE :
+                  ThemeService::COLOR_TOOLBAR_SEPARATOR) :
       SK_ColorBLACK;
 }
 

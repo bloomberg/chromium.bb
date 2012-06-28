@@ -32,6 +32,9 @@ extern const SkColor kResultsSeparatorColor;
 // Background color for search results.
 extern const SkColor kSearchBackgroundColor;
 
+// Background color for suggest overlay.
+extern const SkColor kSuggestBackgroundColor;
+
 // Font size use in the omnibox for non-NTP pages.
 extern const int kOmniboxFontSize;
 

@@ -17,6 +17,7 @@ const SkColor kOmniboxBackgroundColor =
     SkColorSetARGB(128, 255, 255, 255);
 const SkColor kResultsSeparatorColor = SkColorSetRGB(226, 226, 226);
 const SkColor kSearchBackgroundColor = SK_ColorWHITE;
+const SkColor kSuggestBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
 
 const int kNTPOmniboxFontSize = 18;
 const int kNTPOmniboxHeight = 40;

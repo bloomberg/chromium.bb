@@ -58,8 +58,10 @@ class SearchContainerView : public views::View {
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawColor(chrome::search::kSearchBackgroundColor);
     gfx::Size omnibox_pref(omnibox_popup_view_parent_->GetPreferredSize());
+    // The color for this rect must be the same as that used as background for
+    // InlineOmniboxPopupView.
     canvas->FillRect(gfx::Rect(0, 0, width(), omnibox_pref.height()),
-                     chrome::search::kNTPBackgroundColor);
+                     chrome::search::kSuggestBackgroundColor);
     canvas->FillRect(
         gfx::Rect(0, omnibox_pref.height(), width(), 1),
         chrome::search::kResultsSeparatorColor);

@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "grit/chromium_strings.h"
@@ -58,9 +59,8 @@ InlineOmniboxPopupView::InlineOmniboxPopupView(
   set_owned_by_client();
   // Our visibility determines whether the popup is open. Start out closed.
   SetVisible(false);
-  // TODO(sky): replace with constant kNTPBackgroundColor.
   set_background(views::Background::CreateSolidBackground(
-                     SkColorSetRGB(0xF5, 0xF5, 0xF5)));
+                     chrome::search::kSuggestBackgroundColor));
 }
 
 InlineOmniboxPopupView::~InlineOmniboxPopupView() {
