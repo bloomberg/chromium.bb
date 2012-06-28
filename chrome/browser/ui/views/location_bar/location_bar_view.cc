@@ -539,6 +539,16 @@ void LocationBarView::Layout() {
   // hits ctrl-d).
   int location_height = GetInternalHeight(false);
 
+  // In NTP mode, hide all location bar decorations.
+  if (search_model_ && search_model_->mode().is_ntp()) {
+    gfx::Rect location_bounds(0, location_y, width(), location_height);
+    location_entry_view_->SetBoundsRect(location_bounds);
+    for (int i = 0; i < child_count(); ++i)
+      if (child_at(i) != location_entry_view_)
+        child_at(i)->SetVisible(false);
+    return;
+  }
+
   // The edge stroke is 1 px thick.  In popup mode, the edges are drawn by the
   // omnibox' parent, so there isn't any edge to account for at all.
   const int kEdgeThickness = (mode_ == NORMAL) ?
@@ -561,6 +571,7 @@ void LocationBarView::Layout() {
   int ev_bubble_width = 0;
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);
+
   const string16 keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
