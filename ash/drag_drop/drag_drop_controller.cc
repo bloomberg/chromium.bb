@@ -257,7 +257,11 @@ void DragDropController::OnWindowDestroyed(aura::Window* window) {
 
 void DragDropController::OnImplicitAnimationsCompleted() {
   DCHECK(drag_image_.get());
-  drag_image_.reset();
+
+  // By the time we finish animation, another drag/drop session may have
+  // started. We do not want to destroy the drag image in that case.
+  if (!drag_drop_in_progress_)
+    drag_image_.reset();
 }
 
 void DragDropController::StartCanceledAnimation() {
