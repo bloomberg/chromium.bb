@@ -160,7 +160,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, InstallExtensionEvent) {
 
 // Test that PerformanceMonitor will correctly record events as an extension is
 // disabled and enabled.
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
+// Test is flaky, see http://crbug.com/135037.
+IN_PROC_BROWSER_TEST_F(DISABLED_PerformanceMonitorBrowserTest,
                        DisableAndEnableExtensionEvent) {
   const int kNumEvents = 3;
 
