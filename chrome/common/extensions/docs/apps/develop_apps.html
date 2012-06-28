@@ -65,7 +65,7 @@
                 <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
               </button>
               <br>
-              <span class="greytext">e.g. "page action" or "tabs"</span>
+              <span class="greytext">e.g. "event page" or "alarms"</span>
             </div>
           </form>
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -90,7 +90,7 @@
             <a href="https://github.com/GoogleChrome/chrome-app-samples" title="Packaged apps samples repository"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-apps" title="Google Chrome Apps developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
             <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
@@ -143,7 +143,7 @@
           <li><h2>Reference</h2>
             <ul>
               <li><a href="manifest.html">Manifest Files</a></li>
-              <li><a href="apps_api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
               <li><a href="api_other.html">Supported Libraries</a></li>
               <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
@@ -163,10 +163,6 @@
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#version">Doc version</a>
-              <ol>
-              </ol>
-            </li><li>
               <a href="#start">Where to start</a>
               <ol>
               </ol>
@@ -180,16 +176,14 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 <p>
 This documentation tells you how to write packaged apps.
-You want to write bleeding edge apps, right?
-You should know that this is a developer preview release.
-What does that mean? Packaged apps are changing.
-Anything you read now might be different tomorrow,
-so check the docs.
-</p>
-<p>
-This is a work-in-progress doc set,
-so let us know if we've missed anything and
-how we can make them better.
+All developers, however, should know that the new APIs
+for packaged apps are being released as a developer preview.
+This means that they are evolving daily,
+and anything you read now might be different in the near future.
+Please keep up to date with the API reference and documentation.
+If you hit any stumbling blocks,
+feedback is welcome at
+<a href="http://groups.google.com/a/chromium.org/group/chromium-apps">#chromium-apps</a>
 </p>
 <p class="caution">
 <b>Note:</b>
@@ -198,34 +192,18 @@ your <a href="http://code.google.com/chrome/extensions/apps.html">legacy package
 will still work the way they always have,
 but they won't have access to the new APIs.
 </p>
-<h2 id="version">Doc version</h2>
-<p>
-This is the first version of the packaged apps docs,
-so there is only one version.
-</p><p>If you're familiar with early versions of the Chrome extension docs,
-then you've seen "trunk" in your doc URLs:
-<a href="http://code.google.com/chrome/extensions/trunk/overview.html">.../extensions/<b>trunk/</b>...</a>
-All packaged apps docs are all delivered to <strong>trunk</strong>:
-<code>.../trunk/apps/about_apps.html</code>.
-</p>
 <h2 id="start">Where to start</h2>
 <p>
-The <a href="about_apps.html">Getting Started chapter</a> seems like the obvious place to start.
+The <a href="about_apps.html">Getting Started</a> guide is a great place to start.
 It's fast reading; shouldn't take more than 10 minutes to read all three docs.
-</p>
-<p>
-The <a href="app_lifecycle.html">Fundamentals chapter</a>and
-<a href="app_frameworks.html">MVC Architecture</a> are a little meatier,
-so feel free to skip around and read what interests you.
-We've got lots of sample code in our repository,
-and as much as possible, the docs link to relevant samples.
-Look for these notes at the top of the docs,
-and go straight to the code:
-</p>
-<p class="note">
-<b>API Samples: </b>
-Want to play with the code?
-Check out these samples (with links to relevant samples).
+After the Getting Started guide,
+decide what's most relevant to you.
+The <a href="app_lifecycle.html">Fundamentals</a> guide covers
+the details of the app and data lifecycle,
+or learn more about good app design
+by reading <a href="app_frameworks.html">MVC Architecture</a>.
+We've also got lots of sample code in our repository
+that is linked to directly from the documentation.
 </p>
 <p>
 If you're familiar with the Chrome extension docs,

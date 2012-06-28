@@ -65,7 +65,7 @@
                 <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
               </button>
               <br>
-              <span class="greytext">e.g. "page action" or "tabs"</span>
+              <span class="greytext">e.g. "event page" or "alarms"</span>
             </div>
           </form>
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -90,7 +90,7 @@
             <a href="https://github.com/GoogleChrome/chrome-app-samples" title="Packaged apps samples repository"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-apps" title="Google Chrome Apps developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
             <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
@@ -143,7 +143,7 @@
           <li><h2>Reference</h2>
             <ul>
               <li><a href="manifest.html">Manifest Files</a></li>
-              <li><a href="apps_api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
               <li><a href="api_other.html">Supported Libraries</a></li>
               <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
@@ -170,7 +170,7 @@
                 </li><li>
                   <a href="#H3-2">Finding a device</a>
                 </li><li>
-                  <a href="#H3-3">USB transfers and receiving data from device</a>
+                  <a href="#H3-3">USB transfers and receiving data from a device</a>
                 </li><li>
                   <a href="#H3-4">Sending data - control transfers</a>
                 </li><li>
@@ -214,26 +214,25 @@
 This doc shows you how packaged apps can connect to USB devices
 and read from and write to a user's serial ports.
 See also the reference docs for the
-<a href="http://code.google.com/chrome/extensions/trunk/experimental.usb.html">USB API</a>
+<a href="experimental.usb.html">USB API</a>
 and the
-<a href="http://code.google.com/chrome/extensions/trunk/experimental.serial.html">Serial API</a>.
+<a href="experimental.serial.html">Serial API</a>.
+The <a href="experimental.bluetooth.html">Bluetooth API</a> has just landed and
+we'll write more on this soon.
+We've included a link to an early sample below.
 </p>
 <p class="note">
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/serial">serial</a>,
-<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/servo">servo</a>,
-and <a href="https://github.com/GoogleChrome/chrome-apps/blob/master/usb">usb</a> samples.
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/serial">serial</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/servo">servo</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/usb">usb</a>,
+and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/bluetooth-demo">bluetooth-demo</a> samples.
 </p>
 <h2 id="usb">Accessing USB devices</h2>
 <p>
-You can use the USB API to send messages to any device in the bus.
-</p>
-<p class="warning">
-<b>Warning: </b>
-The following sections require a basic understanding
-of how the USB bus works.
+You can use the USB API to send messages to any connected device.
 </p>
 <a name="H3-1"></a><h3>Manifest requirement</h3>
 <p>
@@ -259,35 +258,34 @@ which has four parameters:
 <br>
 <table border="0">
   <tbody><tr>
-    <th scope="col"> Parameter </th>
+    <th scope="col"> Parameter (type) </th>
     <th scope="col"> Description </th>
   </tr>
   <tr>
     <td>vendorId (long)</td>
-    <td>USB device vendor ID (in Linux, use lsusb to find it).</td>
+    <td>The vendor ID for your USB device (in Linux, use lsusb to find it).</td>
   </tr>
   <tr>
     <td>productId (long)</td>
-    <td>USB device product ID (in Linux, use lsusb to find it).</td>
+    <td>The product ID for your USB device (in Linux, use lsusb to find it).</td>
   </tr>
   <tr>
     <td>eventCallbacks(object)</td>
-    <td>An object with a single key,
-      <code>onEvent()</code>,
-      to be called whenever an event occurs on the corresponding device;
-      this is called when the device sends data to the host computer.
-      Host-initiated USB protocol is complex,
-      so read on to find out more.
+    <td>An object with a single key, "onEvent",
+      to be called whenever an event occurs on the corresponding device.
+      This will be the primary method of receiving information from the device.
+      As the host-initiated USB protocol is complex, read on to learn more.
     </td>
   </tr>
   <tr>
     <td>onDevideFoundCallback()</td>
     <td>Called when the device is found.
-      The callback's parameter is <code>NULL</code>,
-      if no device is found;
-      or it's an object with three properties:
-      <code>handle</code>, <code>vendorId</code>,
-      <code>productId</code>.
+      The callback's parameter is an object
+      with three properties: <code>handle</code>,
+      <code>vendorId</code>,
+      <code>productId</code>;
+      or <code>NULL</code>,
+      if no device is found.
       Save this object
       as it's required to send messages to the device.</td>
   </tr>
@@ -308,20 +306,21 @@ var onUsbEvent = function(event) {
 };
 chrome.experimental.usb.findDevice(vendorId, productId, {"onEvent": onUsbEvent}, onDeviceFound);
 </pre>
-<a name="H3-3"></a><h3>USB transfers and receiving data from device</h3>
+<a name="H3-3"></a><h3>USB transfers and receiving data from a device</h3>
 <p>
 USB protocol defines four types of transfers:
 control, bulk, isochronous and interrupt.
 Theoretically they can all occur in both directions:<br>
-device-&gt;host and host-&gt;device.
-Host-&gt;device is initiated by your code and is described in the next sections.
+device-to-host and host-to-device.
+Host-to-device is initiated by your code and is described in the next sections.
 </p>
 <p>
-Device-&gt;host messages are handled by Chrome and delivered
+Device-to-host messages are handled by Chrome and delivered
 to the <code>onEvent()</code> callback
 defined in the <code>findDevice()</code> method.
-The callback receives an event object
-with the following properties:
+For each message from the device,
+the <code>onEvent</code> callback will receive 
+an event object with the following properties:
 </p>
 <br>
 <table border="0">
@@ -364,25 +363,24 @@ The method is simple and receives three parameters:
 <br>
 <table border="0">
   <tbody><tr>
-    <th scope="col"> Parameter </th>
+    <th scope="col"> Parameter (types)</th>
     <th scope="col"> Description </th>
   </tr>
   <tr>
     <td>deviceObj</td>
-    <td>Object sent on <code>findDevice()</code> callback.</td>
+    <td>Object received from <code>findDevice()</code> callback.</td>
   </tr>
   <tr>
     <td>transferInfo</td>
-    <td>Parameter object with the values in the table below.
+    <td>Parameter object with values from the table below.
       Check your USB device protocol specification
-      to know what values you should use.</td>
+      to know which values are supported.</td>
   </tr>
   <tr>
     <td>transferCallback()</td>
     <td>Invoked when the transfer has completed.
-      Notice that this callback doesn't represent any response from the device.
-      It's just to notify your code that the asynchronous transfer request
-      has been processed and you can go ahead.
+      Please note this only indicates that
+      the transfer has been processed.
       The device's response, if any, will always be sent through
       the <code>onEvent()</code> callback set on <code>findDevice()</code>.
     </td>
@@ -410,8 +408,8 @@ Values for <code>transferInfo</code> object:
       IN direction is used to notify the device
       that it should send information to the host.
       All communication in a USB bus is host-initiated,
-      so take an "in" transfer as a "here, device,
-      take your token so you can speak".</td>
+      so use an 'in' transfer to allow a device
+      to send information back.</td>
   </tr>
   <tr>
     <td>request (integer)</td>

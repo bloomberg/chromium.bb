@@ -65,7 +65,7 @@
                 <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
               </button>
               <br>
-              <span class="greytext">e.g. "page action" or "tabs"</span>
+              <span class="greytext">e.g. "event page" or "alarms"</span>
             </div>
           </form>
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -90,7 +90,7 @@
             <a href="https://github.com/GoogleChrome/chrome-app-samples" title="Packaged apps samples repository"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-apps" title="Google Chrome Apps developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
             <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
@@ -143,7 +143,7 @@
           <li><h2>Reference</h2>
             <ul>
               <li><a href="manifest.html">Manifest Files</a></li>
-              <li><a href="apps_api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
               <li><a href="api_other.html">Supported Libraries</a></li>
               <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
@@ -181,6 +181,13 @@
             </li><li>
               <a href="#five">Step 5: Launch your app</a>
               <ol>
+                <li>
+                  <a href="#H3-5">Enable flags</a>
+                </li><li>
+                  <a href="#H3-6">Load your app</a>
+                </li><li>
+                  <a href="#H3-7">Open new tab and launch</a>
+                </li>
               </ol>
             </li>
           </ol>
@@ -193,32 +200,36 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 <p>
 This tutorial walks you through creating your first packaged app.
-Packaged apps are structured similarly to extensions.
-You need to produce a zip file of all your assets for your applications
-that you will then upload to the Chrome Web Store.
-</p>
-<p class="note">
-<b>API Samples: </b>
-Want to play with the code?
-Check out the
-<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/hello-world">hello-world</a>
-sample.
+Packaged apps are structured similarly to extensions
+so current developers will recognize the manifest and packaging methods.
+When you're done,
+you'll just need to produce a zip file of your code and assets
+in order to <a href="publish_app.html">publish</a> your app.
 </p>
 <p>
-The packaged app zip file contains these components:
+A packaged app contains these components:
 </p>
 <ul>
   <li>The <strong>manifest</strong> tells Chrome about your app, what it is,
-    how to launch it and the extra permissions that you require.</li>
+    how to launch it and the extra permissions that it requires.</li>
   <li>The <strong>background script</strong> is used to create the event page
     responsible for managing the app life cycle.</li>
   <li>All code must be included in the package. This includes HTML, JS, CSS
     and Native Client modules.</li>
-  <li>The <code>icons</code> are required for the launcher and visibility in the user's system.</li>
+  <li>All <strong>icons</strong> and other assets must be included
+    in the package as well.</li>
+</ul>
+<p class="note">
+<b>API Samples: </b>
+Want to play with the code?
+Check out the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/hello-world">hello-world</a>
+sample.
+</p>
 <h2 id="one">Step 1: Create the manifest</h2>
 <p>
-First ceate your <code>manifest.json</code> file
-(<a href="manifest.html">Manifest Files</a>
+First create your <code>manifest.json</code> file
+(<a href="manifest.html">Formats: Manifest Files</a>
 describes this manifest in detail):
 </p>
 <pre>{
@@ -232,7 +243,7 @@ describes this manifest in detail):
     }
   },
   "permissions": ["experimental", "appWindow"],
-  "icons": { "16": "icon-16.png", "128": "icon-128.png" }
+  "icons": { "16": "calculator-16.png", "128": "calculator-128.png" }
 }
 </pre>
 <p class="note">
@@ -254,7 +265,9 @@ with the following content:
 </pre>
 <p>
 In the above sample code,
-the 'width' and 'height' control the size of the app window.
+the <a href="app_lifecycle.html#lifecycle">onLaunched event</a>
+will be fired when the user starts the app.
+It then immediately opens a window for the app of the specified width and height.
 Your background script may contain additional listeners,
 windows, post messages, and launch data,
 all of which are used by the event page to manage the app.
@@ -277,20 +290,23 @@ Create your <code>window.html</code> file:
 Copy these icons to your app folder:
 </p>
 <ul>
-  <li><a href="images/icon-16.png">icon-16.png</a></li>
-  <li><a href="images/icon-128.png">icon-128.png</a></li>
+  <li><a href="../images/calculator-16.png">calculator-16.png</a></li>
+  <li><a href="../images/calculator-128.png">calculator-128.png</a></li>
 </ul>
 <h2 id="five">Step 5: Launch your app</h2>
-<h3>Enable flags</h3>
+<a name="H3-5"></a><h3>Enable flags</h3>
 <p>
-You should enable experimental APIs:
+Many of the packaged apps APIs are still experimental,
+so you should enable experimental APIs
+so that you can try them out:
 </p>
 <ul>
   <li>Go to <b>chrome://flags</b>.</li>
   <li>Find "Experimental Extension APIs",
     and click its "Enable" link.</li>
   <li>Restart Chrome.</li>
-<h3>Load your app</h3>
+</ul>
+<a name="H3-6"></a><h3>Load your app</h3>
 <p>
 To load your app,
 bring up the apps and extensions management page
@@ -307,14 +323,14 @@ Click the <b>Load unpacked extension</b> button,
 navigate to your app's folder
 and click <b>OK</b>.
 </p>
-<h3>Open new tab and launch</h3>
+<a name="H3-7"></a><h3>Open new tab and launch</h3>
 <p>
 Once you've loaded your app,
 open a New Tab page
 and click on your new app icon.
 </p>
 <p class="backtotop"><a href="#top">Back to top</a></p>
-</ul></ul></div>
+</div>
         <!-- API PAGE -->
          <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
