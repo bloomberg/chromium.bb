@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WINDOW_SIZER_COMMON_UNITTEST_H_
-#define CHROME_BROWSER_UI_WINDOW_SIZER_COMMON_UNITTEST_H_
+#ifndef CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_
+#define CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_
 #pragma once
 
 // Some standard monitor sizes (no task bar).
@@ -192,4 +192,4 @@ static void GetWindowBounds(const gfx::Rect& monitor1_bounds,
   sizer.DetermineWindowBounds(passed_in, out_bounds);
 }
 
-#endif  // CHROME_BROWSER_UI_WINDOW_SIZER_COMMON_UNITTEST_H_
+#endif  // CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_

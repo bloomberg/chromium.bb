@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/window_sizer.h"
+#include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 
