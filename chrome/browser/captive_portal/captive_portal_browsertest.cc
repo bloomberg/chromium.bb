@@ -69,28 +69,30 @@ const char* const kTestServerIframeTimeoutPath =
 
 // A mock URL for the CaptivePortalService's |test_url|.  When behind a captive
 // portal, this URL return a mock login page.  When connected to the Internet,
-// it returns a 204 response.
+// it returns a 204 response.  Uses the name of the login file so that reloading
+// it will not request a different URL.
 const char* const kMockCaptivePortalTestUrl =
-    "http://mock.captive.portal/captive_portal_test/";
+    "http://mock.captive.portal.test/login.html";
 
 // When behind a captive portal, this URL hangs without committing until a call
-// to URLRequestTimeoutOnDemandJob::FailRequests.  When that function is called,
+// to URLRequestTimeoutOnDemandJob::FailJobs.  When that function is called,
 // the request will time out.
 //
 // When connected to the Internet, this URL returns a non-error page.
-const char* const kMockHttpsUrl = "https://mock.captive.portal/long_timeout/";
+const char* const kMockHttpsUrl =
+    "https://mock.captive.portal.long.timeout/title2.html";
 
 // Same as kMockHttpsUrl, except the timeout happens instantly.
 const char* const kMockHttpsQuickTimeoutUrl =
-    "https://mock.captive.portal/quick_timeout/";
+    "https://mock.captive.portal.quick.timeout/title2.html";
 
 // Expected title of a tab once an HTTPS load completes, when not behind a
 // captive portal.
 const char* const kInternetConnectedTitle = "Title Of Awesomeness";
 
-// A URL request job that hangs until FailRequests() is called.  Started jobs
+// A URL request job that hangs until FailJobs() is called.  Started jobs
 // are stored in a static class variable containing a linked list so that
-// FailRequests() can locate them.
+// FailJobs() can locate them.
 class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
                                      public base::NonThreadSafe {
  public:
@@ -99,24 +101,27 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
 
   // All the public static methods below can be called on any thread.
 
-  // Fails all active URLRequestTimeoutOnDemandJobs with connection timeouts.
-  // Furthermore, any future Jobs will be cancelled when they are issued,
-  // until StopFailingRequests is called.
-  //
-  // This behavior is needed because it's difficult to be sure when a resource
-  // request will start for a provisional load without waiting for a frame to
-  // be committed, which doesn't work for hung resources.  This issue is
-  // compounded by not knowing how many requests will be issued - depending on
-  // timing, there may or may not be favicon requests issued.
-  static void StartFailingRequests();
+  // Waits for exactly |num_jobs|.
+  static void WaitForJobs(int num_jobs);
 
-  // Stops failing new URLRequestTimeoutOnDemandJobs as they are issued.  This
-  // should only be called once it's confirmed that all relevant effects of
-  // requests that StartFailingRequests should have failed have been observed.
-  static void StopFailingRequests();
+  // Fails all active URLRequestTimeoutOnDemandJobs with connection timeouts.
+  // There are expected to be exactly |expected_num_jobs| waiting for
+  // failure.  The only way to gaurantee this is with an earlier call to
+  // WaitForJobs, so makes sure there has been a matching WaitForJobs call.
+  static void FailJobs(int expected_num_jobs);
+
+  // Abandon all active URLRequestTimeoutOnDemandJobs.  |expected_num_jobs|
+  // behaves just as in FailJobs.
+  static void AbandonJobs(int expected_num_jobs);
 
  private:
   friend class URLRequestMockCaptivePortalJobFactory;
+
+  // Operation to perform on jobs when removing them from |job_list_|.
+  enum EndJobOperation {
+    FAIL_JOBS,
+    ABANDON_JOBS,
+  };
 
   explicit URLRequestTimeoutOnDemandJob(net::URLRequest* request);
   virtual ~URLRequestTimeoutOnDemandJob();
@@ -125,18 +130,32 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
   // from the list.
   bool RemoveFromList();
 
-  // Sets |fail_all_requests_| to true and then fails all requests.
-  static void StartFailingRequestsOnIOThread();
+  static void WaitForJobsOnIOThread(int num_jobs);
+  static void FailOrAbandonJobsOnIOThread(
+      int expected_num_jobs,
+      EndJobOperation end_job_operation);
 
-  // Sets |fail_all_requests_| to false.
-  static void StopFailingRequestsOnIOThread();
-
-  // Fails all requests.
-  static void FailRequestsOnIOThread();
+  // Checks if there are at least |num_jobs_to_wait_for_| jobs in
+  // |job_list_|.  If so, exits the message loop on the UI thread, which
+  // should be spinning in a call to WaitForJobs.  Does nothing when
+  // |num_jobs_to_wait_for_| is 0.
+  static void MaybeStopWaitingForJobsOnIOThread();
 
   // All class variables are only accessed on the IO thread.
 
-  static bool fail_all_requests_;
+  // Number of jobs currently being waited for, or 0 if not currently
+  // waiting for jobs.
+  static int num_jobs_to_wait_for_;
+
+  // The last number of jobs that were waited for.  When FailJobs or
+  // AbandonJobs is called, this should match |expected_num_jobs|.
+  static int last_num_jobs_to_wait_for_;
+
+  // Number of jobs that have been started, but not yet waited for.  If jobs
+  // are deleted unexpectedly, they're still included in this count, even though
+  // they've been removed from |job_list_|.  Intended to reduce chance of stalls
+  // on regressions.
+  static int num_jobs_started_;
 
   // Head of linked list of jobs that have been started and are now waiting to
   // be timed out.
@@ -148,7 +167,9 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
   DISALLOW_COPY_AND_ASSIGN(URLRequestTimeoutOnDemandJob);
 };
 
-bool URLRequestTimeoutOnDemandJob::fail_all_requests_ = false;
+int URLRequestTimeoutOnDemandJob::num_jobs_to_wait_for_ = 0;
+int URLRequestTimeoutOnDemandJob::last_num_jobs_to_wait_for_ = 0;
+int URLRequestTimeoutOnDemandJob::num_jobs_started_ = 0;
 URLRequestTimeoutOnDemandJob* URLRequestTimeoutOnDemandJob::job_list_ = NULL;
 
 void URLRequestTimeoutOnDemandJob::Start() {
@@ -157,29 +178,40 @@ void URLRequestTimeoutOnDemandJob::Start() {
   // Insert at start of the list.
   next_job_ = job_list_;
   job_list_ = this;
+  ++num_jobs_started_;
 
-  if (fail_all_requests_) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &URLRequestTimeoutOnDemandJob::FailRequestsOnIOThread));
-  }
+  // Checks if there are at least |num_jobs_to_wait_for_| jobs in
+  // |job_list_|.  If so, exits the message loop on the UI thread, which
+  // should be spinning in a call to WaitForJobs.  Does nothing if
+  // |num_jobs_to_wait_for_| is 0.
+  MaybeStopWaitingForJobsOnIOThread();
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::StartFailingRequests() {
+void URLRequestTimeoutOnDemandJob::WaitForJobs(int num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &URLRequestTimeoutOnDemandJob::StartFailingRequestsOnIOThread));
+      base::Bind(&URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread,
+                 num_jobs));
+  ui_test_utils::RunMessageLoop();
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::StopFailingRequests() {
+void URLRequestTimeoutOnDemandJob::FailJobs(int expected_num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &URLRequestTimeoutOnDemandJob::StopFailingRequestsOnIOThread));
+      base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
+                 expected_num_jobs,
+                 FAIL_JOBS));
+}
+
+// static
+void URLRequestTimeoutOnDemandJob::AbandonJobs(int expected_num_jobs) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
+                 expected_num_jobs,
+                 ABANDON_JOBS));
 }
 
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
@@ -189,10 +221,9 @@ URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
 }
 
 URLRequestTimeoutOnDemandJob::~URLRequestTimeoutOnDemandJob() {
-  // Allow URL request jobs to be abandoned while still active.  Some tests
-  // deliberately do this, and it's best not to depend on favicon requests
-  // having some specific behavior relative to main frame resource loads.
-  RemoveFromList();
+  // All hanging jobs should have failed or been abandoned before being
+  // destroyed.
+  EXPECT_FALSE(RemoveFromList());
 }
 
 bool URLRequestTimeoutOnDemandJob::RemoveFromList() {
@@ -212,37 +243,63 @@ bool URLRequestTimeoutOnDemandJob::RemoveFromList() {
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::StartFailingRequestsOnIOThread() {
+void URLRequestTimeoutOnDemandJob::WaitForJobsOnIOThread(int num_jobs) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ASSERT_EQ(0, num_jobs_to_wait_for_);
+  ASSERT_LT(0, num_jobs);
+  // Number of tabs being waited on should be strictly increasing.
+  ASSERT_LE(last_num_jobs_to_wait_for_, num_jobs);
 
-  ASSERT_FALSE(fail_all_requests_);
-  fail_all_requests_ = true;
-
-  FailRequestsOnIOThread();
+  num_jobs_to_wait_for_ = num_jobs;
+  MaybeStopWaitingForJobsOnIOThread();
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::StopFailingRequestsOnIOThread() {
+void URLRequestTimeoutOnDemandJob::MaybeStopWaitingForJobsOnIOThread() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (num_jobs_to_wait_for_ == 0)
+    return;
 
-  ASSERT_TRUE(fail_all_requests_);
-  fail_all_requests_ = false;
+  // There shouldn't be any extra jobs.
+  EXPECT_LE(num_jobs_started_, num_jobs_to_wait_for_);
+
+  // Should never be greater, but if it is, go ahead and exit the message loop
+  // to try and avoid hanging.
+  if (num_jobs_started_ >= num_jobs_to_wait_for_) {
+    last_num_jobs_to_wait_for_ = num_jobs_to_wait_for_;
+    num_jobs_to_wait_for_ = 0;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            MessageLoop::QuitClosure());
+  }
 }
 
 // static
-void URLRequestTimeoutOnDemandJob::FailRequestsOnIOThread() {
+void URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread(
+    int expected_num_jobs,
+    EndJobOperation end_job_operation) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EXPECT_TRUE(fail_all_requests_);
+  ASSERT_LT(0, expected_num_jobs);
+  EXPECT_EQ(last_num_jobs_to_wait_for_, expected_num_jobs);
+  last_num_jobs_to_wait_for_ = 0;
 
+  int num_jobs = 0;
   while (job_list_) {
+    ++num_jobs;
     URLRequestTimeoutOnDemandJob* job = job_list_;
     // Since the error notification may result in the job's destruction, remove
     // it from the job list before the error.
     EXPECT_TRUE(job->RemoveFromList());
-    job->NotifyStartError(net::URLRequestStatus(
-                              net::URLRequestStatus::FAILED,
-                              net::ERR_CONNECTION_TIMED_OUT));
+    if (end_job_operation == FAIL_JOBS) {
+      job->NotifyStartError(net::URLRequestStatus(
+                                net::URLRequestStatus::FAILED,
+                                net::ERR_CONNECTION_TIMED_OUT));
+    }
   }
+
+  EXPECT_EQ(expected_num_jobs, num_jobs_started_);
+  EXPECT_EQ(expected_num_jobs, num_jobs);
+
+  num_jobs_started_ -= expected_num_jobs;
 }
 
 // URLRequestCaptivePortalJobFactory emulates captive portal behavior.
@@ -306,11 +363,16 @@ void URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortal(
 // static
 void URLRequestMockCaptivePortalJobFactory::AddUrlHandlersOnIOThread() {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Handle only exact matches, so any related requests, such as those for
+  // favicons, are not handled by the factory.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameHandler("http", "mock.captive.portal",
-                             URLRequestMockCaptivePortalJobFactory::Factory);
-  filter->AddHostnameHandler("https", "mock.captive.portal",
-                             URLRequestMockCaptivePortalJobFactory::Factory);
+  filter->AddUrlHandler(GURL(kMockCaptivePortalTestUrl),
+                        URLRequestMockCaptivePortalJobFactory::Factory);
+  filter->AddUrlHandler(GURL(kMockHttpsUrl),
+                        URLRequestMockCaptivePortalJobFactory::Factory);
+  filter->AddUrlHandler(GURL(kMockHttpsQuickTimeoutUrl),
+                        URLRequestMockCaptivePortalJobFactory::Factory);
 }
 
 // static
@@ -330,35 +392,38 @@ net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
   FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
 
-  if (scheme == "https") {
-    if (behind_captive_portal_) {
-      // If not logged in to the captive portal, HTTPS requests will time out,
-      // either immediately on on demand.
-      if (request->url() == GURL(kMockHttpsQuickTimeoutUrl))
-        return new URLRequestFailedJob(request, net::ERR_CONNECTION_TIMED_OUT);
+  if (request->url() == GURL(kMockHttpsUrl)) {
+    if (behind_captive_portal_)
       return new URLRequestTimeoutOnDemandJob(request);
-    }
     // Once logged in to the portal, HTTPS requests return the page that was
     // actually requested.
     return new URLRequestMockHTTPJob(
         request,
         root_http.Append(FILE_PATH_LITERAL("title2.html")));
-  }
-
-  // The URL is the captive portal test URL.
-
-  if (behind_captive_portal_) {
-    // Prior to logging in to the portal, HTTP requests go to the login page.
+  } else if (request->url() == GURL(kMockHttpsQuickTimeoutUrl)) {
+    if (behind_captive_portal_)
+      return new URLRequestFailedJob(request, net::ERR_CONNECTION_TIMED_OUT);
+    // Once logged in to the portal, HTTPS requests return the page that was
+    // actually requested.
     return new URLRequestMockHTTPJob(
         request,
-        root_http.Append(
-            FILE_PATH_LITERAL("captive_portal/login.html")));
+        root_http.Append(FILE_PATH_LITERAL("title2.html")));
+  } else {
+    // The URL should be the captive portal test URL.
+    EXPECT_EQ(GURL(kMockCaptivePortalTestUrl), request->url());
+
+    if (behind_captive_portal_) {
+      // Prior to logging in to the portal, HTTP requests go to the login page.
+      return new URLRequestMockHTTPJob(
+          request,
+          root_http.Append(FILE_PATH_LITERAL("captive_portal/login.html")));
+    }
+
+    // After logging in to the portal, the test URL returns a 204 response.
+    return new URLRequestMockHTTPJob(
+        request,
+        root_http.Append(FILE_PATH_LITERAL("captive_portal/page204.html")));
   }
-  // After logging in to the portal, the test URL returns a 204 response.
-  return new URLRequestMockHTTPJob(
-      request,
-      root_http.Append(
-          FILE_PATH_LITERAL("captive_portal/page204.html")));
 }
 
 // Creates a server-side redirect for use with the TestServer.
@@ -727,7 +792,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // Navigates the active tab to a slow loading SSL page, which will then
   // trigger a captive portal test.  The test is expected to find a captive
   // portal.  The slow loading page will continue to load after the function
-  // returns, until URLRequestTimeoutOnDemandJob::FailRequests() is called,
+  // returns, until URLRequestTimeoutOnDemandJob::FailJobs() is called,
   // at which point it will timeout.
   //
   // When |expect_login_tab| is false, no login tab is expected to be opened,
@@ -740,6 +805,8 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // captive portal tab completing.
   //
   // This function must not be called when the active tab is currently loading.
+  // Waits for the hanging request to be issued, so other functions can rely
+  // on URLRequestTimeoutOnDemandJob::WaitForJobs having been called.
   void SlowLoadBehindCaptivePortal(Browser* browser, bool expect_login_tab);
 
   // Just like SlowLoadBehindCaptivePortal, except the navigated tab has
@@ -914,8 +981,9 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
   // First tab should still be loading.
   EXPECT_EQ(1, NumLoadingTabs());
 
-  // Time out original request(s).
-  URLRequestTimeoutOnDemandJob::StartFailingRequests();
+  // Wait for the request to be issued, then time it out.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  URLRequestTimeoutOnDemandJob::FailJobs(1);
   navigation_observer.WaitForNavigations(1);
 
   ASSERT_EQ(1, browser->tab_count());
@@ -925,9 +993,6 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
 
   // Set a slow SSL load time to prevent the timer from triggering.
   SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
-
-  // It's safe to stop failing requests now.
-  URLRequestTimeoutOnDemandJob::StopFailingRequests();
 }
 
 void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
@@ -1030,6 +1095,10 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
     ASSERT_EQ(initial_tab_count, browser->tab_count());
     EXPECT_EQ(initial_active_index, browser->active_index());
   }
+
+  // Wait for all the expect resource loads to actually start, so subsequent
+  // functions can rely on them having started.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(initial_loading_tabs + 1);
 
   EXPECT_EQ(initial_loading_tabs + 1, NumLoadingTabs());
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
@@ -1221,8 +1290,10 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
 
   CaptivePortalObserver portal_observer(browser->profile());
   FailLoadsAfterLoginObserver fail_loads_observer;
-  // Connection(s) finally time out.
-  URLRequestTimeoutOnDemandJob::StartFailingRequests();
+  // Connection(s) finally time out.  There should have already been a call
+  // to wait for the requests to be issued before logging on.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(num_loading_tabs);
+  URLRequestTimeoutOnDemandJob::FailJobs(num_loading_tabs);
 
   fail_loads_observer.WaitForNavigations();
 
@@ -1236,9 +1307,6 @@ void CaptivePortalBrowserTest::FailLoadsAfterLogin(Browser* browser,
 
   EXPECT_EQ(0, NumNeedReloadTabs());
   EXPECT_EQ(0, NumLoadingTabs());
-
-  // It's safe to stop failing requests now.
-  URLRequestTimeoutOnDemandJob::StopFailingRequests();
 }
 
 void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
@@ -1255,8 +1323,9 @@ void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
 
   CaptivePortalObserver portal_observer(browser->profile());
   MultiNavigationObserver navigation_observer;
-  // Connection(s) finally time out.
-  URLRequestTimeoutOnDemandJob::StartFailingRequests();
+  // Connection(s) finally time out.  There should have already been a call
+  // to wait for the requests to be issued.
+  URLRequestTimeoutOnDemandJob::FailJobs(num_loading_tabs);
 
   navigation_observer.WaitForNavigations(num_loading_tabs);
 
@@ -1276,9 +1345,6 @@ void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
 
   EXPECT_EQ(0, navigation_observer.NumNavigationsForTab(
                    browser->GetWebContentsAt(login_tab)));
-
-  // It's safe to stop failing requests now.
-  URLRequestTimeoutOnDemandJob::StopFailingRequests();
 }
 
 void CaptivePortalBrowserTest::SetSlowSSLLoadTime(
@@ -1491,7 +1557,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
       URLRequestMockHTTPJob::GetMockUrl(
           FilePath(FILE_PATH_LITERAL("title2.html"))),
       NEW_FOREGROUND_TAB,
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   ASSERT_EQ(3, browser()->tab_count());
   EXPECT_FALSE(CheckPending(browser()));
@@ -1517,8 +1583,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, AbortLoad) {
-  // The slow load this starts will end up being abandoned.
   SlowLoadBehindCaptivePortal(browser(), true);
+
+  // Abandon the request.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  URLRequestTimeoutOnDemandJob::AbandonJobs(1);
 
   CaptivePortalObserver portal_observer(browser()->profile());
   MultiNavigationObserver navigation_observer;
@@ -1562,8 +1631,12 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
 // logging in.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        NavigateBrokenToTimeoutTabWhileLoading) {
-  // Go to the error page.  The first load will be abandoned.
+  // Go to the error page.
   SlowLoadBehindCaptivePortal(browser(), true);
+
+  // Abandon the request.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  URLRequestTimeoutOnDemandJob::AbandonJobs(1);
 
   CaptivePortalTabReloader* tab_reloader =
       GetTabReloader(browser()->GetTabContentsAt(0));
@@ -1591,6 +1664,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloader(browser()->GetTabContentsAt(1)));
   ASSERT_TRUE(IsLoginTab(browser()->GetTabContentsAt(1)));
+
+  // Need to make sure the request has been issued before logging in.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
 
   // Simulate logging in.
   browser()->ActivateTabAt(1, true);
@@ -1659,6 +1735,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   // of the login tab, and for the login tab to stop loading.
   portal_observer.WaitForResults(2);
   navigation_observer.WaitForNavigations(1);
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
 
   EXPECT_EQ(2, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
@@ -1709,6 +1786,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, ReloadTimeout) {
   // opening an it.
   portal_observer.WaitForResults(2);
   navigation_observer.WaitForNavigations(1);
+  // Make sure the request has been issued.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
 
   ASSERT_EQ(2, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
