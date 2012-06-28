@@ -60,6 +60,9 @@ PYLINT_DISABLED_WARNINGS = [
     # Others, too many to sort.
     'W0201', 'W0232', 'E1103', 'W0621', 'W0108', 'W0223', 'W0231',
     'R0201', 'E0101', 'C0321',
+    # ************* Module copy
+    # W0104:427,12:_test.odict.__setitem__: Statement seems to have no effect
+    'W0104',
 ]
 
 

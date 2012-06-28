@@ -106,6 +106,23 @@ class WinTool(object):
         print line
     return popen.returncode
 
+  def ExecAsmWrapper(self, arch, *args):
+    """Filter logo banner from invocations of asm.exe."""
+    env = self._GetEnv(arch)
+    # MSVS doesn't assemble x64 asm files.
+    if arch == 'environment.x64':
+      return 0
+    popen = subprocess.Popen(args, shell=True, env=env,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, _ = popen.communicate()
+    for line in out.splitlines():
+      if (not line.startswith('Copyright (C) Microsoft Corporation') and
+          not line.startswith('Microsoft (R) Macro Assembler') and
+          not line.startswith(' Assembling: ') and
+          line):
+        print line
+    return popen.returncode
+
   def ExecRcWrapper(self, arch, *args):
     """Filter logo banner from invocations of rc.exe. Older versions of RC
     don't support the /nologo flag."""

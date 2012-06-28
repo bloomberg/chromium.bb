@@ -145,6 +145,7 @@ class MsvsSettings(object):
         ('msvs_disabled_warnings', list),
         ('msvs_precompiled_header', str),
         ('msvs_precompiled_source', str),
+        ('msvs_target_platform', str),
         ]
     configs = spec['configurations']
     for field, default in supported_fields:
@@ -154,9 +155,11 @@ class MsvsSettings(object):
 
     self.msvs_cygwin_dirs = spec.get('msvs_cygwin_dirs', ['.'])
 
-  def GetVSMacroEnv(self, base_to_build=None):
+  def GetVSMacroEnv(self, base_to_build=None, config=None):
     """Get a dict of variables mapping internal VS macro names to their gyp
     equivalents."""
+    target_platform = self.GetTargetPlatform(config)
+    target_platform = {'x86': 'Win32'}.get(target_platform, target_platform)
     replacements = {
         '$(VSInstallDir)': self.vs_version.Path(),
         '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC') + '\\',
@@ -165,7 +168,7 @@ class MsvsSettings(object):
         '$(InputPath)': '${source}',
         '$(InputName)': '${root}',
         '$(ProjectName)': self.spec['target_name'],
-        '$(PlatformName)': 'Win32', # TODO(scottmg): Support for x64 toolchain.
+        '$(PlatformName)': target_platform,
     }
     # Chromium uses DXSDK_DIR in include/lib paths, but it may or may not be
     # set. This happens when the SDK is sync'd via src-internal, rather than
@@ -175,9 +178,9 @@ class MsvsSettings(object):
     replacements['$(WDK_DIR)'] = self.wdk_dir if self.wdk_dir else ''
     return replacements
 
-  def ConvertVSMacros(self, s, base_to_build=None):
+  def ConvertVSMacros(self, s, base_to_build=None, config=None):
     """Convert from VS macro names to something equivalent."""
-    env = self.GetVSMacroEnv(base_to_build)
+    env = self.GetVSMacroEnv(base_to_build, config=config)
     return ExpandMacros(s, env)
 
   def AdjustLibraries(self, libraries):
@@ -204,15 +207,29 @@ class MsvsSettings(object):
       return self.parent._GetAndMunge(self.field, self.base_path + [name],
           default=default, prefix=prefix, append=self.append, map=map)
 
+  def GetTargetPlatform(self, config):
+    target_platform = self.msvs_target_platform.get(config, '')
+    if not target_platform:
+      target_platform = 'Win32'
+    return {'Win32': 'x86'}.get(target_platform, target_platform)
+
+  def _RealConfig(self, config):
+    target_platform = self.GetTargetPlatform(config)
+    if target_platform == 'x64' and not config.endswith('_x64'):
+      config += '_x64'
+    return config
+
   def _Setting(self, path, config,
               default=None, prefix='', append=None, map=None):
     """_GetAndMunge for msvs_settings."""
+    config = self._RealConfig(config)
     return self._GetAndMunge(
         self.msvs_settings[config], path, default, prefix, append, map)
 
   def _ConfigAttrib(self, path, config,
                    default=None, prefix='', append=None, map=None):
     """_GetAndMunge for msvs_configuration_attributes."""
+    config = self._RealConfig(config)
     return self._GetAndMunge(
         self.msvs_configuration_attributes[config],
         path, default, prefix, append, map)
@@ -220,14 +237,16 @@ class MsvsSettings(object):
   def AdjustIncludeDirs(self, include_dirs, config):
     """Updates include_dirs to expand VS specific paths, and adds the system
     include dirs used for platform SDK and similar."""
+    config = self._RealConfig(config)
     includes = include_dirs + self.msvs_system_include_dirs[config]
     includes.extend(self._Setting(
       ('VCCLCompilerTool', 'AdditionalIncludeDirectories'), config, default=[]))
-    return [self.ConvertVSMacros(p) for p in includes]
+    return [self.ConvertVSMacros(p, config=config) for p in includes]
 
   def GetComputedDefines(self, config):
     """Returns the set of defines that are injected to the defines list based
     on other VS settings."""
+    config = self._RealConfig(config)
     defines = []
     if self._ConfigAttrib(['CharacterSet'], config) == '1':
       defines.extend(('_UNICODE', 'UNICODE'))
@@ -240,16 +259,19 @@ class MsvsSettings(object):
   def GetOutputName(self, config, expand_special):
     """Gets the explicitly overridden output name for a target or returns None
     if it's not overridden."""
+    config = self._RealConfig(config)
     type = self.spec['type']
     root = 'VCLibrarianTool' if type == 'static_library' else 'VCLinkerTool'
     # TODO(scottmg): Handle OutputDirectory without OutputFile.
     output_file = self._Setting((root, 'OutputFile'), config)
     if output_file:
-      output_file = expand_special(self.ConvertVSMacros(output_file))
+      output_file = expand_special(self.ConvertVSMacros(
+          output_file, config=config))
     return output_file
 
   def GetCflags(self, config):
     """Returns the flags that need to be added to .c and .cc compilations."""
+    config = self._RealConfig(config)
     cflags = []
     cflags.extend(['/wd' + w for w in self.msvs_disabled_warnings[config]])
     cl = self._GetWrapper(self, self.msvs_settings[config],
@@ -280,11 +302,13 @@ class MsvsSettings(object):
   def GetPrecompiledHeader(self, config, gyp_to_build_path):
     """Returns an object that handles the generation of precompiled header
     build steps."""
+    config = self._RealConfig(config)
     return _PchHelper(self, config, gyp_to_build_path)
 
   def _GetPchFlags(self, config, extension):
     """Get the flags to be added to the cflags for precompiled header support.
     """
+    config = self._RealConfig(config)
     # The PCH is only built once by a particular source file. Usage of PCH must
     # only be for the same language (i.e. C vs. C++), so only include the pch
     # flags when the language matches.
@@ -297,23 +321,28 @@ class MsvsSettings(object):
 
   def GetCflagsC(self, config):
     """Returns the flags that need to be added to .c compilations."""
+    config = self._RealConfig(config)
     return self._GetPchFlags(config, '.c')
 
   def GetCflagsCC(self, config):
     """Returns the flags that need to be added to .cc compilations."""
+    config = self._RealConfig(config)
     return ['/TP'] + self._GetPchFlags(config, '.cc')
 
   def _GetAdditionalLibraryDirectories(self, root, config, gyp_to_build_path):
     """Get and normalize the list of paths in AdditionalLibraryDirectories
     setting."""
+    config = self._RealConfig(config)
     libpaths = self._Setting((root, 'AdditionalLibraryDirectories'),
                              config, default=[])
-    libpaths = [os.path.normpath(gyp_to_build_path(self.ConvertVSMacros(p)))
+    libpaths = [os.path.normpath(
+                    gyp_to_build_path(self.ConvertVSMacros(p, config=config)))
                 for p in libpaths]
     return ['/LIBPATH:"' + p + '"' for p in libpaths]
 
   def GetLibFlags(self, config, gyp_to_build_path):
     """Returns the flags that need to be added to lib commands."""
+    config = self._RealConfig(config)
     libflags = []
     lib = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLibrarianTool', append=libflags)
@@ -335,6 +364,7 @@ class MsvsSettings(object):
 
   def GetLdflags(self, config, gyp_to_build_path, expand_special):
     """Returns the flags that need to be added to link commands."""
+    config = self._RealConfig(config)
     ldflags = []
     ld = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLinkerTool', append=ldflags)
@@ -387,12 +417,14 @@ class MsvsSettings(object):
   def IsUseLibraryDependencyInputs(self, config):
     """Returns whether the target should be linked via Use Library Dependency
     Inputs (using component .objs of a given .lib)."""
+    config = self._RealConfig(config)
     uldi = self._Setting(('VCLinkerTool', 'UseLibraryDependencyInputs'), config)
     return uldi == 'true'
 
   def GetRcflags(self, config, gyp_to_ninja_path):
     """Returns the flags that need to be added to invocations of the resource
     compiler."""
+    config = self._RealConfig(config)
     rcflags = []
     rc = self._GetWrapper(self, self.msvs_settings[config],
         'VCResourceCompilerTool', append=rcflags)
@@ -440,9 +472,11 @@ class MsvsSettings(object):
   def GetIdlBuildData(self, source, config):
     """Determine the implicit outputs for an idl file. Returns output
     directory, outputs, and variables and flags that are required."""
+    config = self._RealConfig(config)
     midl_get = self._GetWrapper(self, self.msvs_settings[config], 'VCMIDLTool')
     def midl(name, default=None):
-      return self.ConvertVSMacros(midl_get(name, default=default))
+      return self.ConvertVSMacros(midl_get(name, default=default),
+                                  config=config)
     tlb = midl('TypeLibraryName', default='${root}.tlb')
     header = midl('HeaderFileName', default='${root}.h')
     dlldata = midl('DLLDataFileName', default='dlldata.c')

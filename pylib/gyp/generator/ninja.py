@@ -250,7 +250,8 @@ class NinjaWriter:
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
     if self.flavor == 'win':
-      path = self.msvs_settings.ConvertVSMacros(path)
+      path = self.msvs_settings.ConvertVSMacros(
+          path, config=self.config_name)
     path = path.replace(generator_default_variables['RULE_INPUT_ROOT'], root)
     path = path.replace(generator_default_variables['RULE_INPUT_DIRNAME'],
                         dirname)
@@ -345,8 +346,8 @@ class NinjaWriter:
     if self.flavor == 'win':
       self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec,
                                                            generator_flags)
-      # TODO(scottmg): x64 support.
-      self.ninja.variable('arch', self.win_env['x86'])
+      target_platform = self.msvs_settings.GetTargetPlatform(config_name)
+      self.ninja.variable('arch', self.win_env[target_platform])
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -507,7 +508,8 @@ class NinjaWriter:
     # Actions cd into the base directory.
     env = self.GetSortedXcodeEnv()
     if self.flavor == 'win':
-      env = self.msvs_settings.GetVSMacroEnv('$!PRODUCT_DIR')
+      env = self.msvs_settings.GetVSMacroEnv(
+          '$!PRODUCT_DIR', config=self.config_name)
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
@@ -519,7 +521,8 @@ class NinjaWriter:
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(action)
                    if self.flavor == 'win' else False)
       args = action['action']
-      args = [self.msvs_settings.ConvertVSMacros(arg, self.base_to_build)
+      args = [self.msvs_settings.ConvertVSMacros(
+                  arg, self.base_to_build, config=self.config_name)
               for arg in args] if self.flavor == 'win' else args
       rule_name = self.WriteNewNinjaRule(name, args, description,
                                          is_cygwin, env=env)
@@ -557,7 +560,8 @@ class NinjaWriter:
           ('%s ' + generator_default_variables['RULE_INPUT_PATH']) % name)
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(rule)
                    if self.flavor == 'win' else False)
-      args = [self.msvs_settings.ConvertVSMacros(arg, self.base_to_build)
+      args = [self.msvs_settings.ConvertVSMacros(
+                  arg, self.base_to_build, config=self.config_name)
               for arg in args] if self.flavor == 'win' else args
       rule_name = self.WriteNewNinjaRule(name, args, description, is_cygwin)
 
@@ -750,11 +754,14 @@ class NinjaWriter:
       if ext in ('cc', 'cpp', 'cxx'):
         command = 'cxx'
       elif ext == 'c' or (ext in ('s', 'S') and self.flavor != 'win'):
-        # TODO(scottmg): .s files won't be handled by the Windows compiler.
-        # We could add support for .asm, though that's only supported on
-        # x86. Currently not used in Chromium in favor of other third-party
-        # assemblers.
         command = 'cc'
+      elif (self.flavor == 'win' and ext == 'asm' and
+            self.msvs_settings.GetTargetPlatform(config_name) == 'Win32'):
+        # Asm files only get auto assembled for x86 (not x64).
+        command = 'asm'
+        # Add the _asm suffix as msvs is capable of handling .cc and
+        # .asm files of the same name without collision.
+        obj_ext = '_asm.obj'
       elif self.flavor == 'mac' and ext == 'm':
         command = 'objc'
       elif self.flavor == 'mac' and ext == 'mm':
@@ -1109,7 +1116,8 @@ class NinjaWriter:
     args = args[:]
 
     if self.flavor == 'win':
-      description = self.msvs_settings.ConvertVSMacros(description)
+      description = self.msvs_settings.ConvertVSMacros(
+          description, config=self.config_name)
 
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in
@@ -1266,6 +1274,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('idl', 'midl.exe')
     master_ninja.variable('ar', 'lib.exe')
     master_ninja.variable('rc', 'rc.exe')
+    master_ninja.variable('asm', 'ml.exe')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
     master_ninja.variable('ar', os.environ.get('AR', 'ar'))
@@ -1352,6 +1361,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       # Note: $in must be last otherwise rc.exe complains.
       command=('%s gyp-win-tool rc-wrapper '
                '$arch $rc $defines $includes $rcflags /fo$out $in' %
+               sys.executable))
+    master_ninja.rule(
+      'asm',
+      description='ASM $in',
+      command=('%s gyp-win-tool asm-wrapper '
+               '$arch $asm $defines $includes /c /Fo $out $in' %
                sys.executable))
 
   if flavor != 'mac' and flavor != 'win':
