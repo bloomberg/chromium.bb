@@ -462,6 +462,17 @@
               ],
             },
           ],
+          'conditions': [
+            ['component=="shared_library"', {
+              'xcode_settings': {
+                'LD_RUNPATH_SEARCH_PATHS': [
+                  # Get back from Content Shell.app/Contents/Frameworks/
+                  #                                 Helper.app/Contents/MacOS
+                  '@loader_path/../../../../../..',
+                ],
+              },
+            }],
+          ],
         },  # target content_shell_helper_app
       ],
     }],  # OS=="mac"
