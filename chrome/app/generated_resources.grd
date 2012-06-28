@@ -15888,6 +15888,9 @@ Battery full
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password could not be verified. Please try again.
       </message>
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
+        Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.
+      </message>
       <message name="IDS_LOGIN_ERROR_PASSWORD_CHANGED" desc="Couldn't log in because password specified matched as old one, but not new one (online) - password change has been detected.">
         Your password has changed. Please try again with your new password.
       </message>

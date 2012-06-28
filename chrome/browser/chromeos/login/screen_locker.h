@@ -145,6 +145,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Tests can use this to receive login status events.
   LoginStatusConsumer* login_status_consumer_;
 
+  // Number of bad login attempts in a row.
+  int incorrect_passwords_count_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };
 

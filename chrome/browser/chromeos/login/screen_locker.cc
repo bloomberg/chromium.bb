@@ -137,7 +137,8 @@ ScreenLocker::ScreenLocker(const User& user)
       unlock_on_input_(user_.email().empty()),
       locked_(false),
       start_time_(base::Time::Now()),
-      login_status_consumer_(NULL) {
+      login_status_consumer_(NULL),
+      incorrect_passwords_count_(0) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 }
@@ -163,7 +164,9 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   // Don't enable signout button here as we're showing
   // MessageBubble.
 
-  delegate_->ShowErrorMessage(IDS_LOGIN_ERROR_AUTHENTICATING,
+  delegate_->ShowErrorMessage(incorrect_passwords_count_++ ?
+                                  IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME :
+                                  IDS_LOGIN_ERROR_AUTHENTICATING,
                               HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 
   if (login_status_consumer_)
@@ -176,6 +179,7 @@ void ScreenLocker::OnLoginSuccess(
     bool pending_requests,
     bool using_oauth) {
   VLOG(1) << "OnLoginSuccess: Sending Unlock request.";
+  incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
     if (!username.empty())
       LOG(WARNING) << "authentication_start_time_ is not set";
