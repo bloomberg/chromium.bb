@@ -192,8 +192,47 @@ void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
   const struct tls_info *info = get_tls_info();
   size_t tls_size = info->tdata_size + info->tbss_size;
   void *tp = tp_from_combined_area(info, combined_area, tdb_size);
-  char *start = aligned_addr((char *) tp + __nacl_tp_tls_offset(tls_size),
-                             info->tls_alignment);
+  char *start = tp;
+
+  if (__nacl_tp_tls_offset(0) > 0) {
+    /*
+     * ARM case:
+     *  +-----------+--------+----------------+
+     *  |   TDB     | header | TLS data, bss  |
+     *  +-----------+--------+----------------+
+     *              ^        ^
+     *              |        |
+     *              |        +--- $tp+8 points here
+     *              |
+     *              +--- $tp points here
+     *
+     * From $tp, we skip the header size and then must round up from
+     * there to the required alignment (which is what the linker will
+     * will do when calculating TPOFF relocations at link time).  The
+     * end result is that the offset from $tp matches the one chosen
+     * by the linker exactly and that the final address is aligned to
+     * info->tls_alignment (since $tp was already aligned to at least
+     * that much).
+     */
+    start += aligned_size(__nacl_tp_tls_offset(tls_size), info->tls_alignment);
+  } else {
+    /*
+     * x86 case:
+     *  +-----------------+------+
+     *  |  TLS data, bss  | TDB  |
+     *  +-----------------+------+
+     *                    ^
+     *                    |
+     *                    +--- $tp points here
+     *                    |
+     *                    +--- first word's value is $tp address
+     *
+     * We'll subtract the aligned size of the TLS block from $tp, which
+     * must itself already be adequately aligned.
+     */
+    start += __nacl_tp_tls_offset(aligned_size(tls_size, info->tls_alignment));
+  }
+
   memcpy(start, info->tdata_start, info->tdata_size);
   memset(start + info->tdata_size, 0, info->tbss_size);
   return tp;
