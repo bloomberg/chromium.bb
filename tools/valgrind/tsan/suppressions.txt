@@ -977,3 +977,12 @@
    fun:ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault
    fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_134891
+  ThreadSanitizer:Race
+  ...
+  fun:base::MD5Update
+  fun:media::VideoFrame::HashFrameForTesting
+  fun:media::PipelineIntegrationTestBase::OnVideoRendererPaint
+  fun:base::internal::RunnableAdapter::Run
+}
