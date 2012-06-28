@@ -1671,19 +1671,26 @@ range 0-255 and the dots must specify a single cell. Here are some
 examples:
 
 @example
-display a 1 When the character a is sent to the embosser or display,
-it # will produce a dot 1.
+# When the character a is sent to the embosser or display,
+# it will produce a dot 1.
+display a 1
 @end example
 
 @example
-display L 123 When the character L is sent to the display or embosser
-# produces dots 1-2-3.
+# When the character L is sent to the display or embosser
+# it will produce dots 1-2-3.
+display L 123
 @end example
 
 The @code{display} opcode is optional. It is used when the embosser or
 display has a different mapping of characters to dot patterns than
 that given in @ref{Character-Definition Opcodes}. If used, display
 entries must proceed character-definition entries.
+
+A possible use case would be to define display opcodes so that the
+result is Unicode braille for use on a display and a second set of
+display opcodes (in a different file) to produce plain ASCII braille
+for use with an embosser.
 
 @opcode{multind, dots opcode opcode ...}
 The @code{multind} opcode tells the back-translator that a sequence of

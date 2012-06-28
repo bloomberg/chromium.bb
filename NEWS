@@ -30,6 +30,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Improved the documentation
    - Document the test harness
    - Document the use of Valgrind to find memory leaks
+   - Improve the documentation on the display opcode
 
 ** Bug fixes
    - lou_allround and lou_translate now properly handle Unicode

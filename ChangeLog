@@ -1,3 +1,8 @@
+2012-06-28  Christian Egli  <christian.egli@sbs.ch>
+
+	* doc/liblouis.texi (Miscellaneous Opcodes): Enhance the
+	documentation on the display opcode
+
 2012-06-14  Christian Egli  <christian.egli@sbs.ch>
 
 	* liblouis/lou_translateString.c (hyphenate): Fix a buffer overrun.
