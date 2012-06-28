@@ -42,7 +42,7 @@ extern const char kInvalidOperationError[];
 extern const char kInvalidOrderByError[];
 extern const char kInvalidQueryLimit[];
 extern const char kInvalidStateError[];
-extern const char kInvalidURLError[];
+extern const char kInvalidUrlError[];
 extern const char kNotImplementedError[];
 
 }  // namespace download_extension_errors
@@ -350,20 +350,13 @@ class DownloadsGetFileIconFunction : public AsyncDownloadsFunction {
 class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
                                       public content::DownloadItem::Observer {
  public:
-  explicit ExtensionDownloadsEventRouter(
-      Profile* profile, content::DownloadManager* manager);
+  explicit ExtensionDownloadsEventRouter(Profile* profile);
   virtual ~ExtensionDownloadsEventRouter();
 
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
-
-  // Used for testing.
-  struct DownloadsNotificationSource {
-    std::string event_name;
-    Profile* profile;
-  };
 
  private:
   struct OnChangedStat {
@@ -377,6 +370,7 @@ class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
   typedef std::map<int, base::DictionaryValue*> ItemJsonMap;
   typedef std::map<int, OnChangedStat*> OnChangedStatMap;
 
+  void Init(content::DownloadManager* manager);
   void DispatchEvent(const char* event_name, base::Value* json_arg);
 
   Profile* profile_;
