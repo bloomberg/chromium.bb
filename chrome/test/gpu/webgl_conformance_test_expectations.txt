@@ -23,6 +23,8 @@
 //  91531 MAC WIN LINUX : conformance_more_* = SKIP
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
+134743 WIN : conformance_extensions_oes_standard_derivatives = FAIL
+
 UNFILED MAC WIN LINUX : conformance_more_* = SKIP
 UNFILED MAC WIN LINUX : conformance_ogles_* = SKIP
 
@@ -84,7 +86,6 @@ UNFILED XP NVIDIA : conformance_textures_texture_mips = FAIL
 UNFILED WIN7 INTEL : conformance_context_context_attributes_alpha_depth_stencil_antialias = FAIL
 UNFILED WIN7 INTEL : conformance_context_context_lost_restored = FAIL
 UNFILED WIN7 INTEL : conformance_context_premultiplyalpha_test = FAIL
-UNFILED WIN7 INTEL : conformance_extensions_oes_standard_derivatives = FAIL
 UNFILED WIN7 INTEL : conformance_extensions_oes_texture_float = FAIL
 UNFILED WIN7 INTEL : conformance_limits_gl_min_attribs = FAIL
 UNFILED WIN7 INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
