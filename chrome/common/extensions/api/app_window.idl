@@ -12,18 +12,28 @@ namespace appWindow {
     // Height of the window.
     long? height;
 
+    // X coordinate of the window.
     long? left;
+
+    // Y coordinate of the window.
     long? top;
 
+    // Minimium width of the window.
     long? minWidth;
+
+    // Minimum height of the window.
     long? minHeight;
+
+    // Maximum width of the window.
     long? maxWidth;
+
+    // Maximum height of the window.
     long? maxHeight;
 
-    // Window type: 'panel' or 'shell' (defaults to 'shell')
+    // Window type: 'shell' (the default) is the only currently supported value.
     DOMString? type;
 
-    // Frame type: 'none' or 'chrome' (defaults to 'chrome')
+    // Frame type: 'none' or 'chrome' (defaults to 'chrome').
     DOMString? frame;
   };
 
