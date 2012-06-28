@@ -245,7 +245,12 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
 
 #if defined(OS_MACOSX)
   uint32 flags = GetGpuFeatureType();
+  // TODO(jbauman): Add proper blacklist support for core animation plugins so
+  // special-casing this video card won't be necessary. See
+  // http://crbug.com/134015
   if ((flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+      (gpu_info_.gpu.vendor_id == 0x8086 &&
+       gpu_info_.gpu.device_id == 0x0166) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedCompositing)) {
     if (!command_line->HasSwitch(
