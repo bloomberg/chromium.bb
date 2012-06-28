@@ -45,12 +45,28 @@ enum ID {
   // use. Please do not use values in this range.
   kMinimumID = 3300000,
 
-  kUniformity1PercentBase  = kMinimumID,
-  kUniformity5PercentBase  = kUniformity1PercentBase + 100,
-  kUniformity10PercentBase = kUniformity5PercentBase + 20,
-  kUniformity20PercentBase = kUniformity10PercentBase + 10,
-  kUniformity50PercentBase = kUniformity20PercentBase + 5,
-  kUniformityTrialsMax     = 3300136,
+  // Uniformity1Percent: 3300000 - 3300099
+  kUniformity1PercentBase   = kMinimumID,
+  kUniformity1PercentLimit  = kUniformity1PercentBase + 100,
+  // Uniformity5Percent: 3300100 - 3300119
+  kUniformity5PercentBase   = kUniformity1PercentLimit,
+  kUniformity5PercentLimit  = kUniformity5PercentBase + 20,
+  // Uniformity10Percent: 3300120 - 3300129
+  kUniformity10PercentBase  = kUniformity5PercentLimit,
+  kUniformity10PercentLimit = kUniformity10PercentBase + 10,
+  // Uniformity20Percent: 3300130 - 3300134
+  kUniformity20PercentBase  = kUniformity10PercentLimit,
+  kUniformity20PercentLimit = kUniformity20PercentBase + 5,
+  // Uniformity50Percent: 3300135 - 3300136
+  kUniformity50PercentBase  = kUniformity20PercentLimit,
+  kUniformity50PercentLimit = kUniformity50PercentBase + 2,
+
+  // The dynamic uniformity trial is only specified on the server, this is just
+  // to reserve the id.
+  kDynamicUniformityDefault = 3300137,
+  kDynamicUniformityGroup01 = 3300138,
+
+  kUniformityTrialsMax      = 3300138,
 
   // Some values reserved for unit and integration tests.
   kTestValueA = 3300200,
