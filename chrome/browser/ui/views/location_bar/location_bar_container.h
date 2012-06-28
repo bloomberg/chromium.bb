@@ -71,6 +71,9 @@ class LocationBarContainer : public views::View,
   // Returns the background color.
   static SkColor GetBackgroundColor();
 
+  // Returns animation duration in milliseconds.
+  static int GetAnimationDuration();
+
   // Used to animate this view.
   views::BoundsAnimator animator_;
 

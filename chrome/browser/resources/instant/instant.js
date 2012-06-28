@@ -14,14 +14,11 @@ var $ = function(id) { return document.getElementById(id); };
 var instantConfig = (function() {
   'use strict';
 
-  /** Common prefix of instant preferences. **/
-  /** @const */ var INSTANT_PREFIX = 'instant.';
-
   /** List of fields used to dynamically build form. **/
   var FIELDS = [
     {
-      key: 'animation_scale_factor',
-      label: 'Slow down animations by:',
+      key: 'instant.animation_scale_factor',
+      label: 'Slow down animations by a factor of',
       units: 'no units, range 1 to 10',
       default: 1
     }
@@ -92,7 +89,7 @@ var instantConfig = (function() {
    * @param {string} prefName The name of the preference value being requested.
    */
   function getPreferenceValue(prefName) {
-    chrome.send('getPreferenceValue', [INSTANT_PREFIX + prefName]);
+    chrome.send('getPreferenceValue', [prefName]);
   }
 
   /**
@@ -101,7 +98,6 @@ var instantConfig = (function() {
    * @param {value} value The current value associated with prefName.
    */
   function getPreferenceValueResult(prefName, value) {
-    prefName = prefName.substring(prefName.indexOf('.') + 1);
     $(prefName).value = value;
   }
 
@@ -113,7 +109,7 @@ var instantConfig = (function() {
   function setPreferenceValue(prefName, value) {
     chrome.send(
         'setPreferenceValue',
-        [INSTANT_PREFIX + prefName, parseFloat(value)]);
+        [prefName, parseFloat(value)]);
   }
 
   /**

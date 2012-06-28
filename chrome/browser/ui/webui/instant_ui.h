@@ -15,6 +15,9 @@ class InstantUI : public content::WebUIController {
   // handlers.
   explicit InstantUI(content::WebUI* web_ui);
 
+  // Returns a scale factor to slow down instant animations.
+  static int GetSlowAnimationScaleFactor();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantUI);
 };

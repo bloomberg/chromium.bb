@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -23,7 +24,6 @@ LocationBarContainer::LocationBarContainer(views::View* parent,
       native_view_host_(NULL),
       in_toolbar_(true) {
   parent->AddChildView(this);
-  animator_.SetAnimationDuration(kAnimationDuration);
   animator_.set_tween_type(ui::Tween::EASE_IN_OUT);
   PlatformInit();
   if (instant_extended_api_enabled) {
@@ -44,6 +44,8 @@ void LocationBarContainer::SetLocationBarView(LocationBarView* view) {
 }
 
 void LocationBarContainer::AnimateTo(const gfx::Rect& bounds) {
+  // Animation duration can change during session.
+  animator_.SetAnimationDuration(GetAnimationDuration());
   animator_.AnimateViewTo(this, bounds);
 }
 
@@ -76,4 +78,9 @@ void LocationBarContainer::GetAccessibleState(
 void LocationBarContainer::OnBoundsAnimatorDone(
     views::BoundsAnimator* animator) {
   SetInToolbar(true);
+}
+
+// static
+int LocationBarContainer::GetAnimationDuration() {
+  return kAnimationDuration * InstantUI::GetSlowAnimationScaleFactor();
 }

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "grit/theme_resources.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -106,7 +107,7 @@ class NTPViewBackground : public views::Background {
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
     canvas->DrawColor(chrome::search::kNTPBackgroundColor);
     // Have to use the height of the layer here since the layer is animated
-    // independant of the view.
+    // independent of the view.
     int height = view->layer()->bounds().height();
     if (height < chrome::search::kSearchResultsHeight)
       return;
@@ -340,8 +341,7 @@ void SearchViewController::SetState(State state) {
 }
 
 void SearchViewController::StartAnimation() {
-  // TODO(sky): remove this factor after we're happy its all working smoothly.
-  int factor = 1;
+  int factor = InstantUI::GetSlowAnimationScaleFactor();
   {
     ui::Layer* ntp_layer = ntp_view_->layer();
     ui::ScopedLayerAnimationSettings settings(ntp_layer->GetAnimator());

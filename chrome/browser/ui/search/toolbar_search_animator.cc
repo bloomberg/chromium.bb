@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "ui/base/animation/slide_animation.h"
 
 namespace {
@@ -69,11 +70,13 @@ void ToolbarSearchAnimator::RemoveObserver(
 }
 
 void ToolbarSearchAnimator::ModeChanged(const Mode& mode) {
+  int delay_ms = kBackgroundChangeDelayMs *
+      InstantUI::GetSlowAnimationScaleFactor();
   if (mode.is_search() && mode.animate &&
       animate_state_ == ANIMATE_STATE_NONE) {
     background_change_timer_.Start(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kBackgroundChangeDelayMs),
+        base::TimeDelta::FromMilliseconds(delay_ms),
         this,
         &ToolbarSearchAnimator::StartBackgroundChange);
     animate_state_ = ANIMATE_STATE_WAITING;
@@ -111,7 +114,8 @@ void ToolbarSearchAnimator::StartBackgroundChange() {
   if (!background_animation_.get()) {
     background_animation_.reset(new ui::SlideAnimation(this));
     background_animation_->SetTweenType(ui::Tween::LINEAR);
-    background_animation_->SetSlideDuration(kBackgroundChangeDurationMs);
+    background_animation_->SetSlideDuration(
+        kBackgroundChangeDurationMs * InstantUI::GetSlowAnimationScaleFactor());
   }
   background_animation_->Reset(0.0);
   background_animation_->Show();
