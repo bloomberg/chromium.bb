@@ -220,6 +220,9 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderTest,
     testing::Values(TestHarness::Create));
 
+// TODO(joaodasilva): instantiate Configuration3rdPartyPolicyProviderTest too
+// once the mac loader supports 3rd party policy. http://crbug.com/108995
+
 // Special test cases for some mac preferences details.
 class PolicyLoaderMacTest : public PolicyTestBase {
  protected:

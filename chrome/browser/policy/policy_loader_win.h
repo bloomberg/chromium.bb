@@ -50,6 +50,32 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   DISALLOW_COPY_AND_ASSIGN(PolicyLoaderWin);
 };
 
+// Constants shared with tests.
+namespace registry_constants {
+  // Path separator for registry keys.
+  extern const wchar_t kPathSep[];
+  // Registry key within Chrome's key that contains 3rd party policy.
+  extern const wchar_t kThirdParty[];
+  // Registry key within an extension's namespace that contains mandatory
+  // policy.
+  extern const wchar_t kMandatory[];
+  // Registry key within an extension's namespace that contains recommended
+  // policy.
+  extern const wchar_t kRecommended[];
+  // Registry key within an extension's namespace that contains the policy
+  // schema.
+  extern const wchar_t kSchema[];
+  // Key in a JSON schema that indicates the expected type.
+  extern const char kType[];
+  // Key in a JSON schema that indicates the expected properties of an object.
+  extern const char kProperties[];
+  // Key in a JSON schema that indicates the default schema for object
+  // properties.
+  extern const char kAdditionalProperties[];
+  // Key in a JSON schema that indicates the expected type of list items.
+  extern const char kItems[];
+}  // namespace registry_constants
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_POLICY_LOADER_WIN_H_

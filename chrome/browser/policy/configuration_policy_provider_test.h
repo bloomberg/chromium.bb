@@ -97,6 +97,10 @@ class PolicyProviderTestHarness {
       const std::string& policy_name,
       const base::DictionaryValue* policy_value) = 0;
 
+  // Not every provider supports installing 3rd party policy. Those who do
+  // should override this method; the default just makes the test fail.
+  virtual void Install3rdPartyPolicy(const base::DictionaryValue* policies);
+
  private:
   PolicyLevel level_;
   PolicyScope scope_;
@@ -131,6 +135,19 @@ class ConfigurationPolicyProviderTest
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderTest);
+};
+
+// An extension of ConfigurationPolicyProviderTest that also tests loading of
+// 3rd party policy. Policy provider implementations that support loading of
+// 3rd party policy should also instantiate these tests.
+class Configuration3rdPartyPolicyProviderTest
+    : public ConfigurationPolicyProviderTest {
+ protected:
+  Configuration3rdPartyPolicyProviderTest();
+  virtual ~Configuration3rdPartyPolicyProviderTest();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Configuration3rdPartyPolicyProviderTest);
 };
 
 }  // namespace policy

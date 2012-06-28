@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/policy/async_policy_provider.h"
@@ -19,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
+using namespace policy::registry_constants;
 
 namespace policy {
 
@@ -30,54 +32,162 @@ const wchar_t kUnitTestMachineOverrideSubKey[] =
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
 
-// Installs |dict| at the given |path|, in the given |hive|. Currently only
-// string, int and dictionary types are converted; other types cause a failure.
-// Returns false if there was any failure, and true if |dict| was successfully
-// written.
-// TODO(joaodasilva): generate a schema for |dict| too, so that all types can
-// be retrieved.
-bool InstallDictionary(const base::DictionaryValue& dict,
-                       HKEY hive,
-                       const string16& path) {
+// Installs |value| in the given registry |path| and |hive|, under the key
+// |name|. Returns false on errors.
+// Some of the possible Value types are stored after a conversion (e.g. doubles
+// are stored as strings), and can only be retrieved if a corresponding schema
+// is written.
+bool InstallValue(const base::Value& value,
+                  HKEY hive,
+                  const string16& path,
+                  const string16& name) {
   // KEY_ALL_ACCESS causes the ctor to create the key if it does not exist yet.
   RegKey key(hive, path.c_str(), KEY_ALL_ACCESS);
-  const string16 kPathSep = ASCIIToUTF16("\\");
+  switch (value.GetType()) {
+    case base::Value::TYPE_NULL:
+      return key.WriteValue(name.c_str(), L"") == ERROR_SUCCESS;
 
-  for (base::DictionaryValue::Iterator it(dict); it.HasNext(); it.Advance()) {
-    string16 name(UTF8ToUTF16(it.key()));
-    switch (it.value().GetType()) {
-      case base::Value::TYPE_STRING: {
-        string16 value;
-        if (!it.value().GetAsString(&value))
-          return false;
-        if (key.WriteValue(name.c_str(), value.c_str()) != ERROR_SUCCESS)
-          return false;
-        break;
-      }
-
-      case base::Value::TYPE_INTEGER: {
-        int value;
-        if (!it.value().GetAsInteger(&value))
-          return false;
-        if (key.WriteValue(name.c_str(), value) != ERROR_SUCCESS)
-          return false;
-        break;
-      }
-
-      case base::Value::TYPE_DICTIONARY: {
-        const base::DictionaryValue* sub_dict = NULL;
-        if (!it.value().GetAsDictionary(&sub_dict))
-          return false;
-        if (!InstallDictionary(*sub_dict, hive, path + kPathSep + name))
-          return false;
-        break;
-      }
-
-      default:
+    case base::Value::TYPE_BOOLEAN: {
+      bool bool_value;
+      if (!value.GetAsBoolean(&bool_value))
         return false;
+      return key.WriteValue(name.c_str(), bool_value ? 1 : 0) == ERROR_SUCCESS;
     }
+
+    case base::Value::TYPE_INTEGER: {
+      int int_value;
+      if (!value.GetAsInteger(&int_value))
+        return false;
+      return key.WriteValue(name.c_str(), int_value) == ERROR_SUCCESS;
+    }
+
+    case base::Value::TYPE_DOUBLE: {
+      double double_value;
+      if (!value.GetAsDouble(&double_value))
+        return false;
+      string16 str_value = UTF8ToUTF16(base::DoubleToString(double_value));
+      return key.WriteValue(name.c_str(), str_value.c_str()) == ERROR_SUCCESS;
+    }
+
+    case base::Value::TYPE_STRING: {
+      string16 str_value;
+      if (!value.GetAsString(&str_value))
+        return false;
+      return key.WriteValue(name.c_str(), str_value.c_str()) == ERROR_SUCCESS;
+    }
+
+    case base::Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* sub_dict = NULL;
+      if (!value.GetAsDictionary(&sub_dict))
+        return false;
+      for (base::DictionaryValue::Iterator it(*sub_dict);
+           it.HasNext(); it.Advance()) {
+        if (!InstallValue(it.value(), hive, path + kPathSep + name,
+                          UTF8ToUTF16(it.key()))) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    case base::Value::TYPE_LIST: {
+      const base::ListValue* list = NULL;
+      if (!value.GetAsList(&list))
+        return false;
+      for (size_t i = 0; i < list->GetSize(); ++i) {
+        base::Value* item;
+        if (!list->Get(i, &item))
+          return false;
+        if (!InstallValue(*item, hive, path + kPathSep + name,
+                          base::UintToString16(i + 1))) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    case base::Value::TYPE_BINARY:
+      return false;
   }
-  return true;
+  NOTREACHED();
+  return false;
+}
+
+// Builds a JSON schema that represents the types contained in |value|.
+// Ownership is transferred to the caller.
+base::DictionaryValue* BuildSchema(const base::Value& value) {
+  base::DictionaryValue* schema = new base::DictionaryValue();
+  switch (value.GetType()) {
+    case base::Value::TYPE_NULL:
+      schema->SetString(kType, "null");
+      break;
+    case base::Value::TYPE_BOOLEAN:
+      schema->SetString(kType, "boolean");
+      break;
+    case base::Value::TYPE_INTEGER:
+      schema->SetString(kType, "integer");
+      break;
+    case base::Value::TYPE_DOUBLE:
+      schema->SetString(kType, "number");
+      break;
+    case base::Value::TYPE_STRING:
+      schema->SetString(kType, "string");
+      break;
+
+    case base::Value::TYPE_LIST: {
+      // Assumes every list element has the same type.
+      const base::ListValue* list = NULL;
+      if (value.GetAsList(&list) && !list->empty()) {
+        schema->SetString(kType, "array");
+        schema->Set(kItems, BuildSchema(**list->begin()));
+      }
+      break;
+    }
+
+    case base::Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* dict = NULL;
+      if (value.GetAsDictionary(&dict)) {
+        base::DictionaryValue* properties = new base::DictionaryValue();
+        for (base::DictionaryValue::Iterator it(*dict);
+             it.HasNext(); it.Advance()) {
+          properties->Set(it.key(), BuildSchema(it.value()));
+        }
+        schema->SetString(kType, "object");
+        schema->Set(kProperties, properties);
+      }
+      break;
+    }
+
+    case base::Value::TYPE_BINARY:
+      break;
+  }
+  return schema;
+}
+
+// Writes a JSON |schema| at the registry entry |name| at |path|
+// in the given |hive|. Returns false on failure.
+bool WriteSchema(const base::DictionaryValue& schema,
+                 HKEY hive,
+                 const string16& path,
+                 const string16& name) {
+  std::string encoded;
+  base::JSONWriter::Write(&schema, &encoded);
+  if (encoded.empty())
+    return false;
+  string16 encoded16 = UTF8ToUTF16(encoded);
+  // KEY_ALL_ACCESS causes the ctor to create the key if it does not exist yet.
+  RegKey key(hive, path.c_str(), KEY_ALL_ACCESS);
+  return key.WriteValue(name.c_str(), encoded16.c_str()) == ERROR_SUCCESS;
+}
+
+// Builds a JSON schema for |value| and writes it at the registry entry |name|
+// at |path| in the given |hive|. Returns false on failure.
+bool InstallSchema(const base::Value& value,
+                   HKEY hive,
+                   const string16& path,
+                   const string16& name) {
+  scoped_ptr<base::DictionaryValue> schema_dict(BuildSchema(value));
+  return WriteSchema(*schema_dict, hive, path, name);
 }
 
 // This class provides sandboxing and mocking for the parts of the Windows
@@ -130,6 +240,8 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
       const base::DictionaryValue* policy_value) OVERRIDE;
+  virtual void Install3rdPartyPolicy(
+      const base::DictionaryValue* policies) OVERRIDE;
 
   // Creates a harness instance that will install policy in HKCU or HKLM,
   // respectively.
@@ -247,6 +359,30 @@ void TestHarness::InstallDictionaryPolicy(
                  UTF8ToUTF16(json).c_str());
 }
 
+void TestHarness::Install3rdPartyPolicy(const base::DictionaryValue* policies) {
+  // The first level entries are domains, and the second level entries map
+  // components to their policy.
+  const string16 kPathPrefix = string16(kRegistryMandatorySubKey) + kPathSep +
+                               kThirdParty + kPathSep;
+  for (base::DictionaryValue::Iterator domain(*policies);
+       domain.HasNext(); domain.Advance()) {
+    const base::DictionaryValue* components = NULL;
+    if (!domain.value().GetAsDictionary(&components)) {
+      ADD_FAILURE();
+      continue;
+    }
+    for (base::DictionaryValue::Iterator component(*components);
+         component.HasNext(); component.Advance()) {
+      const string16 path = string16(kRegistryMandatorySubKey) + kPathSep +
+                            kThirdParty + kPathSep +
+                            UTF8ToUTF16(domain.key()) + kPathSep +
+                            UTF8ToUTF16(component.key());
+      InstallValue(component.value(), hive_, path, kMandatory);
+      EXPECT_TRUE(InstallSchema(component.value(), hive_, path, kSchema));
+    }
+  }
+}
+
 // static
 PolicyProviderTestHarness* TestHarness::CreateHKCU() {
   return new TestHarness(HKEY_CURRENT_USER, POLICY_SCOPE_USER);
@@ -265,11 +401,23 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderTest,
     testing::Values(TestHarness::CreateHKCU, TestHarness::CreateHKLM));
 
+// Instantiate abstract test case for 3rd party policy reading tests.
+INSTANTIATE_TEST_CASE_P(
+    ThirdPartyPolicyProviderWinTest,
+    Configuration3rdPartyPolicyProviderTest,
+    testing::Values(TestHarness::CreateHKCU, TestHarness::CreateHKLM));
+
 // Test cases for windows policy provider specific functionality.
 class PolicyLoaderWinTest : public PolicyTestBase {
  protected:
   PolicyLoaderWinTest() {}
   virtual ~PolicyLoaderWinTest() {}
+
+  bool Matches(const PolicyBundle& expected) {
+    PolicyLoaderWin loader(&test_policy_definitions::kList);
+    scoped_ptr<PolicyBundle> loaded(loader.Load());
+    return loaded->Equals(expected);
+  }
 
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
 };
@@ -282,21 +430,16 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
   hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hkcu").c_str());
 
-  PolicyLoaderWin loader(&test_policy_definitions::kList);
-  scoped_ptr<PolicyBundle> bundle(loader.Load());
-
-  PolicyBundle expected_bundle;
-  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+  PolicyBundle expected;
+  expected.Get(POLICY_DOMAIN_CHROME, "")
       .Set(test_policy_definitions::kKeyString,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
            base::Value::CreateStringValue("hklm"));
-  EXPECT_TRUE(bundle->Equals(expected_bundle));
+  EXPECT_TRUE(Matches(expected));
 }
 
-// TODO(joaodasilva): share tests for 3rd party policy with
-// ConfigDirPolicyProvider once PolicyLoaderWin is able to load all types.
-TEST_F(PolicyLoaderWinTest, Load3rdParty) {
+TEST_F(PolicyLoaderWinTest, Load3rdPartyWithoutSchema) {
   base::DictionaryValue dict;
   dict.SetString("str", "string value");
   dict.SetInteger("int", 123);
@@ -305,22 +448,19 @@ TEST_F(PolicyLoaderWinTest, Load3rdParty) {
   dict.Set("subsubsubdict", dict.DeepCopy());
 
   base::DictionaryValue policy_dict;
-  policy_dict.Set("3rdparty.extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.policy",
+  policy_dict.Set("extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.policy",
                   dict.DeepCopy());
-  policy_dict.Set("3rdparty.extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.policy",
+  policy_dict.Set("extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.policy",
                   dict.DeepCopy());
-  EXPECT_TRUE(InstallDictionary(policy_dict, HKEY_LOCAL_MACHINE,
-                                kRegistryMandatorySubKey));
+  EXPECT_TRUE(InstallValue(policy_dict, HKEY_LOCAL_MACHINE,
+                           kRegistryMandatorySubKey, kThirdParty));
 
   PolicyBundle expected;
   expected.Get(POLICY_DOMAIN_EXTENSIONS, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
       .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
   expected.Get(POLICY_DOMAIN_EXTENSIONS, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
       .LoadFrom(&dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
-
-  PolicyLoaderWin loader(&test_policy_definitions::kList);
-  scoped_ptr<PolicyBundle> loaded(loader.Load());
-  EXPECT_TRUE(loaded->Equals(expected));
+  EXPECT_TRUE(Matches(expected));
 }
 
 TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
@@ -329,8 +469,6 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
 
   const string16 kPathSuffix =
       kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\merge");
-  const string16 kMandatoryPath = kPathSuffix + ASCIIToUTF16("\\policy");
-  const string16 kRecommendedPath = kPathSuffix + ASCIIToUTF16("\\recommended");
 
   const char kUserMandatory[] = "user-mandatory";
   const char kUserRecommended[] = "user-recommended";
@@ -339,19 +477,23 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
 
   base::DictionaryValue policy;
   policy.SetString("a", kMachineMandatory);
-  EXPECT_TRUE(InstallDictionary(policy, HKEY_LOCAL_MACHINE, kMandatoryPath));
+  EXPECT_TRUE(InstallValue(policy, HKEY_LOCAL_MACHINE,
+                           kPathSuffix, kMandatory));
   policy.SetString("a", kUserMandatory);
   policy.SetString("b", kUserMandatory);
-  EXPECT_TRUE(InstallDictionary(policy, HKEY_CURRENT_USER, kMandatoryPath));
+  EXPECT_TRUE(InstallValue(policy, HKEY_CURRENT_USER,
+                           kPathSuffix, kMandatory));
   policy.SetString("a", kMachineRecommended);
   policy.SetString("b", kMachineRecommended);
   policy.SetString("c", kMachineRecommended);
-  EXPECT_TRUE(InstallDictionary(policy, HKEY_LOCAL_MACHINE, kRecommendedPath));
+  EXPECT_TRUE(InstallValue(policy, HKEY_LOCAL_MACHINE,
+                           kPathSuffix, kRecommended));
   policy.SetString("a", kUserRecommended);
   policy.SetString("b", kUserRecommended);
   policy.SetString("c", kUserRecommended);
   policy.SetString("d", kUserRecommended);
-  EXPECT_TRUE(InstallDictionary(policy, HKEY_CURRENT_USER, kRecommendedPath));
+  EXPECT_TRUE(InstallValue(policy, HKEY_CURRENT_USER,
+                           kPathSuffix, kRecommended));
 
   PolicyBundle expected;
   PolicyMap& expected_policy = expected.Get(POLICY_DOMAIN_EXTENSIONS, "merge");
@@ -363,10 +505,112 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
                       base::Value::CreateStringValue(kMachineRecommended));
   expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                       base::Value::CreateStringValue(kUserRecommended));
+  EXPECT_TRUE(Matches(expected));
+}
 
-  PolicyLoaderWin loader(&test_policy_definitions::kList);
-  scoped_ptr<PolicyBundle> loaded(loader.Load());
-  EXPECT_TRUE(loaded->Equals(expected));
+TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
+  // Create a dictionary with all the types that can be stored encoded in a
+  // string, to pass to InstallSchema(). Also build an equivalent dictionary
+  // with the encoded values, to pass to InstallValue().
+  base::DictionaryValue policy;
+  policy.Set("null", base::Value::CreateNullValue());
+  policy.SetBoolean("bool", true);
+  policy.SetInteger("int", -123);
+  policy.SetDouble("double", 456.78e9);
+  base::ListValue list;
+  list.Append(policy.DeepCopy());
+  list.Append(policy.DeepCopy());
+  policy.Set("list", list.DeepCopy());
+  // Encode |policy| before adding the "dict" entry.
+  std::string encoded_dict;
+  base::JSONWriter::Write(&policy, &encoded_dict);
+  ASSERT_FALSE(encoded_dict.empty());
+  policy.Set("dict", policy.DeepCopy());
+
+  std::string encoded_list;
+  base::JSONWriter::Write(&list, &encoded_list);
+  ASSERT_FALSE(encoded_list.empty());
+  base::DictionaryValue encoded_policy;
+  encoded_policy.SetString("null", "");
+  encoded_policy.SetString("bool", "1");
+  encoded_policy.SetString("int", "-123");
+  encoded_policy.SetString("double", "456.78e9");
+  encoded_policy.SetString("list", encoded_list);
+  encoded_policy.SetString("dict", encoded_dict);
+
+  const string16 kPathSuffix =
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\string");
+  EXPECT_TRUE(InstallSchema(policy, HKEY_CURRENT_USER, kPathSuffix, kSchema));
+  EXPECT_TRUE(
+      InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
+
+  PolicyBundle expected;
+  expected.Get(POLICY_DOMAIN_EXTENSIONS, "string")
+      .LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  EXPECT_TRUE(Matches(expected));
+}
+
+TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
+  base::DictionaryValue policy;
+  policy.SetBoolean("bool", true);
+  policy.SetInteger("int", 123);
+  policy.SetDouble("double", 456.0);
+
+  base::DictionaryValue encoded_policy;
+  encoded_policy.SetInteger("bool", 1);
+  encoded_policy.SetInteger("int", 123);
+  encoded_policy.SetInteger("double", 456);
+
+  const string16 kPathSuffix =
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\int");
+  EXPECT_TRUE(InstallSchema(policy, HKEY_CURRENT_USER, kPathSuffix, kSchema));
+  EXPECT_TRUE(
+      InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
+
+  PolicyBundle expected;
+  expected.Get(POLICY_DOMAIN_EXTENSIONS, "int")
+      .LoadFrom(&policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  EXPECT_TRUE(Matches(expected));
+}
+
+TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
+  // Build a schema for an "object" with a default schema for its properties.
+  base::DictionaryValue default_schema;
+  default_schema.SetString(kType, "number");
+  base::DictionaryValue integer_schema;
+  integer_schema.SetString(kType, "integer");
+  base::DictionaryValue properties;
+  properties.Set("special-int1", integer_schema.DeepCopy());
+  properties.Set("special-int2", integer_schema.DeepCopy());
+  base::DictionaryValue schema;
+  schema.SetString(kType, "object");
+  schema.Set(kProperties, properties.DeepCopy());
+  schema.Set(kAdditionalProperties, default_schema.DeepCopy());
+
+  const string16 kPathSuffix =
+      kRegistryMandatorySubKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");
+  EXPECT_TRUE(WriteSchema(schema, HKEY_CURRENT_USER, kPathSuffix, kSchema));
+
+  // Write some test values.
+  base::DictionaryValue policy;
+  // These special values have a specific schema for them.
+  policy.SetInteger("special-int1", 123);
+  policy.SetString("special-int2", "-456");
+  // Other values default to be loaded as doubles.
+  policy.SetInteger("double1", 789.0);
+  policy.SetString("double2", "123.456e7");
+  policy.SetString("invalid", "omg");
+  EXPECT_TRUE(InstallValue(policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
+
+  base::DictionaryValue expected_policy;
+  expected_policy.SetInteger("special-int1", 123);
+  expected_policy.SetInteger("special-int2", -456);
+  expected_policy.SetDouble("double1", 789.0);
+  expected_policy.SetDouble("double2", 123.456e7);
+  PolicyBundle expected;
+  expected.Get(POLICY_DOMAIN_EXTENSIONS, "test")
+      .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  EXPECT_TRUE(Matches(expected));
 }
 
 }  // namespace policy

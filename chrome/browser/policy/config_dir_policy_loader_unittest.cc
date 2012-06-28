@@ -45,6 +45,8 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void InstallDictionaryPolicy(
       const std::string& policy_name,
       const base::DictionaryValue* policy_value) OVERRIDE;
+  virtual void Install3rdPartyPolicy(
+      const base::DictionaryValue* policies) OVERRIDE;
 
   const FilePath& test_dir() { return test_dir_.path(); }
 
@@ -52,16 +54,22 @@ class TestHarness : public PolicyProviderTestHarness {
   void WriteConfigFile(const base::DictionaryValue& dict,
                        const std::string& file_name);
 
+  // Returns a unique name for a policy file. Each subsequent call returns a new
+  // name that comes lexicographically after the previous one.
+  std::string NextConfigFileName();
+
   static PolicyProviderTestHarness* Create();
 
  private:
   ScopedTempDir test_dir_;
+  int next_policy_file_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
 
 TestHarness::TestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE) {}
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE),
+      next_policy_file_index_(100) {}
 
 TestHarness::~TestHarness() {}
 
@@ -78,35 +86,35 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
 
 void TestHarness::InstallEmptyPolicy() {
   base::DictionaryValue dict;
-  WriteConfigFile(dict, "policy");
+  WriteConfigFile(dict, NextConfigFileName());
 }
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
   base::DictionaryValue dict;
   dict.SetString(policy_name, policy_value);
-  WriteConfigFile(dict, "policy");
+  WriteConfigFile(dict, NextConfigFileName());
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
   base::DictionaryValue dict;
   dict.SetInteger(policy_name, policy_value);
-  WriteConfigFile(dict, "policy");
+  WriteConfigFile(dict, NextConfigFileName());
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
   base::DictionaryValue dict;
   dict.SetBoolean(policy_name, policy_value);
-  WriteConfigFile(dict, "policy");
+  WriteConfigFile(dict, NextConfigFileName());
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   base::DictionaryValue dict;
   dict.Set(policy_name, policy_value->DeepCopy());
-  WriteConfigFile(dict, "policy");
+  WriteConfigFile(dict, NextConfigFileName());
 }
 
 void TestHarness::InstallDictionaryPolicy(
@@ -114,7 +122,13 @@ void TestHarness::InstallDictionaryPolicy(
     const base::DictionaryValue* policy_value) {
   base::DictionaryValue dict;
   dict.Set(policy_name, policy_value->DeepCopy());
-  WriteConfigFile(dict, "policy");
+  WriteConfigFile(dict, NextConfigFileName());
+}
+
+void TestHarness::Install3rdPartyPolicy(const base::DictionaryValue* policies) {
+  base::DictionaryValue dict;
+  dict.Set("3rdparty", policies->DeepCopy());
+  WriteConfigFile(dict, NextConfigFileName());
 }
 
 void TestHarness::WriteConfigFile(const base::DictionaryValue& dict,
@@ -129,6 +143,11 @@ void TestHarness::WriteConfigFile(const base::DictionaryValue& dict,
             file_util::WriteFile(file_path, data.c_str(), data.size()));
 }
 
+std::string TestHarness::NextConfigFileName() {
+  EXPECT_LE(next_policy_file_index_, 999);
+  return std::string("policy") + base::IntToString(next_policy_file_index_++);
+}
+
 // static
 PolicyProviderTestHarness* TestHarness::Create() {
   return new TestHarness();
@@ -140,6 +159,12 @@ PolicyProviderTestHarness* TestHarness::Create() {
 INSTANTIATE_TEST_CASE_P(
     ConfigDirPolicyLoaderTest,
     ConfigurationPolicyProviderTest,
+    testing::Values(TestHarness::Create));
+
+// Instantiate abstract test case for 3rd party policy reading tests.
+INSTANTIATE_TEST_CASE_P(
+    ConfigDir3rdPartyPolicyLoaderTest,
+    Configuration3rdPartyPolicyProviderTest,
     testing::Values(TestHarness::Create));
 
 // Some tests that exercise special functionality in ConfigDirPolicyLoader.
@@ -197,50 +222,6 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   PolicyBundle expected_bundle;
   expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
       .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-  EXPECT_TRUE(bundle->Equals(expected_bundle));
-}
-
-// Tests loading of policy for 3rd parties.
-TEST_F(ConfigDirPolicyLoaderTest, Load3rdParty) {
-  base::DictionaryValue policy_dict;
-  policy_dict.SetBoolean("bool", true);
-  policy_dict.SetString("str", "string value");
-  policy_dict.SetDouble("double", 123.456);
-  policy_dict.SetInteger("int", 789);
-
-  base::ListValue* list = new base::ListValue();
-  for (int i = 0; i < 5; ++i) {
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    dict->SetInteger("subdictindex", i);
-    dict->Set("subdict", policy_dict.DeepCopy());
-    list->Append(dict);
-  }
-  policy_dict.Set("list", list);
-
-  base::DictionaryValue json_dict;
-  // Merge |policy_dict|, which will become the chrome policies.
-  json_dict.MergeDictionary(&policy_dict);
-  json_dict.Set("3rdparty.extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                policy_dict.DeepCopy());
-  json_dict.Set("3rdparty.extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                policy_dict.DeepCopy());
-
-  harness_.WriteConfigFile(json_dict, "policy.json");
-  ConfigDirPolicyLoader loader(harness_.test_dir(), POLICY_SCOPE_USER);
-  scoped_ptr<PolicyBundle> bundle(loader.Load());
-  ASSERT_TRUE(bundle.get());
-  PolicyMap expected_policy;
-  expected_policy.LoadFrom(&policy_dict,
-                           POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_USER);
-  PolicyBundle expected_bundle;
-  expected_bundle.Get(POLICY_DOMAIN_CHROME, "").CopyFrom(expected_policy);
-  expected_bundle.Get(POLICY_DOMAIN_EXTENSIONS,
-                      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-                          .CopyFrom(expected_policy);
-  expected_bundle.Get(POLICY_DOMAIN_EXTENSIONS,
-                      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-                          .CopyFrom(expected_policy);
   EXPECT_TRUE(bundle->Equals(expected_bundle));
 }
 

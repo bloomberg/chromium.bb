@@ -66,6 +66,11 @@ PolicyScope PolicyProviderTestHarness::policy_scope() const {
   return scope_;
 }
 
+void PolicyProviderTestHarness::Install3rdPartyPolicy(
+    const base::DictionaryValue* policies) {
+  FAIL();
+}
+
 ConfigurationPolicyProviderTest::ConfigurationPolicyProviderTest() {}
 
 ConfigurationPolicyProviderTest::~ConfigurationPolicyProviderTest() {}
@@ -254,6 +259,68 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
       .Set(key::kProxySettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            expected_value);
   EXPECT_TRUE(provider.policies().Equals(expected_bundle));
+}
+
+Configuration3rdPartyPolicyProviderTest::
+    Configuration3rdPartyPolicyProviderTest() {}
+
+Configuration3rdPartyPolicyProviderTest::
+    ~Configuration3rdPartyPolicyProviderTest() {}
+
+TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
+  base::DictionaryValue policy_dict;
+  policy_dict.SetBoolean("bool", true);
+  policy_dict.SetDouble("double", 123.456);
+  policy_dict.SetInteger("int", 789);
+  policy_dict.SetString("str", "string value");
+
+  base::ListValue* list = new base::ListValue();
+  for (int i = 0; i < 2; ++i) {
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    dict->SetInteger("subdictindex", i);
+    dict->Set("subdict", policy_dict.DeepCopy());
+    list->Append(dict);
+  }
+  policy_dict.Set("list", list);
+  policy_dict.Set("dict", policy_dict.DeepCopy());
+
+  // Install these policies as a Chrome policy.
+  test_harness_->InstallDictionaryPolicy(
+      test_policy_definitions::kKeyDictionary, &policy_dict);
+  // Install them as 3rd party policies too.
+  base::DictionaryValue policy_3rdparty;
+  policy_3rdparty.Set("extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      policy_dict.DeepCopy());
+  policy_3rdparty.Set("extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                      policy_dict.DeepCopy());
+  // Install invalid 3rd party policies that shouldn't be loaded. These also
+  // help detecting memory leaks in the code paths that detect invalid input.
+  policy_3rdparty.Set("invalid-domain.component", policy_dict.DeepCopy());
+  policy_3rdparty.Set("extensions.cccccccccccccccccccccccccccccccc",
+                      base::Value::CreateStringValue("invalid-value"));
+  test_harness_->Install3rdPartyPolicy(&policy_3rdparty);
+
+  provider_->RefreshPolicies();
+  loop_.RunAllPending();
+
+  PolicyMap expected_policy;
+  expected_policy.Set(test_policy_definitions::kKeyDictionary,
+                      test_harness_->policy_level(),
+                      test_harness_->policy_scope(),
+                      policy_dict.DeepCopy());
+  PolicyBundle expected_bundle;
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "").CopyFrom(expected_policy);
+  expected_policy.Clear();
+  expected_policy.LoadFrom(&policy_dict,
+                           test_harness_->policy_level(),
+                           test_harness_->policy_scope());
+  expected_bundle.Get(POLICY_DOMAIN_EXTENSIONS,
+                      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+                          .CopyFrom(expected_policy);
+  expected_bundle.Get(POLICY_DOMAIN_EXTENSIONS,
+                      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+                          .CopyFrom(expected_policy);
+  EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
 }
 
 }  // namespace policy
