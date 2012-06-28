@@ -2368,6 +2368,13 @@ button_handler(struct widget *widget,
 }
 
 static int
+enter_handler(struct widget *widget,
+	      struct input *input, float x, float y, void *data)
+{
+	return CURSOR_IBEAM;
+}
+
+static int
 motion_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
 	       float x, float y, void *data)
@@ -2421,6 +2428,7 @@ terminal_create(struct display *display, int fullscreen)
 	widget_set_redraw_handler(terminal->widget, redraw_handler);
 	widget_set_resize_handler(terminal->widget, resize_handler);
 	widget_set_button_handler(terminal->widget, button_handler);
+	widget_set_enter_handler(terminal->widget, enter_handler);
 	widget_set_motion_handler(terminal->widget, motion_handler);
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
