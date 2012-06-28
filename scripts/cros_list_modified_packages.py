@@ -128,18 +128,6 @@ def ListWorkonPackages(board, host):
   return result.output.split()
 
 
-def ParseBashArray(value):
-  """Parse a valid bash array into python list."""
-  # The syntax for bash arrays is nontrivial, so let's use bash to do the
-  # heavy lifting for us.
-  sep = ','
-  # Because %s may contain bash comments (#), put a clever newline in the way.
-  cmd = ('CROS_WORKON_PROJECT=%s ;\n:; '
-        'IFS=%s; echo -n "${CROS_WORKON_PROJECT[*]}"' % (value, sep))
-  return cros_build_lib.RunCommandCaptureOutput(cmd, print_cmd=False,
-      shell=True).output.split(sep)
-
-
 def ListWorkonPackagesInfo(board, host):
   """Find the specified workon packages for the specified board.
 
@@ -157,21 +145,14 @@ def ListWorkonPackagesInfo(board, host):
   vdb_path = os.path.join(install_root, portage.const.VDB_PATH)
   root, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
   for overlay in portage_utilities.FindOverlays(root, both, board):
-    # Search ebuilds for project names, ignoring non-existent directories.
-    cmd = ['grep', '^CROS_WORKON_PROJECT=',
-           '--include', '*-9999.ebuild', '-Hsr'] + list(packages)
-    result = cros_build_lib.RunCommandCaptureOutput(
-        cmd, cwd=overlay, error_code_ok=True, print_cmd=False)
-    for grep_line in result.output.splitlines():
-      filename, _, line = grep_line.partition(':')
-      value = line.partition('=')[2]
-      projects = ParseBashArray(value)
-
+    for filename, projects in portage_utilities.GetWorkonProjectMap(overlay,
+                                                                    packages):
       # chromeos-base/power_manager/power_manager-9999
-      # cp = chromeos-base/power_manager; pv = power_manager-9999
+      # cp = chromeos-base/power_manager
       # cpv = chromeos-base/power_manager-9999
-      cp, pv = os.path.split(os.path.splitext(filename)[0])
-      cpv = os.path.join(os.path.dirname(cp), pv)
+      category, pn, p = portage_utilities.SplitEbuildPath(filename)
+      cp = '%s/%s' % (category, pn)
+      cpv = '%s/%s' % (category, p)
 
       # Get the time the package finished building. TODO(build): Teach Portage
       # to store the time the package started building and use that here.

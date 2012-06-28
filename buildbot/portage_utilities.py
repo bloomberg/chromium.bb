@@ -662,3 +662,68 @@ def RegenCache(overlay):
   # Explicitly tell git to also include rm-ed files.
   cros_build_lib.RunCommand(['git', 'commit', '-m', 'regen cache',
                              'metadata/'], cwd=overlay)
+
+
+def ParseBashArray(value):
+  """Parse a valid bash array into python list."""
+  # The syntax for bash arrays is nontrivial, so let's use bash to do the
+  # heavy lifting for us.
+  sep = ','
+  # Because %s may contain bash comments (#), put a clever newline in the way.
+  cmd = 'ARR=%s\nIFS=%s; echo -n "${ARR[*]}"' % (value, sep)
+  return cros_build_lib.RunCommandCaptureOutput(
+      cmd, print_cmd=False, shell=True).output.split(sep)
+
+
+def GetWorkonProjectMap(overlay, subdirectories):
+  """Get the project -> ebuild mapping for cros_workon ebuilds.
+
+  Args:
+    overlay: Overlay to look at.
+    subdirectories: List of subdirectories to look in on the overlay.
+
+  Returns:
+    A list of (filename, projects) tuples for cros-workon ebuilds in the
+    given overlay under the given subdirectories.
+  """
+  # Search ebuilds for project names, ignoring non-existent directories.
+  cmd = ['grep', '^CROS_WORKON_PROJECT=', '--include', '*-9999.ebuild',
+         '-Hsr'] + list(subdirectories)
+  result = cros_build_lib.RunCommandCaptureOutput(
+      cmd, cwd=overlay, error_code_ok=True, print_cmd=False)
+  for grep_line in result.output.splitlines():
+    filename, _, line = grep_line.partition(':')
+    value = line.partition('=')[2]
+    projects = ParseBashArray(value)
+    yield filename, projects
+
+
+def SplitEbuildPath(path):
+  """Split an ebuild path into its components.
+
+  Given a specified ebuild filename, returns $CATEGORY, $PN, $P.
+
+  Example: For chromeos-base/power_manager/power_manager-9999.ebuild,
+  returns ('chromeos-base', 'power_manager', 'power_manager-9999').
+
+  Returns:
+    $CATEGORY, $PN, $P
+  """
+  return os.path.splitext(path)[0].rsplit('/', 3)[-3:]
+
+
+def FindWorkonProjects(packages):
+  """Find the projects associated with the specified cros_workon packages.
+
+  Args:
+    packages: List of cros_workon packages.
+
+  Returns:
+    The set of projects associated with the specified cros_workon packages.
+  """
+  all_projects = set()
+  root, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
+  for overlay in FindOverlays(root, both):
+    for _, projects in GetWorkonProjectMap(overlay, packages):
+      all_projects.update(projects)
+  return all_projects
