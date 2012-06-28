@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# A script to setup symbolic links needed for Chrome's PyAuto framwork.
+# A script to setup symbolic links needed for Chrome's PyAuto framework.
 
 ln -f -s /opt/google/chrome/chrome $(dirname $0)/chrome
 [ -L $(dirname $0)/locales ] || ln -f -s /opt/google/chrome/locales \
@@ -12,3 +12,4 @@ ln -f -s /opt/google/chrome/chrome $(dirname $0)/chrome
 [ -L $(dirname $0)/resources ] || ln -f -s /opt/google/chrome/resources \
     $(dirname $0)/resources
 ln -f -s /opt/google/chrome/*.pak $(dirname $0)/
+ln -f -s /opt/google/chrome/libffmpegsumo.so $(dirname $0)/libffmpegsumo.so
