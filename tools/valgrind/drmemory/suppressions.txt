@@ -67,6 +67,12 @@ name=http://crbug.com/131304
 avcodec-54.dll!avpriv_vorbis_parse_reset
 avcodec-54.dll!avpriv_vorbis_parse_reset
 
+# prefetch of unaddressable memory
+WARNING
+name=http://crbug.com/134979
+avcodec-54.dll!avpriv_vorbis_parse_reset
+avcodec-54.dll!avpriv_vorbis_parse_reset
+
 ############################
 # TODO(timurrrr): investigate these
 UNADDRESSABLE ACCESS
