@@ -287,13 +287,13 @@ void ChromeLauncherController::OpenAppID(
       app_id_to_tab_contents_list_.find(app_id);
 
   if (i != app_id_to_tab_contents_list_.end()) {
-    DCHECK(i->second.size());
+    DCHECK(!i->second.empty());
     TabContents* tab = i->second.front();
     Browser* browser = browser::FindBrowserWithWebContents(
         tab->web_contents());
     TabStripModel* tab_strip = browser->tab_strip_model();
     int index = tab_strip->GetIndexOfTabContents(tab);
-    DCHECK(index != TabStripModel::kNoTab);
+    DCHECK_NE(TabStripModel::kNoTab, index);
     tab_strip->ActivateTabAt(index, false);
     browser->window()->Show();
     ash::wm::ActivateWindow(browser->window()->GetNativeWindow());
@@ -445,7 +445,7 @@ void ChromeLauncherController::RemoveTabFromRunningApp(
   if (i_app_id != app_id_to_tab_contents_list_.end()) {
     TabContentsList* tab_list = &i_app_id->second;
     tab_list->remove(tab);
-    if (!tab_list->size()) {
+    if (tab_list->empty()) {
       app_id_to_tab_contents_list_.erase(i_app_id);
       i_app_id = app_id_to_tab_contents_list_.end();
       ash::LauncherID id = GetLauncherIDForAppID(app_id);
@@ -476,22 +476,15 @@ void ChromeLauncherController::UpdateAppState(TabContents* tab,
     // The tab has gone away.
     RemoveTabFromRunningApp(tab, app_id);
   } else {
-    AppIDToTabContentsListMap::iterator i_app_id =
-        app_id_to_tab_contents_list_.find(app_id);
-
-    if (i_app_id == app_id_to_tab_contents_list_.end()) {
-      app_id_to_tab_contents_list_[app_id] = TabContentsList();
-      i_app_id = app_id_to_tab_contents_list_.find(app_id);
-    }
-    TabContentsList* tab_list = &i_app_id->second;
+    TabContentsList& tab_list(app_id_to_tab_contents_list_[app_id]);
     if (app_state == APP_STATE_INACTIVE) {
       TabContentsList::const_iterator i_tab =
-          std::find(tab_list->begin(), tab_list->end(), tab);
-      if (i_tab != tab_list->end())
-        tab_list->push_back(tab);
+          std::find(tab_list.begin(), tab_list.end(), tab);
+      if (i_tab == tab_list.end())
+        tab_list.push_back(tab);
     } else {
-      tab_list->remove(tab);
-      tab_list->push_front(tab);
+      tab_list.remove(tab);
+      tab_list.push_front(tab);
     }
     ash::LauncherID id = GetLauncherIDForAppID(app_id);
     if (id > 0) {
