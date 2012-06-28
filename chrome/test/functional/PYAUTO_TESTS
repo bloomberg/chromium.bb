@@ -288,6 +288,7 @@
     'chromeos': [
       'chromeos_basic',
       'chromeos_browser',
+      'chromeos_crosh',
       'chromeos_file_browser',
       'chromeos_power',
       'chromeos_prefs',
