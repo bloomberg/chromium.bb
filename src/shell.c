@@ -1852,7 +1852,7 @@ configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
 
 	if (wl_list_empty(&es->layer_link)) {
 		wl_list_insert(&layer->surface_list, &es->layer_link);
-		weston_surface_assign_output(es);
+		weston_compositor_schedule_repaint(es->compositor);
 	}
 }
 

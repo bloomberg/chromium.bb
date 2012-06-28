@@ -1936,15 +1936,14 @@ notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
 	struct wl_surface *surface;
-	uint32_t *k;
+	uint32_t *k, serial;
 
+	serial = wl_display_next_serial(compositor->wl_display);
 	wl_array_copy(&seat->keyboard->keys, keys);
 	wl_array_for_each(k, &seat->keyboard->keys) {
 		weston_compositor_idle_inhibit(compositor);
 		if (update_state == STATE_UPDATE_AUTOMATIC)
-			update_modifier_state(ws,
-					      wl_display_next_serial(compositor->wl_display),
-					      *k,
+			update_modifier_state(ws, serial, *k,
 					      WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
 
@@ -1969,10 +1968,14 @@ notify_keyboard_focus_out(struct wl_seat *seat)
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
 	struct wl_surface *surface;
-	uint32_t *k;
+	uint32_t *k, serial;
 
-	wl_array_for_each(k, &seat->keyboard->keys)
+	serial = wl_display_next_serial(compositor->wl_display);
+	wl_array_for_each(k, &seat->keyboard->keys) {
 		weston_compositor_idle_release(compositor);
+		update_modifier_state(ws, serial, *k,
+				      WL_KEYBOARD_KEY_STATE_RELEASED);
+	}
 
 	ws->modifier_state = 0;
 
