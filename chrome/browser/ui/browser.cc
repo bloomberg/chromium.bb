@@ -2492,7 +2492,7 @@ void Browser::Observe(int type,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, InstantDelegate implementation:
+// Browser, InstantControllerDelegate implementation:
 
 void Browser::ShowInstant(TabContents* preview_contents) {
   window_->ShowInstant(preview_contents);

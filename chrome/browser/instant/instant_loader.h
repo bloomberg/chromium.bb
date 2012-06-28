@@ -142,7 +142,7 @@ class InstantLoader : public content::NotificationObserver {
   friend class InstantTest;
   class FrameLoadObserver;
   class PaintObserverImpl;
-  class TabContentsDelegateImpl;
+  class WebContentsDelegateImpl;
 
   // Invoked when the page wants to update the suggested text. If |user_text_|
   // starts with |suggested_text|, then the delegate is notified of the change,
@@ -210,7 +210,7 @@ class InstantLoader : public content::NotificationObserver {
 
   // Delegate of the preview WebContents. Used to detect when the user does some
   // gesture on the WebContents and the preview needs to be activated.
-  scoped_ptr<TabContentsDelegateImpl> preview_tab_contents_delegate_;
+  scoped_ptr<WebContentsDelegateImpl> preview_tab_contents_delegate_;
 
   // The preview TabContents; may be null.
   scoped_ptr<TabContents> preview_contents_;

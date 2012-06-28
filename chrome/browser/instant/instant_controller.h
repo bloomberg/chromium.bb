@@ -24,7 +24,7 @@
 #include "ui/gfx/rect.h"
 
 struct AutocompleteMatch;
-class InstantDelegate;
+class InstantControllerDelegate;
 class InstantLoader;
 class InstantTest;
 class PrefService;
@@ -62,7 +62,7 @@ class InstantController : public InstantLoaderDelegate {
     SILENT
   };
 
-  InstantController(InstantDelegate* delegate, Mode mode);
+  InstantController(InstantControllerDelegate* delegate, Mode mode);
   virtual ~InstantController();
 
   // Registers instant related preferences.
@@ -230,7 +230,7 @@ class InstantController : public InstantLoaderDelegate {
   // Destroys all loaders scheduled for destruction in |ScheduleForDestroy|.
   void DestroyLoaders();
 
-  InstantDelegate* delegate_;
+  InstantControllerDelegate* delegate_;
 
   // True if |loader_| is ready to be displayed.
   bool is_displayable_;

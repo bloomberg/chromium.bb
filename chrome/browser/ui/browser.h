@@ -20,7 +20,7 @@
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_tab_helper_delegate.h"
-#include "chrome/browser/instant/instant_delegate.h"
+#include "chrome/browser/instant/instant_controller_delegate.h"
 #include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -109,7 +109,7 @@ class Browser : public TabStripModelDelegate,
                 public content::PageNavigator,
                 public content::NotificationObserver,
                 public SelectFileDialog::Listener,
-                public InstantDelegate {
+                public InstantControllerDelegate {
  public:
   // SessionService::WindowType mirrors these values.  If you add to this
   // enum, look at SessionService::WindowType to see if it needs to be
@@ -838,7 +838,7 @@ class Browser : public TabStripModelDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overriden from InstantDelegate:
+  // Overriden from InstantControllerDelegate:
   virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual void CommitInstant(TabContents* preview_contents) OVERRIDE;

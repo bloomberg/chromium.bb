@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_INSTANT_INSTANT_COMMIT_TYPE_H_
 #pragma once
 
-// Enum describing the ways instant can be committed.
+// Reason why the Instant preview is committed (merged into a tab).
 enum InstantCommitType {
-  // The commit is the result of the user pressing enter or tab.
+  // The commit is due to the user pressing enter or tab from the omnibox.
   INSTANT_COMMIT_PRESSED_ENTER,
 
-  // The commit is the result of focus being lost. This typically corresponds
-  // to a mouse click event.
+  // The commit is due to the omnibox losing focus, usually due to the user
+  // clicking on the preview.
   INSTANT_COMMIT_FOCUS_LOST,
 
   // Used internally by InstantController.

@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/instant/instant_delegate.h"
+#include "chrome/browser/instant/instant_controller_delegate.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -33,7 +33,7 @@
 #include "ui/views/widget/widget.h"
 #endif
 
-InstantController::InstantController(InstantDelegate* delegate,
+InstantController::InstantController(InstantControllerDelegate* delegate,
                                      Mode mode)
     : delegate_(delegate),
       is_displayable_(false),
