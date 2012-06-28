@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/graphics_2d_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
@@ -51,6 +52,7 @@ void TestGraphics2D::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Scroll, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Replace, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Flush, filter);
+  RUN_TEST(Dev, filter);
 }
 
 void TestGraphics2D::QuitMessageLoop() {
@@ -625,6 +627,45 @@ std::string TestGraphics2D::TestFlush() {
         return "Second flush succeeded before callback ran.";
     }
   }
+
+  PASS();
+}
+
+std::string TestGraphics2D::TestDev() {
+  // Tests GetScale/SetScale via the Graphics2DDev C++ wrapper
+  const int w=20, h=16;
+  const float scale=1.0f/2.0f;
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
+  if (dc.is_null())
+    return "Failure creating a boring device";
+  pp::Graphics2DDev dc_dev(dc);
+  if (dc_dev.GetScale() != 1.0f)
+    return "GetScale returned unexpected value before SetScale";
+  if (!dc_dev.SetScale(scale))
+    return "SetScale failed";
+  if (dc_dev.GetScale() != scale)
+    return "GetScale mismatch with prior SetScale";
+  // Try setting a few invalid scale factors. Ensure that we catch these errors
+  // and don't change the actual scale
+  if (dc_dev.SetScale(-1.0f))
+    return "SetScale(-1f) did not fail";
+  if (dc_dev.SetScale(0.0f))
+    return "SetScale(0.0f) did not fail";
+  if (dc_dev.GetScale() != scale)
+    return "SetScale with invalid parameter overwrote the scale";
+
+  // Verify that the context has the specified number of pixels, despite the
+  // non-identity scale
+  PP_Size size;
+  size.width = -1;
+  size.height = -1;
+  PP_Bool is_always_opaque = PP_FALSE;
+  if (!graphics_2d_interface_->Describe(dc_dev.pp_resource(), &size,
+                                        &is_always_opaque))
+    return "Describe failed";
+  if (size.width != w || size.height != h ||
+      is_always_opaque != PP_FromBool(false))
+    return "Mismatch of data.";
 
   PASS();
 }

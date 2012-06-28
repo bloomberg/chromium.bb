@@ -55,6 +55,8 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   void OnHostMsgReplaceContents(const HostResource& graphics_2d,
                                 const HostResource& image_data);
   void OnHostMsgFlush(const HostResource& graphics_2d);
+  void OnHostMsgSetScale(const HostResource& graphics_2d,
+                         float scale);
 
   // Host->plugin message handlers.
   void OnPluginMsgFlushACK(const HostResource& graphics_2d,

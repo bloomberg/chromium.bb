@@ -43,6 +43,8 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
   void Scroll(const PP_Rect* clip_rect,
               const PP_Point* amount);
   void ReplaceContents(PP_Resource image_data);
+  bool SetScale(float scale);
+  float GetScale();
   int32_t Flush(scoped_refptr<TrackedCallback> callback);
 
   // Notification that the host has sent an ACK for a pending Flush.
@@ -57,6 +59,7 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
 
   PP_Size size_;
   PP_Bool is_always_opaque_;
+  float scale_;
 
   // In the plugin, this is the current callback set for Flushes. When the
   // pointer is non-NULL, we're waiting for a flush ACK.
@@ -70,7 +73,8 @@ Graphics2D::Graphics2D(const HostResource& host_resource,
                        PP_Bool is_always_opaque)
     : Resource(OBJECT_IS_PROXY, host_resource),
       size_(size),
-      is_always_opaque_(is_always_opaque) {
+      is_always_opaque_(is_always_opaque),
+      scale_(1.0f) {
 }
 
 Graphics2D::~Graphics2D() {
@@ -126,6 +130,19 @@ void Graphics2D::ReplaceContents(PP_Resource image_data) {
       kApiID, host_resource(), image_object->host_resource()));
 }
 
+bool Graphics2D::SetScale(float scale) {
+  if (scale <= 0.0f)
+    return false;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_Dev_SetScale(
+      kApiID, host_resource(), scale));
+  scale_ = scale;
+  return true;
+}
+
+float Graphics2D::GetScale() {
+  return scale_;
+}
+
 int32_t Graphics2D::Flush(scoped_refptr<TrackedCallback> callback) {
   if (TrackedCallback::IsPending(current_flush_callback_))
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
@@ -178,6 +195,8 @@ bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgReplaceContents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Flush,
                         OnHostMsgFlush)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Dev_SetScale,
+                        OnHostMsgSetScale)
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics2D_FlushACK,
                         OnPluginMsgFlushACK)
@@ -237,6 +256,14 @@ void PPB_Graphics2D_Proxy::OnHostMsgFlush(const HostResource& graphics_2d) {
   if (enter.failed())
     return;
   enter.SetResult(enter.object()->Flush(enter.callback()));
+}
+
+void PPB_Graphics2D_Proxy::OnHostMsgSetScale(const HostResource& graphics_2d,
+                                             float scale) {
+  EnterHostFromHostResource<PPB_Graphics2D_API> enter(graphics_2d);
+  if (enter.failed())
+    return;
+  enter.object()->SetScale(scale);
 }
 
 void PPB_Graphics2D_Proxy::OnPluginMsgFlushACK(

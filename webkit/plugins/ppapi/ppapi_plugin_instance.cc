@@ -750,6 +750,9 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
 
   view_data_.rect = PP_FromGfxRect(position);
   view_data_.clip_rect = PP_FromGfxRect(clip);
+  view_data_.device_scale = container_->deviceScaleFactor();
+  view_data_.css_scale = container_->pageZoomFactor() *
+                         container_->pageScaleFactor();
 
   if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
     WebElement element = container_->element();

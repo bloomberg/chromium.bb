@@ -144,6 +144,8 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::ViewData)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen)
   IPC_STRUCT_TRAITS_MEMBER(is_page_visible)
   IPC_STRUCT_TRAITS_MEMBER(clip_rect)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale)
+  IPC_STRUCT_TRAITS_MEMBER(css_scale)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_TouchPoint)
@@ -858,6 +860,9 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
                     ppapi::HostResource /* image_data */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
                     ppapi::HostResource /* graphics_2d */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_Dev_SetScale,
+                    ppapi::HostResource /* graphics_2d */,
+                    float /* scale */)
 
 #if !defined(OS_NACL)
 // PPB_Graphics3D.

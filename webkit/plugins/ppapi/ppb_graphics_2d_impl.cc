@@ -159,6 +159,7 @@ PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PP_Instance instance)
       bound_instance_(NULL),
       offscreen_flush_pending_(false),
       is_always_opaque_(false),
+      scale_(1.0f),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -191,6 +192,7 @@ bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
     return false;
   }
   is_always_opaque_ = is_always_opaque;
+  scale_ = 1.0f;
   return true;
 }
 
@@ -378,6 +380,19 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
   return PP_OK_COMPLETIONPENDING;
 }
 
+bool PPB_Graphics2D_Impl::SetScale(float scale) {
+  if (scale > 0.0f) {
+    scale_ = scale;
+    return true;
+  }
+
+  return false;
+}
+
+float PPB_Graphics2D_Impl::GetScale() {
+  return scale_;
+}
+
 bool PPB_Graphics2D_Impl::ReadImageData(PP_Resource image,
                                         const PP_Point* top_left) {
   // Get and validate the image object to paint into.
@@ -562,10 +577,15 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     // more optimized painting.
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
-  canvas->drawBitmap(image,
-                     SkIntToScalar(plugin_rect.x()),
-                     SkIntToScalar(plugin_rect.y()),
-                     &paint);
+
+  SkPoint origin;
+  origin.set(SkIntToScalar(plugin_rect.x()), SkIntToScalar(plugin_rect.y()));
+  if (scale_ != 1.0f && scale_ > 0.0f) {
+    float inverse_scale = 1.0f / scale_;
+    origin.scale(inverse_scale);
+    canvas->scale(scale_, scale_);
+  }
+  canvas->drawBitmap(image, origin.x(), origin.y(), &paint);
   canvas->restore();
 #endif
 }

@@ -28,6 +28,8 @@ class PPB_Graphics2D_API {
                       const PP_Point* amount) = 0;
   virtual void ReplaceContents(PP_Resource image_data) = 0;
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) = 0;
+  virtual bool SetScale(float scale) = 0;
+  virtual float GetScale() = 0;
 };
 
 }  // namespace thunk

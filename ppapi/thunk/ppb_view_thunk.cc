@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/thunk/enter.h"
@@ -77,6 +78,20 @@ PP_Bool GetClipRect(PP_Resource resource, PP_Rect* clip) {
   return PP_TRUE;
 }
 
+float GetDeviceScale(PP_Resource resource) {
+  EnterView enter(resource, true);
+  if (enter.failed())
+    return 0.0f;
+  return enter.object()->GetData().device_scale;
+}
+
+float GetCSSScale(PP_Resource resource) {
+  EnterView enter(resource, true);
+  if (enter.failed())
+    return 0.0f;
+  return enter.object()->GetData().css_scale;
+}
+
 const PPB_View g_ppb_view_thunk = {
   &IsView,
   &GetRect,
@@ -86,10 +101,19 @@ const PPB_View g_ppb_view_thunk = {
   &GetClipRect
 };
 
+const PPB_View_Dev g_ppb_view_dev_thunk = {
+  &GetDeviceScale,
+  &GetCSSScale
+};
+
 }  // namespace
 
 const PPB_View* GetPPB_View_1_0_Thunk() {
   return &g_ppb_view_thunk;
+}
+
+const PPB_View_Dev* GetPPB_View_Dev_0_1_Thunk() {
+  return &g_ppb_view_dev_thunk;
 }
 
 }  // namespace thunk

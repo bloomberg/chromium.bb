@@ -554,7 +554,17 @@ TEST_PPAPI_OUT_OF_PROCESS(Instance_LeakedObjectDestructors);
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D)
+// Graphics2D_Dev isn't supported in NaCl, only test the other interfaces
+// TODO(jhorwich) Enable when Graphics2D_Dev interfaces are proxied in NaCl.
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_InvalidResource)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_InvalidSize)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Humongous)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_InitToZero)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Describe)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Paint)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Scroll)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Replace)
+TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Flush)
 
 TEST_PPAPI_IN_PROCESS(Graphics3D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics3D)

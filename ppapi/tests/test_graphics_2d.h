@@ -78,6 +78,7 @@ class TestGraphics2D : public TestCase {
   std::string TestScroll();
   std::string TestReplace();
   std::string TestFlush();
+  std::string TestDev();
 
   // Used by the tests that access the C API directly.
   const PPB_Graphics2D* graphics_2d_interface_;

@@ -24,7 +24,9 @@ bool ViewData::Equals(const ViewData& other) const {
          clip_rect.point.x == other.clip_rect.point.x &&
          clip_rect.point.y == other.clip_rect.point.y &&
          clip_rect.size.width == other.clip_rect.size.width &&
-         clip_rect.size.height == other.clip_rect.size.height;
+         clip_rect.size.height == other.clip_rect.size.height &&
+         device_scale == other.device_scale &&
+         css_scale == other.css_scale;
 }
 
 PPB_View_Shared::PPB_View_Shared(ResourceObjectType type,

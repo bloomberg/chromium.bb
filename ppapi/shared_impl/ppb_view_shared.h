@@ -25,6 +25,8 @@ struct PPAPI_SHARED_EXPORT ViewData {
   bool is_fullscreen;
   bool is_page_visible;
   PP_Rect clip_rect;
+  float device_scale;
+  float css_scale;
 };
 
 class PPAPI_SHARED_EXPORT PPB_View_Shared
