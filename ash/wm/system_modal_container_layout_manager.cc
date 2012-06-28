@@ -204,13 +204,17 @@ void SystemModalContainerLayoutManager::CreateModalScreen() {
 
 void SystemModalContainerLayoutManager::DestroyModalScreen() {
   Shell::GetInstance()->RemoveEnvEventFilter(modality_filter_.get());
-  ui::ScopedLayerAnimationSettings settings(
-      modal_screen_->GetNativeView()->layer()->GetAnimator());
-  modal_screen_->Close();
-  settings.AddObserver(
-      CreateHidingWindowAnimationObserver(modal_screen_->GetNativeView()));
-  modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
-  modal_screen_ = NULL;
+  // modal_screen_ can be NULL when a root window is shutting down
+  // and OnWindowDestroying is called first.
+  if (modal_screen_) {
+    ui::ScopedLayerAnimationSettings settings(
+        modal_screen_->GetNativeView()->layer()->GetAnimator());
+    modal_screen_->Close();
+    settings.AddObserver(
+        CreateHidingWindowAnimationObserver(modal_screen_->GetNativeView()));
+    modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
+    modal_screen_ = NULL;
+  }
 }
 
 }  // namespace internal
