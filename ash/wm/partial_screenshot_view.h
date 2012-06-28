@@ -34,8 +34,6 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
  private:
   gfx::Rect GetScreenshotRect() const;
 
-  void set_window(aura::Window* window) { window_ = window; }
-
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
@@ -48,7 +46,6 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
   gfx::Point start_position_;
   gfx::Point current_position_;
   ScreenshotDelegate* screenshot_delegate_;
-  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialScreenshotView);
 };

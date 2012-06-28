@@ -9,8 +9,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
-#include "ui/base/events.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
@@ -22,17 +20,11 @@ namespace ash {
 PartialScreenshotView::PartialScreenshotView(
     ScreenshotDelegate* screenshot_delegate)
     : is_dragging_(false),
-      screenshot_delegate_(screenshot_delegate),
-      window_(NULL) {
+      screenshot_delegate_(screenshot_delegate) {
 }
 
 PartialScreenshotView::~PartialScreenshotView() {
   screenshot_delegate_ = NULL;
-  // Do not delete the |window_| here because |window_| has the
-  // ownership to this object. In case that finishing browser happens
-  // while |window_| != NULL, |window_| is still removed correctly by
-  // its parent container.
-  window_ = NULL;
 }
 
 // static
@@ -62,15 +54,14 @@ void PartialScreenshotView::StartPartialScreenshot(
   // events.  This will close the context menu.
   widget->GetNativeView()->SetCapture();
 
-  view->set_window(widget->GetNativeWindow());
   Shell::GetInstance()->partial_screenshot_filter()->Activate(view);
 }
 
 void PartialScreenshotView::Cancel() {
-  DCHECK(window_);
-  window_->Hide();
   Shell::GetInstance()->partial_screenshot_filter()->Deactivate();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, window_);
+  views::Widget* widget = GetWidget();
+  if (widget)
+    widget->Close();
 }
 
 gfx::NativeCursor PartialScreenshotView::GetCursor(
