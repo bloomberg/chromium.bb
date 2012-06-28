@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
+
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
                                  const GURL& url,
@@ -69,6 +70,15 @@ DictionaryValue* ProtocolHandler::Encode() const {
   d->Set("title", Value::CreateStringValue(title_));
   return d;
 }
+
+#if !defined(NDEBUG)
+std::string ProtocolHandler::ToString() const {
+  return "{ protocol=" + protocol_ +
+         ", url=" + url_.spec() +
+         ", title=" + UTF16ToASCII(title_) +
+         " }";
+}
+#endif
 
 bool ProtocolHandler::operator==(const ProtocolHandler& other) const {
   return protocol_ == other.protocol_ &&
