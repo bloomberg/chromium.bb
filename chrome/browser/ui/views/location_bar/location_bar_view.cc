@@ -430,8 +430,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
   SchedulePaint();
 }
 
-views::View* LocationBarView::GetPageActionView(
-    ExtensionAction *page_action) {
+views::View* LocationBarView::GetPageActionView(ExtensionAction *page_action) {
   DCHECK(page_action);
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
@@ -447,8 +446,7 @@ void LocationBarView::SetStarToggled(bool on) {
 }
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
-  browser::ShowBookmarkBubbleView(star_view_, profile_, url,
-                                  newly_bookmarked);
+  browser::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {

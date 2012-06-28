@@ -26,7 +26,7 @@
 const int kMinimumLabelWidth = 240;
 
 
-// BookmarkBubbleView ---------------------------------------------------------
+// OneClickSigninBubbleView ----------------------------------------------------
 
 // static
 OneClickSigninBubbleView* OneClickSigninBubbleView::bubble_view_ = NULL;

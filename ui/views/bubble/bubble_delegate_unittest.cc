@@ -68,7 +68,7 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
   // for the bubble.
   widget->CloseNow();
   RunPendingMessages();
-  EXPECT_FALSE(bubble_delegate->anchor_widget());
+  EXPECT_NE(bubble_delegate->anchor_widget(), widget);
 
   bubble_widget->CloseNow();
   parent->CloseNow();

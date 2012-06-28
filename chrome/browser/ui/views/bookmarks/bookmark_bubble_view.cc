@@ -305,12 +305,22 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 void BookmarkBubbleView::ShowEditor() {
   const BookmarkNode* node =
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
-  views::Widget* parent = anchor_view()->GetWidget();
+  views::Widget* parent = anchor_widget();
+
+  // TODO(msw): Remove debugging checks for invalid parent; see crbug.com/134504
+  CHECK_NE(parent,
+      reinterpret_cast<views::Widget*>(BubbleDelegateView::kDebugClosing1));
+  CHECK_NE(parent,
+      reinterpret_cast<views::Widget*>(BubbleDelegateView::kDebugClosing2));
+  CHECK_NE(parent,
+      reinterpret_cast<views::Widget*>(BubbleDelegateView::kDebugClosing3));
+  CHECK_NE(parent, static_cast<views::Widget*>(NULL));
+
   Profile* profile = profile_;
   ApplyEdits();
   GetWidget()->Close();
 
-  if (node)
+  if (node && parent)
     BookmarkEditor::Show(parent->GetNativeWindow(), profile,
                          BookmarkEditor::EditDetails::EditNode(node),
                          BookmarkEditor::SHOW_TREE);

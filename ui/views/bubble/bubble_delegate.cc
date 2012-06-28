@@ -92,6 +92,13 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
 }
 #endif
 
+// TODO(msw): Remove debugging code; see crbug.com/134504
+bool IsDebugClosingValue(const views::Widget* w) {
+  return w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing1) ||
+         w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing2) ||
+         w == reinterpret_cast<Widget*>(BubbleDelegateView::kDebugClosing3);
+}
+
 }  // namespace
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -101,6 +108,11 @@ const SkColor BubbleDelegateView::kBackgroundColor =
 // TODO(beng): source from theme provider.
 const SkColor BubbleDelegateView::kBackgroundColor = SK_ColorWHITE;
 #endif
+
+// TODO(msw): Remove magic debugging numbers; see crbug.com/134504
+const ptrdiff_t BubbleDelegateView::kDebugClosing1 = 0xBAD111;
+const ptrdiff_t BubbleDelegateView::kDebugClosing2 = 0xBAD222;
+const ptrdiff_t BubbleDelegateView::kDebugClosing3 = 0xBAD333;
 
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
@@ -139,8 +151,11 @@ BubbleDelegateView::BubbleDelegateView(
 }
 
 BubbleDelegateView::~BubbleDelegateView() {
-  if (anchor_widget_)
-    anchor_widget_->RemoveObserver(this);
+  // TODO(msw): Remove debugging code; see crbug.com/134504
+  if (anchor_widget() != NULL && !IsDebugClosingValue(anchor_widget()))
+    anchor_widget()->RemoveObserver(this);
+  anchor_widget_ = reinterpret_cast<views::Widget*>(kDebugClosing3);
+  anchor_view_ = reinterpret_cast<views::View*>(kDebugClosing3);
 }
 
 // static
@@ -149,8 +164,8 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   // Determine the anchor widget from the anchor view at bubble creation time.
   bubble_delegate->anchor_widget_ = bubble_delegate->anchor_view() ?
       bubble_delegate->anchor_view()->GetWidget() : NULL;
-  if (bubble_delegate->anchor_widget_)
-    bubble_delegate->anchor_widget_->AddObserver(bubble_delegate);
+  if (bubble_delegate->anchor_widget())
+    bubble_delegate->anchor_widget()->AddObserver(bubble_delegate);
 
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
@@ -174,10 +189,12 @@ BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
 }
 
 void BubbleDelegateView::WindowClosing() {
-  if (anchor_widget_) {
-    anchor_widget_->RemoveObserver(this);
-    anchor_widget_ = NULL;
-    anchor_view_ = NULL;
+  // TODO(msw): This function is overriden by subclasses; leave logic to dtor???
+  // TODO(msw): Remove debugging code; see crbug.com/134504
+  if (anchor_widget() != NULL && !IsDebugClosingValue(anchor_widget())) {
+    anchor_widget()->RemoveObserver(this);
+    anchor_view_ = reinterpret_cast<views::View*>(kDebugClosing1);
+    anchor_widget_ = reinterpret_cast<views::Widget*>(kDebugClosing1);
   }
 }
 
@@ -192,8 +209,10 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
 
 void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
   if (anchor_widget() == widget) {
-    anchor_view_ = NULL;
-    anchor_widget_ = NULL;
+    // TODO(msw): Remove debugging code; see crbug.com/134504
+    CHECK_NE(anchor_widget(), static_cast<views::Widget*>(NULL));
+    anchor_view_ = reinterpret_cast<views::View*>(kDebugClosing2);
+    anchor_widget_ = reinterpret_cast<views::Widget*>(kDebugClosing2);
   }
 }
 
