@@ -66,6 +66,10 @@ const char kTouchOptimizedUIDisabled[] = "disabled";
 #if defined(OS_MACOSX)
 const char kDisableCompositedCoreAnimationPlugins[] =
     "disable-composited-core-animation-plugins";
+// Disables using core animation in plugins. This is triggered when accelerated
+// compositing is disabled. See http://crbug.com/122430
+const char kDisableCoreAnimationPlugins[] =
+    "disable-core-animation-plugins";
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)

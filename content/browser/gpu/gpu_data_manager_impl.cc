@@ -19,6 +19,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
@@ -235,6 +236,24 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
         gpu_info_.driver_version);
   }
+}
+
+void GpuDataManagerImpl::AppendPluginCommandLine(
+    CommandLine* command_line) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(command_line);
+
+#if defined(OS_MACOSX)
+  uint32 flags = GetGpuFeatureType();
+  if ((flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAcceleratedCompositing)) {
+    if (!command_line->HasSwitch(
+           switches::kDisableCoreAnimationPlugins))
+      command_line->AppendSwitch(
+          switches::kDisableCoreAnimationPlugins);
+  }
+#endif
 }
 
 void GpuDataManagerImpl::SetGpuFeatureType(GpuFeatureType feature_type) {

@@ -23,6 +23,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
@@ -220,6 +221,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
     switches::kDisableBreakpad,
 #if defined(OS_MACOSX)
     switches::kDisableCompositedCoreAnimationPlugins,
+    switches::kDisableCoreAnimationPlugins,
 #endif
     switches::kDisableLogging,
     switches::kEnableDCHECK,
@@ -239,6 +241,8 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
+
+  GpuDataManagerImpl::GetInstance()->AppendPluginCommandLine(cmd_line);
 
   // If specified, prepend a launcher program to the command line.
   if (!plugin_launcher.empty())
