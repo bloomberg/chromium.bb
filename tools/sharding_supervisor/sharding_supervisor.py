@@ -597,6 +597,7 @@ def main():
     parser.error("You must have at least 1 run per core!")
   num_runs = num_cores * options.runs_per_core
 
+  test = args[0]
   gtest_args = ["--gtest_color=%s" % {
       True: "yes", False: "no"}[options.color]] + args[1:]
 
@@ -623,13 +624,27 @@ def main():
     if (options.runshard < 0 or options.runshard >= num_shards_to_run):
       parser.error("Invalid shard number given parameters!")
     shard = RunShard(
-        args[0], num_shards_to_run, options.runshard, gtest_args, None, None)
+        test, num_shards_to_run, options.runshard, gtest_args, None, None)
     shard.communicate()
     return shard.poll()
 
+  # When running browser_tests, load the test binary into memory before running
+  # any tests. This is needed to prevent loading it from disk causing the first
+  # run tests to timeout flakily. See: http://crbug.com/124260
+  if "browser_tests" in test:
+    args = [test]
+    args.extend(gtest_args)
+    args.append("--warmup")
+    result = subprocess.call(args,
+                             bufsize=0,
+                             universal_newlines=True)
+    # If the test fails, don't run anything else.
+    if result != 0:
+      return result
+
   # shard and run the whole test
   ss = ShardingSupervisor(
-      args[0], num_shards_to_run, num_runs, options.color,
+      test, num_shards_to_run, num_runs, options.color,
       options.original_order, options.prefix, options.retry_percent,
       options.timeout, options.total_slaves, options.slave_index, gtest_args)
   return ss.ShardTest()

@@ -22,6 +22,9 @@ extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
 extern const char kHelpFlag[];
 
+// Flag that causes only the kEmptyTestName test to be run.
+extern const char kWarmupFlag[];
+
 class TestLauncherDelegate {
  public:
   virtual void EarlyInitialize() = 0;
