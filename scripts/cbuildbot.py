@@ -805,6 +805,9 @@ def _CreateParser():
   group.add_remote_option('--clobber', action='store_true', dest='clobber',
                           default=False,
                           help='Clears an old checkout before syncing')
+  group.add_remote_option('--hwtest', dest='hwtest', action='store_true',
+                           default=False,
+                           help='This adds HW test for remote trybot')
   group.add_remote_option('--lkgm', action='store_true', dest='lkgm',
                           default=False,
                           help='Sync to last known good manifest blessed by '

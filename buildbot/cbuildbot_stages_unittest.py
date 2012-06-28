@@ -649,6 +649,49 @@ class HWTestStageTest(AbstractStageTest):
                               self._current_board, self.archive_stage_mock,
                               self.suite)
 
+  def testRemoteTrybotWithHWTest(self):
+    """Test remote trybot with hw test enabled"""
+    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    argv = ['--remote-trybot', '--hwtest', '-r', self.build_root, self.bot_id]
+    parser = cbuildbot._CreateParser()
+    (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
+
+    build = 'trybot-%s/%s' % (self.bot_id,
+                              self.archive_stage_mock.GetVersion().
+                              AndReturn('ver'))
+
+    commands.RunHWTestSuite(build,
+                            self.suite,
+                            self._current_board,
+                            constants.HWTEST_MACH_POOL,
+                            False)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testRemoteTrybotNoHWTest(self):
+    """Test remote trybot with no hw test"""
+    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    argv = ['--remote-trybot', '-r', self.build_root, self.bot_id]
+    parser = cbuildbot._CreateParser()
+    (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
+
+    build = '%s/%s' % (self.bot_id,
+                       self.archive_stage_mock.GetVersion().AndReturn('ver'))
+
+    commands.RunHWTestSuite(build,
+                            self.suite,
+                            self._current_board,
+                            constants.HWTEST_MACH_POOL,
+                            True)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
     self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)

@@ -1022,13 +1022,17 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     if not self._archive_stage.WaitForHWTestUploads():
       raise Exception('Missing uploads.')
 
-    build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
-
+    if self._options.remote_trybot and self._options.hwtest:
+      build = 'trybot-%s/%s' % (self._bot_id,
+                                   self._archive_stage.GetVersion())
+      debug = self._options.debug_forced
+    else:
+      build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
+      debug = self._options.debug
     try:
       with cros_build_lib.SubCommandTimeout(self.INFRASTRUCTURE_TIMEOUT):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
-                                self._build_config['hw_tests_pool'],
-                                self._options.debug)
+                                self._build_config['hw_tests_pool'], debug)
 
     except cros_build_lib.TimeoutError as exception:
       return self._HandleExceptionAsWarning(exception)
@@ -1103,7 +1107,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   option_name = 'archive'
   _VERSION_NOT_SET = '_not_set_version_'
-  _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-trybot'
+  _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-image-archive'
 
   @classmethod
   def GetTrybotArchiveRoot(cls, buildroot):
@@ -1225,16 +1229,18 @@ class ArchiveStage(BoardSpecificBuilderStage):
       return self._GetArchivePath()
 
   def _GetGSUtilArchiveDir(self):
+    bot_id = self._bot_id
     if self._options.archive_base:
       gs_base = self._options.archive_base
     elif self._options.remote_trybot:
       gs_base = self._REMOTE_TRYBOT_ARCHIVE_URL
+      bot_id = 'trybot-' + self._bot_id
     elif self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
       gs_base = 'gs://chromeos-image-archive'
     else:
       return self._build_config['gs_path']
 
-    return '%s/%s' % (gs_base, self._bot_id)
+    return '%s/%s' % (gs_base, bot_id)
 
   def GetGSUploadLocation(self):
     """Get the Google Storage location where we should upload artifacts."""
