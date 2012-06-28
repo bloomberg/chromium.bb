@@ -1798,6 +1798,8 @@ notify_modifiers(struct wl_seat *wl_seat, uint32_t serial)
 		seat->modifier_state |= MODIFIER_ALT;
 	if (mods_lookup & (1 << seat->xkb_info.super_mod))
 		seat->modifier_state |= MODIFIER_SUPER;
+	if (mods_lookup & (1 << seat->xkb_info.shift_mod))
+		seat->modifier_state |= MODIFIER_SHIFT;
 
 	/* Finally, notify the compositor that LEDs have changed. */
 	if (xkb_state_led_index_is_active(seat->xkb_state.state,

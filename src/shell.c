@@ -3248,7 +3248,7 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  ec);
 	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSUP, 0,
 				          backlight_binding, ec);
-	weston_compositor_add_key_binding(ec, KEY_SPACE, mod,
+	weston_compositor_add_key_binding(ec, KEY_SPACE, mod | MODIFIER_SHIFT,
 				          debug_repaint_binding, shell);
 	weston_compositor_add_key_binding(ec, KEY_K, mod,
 				          force_kill_binding, shell);

@@ -52,6 +52,7 @@ enum weston_keyboard_modifier {
 	MODIFIER_CTRL = (1 << 0),
 	MODIFIER_ALT = (1 << 1),
 	MODIFIER_SUPER = (1 << 2),
+	MODIFIER_SHIFT = (1 << 3),
 };
 
 enum weston_led {
