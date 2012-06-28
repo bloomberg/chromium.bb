@@ -65,7 +65,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.44",
+  "version": "2.0",
   "entries": [
     {
       "id": 1,
