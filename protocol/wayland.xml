@@ -777,8 +777,9 @@
       <description summary="set the pointer surface">
 	Set the pointer surface, i.e., the surface that contains the
 	pointer image. This request only takes effect if the pointer
-	focus for this device is one of the requesting client surfaces.
-	If there was a previous surface set with this request it is
+	focus for this device is one of the requesting client surfaces
+	or the surface parameter is the current pointer surface. If
+	there was a previous surface set with this request it is
 	replaced. If surface is NULL, the pointer image is hidden.
 
 	The parameters hotspot_x and hotspot_y define the position of
