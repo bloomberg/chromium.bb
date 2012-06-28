@@ -202,6 +202,9 @@
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_MIRROR_FLIP" file="mirror_flip.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_MOBILE" file="mobile.png" />
       <structure type="chrome_scaled_image" name="IDR_MOBILE_LIT" file="mobile_lit.png" />
       <if expr="pp_ifdef('toolkit_views')">
