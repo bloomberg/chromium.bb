@@ -16,22 +16,25 @@ WebIntentServiceData::WebIntentServiceData()
     : disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
 }
 
-WebIntentServiceData::WebIntentServiceData(const GURL& svc_url,
-                                           const string16& svc_action,
+WebIntentServiceData::WebIntentServiceData(const string16& svc_action,
                                            const string16& svc_type,
+                                           const string16& svc_scheme,
+                                           const GURL& svc_service_url,
                                            const string16& svc_title)
-    : service_url(svc_url),
-      action(svc_action),
+    : action(svc_action),
       type(svc_type),
+      scheme(svc_scheme),
+      service_url(svc_service_url),
       title(svc_title),
       disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
 }
 
 WebIntentServiceData::WebIntentServiceData(
     const WebKit::WebIntentServiceInfo& info)
-    : service_url(info.url()),
-      action(info.action()),
+    : action(info.action()),
       type(info.type()),
+      scheme(string16()),
+      service_url(info.url()),
       title(info.title()),
       disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
   setDisposition(info.disposition());
@@ -40,9 +43,10 @@ WebIntentServiceData::WebIntentServiceData(
 WebIntentServiceData::~WebIntentServiceData() {}
 
 bool WebIntentServiceData::operator==(const WebIntentServiceData& other) const {
-  return service_url == other.service_url &&
-         action == other.action &&
+  return action == other.action &&
          type == other.type &&
+         scheme == other.scheme &&
+         service_url == other.service_url &&
          title == other.title &&
          disposition == other.disposition;
 }
@@ -57,11 +61,12 @@ void WebIntentServiceData::setDisposition(const string16& disp) {
 std::ostream& operator<<(::std::ostream& os,
                          const WebIntentServiceData& intent) {
   return os <<
-         "{" << intent.service_url <<
-         ", " << UTF16ToUTF8(intent.action) <<
-         ", " << UTF16ToUTF8(intent.type) <<
-         ", " << UTF16ToUTF8(intent.title) <<
-         ", " << intent.disposition <<
+         "{action=" << UTF16ToUTF8(intent.action) <<
+         "type=, " << UTF16ToUTF8(intent.type) <<
+         "scheme=, " << UTF16ToUTF8(intent.scheme) <<
+         "service_url=, " << intent.service_url <<
+         "title=, " << UTF16ToUTF8(intent.title) <<
+         "disposition=, " << intent.disposition <<
          "}";
 }
 

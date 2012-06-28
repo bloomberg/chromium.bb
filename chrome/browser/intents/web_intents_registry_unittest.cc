@@ -324,61 +324,75 @@ TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
 
 TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeAndLiteralMatching) {
   WebIntentServiceData services[] = {
-    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("image/*"),
+                         string16(),
+                         GURL("http://elsewhere.com/intent/share.html"),
                          ASCIIToUTF16("Image Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("image/jpeg"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Specific Image Editing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("text/uri-list"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Link Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere2.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("text/plain"),
+                         string16(),
+                         GURL("http://somewhere2.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("elsewhere"),
+                         string16(),
+                         GURL("http://elsewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("somewhere"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("nota/*"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("*nomime"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("*/nomime"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("*/*nomime"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("*/*/nomime"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("nomime/*"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("x-type/*"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("x-/*"),  // actually a string literal
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Text Sharing Service"))
   };
   registry_.RegisterIntentService(services[0]);
@@ -561,41 +575,47 @@ TEST_F(WebIntentsRegistryTest, CollapseIntents) {
 
   // Add two intents with identical |service_url|, |title|, and |action|.
   services.push_back(
-      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-      ASCIIToUTF16("http://webintents.org/share"),
+      WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/png"),
+      string16(),
+      GURL("http://somewhere.com/intent/share.html"),
       ASCIIToUTF16("Image Sharing Service")));
   services.push_back(
-      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-      ASCIIToUTF16("http://webintents.org/share"),
+      WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/jpg"),
+      string16(),
+      GURL("http://somewhere.com/intent/share.html"),
       ASCIIToUTF16("Image Sharing Service")));
   // Service that differs in disposition.
   services.push_back(
-      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-      ASCIIToUTF16("http://webintents.org/share"),
+      WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/png"),
+      string16(),
+      GURL("http://somewhere.com/intent/share.html"),
       ASCIIToUTF16("Image Sharing Service")));
   ASSERT_EQ(WebIntentServiceData::DISPOSITION_WINDOW,
       services.back().disposition);
   services.back().disposition = WebIntentServiceData::DISPOSITION_INLINE;
   // Service that differs in title.
   services.push_back(
-      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-      ASCIIToUTF16("http://webintents.org/share"),
+      WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/png"),
+      string16(),
+      GURL("http://somewhere.com/intent/share.html"),
       ASCIIToUTF16("Sharing Service")));
   // Service that differs in |action|.
   services.push_back(
-      WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-      ASCIIToUTF16("http://webintents.org/share-old"),
+      WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share-old"),
       ASCIIToUTF16("image/png"),
+      string16(),
+      GURL("http://somewhere.com/intent/share.html"),
       ASCIIToUTF16("Image Sharing Service")));
   // Service that differs in |service_url|.
   services.push_back(
-      WebIntentServiceData(GURL("http://zoo.com/share.html"),
-      ASCIIToUTF16("http://webintents.org/share"),
+      WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/png"),
+      string16(),
+      GURL("http://zoo.com/share.html"),
       ASCIIToUTF16("Image Sharing Service")));
 
   // Only the first two services should be collapsed.
@@ -617,14 +637,16 @@ TEST_F(WebIntentsRegistryTest, CollapseIntents) {
 // Verify that GetIntentServices collapses equivalent intents.
 TEST_F(WebIntentsRegistryTest, GetIntentsCollapsesEquivalentIntents) {
   WebIntentServiceData services[] = {
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                         ASCIIToUTF16("http://webintents.org/share"),
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("image/png"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
                          ASCIIToUTF16("Image Sharing Service")),
-    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
-                        ASCIIToUTF16("http://webintents.org/share"),
-                        ASCIIToUTF16("image/jpg"),
-                        ASCIIToUTF16("Image Sharing Service"))
+    WebIntentServiceData(ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("image/jpg"),
+                         string16(),
+                         GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("Image Sharing Service"))
   };
   registry_.RegisterIntentService(services[0]);
   registry_.RegisterIntentService(services[1]);
