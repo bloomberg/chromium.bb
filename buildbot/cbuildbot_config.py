@@ -790,6 +790,18 @@ internal_paladin.add_config('parrot-paladin',
   paladin_builder_name='parrot paladin',
 )
 
+internal_paladin.add_config('stout-paladin',
+  boards=['stout'],
+  paladin_builder_name='stout paladin',
+  important=False,
+)
+
+internal_paladin.add_config('butterfly-paladin',
+  boards=['butterfly'],
+  paladin_builder_name='butterfly paladin',
+  important=False,
+)
+
 # TODO(sosa): Test configs for unified paladin builds.
 internal_paladin.add_config('unified-lumpy-paladin',
   master=True,
@@ -945,6 +957,14 @@ _release.add_config('kiev-release',
 
 _release.add_config('parrot-release',
   boards=['parrot'],
+)
+
+_release.add_config('stout-release',
+  boards=['stout'],
+)
+
+_release.add_config('butterfly-release',
+  boards=['butterfly'],
 )
 
 _arm_release = _release.derive(arm)
