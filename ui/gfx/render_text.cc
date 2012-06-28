@@ -830,7 +830,6 @@ Point RenderText::GetAlignmentOffset() {
 Point RenderText::GetOriginForDrawing() {
   Point origin(GetTextOrigin());
   const int height = GetStringSize().height();
-  DCHECK_LE(height, display_rect().height());
   // Center the text vertically in the display area.
   origin.Offset(0, (display_rect().height() - height) / 2);
   return origin;
