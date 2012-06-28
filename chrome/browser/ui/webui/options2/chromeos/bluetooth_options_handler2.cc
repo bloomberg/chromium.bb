@@ -167,7 +167,7 @@ void BluetoothOptionsHandler::RegisterMessages() {
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {
-  adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
+  adapter_ = BluetoothAdapter::DefaultAdapter();
   adapter_->AddObserver(this);
 }
 

@@ -183,8 +183,8 @@ class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
   // |args| will be an empty list.
   void GetPairedDevicesCallback(const base::ListValue* args);
 
-  // Default bluetooth adapter, used for all operations. Owned by this object.
-  scoped_ptr<BluetoothAdapter> adapter_;
+  // Default bluetooth adapter, used for all operations.
+  scoped_refptr<BluetoothAdapter> adapter_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than this object does.

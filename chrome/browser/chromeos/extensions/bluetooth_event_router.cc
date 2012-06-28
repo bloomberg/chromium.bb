@@ -21,7 +21,7 @@ namespace chromeos {
 
 ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
     : profile_(profile),
-      adapter_(chromeos::BluetoothAdapter::CreateDefaultAdapter()),
+      adapter_(chromeos::BluetoothAdapter::DefaultAdapter()),
       next_socket_id_(1) {
   DCHECK(profile_);
   DCHECK(adapter_.get());

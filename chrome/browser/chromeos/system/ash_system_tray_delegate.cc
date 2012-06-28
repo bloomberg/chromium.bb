@@ -218,7 +218,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
 
-    bluetooth_adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
+    bluetooth_adapter_ = BluetoothAdapter::DefaultAdapter();
     bluetooth_adapter_->AddObserver(this);
   }
 
@@ -1237,7 +1237,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   ConnectionState state_;
   const Network* connected_network_;
 
-  scoped_ptr<BluetoothAdapter> bluetooth_adapter_;
+  scoped_refptr<BluetoothAdapter> bluetooth_adapter_;
 
   BooleanPrefMember accessibility_enabled_;
 

@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -32,7 +33,8 @@ class BluetoothDevice;
 //
 // The class may be instantiated for either a specific adapter, or for the
 // generic "default adapter" which may change depending on availability.
-class BluetoothAdapter : private BluetoothManagerClient::Observer,
+class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
+                         private BluetoothManagerClient::Observer,
                          private BluetoothAdapterClient::Observer,
                          private BluetoothDeviceClient::Observer {
  public:
@@ -79,8 +81,6 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
     virtual void DeviceRemoved(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}
   };
-
-  virtual ~BluetoothAdapter();
 
   // Adds and removes observers for events on this bluetooth adapter,
   // if monitoring multiple adapters check the |adapter| parameter of
@@ -146,10 +146,10 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
       const BluetoothOutOfBandPairingDataCallback& callback,
       const ErrorCallback& error_callback);
 
-  // Creates the instance for the default adapter, whichever that may
+  // Returns the shared instance for the default adapter, whichever that may
   // be at the time. Use IsPresent() and the AdapterPresentChanged() observer
   // method to determine whether an adapter is actually available or not.
-  static BluetoothAdapter* CreateDefaultAdapter();
+  static scoped_refptr<BluetoothAdapter> DefaultAdapter();
 
   // Creates an instance for a specific adapter named by |address|, which
   // may be the bluetooth address of the adapter or a device name such as
@@ -157,14 +157,16 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   static BluetoothAdapter* Create(const std::string& address);
 
  private:
+  friend class base::RefCounted<BluetoothAdapter>;
   friend class BluetoothDevice;
   friend class MockBluetoothAdapter;
 
   BluetoothAdapter();
+  virtual ~BluetoothAdapter();
 
   // Obtains the default adapter object path from the Bluetooth Daemon
   // and tracks future changes to it.
-  void DefaultAdapter();
+  void TrackDefaultAdapter();
 
   // Obtains the object paht for the adapter named by |address| from the
   // Bluetooth Daemon.

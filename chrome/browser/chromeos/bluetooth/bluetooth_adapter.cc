@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -15,6 +16,17 @@
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/object_path.h"
+
+namespace {
+
+// Shared default adapter instance, we don't want to keep this class around
+// if nobody is using it so use a WeakPtr and create the object when needed;
+// since Google C++ Style (and clang's static analyzer) forbids us having
+// exit-time destructors we use a leaky lazy instance for it.
+base::LazyInstance<base::WeakPtr<chromeos::BluetoothAdapter> >::Leaky
+    default_adapter = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 namespace chromeos {
 
@@ -141,7 +153,7 @@ void BluetoothAdapter::ReadLocalOutOfBandPairingData(
               error_callback));
 }
 
-void BluetoothAdapter::DefaultAdapter() {
+void BluetoothAdapter::TrackDefaultAdapter() {
   DVLOG(1) << "Tracking default adapter";
   track_default_ = true;
   DBusThreadManager::Get()->GetBluetoothManagerClient()->
@@ -536,10 +548,14 @@ void BluetoothAdapter::DeviceDisappeared(const dbus::ObjectPath& adapter_path,
 
 
 // static
-BluetoothAdapter* BluetoothAdapter::CreateDefaultAdapter() {
-  BluetoothAdapter* adapter = new BluetoothAdapter;
-  adapter->DefaultAdapter();
-  return adapter;
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::DefaultAdapter() {
+  if (!default_adapter.Get().get()) {
+    BluetoothAdapter* new_adapter = new BluetoothAdapter;
+    default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
+    default_adapter.Get()->TrackDefaultAdapter();
+  }
+
+  return scoped_refptr<BluetoothAdapter>(default_adapter.Get());
 }
 
 // static

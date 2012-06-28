@@ -19,7 +19,6 @@ namespace chromeos {
 class MockBluetoothAdapter : public BluetoothAdapter {
  public:
   MockBluetoothAdapter();
-  virtual ~MockBluetoothAdapter();
 
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());
@@ -36,6 +35,8 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       void(const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
                callback,
            const BluetoothAdapter::ErrorCallback& error_callback));
+ protected:
+  virtual ~MockBluetoothAdapter();
 };
 
 }  // namespace chromeos

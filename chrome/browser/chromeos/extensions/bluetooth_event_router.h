@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,7 +49,7 @@ class ExtensionBluetoothEventRouter
 
   // Exposed for testing.
   void SetAdapterForTest(chromeos::BluetoothAdapter* adapter) {
-    adapter_.reset(adapter);
+    adapter_ = adapter;
   }
  private:
   void DispatchBooleanValueEvent(const char* event_name, bool value);
@@ -58,7 +57,7 @@ class ExtensionBluetoothEventRouter
   bool send_discovery_events_;
 
   Profile* profile_;
-  scoped_ptr<chromeos::BluetoothAdapter> adapter_;
+  scoped_refptr<chromeos::BluetoothAdapter> adapter_;
 
   // The next id to use for referring to a BluetoothSocket.  We avoid using
   // the fd of the socket because we don't want to leak that information to
