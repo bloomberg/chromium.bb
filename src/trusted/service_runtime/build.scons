@@ -765,21 +765,6 @@ if not env.CrossToolsBuild():
       env.File(os.path.join(arch_testdata_dir, 'unaligned_data.nexe')))
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
 
-# TODO(mcgrathr): When the next-generation toolchains are in use, we can
-# produce these tests from source in the usual way and not need the testdata
-# binaries.  http://code.google.com/p/nativeclient/issues/detail?id=2823
-# See also testdata/auxv_phdr.c.
-if not env.CrossToolsBuild():
-  auxv_nexe = env.File(os.path.join(arch_testdata_dir, 'auxv_phdr.nexe'))
-  auxv_stdout = env.File(os.path.join(arch_testdata_dir, 'auxv_phdr.stdout'))
-  node = env.CommandSelLdrTestNacl('auxv_phdr.out',
-                                   auxv_nexe, stdout_golden=auxv_stdout)
-  # TODO(mcgrathr): Add arm testdata files and remove the is_broken.
-  # Producing a working ARM binary requires debugging untrusted ARM stuff
-  # that the auxv_phdr support enables, so is putting cart before horse.
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_auxv_phdr_test',
-                         is_broken=not os.path.exists(str(auxv_nexe)))
-
 # ----------------------------------------------------------
 # Integration Tests With Canned x86 Binaries
 # ----------------------------------------------------------

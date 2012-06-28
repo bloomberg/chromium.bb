@@ -27,9 +27,6 @@ struct NaClElfImageInfo {
   uintptr_t data_start;
   uintptr_t data_end;
   uintptr_t max_vaddr;
-  uintptr_t phdr_addr;
-  int phdr_num;
-  int phdr_size;
 };
 
 NaClErrorCode NaClElfImageValidateProgramHeaders(

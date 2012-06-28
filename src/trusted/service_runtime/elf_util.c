@@ -38,7 +38,6 @@ struct NaClElfImage {
   Elf_Ehdr  ehdr;
   Elf_Phdr  phdrs[NACL_MAX_PROGRAM_HEADERS];
   int       loadable[NACL_MAX_PROGRAM_HEADERS];
-  int       original_elfclass;
 };
 
 
@@ -322,23 +321,6 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
       info->max_vaddr = php->p_vaddr + php->p_memsz;
     }
 
-    /*
-     * If the phdrs are visible in memory, then record this fact so we
-     * can pass the information to the application via AT_PHDR et al.
-     * But don't do so if this was an old ELFCLASS64 file, where the
-     * those phdrs will be in Elf64_Phdr format but the untrusted
-     * runtime code will expect only Elf32_Phdr format.
-     */
-    if (image->original_elfclass == ELFCLASS32 &&
-        php->p_type == PT_LOAD &&
-        php->p_offset <= hdr->e_phoff &&
-        (php->p_offset + php->p_filesz
-         - hdr->e_phoff) >= (Elf_Off) (hdr->e_phentsize * hdr->e_phnum)) {
-      info->phdr_addr = hdr->e_phoff - php->p_offset + php->p_vaddr;
-      info->phdr_num = hdr->e_phnum;
-      info->phdr_size = hdr->e_phentsize;
-    }
-
     switch (nacl_phdr_check_data[j].action) {
       case PCA_NONE:
         break;
@@ -414,12 +396,6 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     NaClLog(2, "could not load elf headers\n");
     return 0;
   }
-
-  /*
-   * Record the real EI_CLASS of this file for later.
-   * In image.ehdr we'll always record ELFCLASS32.
-   */
-  image.original_elfclass = ehdr.ehdr32.e_ident[EI_CLASS];
 
 #if NACL_TARGET_SUBARCH == 64
   if (ELFCLASS64 == ehdr.ehdr64.e_ident[EI_CLASS]) {

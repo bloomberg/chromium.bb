@@ -182,15 +182,6 @@ struct NaClApp {
   uintptr_t                 user_entry_pt;
 
   /*
-   * phdr_addr is the untrusted address at which the ELF program headers
-   * appear in the loaded memory image, or zero if they don't appear.
-   * phdr_num and phdr_size are the e_phnum and e_phentsize fields.
-   */
-  uintptr_t                 phdr_addr;
-  int                       phdr_num;
-  int                       phdr_size;
-
-  /*
    * bundle_size is the bundle alignment boundary for validation (16
    * or 32), so int is okay.  This value must be a power of 2.
    */
