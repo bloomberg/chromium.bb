@@ -23,39 +23,9 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
-#ifndef PR_SET_NO_NEW_PRIVS
-  #define PR_SET_NO_NEW_PRIVS 38
-#endif
-
-#ifndef SYS_SECCOMP
-  #define SYS_SECCOMP 1
-#endif
-
-#ifndef __NR_migrate_pages
-  #define __NR_migrate_pages 256
-#endif
-
-#ifndef __NR_openat
-  #define __NR_openat 257
-#endif
-
-#ifndef __NR_mkdirat
-  #define __NR_mkdirat 258
-#endif
-
-#ifndef __NR_readlinkat
-  #define __NR_readlinkat 267
-#endif
-
-#ifndef __NR_move_pages
-  #define __NR_move_pages 279
-#endif
-
-#ifndef __NR_eventfd2
-  #define __NR_eventfd2 290
-#endif
-
+// These are fairly new and not defined in all headers yet.
 #ifndef __NR_process_vm_readv
   #define __NR_process_vm_readv 310
 #endif
@@ -64,19 +34,9 @@
   #define __NR_process_vm_writev 311
 #endif
 
-// Constants from very new header files that we can't yet include.
-#ifndef SECCOMP_MODE_FILTER
-  #define SECCOMP_MODE_FILTER 2
-  #define SECCOMP_RET_KILL        0x00000000U
-  #define SECCOMP_RET_TRAP        0x00030000U
-  #define SECCOMP_RET_ERRNO       0x00050000U
-  #define SECCOMP_RET_ALLOW       0x7fff0000U
-#endif
-
-
 namespace {
 
-static bool IsSingleThreaded() {
+bool IsSingleThreaded() {
   // Possibly racy, but it's ok because this is more of a debug check to catch
   // new threaded situations arising during development.
   int num_threads =
@@ -88,15 +48,8 @@ static bool IsSingleThreaded() {
   return num_threads == 1 || num_threads == 0;
 }
 
-static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
-  if (signal != SIGSYS)
-    return;
-  if (info->si_code != SYS_SECCOMP)
-    return;
-  if (!void_context)
-    return;
-  ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
-  uintptr_t syscall = context->uc_mcontext.gregs[REG_RAX];
+intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
+  int syscall = args.nr;
   if (syscall >= 1024)
     syscall = 0;
   // Encode 8-bits of the 1st two arguments too, so we can discern which socket
@@ -104,8 +57,8 @@ static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
   // address.
   // Do not encode more bits here without thinking about increasing the
   // likelihood of collision with mapped pages.
-  syscall |= ((context->uc_mcontext.gregs[REG_RDI] & 0xffUL) << 12);
-  syscall |= ((context->uc_mcontext.gregs[REG_RSI] & 0xffUL) << 20);
+  syscall |= ((args.args[0] & 0xffUL) << 12);
+  syscall |= ((args.args[1] & 0xffUL) << 20);
   // Purposefully dereference the syscall as an address so it'll show up very
   // clearly and easily in crash dumps.
   volatile char* addr = reinterpret_cast<volatile char*>(syscall);
@@ -115,282 +68,199 @@ static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
   syscall &= 0xfffUL;
   addr = reinterpret_cast<volatile char*>(syscall);
   *addr = '\0';
-  _exit(1);
+  for (;;)
+    _exit(1);
 }
 
-static void InstallSIGSYSHandler() {
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_flags = SA_SIGINFO;
-  sa.sa_sigaction = SIGSYS_Handler;
-  int ret = sigaction(SIGSYS, &sa, NULL);
-  PLOG_IF(FATAL, ret != 0) << "Failed to install SIGSYS handler.";
+// TODO(jln) we need to restrict the first parameter!
+bool IsKillSyscall(int sysno) {
+  switch (sysno) {
+    case __NR_kill:
+    case __NR_tkill:
+    case __NR_tgkill:
+      return true;
+    default:
+      return false;
+  }
 }
 
-static void EmitLoad(int offset, std::vector<struct sock_filter>* program) {
-  struct sock_filter filter;
-  filter.code = BPF_LD+BPF_W+BPF_ABS;
-  filter.jt = 0;
-  filter.jf = 0;
-  filter.k = offset;
-  program->push_back(filter);
+bool IsGettimeSyscall(int sysno) {
+  switch (sysno) {
+    case __NR_clock_gettime:
+    case __NR_gettimeofday:
+    case __NR_time:
+      return true;
+    default:
+      return false;
+  }
 }
 
-static void EmitLoadArg(int arg, std::vector<struct sock_filter>* program) {
-  // Each argument is 8 bytes, independent of architecture, and start at
-  // an offset of 16 bytes, indepdendent of architecture.
-  EmitLoad(((arg - 1) * 8) + 16, program);
+bool IsFileSystemSyscall(int sysno) {
+  switch (sysno) {
+    case __NR_open:
+    case __NR_openat:
+    case __NR_execve:
+    case __NR_access:
+    case __NR_mkdir:
+    case __NR_mkdirat:
+    case __NR_readlink:
+    case __NR_readlinkat:
+    case __NR_stat:
+    case __NR_lstat:
+    case __NR_chdir:
+      return true;
+    default:
+      return false;
+  }
 }
 
-static void EmitJEQJT1(int value, std::vector<struct sock_filter>* program) {
-  struct sock_filter filter;
-  filter.code = BPF_JMP+BPF_JEQ+BPF_K;
-  filter.jt = 1;
-  filter.jf = 0;
-  filter.k = value;
-  program->push_back(filter);
+playground2::Sandbox::ErrorCode GpuProcessPolicy(int sysno) {
+  switch(sysno) {
+    case __NR_read:
+    case __NR_ioctl:
+    case __NR_poll:
+    case __NR_epoll_wait:
+    case __NR_recvfrom:
+    case __NR_write:
+    case __NR_writev:
+    case __NR_gettid:
+    case __NR_sched_yield:  // Nvidia binary driver.
+
+    case __NR_futex:
+    case __NR_madvise:
+    case __NR_sendmsg:
+    case __NR_recvmsg:
+    case __NR_eventfd2:
+    case __NR_pipe:
+    case __NR_mmap:
+    case __NR_mprotect:
+    case __NR_clone:  // TODO(jln) restrict flags.
+    case __NR_set_robust_list:
+    case __NR_getuid:
+    case __NR_geteuid:
+    case __NR_getgid:
+    case __NR_getegid:
+    case __NR_epoll_create:
+    case __NR_fcntl:
+    case __NR_socketpair:
+    case __NR_epoll_ctl:
+    case __NR_prctl:
+    case __NR_fstat:
+    case __NR_close:
+    case __NR_restart_syscall:
+    case __NR_rt_sigreturn:
+    case __NR_brk:
+    case __NR_rt_sigprocmask:
+    case __NR_munmap:
+    case __NR_dup:
+    case __NR_mlock:
+    case __NR_munlock:
+    case __NR_exit:
+    case __NR_exit_group:
+    case __NR_getpid:  // Nvidia binary driver.
+    case __NR_getppid:  // ATI binary driver.
+    case __NR_lseek:  // Nvidia binary driver.
+    case __NR_shutdown:  // Virtual driver.
+    case __NR_rt_sigaction:  // Breakpad signal handler.
+      return playground2::Sandbox::SB_ALLOWED;
+    case __NR_socket:
+      return EACCES;  // Nvidia binary driver.
+    default:
+      if (IsGettimeSyscall(sysno) ||
+          IsKillSyscall(sysno)) { // GPU watchdog.
+        return playground2::Sandbox::SB_ALLOWED;
+      }
+      // Generally, filename-based syscalls will fail with ENOENT to behave
+      // similarly to a possible future setuid sandbox.
+      if (IsFileSystemSyscall(sysno)) {
+        return ENOENT;
+      }
+      // In any other case crash the program with our SIGSYS handler
+      return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+  }
 }
 
-static void EmitJEQJF(int value,
-                      int jf,
-                      std::vector<struct sock_filter>* program) {
-  struct sock_filter filter;
-  filter.code = BPF_JMP+BPF_JEQ+BPF_K;
-  filter.jt = 0;
-  filter.jf = jf;
-  filter.k = value;
-  program->push_back(filter);
+playground2::Sandbox::ErrorCode FlashProcessPolicy(int sysno) {
+  switch (sysno) {
+    case __NR_futex:
+    case __NR_write:
+    case __NR_epoll_wait:
+    case __NR_read:
+    case __NR_times:
+    case __NR_clone:  // TODO(jln): restrict flags.
+    case __NR_set_robust_list:
+    case __NR_getuid:
+    case __NR_geteuid:
+    case __NR_getgid:
+    case __NR_getegid:
+    case __NR_epoll_create:
+    case __NR_fcntl:
+    case __NR_socketpair:
+    case __NR_pipe:
+    case __NR_epoll_ctl:
+    case __NR_gettid:
+    case __NR_prctl:
+    case __NR_fstat:
+    case __NR_sendmsg:
+    case __NR_mmap:
+    case __NR_munmap:
+    case __NR_mprotect:
+    case __NR_madvise:
+    case __NR_rt_sigaction:
+    case __NR_rt_sigprocmask:
+    case __NR_wait4:
+    case __NR_exit_group:
+    case __NR_exit:
+    case __NR_rt_sigreturn:
+    case __NR_restart_syscall:
+    case __NR_close:
+    case __NR_recvmsg:
+    case __NR_lseek:
+    case __NR_brk:
+    case __NR_sched_yield:
+    case __NR_shutdown:
+    case __NR_sched_getaffinity:
+    case __NR_dup:  // Flash Access.
+    // These are under investigation, and hopefully not here for the long term.
+    case __NR_shmctl:
+    case __NR_shmat:
+    case __NR_shmdt:
+      return playground2::Sandbox::SB_ALLOWED;
+    case __NR_ioctl:
+      return ENOTTY;  // Flash Access.
+
+    default:
+      if (IsGettimeSyscall(sysno) ||
+          IsKillSyscall(sysno)) {
+        return playground2::Sandbox::SB_ALLOWED;
+      }
+      if (IsFileSystemSyscall(sysno)) {
+        return ENOENT;
+      }
+      // In any other case crash the program with our SIGSYS handler
+      return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+  }
 }
 
-static void EmitRet(int value, std::vector<struct sock_filter>* program) {
-  struct sock_filter filter;
-  filter.code = BPF_RET+BPF_K;
-  filter.jt = 0;
-  filter.jf = 0;
-  filter.k = value;
-  program->push_back(filter);
+playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
+  if (sysno < static_cast<int>(MIN_SYSCALL) ||
+      sysno > static_cast<int>(MAX_SYSCALL)) {
+    // TODO(jln) we should not have to do that in a trivial policy
+    return ENOSYS;
+  }
+  switch (sysno) {
+    case __NR_ptrace:
+    case __NR_process_vm_readv:
+    case __NR_process_vm_writev:
+    case __NR_migrate_pages:
+    case __NR_move_pages:
+      return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+    default:
+      return playground2::Sandbox::SB_ALLOWED;
+  }
 }
 
-static void EmitPreamble(std::vector<struct sock_filter>* program) {
-  // First, check correct syscall arch.
-  // "4" is magic offset for the arch number.
-  EmitLoad(4, program);
-  EmitJEQJT1(AUDIT_ARCH_X86_64, program);
-  EmitRet(SECCOMP_RET_KILL, program);
-
-  // Load the syscall number.
-  // "0" is magic offset for the syscall number.
-  EmitLoad(0, program);
-}
-
-static void EmitTrap(std::vector<struct sock_filter>* program) {
-  EmitRet(SECCOMP_RET_TRAP, program);
-}
-
-static void EmitAllow(std::vector<struct sock_filter>* program) {
-  EmitRet(SECCOMP_RET_ALLOW, program);
-}
-
-static void EmitAllowSyscall(int nr, std::vector<struct sock_filter>* program) {
-  EmitJEQJF(nr, 1, program);
-  EmitAllow(program);
-}
-
-static void EmitDenySyscall(int nr, std::vector<struct sock_filter>* program) {
-  EmitJEQJF(nr, 1, program);
-  EmitTrap(program);
-}
-
-static void EmitAllowSyscallArgN(int nr,
-                                 int arg_nr,
-                                 int arg_val,
-                                 std::vector<struct sock_filter>* program) {
-  // Jump forward 4 on no-match so that we also skip the unneccessary reload of
-  // syscall_nr. (It is unneccessary because we have not trashed it yet.)
-  EmitJEQJF(nr, 4, program);
-  EmitLoadArg(arg_nr, program);
-  EmitJEQJF(arg_val, 1, program);
-  EmitAllow(program);
-  // We trashed syscall_nr so put it back in the accumulator.
-  EmitLoad(0, program);
-}
-
-static void EmitFailSyscall(int nr, int err,
-                            std::vector<struct sock_filter>* program) {
-  EmitJEQJF(nr, 1, program);
-  EmitRet(SECCOMP_RET_ERRNO | err, program);
-}
-
-// TODO(cevans) -- only really works as advertised once we restrict clone()
-// to CLONE_THREAD.
-static void EmitAllowSignalSelf(std::vector<struct sock_filter>* program) {
-  EmitAllowSyscallArgN(__NR_kill, 1, getpid(), program);
-  EmitAllowSyscallArgN(__NR_tgkill, 1, getpid(), program);
-}
-
-static void EmitAllowGettime(std::vector<struct sock_filter>* program) {
-  EmitAllowSyscall(__NR_clock_gettime, program);
-  EmitAllowSyscall(__NR_gettimeofday, program);
-  EmitAllowSyscall(__NR_time, program);
-}
-
-static void EmitSetupEmptyFileSystem(std::vector<struct sock_filter>* program) {
-  EmitFailSyscall(__NR_open, ENOENT, program);
-  EmitFailSyscall(__NR_openat, ENOENT, program);
-  EmitFailSyscall(__NR_execve, ENOENT, program);
-  EmitFailSyscall(__NR_access, ENOENT, program);
-  EmitFailSyscall(__NR_mkdir, ENOENT, program);
-  EmitFailSyscall(__NR_mkdirat, ENOENT, program);
-  EmitFailSyscall(__NR_readlink, ENOENT, program);
-  EmitFailSyscall(__NR_readlinkat, ENOENT, program);
-  EmitFailSyscall(__NR_stat, ENOENT, program);
-  EmitFailSyscall(__NR_lstat, ENOENT, program);
-  EmitFailSyscall(__NR_chdir, ENOENT, program);
-}
-
-static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
-  // "Hot" syscalls go first.
-  EmitAllowSyscall(__NR_read, program);
-  EmitAllowSyscall(__NR_ioctl, program);
-  EmitAllowSyscall(__NR_poll, program);
-  EmitAllowSyscall(__NR_epoll_wait, program);
-  EmitAllowSyscall(__NR_recvfrom, program);
-  EmitAllowSyscall(__NR_write, program);
-  EmitAllowSyscall(__NR_writev, program);
-  EmitAllowSyscall(__NR_gettid, program);
-  EmitAllowSyscall(__NR_sched_yield, program);  // Nvidia binary driver.
-  EmitAllowGettime(program);
-
-  // Less hot syscalls.
-  EmitAllowSyscall(__NR_futex, program);
-  EmitAllowSyscall(__NR_madvise, program);
-  EmitAllowSyscall(__NR_sendmsg, program);
-  EmitAllowSyscall(__NR_recvmsg, program);
-  EmitAllowSyscall(__NR_eventfd2, program);
-  EmitAllowSyscall(__NR_pipe, program);
-  EmitAllowSyscall(__NR_mmap, program);
-  EmitAllowSyscall(__NR_mprotect, program);
-  // TODO(cevans): restrict flags.
-  EmitAllowSyscall(__NR_clone, program);
-  EmitAllowSyscall(__NR_set_robust_list, program);
-  EmitAllowSyscall(__NR_getuid, program);
-  EmitAllowSyscall(__NR_geteuid, program);
-  EmitAllowSyscall(__NR_getgid, program);
-  EmitAllowSyscall(__NR_getegid, program);
-  EmitAllowSyscall(__NR_epoll_create, program);
-  EmitAllowSyscall(__NR_fcntl, program);
-  EmitAllowSyscall(__NR_socketpair, program);
-  EmitAllowSyscall(__NR_epoll_ctl, program);
-  EmitAllowSyscall(__NR_prctl, program);
-  EmitAllowSyscall(__NR_fstat, program);
-  EmitAllowSyscall(__NR_close, program);
-  EmitAllowSyscall(__NR_restart_syscall, program);
-  EmitAllowSyscall(__NR_rt_sigreturn, program);
-  EmitAllowSyscall(__NR_brk, program);
-  EmitAllowSyscall(__NR_rt_sigprocmask, program);
-  EmitAllowSyscall(__NR_munmap, program);
-  EmitAllowSyscall(__NR_dup, program);
-  EmitAllowSyscall(__NR_mlock, program);
-  EmitAllowSyscall(__NR_munlock, program);
-  EmitAllowSyscall(__NR_exit, program);
-  EmitAllowSyscall(__NR_exit_group, program);
-  EmitAllowSyscall(__NR_getpid, program);  // Nvidia binary driver.
-  EmitAllowSyscall(__NR_getppid, program);  // ATI binary driver.
-  EmitAllowSyscall(__NR_lseek, program);  // Nvidia binary driver.
-  EmitAllowSyscall(__NR_shutdown, program);  // Virtual driver.
-  EmitAllowSyscall(__NR_rt_sigaction, program);  // Breakpad signal handler.
-  EmitFailSyscall(__NR_socket, EACCES, program);  // Nvidia binary driver.
-  EmitAllowSignalSelf(program);  // GPU watchdog.
-
-  // Generally, filename-based syscalls will fail with ENOENT to behave
-  // similarly to a possible future setuid sandbox.
-  EmitSetupEmptyFileSystem(program);
-}
-
-static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
-  // "Hot" syscalls go first.
-  EmitAllowSyscall(__NR_futex, program);
-  EmitAllowSyscall(__NR_write, program);
-  EmitAllowSyscall(__NR_epoll_wait, program);
-  EmitAllowSyscall(__NR_read, program);
-  EmitAllowSyscall(__NR_times, program);
-
-  // Less hot syscalls.
-  EmitAllowGettime(program);
-  // TODO(cevans): restrict flags.
-  EmitAllowSyscall(__NR_clone, program);
-  EmitAllowSyscall(__NR_set_robust_list, program);
-  EmitAllowSyscall(__NR_getuid, program);
-  EmitAllowSyscall(__NR_geteuid, program);
-  EmitAllowSyscall(__NR_getgid, program);
-  EmitAllowSyscall(__NR_getegid, program);
-  EmitAllowSyscall(__NR_epoll_create, program);
-  EmitAllowSyscall(__NR_fcntl, program);
-  EmitAllowSyscall(__NR_socketpair, program);
-  EmitAllowSyscall(__NR_pipe, program);
-  EmitAllowSyscall(__NR_epoll_ctl, program);
-  EmitAllowSyscall(__NR_gettid, program);
-  EmitAllowSyscall(__NR_prctl, program);
-  EmitAllowSyscall(__NR_fstat, program);
-  EmitAllowSyscall(__NR_sendmsg, program);
-  EmitAllowSyscall(__NR_mmap, program);
-  EmitAllowSyscall(__NR_munmap, program);
-  EmitAllowSyscall(__NR_mprotect, program);
-  EmitAllowSyscall(__NR_madvise, program);
-  EmitAllowSyscall(__NR_rt_sigaction, program);
-  EmitAllowSyscall(__NR_rt_sigprocmask, program);
-  EmitAllowSyscall(__NR_wait4, program);
-  EmitAllowSyscall(__NR_exit_group, program);
-  EmitAllowSyscall(__NR_exit, program);
-  EmitAllowSyscall(__NR_rt_sigreturn, program);
-  EmitAllowSyscall(__NR_restart_syscall, program);
-  EmitAllowSyscall(__NR_close, program);
-  EmitAllowSyscall(__NR_recvmsg, program);
-  EmitAllowSyscall(__NR_lseek, program);
-  EmitAllowSyscall(__NR_brk, program);
-  EmitAllowSyscall(__NR_sched_yield, program);
-  EmitAllowSyscall(__NR_shutdown, program);
-  EmitAllowSyscall(__NR_sched_getaffinity, program);  // 3D
-  EmitAllowSyscall(__NR_dup, program);  // Flash Access.
-  EmitFailSyscall(__NR_ioctl, ENOTTY, program);  // Flash Access.
-  EmitAllowSignalSelf(program);
-
-  // These are under investigation, and hopefully not here for the long term.
-  EmitAllowSyscall(__NR_shmctl, program);
-  EmitAllowSyscall(__NR_shmat, program);
-  EmitAllowSyscall(__NR_shmdt, program);
-
-  EmitSetupEmptyFileSystem(program);
-}
-
-static void ApplyNoPtracePolicy(std::vector<struct sock_filter>* program) {
-  EmitDenySyscall(__NR_ptrace, program);
-  EmitDenySyscall(__NR_process_vm_readv, program);
-  EmitDenySyscall(__NR_process_vm_writev, program);
-  EmitDenySyscall(__NR_migrate_pages, program);
-  EmitDenySyscall(__NR_move_pages, program);
-}
-
-static bool CanUseSeccompFilters() {
-  int ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, 0, 0, 0);
-  if (ret != 0 && errno == EFAULT)
-    return true;
-  return false;
-}
-
-static void InstallFilter(const std::vector<struct sock_filter>& program) {
-  int ret = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
-  PLOG_IF(FATAL, ret != 0) << "prctl(PR_SET_NO_NEW_PRIVS) failed";
-
-  struct sock_fprog fprog;
-  fprog.len = program.size();
-  fprog.filter = const_cast<struct sock_filter*>(&program[0]);
-
-  ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &fprog, 0, 0);
-  PLOG_IF(FATAL, ret != 0) << "Failed to install filter.";
-}
-
-static bool ShouldEnableGPUSandbox() {
+bool ShouldEnableGPUSandbox() {
   // Default setting is: enabled for Linux, disabled for Chrome OS.
   // '--disable-gpu-sandbox' takes precedence over '--enable-gpu-sandbox'.
 #if defined(OS_CHROMEOS)
@@ -437,38 +307,62 @@ void InitializeSandbox() {
     return;
   }
 
+  // We should not enable seccomp mode 2 if seccomp mode 1 is activated. There
+  // is no easy way to know if seccomp mode 1 is activated, this is a hack.
+  //
+  // SeccompSandboxEnabled() (which really is "may we try to enable seccomp
+  // inside the Zygote") is buggy because it relies on the --enable/disable
+  // seccomp-sandbox flags which unfortunately doesn't get passed to every
+  // process type.
+  // TODO(markus): Provide a way to detect if seccomp mode 1 is enabled or let
+  // us disable it by default on Debug builds.
+  if (prctl(PR_GET_SECCOMP, 0, 0, 0, 0) != 0) {
+    VLOG(1) << "Seccomp BPF disabled in "
+            << process_type
+            <<  " because seccomp mode 1 is enabled.";
+    return;
+  }
+
   if (process_type == switches::kGpuProcess &&
       !ShouldEnableGPUSandbox())
     return;
 
-  if (!CanUseSeccompFilters())
+  // TODO(jln): find a way for the Zygote processes under the setuid sandbox to
+  // have a /proc fd and pass it here.
+  // Passing -1 as the /proc fd since we have no special way to have it for
+  // now.
+  if (playground2::Sandbox::supportsSeccompSandbox(-1) !=
+      playground2::Sandbox::STATUS_AVAILABLE) {
     return;
+  }
 
-  std::vector<struct sock_filter> program;
-  EmitPreamble(&program);
+  playground2::Sandbox::EvaluateSyscall SyscallPolicy = NULL;
 
   if (process_type == switches::kGpuProcess) {
-    ApplyGPUPolicy(&program);
-    EmitTrap(&program);  // Default deny.
+    SyscallPolicy = GpuProcessPolicy;
   } else if (process_type == switches::kPpapiPluginProcess) {
-    ApplyFlashPolicy(&program);
-    EmitTrap(&program);  // Default deny.
+    // TODO(jln): figure out what to do with non-Flash PPAPI
+    // out-of-process plug-ins.
+    SyscallPolicy = FlashProcessPolicy;
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kWorkerProcess) {
-    ApplyNoPtracePolicy(&program);
-    EmitAllow(&program);  // Default permit.
+    SyscallPolicy = BlacklistPtracePolicy;
   } else {
     NOTREACHED();
   }
 
-  InstallSIGSYSHandler();
-  InstallFilter(program);
+  playground2::Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
+  playground2::Sandbox::startSandbox();
 
   // TODO(jorgelo): remove this once we surface
   // seccomp filter sandbox status in about:sandbox.
+  const std::string ActivatedSeccomp =
+      "Activated seccomp filter sandbox for process type: " +
+      process_type + ".";
 #if defined(OS_CHROMEOS)
-  LOG(WARNING) << "Activated seccomp filter sandbox for process "
-               << process_type;
+  LOG(WARNING) << ActivatedSeccomp;
+#else
+  VLOG(1) << ActivatedSeccomp;
 #endif
 }
 
