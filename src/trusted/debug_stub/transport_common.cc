@@ -24,6 +24,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 #include <string>
 
 #include "native_client/src/trusted/gdb_rsp/util.h"
@@ -204,6 +205,8 @@ ITransport* ITransport::Connect(const char *addr) {
   }
 
   struct sockaddr_in saddr;
+  // Clearing sockaddr_in first appears to be necessary on Mac OS X.
+  memset(&saddr, 0, sizeof(saddr));
   saddr.sin_family = AF_INET;
   saddr.sin_addr.s_addr = htonl(0x7F000001);
   saddr.sin_port = htons(4014);
@@ -226,6 +229,8 @@ ITransport* ITransport::Accept(const char *addr) {
 
   if (!listening) {
     struct sockaddr_in saddr;
+    // Clearing sockaddr_in first appears to be necessary on Mac OS X.
+    memset(&saddr, 0, sizeof(saddr));
     socklen_t addrlen = static_cast<socklen_t>(sizeof(saddr));
     saddr.sin_family = AF_INET;
     saddr.sin_addr.s_addr = htonl(0x7F000001);

@@ -33,8 +33,7 @@ def RspChecksum(data):
 class GdbRspConnection(object):
 
   def __init__(self, addr=SEL_LDR_RSP_SOCKET_ADDR):
-    self._socket = socket.socket()
-    self._Connect(addr)
+    self._socket = self._Connect(addr)
 
   def _Connect(self, addr):
     # We have to poll because we do not know when sel_ldr has
@@ -45,13 +44,15 @@ class GdbRspConnection(object):
     timeout_in_seconds = 10
     poll_time_in_seconds = 0.1
     for i in xrange(int(timeout_in_seconds / poll_time_in_seconds)):
+      # On Mac OS X, we have to create a new socket FD for each retry.
+      sock = socket.socket()
       try:
-        self._socket.connect(addr)
+        sock.connect(addr)
       except socket.error:
         # Retry after a delay.
         time.sleep(poll_time_in_seconds)
       else:
-        return
+        return sock
     raise Exception('Could not connect to sel_ldr\'s debug stub in %i seconds'
                     % timeout_in_seconds)
 
