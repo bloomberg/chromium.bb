@@ -129,34 +129,6 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
   return EXCEPTION_CONTINUE_EXECUTION;
 }
 
-void IThread::SuspendOneThread(struct NaClAppThread *natp,
-                               struct NaClSignalContext *context) {
-  if (SuspendThread(natp->thread.tid) == -1) {
-    NaClLog(LOG_FATAL, "IThread::SuspendOneThread: SuspendThread failed\n");
-  }
-
-  CONTEXT win_context;
-  win_context.ContextFlags = CONTEXT_ALL;
-  if (!GetThreadContext(natp->thread.tid, &win_context)) {
-    NaClLog(LOG_FATAL, "IThread::SuspendOneThread: GetThreadContext failed\n");
-  }
-  NaClSignalContextFromHandler(context, &win_context);
-}
-
-void IThread::ResumeOneThread(struct NaClAppThread *natp,
-                              const struct NaClSignalContext *context) {
-  CONTEXT win_context;
-  win_context.ContextFlags = CONTEXT_ALL;
-  NaClSignalContextToHandler(&win_context, context);
-  if (!SetThreadContext(natp->thread.tid, &win_context)) {
-    NaClLog(LOG_FATAL, "IThread::ResumeOneThread: SetThreadContext failed\n");
-  }
-
-  if (ResumeThread(natp->thread.tid) == -1) {
-    NaClLog(LOG_FATAL, "IThread::ResumeOneThread: ResumeThread failed\n");
-  }
-}
-
 void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
   // Remove our old catch if there is one, this allows us to add again
   if (NULL != s_OldCatch) RemoveVectoredExceptionHandler(s_OldCatch);

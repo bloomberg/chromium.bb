@@ -11,7 +11,9 @@
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 namespace {
 
@@ -124,10 +126,30 @@ void IThread::Release(IThread *ithread) {
 void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
+
+  if (map.empty()) {
+    NaClLog(LOG_FATAL,
+            "IThread::SuspendAllThreadsExceptSignaled: no threads\n");
+  }
+
+  NaClUntrustedThreadsSuspendAllButOne(
+      map.begin()->second->natp_->nap,
+      signaled_tid == 0 ? NULL : map[signaled_tid]->natp_,
+      /* save_registers= */ 1);
+
   for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
     Thread *thread = it->second;
     if (thread->id_ != signaled_tid) {
-      SuspendOneThread(thread->natp_, &thread->context_);
+      if ((thread->natp_->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
+        thread->context_ = *thread->natp_->suspended_registers;
+      } else {
+        // TODO(eaeltsin): fetch context from NaClAppThread.user.
+        memset(&thread->context_, 0, sizeof(thread->context_));
+        NaClLog(LOG_WARNING,
+                "IThread::SuspendAllThreadsExceptSignaled: thread 0x%x "
+                "registers not fetched\n",
+                thread->id_);
+      }
     }
   }
 }
@@ -135,12 +157,15 @@ void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
 void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
-  for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
-    Thread *thread = it->second;
-    if (thread->id_ != signaled_tid) {
-      ResumeOneThread(thread->natp_, &thread->context_);
-    }
+
+  if (map.empty()) {
+    NaClLog(LOG_FATAL,
+            "IThread::ResumeAllThreadsExceptSignaled: no threads\n");
   }
+
+  NaClUntrustedThreadsResumeAllButOne(
+      map.begin()->second->natp_->nap,
+      signaled_tid == 0 ? NULL : map[signaled_tid]->natp_);
 }
 
 }  // namespace port

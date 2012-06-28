@@ -37,16 +37,6 @@ static enum NaClSignalResult SignalHandler(int signal, void *ucontext) {
   }
 }
 
-void IThread::SuspendOneThread(struct NaClAppThread *,
-                               struct NaClSignalContext *) {
-  // TODO(eaeltsin): implement this.
-}
-
-void IThread::ResumeOneThread(struct NaClAppThread *,
-                              const struct NaClSignalContext *) {
-  // TODO(eaeltsin): implement this.
-}
-
 void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
   NaClSignalHandlerAdd(SignalHandler);
   s_CatchFunc = func;

@@ -40,10 +40,6 @@ class IThread {
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static IThread *Acquire(uint32_t id);
   static void Release(IThread *thread);
-  static void SuspendOneThread(struct NaClAppThread *natp,
-                               struct NaClSignalContext *context);
-  static void ResumeOneThread(struct NaClAppThread *natp,
-                              const struct NaClSignalContext *context);
   static void SuspendAllThreadsExceptSignaled(uint32_t signaled_tid);
   static void ResumeAllThreadsExceptSignaled(uint32_t signaled_tid);
   static void SetExceptionCatch(CatchFunc_t func, void *cookie);

@@ -8,7 +8,9 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
+void NaClUntrustedThreadsSuspendAllButOne(struct NaClApp *nap,
+                                          struct NaClAppThread *natp_to_skip,
+                                          int save_registers) {
   size_t index;
 
   NaClXMutexLock(&nap->threads_mu);
@@ -22,20 +24,29 @@ void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
    */
   for (index = 0; index < nap->threads.num_entries; index++) {
     struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
-    if (natp != NULL) {
+    if (natp != NULL && natp != natp_to_skip) {
       NaClUntrustedThreadSuspend(natp, save_registers);
     }
   }
 }
 
-void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
+void NaClUntrustedThreadsResumeAllButOne(struct NaClApp *nap,
+                                         struct NaClAppThread *natp_to_skip) {
   size_t index;
   for (index = 0; index < nap->threads.num_entries; index++) {
     struct NaClAppThread *natp = NaClGetThreadMu(nap, (int) index);
-    if (natp != NULL) {
+    if (natp != NULL && natp != natp_to_skip) {
       NaClUntrustedThreadResume(natp);
     }
   }
 
   NaClXMutexUnlock(&nap->threads_mu);
+}
+
+void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
+  NaClUntrustedThreadsSuspendAllButOne(nap, NULL, save_registers);
+}
+
+void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
+  NaClUntrustedThreadsResumeAllButOne(nap, NULL);
 }

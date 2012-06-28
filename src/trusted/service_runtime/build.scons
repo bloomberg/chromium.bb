@@ -12,7 +12,11 @@ Import('env')
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 # this is needed for including gen/... files, see GENERATED below
 
-DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
+# There is a circular dependency between debug_stub and sel. Adding sel to this
+# list is a quick and dirty workaround.
+# TODO(eaeltsin): refactor to avoid circular dependencies.
+DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub', 'sel']
+
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
 
