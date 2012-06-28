@@ -1185,7 +1185,7 @@ class Dtrace(ApiBase):
   https://discussions.apple.com/thread/1980539. So resort to handling execve()
   manually.
 
-  errno is not printed in the log since this implementation currently care only
+  errno is not printed in the log since this implementation currently only cares
   about files that were successfully opened.
   """
   class Context(ApiBase.Context):
@@ -1668,7 +1668,7 @@ class Dtrace(ApiBase):
 
     # Code currently not used.
     D_EXTRANEOUS = """
-      /* These are a good learning experience, since it traces a lot of things
+      /* This is a good learning experience, since it traces a lot of things
        * related to the process and child processes.
        * Warning: it generates a gigantic log. For example, tracing
        * "data/trace_inputs/child1.py --child" generates a 2mb log and takes
