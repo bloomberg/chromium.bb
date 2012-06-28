@@ -353,7 +353,8 @@ class GitWrapper(SCMWrapper):
       else:
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
-    if not scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=revision):
+    if (not re.match(r'^[0-9a-fA-F]{40}$', revision) or
+        not scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=revision)):
       # Update the remotes first so we have all the refs.
       backoff_time = 5
       for _ in range(10):
