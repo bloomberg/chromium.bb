@@ -50,13 +50,14 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
   // Get a copy of the handle for use in the broker process.
-  base::win::ScopedHandle handle;
+  HANDLE handle_temp;
   if (!::DuplicateHandle(ipc->client_info->process, source_handle,
-                         ::GetCurrentProcess(), handle.Receive(),
+                         ::GetCurrentProcess(), &handle_temp,
                          0, FALSE, DUPLICATE_SAME_ACCESS)) {
     ipc->return_info.win32_result = ::GetLastError();
     return false;
   }
+  base::win::ScopedHandle handle(handle_temp);
 
   // Get the object type (32 characters is safe; current max is 14).
   BYTE buffer[sizeof(OBJECT_TYPE_INFORMATION) + 32 * sizeof(wchar_t)];

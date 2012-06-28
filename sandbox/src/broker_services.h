@@ -72,7 +72,7 @@ class BrokerServicesBase : public BrokerServices,
   static DWORD WINAPI TargetEventsThread(PVOID param);
 
   // Removes a target peer from the process list if it expires.
-  static VOID CALLBACK RemovePeer(PVOID parameter, BOOLEAN);
+  static VOID CALLBACK RemovePeer(PVOID parameter, BOOLEAN timeout);
 
   // The completion port used by the job objects to communicate events to
   // the worker thread.
