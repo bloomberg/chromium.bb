@@ -140,7 +140,6 @@ int ChildURLCountTotal(const BookmarkNode* node) {
 void OpenAllImpl(const BookmarkNode* node,
                  WindowOpenDisposition initial_disposition,
                  PageNavigator** navigator,
-                 Profile* profile,
                  bool* opened_url) {
   if (node->is_url()) {
     WindowOpenDisposition disposition;
@@ -148,27 +147,21 @@ void OpenAllImpl(const BookmarkNode* node,
       disposition = NEW_BACKGROUND_TAB;
     else
       disposition = initial_disposition;
-    (*navigator)->OpenURL(OpenURLParams(node->url(), content::Referrer(),
-                          disposition, content::PAGE_TRANSITION_AUTO_BOOKMARK,
-                          false));
+    WebContents* opened_tab = (*navigator)->OpenURL(
+        OpenURLParams(node->url(), content::Referrer(), disposition,
+                      content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
     if (!*opened_url) {
       *opened_url = true;
       // We opened the first URL which may have opened a new window or clobbered
       // the current page, reset the navigator just to be sure.
-      Browser* new_browser = browser::FindLastActiveWithProfile(profile);
-      if (new_browser) {
-        WebContents* current_tab = new_browser->GetActiveWebContents();
-        if (current_tab)
-          *navigator = current_tab;
-      }  // else, new_browser == NULL, which happens during testing.
+      *navigator = opened_tab;
     }
   } else {
     // For folders only open direct children.
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child_node = node->GetChild(i);
       if (child_node->is_url())
-        OpenAllImpl(child_node, initial_disposition, navigator, profile,
-                    opened_url);
+        OpenAllImpl(child_node, initial_disposition, navigator, opened_url);
     }
   }
 }
@@ -409,8 +402,7 @@ void OpenAll(gfx::NativeWindow parent,
     profile = profile->GetOffTheRecordProfile();
 
   for (size_t i = 0; i < nodes.size(); ++i)
-    OpenAllImpl(nodes[i], initial_disposition, &navigator, profile,
-                &opened_url);
+    OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url);
 }
 
 void OpenAll(gfx::NativeWindow parent,
