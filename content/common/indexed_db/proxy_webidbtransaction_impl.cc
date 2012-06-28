@@ -30,8 +30,7 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
       idb_transaction_id_));
 }
 
-int RendererWebIDBTransactionImpl::mode() const
-{
+int RendererWebIDBTransactionImpl::mode() const {
   int mode;
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionMode(
       idb_transaction_id_, &mode));
@@ -40,8 +39,7 @@ int RendererWebIDBTransactionImpl::mode() const
 
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     const WebString& name,
-    WebKit::WebExceptionCode& ec)
-{
+    WebKit::WebExceptionCode& ec) {
   int object_store_id;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_TransactionObjectStore(
@@ -51,22 +49,24 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
   return new RendererWebIDBObjectStoreImpl(object_store_id);
 }
 
-void RendererWebIDBTransactionImpl::abort()
-{
+void RendererWebIDBTransactionImpl::commit() {
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionCommit(
+      idb_transaction_id_));
+}
+
+void RendererWebIDBTransactionImpl::abort() {
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionAbort(
       idb_transaction_id_));
 }
 
-void RendererWebIDBTransactionImpl::didCompleteTaskEvents()
-{
+void RendererWebIDBTransactionImpl::didCompleteTaskEvents() {
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_TransactionDidCompleteTaskEvents(
           idb_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::setCallbacks(
-    WebIDBTransactionCallbacks* callbacks)
-{
+    WebIDBTransactionCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,

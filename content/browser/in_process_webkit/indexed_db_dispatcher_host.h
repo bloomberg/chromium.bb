@@ -283,7 +283,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    // TODO: add the rest of the transaction methods.
+    void OnCommit(int32 transaction_id);
     void OnAbort(int32 transaction_id);
     void OnMode(int32 transaction_id, int* mode);
     void OnObjectStore(int32 transaction_id,

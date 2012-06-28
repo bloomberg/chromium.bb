@@ -1068,6 +1068,7 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::TransactionDispatcherHost,
                            message, *msg_is_ok)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionCommit, OnCommit)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionMode, OnMode)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionObjectStore, OnObjectStore)
@@ -1082,6 +1083,16 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
 void IndexedDBDispatcherHost::TransactionDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
+}
+
+void IndexedDBDispatcherHost::TransactionDispatcherHost::OnCommit(
+    int32 transaction_id) {
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &map_, transaction_id);
+  if (!idb_transaction)
+    return;
+
+  idb_transaction->commit();
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnAbort(

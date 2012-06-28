@@ -509,6 +509,10 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_TransactionMode,
                             int32, /* idb_transaction_id */
                             int /* mode */)
 
+// WebIDBTransaction::commit() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionCommit,
+                     int32 /* idb_transaction_id */)
+
 // WebIDBTransaction::abort() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionAbort,
                      int32 /* idb_transaction_id */)

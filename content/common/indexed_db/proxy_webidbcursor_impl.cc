@@ -121,8 +121,7 @@ void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks,
   dispatcher->RequestIDBCursorDelete(callbacks, idb_cursor_id_, &ec);
 }
 
-void RendererWebIDBCursorImpl::postSuccessHandlerCallback()
-{
+void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
   pending_onsuccess_callbacks_--;
 
   // If the onsuccess callback called continue() on the cursor again,

@@ -74,9 +74,10 @@ static const char* kKeyTests[] = {
 
 static const char* kTransactionTests[] = {
 //  "transaction-abort.html", // Flaky, http://crbug.com/83226
-  "transaction-abort-with-js-recursion-cross-frame.html",
-  "transaction-abort-with-js-recursion.html",
-  "transaction-abort-workers.html",
+// TODO(jsbell): Re-enable the following 3 tests after http://webkit.org/b/89379 lands.
+// "transaction-complete-with-js-recursion-cross-frame.html",
+// "transaction-complete-with-js-recursion.html",
+// "transaction-complete-workers.html",
   "transaction-after-close.html",
   "transaction-and-objectstore-calls.html",
   "transaction-basics.html",
