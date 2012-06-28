@@ -59,7 +59,8 @@ enum ResourceStatus {
   RESOURCE_STATUS_NOT_GET = 8,
   RESOURCE_STATUS_URL_TOO_LONG = 16,
   RESOURCE_STATUS_NOT_CACHEABLE = 32,
-  RESOURCE_STATUS_MAX = 64,
+  RESOURCE_STATUS_HEADERS_MISSING = 64,
+  RESOURCE_STATUS_MAX = 128,
 };
 
 }  // namespace
@@ -239,6 +240,9 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
     resource_status |= RESOURCE_STATUS_URL_TOO_LONG;
   }
 
+  if (!response->response_info().headers)
+    resource_status |= RESOURCE_STATUS_HEADERS_MISSING;
+
   if (!IsCacheable(response))
     resource_status |= RESOURCE_STATUS_NOT_CACHEABLE;
 
@@ -257,6 +261,8 @@ bool ResourcePrefetchPredictor::IsCacheable(const net::URLRequest* response) {
   // For non cached responses, we will ensure that the freshness lifetime is
   // some sane value.
   const net::HttpResponseInfo& response_info = response->response_info();
+  if (!response_info.headers)
+    return false;
   base::Time response_time(response_info.response_time);
   response_time += base::TimeDelta::FromSeconds(1);
   base::TimeDelta freshness = response_info.headers->GetFreshnessLifetime(
