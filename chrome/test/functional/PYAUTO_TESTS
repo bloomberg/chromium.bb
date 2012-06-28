@@ -123,7 +123,9 @@
       '-policy.PolicyTest.testExtensionInstallFromForceList',
       # crbug.com/134560
       '-policy.PolicyTest.testBlacklistPolicy',
+      '-policy.PolicyTest.testPolicyToPrefMapping',
       '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
+      '-policy.PolicyTest.testSavingBrowserHistoryDisabled',
       # crbug.com/47935
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
       # crbug.com/83827
