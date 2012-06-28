@@ -361,10 +361,10 @@
 
     <CustomAction Id="set_service_display_name"
                   Property="chromoting_service_display_name"
-                  Value="[binaries]remoting_service.exe,-101" />
+                  Value="@[binaries]remoting_service.exe,-101" />
     <CustomAction Id="set_service_description"
                   Property="chromoting_service_description"
-                  Value="[binaries]remoting_service.exe,-102" />
+                  Value="@[binaries]remoting_service.exe,-102" />
 
     <!-- XP does not support MUI strings in the service name and description, so
          we fall back to plain strings on XP. -->
