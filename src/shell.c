@@ -1014,6 +1014,9 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 	if (!shsurf)
 		return -1;
 
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+		return 0;
+
 	move = malloc(sizeof *move);
 	if (!move)
 		return -1;
