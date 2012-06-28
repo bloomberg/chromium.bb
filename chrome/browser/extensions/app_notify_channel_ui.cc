@@ -132,38 +132,35 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
 }
 
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
-  if (accepted) {
-    StartObservingSync();
-    // Bring up the login page.
-    LoginUIService* login_ui_service =
-        LoginUIServiceFactory::GetForProfile(profile_);
-    LoginUIService::LoginUI* login_ui = login_ui_service->current_login_ui();
-    if (login_ui) {
-      // Some sort of login UI is already visible.
-      SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
-      if (signin->GetAuthenticatedUsername().empty()) {
-        // User is not logged in yet, so just bring up the login UI (could be
-        // the promo UI).
-        login_ui->FocusUI();
-        return;
-      } else {
-        // User is already logged in, so close whatever sync config UI the
-        // user is looking at and display new login UI.
-        login_ui->CloseUI();
-        DCHECK(!login_ui_service->current_login_ui());
-      }
-    }
-    // Any existing UI is now closed - display new login UI.
-    Browser* browser = browser::FindLastActiveWithProfile(profile_);
-    if (browser) {
-      chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupForceLoginSubPage);
-      return;
-    }
-    // Should not be possible to have no browser here, since we're in an
-    // infobar callback.
-    NOTREACHED();
+  if (!accepted) {
+    delegate_->OnSyncSetupResult(false);
+    return;
   }
-  delegate_->OnSyncSetupResult(false);
+
+  StartObservingSync();
+  // Bring up the login page.
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(profile_);
+  LoginUIService::LoginUI* login_ui = login_ui_service->current_login_ui();
+  if (login_ui) {
+    // Some sort of login UI is already visible.
+    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
+    if (signin->GetAuthenticatedUsername().empty()) {
+      // User is not logged in yet, so just bring up the login UI (could be
+      // the promo UI).
+      login_ui->FocusUI();
+      return;
+    } else {
+      // User is already logged in, so close whatever sync config UI the
+      // user is looking at and display new login UI.
+      login_ui->CloseUI();
+      DCHECK(!login_ui_service->current_login_ui());
+    }
+  }
+  // Any existing UI is now closed - display new login UI.
+  Browser* browser = browser::FindBrowserWithWebContents(
+      tab_contents_->web_contents());
+  chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupForceLoginSubPage);
 }
 
 void AppNotifyChannelUIImpl::OnStateChanged() {
