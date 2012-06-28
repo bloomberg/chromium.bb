@@ -898,6 +898,10 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
     # TODO(sosa): Remove copy once crosbug.com/23690 is closed.
     if self._tarball_dir:
+      shutil.copyfile(os.path.join(self._tarball_dir, 'autotest.tar'),
+                      os.path.join(self.GetImageDirSymlink(),
+                                   'autotest.tar'))
+      # TODO(yjhong): Remove autotest.tar.bz2 when crosbug.com/32207 is closed
       shutil.copyfile(os.path.join(self._tarball_dir, 'autotest.tar.bz2'),
                       os.path.join(self.GetImageDirSymlink(),
                                    'autotest.tar.bz2'))

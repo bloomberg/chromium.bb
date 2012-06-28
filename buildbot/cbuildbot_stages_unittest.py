@@ -902,7 +902,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     # Convenience variables.
     fake_autotest_dir = '/fake/autotest'
-    autotest_tarball_name = 'autotest.tar.bz2'
+    autotest_tarball_name = 'autotest.tar'
     test_suites_tarball_name = 'test_suites.tar.bz2'
     autotest_tarball_path = os.path.join(fake_autotest_dir,
                                          autotest_tarball_name)
@@ -1013,7 +1013,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     # Convenience variables.
     fake_autotest_dir = '/fake/autotest'
-    autotest_tarball_name = 'autotest.tar.bz2'
+    autotest_tarball_name = 'autotest.tar'
     test_suites_tarball_name = 'test_suites.tar.bz2'
     autotest_tarball_path = os.path.join(fake_autotest_dir,
                                          autotest_tarball_name)

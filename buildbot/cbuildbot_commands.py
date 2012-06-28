@@ -4,6 +4,7 @@
 
 """Module containing the various individual commands a builder can run."""
 
+import fnmatch
 import getpass
 import glob
 import logging
@@ -924,22 +925,44 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
       cmd, enter_chroot=True, extra_env=extra_env, cwd=scripts_dir)
 
 
-def BuildTarball(buildroot, input_list, tarball_output, cwd=None):
-  """Tars files and directories from input_list to tarball_output.
+def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
+                 compressed=True):
+  """Tars and zips files and directories from input_list to tarball_output.
 
   Args:
     buildroot: Root directory where build occurs.
     input_list: A list of files and directories to be archived.
     tarball_output: Path of output tar archive file.
     cwd: Current working directory when tar command is executed.
+    compressed: Whether or not the tarball should be compressed with pbzip2.
   """
   pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
-  cmd = ['tar',
-         '--use-compress-program=%s' % pbzip2,
-         '-cf', tarball_output]
+  if compressed:
+    cmd = ['tar',
+           '--use-compress-program=%s' % pbzip2,
+           '-cf', tarball_output]
+  else:
+    cmd = ['tar',
+           '-cf', tarball_output]
   cmd += input_list
   cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
 
+
+def FindFilesWithPattern(pattern, root=os.curdir):
+  """Search the root directory recursively for matching filenames.
+
+  Args:
+    pattern: the pattern used to match the filenames
+    root: the root directory to search.
+
+  Returns a list of paths of the matched files.
+  """
+  matches = []
+  for root, _, filenames in os.walk(root):
+    for filename in fnmatch.filter(filenames, pattern):
+      matches.append(os.path.join(root, filename))
+
+  return matches
 
 def BuildAutotestTarballs(buildroot, board, tarball_dir):
   """Tar up the autotest artifacts into image_dir.
@@ -951,14 +974,24 @@ def BuildAutotestTarballs(buildroot, board, tarball_dir):
 
   Returns a tuple containing the paths of the autotest and test_suites tarballs.
   """
-  autotest_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
+  autotest_tarball = os.path.join(tarball_dir, 'autotest.tar')
   test_suites_tarball = os.path.join(tarball_dir, 'test_suites.tar.bz2')
   cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
 
-  BuildTarball(buildroot, ['autotest'], autotest_tarball, cwd=cwd)
+  # Find the control files in autotest/
+  control_files = FindFilesWithPattern('control*', root='autotest')
+
+  # Tar the control files and the packages
+  input_list = control_files + ['autotest/packages']
+  BuildTarball(buildroot, input_list, autotest_tarball,
+               cwd=cwd, compressed=False)
+
+  # TODO(yjhong): Remove autotest.tar.bz2 when crosbug.com/32207 is closed
+  autotest_zipped_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
+  BuildTarball(buildroot, ['autotest'], autotest_zipped_tarball, cwd=cwd)
   BuildTarball(buildroot, ['autotest/test_suites'], test_suites_tarball,
                cwd=cwd)
-  return [autotest_tarball, test_suites_tarball]
+  return [autotest_tarball, autotest_zipped_tarball, test_suites_tarball]
 
 
 def BuildImageZip(archive_dir, image_dir):
