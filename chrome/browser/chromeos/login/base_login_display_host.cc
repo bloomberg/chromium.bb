@@ -271,19 +271,17 @@ void BaseLoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (content::NOTIFICATION_APP_EXITING == type)
+  if (type == content::NOTIFICATION_APP_EXITING) {
     ShutdownDisplayHost(true);
-  else if (chrome::NOTIFICATION_BROWSER_OPENED == type)
+  } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
     OnBrowserCreated();
-  else
-    return;
-
-  registrar_.Remove(this,
-                    content::NOTIFICATION_APP_EXITING,
-                    content::NotificationService::AllSources());
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_BROWSER_OPENED,
-                    content::NotificationService::AllSources());
+    registrar_.Remove(this,
+                      content::NOTIFICATION_APP_EXITING,
+                      content::NotificationService::AllSources());
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_BROWSER_OPENED,
+                      content::NotificationService::AllSources());
+  }
 }
 
 void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
