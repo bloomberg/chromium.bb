@@ -174,6 +174,7 @@ class PolicyTestBase(pyauto.PyUITest):
       self.RemoveAllCryptohomeVaultsOnChromeOS()
     else:
       pyauto.PyUITest.setUp(self)
+    self._branding = self.GetBrowserInfo()['properties']['branding']
 
   def tearDown(self):
     """Cleans up the policies and related files created in tests."""
@@ -184,7 +185,7 @@ class PolicyTestBase(pyauto.PyUITest):
       self.SetDevicePolicy()
     else:
       # On other platforms, there is only user policy to clear.
-      self.SetUserPolicy()
+      self.SetUserPolicy(refresh=False)
 
     pyauto.PyUITest.tearDown(self)
 
@@ -230,7 +231,7 @@ class PolicyTestBase(pyauto.PyUITest):
         raise TypeError('Unsupported data type: "%s"' % value)
 
     assert self.IsWin()
-    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
+    if self._branding == 'Google Chrome':
       reg_base = r'SOFTWARE\Policies\Google\Chrome'
     else:
       reg_base = r'SOFTWARE\Policies\Chromium'
@@ -252,7 +253,7 @@ class PolicyTestBase(pyauto.PyUITest):
     sudo_cmd_file = os.path.join(os.path.dirname(__file__),
                                  'policy_posix_util.py')
 
-    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
+    if self._branding == 'Google Chrome':
       policies_location_base = '/etc/opt/chrome'
     else:
       policies_location_base = '/etc/chromium'
@@ -282,7 +283,7 @@ class PolicyTestBase(pyauto.PyUITest):
     sudo_cmd_file = os.path.join(os.path.dirname(__file__),
                                  'policy_posix_util.py')
 
-    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
+    if self._branding == 'Google Chrome':
       policies_file_base = 'com.google.Chrome.plist'
     else:
       policies_file_base = 'org.chromium.Chromium.plist'
@@ -305,10 +306,14 @@ class PolicyTestBase(pyauto.PyUITest):
                        'copy', policies_tmp_file, policies_location])
       os.remove(policies_tmp_file)
 
-  def SetUserPolicy(self, user_policy=None):
+  def SetUserPolicy(self, user_policy=None, refresh=True):
     """Sets the user policy provided as a dict.
 
-    Passing a value of None clears the user policy."""
+    Args:
+      user_policy: The user policy to set. None clears it.
+      refresh: If True, chrome will refresh and apply the new policy.
+               Requires chrome to be alive for it.
+    """
     if self.IsChromeOS():
       self._SetUserPolicyChromeOS(user_policy=user_policy)
     elif self.IsWin():
@@ -320,7 +325,8 @@ class PolicyTestBase(pyauto.PyUITest):
     else:
       raise NotImplementedError('Not available on this platform.')
 
-    self.RefreshPolicies()
+    if refresh:
+      self.RefreshPolicies()
 
   def _SetProtobufMessageField(self, group_message, field, field_value):
     """Sets the given field in a protobuf to the given value."""
