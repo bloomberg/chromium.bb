@@ -27,10 +27,12 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #endif
 
 using base::Time;
@@ -326,8 +328,17 @@ MenuItemView* MenuController::Run(Widget* parent,
   DCHECK_LE(message_loop_depth_, 2);
 #if defined(USE_AURA)
   root_window_ = parent->GetNativeWindow()->GetRootWindow();
+
+  // Observe activation changes to close the window if another window is
+  // activated (crbug.com/131027).
+  if (!nested_menu)
+    aura::client::GetActivationClient(root_window_)->AddObserver(this);
+
   aura::client::GetDispatcherClient(root_window_)->
       RunWithDispatcher(this, parent->GetNativeWindow(), true);
+
+  if (!nested_menu)
+    aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
 #else
   {
     MessageLoopForUI* loop = MessageLoopForUI::current();
@@ -697,11 +708,6 @@ void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StartCancelAllTimer();
   SetDropMenuItem(NULL, MenuDelegate::DROP_NONE);
   StopScrolling();
-}
-
-void MenuController::OnWidgetActivationChanged() {
-  if (!drag_in_progress_)
-    Cancel(EXIT_ALL);
 }
 
 void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
@@ -2123,5 +2129,13 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
                  SELECTION_OPEN_SUBMENU);
   }
 }
+
+#if defined(USE_AURA)
+void MenuController::OnWindowActivated(aura::Window* active,
+                                       aura::Window* old_active) {
+  if (!drag_in_progress_)
+    Cancel(EXIT_ALL);
+}
+#endif
 
 }  // namespace views

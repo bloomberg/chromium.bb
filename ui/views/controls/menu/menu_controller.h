@@ -21,8 +21,11 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/activation_change_observer.h"
+
 namespace aura {
 class RootWindow;
+class Window;
 }
 #endif
 
@@ -48,7 +51,14 @@ class MenuRunnerImpl;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
+class VIEWS_EXPORT MenuController
+#if defined(USE_AURA)
+    : public MessageLoop::Dispatcher,
+      public aura::client::ActivationChangeObserver {
+#else
+    : public MessageLoop::Dispatcher {
+#endif
+
  public:
   // Enumeration of how the menu should exit.
   enum ExitType {
@@ -125,10 +135,6 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // Invoked from the scroll buttons of the MenuScrollViewContainer.
   void OnDragEnteredScrollButton(SubmenuView* source, bool is_up);
   void OnDragExitedScrollButton(SubmenuView* source);
-
-  // Invoked once for any Widget activation change.  This allows the menu
-  // to be canceled if the window manager changes the active window.
-  void OnWidgetActivationChanged();
 
   // Update the submenu's selection based on the current mouse location
   void UpdateSubmenuSelection(SubmenuView* source);
@@ -444,6 +450,12 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // Handles the mouse location event on the submenu |source|.
   void HandleMouseLocation(SubmenuView* source,
                            const gfx::Point& mouse_location);
+
+#if defined(USE_AURA)
+  // aura::client::ActivationChangeObserver overrides:
+  virtual void OnWindowActivated(aura::Window* active,
+                                 aura::Window* old_active) OVERRIDE;
+#endif
 
   // The active instance.
   static MenuController* active_instance_;
