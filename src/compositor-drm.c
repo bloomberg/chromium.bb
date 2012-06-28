@@ -43,6 +43,8 @@
 #include "launcher-util.h"
 #include "log.h"
 
+static int option_current_mode = 0;
+
 enum {
 	WESTON_PLANE_DRM_CURSOR = 0x100
 };
@@ -1119,17 +1121,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	return 0;
 }
 
-static drmModeModeInfo builtin_1024x768 = {
-	63500,			/* clock */
-	1024, 1072, 1176, 1328, 0,
-	768, 771, 775, 798, 0,
-	59920,
-	DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_PVSYNC,
-	0,
-	"1024x768"
-};
-
-
 static int
 drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 {
@@ -1157,6 +1148,10 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 
 	mode->base.refresh = refresh;
 	mode->mode_info = *info;
+
+	if (info->type & DRM_MODE_TYPE_PREFERRED)
+		mode->base.flags |= WL_OUTPUT_MODE_PREFERRED;
+
 	wl_list_insert(output->base.mode_list.prev, &mode->base.link);
 
 	return 0;
@@ -1297,7 +1292,10 @@ create_output_for_connector(struct drm_compositor *ec,
 {
 	struct drm_output *output;
 	struct drm_mode *drm_mode, *next;
+	struct weston_mode *m, *preferred, *current;
 	drmModeEncoder *encoder;
+	drmModeModeInfo crtc_mode;
+	drmModeCrtc *crtc;
 	int i, ret;
 
 	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoders[0]);
@@ -1337,23 +1335,54 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->original_crtc = drmModeGetCrtc(ec->drm.fd, output->crtc_id);
 	drmModeFreeEncoder(encoder);
 
+	/* Get the current mode on the crtc that's currently driving
+	 * this connector. */
+	encoder = drmModeGetEncoder(ec->drm.fd, connector->encoder_id);
+	if (encoder == NULL)
+		goto err_free;
+	crtc = drmModeGetCrtc(ec->drm.fd, encoder->crtc_id);
+	drmModeFreeEncoder(encoder);
+	if (crtc == NULL)
+		goto err_free;
+	crtc_mode = crtc->mode;
+	drmModeFreeCrtc(crtc);
+
 	for (i = 0; i < connector->count_modes; i++) {
 		ret = drm_output_add_mode(output, &connector->modes[i]);
 		if (ret)
 			goto err_free;
 	}
 
-	if (connector->count_modes == 0) {
-		ret = drm_output_add_mode(output, &builtin_1024x768);
-		if (ret)
-			goto err_free;
+	preferred = NULL;
+	current = NULL;
+	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
+		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode)) {
+			drm_mode->base.flags |= WL_OUTPUT_MODE_CURRENT;
+			current = &drm_mode->base;
+		}
+		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
+			preferred = &drm_mode->base;
 	}
 
-	drm_mode = container_of(output->base.mode_list.next,
-				struct drm_mode, base.link);
-	output->base.current = &drm_mode->base;
-	drm_mode->base.flags =
-		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	if (current == NULL) {
+		ret = drm_output_add_mode(output, &crtc_mode);
+		if (ret)
+			goto err_free;
+		current = container_of(output->base.mode_list.prev,
+				       struct weston_mode, link);
+		current->flags |= WL_OUTPUT_MODE_CURRENT;
+	}
+
+	if (preferred == NULL)
+		preferred = current;
+
+	if (option_current_mode) {
+		output->base.current = current;
+	} else {
+		output->base.current = preferred;
+		current->flags &= ~WL_OUTPUT_MODE_CURRENT;
+		preferred->flags |= WL_OUTPUT_MODE_CURRENT;
+	}
 
 	output->surface = gbm_surface_create(ec->gbm,
 					     output->base.current->width,
@@ -1403,11 +1432,17 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.set_dpms = drm_set_dpms;
 	output->base.switch_mode = drm_output_switch_mode;
 
-	weston_log("kms connector %d, crtc %d at mode %dx%d@%.1f\n",
-		   output->connector_id, output->crtc_id,
-		   output->base.current->width,
-		   output->base.current->height,
-		   output->base.current->refresh / 1000.0);
+	weston_log("kms connector %d, crtc %d\n",
+		   output->connector_id, output->crtc_id);
+	wl_list_for_each(m, &output->base.mode_list, link)
+		weston_log_continue("  mode %dx%d@%.1f%s%s%s\n",
+				    m->width, m->height, m->refresh / 1000.0,
+				    m->flags & WL_OUTPUT_MODE_PREFERRED ?
+				    ", preferred" : "",
+				    m->flags & WL_OUTPUT_MODE_CURRENT ?
+				    ", current" : "",
+				    connector->count_modes == 0 ?
+				    ", built-in" : "");
 
 	return 0;
 
@@ -1957,6 +1992,7 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 		{ WESTON_OPTION_INTEGER, "connector", 0, &connector },
 		{ WESTON_OPTION_STRING, "seat", 0, &seat },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &tty },
+		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &option_current_mode },
 	};
 
 	parse_options(drm_options, ARRAY_LENGTH(drm_options), argc, argv);
