@@ -7,7 +7,9 @@ file, with a bit of extra info.
 ** Document the changes to LOUIS_TABLEPATH
 ** Extend and document the scripting language
 ** remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
-   [mh] most of the work done, configure.ac needs to do a pymod check for nose, make check needs to test for both python2/3 and nose. for given version.
+   [mh] most of the work done, 
+   - configure.ac does not check for nose now. Instead it is done with
+     a try except in the python script
 ** [mh, ha] harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
    Harness updated to include functionality, harness files regenerated easely using Attilas harness generator.
 ** [mh] Document the test harness with its use of json
