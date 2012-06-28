@@ -352,7 +352,18 @@ TEST_F(StartupTest, MAYBE_PerfFewTabs) {
   RunPerfTestWithManyTabs("few_tabs", "cmdline", 5, 2, false);
 }
 
-TEST_F(StartupTest, PerfFewTabsReference) {
+// http://crbug.com/135059
+#if defined(OS_MACOSX)
+#define MAYBE_PerfFewTabsReference DISABLED_PerfFewTabsReference
+#define MAYBE_PerfRestoreFewTabsReference DISABLED_PerfRestoreFewTabsReference
+#define MAYBE_PerfRestoreSeveralTabsReference DISABLED_PerfRestoreSeveralTabsReference
+#else
+#define MAYBE_PerfFewTabsReference PerfFewTabsReference
+#define MAYBE_PerfRestoreFewTabsReference PerfRestoreFewTabsReference
+#define MAYBE_PerfRestoreSeveralTabsReference PerfRestoreSeveralTabsReference
+#endif
+
+TEST_F(StartupTest, MAYBE_PerfFewTabsReference) {
   UseReferenceBuild();
   RunPerfTestWithManyTabs("few_tabs", "cmdline-ref", 5, 2, false);
 }
@@ -361,7 +372,7 @@ TEST_F(StartupTest, PerfRestoreFewTabs) {
   RunPerfTestWithManyTabs("few_tabs", "restore", 5, 2, true);
 }
 
-TEST_F(StartupTest, PerfRestoreFewTabsReference) {
+TEST_F(StartupTest, MAYBE_PerfRestoreFewTabsReference) {
   UseReferenceBuild();
   RunPerfTestWithManyTabs("few_tabs", "restore-ref", 5, 2, true);
 }
@@ -412,7 +423,7 @@ TEST_F(StartupTest, MAYBE_PerfRestoreSeveralTabs) {
   RunPerfTestWithManyTabs("several_tabs", "restore", 10, 4, true);
 }
 
-TEST_F(StartupTest, PerfRestoreSeveralTabsReference) {
+TEST_F(StartupTest, MAYBE_PerfRestoreSeveralTabsReference) {
   UseReferenceBuild();
   RunPerfTestWithManyTabs("several_tabs", "restore-ref", 10, 4, true);
 }
