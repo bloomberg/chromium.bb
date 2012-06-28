@@ -96,8 +96,11 @@ const int kThumbnailHeight = 80;
 // Index of the default image used for the |kStubUser| user.
 const int kStubDefaultImageIndex = 0;
 
-// Delay betweeen user login and attempt to update user's profile image.
-const long kProfileImageDownloadDelayMs = 10000;
+// Delay betweeen user login and attempt to update user's profile data.
+const long kProfileDataDownloadDelayMs = 10000;
+
+// Delay betweeen subsequent profile refresh attempts (24 hrs).
+const long kProfileRefreshIntervalMs = 24L * 3600 * 1000;
 
 // Enum for reporting histograms about profile picture download.
 enum ProfileDownloadResult {
@@ -105,11 +108,15 @@ enum ProfileDownloadResult {
   kDownloadSuccess,
   kDownloadFailure,
   kDownloadDefault,
+  kDownloadCached,
 
   // Must be the last, convenient count.
   kDownloadResultsCount
 };
 
+// Time histogram prefix for a cached profile image download.
+const char kProfileDownloadCachedTime[] =
+    "UserImage.ProfileDownloadTime.Cached";
 // Time histogram prefix for the default profile image download.
 const char kProfileDownloadDefaultTime[] =
     "UserImage.ProfileDownloadTime.Default";
@@ -121,6 +128,8 @@ const char kProfileDownloadSuccessTime[] =
     "UserImage.ProfileDownloadTime.Success";
 // Time histogram suffix for a profile image download after login.
 const char kProfileDownloadReasonLoggedIn[] = "LoggedIn";
+// Time histogram suffix for a scheduled profile image download.
+const char kProfileDownloadReasonScheduled[] = "Scheduled";
 
 // Add a histogram showing the time it takes to download a profile image.
 // Separate histograms are reported for each download |reason| and |result|.
@@ -137,6 +146,9 @@ void AddProfileImageTimeHistogram(ProfileDownloadResult result,
       break;
     case kDownloadSuccess:
       histogram_name = kProfileDownloadSuccessTime;
+      break;
+    case kDownloadCached:
+      histogram_name = kProfileDownloadCachedTime;
       break;
     default:
       NOTREACHED();
@@ -214,7 +226,8 @@ UserManagerImpl::UserManagerImpl()
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
-      downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
+      downloaded_profile_image_data_url_(chrome::kAboutBlankURL),
+      downloading_profile_image_(false) {
   // UserManager instance should be used only on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If we're not running on ChromeOS, and are not showing the login manager
@@ -312,18 +325,22 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     SetInitialUserImage(email);
     SetInitialUserWallpaper(email);
   } else {
-    // Download profile image if it's user image and see if it has changed.
     int image_index = logged_in_user_->image_index();
-    if (image_index == User::kProfileImageIndex) {
+    // If current user image is profile image, it needs to be refreshed.
+    bool download_profile_image = image_index == User::kProfileImageIndex;
+    if (download_profile_image)
       InitDownloadedProfileImage();
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&UserManagerImpl::DownloadProfileImage,
-                     base::Unretained(this),
-                     kProfileDownloadReasonLoggedIn),
-          base::TimeDelta::FromMilliseconds(kProfileImageDownloadDelayMs));
-    }
+
+    // Download user's profile data (full name and optionally image) to see if
+    // it has changed.
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&UserManagerImpl::DownloadProfileData,
+                   base::Unretained(this),
+                   kProfileDownloadReasonLoggedIn,
+                   download_profile_image),
+        base::TimeDelta::FromMilliseconds(kProfileDataDownloadDelayMs));
 
     int histogram_index = image_index;
     switch (image_index) {
@@ -340,6 +357,11 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
                               histogram_index,
                               kHistogramImagesCount);
   }
+
+  // Set up a repeating timer for refreshing the profile data.
+  profile_download_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kProfileRefreshIntervalMs),
+      this, &UserManagerImpl::DownloadProfileDataScheduled);
 
   if (!browser_restart) {
     // For GAIA login flow, logged in user wallpaper may not be loaded.
@@ -682,22 +704,7 @@ void UserManagerImpl::SaveUserImageFromProfileImage(
 }
 
 void UserManagerImpl::DownloadProfileImage(const std::string& reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (profile_image_downloader_.get()) {
-    // Another download is already in progress
-    return;
-  }
-
-  if (IsLoggedInAsGuest()) {
-    // This is a guest login so there's no profile image to download.
-    return;
-  }
-
-  profile_image_download_reason_ = reason;
-  profile_image_load_start_time_ = base::Time::Now();
-  profile_image_downloader_.reset(new ProfileDownloader(this));
-  profile_image_downloader_->Start();
+  DownloadProfileData(reason, true);
 }
 
 void UserManagerImpl::Observe(int type,
@@ -894,7 +901,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
                        image_index == User::kProfileImageIndex) {
               // Path may be empty for profile images (meaning that the image
               // hasn't been downloaded for the first time yet, in which case a
-              // download will be scheduled for |kProfileImageDownloadDelayMs|
+              // download will be scheduled for |kProfileDataDownloadDelayMs|
               // after user logs in).
               DCHECK(!image_path.empty() ||
                      image_index == User::kProfileImageIndex);
@@ -1448,6 +1455,34 @@ void UserManagerImpl::InitDownloadedProfileImage() {
   }
 }
 
+void UserManagerImpl::DownloadProfileData(const std::string& reason,
+                                          bool download_image) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // For guest login there's no profile image to download.
+  if (IsLoggedInAsGuest())
+    return;
+
+  // Mark profile picture as needed.
+  downloading_profile_image_ |= download_image;
+
+  // Another download is already in progress
+  if (profile_image_downloader_.get())
+    return;
+
+  profile_image_download_reason_ = reason;
+  profile_image_load_start_time_ = base::Time::Now();
+  profile_image_downloader_.reset(new ProfileDownloader(this));
+  profile_image_downloader_->Start();
+}
+
+void UserManagerImpl::DownloadProfileDataScheduled() {
+  // If current user image is profile image, it needs to be refreshed.
+  bool download_profile_image =
+      logged_in_user_->image_index() == User::kProfileImageIndex;
+  DownloadProfileData(kProfileDownloadReasonScheduled, download_profile_image);
+}
+
 void UserManagerImpl::DeleteUserImage(const FilePath& image_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!file_util::Delete(image_path, false)) {
@@ -1485,6 +1520,11 @@ void UserManagerImpl::CheckOwnership() {
 }
 
 // ProfileDownloaderDelegate override.
+bool UserManagerImpl::NeedsProfilePicture() const {
+  return downloading_profile_image_;
+}
+
+// ProfileDownloaderDelegate override.
 int UserManagerImpl::GetDesiredImageSideLength() const {
   return GetCurrentUserImageSize();
 }
@@ -1498,31 +1538,37 @@ Profile* UserManagerImpl::GetBrowserProfile() {
   return ProfileManager::GetDefaultProfile();
 }
 
-void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
-                                         bool success) {
+void UserManagerImpl::OnProfileDownloadSuccess(ProfileDownloader* downloader) {
   // Make sure that |ProfileDownloader| gets deleted after return.
   scoped_ptr<ProfileDownloader> profile_image_downloader(
       profile_image_downloader_.release());
-  DCHECK(profile_image_downloader.get() == downloader);
+  DCHECK_EQ(downloader, profile_image_downloader.get());
 
-  ProfileDownloadResult result;
-  if (!success) {
+  if (!downloader->GetProfileFullName().empty()) {
     SaveUserDisplayName(GetLoggedInUser().email(),
-        UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
-    result = kDownloadFailure;
-  } else {
-    if (downloader->GetProfileFullName().empty()) {
-      SaveUserDisplayName(GetLoggedInUser().email(),
-          UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
-    } else {
-      SaveUserDisplayName(GetLoggedInUser().email(),
-          downloader->GetProfileFullName());
-    }
-    if (downloader->GetProfilePicture().isNull())
-      result = kDownloadDefault;
-    else
-      result = kDownloadSuccess;
+                        downloader->GetProfileFullName());
   }
+
+  bool requested_image = downloading_profile_image_;
+  downloading_profile_image_ = false;
+  if (!requested_image)
+    return;
+
+  ProfileDownloadResult result = kDownloadFailure;
+  switch (downloader->GetProfilePictureStatus()) {
+    case ProfileDownloader::PICTURE_SUCCESS:
+      result = kDownloadSuccess;
+      break;
+    case ProfileDownloader::PICTURE_CACHED:
+      result = kDownloadCached;
+      break;
+    case ProfileDownloader::PICTURE_DEFAULT:
+      result = kDownloadDefault;
+      break;
+    default:
+      NOTREACHED();
+  }
+
   UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
       result, kDownloadResultsCount);
 
@@ -1530,44 +1576,57 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
   base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
   AddProfileImageTimeHistogram(result, profile_image_download_reason_, delta);
 
-  if (result == kDownloadSuccess) {
-    // Check if this image is not the same as already downloaded.
-    std::string new_image_data_url =
-        web_ui_util::GetImageDataUrl(gfx::ImageSkia(
-        downloader->GetProfilePicture()));
-    if (!downloaded_profile_image_data_url_.empty() &&
-        new_image_data_url == downloaded_profile_image_data_url_)
-      return;
+  // Nothing to do if picture is cached or the default avatar.
+  if (result != kDownloadSuccess)
+    return;
 
-    downloaded_profile_image_data_url_ = new_image_data_url;
-    downloaded_profile_image_ = downloader->GetProfilePicture();
-    profile_image_url_ = GURL(downloader->GetProfilePictureURL());
+  // Check if this image is not the same as already downloaded.
+  gfx::ImageSkia new_image(downloader->GetProfilePicture());
+  std::string new_image_data_url = web_ui_util::GetImageDataUrl(new_image);
+  if (!downloaded_profile_image_data_url_.empty() &&
+      new_image_data_url == downloaded_profile_image_data_url_)
+    return;
 
-    if (GetLoggedInUser().image_index() == User::kProfileImageIndex) {
-      VLOG(1) << "Updating profile image for logged-in user";
-      UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                                kDownloadSuccessChanged,
-                                kDownloadResultsCount);
+  downloaded_profile_image_data_url_ = new_image_data_url;
+  downloaded_profile_image_ = downloader->GetProfilePicture();
+  profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
-      // This will persist |downloaded_profile_image_| to file.
-      SaveUserImageFromProfileImage(GetLoggedInUser().email());
-    }
+  if (GetLoggedInUser().image_index() == User::kProfileImageIndex) {
+    VLOG(1) << "Updating profile image for logged-in user";
+    UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
+                              kDownloadSuccessChanged,
+                              kDownloadResultsCount);
+    // This will persist |downloaded_profile_image_| to file.
+    SaveUserImageFromProfileImage(GetLoggedInUser().email());
   }
 
-  if (result == kDownloadSuccess) {
-    // TODO(ivankr): temporary measure until UserManager is fully migrated
-    // to use ImageSkia instead of SkBitmap.
-    gfx::ImageSkia profile_image(downloaded_profile_image_);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-        content::Source<UserManagerImpl>(this),
-        content::Details<const gfx::ImageSkia>(&profile_image));
-  } else {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-        content::Source<UserManagerImpl>(this),
-        content::NotificationService::NoDetails());
-  }
+  // TODO(ivankr): temporary measure until UserManager is fully migrated
+  // to use ImageSkia instead of SkBitmap.
+  gfx::ImageSkia profile_image(downloaded_profile_image_);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+      content::Source<UserManagerImpl>(this),
+      content::Details<const gfx::ImageSkia>(&profile_image));
+}
+
+void UserManagerImpl::OnProfileDownloadFailure(ProfileDownloader* downloader) {
+  DCHECK_EQ(downloader, profile_image_downloader_.get());
+  profile_image_downloader_.reset();
+
+  downloading_profile_image_ = false;
+
+  UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
+      kDownloadFailure, kDownloadResultsCount);
+
+  DCHECK(!profile_image_load_start_time_.is_null());
+  base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
+  AddProfileImageTimeHistogram(kDownloadFailure, profile_image_download_reason_,
+                               delta);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+      content::Source<UserManagerImpl>(this),
+      content::NotificationService::NoDetails());
 }
 
 User* UserManagerImpl::CreateUser(const std::string& email) const {

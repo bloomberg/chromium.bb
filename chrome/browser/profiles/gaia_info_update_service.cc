@@ -83,6 +83,10 @@ void GAIAInfoUpdateService::RegisterUserPrefs(PrefService* prefs) {
       prefs::kProfileGAIAInfoPictureURL, "", PrefService::UNSYNCABLE_PREF);
 }
 
+bool GAIAInfoUpdateService::NeedsProfilePicture() const {
+  return true;
+}
+
 int GAIAInfoUpdateService::GetDesiredImageSideLength() const {
   return 256;
 }
@@ -95,25 +99,23 @@ std::string GAIAInfoUpdateService::GetCachedPictureURL() const {
   return profile_->GetPrefs()->GetString(prefs::kProfileGAIAInfoPictureURL);
 }
 
-void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
-                                               bool success) {
+void GAIAInfoUpdateService::OnProfileDownloadSuccess(
+    ProfileDownloader* downloader) {
+  // Make sure that |ProfileDownloader| gets deleted after return.
+  scoped_ptr<ProfileDownloader> profile_image_downloader(
+      profile_image_downloader_.release());
+
   // Save the last updated time.
   last_updated_ = base::Time::Now();
   profile_->GetPrefs()->SetInt64(prefs::kProfileGAIAInfoUpdateTime,
                                  last_updated_.ToInternalValue());
   ScheduleNextUpdate();
 
-  if (!success) {
-    profile_image_downloader_.reset();
-    return;
-  }
-
   string16 full_name = downloader->GetProfileFullName();
   SkBitmap bitmap = downloader->GetProfilePicture();
   ProfileDownloader::PictureStatus picture_status =
       downloader->GetProfilePictureStatus();
   std::string picture_url = downloader->GetProfilePictureURL();
-  profile_image_downloader_.reset();
 
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -149,6 +151,17 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
     profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
     cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, true);
   }
+}
+
+void GAIAInfoUpdateService::OnProfileDownloadFailure(
+    ProfileDownloader* downloader) {
+  profile_image_downloader_.reset();
+
+  // Save the last updated time.
+  last_updated_ = base::Time::Now();
+  profile_->GetPrefs()->SetInt64(prefs::kProfileGAIAInfoUpdateTime,
+                                 last_updated_.ToInternalValue());
+  ScheduleNextUpdate();
 }
 
 void GAIAInfoUpdateService::Observe(

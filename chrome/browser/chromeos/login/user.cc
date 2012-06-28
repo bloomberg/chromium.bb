@@ -78,10 +78,10 @@ std::string User::GetAccountName(bool use_display_email) const {
 }
 
 string16 User::GetDisplayName() const {
-  // We should try hard not to return an empty string (crbug.com/131630#c13).
-  if (display_name_.empty())
-    return UTF8ToUTF16(GetAccountName(true));
-  return display_name_;
+  // Fallback to the email account name in case display name haven't been set.
+  return display_name_.empty() ?
+      UTF8ToUTF16(GetAccountName(true)) :
+      display_name_;
 }
 
 }  // namespace chromeos

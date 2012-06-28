@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,11 +36,12 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // ProfileDownloaderDelegate:
+  virtual bool NeedsProfilePicture() const OVERRIDE;
   virtual int GetDesiredImageSideLength() const OVERRIDE;
   virtual Profile* GetBrowserProfile() OVERRIDE;
   virtual std::string GetCachedPictureURL() const OVERRIDE;
-  virtual void OnDownloadComplete(ProfileDownloader* downloader,
-                                  bool success) OVERRIDE;
+  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
+  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GAIAInfoUpdateServiceTest, ScheduleUpdate);

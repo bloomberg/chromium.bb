@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -266,6 +267,15 @@ class UserManagerImpl : public UserManager,
   // user.
   void InitDownloadedProfileImage();
 
+  // Download user's profile data, including full name and picture, when
+  // |download_image| is true.
+  // |reason| is an arbitrary string (used to report UMA histograms with
+  // download times).
+  void DownloadProfileData(const std::string& reason, bool download_image);
+
+  // Scheduled call for downloading profile data.
+  void DownloadProfileDataScheduled();
+
   // Deletes user's image file. Runs on FILE thread.
   void DeleteUserImage(const FilePath& image_path);
 
@@ -276,11 +286,12 @@ class UserManagerImpl : public UserManager,
   void CheckOwnership();
 
   // ProfileDownloaderDelegate implementation.
+  virtual bool NeedsProfilePicture() const OVERRIDE;
   virtual int GetDesiredImageSideLength() const OVERRIDE;
   virtual Profile* GetBrowserProfile() OVERRIDE;
   virtual std::string GetCachedPictureURL() const OVERRIDE;
-  virtual void OnDownloadComplete(ProfileDownloader* downloader,
-                                  bool success) OVERRIDE;
+  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
+  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) OVERRIDE;
 
   // Creates a new User instance.
   User* CreateUser(const std::string& email) const;
@@ -363,6 +374,13 @@ class UserManagerImpl : public UserManager,
 
   // Original URL of |downloaded_profile_image_|, from which it was downloaded.
   GURL profile_image_url_;
+
+  // True when |profile_image_downloader_| is fetching profile picture (not
+  // just full name).
+  bool downloading_profile_image_;
+
+  // Timer triggering DownloadProfileDataScheduled for refreshing profile data.
+  base::RepeatingTimer<UserManagerImpl> profile_download_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

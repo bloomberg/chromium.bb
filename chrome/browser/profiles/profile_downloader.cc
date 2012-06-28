@@ -209,7 +209,7 @@ void ProfileDownloader::Start() {
   if (!service) {
     // This can happen in some test paths.
     LOG(WARNING) << "User has no token service";
-    delegate_->OnDownloadComplete(this, false);
+    delegate_->OnProfileDownloadFailure(this);
     return;
   }
 
@@ -283,7 +283,7 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Response code is " << source->GetResponseCode();
     DVLOG(1) << "Url is " << source->GetURL().spec();
     DVLOG(1) << "Data is " << data;
-    delegate_->OnDownloadComplete(this, false);
+    delegate_->OnProfileDownloadFailure(this);
     return;
   }
 
@@ -291,19 +291,24 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     std::string image_url;
     if (!GetProfileNameAndImageURL(data, &profile_full_name_, &image_url,
         delegate_->GetDesiredImageSideLength())) {
-      delegate_->OnDownloadComplete(this, false);
+      delegate_->OnProfileDownloadFailure(this);
+      return;
+    }
+    if (!delegate_->NeedsProfilePicture()) {
+      VLOG(1) << "Skipping profile picture download";
+      delegate_->OnProfileDownloadSuccess(this);
       return;
     }
     if (IsDefaultProfileImageURL(image_url)) {
       VLOG(1) << "User has default profile picture";
       picture_status_ = PICTURE_DEFAULT;
-      delegate_->OnDownloadComplete(this, true);
+      delegate_->OnProfileDownloadSuccess(this);
       return;
     }
     if (!image_url.empty() && image_url == delegate_->GetCachedPictureURL()) {
       VLOG(1) << "Picture URL matches cached picture URL";
       picture_status_ = PICTURE_CACHED;
-      delegate_->OnDownloadComplete(this, true);
+      delegate_->OnProfileDownloadSuccess(this);
       return;
     }
     VLOG(1) << "Fetching profile image from " << image_url;
@@ -337,12 +342,12 @@ void ProfileDownloader::OnImageDecoded(const ImageDecoder* decoder,
       image_size,
       image_size);
   picture_status_ = PICTURE_SUCCESS;
-  delegate_->OnDownloadComplete(this, true);
+  delegate_->OnProfileDownloadSuccess(this);
 }
 
 void ProfileDownloader::OnDecodeImageFailed(const ImageDecoder* decoder) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  delegate_->OnDownloadComplete(this, false);
+  delegate_->OnProfileDownloadFailure(this);
 }
 
 void ProfileDownloader::Observe(
@@ -365,7 +370,7 @@ void ProfileDownloader::Observe(
     if (token_details->service() ==
         GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
       LOG(WARNING) << "ProfileDownloader: token request failed";
-      delegate_->OnDownloadComplete(this, false);
+      delegate_->OnProfileDownloadFailure(this);
     }
   }
 }
@@ -380,5 +385,5 @@ void ProfileDownloader::OnGetTokenSuccess(const std::string& access_token) {
 // Callback for OAuth2AccessTokenFetcher on failure.
 void ProfileDownloader::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   LOG(WARNING) << "ProfileDownloader: token request using refresh token failed";
-  delegate_->OnDownloadComplete(this, false);
+  delegate_->OnProfileDownloadFailure(this);
 }

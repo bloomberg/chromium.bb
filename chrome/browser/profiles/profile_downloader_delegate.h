@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,9 @@ class ProfileDownloaderDelegate {
  public:
   virtual ~ProfileDownloaderDelegate() {}
 
+  // Whether the delegate need profile picture to be downloaded.
+  virtual bool NeedsProfilePicture() const = 0;
+
   // Returns the desired side length of the profile image. If 0, returns image
   // of the originally uploaded size.
   virtual int GetDesiredImageSideLength() const = 0;
@@ -32,10 +35,12 @@ class ProfileDownloaderDelegate {
   // Returns the browser profile associated with this download request.
   virtual Profile* GetBrowserProfile() = 0;
 
-  // Called when the download is complete. On success delegate should query
-  // the downloader for values.
-  virtual void OnDownloadComplete(ProfileDownloader* downloader,
-                                  bool success) = 0;
+  // Called when the profile download has completed successfully. Delegate can
+  // query the downloader for the picture and full name.
+  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) = 0;
+
+  // Called when the profile download has failed.
+  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) = 0;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_DOWNLOADER_DELEGATE_H_

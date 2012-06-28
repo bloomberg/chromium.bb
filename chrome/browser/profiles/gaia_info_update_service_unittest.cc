@@ -85,7 +85,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   // No URL should be cached yet.
   EXPECT_EQ(std::string(), service.GetCachedPictureURL());
 
-  service.OnDownloadComplete(&downloader, true);
+  service.OnProfileDownloadSuccess(&downloader);
 
   // On success both the profile info and GAIA info should be updated.
   size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
@@ -108,7 +108,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   EXPECT_EQ(std::string(), service.GetCachedPictureURL());
   NiceMock<ProfileDownloaderMock> downloader(&service);
 
-  service.OnDownloadComplete(&downloader, false);
+  service.OnProfileDownloadFailure(&downloader);
 
   // On failure nothing should be updated.
   EXPECT_FALSE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(index));
@@ -139,7 +139,7 @@ TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
       WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
   EXPECT_CALL(downloader, GetProfilePictureURL()).WillOnce(Return(""));
 
-  service.OnDownloadComplete(&downloader, true);
+  service.OnProfileDownloadSuccess(&downloader);
 
   // On success with no migration the profile info should not be updated but
   // the GAIA info should be updated.
