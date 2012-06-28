@@ -124,7 +124,11 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   // by the suggest service. That is, it is not useful to use the suggest
   // service when this client can use the spellcheck service.
   std::string locale = pref->GetString(prefs::kSpellCheckDictionary);
+#if defined(OS_MACOSX)
+  bool spellcheck_available = locale.empty();
+#else
   bool spellcheck_available = locale.empty() || !locale.compare(0, 2, "en");
+#endif
   return type == SUGGEST ? !spellcheck_available : spellcheck_available;
 }
 

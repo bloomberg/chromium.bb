@@ -293,6 +293,7 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, EnableSpellingService) {
       new SpellingMenuObserver(menu.get()));
   menu->SetObserver(observer.get());
   menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+  menu->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "");
 
   content::ContextMenuParams params;
   params.is_editable = true;

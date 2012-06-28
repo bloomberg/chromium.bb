@@ -263,6 +263,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
   PrefService* pref = profile_.GetPrefs();
   pref->SetBoolean(prefs::kEnableSpellCheck, true);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+  pref->SetString(prefs::kSpellCheckDictionary, "");
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     client_.SetHTTPRequest(kTests[i].request_type, kTests[i].request_text);
@@ -304,7 +305,10 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   // SpellingServiceClient::IsAvailable() describes why this function returns
   // false for suggestions.)
   static const char* kSupported[] = {
-    "", "en-AU", "en-CA", "en-GB", "en-US",
+    "",
+#if !defined(OS_MACOSX)
+    "en-AU", "en-CA", "en-GB", "en-US",
+#endif
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSupported); ++i) {
     pref->SetString(prefs::kSpellCheckDictionary, kSupported[i]);
@@ -315,6 +319,9 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   // On the other hand, this function returns true for suggestions and false for
   // spellcheck for unsupported locales.
   static const char* kUnsupported[] = {
+#if defined(OS_MACOSX)
+    "en-AU", "en-CA", "en-GB", "en-US",
+#endif
     "af-ZA", "bg-BG", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "es-ES",
     "et-EE", "fo-FO", "fr-FR", "he-IL", "hi-IN", "hr-HR", "hu-HU", "id-ID",
     "it-IT", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT",
