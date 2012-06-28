@@ -172,6 +172,11 @@
                 }]
               ],
             }],
+            [ 'target_arch=="mipsel"', {
+              'sources': [
+                'jsimd_none.c',
+              ],
+            }],
 
             # Build rules for an asm file.
             # On Windows, we use the precompiled yasm binary. On Linux, we build
