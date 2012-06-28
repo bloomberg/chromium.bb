@@ -65,7 +65,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.0",
+  "version": "2.1",
   "entries": [
     {
       "id": 1,
@@ -605,19 +605,6 @@
       "blacklist": [
         "flash_3d",
         "flash_stage3d"
-      ]
-    },
-    {
-      "id": 40,
-      "description": "GPU driver may cause kernel panic on 2012 Macbook Airs.",
-      "cr_bugs": [134015],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0166"],
-      "blacklist": [
-        "all"
       ]
     },
     {
