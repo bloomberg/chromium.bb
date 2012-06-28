@@ -322,7 +322,8 @@ class DetachProcessTest(ChromeDriverTest):
     self._server2.Kill()
 
   # TODO(kkania): Remove this when Chrome 15 is stable.
-  def testDetachProcess(self):
+  # crbug.com/134982
+  def DISABLED_testDetachProcess(self):
     # This is a weak test. Its purpose is to just make sure we can start
     # Chrome successfully in detached mode. There's not an easy way to know
     # if Chrome is shutting down due to the channel error when the client
