@@ -202,6 +202,14 @@ class VIEWS_EXPORT MenuDelegate {
 
   // Invoked prior to a menu being hidden.
   virtual void WillHideMenu(MenuItemView* menu);
+
+  // Creates and returns a new border for the menu, or NULL if no border is
+  // needed. Caller owns the returned object.
+  virtual Border* CreateMenuBorder();
+
+  // Creates and returns a new background for the menu, or NULL if no
+  // background is needed. Caller owns the returned object.
+  virtual Background* CreateMenuBackground();
 };
 
 }  // namespace views

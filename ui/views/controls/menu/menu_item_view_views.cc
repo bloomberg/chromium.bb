@@ -23,7 +23,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   bool render_selection =
       (mode == PB_NORMAL && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
-       !has_children());
+       (NonIconChildViewsCount() == 0));
 
   int icon_x = config.item_left_margin;
   int top_margin = GetTopMargin();
@@ -72,11 +72,10 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
-  gfx::Rect text_bounds(label_start_, top_margin +
-                        (available_height - font.GetHeight() + 1) / 2, width,
-                        font.GetHeight());
+  gfx::Rect text_bounds(label_start_, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
-  int flags = GetRootMenuItem()->GetDrawStringFlags();
+  int flags = GetRootMenuItem()->GetDrawStringFlags() |
+              gfx::Canvas::TEXT_VALIGN_MIDDLE;
   if (mode == PB_FOR_DRAG)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringInt(title(), font, fg_color,
@@ -84,23 +83,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                         text_bounds.height(), flags);
 
   PaintAccelerator(canvas);
-
-  // Render the icon.
-  if (icon_.width() > 0) {
-    gfx::Rect icon_bounds(config.item_left_margin,
-                          top_margin + (height() - top_margin -
-                          bottom_margin - icon_.height()) / 2,
-                          icon_.width(),
-                          icon_.height());
-    icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
-    if (!enabled()) {
-      SkPaint paint;
-      paint.setAlpha(120);
-      canvas->DrawImageInt(icon_, icon_bounds.x(), icon_bounds.y(), paint);
-    } else {
-      canvas->DrawImageInt(icon_, icon_bounds.x(), icon_bounds.y());
-    }
-  }
 
   // Render the submenu indicator (arrow).
   if (HasSubmenu()) {

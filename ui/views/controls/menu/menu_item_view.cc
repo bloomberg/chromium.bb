@@ -13,6 +13,7 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_separator.h"
@@ -63,6 +64,9 @@ const int MenuItemView::kEmptyMenuItemViewID =
     MenuItemView::kMenuItemViewID + 1;
 
 // static
+int MenuItemView::icon_area_width_ = 0;
+
+// static
 int MenuItemView::label_start_;
 
 // static
@@ -86,6 +90,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       has_mnemonics_(false),
       show_mnemonics_(false),
       has_icons_(false),
+      icon_view_(NULL),
       top_margin_(-1),
       bottom_margin_(-1),
       requested_menu_position_(POSITION_BEST_FIT),
@@ -219,7 +224,8 @@ MenuItemView* MenuItemView::AddMenuItemAt(int index,
     item->SetTitle(GetDelegate()->GetLabel(item_id));
   else
     item->SetTitle(label);
-  item->SetIcon(icon);
+  if (!icon.empty())
+    item->SetIcon(icon);
   if (type == SUBMENU)
     item->CreateSubmenu();
   submenu_->AddChildViewAt(item, index);
@@ -360,7 +366,26 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 }
 
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
-  icon_ = icon;
+  if (icon.empty()) {
+    SetIconView(NULL);
+    return;
+  }
+
+  ImageView* icon_view = new ImageView();
+  icon_view->SetImage(&icon);
+  SetIconView(icon_view);
+}
+
+void MenuItemView::SetIconView(View* icon_view) {
+  if (icon_view_) {
+    RemoveChildView(icon_view_);
+    delete icon_view_;
+    icon_view_ = NULL;
+  }
+  if (icon_view) {
+    AddChildView(icon_view);
+    icon_view_ = icon_view;
+  }
   SchedulePaint();
 }
 
@@ -481,9 +506,21 @@ void MenuItemView::Layout() {
     int x = width() - (use_right_margin_ ? item_right_margin_ : 0);
     for (int i = child_count() - 1; i >= 0; --i) {
       View* child = child_at(i);
+      if (icon_view_ && (icon_view_ == child))
+        continue;
       int width = child->GetPreferredSize().width();
       child->SetBounds(x - width, 0, width, height());
       x -= width - kChildXPadding;
+    }
+    // Position |icon_view|.
+    const MenuConfig& config = MenuConfig::instance();
+    if (icon_view_) {
+      icon_view_->SizeToPreferredSize();
+      gfx::Size size = icon_view_->GetPreferredSize();
+      int x = config.item_left_margin + (icon_area_width_ - size.width()) / 2;
+      int y =
+          (height() + GetTopMargin() - GetBottomMargin() - size.height()) / 2;
+      icon_view_->SetPosition(gfx::Point(x, y));
     }
   }
 }
@@ -515,6 +552,7 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       has_mnemonics_(false),
       show_mnemonics_(false),
       has_icons_(false),
+      icon_view_(NULL),
       top_margin_(-1),
       bottom_margin_(-1),
       requested_menu_position_(POSITION_BEST_FIT),
@@ -534,21 +572,24 @@ std::string MenuItemView::GetClassName() const {
 // Calculates all sizes that we can from the OS.
 //
 // This is invoked prior to Running a menu.
-void MenuItemView::UpdateMenuPartSizes(bool has_icons) {
+void MenuItemView::UpdateMenuPartSizes() {
   MenuConfig::Reset();
   const MenuConfig& config = MenuConfig::instance();
 
   item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
                        config.arrow_to_edge_padding;
+  icon_area_width_ = config.check_width;
+  if (has_icons_)
+    icon_area_width_ = std::max(icon_area_width_, GetMaxIconViewWidth());
 
   if (config.always_use_icon_to_label_padding)
-    label_start_ = config.item_left_margin + config.check_width +
+    label_start_ = config.item_left_margin + icon_area_width_ +
                    config.icon_to_label_padding;
   else
     // If there are no icons don't pad by the icon to label padding. This
     // makes us look close to system menus.
-    label_start_ = config.item_left_margin + config.check_width +
-                   (has_icons ? config.icon_to_label_padding : 0);
+    label_start_ = config.item_left_margin + icon_area_width_ +
+                   (has_icons_ ? config.icon_to_label_padding : 0);
 
   if (config.render_gutter)
     label_start_ += config.gutter_width + config.gutter_to_label;
@@ -599,7 +640,7 @@ void MenuItemView::PrepareForRun(bool has_mnemonics, bool show_mnemonics) {
   if (!MenuController::GetActiveInstance()) {
     // Only update the menu size if there are no menus showing, otherwise
     // things may shift around.
-    UpdateMenuPartSizes(has_icons_);
+    UpdateMenuPartSizes();
   }
 }
 
@@ -735,13 +776,20 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
 
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
+    View* child = child_at(i);
+    if (icon_view_ && (icon_view_ == child))
+      continue;
     if (i)
       width += kChildXPadding;
-    width += child_at(i)->GetPreferredSize().width();
+    width += child->GetPreferredSize().width();
   }
-  // Return a height of 0 to indicate that we should use the title height
-  // instead.
-  return gfx::Size(width, 0);
+  int height = 0;
+  if (icon_view_)
+    height = icon_view_->GetPreferredSize().height();
+
+  // If there is no icon view it returns a height of 0 to indicate that
+  // we should use the title height instead.
+  return gfx::Size(width, height);
 }
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
@@ -778,9 +826,29 @@ string16 MenuItemView::GetAcceleratorText() {
 
 bool MenuItemView::IsContainer() const {
   // Let the first child take over |this| when we only have one child and no
-  // title.  Note that what child_count() returns is the number of children,
+  // title.
+  return (NonIconChildViewsCount() == 1) && title_.empty();
+}
+
+int MenuItemView::NonIconChildViewsCount() const {
+  // Note that what child_count() returns is the number of children,
   // not the number of menu items.
-  return child_count() == 1 && title_.empty();
+  return child_count() - (icon_view_ ? 1 : 0);
+}
+
+int MenuItemView::GetMaxIconViewWidth() const {
+  int width = 0;
+  for (int i = 0; i < submenu_->GetMenuItemCount(); ++i) {
+    MenuItemView* menu_item = submenu_->GetMenuItemAt(i);
+    int temp_width = 0;
+    if (menu_item->HasSubmenu()) {
+      temp_width = menu_item->GetMaxIconViewWidth();
+    } else if (menu_item->icon_view()) {
+      temp_width = menu_item->icon_view()->GetPreferredSize().width();
+    }
+    width = std::max(width, temp_width);
+  }
+  return width;
 }
 
 }  // namespace views

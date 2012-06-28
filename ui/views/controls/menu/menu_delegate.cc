@@ -127,4 +127,16 @@ void MenuDelegate::WillShowMenu(MenuItemView* menu) {
 void MenuDelegate::WillHideMenu(MenuItemView* menu) {
 }
 
+Border* MenuDelegate::CreateMenuBorder() {
+  return Border::CreateEmptyBorder(
+      MenuConfig::instance().submenu_vertical_margin_size,
+      MenuConfig::instance().submenu_horizontal_margin_size,
+      MenuConfig::instance().submenu_vertical_margin_size,
+      MenuConfig::instance().submenu_horizontal_margin_size);
+}
+
+Background* MenuDelegate::CreateMenuBackground() {
+  return NULL;
+}
+
 }  // namespace views
