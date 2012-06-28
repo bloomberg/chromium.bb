@@ -47,9 +47,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   {
     FullscreenNotificationObserver fullscreen_observer;
@@ -76,9 +74,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, false));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 }
 
 // Tests entering fullscreen and then requesting mouse lock results in
@@ -92,12 +89,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   AddTabAtIndexAndWait(1, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   // Request mouse lock and verify the bubble is waiting for user confirmation.
-  RequestToLockMouse(fullscreen_tab, true, false);
+  RequestToLockMouse(true, false);
   ASSERT_TRUE(IsMouseLockPermissionRequested());
 
   // Accept mouse lock and verify bubble no longer shows confirmation buttons.
@@ -110,13 +105,12 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
   GURL url = test_server()->GetURL("simple.html");
   AddTabAtIndexAndWait(0, url, content::PAGE_TRANSITION_TYPED);
-  WebContents* tab = browser()->GetActiveWebContents();
 
   // Validate that going fullscreen for a URL defaults to asking permision.
   ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_TRUE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, false));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 
   // Add content setting to ALLOW fullscreen.
   HostContentSettingsMap* settings_map =
@@ -130,14 +124,14 @@ void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
 
   // Now, fullscreen should not prompt for permission.
   ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_FALSE(IsFullscreenPermissionRequested());
 
   // Leaving tab in fullscreen, now test mouse lock ALLOW:
 
   // Validate that mouse lock defaults to asking permision.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
-  RequestToLockMouse(tab, true, false);
+  RequestToLockMouse(true, false);
   ASSERT_TRUE(IsMouseLockPermissionRequested());
   LostMouseLock();
 
@@ -149,7 +143,7 @@ void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
 
   // Now, mouse lock should not prompt for permission.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
-  RequestToLockMouse(tab, true, false);
+  RequestToLockMouse(true, false);
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   LostMouseLock();
 
@@ -163,7 +157,7 @@ void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
 
   // Now, mouse lock should not be pending.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
-  RequestToLockMouse(tab, true, false);
+  RequestToLockMouse(true, false);
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 
@@ -200,8 +194,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, BrowserFullscreenExit) {
   // Enter tab fullscreen.
   AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   // Exit browser fullscreen.
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(false));
@@ -217,9 +210,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   // Enter and then exit tab fullscreen.
   AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, false));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 
   // Verify browser fullscreen still active.
   ASSERT_TRUE(IsFullscreenForBrowser());
@@ -230,44 +222,45 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenFileURL) {
   ui_test_utils::NavigateToURL(browser(),
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(kSimpleFile)));
-  WebContents* tab = browser()->GetActiveWebContents();
 
   // Validate that going fullscreen for a file does not ask permision.
   ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, false));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 }
 
+// Tests fullscreen is exited on page navigation.
+// (Similar to mouse lock version in FullscreenControllerInteractiveTest)
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        TestTabExitsFullscreenOnNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
 
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
 
+// Tests fullscreen is exited when navigating back.
+// (Similar to mouse lock version in FullscreenControllerInteractiveTest)
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        TestTabExitsFullscreenOnGoBack) {
   ASSERT_TRUE(test_server()->Start());
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
 
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   GoBack();
 
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
 
+// Tests fullscreen is not exited on sub frame navigation.
+// (Similar to mouse lock version in FullscreenControllerInteractiveTest)
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        TestTabDoesntExitFullscreenOnSubFrameNavigation) {
   ASSERT_TRUE(test_server()->Start());
@@ -275,14 +268,14 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kSimpleFile)));
   GURL url_with_fragment(url.spec() + "#fragment");
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
 
   ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ui_test_utils::NavigateToURL(browser(), url_with_fragment);
   ASSERT_TRUE(IsFullscreenForTabOrPending());
 }
 
+// Tests tab fullscreen exits, but browser fullscreen remains, on navigation.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        TestFullscreenFromTabWhenAlreadyInBrowserFullscreenWorks) {
   ASSERT_TRUE(test_server()->Start());
@@ -290,10 +283,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   GoBack();
 
@@ -310,13 +301,11 @@ IN_PROC_BROWSER_TEST_F(
   AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
-
   {
     FullscreenNotificationObserver fullscreen_observer;
     EXPECT_FALSE(browser()->window()->IsFullscreen());
     EXPECT_FALSE(browser()->window()->InPresentationMode());
-    browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+    browser()->ToggleFullscreenModeForTab(tab, true);
     fullscreen_observer.Wait();
     ASSERT_TRUE(browser()->window()->IsFullscreen());
     ASSERT_TRUE(browser()->window()->InPresentationMode());
@@ -346,20 +335,19 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        PendingMouseLockExitsOnTabSwitch) {
   AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                        content::PAGE_TRANSITION_TYPED);
-  WebContents* tab2 = browser()->GetActiveWebContents();
   AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                        content::PAGE_TRANSITION_TYPED);
   WebContents* tab1 = browser()->GetActiveWebContents();
 
   // Request mouse lock. Bubble is displayed.
-  RequestToLockMouse(tab1, true, false);
+  RequestToLockMouse(true, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
   // Activate current tab. Mouse lock bubble remains.
   browser()->ActivateTabAt(0, true);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
-  // Activate tab2. Mouse lock bubble clears.
+  // Activate second tab. Mouse lock bubble clears.
   {
     MouseLockNotificationObserver mouse_lock_observer;
     browser()->ActivateTabAt(1, true);
@@ -370,10 +358,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   // Now, test that closing an unrelated tab does not disturb a request.
 
   // Request mouse lock. Bubble is displayed.
-  RequestToLockMouse(tab2, true, false);
+  RequestToLockMouse(true, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
-  // Close tab1. Mouse lock bubble remains.
+  // Close first tab while second active. Mouse lock bubble remains.
   browser()->CloseTabContents(tab1);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 }
@@ -387,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        content::PAGE_TRANSITION_TYPED);
 
   // Request mouse lock. Bubble is displayed.
-  RequestToLockMouse(browser()->GetActiveWebContents(), true, false);
+  RequestToLockMouse(true, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
   // Close tab. Bubble is cleared.

@@ -23,9 +23,8 @@ void FullscreenControllerTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnablePointerLock);
 }
 
-void FullscreenControllerTest::ToggleTabFullscreen(WebContents* tab,
-                                                   bool enter_fullscreen) {
-  ToggleTabFullscreenInternal(tab, enter_fullscreen, true);
+void FullscreenControllerTest::ToggleTabFullscreen(bool enter_fullscreen) {
+  ToggleTabFullscreen_Internal(enter_fullscreen, true);
 }
 
 // |ToggleTabFullscreen| should not need to tolerate the transition failing.
@@ -37,8 +36,8 @@ void FullscreenControllerTest::ToggleTabFullscreen(WebContents* tab,
 // allows a fullscreen_controller_interactive_browsertest.cc test to verify
 // that when running serially there is no flakiness in the transition.
 void FullscreenControllerTest::ToggleTabFullscreenNoRetries(
-    WebContents* tab, bool enter_fullscreen) {
-  ToggleTabFullscreenInternal(tab, enter_fullscreen, false);
+    bool enter_fullscreen) {
+  ToggleTabFullscreen_Internal(enter_fullscreen, false);
 }
 
 void FullscreenControllerTest::ToggleBrowserFullscreen(bool enter_fullscreen) {
@@ -52,9 +51,10 @@ void FullscreenControllerTest::ToggleBrowserFullscreen(bool enter_fullscreen) {
   ASSERT_EQ(IsFullscreenForBrowser(), enter_fullscreen);
 }
 
-void FullscreenControllerTest::RequestToLockMouse(WebContents* tab,
+void FullscreenControllerTest::RequestToLockMouse(
     bool user_gesture,
     bool last_unlocked_by_target) {
+  WebContents* tab = browser()->GetActiveWebContents();
   browser()->RequestToLockMouse(tab, user_gesture,
       last_unlocked_by_target);
 }
@@ -149,8 +149,9 @@ void FullscreenControllerTest::Reload() {
   observer.Wait();
 }
 
-void FullscreenControllerTest::ToggleTabFullscreenInternal(
-    WebContents* tab, bool enter_fullscreen, bool retry_until_success) {
+void FullscreenControllerTest::ToggleTabFullscreen_Internal(
+    bool enter_fullscreen, bool retry_until_success) {
+  WebContents* tab = browser()->GetActiveWebContents();
   if (IsFullscreenForBrowser()) {
     // Changing tab fullscreen state will not actually change the window
     // when browser fullscreen is in effect.

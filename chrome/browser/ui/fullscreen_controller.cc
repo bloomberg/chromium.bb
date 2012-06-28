@@ -95,6 +95,7 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
                                               bool user_gesture,
                                               bool last_unlocked_by_target) {
   DCHECK(!IsMouseLocked());
+  NotifyMouseLockChange();
 
   // Check for command line switch disabling mouse lock when not tab fullscreen.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -103,8 +104,6 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
     web_contents->GotResponseToLockMouseRequest(false);
     return;
   }
-
-  NotifyMouseLockChange();
 
   // Must have a user gesture to prevent misbehaving sites from constantly
   // re-locking the mouse. Exceptions are when the page has unlocked
