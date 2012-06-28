@@ -36,7 +36,11 @@ class LoginSettings;
 // Does the login, keeps it alive (with refreshing cookies and
 // reattempting login when disconnected), and figures out what actions
 // to take on the various errors that may occur.
+//
+// TODO(akalin): Make this observe proxy config changes also.
 class Login : public net::NetworkChangeNotifier::IPAddressObserver,
+              public net::NetworkChangeNotifier::ConnectionTypeObserver,
+              public net::NetworkChangeNotifier::DNSObserver,
               public SingleLoginAttempt::Delegate {
  public:
   class Delegate {
@@ -81,6 +85,13 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged() OVERRIDE;
 
+  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+
+  // net::NetworkChangeNotifier::DNSObserver implementation.
+  virtual void OnDNSChanged(unsigned detail) OVERRIDE;
+
   // SingleLoginAttempt::Delegate implementation.
   virtual void OnConnect(
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
@@ -89,7 +100,8 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   virtual void OnSettingsExhausted() OVERRIDE;
 
  private:
-  void OnLogoff();
+  // Called by the various network notifications.
+  void OnNetworkEvent();
 
   // Stops any existing reconnect timer and sets an initial reconnect
   // interval.

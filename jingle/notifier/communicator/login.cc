@@ -43,15 +43,18 @@ Login::Login(Delegate* delegate,
                       try_ssltcp_first,
                       auth_mechanism) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  // TODO(akalin): Add as DNSObserver once bug 130610 is fixed.
   ResetReconnectState();
 }
 
 Login::~Login() {
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void Login::StartConnection() {
-  VLOG(1) << "Starting connection...";
+  DVLOG(1) << "Starting connection...";
   single_attempt_.reset(new SingleLoginAttempt(login_settings_, this));
 }
 
@@ -87,7 +90,22 @@ void Login::OnSettingsExhausted() {
 }
 
 void Login::OnIPAddressChanged() {
-  VLOG(1) << "Detected IP address change";
+  DVLOG(1) << "Detected IP address change";
+  OnNetworkEvent();
+}
+
+void Login::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  DVLOG(1) << "Detected connection type change";
+  OnNetworkEvent();
+}
+
+void Login::OnDNSChanged(unsigned detail) {
+  DVLOG(1) << "Detected DNS change";
+  OnNetworkEvent();
+}
+
+void Login::OnNetworkEvent() {
   // Reconnect in 1 to 9 seconds (vary the time a little to try to
   // avoid spikey behavior on network hiccups).
   reconnect_interval_ = base::TimeDelta::FromSeconds(base::RandInt(1, 9));
@@ -105,8 +123,8 @@ void Login::TryReconnect() {
   DCHECK_GT(reconnect_interval_.InSeconds(), 0);
   single_attempt_.reset();
   reconnect_timer_.Stop();
-  VLOG(1) << "Reconnecting in "
-          << reconnect_interval_.InSeconds() << " seconds";
+  DVLOG(1) << "Reconnecting in "
+           << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
       FROM_HERE, reconnect_interval_, this, &Login::DoReconnect);
 }
@@ -118,7 +136,7 @@ void Login::DoReconnect() {
   reconnect_interval_ *= 2;
   if (reconnect_interval_ > kMaxReconnectInterval)
     reconnect_interval_ = kMaxReconnectInterval;
-  VLOG(1) << "Reconnecting...";
+  DVLOG(1) << "Reconnecting...";
   StartConnection();
 }
 
