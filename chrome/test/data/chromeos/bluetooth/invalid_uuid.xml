@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<record>
+	<attribute id="0x0001">
+		<sequence>
+			<uuid value="01234567:89AB-CDEF-0123-456789ABCDEF" />
+		</sequence>
+	</attribute>
+</record>

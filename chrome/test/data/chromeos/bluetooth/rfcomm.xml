@@ -6,7 +6,7 @@
 	</attribute>
 	<attribute id="0x0001">
 		<sequence>
-			<uuid value="00001101-0000-1000-8000-0123456789ab" />
+			<uuid value="01234567-89ab-cdef-0123-456789abcdef" />
 		</sequence>
 	</attribute>
 	<attribute id="0x0004">

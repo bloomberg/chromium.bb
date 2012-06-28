@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace {
@@ -108,13 +109,14 @@ void BluetoothServiceRecord::ExtractUuid(XmlReader* reader) {
   do {
     if (reader->NodeName() == kSequenceNode) {
       if (AdvanceToTag(reader, kUuidNode)) {
-        std::string uuid;
         if (!reader->NodeAttribute(kValueAttribute, &uuid_))
           uuid_.clear();
       }
     }
   } while (AdvanceToTag(reader, kSequenceNode) &&
            reader->Depth() != start_depth);
+
+  uuid_ = bluetooth_utils::CanonicalUuid(uuid_);
 }
 
 }  // namespace chromeos
