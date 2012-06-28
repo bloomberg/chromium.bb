@@ -754,6 +754,8 @@ bool PNGCodec::EncodeWithCompressionLevel(const unsigned char* input,
     return false;
   destroyer.SetInfoStruct(&info_ptr);
 
+  output->clear();
+
   PngEncoderState state(output);
   bool success = DoLibpngWrite(png_ptr, info_ptr, &state,
                                size.width(), size.height(), row_byte_width,
@@ -770,7 +772,9 @@ bool PNGCodec::EncodeBGRASkBitmap(const SkBitmap& input,
   static const int bbp = 4;
 
   SkAutoLockPixels lock_input(input);
-  DCHECK(input.empty() || input.bytesPerPixel() == bbp);
+  if (input.empty())
+    return false;
+  DCHECK(input.bytesPerPixel() == bbp);
 
   return Encode(reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
                 FORMAT_SkBitmap, Size(input.width(), input.height()),
