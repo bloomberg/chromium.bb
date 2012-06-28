@@ -1,0 +1,40 @@
+<div id="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li>
+      <a href="#apiReference">API reference: chrome.{{api.name}}</a>
+      <ol>
+        {{?api.functions}}
+        <li>
+          <a href="#global-methods">Methods</a>
+          <ol>
+            {{#api.functions}}
+            <li><a href="#method-{{name}}">{{name}}</a></li>
+            {{/}}
+          </ol>
+        </li>
+        {{/api.functions}}
+        {{?api.events}}
+        <li>
+          <a href="#global-events">Events</a>
+          <ol>
+            {{#api.events}}
+            <li><a href="#event-{{name}}">{{name}}</a></li>
+            {{/}}
+          </ol>
+        </li>
+        {{/api.events}}
+        {{?api.types}}
+        <li>
+          <a href="#types">Types</a>
+          <ol>
+            {{#api.types}}
+            <li><a href="#type-{{name}}">{{name}}</a></li>
+            {{/}}
+          </ol>
+        </li>
+        {{/api.types}}
+      </ol>
+    </li>
+  </ol>
+</div>

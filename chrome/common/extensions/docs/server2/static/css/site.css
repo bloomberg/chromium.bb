@@ -12,6 +12,20 @@ p {
   line-height: 125%;
 }
 
+p.note,
+p.caution,
+p.warning {
+  margin: 1em 0 0 0;
+  padding: .2em .5em .2em .9em;
+  background-color: #EFEFEF;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+}
+
+p.note {
+  border-color: #36C;
+}
+
 a, a:link {
   text-decoration: none;
   color: #333;
@@ -54,9 +68,53 @@ ol li {
 img {
   border: none;
   padding: 0;
+  margin: 1em 0 0 0;
 }
 
-.hidden, .hidden *, #skipto, #skipto * {
+code,
+pre {
+  font-family: monospace;
+  color: #007000;
+}
+
+code {
+  font-size: 10pt;
+}
+
+pre {
+  font-size: 9pt;
+  background-color: #FAFAFA;
+  border: 1px solid #BBB;
+  margin: 1em 0 0 0;
+  padding: .99em;
+  overflow: auto;
+  word-wrap: break-word;
+}
+
+pre b {
+  background: yellow;
+}
+
+dt {
+  font-weight: bold;
+  margin: .75em 0 0 0;
+}
+
+dl {
+  margin: 0;
+  line-height: 125%;
+}
+
+dd {
+  margin: .4em 0 0 2em;
+  padding: 0;
+  font-weight: normal;
+}
+
+.hidden,
+.hidden *,
+#skipto,
+#skipto * {
   position: relative;
   top: -9999px;
   left: -9999px;
@@ -71,7 +129,6 @@ img {
   color: white;
   font-weight: bold;
   padding: 6px 8px;
-  width: 100%;
 }
 
 span.displayModeWarning {
@@ -144,6 +201,15 @@ span.displayModeWarning {
 
 #gc-pagecontent {
   padding-left: 24px;
+  margin: 0 0 0 171px;
+}
+
+#gc-pagecontent h2 {
+  font-size: 130%;
+  font-weight: bold;
+  margin: 2em 0 0 0;
+  padding: 1px 0;
+  border-bottom: 1px solid #CCC;
 }
 
 #gc-pagecontent h3 {
@@ -151,6 +217,30 @@ span.displayModeWarning {
   font-weight: bold;
   margin: 1.5em 0 0 0;
   top: 0em;
+}
+
+#gc-pagecontent h3 {
+  font-size: 130%;
+  font-weight: bold;
+  margin: 1.5em 0 0 0;
+  top: 0em;
+}
+
+#gc-pagecontent h4 {
+  font-size: 110%;
+  margin: .7em 0 0 0;
+  position: relative;
+  top: .4em;
+}
+
+#gc-pagecontent h1.page_title,
+#gc-pagecontent h2.page_title {
+  line-height: 130%;
+  font-size: 170%;
+  margin: 0;
+  padding: .8em 0 0;
+  border: none;
+  background: none;
 }
 
 #gc-footer {
@@ -163,4 +253,25 @@ span.displayModeWarning {
   text-align: center;
   padding: 30px 0;
   margin: 0 0 0 0;
+}
+
+.api_reference div.summary {
+  border: 1px solid #b582f6;
+  font-family: "Courier New", courier, monospace;
+  padding: 0.5em 0.5em 0.5em 2em;
+  text-indent: -1.5em;
+  background-color: #ede1fd;
+  margin-top: 1em;
+}
+
+.api_reference div.description {
+  margin-left: 2em;
+}
+
+div.summary .subdued {
+  color: #dfc9fb;
+}
+
+.optional {
+  color: #7D7D7D;
 }

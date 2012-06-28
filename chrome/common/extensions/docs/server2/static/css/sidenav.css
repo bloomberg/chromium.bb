@@ -1,0 +1,109 @@
+#gc-toc {
+  padding: .5em 0 140px 14px;
+  margin: 0;
+  width: 171px;
+  float: left;
+}
+
+#gc-toc * {
+  vertical-align: middle;
+}
+
+#gc-toc ul {
+  padding: .6em 0 0;
+  margin: 0;
+  line-height: 120%;
+  list-style: none;
+}
+
+#gc-toc ul li {
+  padding: .2em 0 .2em 15px;
+  margin: 0;
+}
+
+#gc-toc li a {
+  padding-right: 4px;
+}
+
+#gc-toc h2 {
+  font-weight: bold;
+  font-size: 100%;
+  margin: 0;
+  padding: .2em 0;
+  border: none;
+  background: white;
+}
+
+#gc-toc ul ul {
+  padding: 0;
+  margin: 0;
+}
+
+#gc-toc .toggle {
+  background: url('../images/toggle_sprite.png') no-repeat 0px 0px;
+  width: 9px;
+  height: 9px;
+  overflow: hidden;
+  float: left;
+  text-decoration: none;
+  margin: 4px 1px 4px -13px;
+  cursor: pointer;
+}
+
+#gc-toc .toggle.selected {
+  background-position: 0 -9px;
+}
+
+#gc-toc ul .leftNavSelected {
+  background-color: #F1F1F1;
+  color: black;
+  text-decoration: none;
+  z-index: 2;
+  position: relative;
+}
+
+#gc-toc div.line {
+  border-top: thin solid #FAFAFA;
+  height: 1px;
+  margin: 1.3em 1em 0 0;
+  padding: 0;
+}
+
+#toc {
+  background-color: #F1F1F1;
+  border: 1px solid #BBB;
+  display: inline;
+  float: right;
+  margin: 5px 0px 5px 20px;
+  padding: 5px;
+  width: 250px;
+}
+
+#toc * {
+  padding: 0;
+  list-style: none;
+}
+
+#toc h2 {
+  font-size: 100%;
+  margin: 0;
+  background-color: #FAFAFA;
+  padding: 0;
+  border: none;
+}
+
+#toc ol {
+  margin: 1em 0 0 0;
+}
+
+#toc ol li {
+  margin: .4em 0 0 1em;
+}
+
+#toc ol li ol {
+  margin: 0;
+}
+
+#toc ol li ol li {
+  margin: .1em 0 0 1em;
+}
