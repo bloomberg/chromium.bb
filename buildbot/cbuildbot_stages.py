@@ -1225,7 +1225,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
       return self._GetArchivePath()
 
   def _GetGSUtilArchiveDir(self):
-    if self._options.remote_trybot:
+    if self._options.archive_base:
+      gs_base = self._options.archive_base
+    elif self._options.remote_trybot:
       gs_base = self._REMOTE_TRYBOT_ARCHIVE_URL
     elif self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
       gs_base = 'gs://chromeos-image-archive'

@@ -680,12 +680,23 @@ def check_path(option, opt, value):
 
   return expanded
 
+# pylint: disable=W0613
+def check_gs_path(option, opt, value):
+  """Expand paths and make them absolute."""
+  value = value.strip().rstrip('/')
+  if not value.startswith('gs://'):
+    raise optparse.OptionValueError('Invalid gs path %s specified for %s'
+                                    % (value, opt))
+
+  return value
+
 
 class CustomOption(optparse.Option):
   """Subclass Option class to implement pass-through and path evaluation."""
-  TYPES = optparse.Option.TYPES + ('path',)
+  TYPES = optparse.Option.TYPES + ('path', 'gs_path')
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
   TYPE_CHECKER['path'] = check_path
+  TYPE_CHECKER['gs_path'] = check_gs_path
 
   ACTIONS = optparse.Option.ACTIONS + ('extend',)
   STORE_ACTIONS = optparse.Option.STORE_ACTIONS + ('extend',)
@@ -772,6 +783,9 @@ def _CreateParser():
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
+  # The base GS URL (gs://<bucket_name>/<path>) to archive artifacts to.
+  group.add_remote_option('--archive-base', type='gs_path',
+                          help=optparse.SUPPRESS_HELP)
   # bootstrap-args are not verified by the bootstrap code.  It gets passed
   # direcly to the bootstrap re-execution.
   group.add_remote_option('--bootstrap-args', action='append',
