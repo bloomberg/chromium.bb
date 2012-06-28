@@ -1788,12 +1788,6 @@ void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {
   window_->SetBounds(pos);
 }
 
-void Browser::DetachContents(WebContents* source) {
-  int index = tab_strip_model_->GetIndexOfWebContents(source);
-  if (index >= 0)
-    tab_strip_model_->DetachTabContentsAt(index);
-}
-
 bool Browser::IsPopupOrPanel(const WebContents* source) const {
   // A non-tabbed BROWSER is an unconstrained popup.
   return is_type_popup() || is_type_panel();
@@ -1840,24 +1834,6 @@ bool Browser::TakeFocus(bool reverse) {
 
 bool Browser::IsApplication() const {
   return is_app();
-}
-
-void Browser::ConvertContentsToApplication(WebContents* contents) {
-  const GURL& url = contents->GetController().GetActiveEntry()->GetURL();
-  std::string app_name = web_app::GenerateApplicationNameFromURL(url);
-
-  DetachContents(contents);
-  Browser* app_browser = Browser::CreateWithParams(
-      Browser::CreateParams::CreateForApp(
-          TYPE_POPUP, app_name, gfx::Rect(), profile_));
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
-  if (!tab_contents)
-    tab_contents = new TabContents(contents);
-  app_browser->tab_strip_model()->AppendTabContents(tab_contents, true);
-
-  contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  contents->GetRenderViewHost()->SyncRendererPrefs();
-  app_browser->window()->Show();
 }
 
 gfx::Rect Browser::GetRootWindowResizerRect() const {

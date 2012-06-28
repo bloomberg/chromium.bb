@@ -12,6 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_linux.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
@@ -298,9 +301,10 @@ CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
 }
 
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
-  if (tab_contents_->web_contents()->GetDelegate())
-    tab_contents_->web_contents()->GetDelegate()->ConvertContentsToApplication(
-        tab_contents_->web_contents());
+  Browser* browser =
+      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
+  if (browser)
+    chrome::ConvertTabToAppWindow(browser, tab_contents_->web_contents());
 }
 
 CreateChromeApplicationShortcutsDialogGtk::

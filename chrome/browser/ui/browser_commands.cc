@@ -46,6 +46,7 @@
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/content_restriction.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
@@ -922,6 +923,28 @@ bool CanViewSource(const Browser* browser) {
 
 bool CanCreateApplicationShortcuts(const Browser* browser) {
   return web_app::IsValidUrl(browser->GetActiveWebContents()->GetURL());
+}
+
+void ConvertTabToAppWindow(Browser* browser,
+                           content::WebContents* contents) {
+  const GURL& url = contents->GetController().GetActiveEntry()->GetURL();
+  std::string app_name = web_app::GenerateApplicationNameFromURL(url);
+
+  int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
+  if (index >= 0)
+    browser->tab_strip_model()->DetachTabContentsAt(index);
+
+  Browser* app_browser = Browser::CreateWithParams(
+      Browser::CreateParams::CreateForApp(
+          Browser::TYPE_POPUP, app_name, gfx::Rect(), browser->profile()));
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
+  if (!tab_contents)
+    tab_contents = new TabContents(contents);
+  app_browser->tab_strip_model()->AppendTabContents(tab_contents, true);
+
+  contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  contents->GetRenderViewHost()->SyncRendererPrefs();
+  app_browser->window()->Show();
 }
 
 }  // namespace chrome

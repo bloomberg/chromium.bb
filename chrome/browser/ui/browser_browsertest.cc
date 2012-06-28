@@ -702,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   EXPECT_TRUE(app_tab->GetMutableRendererPrefs()->can_accept_load_drops);
 
   // Turn |app_tab| into a tab in an app panel.
-  browser()->ConvertContentsToApplication(app_tab);
+  chrome::ConvertTabToAppWindow(browser(), app_tab);
 
   // The launch should have created a new browser.
   ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));

@@ -145,6 +145,8 @@ bool CanViewSource(const Browser* browser);
 
 bool CanCreateApplicationShortcuts(const Browser* browser);
 
+void ConvertTabToAppWindow(Browser* browser, content::WebContents* contents);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_COMMANDS_H_

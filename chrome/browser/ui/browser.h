@@ -690,7 +690,6 @@ class Browser : public TabStripModelDelegate,
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& pos) OVERRIDE;
-  virtual void DetachContents(content::WebContents* source) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
   virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
@@ -702,8 +701,6 @@ class Browser : public TabStripModelDelegate,
   virtual void WebContentsFocused(content::WebContents* content) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
   virtual bool IsApplication() const OVERRIDE;
-  virtual void ConvertContentsToApplication(
-      content::WebContents* source) OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* source,
                                  bool proceed,
