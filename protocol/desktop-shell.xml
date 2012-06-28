@@ -23,7 +23,13 @@
 
     <request name="unlock"/>
 
-    <request name="set_busy_surface">
+    <request name="set_grab_surface">
+      <description summary="set grab surface">
+	The surface set by this request will receive a fake
+	pointer.enter event during grabs at position 0, 0 and is
+	expected to set an appropriate cursor image as described by
+	the grab_cursor event sent just before the enter event.
+      </description>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
@@ -45,6 +51,35 @@
         desktop resume.
       </description>
     </event>
+
+    <event name="grab_cursor">
+      <description summary="tell client what cursor to show during a grab">
+	This event will be sent immediately before a fake enter event on the
+	grab surface.
+      </description>
+      <arg name="cursor" type="uint"/>
+    </event>
+
+    <enum name="cursor">
+      <entry name="none" value="0"/>
+
+      <entry name="resize_top" value="1"/>
+      <entry name="resize_bottom" value="2"/>
+
+      <entry name="arrow" value="3"/>
+
+      <entry name="resize_left" value="4"/>
+      <entry name="resize_top_left" value="5"/>
+      <entry name="resize_bottom_left" value="6"/>
+
+      <entry name="move" value="7"/>
+
+      <entry name="resize_right" value="8"/>
+      <entry name="resize_top_right" value="9"/>
+      <entry name="resize_bottom_right" value="10"/>
+
+      <entry name="busy" value="11"/>
+    </enum>
   </interface>
 
   <interface name="screensaver" version="1">

@@ -50,8 +50,10 @@ struct desktop {
 	struct task unlock_task;
 	struct wl_list outputs;
 
-	struct window *busy_window;
-	struct widget *busy_widget;
+	struct window *grab_window;
+	struct widget *grab_widget;
+
+	enum desktop_shell_cursor grab_cursor;
 };
 
 struct surface {
@@ -742,9 +744,54 @@ desktop_shell_prepare_lock_surface(void *data,
 	}
 }
 
+static void
+desktop_shell_grab_cursor(void *data,
+			  struct desktop_shell *desktop_shell,
+			  uint32_t cursor)
+{
+	struct desktop *desktop = data;
+
+	switch (cursor) {
+	case DESKTOP_SHELL_CURSOR_BUSY:
+		desktop->grab_cursor = CURSOR_WATCH;
+		break;
+	case DESKTOP_SHELL_CURSOR_MOVE:
+		desktop->grab_cursor = CURSOR_DRAGGING;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_TOP:
+		desktop->grab_cursor = CURSOR_TOP;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM:
+		desktop->grab_cursor = CURSOR_BOTTOM;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_LEFT:
+		desktop->grab_cursor = CURSOR_LEFT;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_RIGHT:
+		desktop->grab_cursor = CURSOR_RIGHT;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_TOP_LEFT:
+		desktop->grab_cursor = CURSOR_TOP_LEFT;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_TOP_RIGHT:
+		desktop->grab_cursor = CURSOR_TOP_RIGHT;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM_LEFT:
+		desktop->grab_cursor = CURSOR_BOTTOM_LEFT;
+		break;
+	case DESKTOP_SHELL_CURSOR_RESIZE_BOTTOM_RIGHT:
+		desktop->grab_cursor = CURSOR_BOTTOM_RIGHT;
+		break;
+	case DESKTOP_SHELL_CURSOR_ARROW:
+	default:
+		desktop->grab_cursor = CURSOR_LEFT_PTR;
+	}
+}
+
 static const struct desktop_shell_listener listener = {
 	desktop_shell_configure,
-	desktop_shell_prepare_lock_surface
+	desktop_shell_prepare_lock_surface,
+	desktop_shell_grab_cursor
 };
 
 static struct background *
@@ -765,29 +812,33 @@ background_create(struct desktop *desktop)
 }
 
 static int
-busy_surface_enter_handler(struct widget *widget, struct input *input,
+grab_surface_enter_handler(struct widget *widget, struct input *input,
 			   float x, float y, void *data)
 {
-	return CURSOR_WATCH;
+	struct desktop *desktop = data;
+
+	return desktop->grab_cursor;
 }
 
 static void
-busy_surface_create(struct desktop *desktop)
+grab_surface_create(struct desktop *desktop)
 {
 	struct wl_surface *s;
 
-	desktop->busy_window = window_create(desktop->display);
-	s = window_get_wl_surface(desktop->busy_window);
-	desktop_shell_set_busy_surface(desktop->shell, s);
+	desktop->grab_window = window_create(desktop->display);
+	window_set_user_data(desktop->grab_window, desktop);
 
-	desktop->busy_widget =
-		window_add_widget(desktop->busy_window, desktop);
+	s = window_get_wl_surface(desktop->grab_window);
+	desktop_shell_set_grab_surface(desktop->shell, s);
+
+	desktop->grab_widget =
+		window_add_widget(desktop->grab_window, desktop);
 	/* We set the allocation to 1x1 at 0,0 so the fake enter event
 	 * at 0,0 will go to this widget. */
-	widget_set_allocation(desktop->busy_widget, 0, 0, 1, 1);
+	widget_set_allocation(desktop->grab_widget, 0, 0, 1, 1);
 
-	widget_set_enter_handler(desktop->busy_widget,
-				 busy_surface_enter_handler);
+	widget_set_enter_handler(desktop->grab_widget,
+				 grab_surface_enter_handler);
 }
 
 static void
@@ -887,7 +938,7 @@ int main(int argc, char *argv[])
 					     output->output, surface);
 	}
 
-	busy_surface_create(&desktop);
+	grab_surface_create(&desktop);
 
 	config_file = config_file_path("weston.ini");
 	ret = parse_config_file(config_file,

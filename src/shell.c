@@ -78,7 +78,7 @@ struct desktop_shell {
 	struct weston_layer lock_layer;
 
 	struct wl_listener pointer_focus_listener;
-	struct weston_surface *busy_surface;
+	struct weston_surface *grab_surface;
 
 	struct {
 		struct weston_process process;
@@ -198,6 +198,7 @@ struct shell_grab {
 	struct wl_pointer_grab grab;
 	struct shell_surface *shsurf;
 	struct wl_listener shsurf_destroy_listener;
+	struct wl_pointer *pointer;
 };
 
 struct weston_move_grab {
@@ -249,23 +250,36 @@ destroy_shell_grab_shsurf(struct wl_listener *listener, void *data)
 }
 
 static void
-shell_grab_init(struct shell_grab *grab,
-		const struct wl_pointer_grab_interface *interface,
-		struct shell_surface *shsurf)
+shell_grab_start(struct shell_grab *grab,
+		 const struct wl_pointer_grab_interface *interface,
+		 struct shell_surface *shsurf,
+		 struct wl_pointer *pointer,
+		 enum desktop_shell_cursor cursor)
 {
+	struct desktop_shell *shell = shsurf->shell;
+
 	grab->grab.interface = interface;
 	grab->shsurf = shsurf;
 	grab->shsurf_destroy_listener.notify = destroy_shell_grab_shsurf;
 	wl_signal_add(&shsurf->resource.destroy_signal,
 		      &grab->shsurf_destroy_listener);
 
+	grab->pointer = pointer;
+	grab->grab.focus = &shsurf->surface->surface;
+
+	wl_pointer_start_grab(pointer, &grab->grab);
+	desktop_shell_send_grab_cursor(shell->child.desktop_shell, cursor);
+	wl_pointer_set_focus(pointer, &shell->grab_surface->surface,
+			     wl_fixed_from_int(0), wl_fixed_from_int(0));
 }
 
 static void
-shell_grab_finish(struct shell_grab *grab)
+shell_grab_end(struct shell_grab *grab)
 {
 	if (grab->shsurf)
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
+
+	wl_pointer_end_grab(grab->pointer);
 }
 
 static void
@@ -795,7 +809,7 @@ move_grab_button(struct wl_pointer_grab *grab,
 
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
-		shell_grab_finish(shell_grab);
+		shell_grab_end(shell_grab);
 		wl_pointer_end_grab(pointer);
 		free(grab);
 	}
@@ -815,7 +829,7 @@ busy_cursor_grab_focus(struct wl_pointer_grab *base,
 	struct wl_pointer *pointer = base->pointer;
 
 	if (grab->grab.focus != surface) {
-		shell_grab_finish(grab);
+		shell_grab_end(grab);
 		wl_pointer_end_grab(pointer);
 		free(grab);
 	}
@@ -843,16 +857,13 @@ static void
 set_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
 {
 	struct shell_grab *grab;
-	struct desktop_shell *shell = shsurf->shell;
 
 	grab = malloc(sizeof *grab);
 	if (!grab)
 		return;
 
-	shell_grab_init(grab, &busy_cursor_grab_interface, shsurf);
-	grab->grab.focus = &shsurf->surface->surface;
-	wl_pointer_start_grab(pointer, &grab->grab);
-	wl_pointer_set_focus(pointer, &shell->busy_surface->surface, 0, 0);
+	shell_grab_start(grab, &busy_cursor_grab_interface, shsurf, pointer,
+			 DESKTOP_SHELL_CURSOR_BUSY);
 }
 
 static void
@@ -861,8 +872,7 @@ end_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
 	struct shell_grab *grab = (struct shell_grab *) pointer->grab;
 
 	if (grab->grab.interface == &busy_cursor_grab_interface) {
-		shell_grab_finish(grab);
-		wl_pointer_end_grab(pointer);
+		shell_grab_end(grab);
 		free(grab);
 	}
 }
@@ -966,7 +976,7 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 			wl_list_for_each(seat, &ec->seat_list, link) {
 				pointer = seat->seat.pointer;
 				if (pointer->focus ==
-				    &shell->busy_surface->surface &&
+				    &shell->grab_surface->surface &&
 				    pointer->current ==
 				    &shsurf->surface->surface)
 					end_busy_cursor(shsurf, pointer);
@@ -1008,18 +1018,13 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 	if (!move)
 		return -1;
 
-	shell_grab_init(&move->base, &move_grab_interface, shsurf);
-
 	move->dx = wl_fixed_from_double(shsurf->surface->geometry.x) -
 			ws->seat.pointer->grab_x;
 	move->dy = wl_fixed_from_double(shsurf->surface->geometry.y) -
 			ws->seat.pointer->grab_y;
 
-	wl_pointer_start_grab(ws->seat.pointer, &move->base.grab);
-
-	wl_pointer_set_focus(ws->seat.pointer, NULL,
-	                     wl_fixed_from_int(0),
-			     wl_fixed_from_int(0));
+	shell_grab_start(&move->base, &move_grab_interface, shsurf,
+			 ws->seat.pointer, DESKTOP_SHELL_CURSOR_MOVE);
 
 	return 0;
 }
@@ -1108,8 +1113,7 @@ resize_grab_button(struct wl_pointer_grab *grab,
 
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
-		shell_grab_finish(&resize->base);
-		wl_pointer_end_grab(pointer);
+		shell_grab_end(&resize->base);
 		free(grab);
 	}
 }
@@ -1137,17 +1141,12 @@ surface_resize(struct shell_surface *shsurf,
 	if (!resize)
 		return -1;
 
-	shell_grab_init(&resize->base, &resize_grab_interface, shsurf);
-
 	resize->edges = edges;
 	resize->width = shsurf->surface->geometry.width;
 	resize->height = shsurf->surface->geometry.height;
 
-	wl_pointer_start_grab(ws->seat.pointer, &resize->base.grab);
-
-	wl_pointer_set_focus(ws->seat.pointer, NULL,
-			     wl_fixed_from_int(0),
-			     wl_fixed_from_int(0));
+	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
+			 ws->seat.pointer, edges);
 
 	return 0;
 }
@@ -2009,13 +2008,13 @@ desktop_shell_unlock(struct wl_client *client,
 }
 
 static void
-desktop_shell_set_busy_surface(struct wl_client *client,
+desktop_shell_set_grab_surface(struct wl_client *client,
 			       struct wl_resource *resource,
 			       struct wl_resource *surface_resource)
 {
 	struct desktop_shell *shell = resource->data;
 
-	shell->busy_surface = surface_resource->data;
+	shell->grab_surface = surface_resource->data;
 }
 
 static const struct desktop_shell_interface desktop_shell_implementation = {
@@ -2023,7 +2022,7 @@ static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_set_panel,
 	desktop_shell_set_lock_surface,
 	desktop_shell_unlock,
-	desktop_shell_set_busy_surface
+	desktop_shell_set_grab_surface
 };
 
 static enum shell_surface_type
@@ -2266,8 +2265,7 @@ rotate_grab_button(struct wl_pointer_grab *grab,
 		if (shsurf)
 			weston_matrix_multiply(&shsurf->rotation.rotation,
 					       &rotate->rotation);
-		shell_grab_finish(&rotate->base);
-		wl_pointer_end_grab(pointer);
+		shell_grab_end(&rotate->base);
 		free(rotate);
 	}
 }
@@ -2300,14 +2298,10 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 	if (!rotate)
 		return;
 
-	shell_grab_init(&rotate->base, &rotate_grab_interface, surface);
-
 	weston_surface_to_global_float(surface->surface,
 				       surface->surface->geometry.width / 2,
 				       surface->surface->geometry.height / 2,
 				       &rotate->center.x, &rotate->center.y);
-
-	wl_pointer_start_grab(seat->pointer, &rotate->base.grab);
 
 	dx = wl_fixed_to_double(seat->pointer->x) - rotate->center.x;
 	dy = wl_fixed_to_double(seat->pointer->y) - rotate->center.y;
@@ -2332,9 +2326,8 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		weston_matrix_init(&rotate->rotation);
 	}
 
-	wl_pointer_set_focus(seat->pointer, NULL,
-			     wl_fixed_from_int(0),
-			     wl_fixed_from_int(0));
+	shell_grab_start(&rotate->base, &rotate_grab_interface, surface,
+			 seat->pointer, DESKTOP_SHELL_CURSOR_ARROW);
 }
 
 static void
