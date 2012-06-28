@@ -176,6 +176,31 @@ for persistence on the model itself
 and is typically implemented via JSON API.
 </p>
 
+<p>
+A slightly different take from
+having a model handle the persistence
+is to introduce a separate concept of Store and Adapter API.
+Store, Model and
+Adapter (in some frameworks it is called Proxy)
+work hand by hand.
+Store is the repository that holds the loaded models,
+and it also provides functions such as creating,
+querying and filtering the model instances contained within it.
+</p>
+
+<p>
+An adapter, or a proxy, receives the requests from a store and
+translates them into appropriate actions to take
+against your persistent data layer
+(such as JSON API).
+This is interesting in the modern web app design
+because you often interact with more than one persistent data layer
+such as a remote server and browser’s local storage.
+Chrome package apps provides both
+<a href="storage.html">Chrome Storage API</a> and
+<a href="fileSystem.html">HTML 5 fileSystem API</a> for client side storage.
+</p>
+
 <p>Pros:</p>
 
 <ul>

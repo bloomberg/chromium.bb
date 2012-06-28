@@ -132,8 +132,8 @@ but it has no direct access to the Chrome app APIs
 </p>
 
 <p>
-Some of the restrictions on packaged apps are enforced by the
-<a href="http://code.google.com/chrome/extensions/contentSecurityPolicy.html">Content Security Policy (CSP)</a>
+Some of the restrictions on packaged apps are enforced by the 
+<a href="app_csp.html">Content Security Policy (CSP)</a>
 which is always the following and cannot be changed for packaged apps:
 </p>
 
@@ -222,13 +222,8 @@ The Storage API handles data asynchronously.
 
 <p>
 In general, how you save data remotely is up to you,
-but some frameworks and APIs can help.
-For example,
-in the Backbone MVC model,
-you can use a custom Backbone.sync adapter.
-</p>
-
-<p>
+but some frameworks and APIs can help
+(see <a href="app_frameworks.html">MVC Architecture</a>).
 If you use the Chrome Storage API,
 then all syncable data
 is automatically synced
@@ -257,7 +252,7 @@ if they reinstall your app.
 Using an MVC framework can help you design and implement your app
 so that the data is completely separate from the app's
 view on the data.
-See <a href="app_frameworks.html">Recommended Frameworks</a>
+See <a href="app_frameworks.html">MVC Architecture</a>
 for a list of MVC frameworks.
 </p>
 

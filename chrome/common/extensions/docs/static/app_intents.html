@@ -17,7 +17,7 @@ communication.</p>
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-apps/blob/master/webintents">webintents</a> sample.
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/webintents">webintents</a> sample.
 </p>
 
 <h2 id="register">Register your app to handle an action</h2>
@@ -102,7 +102,7 @@ chrome.experimental.app.onLaunched(function(intent) {
 <p>
   When your application is launched with a file as the parameter
   on the command-line,
-  the <code>intent.data</code> property is a <code>FileEntry</code>FileEntry.
+  the <code>intent.data</code> property is a <code>FileEntry</code>.
   This is really cool because now you have a direct reference back to the physical
   file on the disk,
   and you can write data back to it.
@@ -156,7 +156,7 @@ chrome.experimental.app.onLaunched(function(intent) {
 <p>
 If your application or extension is localized
 as per the guidelines in
-<a href="http://code.google.com/chrome/extensions/i18n.html">Internationalization (i18n)</a>,
+<a href="i18n.html">Internationalization (i18n)</a>,
 you can localize the title of your intent in the picker
 using the exact same infrastructure:
 </p>

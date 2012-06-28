@@ -53,7 +53,7 @@ Here are the five steps you need to complete:
 <ol>
 	<li>Add permissions to your manifest and upload your app.</li>
 	<li>Copy key in the installed <code>manifest.json</code> to your source manifest.</li>
-	<li>Register your app in the developer console.</li>
+	<li>Get your client ID.</li>
 	<li>Update your manifest to include the client ID and scopes.</li>
 	<li>Get the authentication token.</li>
 </ol>
@@ -97,29 +97,16 @@ It's not the most graceful task, but here's how it goes:
 	<li>Copy the "key" in the installed <code>manifest.json</code> and paste it into your app's source manifest file.</li>
 </ol>
 
-<h3>Register your app</h3>
+<h3>Get your client ID</h3>
 
 <p>
-You need to register your app
-in the Google APIs Console
-to get the client ID.
+Setting up the client ID is currently not available externally
+via <a href="https://devconsole-canary.corp.google.com/apis/">Google APIs Console</a>.
+So to setup the OAuth2 client ID,
+email <a href="mailto:chrome-apps-auth-requests@google.com">chrome-apps-auth-request@google.com</a>
+with your stable app ID and
+we will reply appropriately with your OAuth2 client ID.
 </p>
-
-<ol>
-	<li> Login to the
-		<a href="https://devconsole-canary.corp.google.com/apis/">Google APIs Console</a>
-		using the same Google account used to upload your app. </li>
-	<li>Create a new project by expanding the drop-down menu in the top-left corner
-		and selecting the <strong>Create...</strong> menu item. </li>
-    <li> Once created and named,
-    	go to the "Services" navigation menu item and
-    	turn on any Google services your app needs. </li>
-    <li> Go to the "API Access" navigation menu item and click on the
-    	<strong>Create an OAuth 2.0 client ID...</strong> blue button. </li>
-    <li> Enter the requested branding information and
-    	select the <strong>Chrome App</strong> application type and enter your app ID
-    	(same ID displayed in the apps and extensions management page). </li>
-</ol>
 
 <h3>Update your manifest</h3>
 

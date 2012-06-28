@@ -7,24 +7,25 @@ of sending or receiving data.
 Starting with the basics,
 you should use an MVC framework to help you design and implement your app
 so that data is completely separate from the app's view on that data
-(see <a href="app_framework.html">Recommended Frameworks</a>).
+(see <a href="app_frameworks.html">MVC Architecture</a>).
 </p>
 
 <p>
 You also need to think about how data is handled when your app is offline
-(see <a href="app_offline.html">Offline First</a>).
+(see <a href="offline_apps.html">Offline First</a>).
 This doc briefly introduces the storage options
 for sending, receiving, and saving data locally;
 the remainder of the doc shows you how
-to use Chrome's File System API.
+to use Chrome's File System API
+(see also the <a href="fileSystem.html">fileSystem API</a>).
 </p>
 
 <p class="note">
 <b>API Samples: </b>
 Want to play with the code?
 Check out the
-<a href="https://github.com/GoogleChrome/chrome-apps-samples/blob/master/filesystem-access">filesystem-access</a>
-and <a href="https://github.com/GoogleChrome/chrome-apps-samples/blob/master/storage">storage</a> samples.
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/filesystem-access">filesystem-access</a>
+and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/storage">storage</a> samples.
 </p>
 
 <h2 id="options">Storage options</h2>
@@ -137,7 +138,7 @@ function displayPath(fileEntry) {
 If you need to implement drag-and-drop selection,
 the drag-and-drop file controller
 (<code>dnd.js</code>) in
-the <a href="https://github.com/GoogleChrome/chrome-apps-samples/blob/master/filesystem-access">filesystem-access</a>
+the <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/filesystem-access">filesystem-access</a>
 sample is a good starting point.
 The controller creates a file entry
 from a <code>DataTransferItem</code>
