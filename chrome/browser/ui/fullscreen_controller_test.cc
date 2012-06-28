@@ -25,24 +25,20 @@ void FullscreenControllerTest::SetUpCommandLine(CommandLine* command_line) {
 
 void FullscreenControllerTest::ToggleTabFullscreen(WebContents* tab,
                                                    bool enter_fullscreen) {
-  if (IsFullscreenForBrowser()) {
-    // Changing tab fullscreen state will not actually change the window
-    // when browser fullscreen is in effect.
-    browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
-  } else {  // Not in browser fullscreen, expect window to actually change.
-    FullscreenNotificationObserver fullscreen_observer;
-    browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
-    fullscreen_observer.Wait();
+  ToggleTabFullscreenInternal(tab, enter_fullscreen, true);
+}
 
-    // TODO(scheib): This assert may be overly conservative, and is causing
-    // flakiness in some tests such as:
-    // FullscreenControllerBrowserTest.FullscreenMouseLockContentSettings.
-    // Disabled to determine if it reduces flakiness, measure and either
-    // remove this comment block or find another solution after
-    // about 1 week == 2012-07-01.
-    //
-    // ASSERT_EQ(browser()->window()->IsFullscreen(), enter_fullscreen);
-  }
+// |ToggleTabFullscreen| should not need to tolerate the transition failing.
+// Most fullscreen tests run sharded in fullscreen_controller_browsertest.cc
+// and some flakiness has occurred when calling |ToggleTabFullscreen|, so that
+// method has been made robust by retrying if the transition fails.
+// The root cause of that flakiness should still be tracked down, see
+// http://crbug.com/133831. In the mean time, this method
+// allows a fullscreen_controller_interactive_browsertest.cc test to verify
+// that when running serially there is no flakiness in the transition.
+void FullscreenControllerTest::ToggleTabFullscreenNoRetries(
+    WebContents* tab, bool enter_fullscreen) {
+  ToggleTabFullscreenInternal(tab, enter_fullscreen, false);
 }
 
 void FullscreenControllerTest::ToggleBrowserFullscreen(bool enter_fullscreen) {
@@ -151,4 +147,25 @@ void FullscreenControllerTest::Reload() {
   chrome::Reload(browser(), CURRENT_TAB);
 
   observer.Wait();
+}
+
+void FullscreenControllerTest::ToggleTabFullscreenInternal(
+    WebContents* tab, bool enter_fullscreen, bool retry_until_success) {
+  if (IsFullscreenForBrowser()) {
+    // Changing tab fullscreen state will not actually change the window
+    // when browser fullscreen is in effect.
+    browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
+  } else {  // Not in browser fullscreen, expect window to actually change.
+    ASSERT_NE(browser()->window()->IsFullscreen(), enter_fullscreen);
+    do {
+      FullscreenNotificationObserver fullscreen_observer;
+      browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
+      fullscreen_observer.Wait();
+      // Repeat ToggleFullscreenModeForTab until the correct state is entered.
+      // This addresses flakiness on test bots running many fullscreen
+      // tests in parallel.
+    } while (retry_until_success &&
+             browser()->window()->IsFullscreen() != enter_fullscreen);
+    ASSERT_EQ(browser()->window()->IsFullscreen(), enter_fullscreen);
+  }
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen_controller_test.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -469,4 +470,26 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
     ASSERT_FALSE(IsMouseLocked());
     ASSERT_FALSE(IsFullscreenForTabOrPending());
   }
+}
+
+// Tests ToggleFullscreenModeForTab always causes window to change.
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
+                       ToggleFullscreenModeForTab) {
+  // Most fullscreen tests run sharded in fullscreen_controller_browsertest.cc
+  // but flakiness required a while loop in
+  // FullscreenControllerTest::ToggleTabFullscreen. This test verifies that
+  // when running serially there is no flakiness.
+  // This test reproduces the same flow as
+  // FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings.
+  // http://crbug.com/133831
+
+  GURL url = test_server()->GetURL("simple.html");
+  AddTabAtIndexAndWait(0, url, content::PAGE_TRANSITION_TYPED);
+  WebContents* tab = browser()->GetActiveWebContents();
+
+  // Validate that going fullscreen for a URL defaults to asking permision.
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(tab, true));
+  ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(tab, false));
 }
