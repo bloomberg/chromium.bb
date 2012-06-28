@@ -2078,6 +2078,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     // that on.
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         self, ScaleFactor(self));
+    // For latency_tests.cc:
+    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
     renderWidgetHostView_->AckPendingSwapBuffers();
     return;
   }
