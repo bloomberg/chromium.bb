@@ -60,6 +60,11 @@
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
+#define TRACE_BACKBUFFER_MEMORY_TOTAL(decoder) \
+    TRACE_COUNTER_ID1( \
+      "GLES2DecoderImpl", "BackbufferMemory", decoder, \
+      decoder->GetBackbufferMemoryTotal())
+
 namespace gpu {
 namespace gles2 {
 
@@ -1319,7 +1324,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Computes the estimated memory used for the backbuffer and passes it to
   // the tracing system.
-  void UpdateBackbufferMemoryAccounting();
+  size_t GetBackbufferMemoryTotal();
 
   // Returns true if the context was just lost due to e.g. GL_ARB_robustness.
   bool WasContextLost();
@@ -1710,7 +1715,7 @@ void Texture::Create() {
   glTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   estimated_size_ = 16u * 16u * 4u;
-  decoder_->UpdateBackbufferMemoryAccounting();
+  TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
 }
 
 bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
@@ -1737,7 +1742,7 @@ bool Texture::AllocateStorage(const gfx::Size& size, GLenum format) {
         size.width(), size.height(), format, GL_UNSIGNED_BYTE, 4, &image_size,
         NULL, NULL);
     estimated_size_ = image_size;
-    decoder_->UpdateBackbufferMemoryAccounting();
+    TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
   return success;
 }
@@ -1761,7 +1766,7 @@ void Texture::Destroy() {
     glDeleteTextures(1, &id_);
     id_ = 0;
     estimated_size_ = 0;
-    decoder_->UpdateBackbufferMemoryAccounting();
+    TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
 }
 
@@ -1816,7 +1821,7 @@ bool RenderBuffer::AllocateStorage(const gfx::Size& size, GLenum format,
   if (success) {
     estimated_size_ = size.width() * size.height() * samples *
                       GLES2Util::RenderbufferBytesPerPixel(format);
-    decoder_->UpdateBackbufferMemoryAccounting();
+    TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
   return success;
 }
@@ -1827,7 +1832,7 @@ void RenderBuffer::Destroy() {
     glDeleteRenderbuffersEXT(1, &id_);
     id_ = 0;
     estimated_size_ = 0;
-    decoder_->UpdateBackbufferMemoryAccounting();
+    TRACE_BACKBUFFER_MEMORY_TOTAL(decoder_);
   }
 }
 
@@ -2977,7 +2982,7 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
   return true;
 }
 
-void GLES2DecoderImpl::UpdateBackbufferMemoryAccounting() {
+size_t GLES2DecoderImpl::GetBackbufferMemoryTotal() {
   size_t total = 0;
   if (offscreen_target_frame_buffer_.get()) {
     if (offscreen_target_color_texture_.get()) {
@@ -3003,8 +3008,7 @@ void GLES2DecoderImpl::UpdateBackbufferMemoryAccounting() {
     total += size.width() * size.height() *
         GLES2Util::RenderbufferBytesPerPixel(back_buffer_color_format_);
   }
-  TRACE_COUNTER_ID1(
-      "GLES2DecoderImpl", "BackbufferMemory", this, total);
+  return total;
 }
 
 bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
@@ -3061,7 +3065,7 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
                << "to allocate storage for offscreen target stencil buffer.";
     return false;
   }
-  UpdateBackbufferMemoryAccounting();
+  TRACE_BACKBUFFER_MEMORY_TOTAL(this);
 
   // Attach the offscreen target buffers to the target frame buffer.
   if (IsOffscreenBufferMultisampled()) {
@@ -3152,7 +3156,7 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
     }
   }
 
-  UpdateBackbufferMemoryAccounting();
+  TRACE_BACKBUFFER_MEMORY_TOTAL(this);
 
   return error::kNoError;
 }
@@ -8225,7 +8229,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       DCHECK(offscreen_saved_color_format_);
       offscreen_saved_color_texture_->AllocateStorage(
           offscreen_size_, offscreen_saved_color_format_);
-      UpdateBackbufferMemoryAccounting();
+      TRACE_BACKBUFFER_MEMORY_TOTAL(this);
 
       offscreen_saved_frame_buffer_->AttachRenderTexture(
           offscreen_saved_color_texture_.get());
