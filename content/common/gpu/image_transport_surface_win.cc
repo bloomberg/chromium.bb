@@ -166,6 +166,8 @@ std::string PbufferImageTransportSurface::GetExtensions() {
 void PbufferImageTransportSurface::SendBuffersSwapped() {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle = reinterpret_cast<int64>(GetShareHandle());
+  CHECK(params.surface_handle);
+
   params.size = GetSize();
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
