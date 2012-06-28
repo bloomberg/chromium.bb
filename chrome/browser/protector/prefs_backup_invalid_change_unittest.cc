@@ -24,15 +24,18 @@ const char kStartupUrl[] = "http://example.com/";
 
 class PrefsBackupInvalidChangeTest : public testing::Test {
  protected:
+  virtual void SetUp() OVERRIDE {
+    // Make the tests independent of the Mac startup pref migration (see
+    // SessionStartupPref::MigrateMacDefaultPrefIfNecessary).
+    PrefService* prefs = profile_.GetPrefs();
+    prefs->SetString(prefs::kProfileCreatedByVersion, "22.0.0.0.0");
+  }
+
   TestingProfile profile_;
 };
 
 // Test that correct default values are applied by Init.
 TEST_F(PrefsBackupInvalidChangeTest, Defaults) {
-#if defined(OS_MACOSX)
-  if (base::mac::IsOSLionOrLater())
-    FAIL() << "Broken after r142958; http://crbug.com/134186";
-#endif
   SessionStartupPref startup_pref(SessionStartupPref::URLS);
   startup_pref.urls.push_back(GURL(kStartupUrl));
   SessionStartupPref::SetStartupPref(&profile_, startup_pref);
