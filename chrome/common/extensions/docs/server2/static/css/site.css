@@ -255,6 +255,10 @@ span.displayModeWarning {
   margin: 0 0 0 0;
 }
 
+#type_name {
+  font-style: italic;
+}
+
 .api_reference div.summary {
   border: 1px solid #b582f6;
   font-family: "Courier New", courier, monospace;
