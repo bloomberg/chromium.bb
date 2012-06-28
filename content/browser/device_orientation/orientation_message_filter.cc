@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/device_orientation/message_filter.h"
+#include "content/browser/device_orientation/orientation_message_filter.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/device_orientation/orientation.h"
@@ -15,13 +15,13 @@ using content::BrowserThread;
 
 namespace device_orientation {
 
-MessageFilter::MessageFilter() : provider_(NULL) {
+OrientationMessageFilter::OrientationMessageFilter() : provider_(NULL) {
 }
 
-MessageFilter::~MessageFilter() {
+OrientationMessageFilter::~OrientationMessageFilter() {
 }
 
-class MessageFilter::ObserverDelegate
+class OrientationMessageFilter::ObserverDelegate
     : public base::RefCounted<ObserverDelegate>, public Provider::Observer {
  public:
     // Create ObserverDelegate that observes provider and forwards updates to
@@ -45,7 +45,7 @@ class MessageFilter::ObserverDelegate
   DISALLOW_COPY_AND_ASSIGN(ObserverDelegate);
 };
 
-MessageFilter::ObserverDelegate::ObserverDelegate(Provider* provider,
+OrientationMessageFilter::ObserverDelegate::ObserverDelegate(Provider* provider,
                                                   int render_view_id,
                                                   IPC::Sender* sender)
     : provider_(provider),
@@ -54,11 +54,11 @@ MessageFilter::ObserverDelegate::ObserverDelegate(Provider* provider,
   provider_->AddObserver(this);
 }
 
-MessageFilter::ObserverDelegate::~ObserverDelegate() {
+OrientationMessageFilter::ObserverDelegate::~ObserverDelegate() {
   provider_->RemoveObserver(this);
 }
 
-void MessageFilter::ObserverDelegate::OnOrientationUpdate(
+void OrientationMessageFilter::ObserverDelegate::OnOrientationUpdate(
     const Orientation& orientation) {
   DeviceOrientationMsg_Updated_Params params;
   params.can_provide_alpha = orientation.can_provide_alpha_;
@@ -73,11 +73,11 @@ void MessageFilter::ObserverDelegate::OnOrientationUpdate(
   sender_->Send(new DeviceOrientationMsg_Updated(render_view_id_, params));
 }
 
-bool MessageFilter::OnMessageReceived(const IPC::Message& message,
+bool OrientationMessageFilter::OnMessageReceived(const IPC::Message& message,
                                       bool* message_was_ok) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(OrientationMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(DeviceOrientationHostMsg_StartUpdating, OnStartUpdating)
     IPC_MESSAGE_HANDLER(DeviceOrientationHostMsg_StopUpdating, OnStopUpdating)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -85,7 +85,7 @@ bool MessageFilter::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void MessageFilter::OnStartUpdating(int render_view_id) {
+void OrientationMessageFilter::OnStartUpdating(int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!provider_)
@@ -96,7 +96,7 @@ void MessageFilter::OnStartUpdating(int render_view_id) {
                                                         this);
 }
 
-void MessageFilter::OnStopUpdating(int render_view_id) {
+void OrientationMessageFilter::OnStopUpdating(int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   observers_map_.erase(render_view_id);

@@ -44,7 +44,7 @@
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/device_orientation/message_filter.h"
+#include "content/browser/device_orientation/orientation_message_filter.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -510,7 +510,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetRequestContext(),
       BrowserContext::GetFileSystemContext(browser_context),
       ChromeBlobStorageContext::GetFor(browser_context)));
-  channel_->AddFilter(new device_orientation::MessageFilter());
+  channel_->AddFilter(new device_orientation::OrientationMessageFilter());
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(

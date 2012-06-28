@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_MESSAGE_FILTER_H_
-#define CONTENT_BROWSER_DEVICE_ORIENTATION_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_
 
 #include <map>
 
@@ -12,16 +12,16 @@
 
 namespace device_orientation {
 
-class MessageFilter : public content::BrowserMessageFilter {
+class OrientationMessageFilter : public content::BrowserMessageFilter {
  public:
-  MessageFilter();
+  OrientationMessageFilter();
 
   // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
  private:
-  virtual ~MessageFilter();
+  virtual ~OrientationMessageFilter();
 
   void OnStartUpdating(int render_view_id);
   void OnStopUpdating(int render_view_id);
@@ -34,9 +34,9 @@ class MessageFilter : public content::BrowserMessageFilter {
 
   scoped_refptr<Provider> provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(OrientationMessageFilter);
 };
 
 }  // namespace device_orientation
 
-#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_
