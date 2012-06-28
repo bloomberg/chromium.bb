@@ -428,6 +428,9 @@ void PrintHeaderFooterByRenderText(
   // TODO(arthurhsu): Following code works on Windows only so far.
   // See crbug.com/108599 and its blockers for more information.
   scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
+  // TODO(asvitkine): The below line is to workaround http://crbug.com/133548.
+  // Remove it when the underlying Skia bug has been fixed.
+  render_text->set_clip_to_display_rect(false);
   render_text->SetText(text);
   int font_size = printing::kSettingHeaderFooterFontSize / webkit_scale_factor;
   render_text->SetFontSize(font_size);
