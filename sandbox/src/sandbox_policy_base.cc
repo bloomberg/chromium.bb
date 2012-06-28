@@ -61,14 +61,15 @@ PolicyBase::PolicyBase()
       lockdown_level_(USER_LOCKDOWN),
       initial_level_(USER_LOCKDOWN),
       job_level_(JOB_LOCKDOWN),
-      integrity_level_(INTEGRITY_LEVEL_LAST),
-      delayed_integrity_level_(INTEGRITY_LEVEL_LAST),
-      policy_(NULL),
-      policy_maker_(NULL),
+      ui_exceptions_(0),
+      use_alternate_desktop_(false),
+      use_alternate_winstation_(false),
       file_system_init_(false),
       relaxed_interceptions_(true),
-      use_alternate_desktop_(false),
-      use_alternate_winstation_(false) {
+      integrity_level_(INTEGRITY_LEVEL_LAST),
+      delayed_integrity_level_(INTEGRITY_LEVEL_LAST),
+      policy_maker_(NULL),
+      policy_(NULL) {
   ::InitializeCriticalSection(&lock_);
   // Initialize the IPC dispatcher array.
   memset(&ipc_targets_, NULL, sizeof(ipc_targets_));
@@ -120,35 +121,34 @@ PolicyBase::~PolicyBase() {
   ::DeleteCriticalSection(&lock_);
 }
 
-DWORD PolicyBase::MakeJobObject(HANDLE* job) {
-  // Create the windows job object.
-  Job job_obj;
-  DWORD result = job_obj.Init(job_level_, NULL, ui_exceptions_);
-  if (ERROR_SUCCESS != result) {
-    return result;
-  }
-  *job = job_obj.Detach();
-  return ERROR_SUCCESS;
+void PolicyBase::AddRef() {
+  ::InterlockedIncrement(&ref_count);
 }
 
-DWORD PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
-  // Create the 'naked' token. This will be the permanent token associated
-  // with the process and therefore with any thread that is not impersonating.
-  DWORD result = CreateRestrictedToken(lockdown, lockdown_level_,
-                                       integrity_level_, PRIMARY);
-  if (ERROR_SUCCESS != result) {
-    return result;
+void PolicyBase::Release() {
+  if (0 == ::InterlockedDecrement(&ref_count))
+    delete this;
+}
+
+ResultCode PolicyBase::SetTokenLevel(TokenLevel initial, TokenLevel lockdown) {
+  if (initial < lockdown) {
+    return SBOX_ERROR_BAD_PARAMS;
   }
-  // Create the 'better' token. We use this token as the one that the main
-  // thread uses when booting up the process. It should contain most of
-  // what we need (before reaching main( ))
-  result = CreateRestrictedToken(initial, initial_level_,
-                                 integrity_level_, IMPERSONATION);
-  if (ERROR_SUCCESS != result) {
-    ::CloseHandle(*lockdown);
-    return result;
-  }
+  initial_level_ = initial;
+  lockdown_level_ = lockdown;
   return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetJobLevel(JobLevel job_level, uint32 ui_exceptions) {
+  job_level_ = job_level;
+  ui_exceptions_ = ui_exceptions;
+  return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetAlternateDesktop(bool alternate_winstation) {
+  use_alternate_desktop_ = true;
+  use_alternate_winstation_ = alternate_winstation;
+  return CreateAlternateDesktop(alternate_winstation);
 }
 
 std::wstring PolicyBase::GetAlternateDesktop() const {
@@ -226,48 +226,31 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
   return SBOX_ALL_OK;
 }
 
-bool PolicyBase::AddTarget(TargetProcess* target) {
-  if (NULL != policy_)
-    policy_maker_->Done();
+void PolicyBase::DestroyAlternateDesktop() {
+  if (alternate_desktop_handle_) {
+    ::CloseDesktop(alternate_desktop_handle_);
+    alternate_desktop_handle_ = NULL;
+  }
 
-  if (!SetupAllInterceptions(target))
-    return false;
-
-  if (!SetupHandleCloser(target))
-    return false;
-
-  // Initialize the sandbox infrastructure for the target.
-  if (ERROR_SUCCESS != target->Init(this, policy_, kIPCMemSize, kPolMemSize))
-    return false;
-
-  g_shared_delayed_integrity_level = delayed_integrity_level_;
-  ResultCode ret = target->TransferVariable(
-                       "g_shared_delayed_integrity_level",
-                       &g_shared_delayed_integrity_level,
-                       sizeof(g_shared_delayed_integrity_level));
-  g_shared_delayed_integrity_level = INTEGRITY_LEVEL_LAST;
-  if (SBOX_ALL_OK != ret)
-    return false;
-
-  AutoLock lock(&lock_);
-  targets_.push_back(target);
-  return true;
+  if (alternate_winstation_handle_) {
+    ::CloseWindowStation(alternate_winstation_handle_);
+    alternate_winstation_handle_ = NULL;
+  }
 }
 
-bool PolicyBase::OnJobEmpty(HANDLE job) {
-  AutoLock lock(&lock_);
-  TargetSet::iterator it;
-  for (it = targets_.begin(); it != targets_.end(); ++it) {
-    if ((*it)->Job() == job)
-      break;
-  }
-  if (it == targets_.end()) {
-    return false;
-  }
-  TargetProcess* target = *it;
-  targets_.erase(it);
-  delete target;
-  return true;
+ResultCode PolicyBase::SetIntegrityLevel(IntegrityLevel integrity_level) {
+  integrity_level_ = integrity_level;
+  return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetDelayedIntegrityLevel(
+    IntegrityLevel integrity_level) {
+  delayed_integrity_level_ = integrity_level;
+  return SBOX_ALL_OK;
+}
+
+void PolicyBase::SetStrictInterceptions() {
+  relaxed_interceptions_ = false;
 }
 
 ResultCode PolicyBase::AddRule(SubSystem subsystem, Semantics semantics,
@@ -341,31 +324,14 @@ ResultCode PolicyBase::AddRule(SubSystem subsystem, Semantics semantics,
   return SBOX_ALL_OK;
 }
 
-EvalResult PolicyBase::EvalPolicy(int service,
-                                  CountedParameterSetBase* params) {
-  if (NULL != policy_) {
-    if (NULL == policy_->entry[service]) {
-      // There is no policy for this particular service. This is not a big
-      // deal.
-      return DENY_ACCESS;
-    }
-    for (int i = 0; i < params->count; i++) {
-      if (!params->parameters[i].IsValid()) {
-        NOTREACHED();
-        return SIGNAL_ALARM;
-      }
-    }
-    PolicyProcessor pol_evaluator(policy_->entry[service]);
-    PolicyResult result =  pol_evaluator.Evaluate(kShortEval,
-                                                  params->parameters,
-                                                  params->count);
-    if (POLICY_MATCH == result) {
-      return pol_evaluator.GetAction();
-    }
-    DCHECK(POLICY_ERROR != result);
-  }
+ResultCode PolicyBase::AddDllToUnload(const wchar_t* dll_name) {
+  blacklisted_dlls_.push_back(std::wstring(dll_name));
+  return SBOX_ALL_OK;
+}
 
-  return DENY_ACCESS;
+ResultCode PolicyBase::AddKernelObjectToClose(const char16* handle_type,
+                                              const char16* handle_name) {
+  return handle_closer_.AddHandle(handle_type, handle_name);
 }
 
 // When an IPC is ready in any of the targets we get called. We manage an array
@@ -402,6 +368,108 @@ bool PolicyBase::SetupService(InterceptionManager* manager, int service) {
     return false;
   }
   return dispatch->SetupService(manager, service);
+}
+
+DWORD PolicyBase::MakeJobObject(HANDLE* job) {
+  // Create the windows job object.
+  Job job_obj;
+  DWORD result = job_obj.Init(job_level_, NULL, ui_exceptions_);
+  if (ERROR_SUCCESS != result) {
+    return result;
+  }
+  *job = job_obj.Detach();
+  return ERROR_SUCCESS;
+}
+
+DWORD PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
+  // Create the 'naked' token. This will be the permanent token associated
+  // with the process and therefore with any thread that is not impersonating.
+  DWORD result = CreateRestrictedToken(lockdown, lockdown_level_,
+                                       integrity_level_, PRIMARY);
+  if (ERROR_SUCCESS != result) {
+    return result;
+  }
+  // Create the 'better' token. We use this token as the one that the main
+  // thread uses when booting up the process. It should contain most of
+  // what we need (before reaching main( ))
+  result = CreateRestrictedToken(initial, initial_level_,
+                                 integrity_level_, IMPERSONATION);
+  if (ERROR_SUCCESS != result) {
+    ::CloseHandle(*lockdown);
+    return result;
+  }
+  return SBOX_ALL_OK;
+}
+
+bool PolicyBase::AddTarget(TargetProcess* target) {
+  if (NULL != policy_)
+    policy_maker_->Done();
+
+  if (!SetupAllInterceptions(target))
+    return false;
+
+  if (!SetupHandleCloser(target))
+    return false;
+
+  // Initialize the sandbox infrastructure for the target.
+  if (ERROR_SUCCESS != target->Init(this, policy_, kIPCMemSize, kPolMemSize))
+    return false;
+
+  g_shared_delayed_integrity_level = delayed_integrity_level_;
+  ResultCode ret = target->TransferVariable(
+                       "g_shared_delayed_integrity_level",
+                       &g_shared_delayed_integrity_level,
+                       sizeof(g_shared_delayed_integrity_level));
+  g_shared_delayed_integrity_level = INTEGRITY_LEVEL_LAST;
+  if (SBOX_ALL_OK != ret)
+    return false;
+
+  AutoLock lock(&lock_);
+  targets_.push_back(target);
+  return true;
+}
+
+bool PolicyBase::OnJobEmpty(HANDLE job) {
+  AutoLock lock(&lock_);
+  TargetSet::iterator it;
+  for (it = targets_.begin(); it != targets_.end(); ++it) {
+    if ((*it)->Job() == job)
+      break;
+  }
+  if (it == targets_.end()) {
+    return false;
+  }
+  TargetProcess* target = *it;
+  targets_.erase(it);
+  delete target;
+  return true;
+}
+
+EvalResult PolicyBase::EvalPolicy(int service,
+                                  CountedParameterSetBase* params) {
+  if (NULL != policy_) {
+    if (NULL == policy_->entry[service]) {
+      // There is no policy for this particular service. This is not a big
+      // deal.
+      return DENY_ACCESS;
+    }
+    for (int i = 0; i < params->count; i++) {
+      if (!params->parameters[i].IsValid()) {
+        NOTREACHED();
+        return SIGNAL_ALARM;
+      }
+    }
+    PolicyProcessor pol_evaluator(policy_->entry[service]);
+    PolicyResult result =  pol_evaluator.Evaluate(kShortEval,
+                                                  params->parameters,
+                                                  params->count);
+    if (POLICY_MATCH == result) {
+      return pol_evaluator.GetAction();
+    }
+    DCHECK(POLICY_ERROR != result);
+  }
+
+  return DENY_ACCESS;
 }
 
 // We service IPC_PING_TAG message which is a way to test a round trip of the

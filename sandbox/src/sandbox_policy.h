@@ -15,6 +15,45 @@ namespace sandbox {
 
 class TargetPolicy {
  public:
+  // Windows subsystems that can have specific rules.
+  // Note: The process subsystem(SUBSY_PROCESS) does not evaluate the request
+  // exactly like the CreateProcess API does. See the comment at the top of
+  // process_thread_dispatcher.cc for more details.
+  enum SubSystem {
+    SUBSYS_FILES,             // Creation and opening of files and pipes.
+    SUBSYS_NAMED_PIPES,       // Creation of named pipes.
+    SUBSYS_PROCESS,           // Creation of child processes.
+    SUBSYS_REGISTRY,          // Creation and opening of registry keys.
+    SUBSYS_SYNC,              // Creation of named sync objects.
+    SUBSYS_HANDLES            // Duplication of handles to other processes.
+  };
+
+  // Allowable semantics when a rule is matched.
+  enum Semantics {
+    FILES_ALLOW_ANY,       // Allows open or create for any kind of access that
+                           // the file system supports.
+    FILES_ALLOW_READONLY,  // Allows open or create with read access only.
+    FILES_ALLOW_QUERY,     // Allows access to query the attributes of a file.
+    FILES_ALLOW_DIR_ANY,   // Allows open or create with directory semantics
+                           // only.
+    HANDLES_DUP_ANY,       // Allows duplicating handles opened with any
+                           // access permissions.
+    HANDLES_DUP_BROKER,    // Allows duplicating handles to the broker process.
+    NAMEDPIPES_ALLOW_ANY,  // Allows creation of a named pipe.
+    PROCESS_MIN_EXEC,      // Allows to create a process with minimal rights
+                           // over the resulting process and thread handles.
+                           // No other parameters besides the command line are
+                           // passed to the child process.
+    PROCESS_ALL_EXEC,      // Allows the creation of a process and return fill
+                           // access on the returned handles.
+                           // This flag can be used only when the main token of
+                           // the sandboxed application is at least INTERACTIVE.
+    EVENTS_ALLOW_ANY,      // Allows the creation of an event with full access.
+    EVENTS_ALLOW_READONLY, // Allows opening an even with synchronize access.
+    REG_ALLOW_READONLY,    // Allows readonly access to a registry key.
+    REG_ALLOW_ANY          // Allows read and write access to a registry key.
+  };
+
   // Increments the reference count of this object. The reference count must
   // be incremented if this interface is given to another component.
   virtual void AddRef() = 0;
@@ -97,6 +136,13 @@ class TargetPolicy {
   // Destroys the desktop and windows station.
   virtual void DestroyAlternateDesktop() = 0;
 
+  // Sets the integrity level of the process in the sandbox. Both the initial
+  // token and the main token will be affected by this. This is valid only
+  // on Vista. It is silently ignored on other OSes. If you set the integrity
+  // level to a level higher than your current level, the sandbox will fail
+  // to start.
+  virtual ResultCode SetIntegrityLevel(IntegrityLevel level) = 0;
+
   // Sets the integrity level of the process in the sandbox. The integrity level
   // will not take effect before you call LowerToken. User Interface Privilege
   // Isolation is not affected by this setting and will remain off for the
@@ -105,58 +151,12 @@ class TargetPolicy {
   // than your current level, the sandbox will fail to start.
   virtual ResultCode SetDelayedIntegrityLevel(IntegrityLevel level) = 0;
 
-  // Sets the integrity level of the process in the sandbox. Both the initial
-  // token and the main token will be affected by this. This is valid only
-  // on Vista. It is silently ignored on other OSes. If you set the integrity
-  // level to a level higher than your current level, the sandbox will fail
-  // to start.
-  virtual ResultCode SetIntegrityLevel(IntegrityLevel level) = 0;
-
   // Sets the interceptions to operate in strict mode. By default, interceptions
   // are performed in "relaxed" mode, where if something inside NTDLL.DLL is
   // already patched we attempt to intercept it anyway. Setting interceptions
   // to strict mode means that when we detect that the function is patched we'll
   // refuse to perform the interception.
   virtual void SetStrictInterceptions() = 0;
-
-  // Windows subsystems that can have specific rules.
-  // Note: The process subsystem(SUBSY_PROCESS) does not evaluate the request
-  // exactly like the CreateProcess API does. See the comment at the top of
-  // process_thread_dispatcher.cc for more details.
-  enum SubSystem {
-    SUBSYS_FILES,             // Creation and opening of files and pipes.
-    SUBSYS_NAMED_PIPES,       // Creation of named pipes.
-    SUBSYS_PROCESS,           // Creation of child processes.
-    SUBSYS_REGISTRY,          // Creation and opening of registry keys.
-    SUBSYS_SYNC,              // Creation of named sync objects.
-    SUBSYS_HANDLES            // Duplication of handles to other processes.
-  };
-
-  // Allowable semantics when a rule is matched.
-  enum Semantics {
-    FILES_ALLOW_ANY,       // Allows open or create for any kind of access that
-                           // the file system supports.
-    FILES_ALLOW_READONLY,  // Allows open or create with read access only.
-    FILES_ALLOW_QUERY,     // Allows access to query the attributes of a file.
-    FILES_ALLOW_DIR_ANY,   // Allows open or create with directory semantics
-                           // only.
-    HANDLES_DUP_ANY,       // Allows duplicating handles opened with any
-                           // access permissions.
-    HANDLES_DUP_BROKER,    // Allows duplicating handles to the broker process.
-    NAMEDPIPES_ALLOW_ANY,  // Allows creation of a named pipe.
-    PROCESS_MIN_EXEC,      // Allows to create a process with minimal rights
-                           // over the resulting process and thread handles.
-                           // No other parameters besides the command line are
-                           // passed to the child process.
-    PROCESS_ALL_EXEC,      // Allows the creation of a process and return fill
-                           // access on the returned handles.
-                           // This flag can be used only when the main token of
-                           // the sandboxed application is at least INTERACTIVE.
-    EVENTS_ALLOW_ANY,      // Allows the creation of an event with full access.
-    EVENTS_ALLOW_READONLY, // Allows opening an even with synchronize access.
-    REG_ALLOW_READONLY,    // Allows readonly access to a registry key.
-    REG_ALLOW_ANY          // Allows read and write access to a registry key.
-  };
 
   // Adds a policy rule effective for processes spawned using this policy.
   // subsystem: One of the above enumerated windows subsystems.

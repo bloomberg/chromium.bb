@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/handle_closer.h"
@@ -34,100 +35,50 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
  public:
   PolicyBase();
 
-  virtual void AddRef() {
-    ::InterlockedIncrement(&ref_count);
-  }
-
-  virtual void Release() {
-    if (0 == ::InterlockedDecrement(&ref_count))
-      delete this;
-  }
-
-  virtual ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) {
-    if (initial < lockdown) {
-      return SBOX_ERROR_BAD_PARAMS;
-    }
-    initial_level_ = initial;
-    lockdown_level_ = lockdown;
-    return SBOX_ALL_OK;
-  }
-
-  virtual ResultCode SetJobLevel(JobLevel job_level, uint32 ui_exceptions) {
-    job_level_ = job_level;
-    ui_exceptions_ = ui_exceptions;
-    return SBOX_ALL_OK;
-  }
-
-  virtual ResultCode SetAlternateDesktop(bool alternate_winstation) {
-    use_alternate_desktop_ = true;
-    use_alternate_winstation_ = alternate_winstation;
-    return CreateAlternateDesktop(alternate_winstation);
-  }
-
-  virtual std::wstring GetAlternateDesktop() const;
-
-  virtual ResultCode CreateAlternateDesktop(bool alternate_winstation);
-
-  virtual void DestroyAlternateDesktop() {
-    if (alternate_desktop_handle_) {
-      ::CloseDesktop(alternate_desktop_handle_);
-      alternate_desktop_handle_ = NULL;
-    }
-
-    if (alternate_winstation_handle_) {
-      ::CloseWindowStation(alternate_winstation_handle_);
-      alternate_winstation_handle_ = NULL;
-    }
-  }
-
-  virtual ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) {
-    integrity_level_ = integrity_level;
-    return SBOX_ALL_OK;
-  }
-
-  virtual ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) {
-    delayed_integrity_level_ = integrity_level;
-    return SBOX_ALL_OK;
-  }
-
-  virtual void SetStrictInterceptions() {
-    relaxed_interceptions_ = false;
-  }
-
+  // TargetPolicy:
+  virtual void AddRef() OVERRIDE;
+  virtual void Release() OVERRIDE;
+  virtual ResultCode SetTokenLevel(TokenLevel initial,
+                                   TokenLevel lockdown) OVERRIDE;
+  virtual ResultCode SetJobLevel(JobLevel job_level,
+                                 uint32 ui_exceptions) OVERRIDE;
+  virtual ResultCode SetAlternateDesktop(bool alternate_winstation) OVERRIDE;
+  virtual std::wstring GetAlternateDesktop() const OVERRIDE;
+  virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) OVERRIDE;
+  virtual void DestroyAlternateDesktop() OVERRIDE;
+  virtual ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) OVERRIDE;
+  virtual ResultCode SetDelayedIntegrityLevel(
+      IntegrityLevel integrity_level) OVERRIDE;
+  virtual void SetStrictInterceptions() OVERRIDE;
   virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
-                             const wchar_t* pattern);
-
-  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) {
-    blacklisted_dlls_.push_back(std::wstring(dll_name));
-    return SBOX_ALL_OK;
-  }
-
+                             const wchar_t* pattern) OVERRIDE;
+  virtual ResultCode AddDllToUnload(const wchar_t* dll_name);
   virtual ResultCode AddKernelObjectToClose(const char16* handle_type,
-                                            const char16* handle_name) {
-    return handle_closer_.AddHandle(handle_type, handle_name);
-  }
+                                            const char16* handle_name) OVERRIDE;
+
+  // Dispatcher:
+  virtual Dispatcher* OnMessageReady(IPCParams* ipc,
+                                     CallbackGeneric* callback) OVERRIDE;
+  virtual bool SetupService(InterceptionManager* manager, int service) OVERRIDE;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel(). Returns the standard windows of ::GetLastError().
   DWORD MakeJobObject(HANDLE* job);
+
   // Creates the two tokens with the levels specified in a previous call to
   // SetTokenLevel(). Returns the standard windows of ::GetLastError().
   DWORD MakeTokens(HANDLE* initial, HANDLE* lockdown);
+
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
   bool AddTarget(TargetProcess* target);
+
   // Called when there are no more active processes in a Job.
   // Removes a Job object associated with this policy and the target associated
   // with the job.
   bool OnJobEmpty(HANDLE job);
 
-  // Overrides Dispatcher::OnMessageReady.
-  virtual Dispatcher* OnMessageReady(IPCParams* ipc, CallbackGeneric* callback);
-
-  // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
-
-  virtual EvalResult EvalPolicy(int service, CountedParameterSetBase* params);
+  EvalResult EvalPolicy(int service, CountedParameterSetBase* params);
 
  private:
   ~PolicyBase();
@@ -159,6 +110,9 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   uint32 ui_exceptions_;
   bool use_alternate_desktop_;
   bool use_alternate_winstation_;
+  // Helps the file system policy initialization.
+  bool file_system_init_;
+  bool relaxed_interceptions_;
   IntegrityLevel integrity_level_;
   IntegrityLevel delayed_integrity_level_;
   // The array of objects that will answer IPC calls.
@@ -167,10 +121,6 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   LowLevelPolicy* policy_maker_;
   // Memory structure that stores the low level policy.
   PolicyGlobal* policy_;
-  // Helps the file system policy initialization.
-  bool file_system_init_;
-  // Operation mode for the interceptions.
-  bool relaxed_interceptions_;
   // The list of dlls to unload in the target process.
   std::vector<std::wstring> blacklisted_dlls_;
   // This is a map of handle-types to names that we need to close in the
