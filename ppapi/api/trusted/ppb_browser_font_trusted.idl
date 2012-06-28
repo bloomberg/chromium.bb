@@ -237,6 +237,10 @@ interface PPB_BrowserFont_Trusted {
    * the string. This handles complex scripts such as Arabic, where characters
    * may be combined or replaced depending on the context. Returns (uint32)-1
    * on failure.
+   *
+   * TODO(brettw) this function may be broken. See the CharPosRTL test. It
+   * seems to tell you "insertion point" rather than painting position. This
+   * is useful but maybe not what we intended here.
    */
   uint32_t CharacterOffsetForPixel(
       [in] PP_Resource font,

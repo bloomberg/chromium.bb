@@ -18,7 +18,9 @@ class TestBrowserFont : public TestCase {
  private:
   std::string TestFontFamilies();
   std::string TestMeasure();
+  std::string TestMeasureRTL();
   std::string TestCharPos();
+  std::string TestCharPosRTL();
   std::string TestDraw();
 };
 

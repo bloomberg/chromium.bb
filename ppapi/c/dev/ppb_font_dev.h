@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_font_dev.idl modified Tue Oct 11 10:01:39 2011. */
+/* From dev/ppb_font_dev.idl modified Mon Jun 25 14:54:48 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
@@ -141,11 +141,27 @@ struct PP_TextRun_Dev {
   struct PP_Var text;
   /**
    * Set to PP_TRUE if the text is right-to-left.
+   *
+   * When <code>override_direction</code> is false, the browser will perform
+   * the Unicode Bidirectional Algorithm (http://unicode.org/reports/tr9/) on
+   * the text. The value of the <code>rtl</code> flag specifies the
+   * direcionality of the surrounding environment. This means that Hebrew
+   * word will always display right to left, even if <code>rtl</code> is false.
+   *
+   * When <code>override_direction</code> is true, no autodetection will be done
+   * and <code>rtl</code> specifies the direction of the text.
+   *
+   * TODO(brettw) note that autodetection with rtl = true is currently
+   * unimplemented.
    */
   PP_Bool rtl;
   /**
    * Set to PP_TRUE to force the directionality of the text regardless of
-   * content
+   * content.
+   *
+   * If this flag is set, the browser will skip autodetection of the content
+   * and will display all text in the direction speficied by the
+   * <code>rtl</code> flag.
    */
   PP_Bool override_direction;
 };

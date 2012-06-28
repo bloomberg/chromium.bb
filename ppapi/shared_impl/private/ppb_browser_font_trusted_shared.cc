@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFontDescription.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextRun.h"
+#include "unicode/ubidi.h"
 
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
@@ -50,6 +51,74 @@ string16 GetFontFromMap(
     return it->second;
   return string16();
 }
+
+// Splits a PP_BrowserFont_Trusted_TextRun into a sequence or LTR and RTL
+// WebTextRuns that can be used for WebKit. Normally WebKit does this for us,
+// but the font drawing and measurement routines we call happen after this
+// step. So for correct rendering of RTL content, we need to do it ourselves.
+class TextRunCollection {
+ public:
+  explicit TextRunCollection(const PP_BrowserFont_Trusted_TextRun& run)
+      : bidi_(NULL),
+        num_runs_(0) {
+    StringVar* text_string = StringVar::FromPPVar(run.text);
+    if (!text_string)
+      return;  // Leave num_runs_ = 0 so we'll do nothing.
+    text_ = UTF8ToUTF16(text_string->value());
+
+    if (run.override_direction) {
+      // Skip autodetection.
+      num_runs_ = 1;
+      override_run_ = WebTextRun(text_, PP_ToBool(run.rtl), true);
+    } else {
+      bidi_ = ubidi_open();
+      UErrorCode uerror = U_ZERO_ERROR;
+      ubidi_setPara(bidi_, text_.data(), text_.size(), run.rtl, NULL, &uerror);
+      if (U_SUCCESS(uerror))
+        num_runs_ = ubidi_countRuns(bidi_, &uerror);
+    }
+  }
+
+  ~TextRunCollection() {
+    if (bidi_)
+      ubidi_close(bidi_);
+  }
+
+  const string16& text() const { return text_; }
+  int num_runs() const { return num_runs_; }
+
+  // Returns a WebTextRun with the info for the run at the given index.
+  // The range covered by the run is in the two output params.
+  WebTextRun GetRunAt(int index, int32_t* run_start, int32_t* run_len) const {
+    DCHECK(index < num_runs_);
+    if (bidi_) {
+      bool run_rtl = !!ubidi_getVisualRun(bidi_, index, run_start, run_len);
+      return WebTextRun(string16(&text_[*run_start], *run_len),
+                        run_rtl, true);
+    }
+
+    // Override run, return the single one.
+    DCHECK(index == 0);
+    *run_start = 0;
+    *run_len = static_cast<int32_t>(text_.size());
+    return override_run_;
+  }
+
+ private:
+  // Will be null if we skipped autodetection.
+  UBiDi* bidi_;
+
+  // Text of all the runs.
+  string16 text_;
+
+  int num_runs_;
+
+  // When the content specifies override_direction (bidi_ is null) then this
+  // will contain the single text run for WebKit.
+  WebTextRun override_run_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextRunCollection);
+};
 
 bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
                            WebTextRun* run) {
@@ -280,25 +349,53 @@ int32_t PPB_BrowserFont_Trusted_Shared::MeasureText(
 uint32_t PPB_BrowserFont_Trusted_Shared::CharacterOffsetForPixel(
     const PP_BrowserFont_Trusted_TextRun* text,
     int32_t pixel_position) {
-  WebTextRun run;
-  if (!PPTextRunToWebTextRun(*text, &run))
-    return -1;
-  return static_cast<uint32_t>(font_->offsetForPosition(
-      run, static_cast<float>(pixel_position)));
+  TextRunCollection runs(*text);
+  int32_t cur_pixel_offset = 0;
+  for (int i = 0; i < runs.num_runs(); i++) {
+    int32_t run_begin = 0;
+    int32_t run_len = 0;
+    WebTextRun run = runs.GetRunAt(i, &run_begin, &run_len);
+    int run_width = font_->calculateWidth(run);
+    if (pixel_position < cur_pixel_offset + run_width) {
+      // Offset is in this run.
+      return static_cast<uint32_t>(font_->offsetForPosition(
+              run, static_cast<float>(pixel_position - cur_pixel_offset))) +
+          run_begin;
+    }
+    cur_pixel_offset += run_width;
+  }
+  return runs.text().size();
 }
 
 int32_t PPB_BrowserFont_Trusted_Shared::PixelOffsetForCharacter(
     const PP_BrowserFont_Trusted_TextRun* text,
     uint32_t char_offset) {
-  WebTextRun run;
-  if (!PPTextRunToWebTextRun(*text, &run))
-    return -1;
-  if (char_offset >= run.text.length())
-    return -1;
-
-  WebFloatRect rect = font_->selectionRectForText(
-      run, WebFloatPoint(0.0f, 0.0f), font_->height(), 0, char_offset);
-  return static_cast<int>(rect.width);
+  TextRunCollection runs(*text);
+  int32_t cur_pixel_offset = 0;
+  for (int i = 0; i < runs.num_runs(); i++) {
+    int32_t run_begin = 0;
+    int32_t run_len = 0;
+    WebTextRun run = runs.GetRunAt(i, &run_begin, &run_len);
+    if (char_offset >= static_cast<uint32_t>(run_begin) &&
+        char_offset < static_cast<uint32_t>(run_begin + run_len)) {
+      // Character we're looking for is in this run.
+      //
+      // Here we ask WebKit to give us the rectangle around the character in
+      // question, and then return the left edge. If we asked for a range of
+      // 0 characters starting at the character in question, it would give us
+      // a 0-width rect around the insertion point. But that will be on the
+      // right side of the character for an RTL run, which would be wrong.
+      WebFloatRect rect = font_->selectionRectForText(
+          run, WebFloatPoint(0.0f, 0.0f), font_->height(),
+          char_offset - run_begin, char_offset - run_begin + 1);
+      return cur_pixel_offset + static_cast<int>(rect.x);
+    } else {
+      // Character is past this run, account for the pixels and continue
+      // looking.
+      cur_pixel_offset += font_->calculateWidth(run);
+    }
+  }
+  return -1;  // Requested a char beyond the end.
 }
 
 void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
@@ -308,10 +405,6 @@ void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
     uint32_t color,
     const PP_Rect* clip,
     PP_Bool image_data_is_opaque) {
-  WebTextRun run;
-  if (!PPTextRunToWebTextRun(text, &run))
-    return;
-
   // Convert position and clip.
   WebFloatPoint web_position(static_cast<float>(position->x),
                              static_cast<float>(position->y));
@@ -328,8 +421,20 @@ void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
                        clip->size.width, clip->size.height);
   }
 
-  font_->drawText(destination, run, web_position, color, web_clip,
-                  PP_ToBool(image_data_is_opaque));
+  TextRunCollection runs(text);
+  for (int i = 0; i < runs.num_runs(); i++) {
+    int32_t run_begin = 0;
+    int32_t run_len = 0;
+    WebTextRun run = runs.GetRunAt(i, &run_begin, &run_len);
+    font_->drawText(destination, run, web_position, color, web_clip,
+                    PP_ToBool(image_data_is_opaque));
+
+    // Advance to the next run. Note that we avoid doing this for the last run
+    // since it's unnecessary, measuring text is slow, and most of the time
+    // there will be only one run anyway.
+    if (i != runs.num_runs() - 1)
+      web_position.x += font_->calculateWidth(run);
+  }
 }
 
 }  // namespace ppapi
