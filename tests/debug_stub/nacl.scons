@@ -5,15 +5,10 @@
 
 Import('env')
 
-import sys
-
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-# The test has to be able to kill the subprocess.
-if sys.version_info < (2, 6):
-  Return()
 if env.Bit('bitcode'):
   # We use inline assembly, which does not work in pexes.
   if env.Bit('pnacl_generate_pexe'):
@@ -32,11 +27,6 @@ bootstrap, _ = env.GetBootstrap()
 if bootstrap is not None:
   sel_ldr_command = [bootstrap] + sel_ldr_command
 
-# TODO(mlinck) Fix the test to correctly kill sel_ldr, and check if the
-# port is already busy.  This appears to be related to Hardy which is
-# why we are only turning this off on the coverage bots.
-# See:
-# http://code.google.com/p/nativeclient/issues/detail?id=1724
 node = env.CommandTest(
     'debug_stub_test.out',
     command=['${PYTHON}', env.File('debug_stub_test.py'), '-v',
