@@ -88,6 +88,32 @@ ImageBuffer.prototype.getDragHandler = function(x, y, touch) {
 };
 
 /**
+ * Searches for an action for the double tap enumerating
+ * layers in the descending Z-order.
+ * @param {number} x X coordinate of the event.
+ * @param {number} y Y coordinate of the event.
+ * @return {ImageBuffer.DoubleTapAction}
+ */
+ImageBuffer.prototype.getDoubleTapAction = function(x, y) {
+  for (var i = this.overlays_.length - 1; i >= 0; i--) {
+    var action = this.overlays_[i].getDoubleTapAction(x, y);
+    if (action != ImageBuffer.DoubleTapAction.NOTHING)
+      return action;
+  }
+  return ImageBuffer.DoubleTapAction.NOTHING;
+};
+
+/**
+ * Possible double tap actions.
+ * @enum
+ */
+ImageBuffer.DoubleTapAction = {
+  NOTHING: 0,
+  COMMIT: 1,
+  CANCEL: 2
+};
+
+/**
  * ImageBuffer.Overlay is a pluggable extension that modifies the outlook
  * and the behavior of the ImageBuffer instance.
  */
@@ -102,3 +128,7 @@ ImageBuffer.Overlay.prototype.getCursorStyle = function() { return null };
 ImageBuffer.Overlay.prototype.onClick = function() { return false };
 
 ImageBuffer.Overlay.prototype.getDragHandler = function() { return null };
+
+ImageBuffer.Overlay.prototype.getDoubleTapAction = function(x, y) {
+  return ImageBuffer.DoubleTapAction.NOTHING;
+};

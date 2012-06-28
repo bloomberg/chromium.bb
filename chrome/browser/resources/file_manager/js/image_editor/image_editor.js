@@ -36,6 +36,8 @@ function ImageEditor(
   this.panControl_ = new ImageEditor.MouseControl(
       this.rootContainer_, this.container_, this.getBuffer());
 
+  this.panControl_.setDoubleTapCallback(this.onDoubleTap_.bind(this));
+
   this.mainToolbar_ = new ImageEditor.Toolbar(
       DOMContainers.toolbar, displayStringFunction);
 
@@ -557,6 +559,22 @@ ImageEditor.prototype.onKeyDown = function(event) {
 };
 
 /**
+ * Double tap handler.
+ * @param {number} x X coordinate of the event.
+ * @param {number} y Y coordinate of the event.
+ * @private
+ */
+ImageEditor.prototype.onDoubleTap_ = function(x, y) {
+  if (this.getMode()) {
+    var action = this.buffer_.getDoubleTapAction(x, y);
+    if (action == ImageBuffer.DoubleTapAction.COMMIT)
+      this.leaveMode(true);
+    else if (action == ImageBuffer.DoubleTapAction.CANCEL)
+      this.leaveMode(false);
+  }
+};
+
+/**
  * Hide the tools that overlap the given rectangular frame.
  *
  * @param {Rect} frame Hide the tool that overlaps this rect.
@@ -605,6 +623,31 @@ ImageEditor.MouseControl = function(rootContainer, container, buffer) {
 };
 
 /**
+ * Maximum movement for touch to be detected as a tap (in pixels).
+ * @private
+ */
+ImageEditor.MouseControl.MAX_MOVEMENT_FOR_TAP_ = 8;
+
+/**
+ * Maximum time for touch to be detected as a tap (in milliseconds).
+ * @private
+ */
+ImageEditor.MouseControl.MAX_TAP_DURATION_ = 500;
+
+/**
+ * Maximum distance from the first tap to the second tap to be considered
+ * as a double tap.
+ * @private
+ */
+ImageEditor.MouseControl.MAX_DISTANCE_FOR_DOUBLE_TAP_ = 32;
+
+/**
+ * Maximum time for touch to be detected as a double tap (in milliseconds).
+ * @private
+ */
+ImageEditor.MouseControl.MAX_DOUBLE_TAP_DURATION_ = 1000;
+
+/**
  * Convert the event position from the event object to client coordinates.
  *
  * @param {MouseEvent|Touch} e Pointer position.
@@ -640,6 +683,11 @@ ImageEditor.MouseControl.prototype.getTouchPosition_ = function(e) {
 ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
   var position = this.getTouchPosition_(e);
   if (position) {
+    this.touchStartInfo_ = {
+      x: position.x,
+      y: position.y,
+      time: Date.now()
+    };
     this.dragHandler_ = this.buffer_.getDragHandler(position.x, position.y,
                                                     true /* touch */);
     this.dragHappened_ = false;
@@ -652,13 +700,43 @@ ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
  * @param {TouchEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
-  var position = this.getTouchPosition_(e);
-
-  if (position && !this.dragHappened_) {
-    this.buffer_.onClick(position.x, position.y);
+  if (!this.dragHappened_ && Date.now() - this.touchStartInfo_.time <=
+                             ImageEditor.MouseControl.MAX_TAP_DURATION_) {
+    this.buffer_.onClick(this.touchStartInfo_.x, this.touchStartInfo_.y);
+    if (this.previousTouchStartInfo_ &&
+        Date.now() - this.previousTouchStartInfo_.time <
+            ImageEditor.MouseControl.MAX_DOUBLE_TAP_DURATION_) {
+      var prevTouchCircle = new Circle(
+          this.previousTouchStartInfo_.x,
+          this.previousTouchStartInfo_.y,
+          ImageEditor.MouseControl.MAX_DISTANCE_FOR_DOUBLE_TAP_);
+      if (prevTouchCircle.inside(this.touchStartInfo_.x,
+                                 this.touchStartInfo_.y)) {
+        this.doubleTapCallback_(this.touchStartInfo_.x, this.touchStartInfo_.y);
+      }
+    }
+    this.previousTouchStartInfo_ = this.touchStartInfo_;
+  } else {
+    this.previousTouchStartInfo_ = null;
   }
   this.onTouchCancel(e);
   e.preventDefault();
+};
+
+/**
+ * Default double tap handler.
+ * @param {number} x X coordinate of the event.
+ * @param {number} y Y coordinate of the event.
+ * @private
+ */
+ImageEditor.MouseControl.prototype.doubleTapCallback_ = function(x, y) {}
+
+/**
+ * Sets callback to be called when double tap detected.
+ * @param {function(number, number)} callback.
+ */
+ImageEditor.MouseControl.prototype.setDoubleTapCallback = function(callback) {
+  this.doubleTapCallback_ = callback;
 };
 
 /**
@@ -667,6 +745,7 @@ ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
 ImageEditor.MouseControl.prototype.onTouchCancel = function() {
   this.dragHandler_ = null;
   this.dragHappened_ = false;
+  this.touchStartInfo_ = null;
   this.lockMouse_(false);
 };
 
@@ -676,10 +755,16 @@ ImageEditor.MouseControl.prototype.onTouchCancel = function() {
  */
 ImageEditor.MouseControl.prototype.onTouchMove = function(e) {
   var position = this.getTouchPosition_(e);
+  if (!position)
+    return;
 
-  if (position && this.dragHandler_) {
+  if (this.touchStartInfo_ && !this.dragHappened_) {
+    var tapCircle = new Circle(this.touchStartInfo_.x, this.touchStartInfo_.y,
+                    ImageEditor.MouseControl.MAX_MOVEMENT_FOR_TAP_);
+    this.dragHappened_ = !tapCircle.inside(position.x, position.y);
+  }
+  if (this.dragHandler_ && this.dragHappened_) {
     this.dragHandler_(position.x, position.y);
-    this.dragHappened_ = true;
     this.lockMouse_(true);
   }
   e.preventDefault();

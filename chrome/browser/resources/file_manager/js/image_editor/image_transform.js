@@ -134,6 +134,10 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
   };
 };
 
+ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
+  return this.cropRect_.getDoubleTapAction(x, y);
+};
+
 /**
  * A draggable rectangle over the image.
  */
@@ -343,4 +347,15 @@ DraggableRect.prototype.getDragHandler = function(x, y, touch) {
     if (resizeFuncX) resizeFuncX(convertX(x));
     if (resizeFuncY) resizeFuncY(convertY(y));
   };
+};
+
+DraggableRect.prototype.getDoubleTapAction = function(x, y, touch) {
+  x = this.viewport_.screenToImageX(x);
+  y = this.viewport_.screenToImageY(y);
+
+  var clipRect = this.viewport_.getImageClipped();
+  if (clipRect.inside(x, y))
+    return ImageBuffer.DoubleTapAction.COMMIT;
+  else
+    return ImageBuffer.DoubleTapAction.NOTHING;
 };
