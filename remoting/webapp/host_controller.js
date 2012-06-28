@@ -274,7 +274,9 @@ function parseHostConfig_(configStr) {
       typeof config['xmpp_login'] == 'string') {
     return config;
   } else {
-    console.error('Invalid getDaemonConfig response.');
+    if (configStr != '{}') {
+      console.error('Invalid getDaemonConfig response.');
+    }
   }
   return null;
 }

@@ -344,10 +344,14 @@ remoting.OAuth2.prototype.revokeToken_ = function(token) {
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.callWithToken = function(onOk, onError) {
-  if (this.needsNewAccessToken()) {
-    this.refreshAccessToken_(this.onRefreshToken_.bind(this, onOk, onError));
-  } else {
-    onOk(this.getAccessToken_());
+  try {
+    if (this.needsNewAccessToken()) {
+      this.refreshAccessToken_(this.onRefreshToken_.bind(this, onOk, onError));
+    } else {
+      onOk(this.getAccessToken_());
+    }
+  } catch (error) {
+    onError(remoting.Error.NOT_AUTHENTICATED);
   }
 };
 

@@ -131,21 +131,25 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
     if (xhr.status == 200) {
       var response =
           /** @type {{data: {items: Array}}} */ jsonParseSafe(xhr.responseText);
-      if (response && response.data && response.data.items) {
-        this.hosts_ = response.data.items;
-        /**
-         * @param {remoting.Host} a
-         * @param {remoting.Host} b
-         */
-        var cmp = function(a, b) {
-          if (a.status < b.status) {
-            return 1;
-          } else if (b.status < a.status) {
-            return -1;
-          }
-          return 0;
-        };
-        this.hosts_ = /** @type {Array} */ this.hosts_.sort(cmp);
+      if (response && response.data) {
+        if (response.data.items) {
+          this.hosts_ = response.data.items;
+          /**
+           * @param {remoting.Host} a
+           * @param {remoting.Host} b
+           */
+          var cmp = function(a, b) {
+            if (a.status < b.status) {
+              return 1;
+            } else if (b.status < a.status) {
+              return -1;
+            }
+            return 0;
+          };
+          this.hosts_ = /** @type {Array} */ this.hosts_.sort(cmp);
+        } else {
+          this.hosts_ = [];
+        }
       } else {
         console.error('Invalid "hosts" response from server.');
       }

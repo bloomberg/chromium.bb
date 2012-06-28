@@ -154,6 +154,10 @@
     "message": "Unable to reach the host. This is probably due to the configuration of the network you are using.",
     "description": "Error displayed when the host is online, but we are unable to connect to it due to network configuration."
   },
+  "ERROR_NOT_AUTHENTICATED": {
+    "message": "You are not signed in to Chromoting. Please sign in and try again.",
+    "description": "Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in."
+  },
   "ERROR_MISSING_PLUGIN": {
     "message": "Some components required for Chromoting are missing. Please make sure you're running the latest version of Chromium and try again.",
     "description": "Error displayed if the client plugin fails to load."
