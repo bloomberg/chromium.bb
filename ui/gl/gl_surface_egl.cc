@@ -439,8 +439,10 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size) {
 
   size_ = size;
 
-  if (!Initialize())
+  if (!Initialize()) {
+    LOG(ERROR) << "Failed to resize pbuffer.";
     return false;
+  }
 
   if (was_current)
     return current_context->MakeCurrent(this);
@@ -457,8 +459,10 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
   NOTREACHED();
   return NULL;
 #else
-  const char* extensions = eglQueryString(g_display, EGL_EXTENSIONS);
-  if (!strstr(extensions, "EGL_ANGLE_query_surface_pointer"))
+  if (!g_EGL_ANGLE_query_surface_pointer)
+    return NULL;
+
+  if (!g_EGL_ANGLE_surface_d3d_texture_2d_share_handle)
     return NULL;
 
   void* handle;
@@ -468,6 +472,8 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
                                    &handle)) {
     return NULL;
   }
+
+  CHECK(handle);
 
   return handle;
 #endif

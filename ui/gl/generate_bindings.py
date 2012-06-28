@@ -1065,6 +1065,7 @@ FUNCTION_SETS = [
   [EGL_FUNCTIONS, 'egl', ['../../third_party/khronos/EGL/eglext.h'],
     [
       'EGL_ANGLE_d3d_share_handle_client_buffer',
+      'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
     ],
   ],
   [WGL_FUNCTIONS, 'wgl', [
