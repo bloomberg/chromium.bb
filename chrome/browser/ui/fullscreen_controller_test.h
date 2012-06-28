@@ -39,10 +39,12 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   FullscreenControllerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-  void ToggleTabFullscreen(bool enter_fullscreen);
-  void ToggleTabFullscreenNoRetries(bool enter_fullscreen);
+  void ToggleTabFullscreen(content::WebContents* tab, bool enter_fullscreen);
+  void ToggleTabFullscreenNoRetries(content::WebContents* tab,
+                                    bool enter_fullscreen);
   void ToggleBrowserFullscreen(bool enter_fullscreen);
-  void RequestToLockMouse(bool user_gesture,
+  void RequestToLockMouse(content::WebContents* tab,
+                          bool user_gesture,
                           bool last_unlocked_by_target);
   void LostMouseLock();
   bool SendEscapeToFullscreenController();
@@ -61,7 +63,8 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void Reload();
   static const char kFullscreenMouseLockHTML[];
  private:
-  void ToggleTabFullscreen_Internal(bool enter_fullscreen,
+  void ToggleTabFullscreenInternal(content::WebContents* tab,
+                                    bool enter_fullscreen,
                                     bool retry_until_success);
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerTest);
 };
