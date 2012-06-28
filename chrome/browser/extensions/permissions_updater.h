@@ -42,7 +42,8 @@ class PermissionsUpdater {
 
   // Adds all permissions in the |extension|'s active permissions to its
   // granted permission set.
-  void GrantActivePermissions(const Extension* extension);
+  void GrantActivePermissions(const Extension* extension,
+                              bool record_oauth2_grant);
 
   // Sets the |extension|'s active permissions to |permissions|.
   void UpdateActivePermissions(const Extension* extension,
@@ -53,6 +54,9 @@ class PermissionsUpdater {
     ADDED,
     REMOVED,
   };
+
+  // Records the oauth2 grant for the scopes specified in |permissions|.
+  void RecordOAuth2Grant(const Extension* extension);
 
   // Dispatches specified event to the extension.
   void DispatchEvent(const std::string& extension_id,

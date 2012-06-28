@@ -74,6 +74,7 @@ extern const char kCrashOnLive[];
 extern const char kDebugDevToolsFrontend[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPrint[];
+extern const char kDemandUserScopeApproval[];
 extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
 extern const char kDisableAsynchronousSpellChecking[];

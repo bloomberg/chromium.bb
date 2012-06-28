@@ -936,6 +936,24 @@ void ExtensionPrefs::AddGrantedPermissions(
       extension_id, kPrefGrantedPermissions, new_perms.get());
 }
 
+void ExtensionPrefs::RemoveGrantedPermissions(
+    const std::string& extension_id,
+    const PermissionSet* permissions) {
+  CHECK(Extension::IdIsValid(extension_id));
+
+  scoped_refptr<PermissionSet> granted_permissions(
+      GetGrantedPermissions(extension_id));
+
+  // The new granted permissions are the difference of the already granted
+  // permissions and the newly ungranted permissions.
+  scoped_refptr<PermissionSet> new_perms(
+      PermissionSet::CreateDifference(
+          granted_permissions.get(), permissions));
+
+  SetExtensionPrefPermissionSet(
+      extension_id, kPrefGrantedPermissions, new_perms.get());
+}
+
 PermissionSet* ExtensionPrefs::GetActivePermissions(
     const std::string& extension_id) {
   CHECK(Extension::IdIsValid(extension_id));

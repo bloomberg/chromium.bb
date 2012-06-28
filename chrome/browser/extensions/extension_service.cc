@@ -888,12 +888,12 @@ void ExtensionService::DisableExtension(
 }
 
 void ExtensionService::GrantPermissionsAndEnableExtension(
-    const Extension* extension) {
+    const Extension* extension, bool record_oauth2_grant) {
   CHECK(extension);
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_ReEnable");
   extensions::PermissionsUpdater perms_updater(profile());
-  perms_updater.GrantActivePermissions(extension);
+  perms_updater.GrantActivePermissions(extension, record_oauth2_grant);
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
 }

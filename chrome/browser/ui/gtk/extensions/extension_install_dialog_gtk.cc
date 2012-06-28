@@ -82,6 +82,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       delegate_(delegate),
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
+  bool show_oauth_issues = prompt.GetOAuthIssueCount() > 0;
   bool is_inline_install =
       prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   bool is_bundle_install =
@@ -129,7 +130,8 @@ ExtensionInstallDialog::ExtensionInstallDialog(
 
   GtkWidget* heading_vbox = gtk_vbox_new(FALSE, 0);
   // If we are not going to show anything else, vertically center the title.
-  bool center_heading = !show_permissions && !is_inline_install;
+  bool center_heading =
+      !show_permissions && !show_oauth_issues && !is_inline_install;
   gtk_box_pack_start(GTK_BOX(left_column_area), heading_vbox, center_heading,
                      center_heading, 0);
 
@@ -188,9 +190,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       gtk_box_pack_start(GTK_BOX(extensions_vbox), extension_label,
                          FALSE, FALSE, kExtensionsPadding);
     }
-  }
-
-  if (!is_bundle_install) {
+  } else {
     // Resize the icon if necessary.
     SkBitmap scaled_icon = *prompt.icon().ToSkBitmap();
     if (scaled_icon.width() > kImageSize || scaled_icon.height() > kImageSize) {
@@ -232,6 +232,32 @@ ExtensionInstallDialog::ExtensionInstallDialog(
           prompt.GetPermission(i)).c_str());
       gtk_util::SetLabelWidth(permission_label, kLeftColumnMinWidth);
       gtk_box_pack_start(GTK_BOX(permissions_container), permission_label,
+                         FALSE, FALSE, kPermissionsPadding);
+    }
+  }
+
+  if (show_oauth_issues) {
+    GtkWidget* oauth_issues_container;
+    if (is_inline_install) {
+      oauth_issues_container = content_vbox;
+      gtk_box_pack_start(GTK_BOX(content_vbox), gtk_hseparator_new(),
+                         FALSE, FALSE, ui::kControlSpacing);
+    } else {
+      oauth_issues_container = left_column_area;
+    }
+
+    GtkWidget* oauth_issues_header = gtk_util::CreateBoldLabel(
+        "The app wants these scopes:");
+    gtk_util::SetLabelWidth(oauth_issues_header, kLeftColumnMinWidth);
+    gtk_box_pack_start(GTK_BOX(oauth_issues_container), oauth_issues_header,
+                       FALSE, FALSE, 0);
+
+    // TODO(estade): display the issue details under zippies.
+    for (size_t i = 0; i < prompt.GetOAuthIssueCount(); ++i) {
+      GtkWidget* label = gtk_label_new(
+          prompt.GetOAuthIssue(i).description.c_str());
+      gtk_util::SetLabelWidth(label, kLeftColumnMinWidth);
+      gtk_box_pack_start(GTK_BOX(oauth_issues_container), label,
                          FALSE, FALSE, kPermissionsPadding);
     }
   }
