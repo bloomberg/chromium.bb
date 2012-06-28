@@ -41,10 +41,8 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
   if (view->layer()) {
     layers->push_back(view->layer());
   } else {
-    for (View::Views::const_iterator i = view->children_begin();
-         i != view->children_end(); ++i) {
-      BuildRootLayers(*i, layers);
-    }
+    for (int i = 0; i < view->child_count(); ++i)
+      BuildRootLayers(view->child_at(i), layers);
   }
 }
 

@@ -131,11 +131,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
 
-  // STL-style accessors.
-  Views::const_iterator children_begin() { return children_.begin(); }
-  Views::const_iterator children_end() { return children_.end(); }
-  Views::const_reverse_iterator children_rbegin() { return children_.rbegin(); }
-  Views::const_reverse_iterator children_rend() { return children_.rend(); }
   int child_count() const { return static_cast<int>(children_.size()); }
   bool has_children() const { return !children_.empty(); }
 

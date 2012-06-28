@@ -392,9 +392,8 @@ void NativeTabbedPaneViews::InitControl() {
 }
 
 void NativeTabbedPaneViews::InitializeTabs() {
-  for (std::vector<View*>::const_iterator tab = tab_strip_->children_begin();
-       tab != tab_strip_->children_end(); ++tab)
-    content_view_->AddChildView(Tab::GetContents(*tab));
+  for (int i = 0; i < tab_strip_->child_count(); ++i)
+    content_view_->AddChildView(Tab::GetContents(tab_strip_->child_at(i)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

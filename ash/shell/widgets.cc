@@ -99,10 +99,8 @@ void WidgetsWindow::Layout() {
   const int kVerticalPad = 5;
   int left = 5;
   int top = kVerticalPad;
-  for (Views::const_iterator it = children_begin();
-       it != children_end();
-       ++it) {
-    views::View* view = *it;
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* view = child_at(i);
     gfx::Size preferred = view->GetPreferredSize();
     view->SetBounds(left, top, preferred.width(), preferred.height());
     top += preferred.height() + kVerticalPad;
