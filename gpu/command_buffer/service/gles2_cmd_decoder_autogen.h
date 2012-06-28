@@ -223,13 +223,6 @@ error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleClear(
-    uint32 immediate_data_size, const gles2::Clear& c) {
-  GLbitfield mask = static_cast<GLbitfield>(c.mask);
-  DoClear(mask);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleClearColor(
     uint32 immediate_data_size, const gles2::ClearColor& c) {
   GLclampf red = static_cast<GLclampf>(c.red);

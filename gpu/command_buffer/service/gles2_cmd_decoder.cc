@@ -1003,7 +1003,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLenum DoCheckFramebufferStatus(GLenum target);
 
   // Wrapper for glClear
-  void DoClear(GLbitfield mask);
+  error::Error DoClear(GLbitfield mask);
 
   // Wrappers for clear and mask settings functions.
   void DoClearColor(
@@ -1355,6 +1355,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void LogMessage(const std::string& msg);
   void RenderWarning(const std::string& msg);
   void PerformanceWarning(const std::string& msg);
+
+  bool ShouldDeferDraws() {
+    return !offscreen_target_frame_buffer_.get() &&
+           bound_draw_framebuffer_ == NULL &&
+           surface_->DeferDraws();
+  }
 
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -4243,13 +4249,22 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoClear(GLbitfield mask) {
+error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
+  if (ShouldDeferDraws())
+    return error::kDeferCommandUntilLater;
   if (CheckBoundFramebuffersValid("glClear")) {
     UNSHIPPED_TRACE_EVENT_INSTANT2("test_gpu", "DoClear", "red", clear_red_,
                                    "green", clear_green_);
     ApplyDirtyState();
     glClear(mask);
   }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleClear(
+    uint32 immediate_data_size, const gles2::Clear& c) {
+  GLbitfield mask = static_cast<GLbitfield>(c.mask);
+  return DoClear(mask);
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
@@ -5492,6 +5507,8 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     GLint first,
     GLsizei count,
     GLsizei primcount) {
+  if (ShouldDeferDraws())
+    return error::kDeferCommandUntilLater;
   if (!validators_->draw_mode.IsValid(mode)) {
     SetGLError(GL_INVALID_ENUM, function_name, "mode GL_INVALID_ENUM");
     return error::kNoError;
@@ -5593,6 +5610,8 @@ error::Error GLES2DecoderImpl::DoDrawElements(
     GLenum type,
     int32 offset,
     GLsizei primcount) {
+  if (ShouldDeferDraws())
+    return error::kDeferCommandUntilLater;
   if (!bound_element_array_buffer_) {
     SetGLError(GL_INVALID_OPERATION,
                function_name, "No element array buffer bound");
@@ -8204,6 +8223,10 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
 error::Error GLES2DecoderImpl::HandleSwapBuffers(
     uint32 immediate_data_size, const gles2::SwapBuffers& c) {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+  if (!is_offscreen && surface_->DeferSwapBuffers()) {
+    return error::kDeferCommandUntilLater;
+  }
+
   int this_frame_number = frame_number_++;
   // TRACE_EVENT for gpu tests:
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers",

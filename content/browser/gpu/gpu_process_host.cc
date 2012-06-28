@@ -27,6 +27,7 @@
 #include "content/gpu/gpu_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -47,6 +48,9 @@
 
 using content::BrowserThread;
 using content::ChildProcessHost;
+using content::RenderProcessHost;
+using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
 
 bool GpuProcessHost::gpu_enabled_ = true;
 bool GpuProcessHost::hardware_gpu_enabled_ = true;
@@ -97,27 +101,62 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
   }
 }
 
+void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
+                                                     int route_id,
+                                                     bool alive) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
+                   host_id,
+                   route_id,
+                   alive));
+    return;
+  }
+
+  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+  if (host) {
+    if (alive)
+      host->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id, 0));
+    else
+      host->ForceShutdown();
+  }
+}
+
+// This sends a ViewMsg_SwapBuffers_ACK directly to the renderer process
+// (RenderWidget). This path is currently not used with the threaded compositor.
+void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(int surface_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForRenderer,
+                   surface_id));
+    return;
+  }
+
+  int render_process_id = 0;
+  int render_widget_id = 0;
+  if (!GpuSurfaceTracker::Get()->GetRenderWidgetIDForSurface(
+      surface_id, &render_process_id, &render_widget_id)) {
+    return;
+  }
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (!host)
+    return;
+  RenderWidgetHost* rwh = host->GetRenderWidgetHostByID(render_widget_id);
+  if (!rwh)
+    return;
+  RenderWidgetHostImpl::From(rwh)->AcknowledgeSwapBuffersToRenderer();
+}
+
 void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
                                                int route_id,
+                                               int surface_id,
                                                bool alive) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    GpuProcessHost* host = GpuProcessHost::FromID(host_id);
-    if (host) {
-      if (alive)
-        host->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id, 0));
-      else {
-        host->ForceShutdown();
-      }
-    }
-  } else {
-    BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-                 host_id,
-                 route_id,
-                 alive));
-  }
+  AcceleratedSurfaceBuffersSwappedCompletedForGPU(host_id, route_id, alive);
+  AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id);
 }
 
 }  // anonymous namespace
@@ -569,7 +608,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   }
 
   base::ScopedClosureRunner scoped_completion_runner(
-      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
+      base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
                  host_id_, params.route_id, true));
 
   int render_process_id = 0;
@@ -607,6 +646,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
                  host_id_,
                  params.route_id,
+                 params.surface_id,
                  true));
 
   gfx::PluginWindowHandle handle =
@@ -630,7 +670,8 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       params.surface_handle,
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
                  host_id_,
-                 params.route_id));
+                 params.route_id,
+                 params.surface_id));
 }
 
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(

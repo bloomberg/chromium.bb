@@ -120,11 +120,7 @@ GLenum CheckFramebufferStatus(GLenum target) {
   return *result;
 }
 
-void Clear(GLbitfield mask) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glClear(" << mask << ")");
-  helper_->Clear(mask);
-}
+void Clear(GLbitfield mask);
 
 void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

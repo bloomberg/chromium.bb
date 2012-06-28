@@ -290,15 +290,8 @@ TEST_F(GLES2DecoderTest1, CheckFramebufferStatusInvalidArgsBadSharedMemoryId) {
   cmd.Init(GL_FRAMEBUFFER, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
+// TODO(gman): Clear
 
-TEST_F(GLES2DecoderTest1, ClearValidArgs) {
-  EXPECT_CALL(*gl_, Clear(1));
-  SpecializedSetup<Clear, 0>(true);
-  Clear cmd;
-  cmd.Init(1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
 
 TEST_F(GLES2DecoderTest1, ClearColorValidArgs) {
   EXPECT_CALL(*gl_, ClearColor(1, 2, 3, 4));

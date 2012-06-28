@@ -519,9 +519,20 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   if (command_buffer_->GetLastState().error == gpu::error::kNoError)
     gl_->SwapBuffers();
 
-  command_buffer_->Echo(base::Bind(
-      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
-      weak_ptr_factory_.GetWeakPtr()));
+  bool use_echo_for_swap_ack = true;
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
+  use_echo_for_swap_ack =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedCompositing) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableThreadedCompositing);
+#endif
+  if (use_echo_for_swap_ack) {
+    command_buffer_->Echo(base::Bind(
+        &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
 #if defined(OS_MACOSX)
   // It appears that making the compositor's on-screen context current on
   // other platforms implies this flush. TODO(kbr): this means that the

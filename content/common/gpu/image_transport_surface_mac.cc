@@ -30,6 +30,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   // GLSurface implementation
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual bool DeferDraws() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
@@ -75,6 +76,12 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   // Whether or not we've successfully made the surface current once.
   bool made_current_;
 
+  // Whether a SwapBuffers is pending.
+  bool is_swap_buffers_pending_;
+
+  // Whether we unscheduled command buffer because of pending SwapBuffers.
+  bool did_unschedule_;
+
   scoped_ptr<ImageTransportHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceImageTransportSurface);
@@ -106,7 +113,9 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
       texture_id_(0),
       io_surface_handle_(0),
       context_(NULL),
-      made_current_(false) {
+      made_current_(false),
+      is_swap_buffers_pending_(false),
+      did_unschedule_(false) {
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
 }
 
@@ -140,6 +149,20 @@ void IOSurfaceImageTransportSurface::Destroy() {
 
   helper_->Destroy();
   NoOpGLSurfaceCGL::Destroy();
+}
+
+bool IOSurfaceImageTransportSurface::DeferDraws() {
+  // The command buffer hit a draw/clear command that could clobber the
+  // IOSurface in use by an earlier SwapBuffers. If a Swap is pending, abort
+  // processing of the command by returning true and unschedule until the Swap
+  // Ack arrives.
+  DCHECK(!did_unschedule_);
+  if (is_swap_buffers_pending_) {
+    did_unschedule_ = true;
+    helper_->SetScheduled(false);
+    return true;
+  }
+  return false;
 }
 
 bool IOSurfaceImageTransportSurface::IsOffscreen() {
@@ -199,7 +222,8 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
   params.surface_handle = io_surface_handle_;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
-  helper_->SetScheduled(false);
+  DCHECK(!is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = true;
   return true;
 }
 
@@ -218,7 +242,8 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
   params.height = height;
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
-  helper_->SetScheduled(false);
+  DCHECK(!is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = true;
   return true;
 }
 
@@ -235,7 +260,12 @@ gfx::Size IOSurfaceImageTransportSurface::GetSize() {
 }
 
 void IOSurfaceImageTransportSurface::OnBufferPresented(uint32 sync_point) {
-  helper_->SetScheduled(true);
+  DCHECK(is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = false;
+  if (did_unschedule_) {
+    did_unschedule_ = false;
+    helper_->SetScheduled(true);
+  }
 }
 
 void IOSurfaceImageTransportSurface::OnNewSurfaceACK(

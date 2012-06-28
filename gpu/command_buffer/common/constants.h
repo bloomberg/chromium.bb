@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,12 +21,13 @@ namespace error {
     kUnknownCommand,
     kInvalidArguments,
     kLostContext,
-    kGenericError
+    kGenericError,
+    kDeferCommandUntilLater
   };
 
   // Return true if the given error code is an actual error.
   inline bool IsError(Error error) {
-    return error != kNoError;
+    return error != kNoError && error != kDeferCommandUntilLater;
   }
 
   // Provides finer grained information about why the context was lost.

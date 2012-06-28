@@ -363,6 +363,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       int gpu_host_id,
       uint32 sync_point);
 
+  // Called by the view in response to AcceleratedSurfaceBuffersSwapped for
+  // platforms that support deferred GPU process descheduling. This does
+  // nothing if the compositor thread is enabled.
+  // TODO(jbates) Once the compositor thread is always on, this can be removed.
+  void AcknowledgeSwapBuffersToRenderer();
+
   // Signals that the compositing surface was updated, e.g. after a lost context
   // event.
   void CompositingSurfaceUpdated();

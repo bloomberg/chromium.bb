@@ -872,7 +872,10 @@ _FUNCTION_INFO = {
     'error_value': 'GL_FRAMEBUFFER_UNSUPPORTED',
     'result': ['GLenum'],
   },
-  'Clear': {'decoder_func': 'DoClear'},
+  'Clear': {
+    'type': 'Manual',
+    'cmd_args': 'GLbitfield mask'
+  },
   'ClearColor': {'decoder_func': 'DoClearColor'},
   'ClearDepthf': {
     'decoder_func': 'DoClearDepthf',

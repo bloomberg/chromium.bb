@@ -1857,6 +1857,16 @@ void RenderWidgetHostImpl::AcknowledgeBufferPresent(
                                                             sync_point));
 }
 
+void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
+  bool enable_threaded_compositing =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedCompositing) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableThreadedCompositing);
+  if (!enable_threaded_compositing)
+    Send(new ViewMsg_SwapBuffers_ACK(routing_id_));
+}
+
 void RenderWidgetHostImpl::DelayedAutoResized() {
   gfx::Size new_size = new_auto_size_;
   // Clear the new_auto_size_ since the empty value is used as a flag to

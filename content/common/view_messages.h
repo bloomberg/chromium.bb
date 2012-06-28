@@ -837,6 +837,14 @@ IPC_MESSAGE_ROUTED4(ViewMsg_PaintAtSize,
 // This signals the render view that it can send another UpdateRect message.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
 
+// Tells the render view that a SwapBuffers was completed. Typically,
+// SwapBuffers requests go from renderer -> GPU process -> browser. Most
+// platforms still use the GfxCxt3D Echo for receiving the SwapBuffers Ack.
+// Using Echo routes the ack from browser -> GPU process -> renderer, while this
+// Ack goes directly from browser -> renderer. This is not used for the threaded
+// compositor path.
+IPC_MESSAGE_ROUTED0(ViewMsg_SwapBuffers_ACK)
+
 // Message payload includes:
 // 1. A blob that should be cast to WebInputEvent
 // 2. An optional boolean value indicating if a RawKeyDown event is associated

@@ -79,7 +79,7 @@ error::Error CommandParser::ProcessCommand() {
   }
 
   // If get was not set somewhere else advance it.
-  if (get == get_)
+  if (get == get_ && result != error::kDeferCommandUntilLater)
     get_ = (get + header.size) % entry_count_;
 
   if (trace_gl_commands_)

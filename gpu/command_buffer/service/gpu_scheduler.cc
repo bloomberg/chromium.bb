@@ -80,6 +80,11 @@ void GpuScheduler::PutChanged() {
 
     error = parser_->ProcessCommand();
 
+    if (error == error::kDeferCommandUntilLater) {
+      DCHECK(unscheduled_count_ > 0);
+      return;
+    }
+
     // TODO(piman): various classes duplicate various pieces of state, leading
     // to needlessly complex update logic. It should be possible to simply
     // share the state across all of them.

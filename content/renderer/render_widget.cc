@@ -234,6 +234,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
     IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_SwapBuffers_ACK, OnSwapBuffersComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
     IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
