@@ -203,14 +203,14 @@ bool BluetoothDevice::ProvidesServiceWithUUID(const std::string& uuid) const {
 
 void BluetoothDevice::ProvidesServiceWithName(const std::string& name,
     const ProvidesServiceCallback& callback) {
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-      DiscoverServices(
-          object_path_,
-          "",  // empty pattern to browse all services
-          base::Bind(&BluetoothDevice::SearchServicesForNameCallback,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     name,
-                     callback));
+  GetServiceRecords(
+      base::Bind(&BluetoothDevice::SearchServicesForNameCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 name,
+                 callback),
+      base::Bind(&BluetoothDevice::SearchServicesForNameErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
@@ -350,14 +350,14 @@ void BluetoothDevice::Forget(const ErrorCallback& error_callback) {
 
 void BluetoothDevice::ConnectToService(const std::string& service_uuid,
                                        const SocketCallback& callback) {
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-      DiscoverServices(
-          object_path_,
-          service_uuid,
-          base::Bind(&BluetoothDevice::ConnectToMatchingService,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     service_uuid,
-                     callback));
+  GetServiceRecords(
+      base::Bind(&BluetoothDevice::GetServiceRecordsForConnectCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 service_uuid,
+                 callback),
+      base::Bind(&BluetoothDevice::GetServiceRecordsForConnectErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void BluetoothDevice::SetOutOfBandPairingData(
@@ -609,46 +609,42 @@ void BluetoothDevice::ForgetCallback(const ErrorCallback& error_callback,
   }
 }
 
+void BluetoothDevice::SearchServicesForNameErrorCallback(
+    const ProvidesServiceCallback& callback) {
+  callback.Run(false);
+}
+
 void BluetoothDevice::SearchServicesForNameCallback(
     const std::string& name,
     const ProvidesServiceCallback& callback,
-    const dbus::ObjectPath& object_path,
-    const BluetoothDeviceClient::ServiceMap& service_map,
-    bool success) {
-  if (!success) {
-    callback.Run(false);
-    return;
-  }
-
-  for (BluetoothDeviceClient::ServiceMap::const_iterator i =
-      service_map.begin(); i != service_map.end(); ++i) {
-    BluetoothServiceRecord service_record(address(), i->second);
-    if (service_record.name() == name) {
+    const ServiceRecordList& list) {
+  for (ServiceRecordList::const_iterator i = list.begin();
+      i != list.end(); ++i) {
+    if ((*i)->name() == name) {
       callback.Run(true);
       return;
     }
   }
-
   callback.Run(false);
 }
 
-void BluetoothDevice::ConnectToMatchingService(
+void BluetoothDevice::GetServiceRecordsForConnectErrorCallback(
+    const SocketCallback& callback) {
+  callback.Run(NULL);
+}
+
+void BluetoothDevice::GetServiceRecordsForConnectCallback(
     const std::string& service_uuid,
     const SocketCallback& callback,
-    const dbus::ObjectPath& object_path,
-    const BluetoothDeviceClient::ServiceMap& service_map,
-    bool success) {
-  if (success) {
-    // If multiple service records are found, use the first one that works.
-    for (BluetoothDeviceClient::ServiceMap::const_iterator i =
-        service_map.begin(); i != service_map.end(); ++i) {
-      BluetoothServiceRecord service_record(address(), i->second);
-      scoped_refptr<BluetoothSocket> socket(
-          BluetoothSocket::CreateBluetoothSocket(service_record));
-      if (socket.get() != NULL) {
-        callback.Run(socket);
-        return;
-      }
+    const ServiceRecordList& list) {
+  // If multiple service records are found, use the first one that works.
+  for (ServiceRecordList::const_iterator i = list.begin();
+      i != list.end(); ++i) {
+    scoped_refptr<BluetoothSocket> socket(
+        BluetoothSocket::CreateBluetoothSocket(**i));
+    if (socket.get() != NULL) {
+      callback.Run(socket);
+      return;
     }
   }
   callback.Run(NULL);

@@ -409,28 +409,30 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   void ForgetCallback(const ErrorCallback& error_callback,
                       const dbus::ObjectPath& adapter_path, bool success);
 
-  // Called by BluetoothDeviceClient when a call to DiscoverServices() that was
-  // initated from ProvidesServiceWithName completes.  The |result_callback| is
-  // called with true if a service with name matching |name| is discovered, or
-  // with false otherwise.  The rest of the parameters are as documented for a
-  // BluetoothDeviceClient::ServicesCallback.
+  // Called if the call to GetServiceRecords from ProvidesServiceWithName fails.
+  void SearchServicesForNameErrorCallback(
+      const ProvidesServiceCallback& callback);
+
+  // Called by GetServiceRecords with the list of BluetoothServiceRecords to
+  // search for |name|.  |callback| is the callback from
+  // ProvidesServiceWithName.
   void SearchServicesForNameCallback(
       const std::string& name,
       const ProvidesServiceCallback& callback,
-      const dbus::ObjectPath& object_path,
-      const BluetoothDeviceClient::ServiceMap& service_map,
-      bool success);
+      const ServiceRecordList& list);
 
-  // Called by BluetoothDeviceClient when a call to DiscoverServices() that was
-  // initated from ConnectToService completes.  The |callback| is called with
-  // true iff a connection was successfully established.  The rest of the
-  // parameters are as documented for a BluetoothDeviceClient::ServicesCallback.
-  void ConnectToMatchingService(
+  // Called if the call to GetServiceRecords from Connect fails.
+  void GetServiceRecordsForConnectErrorCallback(
+      const SocketCallback& callback);
+
+  // Called by GetServiceRecords with the list of BluetoothServiceRecords.
+  // Connections are attempted to each service in the list matching
+  // |service_uuid|, and the socket from the first successful connection is
+  // passed to |callback|.
+  void GetServiceRecordsForConnectCallback(
       const std::string& service_uuid,
       const SocketCallback& callback,
-      const dbus::ObjectPath& object_path,
-      const BluetoothDeviceClient::ServiceMap& service_map,
-      bool success);
+      const ServiceRecordList& list);
 
   // Called by BlueoothDeviceClient in response to the AddRemoteData and
   // RemoveRemoteData method calls.
