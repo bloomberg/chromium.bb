@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -191,10 +190,11 @@ void AddGDataMountPoint(
     content::RenderViewHost* render_view_host) {
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile)->external_provider();
+  if (!provider)
+    return;
+
   const FilePath mount_point = gdata::util::GetGDataMountPointPath();
   if (!render_view_host || !render_view_host->GetProcess())
-    return;
-  if (!provider || provider->HasMountPoint(mount_point))
     return;
 
   // Grant R/W permissions to gdata 'folder'. File API layer still
@@ -224,11 +224,6 @@ void AddGDataMountPoint(
       cache->GetCacheDirectoryPath(
           gdata::GDataCache::CACHE_TYPE_PERSISTENT),
       file_handler_util::GetReadOnlyPermissions());
-
-  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
-  provider->AddRemoteMountPoint(
-      mount_point,
-      new gdata::GDataFileSystemProxy(gdata_file_system));
 
   FilePath mount_point_virtual;
   if (provider->GetVirtualPath(mount_point, &mount_point_virtual))

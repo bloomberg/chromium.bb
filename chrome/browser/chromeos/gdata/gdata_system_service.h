@@ -54,6 +54,11 @@ class GDataSystemService : public ProfileKeyedService  {
   // other functions.
   void Initialize();
 
+  // Registers remote file system proxy for drive mount point.
+  void AddDriveMountPoint();
+  // Unregisters drive mount point from File API.
+  void RemoveDriveMountPoint();
+
   friend class GDataSystemServiceFactory;
 
   Profile* profile_;

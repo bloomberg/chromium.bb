@@ -10,15 +10,19 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -70,10 +74,13 @@ void GDataSystemService::Initialize() {
       download_manager,
       cache_->GetCacheDirectoryPath(
           GDataCache::CACHE_TYPE_TMP_DOWNLOADS));
+
+  AddDriveMountPoint();
 }
 
 void GDataSystemService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RemoveDriveMountPoint();
 
   // Shut down the member objects in the reverse order of creation.
   webapps_registry_.reset();
@@ -82,6 +89,28 @@ void GDataSystemService::Shutdown() {
   file_system_.reset();
   uploader_.reset();
   documents_service_.reset();
+}
+
+void GDataSystemService::AddDriveMountPoint() {
+  if (!gdata::util::IsGDataAvailable(profile_))
+    return;
+
+  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+  if (provider && !provider->HasMountPoint(mount_point)) {
+    provider->AddRemoteMountPoint(
+        mount_point,
+        new GDataFileSystemProxy(file_system_.get()));
+  }
+}
+
+void GDataSystemService::RemoveDriveMountPoint() {
+  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+  if (provider && provider->HasMountPoint(mount_point))
+    provider->RemoveMountPoint(mount_point);
 }
 
 //===================== GDataSystemServiceFactory =============================
