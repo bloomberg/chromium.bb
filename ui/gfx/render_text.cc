@@ -853,7 +853,10 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   bool fade_left = fade_head();
   bool fade_right = fade_tail();
   // Under RTL, |fade_right| == |fade_head|.
-  if (GetTextDirection() == base::i18n::RIGHT_TO_LEFT)
+  // TODO(asvitkine): This is currently not based on GetTextDirection() because
+  //                  RenderTextWin does not return a direction that's based on
+  //                  the text content.
+  if (horizontal_alignment() == ALIGN_RIGHT)
     std::swap(fade_left, fade_right);
 
   gfx::Rect solid_part = display_rect();
