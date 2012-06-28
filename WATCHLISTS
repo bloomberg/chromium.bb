@@ -401,7 +401,7 @@
                      'glotov+watch@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
     'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
-                'darin-cc@chromium.org', 'jochen+watch-content@chromium.org'],
+                'darin-cc@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org', 'rkn@chromium.org',
                        'wtc@chromium.org'],
     'dns': ['mmenke@chromium.org'],
