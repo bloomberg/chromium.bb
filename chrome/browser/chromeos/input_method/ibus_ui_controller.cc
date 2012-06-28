@@ -20,6 +20,7 @@
 #include "third_party/mozc/session/candidates_lite.pb.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/ime/ibus_client_impl.h"
 #include "ui/base/ime/input_method_ibus.h"
 
 namespace chromeos {
@@ -280,7 +281,7 @@ class IBusUiControllerImpl : public IBusUiController {
 
  private:
   // A class for customizing the behavior of ui::InputMethodIBus for Chrome OS.
-  class IBusChromeOSClientImpl : public ui::internal::IBusClient {
+  class IBusChromeOSClientImpl : public ui::internal::IBusClientImpl {
    public:
     explicit IBusChromeOSClientImpl(IBusUiControllerImpl* ui)
         : ui_(ui) {

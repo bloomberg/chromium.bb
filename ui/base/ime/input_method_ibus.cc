@@ -23,11 +23,10 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "ui/base/events.h"
-#include "ui/base/ime/ibus_client.h"
+#include "ui/base/ime/ibus_client_impl.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
@@ -37,12 +36,6 @@
 namespace {
 
 const int kIBusReleaseMask = 1 << 30;
-const char kClientName[] = "chrome";
-
-// Following capability mask is introduced from
-// http://ibus.googlecode.com/svn/docs/ibus-1.4/ibus-ibustypes.html#IBusCapabilite
-const uint32 kIBusCapabilityPreeditText = 1U;
-const uint32 kIBusCapabilityFocus = 8U;
 
 XKeyEvent* GetKeyEvent(XEvent* event) {
   DCHECK(event && (event->type == KeyPress || event->type == KeyRelease));
@@ -84,26 +77,21 @@ void IBusKeyEventFromNativeKeyEvent(const base::NativeEvent& native_event,
     *ibus_state |= kIBusReleaseMask;
 }
 
-chromeos::IBusInputContextClient* GetInputContextClient() {
-  return chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
-}
-
 }  // namespace
 
 namespace ui {
 
-// A class to hold all data related to a key event being processed by the input
-// method but still has no result back yet.
-class InputMethodIBus::PendingKeyEvent {
+// InputMethodIBus::PendingKeyEventImpl implementation ------------------------
+class InputMethodIBus::PendingKeyEventImpl
+    : public internal::IBusClient::PendingKeyEvent {
  public:
-  PendingKeyEvent(InputMethodIBus* input_method,
-                  const base::NativeEvent& native_event,
-                  uint32 ibus_keyval);
-  virtual ~PendingKeyEvent();
+  PendingKeyEventImpl(InputMethodIBus* input_method,
+                      const base::NativeEvent& native_event,
+                      uint32 ibus_keyval);
+  virtual ~PendingKeyEventImpl();
 
-  // Process this pending key event after we receive its result from the input
-  // method. It just call through InputMethodIBus::ProcessKeyEventPostIME().
-  void ProcessPostIME(bool handled);
+  // internal::IBusClient::PendingKeyEvent overrides:
+  virtual void ProcessPostIME(bool handled) OVERRIDE;
 
   // Abandon this pending key event. Its result will just be discarded.
   void Abandon() { input_method_ = NULL; }
@@ -124,10 +112,10 @@ class InputMethodIBus::PendingKeyEvent {
 
   const uint32 ibus_keyval_;
 
-  DISALLOW_COPY_AND_ASSIGN(PendingKeyEvent);
+  DISALLOW_COPY_AND_ASSIGN(PendingKeyEventImpl);
 };
 
-InputMethodIBus::PendingKeyEvent::PendingKeyEvent(
+InputMethodIBus::PendingKeyEventImpl::PendingKeyEventImpl(
     InputMethodIBus* input_method,
     const base::NativeEvent& native_event,
     uint32 ibus_keyval)
@@ -140,12 +128,12 @@ InputMethodIBus::PendingKeyEvent::PendingKeyEvent(
   x_event_ = *GetKeyEvent(native_event);
 }
 
-InputMethodIBus::PendingKeyEvent::~PendingKeyEvent() {
+InputMethodIBus::PendingKeyEventImpl::~PendingKeyEventImpl() {
   if (input_method_)
     input_method_->FinishPendingKeyEvent(this);
 }
 
-void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
+void InputMethodIBus::PendingKeyEventImpl::ProcessPostIME(bool handled) {
   if (!input_method_)
     return;
 
@@ -161,20 +149,18 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
   // and 'unmodified_character_' to support i18n VKs like a French VK!
 }
 
-// A class to hold information of a pending request for creating an ibus input
-// context.
-class InputMethodIBus::PendingCreateICRequest {
+// InputMethodIBus::PendingCreateICRequestImpl implementation -----------------
+class InputMethodIBus::PendingCreateICRequestImpl
+    : public internal::IBusClient::PendingCreateICRequest {
  public:
-  PendingCreateICRequest(InputMethodIBus* input_method,
-                         PendingCreateICRequest** request_ptr);
-  virtual ~PendingCreateICRequest();
+  PendingCreateICRequestImpl(InputMethodIBus* input_method,
+                             internal::IBusClient* ibus_client,
+                             PendingCreateICRequestImpl** request_ptr);
+  virtual ~PendingCreateICRequestImpl();
 
-  // Set up signal handlers, or destroy object proxy if the input context is
-  // already abandoned.
-  void InitOrAbandonInputContext();
-
-  // Called if the create input context method call is failed.
-  void OnCreateInputContextFailed();
+  // internal::IBusClient::PendingCreateICRequest overrides:
+  virtual void InitOrAbandonInputContext() OVERRIDE;
+  virtual void OnCreateInputContextFailed() OVERRIDE;
 
   // Abandon this pending key event. Its result will just be discarded.
   void Abandon() {
@@ -185,44 +171,49 @@ class InputMethodIBus::PendingCreateICRequest {
 
  private:
   InputMethodIBus* input_method_;
-  PendingCreateICRequest** request_ptr_;
+  internal::IBusClient* ibus_client_;
+  PendingCreateICRequestImpl** request_ptr_;
 
-  DISALLOW_COPY_AND_ASSIGN(PendingCreateICRequest);
+  DISALLOW_COPY_AND_ASSIGN(PendingCreateICRequestImpl);
 };
 
-InputMethodIBus::PendingCreateICRequest::PendingCreateICRequest(
+InputMethodIBus::PendingCreateICRequestImpl::PendingCreateICRequestImpl(
     InputMethodIBus* input_method,
-    PendingCreateICRequest** request_ptr)
+    internal::IBusClient* ibus_client,
+    PendingCreateICRequestImpl** request_ptr)
     : input_method_(input_method),
+      ibus_client_(ibus_client),
       request_ptr_(request_ptr) {
 }
 
-InputMethodIBus::PendingCreateICRequest::~PendingCreateICRequest() {
+InputMethodIBus::PendingCreateICRequestImpl::~PendingCreateICRequestImpl() {
   if (request_ptr_) {
     DCHECK_EQ(*request_ptr_, this);
     *request_ptr_ = NULL;
   }
 }
 
-void InputMethodIBus::PendingCreateICRequest::OnCreateInputContextFailed() {
+void InputMethodIBus::PendingCreateICRequestImpl::OnCreateInputContextFailed() {
   // TODO(nona): If the connection between Chrome and ibus-daemon terminates
   // for some reason, the create ic request will fail. We might want to call
   // ibus_client_->CreateContext() again after some delay.
 }
 
-void InputMethodIBus::PendingCreateICRequest::InitOrAbandonInputContext() {
+void InputMethodIBus::PendingCreateICRequestImpl::InitOrAbandonInputContext() {
   if (input_method_) {
-    DCHECK(input_method_->IsContextReady());
+    DCHECK(ibus_client_->IsContextReady());
     input_method_->SetUpSignalHandlers();
   } else {
-    GetInputContextClient()->ResetObjectProxy();
+    ibus_client_->DestroyProxy();
+    DCHECK(!ibus_client_->IsContextReady());
   }
 }
 
 // InputMethodIBus implementation -----------------------------------------
 InputMethodIBus::InputMethodIBus(
     internal::InputMethodDelegate* delegate)
-    : ibus_client_(new internal::IBusClient),
+    :
+      ibus_client_(new internal::IBusClientImpl),
       pending_create_ic_request_(NULL),
       context_focused_(false),
       composing_text_(false),
@@ -234,7 +225,7 @@ InputMethodIBus::InputMethodIBus(
 
 InputMethodIBus::~InputMethodIBus() {
   AbandonAllPendingKeyEvents();
-  if (IsContextReady())
+  if (ibus_client_->IsContextReady())
     DestroyContext();
 }
 
@@ -264,7 +255,7 @@ void InputMethodIBus::Init(bool focused) {
   // created automatically.
 
   // Create the input context if the connection is already established.
-  if (IsConnected())
+  if (ibus_client_->IsConnected())
     CreateContext();
 
   InputMethodBase::Init(focused);
@@ -272,7 +263,7 @@ void InputMethodIBus::Init(bool focused) {
 
 // static
 void InputMethodIBus::ProcessKeyEventDone(
-    PendingKeyEvent* pending_key_event, bool is_handled) {
+    PendingKeyEventImpl* pending_key_event, bool is_handled) {
   DCHECK(pending_key_event);
   pending_key_event->ProcessPostIME(is_handled);
   delete pending_key_event;
@@ -305,15 +296,15 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
     return;
   }
 
-  PendingKeyEvent* pending_key =
-      new PendingKeyEvent(this, native_event, ibus_keyval);
+  PendingKeyEventImpl* pending_key =
+      new PendingKeyEventImpl(this, native_event, ibus_keyval);
   pending_key_events_.insert(pending_key);
 
-  GetInputContextClient()->ProcessKeyEvent(
-      ibus_keyval,
-      ibus_keycode,
-      ibus_state, base::Bind(&InputMethodIBus::ProcessKeyEventDone,
-                             base::Unretained(pending_key)));
+  ibus_client_->SendKeyEvent(ibus_keyval,
+                             ibus_keycode,
+                             ibus_state,
+                             base::Bind(&InputMethodIBus::ProcessKeyEventDone,
+                                        base::Unretained(pending_key)));
 
   // We don't want to suppress the result generated by this key event, but it
   // may cause problem. See comment in ResetContext() method.
@@ -321,7 +312,7 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
 }
 
 void InputMethodIBus::OnTextInputTypeChanged(const TextInputClient* client) {
-  if (IsContextReady() && IsTextInputClientFocused(client)) {
+  if (ibus_client_->IsContextReady() && IsTextInputClientFocused(client)) {
     ResetContext();
     UpdateContextFocusState();
   }
@@ -384,25 +375,17 @@ void InputMethodIBus::OnDidChangeFocusedClient(TextInputClient* focused_before,
 }
 
 void InputMethodIBus::CreateContext() {
-  DCHECK(IsConnected());
+  DCHECK(ibus_client_->IsConnected());
   DCHECK(!pending_create_ic_request_);
 
-  pending_create_ic_request_ = new PendingCreateICRequest(
-      this, &pending_create_ic_request_);
-
   // Creates the input context asynchronously.
-  chromeos::DBusThreadManager::Get()->GetIBusClient()->CreateInputContext(
-      kClientName,
-      base::Bind(&InputMethodIBus::CreateInputContextDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Unretained(pending_create_ic_request_)),
-      base::Bind(&InputMethodIBus::CreateInputContextFail,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Unretained(pending_create_ic_request_)));
+  pending_create_ic_request_ = new PendingCreateICRequestImpl(
+      this, ibus_client_.get(), &pending_create_ic_request_);
+  ibus_client_->CreateContext(pending_create_ic_request_);
 }
 
 void InputMethodIBus::SetUpSignalHandlers() {
-  DCHECK(IsContextReady());
+  DCHECK(ibus_client_->IsContextReady());
 
   // connect input context signals
   chromeos::IBusInputContextClient* input_context_client =
@@ -427,8 +410,7 @@ void InputMethodIBus::SetUpSignalHandlers() {
       base::Bind(&InputMethodIBus::OnHidePreeditText,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  GetInputContextClient()->SetCapabilities(
-      kIBusCapabilityPreeditText | kIBusCapabilityFocus);
+  ibus_client_->SetCapabilities(internal::IBusClient::INLINE_COMPOSITION);
 
   UpdateContextFocusState();
   // Since ibus-daemon is launched in an on-demand basis on Chrome OS, RWHVA (or
@@ -440,7 +422,7 @@ void InputMethodIBus::SetUpSignalHandlers() {
 
 void InputMethodIBus::DestroyContext() {
   if (pending_create_ic_request_) {
-    DCHECK(!IsContextReady());
+    DCHECK(!ibus_client_->IsContextReady());
     // |pending_create_ic_request_| will be deleted in CreateInputContextDone().
     pending_create_ic_request_->Abandon();
     pending_create_ic_request_ = NULL;
@@ -452,7 +434,7 @@ void InputMethodIBus::DestroyContext() {
     // We can't use IsContextReady here because we want to destroy object proxy
     // regardless of connection. The IsContextReady contains connection check.
     ResetInputContext();
-    DCHECK(!IsContextReady());
+    DCHECK(!ibus_client_->IsContextReady());
   }
 }
 
@@ -494,13 +476,13 @@ void InputMethodIBus::ResetContext() {
   // Note: some input method engines may not support reset method, such as
   // ibus-anthy. But as we control all input method engines by ourselves, we can
   // make sure that all of the engines we are using support it correctly.
-  GetInputContextClient()->Reset();
+  ibus_client_->Reset();
 
   character_composer_.Reset();
 }
 
 void InputMethodIBus::UpdateContextFocusState() {
-  if (!IsContextReady()) {
+  if (!ibus_client_->IsContextReady()) {
     context_focused_ = false;
     return;
   }
@@ -520,15 +502,15 @@ void InputMethodIBus::UpdateContextFocusState() {
   // We only focus in |context_| when the focus is in a normal textfield.
   // ibus_input_context_focus_{in|out}() run asynchronously.
   if (old_context_focused && !context_focused_)
-    GetInputContextClient()->FocusOut();
+    ibus_client_->FocusOut();
   else if (!old_context_focused && context_focused_)
-    GetInputContextClient()->FocusIn();
+    ibus_client_->FocusIn();
 
   if (context_focused_) {
-    uint32 capability = kIBusCapabilityFocus;
-    if (CanComposeInline())
-      capability |= kIBusCapabilityPreeditText;
-    GetInputContextClient()->SetCapabilities(capability);
+    internal::IBusClient::InlineCompositionCapability capability =
+        CanComposeInline() ? internal::IBusClient::INLINE_COMPOSITION
+                           : internal::IBusClient::OFF_THE_SPOT_COMPOSITION;
+    ibus_client_->SetCapabilities(capability);
   }
 }
 
@@ -725,7 +707,7 @@ void InputMethodIBus::SendFakeProcessKeyEvent(bool pressed) const {
                                     0);
 }
 
-void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEvent* pending_key) {
+void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEventImpl* pending_key) {
   DCHECK(pending_key_events_.count(pending_key));
 
   // |pending_key| will be deleted in ProcessKeyEventDone().
@@ -733,7 +715,7 @@ void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEvent* pending_key) {
 }
 
 void InputMethodIBus::AbandonAllPendingKeyEvents() {
-  std::set<PendingKeyEvent*>::iterator i;
+  std::set<PendingKeyEventImpl*>::iterator i;
   for (i = pending_key_events_.begin(); i != pending_key_events_.end(); ++i) {
     // The object will be deleted in ProcessKeyEventDone().
     (*i)->Abandon();
@@ -863,41 +845,13 @@ void InputMethodIBus::ResetInputContext() {
 
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
-  GetInputContextClient()->ResetObjectProxy();
-}
-
-void InputMethodIBus::CreateInputContextDone(
-    PendingCreateICRequest* ic_request,
-    const dbus::ObjectPath& object_path) {
-  chromeos::DBusThreadManager::Get()->GetIBusInputContextClient()
-      ->Initialize(chromeos::DBusThreadManager::Get()->GetIBusBus(),
-                   object_path);
-  ic_request->InitOrAbandonInputContext();
-  delete ic_request;
-}
-
-void InputMethodIBus::CreateInputContextFail(
-    PendingCreateICRequest* ic_request) {
-  ic_request->OnCreateInputContextFailed();
-  delete ic_request;
-}
-
-bool InputMethodIBus::IsConnected() {
-  return chromeos::DBusThreadManager::Get()->GetIBusBus() != NULL;
-}
-
-bool InputMethodIBus::IsContextReady() {
-  if (!IsConnected())
-    return false;
-  if (!GetInputContextClient())
-    return false;
-  return GetInputContextClient()->IsObjectProxyReady();
+  ibus_client_->DestroyProxy();
 }
 
 void InputMethodIBus::OnConnected() {
-  DCHECK(IsConnected());
+  DCHECK(ibus_client_->IsConnected());
   // If already input context is initialized, do nothing.
-  if (IsContextReady())
+  if (ibus_client_->IsContextReady())
     return;
 
   DestroyContext();

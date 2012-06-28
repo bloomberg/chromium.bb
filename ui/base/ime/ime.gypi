@@ -11,7 +11,8 @@
       'composition_text.h',
       'composition_underline.h',
       'ibus_client.h',
-      'ibus_client.cc',
+      'ibus_client_impl.cc',
+      'ibus_client_impl.h',
       'input_method.h',
       'input_method_base.cc',
       'input_method_base.h',
@@ -44,6 +45,8 @@
     }],
     ['chromeos==0', {
       'sources!': [
+        'ibus_client_impl.cc',
+        'ibus_client_impl.h',
         'input_method_ibus.cc',
         'input_method_ibus.h',
       ],

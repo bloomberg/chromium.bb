@@ -7,6 +7,8 @@
     'ime_test_files': [
       'character_composer_unittest.cc',
       'input_method_ibus_unittest.cc',
+      'mock_ibus_client.h',
+      'mock_ibus_client.cc',
     ],
   },
   'sources': [
