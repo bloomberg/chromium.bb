@@ -404,6 +404,10 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" />
       </if>
+      <!-- Instant Extended API active tab images are common for all platforms. -->
+      <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER_SEARCH" file="tab_active_center_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT_SEARCH" file="tab_active_left_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT_SEARCH" file="tab_active_right_search.png" />
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
            then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->

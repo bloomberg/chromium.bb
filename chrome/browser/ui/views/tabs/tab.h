@@ -127,6 +127,7 @@ class Tab : public BaseTab {
     int y_offset;
   };
   static TabImage tab_active_;
+  static TabImage tab_active_search_;
   static TabImage tab_inactive_;
   static TabImage tab_alpha_;
 
@@ -140,8 +141,6 @@ class Tab : public BaseTab {
 
   // The current color of the close button.
   SkColor close_button_color_;
-
-  static bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };
