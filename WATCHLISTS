@@ -57,9 +57,6 @@
     'browser_compositor': {
       'filepath': 'ui/compositor/.*'
     },
-    'browser_gl': {
-      'filepath': 'ui/gl/.*'
-    },
     'browser_main': {
       'filepath': 'chrome/browser/browser_main.cc',
     },
@@ -264,6 +261,9 @@
       'filepath': 'chrome/browser/renderer_host/.*|chrome/renderer/.*|'\
         'chrome/common/render.*',
     },
+    'search': {
+      'filepath': 'chrome/browser/ui/search/.*',
+    },
     'sessions': {
       'filepath': 'chrome/browser/sessions/.*',
     },
@@ -344,9 +344,6 @@
                   'ui/views/view.cc|'\
                   'ui/views/widget/.*',
     },
-    'webdata': {
-      'filepath': 'chrome/browser/webdata/.*',
-    },
     'webkit': {
       'filepath': 'webkit/.*',
     },
@@ -390,9 +387,7 @@
                          'stevenjb+watch@chromium.org',
                          'nkostylev+watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
-                           'piman+watch@chromium.org',
-                           'dhollowa+watch@chromium.org'],
-    'browser_gl': ['dhollowa+watch@chromium.org'],
+                           'piman+watch@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
@@ -468,6 +463,7 @@
                  'sanjeevr@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
                  'brettw-cc@chromium.org'],
+    'search': ['dhollowa+watch@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'shell_window': ['jeremya+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
@@ -492,7 +488,6 @@
                  'timurrrr+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
-    'webdata': ['dhollowa+watch@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'worker': ['jam@chromium.org'],
     'x11': ['derat+watch@chromium.org',
