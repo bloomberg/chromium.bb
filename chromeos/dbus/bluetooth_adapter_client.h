@@ -33,51 +33,51 @@ class CHROMEOS_EXPORT BluetoothAdapterClient {
   // Structure of properties associated with bluetooth adapters.
   struct Properties : public BluetoothPropertySet {
     // The Bluetooth device address of the adapter. Read-only.
-    BluetoothProperty<std::string> address;
+    dbus::Property<std::string> address;
 
     // The Bluetooth friendly name of the adapter, unlike remote devices,
     // this property can be changed to change the presentation for when
     // the adapter is discoverable.
-    BluetoothProperty<std::string> name;
+    dbus::Property<std::string> name;
 
     // The Bluetooth class of the adapter device. Read-only.
-    BluetoothProperty<uint32> bluetooth_class;
+    dbus::Property<uint32> bluetooth_class;
 
     // Whether the adapter radio is powered.
-    BluetoothProperty<bool> powered;
+    dbus::Property<bool> powered;
 
     // Whether the adapter is discoverable by other Bluetooth devices.
     // |discovering_timeout| is used to automatically disable after a time
     // period.
-    BluetoothProperty<bool> discoverable;
+    dbus::Property<bool> discoverable;
 
     // Whether the adapter accepts incoming pairing requests from other
     // Bluetooth devices. |pairable_timeout| is used to automatically disable
     // after a time period.
-    BluetoothProperty<bool> pairable;
+    dbus::Property<bool> pairable;
 
     // The timeout in seconds to cease accepting incoming pairing requests
     // after |pairable| is set to true. Zero means adapter remains pairable
     // forever.
-    BluetoothProperty<uint32> pairable_timeout;
+    dbus::Property<uint32> pairable_timeout;
 
     // The timeout in seconds to cease the adapter being discoverable by
     // other Bluetooth devices after |discoverable| is set to true. Zero
     // means adapter remains discoverable forever.
-    BluetoothProperty<uint32> discoverable_timeout;
+    dbus::Property<uint32> discoverable_timeout;
 
     // Indicates that the adapter is discovering other Bluetooth Devices.
     // Read-only. Use StartDiscovery() to begin discovery.
-    BluetoothProperty<bool> discovering;
+    dbus::Property<bool> discovering;
 
     // List of object paths of known Bluetooth devices, known devices are
     // those that have previously been connected or paired or are currently
     // connected or paired. Read-only.
-    BluetoothProperty<std::vector<dbus::ObjectPath> > devices;
+    dbus::Property<std::vector<dbus::ObjectPath> > devices;
 
     // List of 128-bit UUIDs that represent the available local services.
     // Read-only.
-    BluetoothProperty<std::vector<std::string> > uuids;
+    dbus::Property<std::vector<std::string> > uuids;
 
     Properties(dbus::ObjectProxy* object_proxy,
                PropertyChangedCallback callback);

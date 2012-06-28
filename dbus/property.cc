@@ -91,6 +91,36 @@ void PropertySet::ChangedConnected(const std::string& interface_name,
 }
 
 
+void PropertySet::Get(PropertyBase* property, GetCallback callback) {
+  MethodCall method_call(kPropertiesInterface, kPropertiesGet);
+  MessageWriter writer(&method_call);
+  writer.AppendString(interface());
+  writer.AppendString(property->name());
+
+  DCHECK(object_proxy_);
+  object_proxy_->CallMethod(&method_call,
+                            ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::Bind(&PropertySet::OnGet,
+                                       GetWeakPtr(),
+                                       property,
+                                       callback));
+}
+
+void PropertySet::OnGet(PropertyBase* property, GetCallback callback,
+                        Response* response) {
+  if (!response) {
+    LOG(WARNING) << property->name() << ": Get: failed.";
+    return;
+  }
+
+  MessageReader reader(response);
+  if (property->PopValueFromReader(&reader))
+    NotifyPropertyChanged(property->name());
+
+  if (!callback.is_null())
+    callback.Run(response);
+}
+
 void PropertySet::GetAll() {
   MethodCall method_call(kPropertiesInterface, kPropertiesGetAll);
   MessageWriter writer(&method_call);
@@ -116,6 +146,28 @@ void PropertySet::OnGetAll(Response* response) {
   }
 }
 
+void PropertySet::Set(PropertyBase* property, SetCallback callback) {
+  MethodCall method_call(kPropertiesInterface, kPropertiesSet);
+  MessageWriter writer(&method_call);
+  writer.AppendString(interface());
+  writer.AppendString(property->name());
+  property->AppendSetValueToWriter(&writer);
+
+  DCHECK(object_proxy_);
+  object_proxy_->CallMethod(&method_call,
+                            ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::Bind(&PropertySet::OnSet,
+                                       GetWeakPtr(),
+                                       property,
+                                       callback));
+}
+
+void PropertySet::OnSet(PropertyBase* property, SetCallback callback,
+                        Response* response) {
+  LOG_IF(WARNING, !response) << property->name() << ": Set: failed.";
+  if (!callback.is_null())
+    callback.Run(response);
+}
 
 bool PropertySet::UpdatePropertiesFromReader(MessageReader* reader) {
   DCHECK(reader);
@@ -163,8 +215,7 @@ void PropertySet::NotifyPropertyChanged(const std::string& name) {
 //
 
 template <>
-Property<uint8>::Property() : value_(0),
-                              weak_ptr_factory_(this) {
+Property<uint8>::Property() : value_(0) {
 }
 
 template <>
@@ -173,9 +224,8 @@ bool Property<uint8>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<uint8>::AppendToWriter(MessageWriter* writer,
-                                     const uint8& value) {
-  writer->AppendVariantOfByte(value);
+void Property<uint8>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfByte(set_value_);
 }
 
 //
@@ -183,8 +233,7 @@ void Property<uint8>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<bool>::Property() : value_(false),
-                             weak_ptr_factory_(this) {
+Property<bool>::Property() : value_(false) {
 }
 
 template <>
@@ -193,9 +242,8 @@ bool Property<bool>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<bool>::AppendToWriter(MessageWriter* writer,
-                                    const bool& value) {
-  writer->AppendVariantOfBool(value);
+void Property<bool>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfBool(set_value_);
 }
 
 //
@@ -203,8 +251,7 @@ void Property<bool>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<int16>::Property() : value_(0),
-                              weak_ptr_factory_(this) {
+Property<int16>::Property() : value_(0) {
 }
 
 template <>
@@ -213,9 +260,8 @@ bool Property<int16>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<int16>::AppendToWriter(MessageWriter* writer,
-                                     const int16& value) {
-  writer->AppendVariantOfInt16(value);
+void Property<int16>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfInt16(set_value_);
 }
 
 //
@@ -223,8 +269,7 @@ void Property<int16>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<uint16>::Property() : value_(0),
-                               weak_ptr_factory_(this) {
+Property<uint16>::Property() : value_(0) {
 }
 
 template <>
@@ -233,9 +278,8 @@ bool Property<uint16>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<uint16>::AppendToWriter(MessageWriter* writer,
-                                      const uint16& value) {
-  writer->AppendVariantOfUint16(value);
+void Property<uint16>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfUint16(set_value_);
 }
 
 //
@@ -243,8 +287,7 @@ void Property<uint16>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<int32>::Property() : value_(0),
-                              weak_ptr_factory_(this) {
+Property<int32>::Property() : value_(0) {
 }
 
 template <>
@@ -253,9 +296,8 @@ bool Property<int32>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<int32>::AppendToWriter(MessageWriter* writer,
-                                     const int32& value) {
-  writer->AppendVariantOfInt32(value);
+void Property<int32>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfInt32(set_value_);
 }
 
 //
@@ -263,8 +305,7 @@ void Property<int32>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<uint32>::Property() : value_(0),
-                               weak_ptr_factory_(this) {
+Property<uint32>::Property() : value_(0) {
 }
 
 template <>
@@ -273,9 +314,8 @@ bool Property<uint32>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<uint32>::AppendToWriter(MessageWriter* writer,
-                                      const uint32& value) {
-  writer->AppendVariantOfUint32(value);
+void Property<uint32>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfUint32(set_value_);
 }
 
 //
@@ -283,8 +323,7 @@ void Property<uint32>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<int64>::Property() : value_(0),
-                              weak_ptr_factory_(this) {
+Property<int64>::Property() : value_(0) {
 }
 
 template <>
@@ -293,9 +332,8 @@ bool Property<int64>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<int64>::AppendToWriter(MessageWriter* writer,
-                                     const int64& value) {
-  writer->AppendVariantOfInt64(value);
+void Property<int64>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfInt64(set_value_);
 }
 
 //
@@ -303,8 +341,7 @@ void Property<int64>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<uint64>::Property() : value_(0),
-                               weak_ptr_factory_(this) {
+Property<uint64>::Property() : value_(0) {
 }
 
 template <>
@@ -313,9 +350,8 @@ bool Property<uint64>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<uint64>::AppendToWriter(MessageWriter* writer,
-                                      const uint64& value) {
-  writer->AppendVariantOfUint64(value);
+void Property<uint64>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfUint64(set_value_);
 }
 
 //
@@ -323,8 +359,7 @@ void Property<uint64>::AppendToWriter(MessageWriter* writer,
 //
 
 template <>
-Property<double>::Property() : value_(0.0),
-                               weak_ptr_factory_(this) {
+Property<double>::Property() : value_(0.0) {
 }
 
 template <>
@@ -333,9 +368,8 @@ bool Property<double>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<double>::AppendToWriter(MessageWriter* writer,
-                                      const double& value) {
-  writer->AppendVariantOfDouble(value);
+void Property<double>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfDouble(set_value_);
 }
 
 //
@@ -348,9 +382,8 @@ bool Property<std::string>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<std::string>::AppendToWriter(MessageWriter* writer,
-                                           const std::string& value) {
-  writer->AppendVariantOfString(value);
+void Property<std::string>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfString(set_value_);
 }
 
 //
@@ -363,9 +396,8 @@ bool Property<ObjectPath>::PopValueFromReader(MessageReader* reader) {
 }
 
 template <>
-void Property<ObjectPath>::AppendToWriter(MessageWriter* writer,
-                                          const ObjectPath& value) {
-  writer->AppendVariantOfObjectPath(value);
+void Property<ObjectPath>::AppendSetValueToWriter(MessageWriter* writer) {
+  writer->AppendVariantOfObjectPath(set_value_);
 }
 
 //
@@ -384,12 +416,11 @@ bool Property<std::vector<std::string> >::PopValueFromReader(
 }
 
 template <>
-void Property<std::vector<std::string> >::AppendToWriter(
-    MessageWriter* writer,
-    const std::vector<std::string>& value) {
+void Property<std::vector<std::string> >::AppendSetValueToWriter(
+    MessageWriter* writer) {
   MessageWriter variant_writer(NULL);
   writer->OpenVariant("as", &variant_writer);
-  variant_writer.AppendArrayOfStrings(value);
+  variant_writer.AppendArrayOfStrings(set_value_);
   writer->CloseContainer(&variant_writer);
 }
 
@@ -409,12 +440,11 @@ bool Property<std::vector<ObjectPath> >::PopValueFromReader(
 }
 
 template <>
-void Property<std::vector<ObjectPath> >::AppendToWriter(
-    MessageWriter* writer,
-    const std::vector<ObjectPath>& value) {
+void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
+    MessageWriter* writer) {
   MessageWriter variant_writer(NULL);
   writer->OpenVariant("ao", &variant_writer);
-  variant_writer.AppendArrayOfObjectPaths(value);
+  variant_writer.AppendArrayOfObjectPaths(set_value_);
   writer->CloseContainer(&variant_writer);
 }
 

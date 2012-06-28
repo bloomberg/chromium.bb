@@ -33,7 +33,7 @@ class CHROMEOS_EXPORT BluetoothInputClient {
   // Structure of properties associated with bluetooth input devices.
   struct Properties : public BluetoothPropertySet {
     // Indicates that the device is currently connected. Read-only.
-    BluetoothProperty<bool> connected;
+    dbus::Property<bool> connected;
 
     Properties(dbus::ObjectProxy* object_proxy,
                PropertyChangedCallback callback);

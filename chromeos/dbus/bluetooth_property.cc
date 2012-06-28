@@ -28,6 +28,11 @@ void BluetoothPropertySet::ChangedReceived(dbus::Signal* signal) {
   UpdatePropertyFromReader(&reader);
 }
 
+void BluetoothPropertySet::Get(dbus::PropertyBase* property,
+                               GetCallback callback) {
+  NOTREACHED() << "BlueZ does not implement Get for properties";
+}
+
 void BluetoothPropertySet::GetAll() {
   dbus::MethodCall method_call(interface(),
                                bluetooth_common::kGetProperties);
@@ -38,6 +43,24 @@ void BluetoothPropertySet::GetAll() {
                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                            base::Bind(&dbus::PropertySet::OnGetAll,
                                       GetWeakPtr()));
+}
+
+void BluetoothPropertySet::Set(dbus::PropertyBase* property,
+                               SetCallback callback) {
+  dbus::MethodCall method_call(interface(),
+                               bluetooth_common::kSetProperty);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(property->name());
+  property->AppendSetValueToWriter(&writer);
+
+  dbus::ObjectProxy *object_proxy = this->object_proxy();
+  DCHECK(object_proxy);
+  object_proxy->CallMethod(&method_call,
+                           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                           base::Bind(&dbus::PropertySet::OnSet,
+                                      this->GetWeakPtr(),
+                                      property,
+                                      callback));
 }
 
 }  // namespace chromeos

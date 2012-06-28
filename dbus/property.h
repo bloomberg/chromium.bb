@@ -157,7 +157,13 @@ class PropertyBase {
   // Method used by PropertySet to retrieve the value from a MessageReader,
   // no knowledge of the contained type is required, this method returns
   // true if its expected type was found, false if not.
+  // Implementation provided by specialization.
   virtual bool PopValueFromReader(MessageReader*) = 0;
+
+  // Method used by PropertySet to append the set value to a MessageWriter,
+  // no knowledge of the contained type is required.
+  // Implementation provided by specialization.
+  virtual void AppendSetValueToWriter(MessageWriter* writer) = 0;
 
  protected:
   // Retrieves the associated property set.
@@ -223,12 +229,39 @@ class PropertySet {
                                 const std::string& signal_name,
                                 bool success);
 
+  // Callback for Get() method, |success| indicates whether or not the
+  // value could be retrived, if true the new value can be obtained by
+  // calling value() on the property.
+  typedef base::Callback<void(bool success)> GetCallback;
+
+  // Requests an updated value from the remote object for |property|
+  // incurring a round-trip. |callback| will be called when the new
+  // value is available. This may not be implemented by some interfaces,
+  // and may be overriden by sub-classes if interfaces use different
+  // method calls.
+  virtual void Get(PropertyBase* property, GetCallback callback);
+  virtual void OnGet(PropertyBase* property, GetCallback callback,
+                     Response* response);
+
   // Queries the remote object for values of all properties and updates
   // initial values. Sub-classes may override to use a different D-Bus
   // method, or if the remote object does not support retrieving all
   // properties, either ignore or obtain each property value individually.
   virtual void GetAll();
   virtual void OnGetAll(Response* response);
+
+  // Callback for Set() method, |success| indicates whether or not the
+  // new property value was accepted by the remote object.
+  typedef base::Callback<void(bool success)> SetCallback;
+
+  // Requests that the remote object for |property| change the property to
+  // its new value. |callback| will be called to indicate the success or
+  // failure of the request, however the new value may not be available
+  // depending on the remote object. This method may be overridden by
+  // sub-classes if interfaces use different method calls.
+  virtual void Set(PropertyBase* property, SetCallback callback);
+  virtual void OnSet(PropertyBase* property, SetCallback callback,
+                     Response* response);
 
   // Update properties by reading an array of dictionary entries, each
   // containing a string with the name and a variant with the value, from
@@ -293,8 +326,8 @@ class PropertySet {
 //
 // Properties provide a cached value that has an initial sensible default
 // until the reply to PropertySet::GetAll() is retrieved and is updated by
-// all calls to that method, Property<>::Get() and property changed signals
-// handled by PropertySet. It can be obtained by calling value() on the
+// all calls to that method, PropertySet::Get() and property changed signals
+// also handled by PropertySet. It can be obtained by calling value() on the
 // property.
 //
 // It is recommended that this cached value be used where necessary, with
@@ -303,119 +336,54 @@ class PropertySet {
 // access.
 //
 // Where a round-trip is necessary, the Get() method is provided. And to
-// update the remote object value, the Set() method is also provided.
+// update the remote object value, the Set() method is also provided; these
+// both simply call methods on PropertySet.
 //
 // Handling of particular D-Bus types is performed via specialization,
-// typically the PopValueFromReader() and AppendToWriter() methods will need
-// to be provided, and in rare cases a constructor to provide a default value.
-// Specializations for basic D-Bus types, strings, object paths and arrays
-// are provided for you.
+// typically the PopValueFromReader() and AppendSetValueToWriter() methods
+// will need to be provided, and in rare cases a constructor to provide a
+// default value. Specializations for basic D-Bus types, strings, object
+// paths and arrays are provided for you.
 template <class T>
 class Property : public PropertyBase {
  public:
-  // Callback for Get() method, |success| indicates whether or not the
-  // value could be retrived, if true the new value can be obtained by
-  // calling value() on the property.
-  typedef base::Callback<void(bool success)> GetCallback;
-
-  // Callback for Set() method, |success| indicates whether or not the
-  // new property value was accepted by the remote object.
-  typedef base::Callback<void(bool success)> SetCallback;
-
-  Property() : weak_ptr_factory_(this) {}
+  Property() {}
 
   // Retrieves the cached value.
   const T& value() const { return value_; }
 
   // Requests an updated value from the remote object incurring a
   // round-trip. |callback| will be called when the new value is available.
-  // This may not be implemented by some interfaces, and may be overriden
-  // by sub-classes if interfaces use different method calls.
-  virtual void Get(GetCallback callback) {
-    MethodCall method_call(kPropertiesInterface, kPropertiesGet);
-    MessageWriter writer(&method_call);
-    writer.AppendString(property_set()->interface());
-    writer.AppendString(name());
-
-    ObjectProxy* object_proxy = property_set()->object_proxy();
-    DCHECK(object_proxy);
-    object_proxy->CallMethod(&method_call,
-                             ObjectProxy::TIMEOUT_USE_DEFAULT,
-                             base::Bind(&Property<T>::OnGet,
-                                        GetWeakPtr(),
-                                        callback));
-  }
-
-  // Callback for Get(), may be overriden by sub-classes if interfaces
-  // use different response arguments.
-  virtual void OnGet(SetCallback callback, Response* response) {
-    if (!response) {
-      LOG(WARNING) << name() << ": Get: failed.";
-      return;
-    }
-
-    MessageReader reader(response);
-    if (PopValueFromReader(&reader))
-      property_set()->NotifyPropertyChanged(name());
-
-    if (!callback.is_null())
-      callback.Run(response);
+  // This may not be implemented by some interfaces.
+  virtual void Get(dbus::PropertySet::GetCallback callback) {
+    property_set()->Get(this, callback);
   }
 
   // Requests that the remote object change the property value to |value|,
   // |callback| will be called to indicate the success or failure of the
   // request, however the new value may not be available depending on the
-  // remote object. This method may be overridden by sub-classes if
-  // interfaces use different method calls.
-  virtual void Set(const T& value, SetCallback callback) {
-    MethodCall method_call(kPropertiesInterface, kPropertiesSet);
-    MessageWriter writer(&method_call);
-    writer.AppendString(property_set()->interface());
-    writer.AppendString(name());
-    AppendToWriter(&writer, value);
-
-    ObjectProxy* object_proxy = property_set()->object_proxy();
-    DCHECK(object_proxy);
-    object_proxy->CallMethod(&method_call,
-                             ObjectProxy::TIMEOUT_USE_DEFAULT,
-                             base::Bind(&Property<T>::OnSet,
-                                        GetWeakPtr(),
-                                        callback));
+  // remote object.
+  virtual void Set(const T& value, dbus::PropertySet::SetCallback callback) {
+    set_value_ = value;
+    property_set()->Set(this, callback);
   }
 
-  // Callback for Set(), may be overriden by sub-classes if interfaces
-  // use different response arguments.
-  virtual void OnSet(SetCallback callback, Response* response) {
-    LOG_IF(WARNING, !response) << name() << ": Set: failed.";
-    if (!callback.is_null())
-      callback.Run(response);
-  }
+  // Method used by PropertySet to retrieve the value from a MessageReader,
+  // no knowledge of the contained type is required, this method returns
+  // true if its expected type was found, false if not.
+  virtual bool PopValueFromReader(MessageReader*);
 
-  // Updates the cached property value, replacing any previous value
-  // entirely, by popping from |reader| which should be positioned at the
-  // property value, generally of variant type.
+  // Method used by PropertySet to append the set value to a MessageWriter,
+  // no knowledge of the contained type is required.
   // Implementation provided by specialization.
-  virtual bool PopValueFromReader(MessageReader* reader);
-
-  // Appends the passed |value| to |writer|, generally as a variant type.
-  // Implementation provided by specialization.
-  virtual void AppendToWriter(MessageWriter* writer, const T& value);
-
- protected:
-  // Get a weak pointer to this propertyt, provided so that sub-classes
-  // overriding methods that make D-Bus calls may use the existing (or
-  // override) callbacks without providing their own weak pointer factory.
-  base::WeakPtr<Property<T> > GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
+  virtual void AppendSetValueToWriter(MessageWriter* writer);
 
  private:
   // Current cached value of the property.
   T value_;
 
-  // Weak pointer factory as D-Bus callbacks may last longer than these
-  // objects.
-  base::WeakPtrFactory<Property<T> > weak_ptr_factory_;
+  // Replacement value of the property.
+  T set_value_;
 };
 
 }  // namespace dbus

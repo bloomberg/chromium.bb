@@ -33,63 +33,63 @@ class CHROMEOS_EXPORT BluetoothDeviceClient {
   // Structure of properties associated with bluetooth devices.
   struct Properties : public BluetoothPropertySet {
     // The Bluetooth device address of the device. Read-only.
-    BluetoothProperty<std::string> address;
+    dbus::Property<std::string> address;
 
     // The Bluetooth friendly name of the device. Read-only, to give a
     // different local name, use the |alias| property.
-    BluetoothProperty<std::string> name;
+    dbus::Property<std::string> name;
 
     // Unique numeric identifier for the vendor of the device. Read-only.
-    BluetoothProperty<uint16> vendor;
+    dbus::Property<uint16> vendor;
 
     // Unique vendor-assigned product identifier for the product of the
     // device. Read-only.
-    BluetoothProperty<uint16> product;
+    dbus::Property<uint16> product;
 
     // Unique vendor-assigned version identifier for the device. Read-only.
-    BluetoothProperty<uint16> version;
+    dbus::Property<uint16> version;
 
     // Proposed icon name for the device according to the freedesktop.org
     // icon naming specification. Read-only.
-    BluetoothProperty<std::string> icon;
+    dbus::Property<std::string> icon;
 
     // The Bluetooth class of the device. Read-only.
-    BluetoothProperty<uint32> bluetooth_class;
+    dbus::Property<uint32> bluetooth_class;
 
     // List of 128-bit UUIDs that represent the available remote services.
     // Raed-only.
-    BluetoothProperty<std::vector<std::string> > uuids;
+    dbus::Property<std::vector<std::string> > uuids;
 
     // List of characteristics-based available remote services. Read-only.
-    BluetoothProperty<std::vector<dbus::ObjectPath> > services;
+    dbus::Property<std::vector<dbus::ObjectPath> > services;
 
     // Indicates that the device is currently paired. Read-only.
-    BluetoothProperty<bool> paired;
+    dbus::Property<bool> paired;
 
     // Indicates that the device is currently connected. Read-only.
-    BluetoothProperty<bool> connected;
+    dbus::Property<bool> connected;
 
     // Whether the device is trusted, and connections should be always
     // accepted and attempted when the device is visible.
-    BluetoothProperty<bool> trusted;
+    dbus::Property<bool> trusted;
 
     // Whether the device is blocked, connections will be always rejected
     // and the device will not be visible.
-    BluetoothProperty<bool> blocked;
+    dbus::Property<bool> blocked;
 
     // Local alias for the device, if not set, is equal to |name|.
-    BluetoothProperty<std::string> alias;
+    dbus::Property<std::string> alias;
 
     // List of object paths of nodes the device provides. Read-only.
-    BluetoothProperty<std::vector<dbus::ObjectPath> > nodes;
+    dbus::Property<std::vector<dbus::ObjectPath> > nodes;
 
     // Object path of the adapter the device belongs to. Read-only.
-    BluetoothProperty<dbus::ObjectPath> adapter;
+    dbus::Property<dbus::ObjectPath> adapter;
 
     // Indicates whether the device is likely to only support pre-2.1
     // PIN Code pairing rather than 2.1 Secure Simple Pairing, this can
     // give false positives. Read-only.
-    BluetoothProperty<bool> legacy_pairing;
+    dbus::Property<bool> legacy_pairing;
 
     Properties(dbus::ObjectProxy* object_proxy,
                PropertyChangedCallback callback);

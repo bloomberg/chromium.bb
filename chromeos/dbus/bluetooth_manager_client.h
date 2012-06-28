@@ -29,7 +29,7 @@ class CHROMEOS_EXPORT BluetoothManagerClient {
   // Structure of properties associated with the bluetooth manager.
   struct Properties : public BluetoothPropertySet {
     // List of object paths of local Bluetooth adapters. Read-only.
-    BluetoothProperty<std::vector<dbus::ObjectPath> > adapters;
+    dbus::Property<std::vector<dbus::ObjectPath> > adapters;
 
     Properties(dbus::ObjectProxy* object_proxy,
                PropertyChangedCallback callback);

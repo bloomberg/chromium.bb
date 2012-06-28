@@ -32,10 +32,10 @@ class CHROMEOS_EXPORT BluetoothNodeClient {
   // Structure of properties associated with persistent device nodes.
   struct Properties : public BluetoothPropertySet {
     // The name of the device node under /dev. Read-only.
-    BluetoothProperty<std::string> name;
+    dbus::Property<std::string> name;
 
     // Object path of the device the node binding belongs to. Read-only.
-    BluetoothProperty<dbus::ObjectPath> device;
+    dbus::Property<dbus::ObjectPath> device;
 
     Properties(dbus::ObjectProxy* object_proxy,
                PropertyChangedCallback callback);
