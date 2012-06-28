@@ -21,9 +21,7 @@ import org.chromium.content.common.TraceEvent;
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
-    /* TODO(jrg): resolve up and downstream discrepancy; there is no
-     * upstream libchromeview.so */
-    private static String sLibrary = "chromeview";
+    private static String sLibrary = null;
 
     private static boolean sLoaded = false;
 
@@ -59,6 +57,13 @@ public class LibraryLoader {
 
         assert !sLoaded : "Setting the library must happen before load is called.";
         sLibrary = library;
+    }
+
+    /**
+     * @return The name of the native library set to be loaded.
+     */
+    public static String getLibraryToLoad() {
+        return sLibrary;
     }
 
     /**
@@ -168,6 +173,10 @@ public class LibraryLoader {
      * @return Whether the native library was successfully loaded.
      */
     static boolean loadNow() {
+        if (sLibrary == null) {
+            assert false : "No library specified to load.  Call setLibraryToLoad before first.";
+            return false;
+        }
         assert !sInitialized;
         try {
             Log.i(TAG, "loading: " + sLibrary);

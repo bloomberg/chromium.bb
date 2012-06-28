@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/global_descriptors_posix.h"
+#include "base/platform_file.h"
 #include "base/process.h"
 
 namespace content {
@@ -17,21 +18,13 @@ namespace content {
 typedef base::Callback<void(base::ProcessHandle)> StartSandboxedProcessCallback;
 // Starts a process as a sandboxed process spawned by the Android
 // ActivityManager.
-// The connection object returned may be used with a subsequent call to
-// CancelStartSandboxedProcess().
 // The created process handle is returned to the |callback| on success, 0 is
 // retuned if the process could not be created.
-base::android::ScopedJavaLocalRef<jobject> StartSandboxedProcess(
+void StartSandboxedProcess(
     const CommandLine::StringVector& argv,
     int ipc_fd,
-    int crash_fd,
+    const base::GlobalDescriptors::Mapping& files_to_register,
     const StartSandboxedProcessCallback& callback);
-
-// Cancel the starting of a sanboxed process.
-//
-// |connection| is the one returned by StartSandboxedProcess.
-void CancelStartSandboxedProcess(
-    const base::android::JavaRef<jobject>& connection);
 
 // Stops a sandboxed process based on the handle returned form
 // StartSandboxedProcess.
@@ -44,3 +37,4 @@ bool RegisterSandboxedProcessLauncher(JNIEnv* env);
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_SANDBOXED_PROCESS_LAUNCHER_H_
+

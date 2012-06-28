@@ -16,6 +16,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Surface;
 
+import java.util.ArrayList;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.app.ContentMain;
@@ -43,9 +45,12 @@ public class SandboxedProcessService extends Service {
     // This is the native "Main" thread for the renderer / utility process.
     private Thread mSandboxMainThread;
     // Parameters received via IPC, only accessed while holding the mSandboxMainThread monitor.
+    private String mNativeLibraryName;  // Must be passed in via the bind command.
     private String[] mCommandLineParams;
     private ParcelFileDescriptor mIPCFd;
-    private ParcelFileDescriptor mCrashFd;
+    // Pairs IDs and file descriptors that should be registered natively.
+    private ArrayList<Integer> mExtraFileIds;
+    private ArrayList<ParcelFileDescriptor> mExtraFileFds;
 
     private static Context sContext = null;
     private boolean mLibraryInitialized = false;
@@ -66,9 +71,20 @@ public class SandboxedProcessService extends Service {
                 // We must have received the command line by now
                 assert mCommandLineParams != null;
                 mIPCFd = args.getParcelable(SandboxedProcessConnection.EXTRA_IPC_FD);
-                // mCrashFd may be null if native crash reporting is disabled.
-                if (args.containsKey(SandboxedProcessConnection.EXTRA_CRASH_FD)) {
-                    mCrashFd = args.getParcelable(SandboxedProcessConnection.EXTRA_CRASH_FD);
+                mExtraFileIds = new ArrayList<Integer>();
+                mExtraFileFds = new ArrayList<ParcelFileDescriptor>();
+                for (int i = 0;; i++) {
+                    String fdName = SandboxedProcessConnection.EXTRA_FILES_PREFIX + i
+                            + SandboxedProcessConnection.EXTRA_FILES_FD_SUFFIX;
+                    ParcelFileDescriptor parcel = args.getParcelable(fdName);
+                    if (parcel == null) {
+                        // End of the file list.
+                        break;
+                    }
+                    mExtraFileFds.add(parcel);
+                    String idName = SandboxedProcessConnection.EXTRA_FILES_PREFIX + i
+                            + SandboxedProcessConnection.EXTRA_FILES_ID_SUFFIX;
+                    mExtraFileIds.add(args.getInt(idName));
                 }
                 mSandboxMainThread.notifyAll();
             }
@@ -95,6 +111,12 @@ public class SandboxedProcessService extends Service {
             @Override
             public void run()  {
                 try {
+                    synchronized (mSandboxMainThread) {
+                        while (mNativeLibraryName == null) {
+                            mSandboxMainThread.wait();
+                        }
+                    }
+                    LibraryLoader.setLibraryToLoad(mNativeLibraryName);
                     if (!LibraryLoader.loadNow()) return;
                     synchronized (mSandboxMainThread) {
                         while (mCommandLineParams == null) {
@@ -109,10 +131,17 @@ public class SandboxedProcessService extends Service {
                             mSandboxMainThread.wait();
                         }
                     }
-                    int crashFd = (mCrashFd == null) ? -1 : mCrashFd.detachFd();
+                    assert mExtraFileIds.size() == mExtraFileFds.size();
+                    int[] extraFileIds = new int[mExtraFileIds.size()];
+                    int[] extraFileFds = new int[mExtraFileFds.size()];
+                    for (int i = 0; i < mExtraFileIds.size(); ++i) {
+                        extraFileIds[i] = mExtraFileIds.get(i);
+                        extraFileFds[i] = mExtraFileFds.get(i).detachFd();
+                    }
                     ContentMain.initApplicationContext(sContext.getApplicationContext());
                     nativeInitSandboxedProcess(sContext.getApplicationContext(),
-                            SandboxedProcessService.this, mIPCFd.detachFd(), crashFd);
+                            SandboxedProcessService.this, mIPCFd.detachFd(),
+                            extraFileIds, extraFileFds);
                     ContentMain.start();
                     nativeExitSandboxedProcess();
                 } catch (InterruptedException e) {
@@ -158,6 +187,8 @@ public class SandboxedProcessService extends Service {
         stopSelf();
 
         synchronized (mSandboxMainThread) {
+            mNativeLibraryName = intent.getStringExtra(
+                    SandboxedProcessConnection.EXTRA_NATIVE_LIBRARY_NAME);
             mCommandLineParams = intent.getStringArrayExtra(
                     SandboxedProcessConnection.EXTRA_COMMAND_LINE);
             mSandboxMainThread.notifyAll();
@@ -179,8 +210,8 @@ public class SandboxedProcessService extends Service {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void establishSurfaceTexturePeer(int pid, int type, Object surfaceObject, int primaryID,
-                                             int secondaryID) {
+    private void establishSurfaceTexturePeer(
+            int pid, int type, Object surfaceObject, int primaryID, int secondaryID) {
         if (mCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return;
@@ -216,10 +247,13 @@ public class SandboxedProcessService extends Service {
      * @param applicationContext The Application Context of the current process.
      * @param service The current SandboxedProcessService object.
      * @param ipcFd File descriptor to use for ipc.
-     * @param crashFd File descriptor for signaling crashes.
+     * @param extraFileIds (Optional) A list of pair of file IDs that should be registered for
+     *                     access by the renderer.
+     * @param extraFileFds (Optional) A list of pair of file descriptors that should be registered
+     *                     for access by the renderer.
      */
     private static native void nativeInitSandboxedProcess(Context applicationContext,
-            SandboxedProcessService service, int ipcFd, int crashFd);
+            SandboxedProcessService service, int ipcFd, int[] extraFileIds, int[] extraFileFds);
 
     /**
      * Force the sandboxed process to exit.

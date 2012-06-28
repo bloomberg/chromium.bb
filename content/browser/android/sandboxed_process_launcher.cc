@@ -7,11 +7,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "jni/sandboxed_process_launcher_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ScopedJavaLocalRef;
+using base::GlobalDescriptors;
 using content::StartSandboxedProcessCallback;
 
 // Called from SandboxedProcessLauncher.java when the SandboxedProcess was
@@ -31,10 +33,10 @@ static void OnSandboxedProcessStarted(JNIEnv*,
 
 namespace content {
 
-ScopedJavaLocalRef<jobject> StartSandboxedProcess(
+void StartSandboxedProcess(
     const CommandLine::StringVector& argv,
     int ipc_fd,
-    int crash_fd,
+    const GlobalDescriptors::Mapping& files_to_register,
     const StartSandboxedProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
@@ -42,18 +44,24 @@ ScopedJavaLocalRef<jobject> StartSandboxedProcess(
   // Create the Command line String[]
   ScopedJavaLocalRef<jobjectArray> j_argv = ToJavaArrayOfStrings(env, argv);
 
-  return Java_SandboxedProcessLauncher_start(env,
+  ScopedJavaLocalRef<jintArray> j_file_to_register_id_files(env,
+      env->NewIntArray(files_to_register.size() * 2));
+  scoped_array<jint> file_to_register_id_files(
+      new jint[files_to_register.size() * 2]);
+  for (size_t i = 0; i < files_to_register.size(); ++i) {
+    const GlobalDescriptors::KeyFDPair& id_file = files_to_register[i];
+    file_to_register_id_files[2 * i] = id_file.first;
+    file_to_register_id_files[(2 * i) + 1] = id_file.second;
+  }
+  env->SetIntArrayRegion(j_file_to_register_id_files.obj(),
+                         0, files_to_register.size() * 2,
+                         file_to_register_id_files.get());
+  Java_SandboxedProcessLauncher_start(env,
           base::android::GetApplicationContext(),
           static_cast<jobjectArray>(j_argv.obj()),
           static_cast<jint>(ipc_fd),
-          static_cast<jint>(crash_fd),
+          j_file_to_register_id_files.obj(),
           reinterpret_cast<jint>(new StartSandboxedProcessCallback(callback)));
-}
-
-void CancelStartSandboxedProcess(
-    const base::android::JavaRef<jobject>& connection) {
-  Java_SandboxedProcessLauncher_cancelStart(AttachCurrentThread(),
-                                            connection.obj());
 }
 
 void StopSandboxedProcess(base::ProcessHandle handle) {

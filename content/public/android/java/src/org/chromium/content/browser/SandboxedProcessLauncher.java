@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ThreadUtils;
+import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
@@ -74,7 +76,10 @@ public class SandboxedProcessLauncher {
             String[] commandLine) {
         SandboxedProcessConnection connection = allocateConnection(context);
         if (connection != null) {
-            connection.bind(commandLine);
+            String libraryName = LibraryLoader.getLibraryToLoad();
+            assert libraryName != null : "Attempting to launch a sandbox process without first "
+                    + "calling LibraryLoader.setLibraryToLoad";
+            connection.bind(libraryName, commandLine);
         }
         return connection;
     }
@@ -136,10 +141,11 @@ public class SandboxedProcessLauncher {
 
     /**
      * Should be called early in startup so the work needed to spawn the sandboxed process can
-     * be done in parallel to other startup work.
+     * be done in parallel to other startup work. Must not be called on the UI thread.
      * @param context the application context used for the connection.
      */
     public static synchronized void warmUp(Context context) {
+        assert !ThreadUtils.runningOnUiThread();
         if (mSpareConnection == null) {
             mSpareConnection = allocateBoundConnection(context, null);
         }
@@ -155,14 +161,13 @@ public class SandboxedProcessLauncher {
      * @param commandLine The sandboxed process command line argv.
      * @param ipcFd File descriptor used to set up IPC.
      * @param clientContext Arbitrary parameter used by the client to distinguish this connection.
-     * @return Connection object which maybe used with subsequent call to {@link #cancelStart}
      */
     @CalledByNative
-    static SandboxedProcessConnection start(
+    static void start(
             Context context,
             final String[] commandLine,
             int ipcFd,
-            int crashFd,
+            int[] fileToRegisterIdFds,
             final int clientContext) {
         assert clientContext != 0;
         SandboxedProcessConnection allocatedConnection;
@@ -173,7 +178,7 @@ public class SandboxedProcessLauncher {
         if (allocatedConnection == null) {
             allocatedConnection = allocateBoundConnection(context, commandLine);
             if (allocatedConnection == null) {
-                return null;
+                return;
             }
         }
         final SandboxedProcessConnection connection = allocatedConnection;
@@ -192,21 +197,8 @@ public class SandboxedProcessLauncher {
                 nativeOnSandboxedProcessStarted(clientContext, pid);
             }
         };
-        connection.setupConnection(commandLine, ipcFd, crashFd, createCallback(), onConnect);
-        return connection;
-    }
-
-    /**
-     * Cancels a pending connection to a sandboxed process. This may be called from any thread.
-     *
-     * @param connection the object that was returned from the corresponding call to {@link #start}.
-     */
-    @CalledByNative
-    static void cancelStart(SandboxedProcessConnection connection) {
-        assert connection != null;
-        assert !mServiceMap.containsValue(connection);
-        connection.unbind();
-        freeConnection(connection);
+        connection.setupConnection(commandLine, ipcFd, fileToRegisterIdFds, createCallback(),
+                onConnect);
     }
 
     /**
