@@ -2839,6 +2839,7 @@
         'browser/notifications/desktop_notifications_unittest.h',
         'browser/notifications/notification_browsertest.cc',
         'browser/page_cycler/page_cycler_browsertest.cc',
+        'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/device_management_service_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
         'browser/prefs/pref_service_browsertest.cc',

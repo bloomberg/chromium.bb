@@ -1,0 +1,5 @@
+{
+  "version": "2",
+  "name": "Simple Extension",
+  "background_page": "background.html"
+}
