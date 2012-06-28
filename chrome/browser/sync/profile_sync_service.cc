@@ -68,16 +68,16 @@ using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::SyncBackendHost;
-using csync::JsBackend;
-using csync::JsController;
-using csync::JsEventDetails;
-using csync::JsEventHandler;
-using csync::ModelSafeRoutingInfo;
-using csync::SyncCredentials;
-using csync::SyncProtocolError;
-using csync::WeakHandle;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
+using syncer::JsBackend;
+using syncer::JsController;
+using syncer::JsEventDetails;
+using syncer::JsEventHandler;
+using syncer::ModelSafeRoutingInfo;
+using syncer::SyncCredentials;
+using syncer::SyncProtocolError;
+using syncer::WeakHandle;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -108,9 +108,9 @@ static bool IsTokenServiceRelevant(const std::string& service) {
 }
 
 bool ShouldShowActionOnUI(
-    const csync::SyncProtocolError& error) {
-  return (error.action != csync::UNKNOWN_ACTION &&
-          error.action != csync::DISABLE_SYNC_ON_CLIENT);
+    const syncer::SyncProtocolError& error) {
+  return (error.action != syncer::UNKNOWN_ACTION &&
+          error.action != syncer::DISABLE_SYNC_ON_CLIENT);
 }
 
 ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
@@ -118,7 +118,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        SigninManager* signin_manager,
                                        StartBehavior start_behavior)
     : last_auth_error_(AuthError::None()),
-      passphrase_required_reason_(csync::REASON_PASSPHRASE_NOT_REQUIRED),
+      passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
       profile_(profile),
       // |profile| may be NULL in unit tests.
@@ -131,7 +131,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
-      encrypted_types_(csync::Cryptographer::SensitiveTypes()),
+      encrypted_types_(syncer::Cryptographer::SensitiveTypes()),
       encrypt_everything_(false),
       encryption_pending_(false),
       auto_start_enabled_(start_behavior == AUTO_START),
@@ -479,7 +479,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // Shutdown the migrator before the backend to ensure it doesn't pull a null
   // snapshot.
   migrator_.reset();
-  sync_js_controller_.AttachJsBackend(WeakHandle<csync::JsBackend>());
+  sync_js_controller_.AttachJsBackend(WeakHandle<syncer::JsBackend>());
 
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
@@ -501,8 +501,8 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   cached_passphrase_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
-  encrypted_types_ = csync::Cryptographer::SensitiveTypes();
-  passphrase_required_reason_ = csync::REASON_PASSPHRASE_NOT_REQUIRED;
+  encrypted_types_ = syncer::Cryptographer::SensitiveTypes();
+  passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
   last_auth_error_ = GoogleServiceAuthError::None();
 
   if (sync_global_error_.get()) {
@@ -586,7 +586,7 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
 void ProfileSyncService::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  // Unrecoverable errors that arrive via the csync::UnrecoverableErrorHandler
+  // Unrecoverable errors that arrive via the syncer::UnrecoverableErrorHandler
   // interface are assumed to originate within the syncer.
   unrecoverable_error_reason_ = ERROR_REASON_SYNCER;
   OnUnrecoverableErrorImpl(from_here, message, true);
@@ -624,9 +624,9 @@ void ProfileSyncService::DisableBrokenDatatype(
   // passed onto the change processor.
   DeactivateDataType(type);
 
-  csync::SyncError error(from_here, message, type);
+  syncer::SyncError error(from_here, message, type);
 
-  std::list<csync::SyncError> errors;
+  std::list<syncer::SyncError> errors;
   errors.push_back(error);
 
   // Update this before posting a task. So if a configure happens before
@@ -640,7 +640,7 @@ void ProfileSyncService::DisableBrokenDatatype(
 }
 
 void ProfileSyncService::OnBackendInitialized(
-    const csync::WeakHandle<csync::JsBackend>& js_backend, bool success) {
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success) {
   if (!HasSyncSetupCompleted()) {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);
   } else {
@@ -709,7 +709,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 }
 
 void ProfileSyncService::OnExperimentsChanged(
-    const csync::Experiments& experiments) {
+    const syncer::Experiments& experiments) {
   if (current_experiments.Matches(experiments))
     return;
 
@@ -793,16 +793,16 @@ void ProfileSyncService::UpdateAuthErrorState(
 namespace {
 
 GoogleServiceAuthError ConnectionStatusToAuthError(
-    csync::ConnectionStatus status) {
+    syncer::ConnectionStatus status) {
   switch (status) {
-    case csync::CONNECTION_OK:
+    case syncer::CONNECTION_OK:
       return GoogleServiceAuthError::None();
       break;
-    case csync::CONNECTION_AUTH_ERROR:
+    case syncer::CONNECTION_AUTH_ERROR:
       return GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
       break;
-    case csync::CONNECTION_SERVER_ERROR:
+    case syncer::CONNECTION_SERVER_ERROR:
       return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
       break;
     default:
@@ -814,7 +814,7 @@ GoogleServiceAuthError ConnectionStatusToAuthError(
 }  // namespace
 
 void ProfileSyncService::OnConnectionStatusChange(
-    csync::ConnectionStatus status) {
+    syncer::ConnectionStatus status) {
   UpdateAuthErrorState(ConnectionStatusToAuthError(status));
 }
 
@@ -826,7 +826,7 @@ void ProfileSyncService::OnStopSyncingPermanently() {
 }
 
 void ProfileSyncService::OnPassphraseRequired(
-    csync::PassphraseRequiredReason reason,
+    syncer::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK(backend_.get());
   DCHECK(backend_->IsNigoriEnabled());
@@ -839,7 +839,7 @@ void ProfileSyncService::OnPassphraseRequired(
   }
 
   DVLOG(1) << "Passphrase required with reason: "
-           << csync::PassphraseRequiredReasonToString(reason);
+           << syncer::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
   // Notify observers that the passphrase status may have changed.
@@ -857,7 +857,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // passphrase. We do this here rather than down in ResolvePassphraseRequired()
   // because that can be called by OnPassphraseRequired() if no encrypted data
   // types are enabled, and we don't want to clobber the true passphrase error.
-  passphrase_required_reason_ = csync::REASON_PASSPHRASE_NOT_REQUIRED;
+  passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
@@ -866,7 +866,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
     data_type_manager_->Configure(types,
-                                  csync::CONFIGURE_REASON_RECONFIGURATION);
+                                  syncer::CONFIGURE_REASON_RECONFIGURATION);
   }
 
   NotifyObservers();
@@ -907,12 +907,12 @@ void ProfileSyncService::OnMigrationNeededForTypes(
 void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   last_actionable_error_ = error;
   DCHECK_NE(last_actionable_error_.action,
-            csync::UNKNOWN_ACTION);
+            syncer::UNKNOWN_ACTION);
   switch (error.action) {
-    case csync::UPGRADE_CLIENT:
-    case csync::CLEAR_USER_DATA_AND_RESYNC:
-    case csync::ENABLE_SYNC_ON_ACCOUNT:
-    case csync::STOP_AND_RESTART_SYNC:
+    case syncer::UPGRADE_CLIENT:
+    case syncer::CLEAR_USER_DATA_AND_RESYNC:
+    case syncer::ENABLE_SYNC_ON_ACCOUNT:
+    case syncer::STOP_AND_RESTART_SYNC:
       // TODO(lipalani) : if setup in progress we want to display these
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
@@ -926,7 +926,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
                                    true,
                                    ERROR_REASON_ACTIONABLE_ERROR);
       break;
-    case csync::DISABLE_SYNC_ON_CLIENT:
+    case syncer::DISABLE_SYNC_ON_CLIENT:
       OnStopSyncingPermanently();
       break;
     default:
@@ -994,7 +994,7 @@ bool ProfileSyncService::HasUnrecoverableError() const {
 
 bool ProfileSyncService::IsPassphraseRequired() const {
   return passphrase_required_reason_ !=
-      csync::REASON_PASSPHRASE_NOT_REQUIRED;
+      syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
 // TODO(zea): Rename this IsPassphraseNeededFromUI and ensure it's used
@@ -1079,9 +1079,9 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
 void ProfileSyncService::RefreshSpareBootstrapToken(
     const std::string& passphrase) {
   browser_sync::ChromeEncryptor encryptor;
-  csync::Cryptographer temp_cryptographer(&encryptor);
+  syncer::Cryptographer temp_cryptographer(&encryptor);
   // The first 2 params (hostname and username) doesn't have any effect here.
-  csync::KeyParams key_params = {"localhost", "dummy", passphrase};
+  syncer::KeyParams key_params = {"localhost", "dummy", passphrase};
 
   std::string bootstrap_token;
   if (!temp_cryptographer.AddKey(key_params)) {
@@ -1148,7 +1148,7 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
 }
 
 bool ProfileSyncService::IsCryptographerReady(
-    const csync::BaseTransaction* trans) const {
+    const syncer::BaseTransaction* trans) const {
   return backend_.get() && backend_->IsCryptographerReady(trans);
 }
 
@@ -1193,22 +1193,22 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     NotifyObservers();
     return;
   }
-  csync::ConfigureReason reason = csync::CONFIGURE_REASON_UNKNOWN;
+  syncer::ConfigureReason reason = syncer::CONFIGURE_REASON_UNKNOWN;
   if (!HasSyncSetupCompleted()) {
-    reason = csync::CONFIGURE_REASON_NEW_CLIENT;
+    reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
   } else if (restart == false ||
-             csync::InitialSyncEndedForTypes(types, GetUserShare())) {
-    reason = csync::CONFIGURE_REASON_RECONFIGURATION;
+             syncer::InitialSyncEndedForTypes(types, GetUserShare())) {
+    reason = syncer::CONFIGURE_REASON_RECONFIGURATION;
   } else {
     DCHECK(restart);
-    reason = csync::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+    reason = syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
   }
-  DCHECK(reason != csync::CONFIGURE_REASON_UNKNOWN);
+  DCHECK(reason != syncer::CONFIGURE_REASON_UNKNOWN);
 
   data_type_manager_->Configure(types, reason);
 }
 
-csync::UserShare* ProfileSyncService::GetUserShare() const {
+syncer::UserShare* ProfileSyncService::GetUserShare() const {
   if (backend_.get() && backend_initialized_) {
     return backend_->GetUserShare();
   }
@@ -1216,13 +1216,13 @@ csync::UserShare* ProfileSyncService::GetUserShare() const {
   return NULL;
 }
 
-csync::sessions::SyncSessionSnapshot
+syncer::sessions::SyncSessionSnapshot
     ProfileSyncService::GetLastSessionSnapshot() const {
   if (backend_.get() && backend_initialized_) {
     return backend_->GetLastSessionSnapshot();
   }
   NOTREACHED();
-  return csync::sessions::SyncSessionSnapshot();
+  return syncer::sessions::SyncSessionSnapshot();
 }
 
 bool ProfileSyncService::HasUnsyncedItems() const {
@@ -1239,7 +1239,7 @@ browser_sync::BackendMigrator*
 }
 
 void ProfileSyncService::GetModelSafeRoutingInfo(
-    csync::ModelSafeRoutingInfo* out) const {
+    syncer::ModelSafeRoutingInfo* out) const {
   if (backend_.get() && backend_initialized_) {
     backend_->GetModelSafeRoutingInfo(out);
   } else {
@@ -1254,10 +1254,10 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
     return result;
   }
 
-  std::vector<csync::SyncError> errors =
+  std::vector<syncer::SyncError> errors =
       failed_datatypes_handler_.GetAllErrors();
-  std::map<ModelType, csync::SyncError> error_map;
-  for (std::vector<csync::SyncError>::iterator it = errors.begin();
+  std::map<ModelType, syncer::SyncError> error_map;
+  for (std::vector<syncer::SyncError>::iterator it = errors.begin();
        it != errors.end(); ++it) {
     error_map[it->type()] = *it;
   }
@@ -1268,7 +1268,7 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
   backend_->GetModelSafeRoutingInfo(&routing_info);
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
-    if (it->second == csync::GROUP_PASSIVE) {
+    if (it->second == syncer::GROUP_PASSIVE) {
       passive_types.Put(it->first);
     } else {
       active_types.Put(it->first);
@@ -1287,7 +1287,7 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
     type_status->SetString("name", ModelTypeToString(type));
 
     if (error_map.find(type) != error_map.end()) {
-      const csync::SyncError &error = error_map.find(type)->second;
+      const syncer::SyncError &error = error_map.find(type)->second;
       DCHECK(error.IsSet());
       std::string error_text = "Error: " + error.location().ToString() +
           ", " + error.message();
@@ -1315,7 +1315,7 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
 }
 
 void ProfileSyncService::ActivateDataType(
-    syncable::ModelType type, csync::ModelSafeGroup group,
+    syncable::ModelType type, syncer::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
   if (!backend_.get()) {
     NOTREACHED();
@@ -1343,7 +1343,7 @@ void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {
   cached_passphrase_.clear();
 
   // If we need a passphrase to decrypt data, try the cached passphrase.
-  if (passphrase_required_reason() == csync::REASON_DECRYPTION) {
+  if (passphrase_required_reason() == syncer::REASON_DECRYPTION) {
     if (SetDecryptionPassphrase(passphrase)) {
       DVLOG(1) << "Cached passphrase successfully decrypted pending keys";
       return;
@@ -1371,13 +1371,13 @@ void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
 
   DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
            << " passphrase for encryption.";
-  if (passphrase_required_reason_ == csync::REASON_ENCRYPTION) {
+  if (passphrase_required_reason_ == syncer::REASON_ENCRYPTION) {
     // REASON_ENCRYPTION implies that the cryptographer does not have pending
     // keys. Hence, as long as we're not trying to do an invalid passphrase
     // change (e.g. explicit -> explicit or explicit -> implicit), we know this
     // will succeed. If for some reason a new encryption key arrives via
     // sync later, the SBH will trigger another OnPassphraseRequired().
-    passphrase_required_reason_ = csync::REASON_PASSPHRASE_NOT_REQUIRED;
+    passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
     NotifyObservers();
   }
   backend_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
@@ -1488,7 +1488,7 @@ void ProfileSyncService::Observe(int type,
         // error representing it.
         DCHECK_EQ(result->failed_data_types.size(),
                   static_cast<unsigned int>(1));
-        csync::SyncError error = result->failed_data_types.front();
+        syncer::SyncError error = result->failed_data_types.front();
         DCHECK(error.IsSet());
         std::string message =
           "Sync configuration failed with status " +
@@ -1624,7 +1624,7 @@ bool ProfileSyncService::HasObserver(Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-base::WeakPtr<csync::JsController> ProfileSyncService::GetJsController() {
+base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
   return sync_js_controller_.AsWeakPtr();
 }
 

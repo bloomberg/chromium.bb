@@ -49,7 +49,7 @@ ACTION_P(CopyData, data) {
 MATCHER_P(CheckSyncChanges, n_sync_changes_list, "") {
   if (arg.size() != n_sync_changes_list.size())
     return false;
-  csync::SyncChangeList::const_iterator passed, expected;
+  syncer::SyncChangeList::const_iterator passed, expected;
   for (passed = arg.begin(), expected = n_sync_changes_list.begin();
        passed != arg.end() && expected != n_sync_changes_list.end();
        ++passed, ++expected) {
@@ -87,14 +87,14 @@ MATCHER_P(DataBundleCheck, n_bundle, "") {
   return true;
 }
 
-class MockSyncChangeProcessor : public csync::SyncChangeProcessor {
+class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   MockSyncChangeProcessor() {}
   virtual ~MockSyncChangeProcessor() {}
 
   MOCK_METHOD2(ProcessSyncChanges,
-               csync::SyncError(const tracked_objects::Location&,
-                         const csync::SyncChangeList&));
+               syncer::SyncError(const tracked_objects::Location&,
+                         const syncer::SyncChangeList&));
 };
 
 class AutofillProfileSyncableServiceTest : public testing::Test {
@@ -131,7 +131,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
   profiles_from_web_db.back()->SetInfo(ADDRESS_HOME_LINE1,
                                        UTF8ToUTF16("2 2nd st"));
 
-  csync::SyncDataList data_list;
+  syncer::SyncDataList data_list;
   AutofillProfile profile1(guid_synced1);
   profile1.SetInfo(NAME_FIRST, UTF8ToUTF16("Jane"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile1));
@@ -143,9 +143,9 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
   profile3.SetInfo(NAME_FIRST, UTF8ToUTF16("Tom Doe"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile3));
 
-  csync::SyncChangeList expected_change_list;
+  syncer::SyncChangeList expected_change_list;
   expected_change_list.push_back(
-      csync::SyncChange(csync::SyncChange::ACTION_ADD,
+      syncer::SyncChange(syncer::SyncChange::ACTION_ADD,
                  AutofillProfileSyncableService::CreateData(
                      (*profiles_from_web_db.front()))));
 
@@ -162,17 +162,17 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
       .Times(1)
       .WillOnce(Return(true));
   ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-      .WillByDefault(Return(csync::SyncError()));
+      .WillByDefault(Return(syncer::SyncError()));
   EXPECT_CALL(*sync_processor_,
               ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
       .Times(1)
-      .WillOnce(Return(csync::SyncError()));
+      .WillOnce(Return(syncer::SyncError()));
 
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncable::AUTOFILL_PROFILE, data_list,
-      sync_processor_.PassAs<csync::SyncChangeProcessor>(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
   autofill_syncable_service_.StopSyncing(syncable::AUTOFILL_PROFILE);
 }
 
@@ -193,22 +193,22 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
       .Times(1)
       .WillOnce(Return(true));
   ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-      .WillByDefault(Return(csync::SyncError()));
+      .WillByDefault(Return(syncer::SyncError()));
   EXPECT_CALL(*sync_processor_,
               ProcessSyncChanges(
                   _,
-                  Property(&csync::SyncChangeList::size, Eq(2U))))
+                  Property(&syncer::SyncChangeList::size, Eq(2U))))
       .Times(1)
-      .WillOnce(Return(csync::SyncError()));
+      .WillOnce(Return(syncer::SyncError()));
 
-  csync::SyncDataList data_list;
+  syncer::SyncDataList data_list;
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncable::AUTOFILL_PROFILE, data_list,
-      sync_processor_.PassAs<csync::SyncChangeProcessor>(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
-  csync::SyncDataList data =
+  syncer::SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncable::AUTOFILL_PROFILE);
 
   EXPECT_EQ(2U, data.size());
@@ -223,15 +223,15 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
   std::string guid_present = kGuid1;
   std::string guid_synced = kGuid2;
 
-  csync::SyncChangeList change_list;
+  syncer::SyncChangeList change_list;
   AutofillProfile profile(guid_synced);
   profile.SetInfo(NAME_FIRST, UTF8ToUTF16("Jane"));
   change_list.push_back(
-      csync::SyncChange(csync::SyncChange::ACTION_ADD,
+      syncer::SyncChange(syncer::SyncChange::ACTION_ADD,
       AutofillProfileSyncableService::CreateData(profile)));
   AutofillProfile empty_profile(guid_present);
   change_list.push_back(
-      csync::SyncChange(csync::SyncChange::ACTION_DELETE,
+      syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
                  AutofillProfileSyncableService::CreateData(empty_profile)));
 
   AutofillProfileSyncableService::DataBundle expected_bundle;
@@ -244,7 +244,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
       .WillOnce(Return(true));
 
   autofill_syncable_service_.set_sync_processor(sync_processor_.release());
-  csync::SyncError error = autofill_syncable_service_.ProcessSyncChanges(
+  syncer::SyncError error = autofill_syncable_service_.ProcessSyncChanges(
       FROM_HERE, change_list);
 
   EXPECT_FALSE(error.IsSet());
@@ -256,8 +256,9 @@ TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
   AutofillProfileChange change1(AutofillProfileChange::ADD, kGuid1, &profile);
   AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid2, NULL);
   ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-      .WillByDefault(Return(csync::SyncError(FROM_HERE, std::string("an error"),
-                                      syncable::AUTOFILL_PROFILE)));
+      .WillByDefault(
+          Return(syncer::SyncError(FROM_HERE, std::string("an error"),
+                                   syncable::AUTOFILL_PROFILE)));
   EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(2);
 
   autofill_syncable_service_.set_sync_processor(sync_processor_.release());

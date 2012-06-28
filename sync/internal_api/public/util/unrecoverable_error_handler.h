@@ -10,7 +10,7 @@
 
 #include "base/location.h"
 
-namespace csync {
+namespace syncer {
 
 class UnrecoverableErrorHandler {
  public:
@@ -24,7 +24,6 @@ class UnrecoverableErrorHandler {
   virtual ~UnrecoverableErrorHandler() { }
 };
 
-}
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_UNRECOVERABLE_ERROR_HANDLER_H_
-

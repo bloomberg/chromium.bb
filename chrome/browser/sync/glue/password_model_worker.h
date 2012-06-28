@@ -21,26 +21,26 @@ class WaitableEvent;
 
 namespace browser_sync {
 
-// A csync::ModelSafeWorker for password models that accepts requests
+// A syncer::ModelSafeWorker for password models that accepts requests
 // from the syncapi that need to be fulfilled on the password thread,
 // which is the DB thread on Linux and Windows.
-class PasswordModelWorker : public csync::ModelSafeWorker {
+class PasswordModelWorker : public syncer::ModelSafeWorker {
  public:
   explicit PasswordModelWorker(
       const scoped_refptr<PasswordStore>& password_store);
 
-  // csync::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual csync::SyncerError DoWorkAndWaitUntilDone(
-      const csync::WorkCallback& work) OVERRIDE;
-  virtual csync::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  virtual syncer::SyncerError DoWorkAndWaitUntilDone(
+      const syncer::WorkCallback& work) OVERRIDE;
+  virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  private:
   virtual ~PasswordModelWorker();
 
   void CallDoWorkAndSignalTask(
-    const csync::WorkCallback& work,
+    const syncer::WorkCallback& work,
     base::WaitableEvent* done,
-    csync::SyncerError* error);
+    syncer::SyncerError* error);
 
   scoped_refptr<PasswordStore> password_store_;
   DISALLOW_COPY_AND_ASSIGN(PasswordModelWorker);

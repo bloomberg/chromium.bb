@@ -22,7 +22,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace csync {
+namespace syncer {
 
 class JsArgList;
 class JsEventDetails;
@@ -104,6 +104,6 @@ class MockJsReplyHandler
                void(const ::std::string&, const JsArgList&));
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_JS_JS_TEST_UTIL_H_

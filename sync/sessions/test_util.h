@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 namespace test_util {
 
@@ -47,6 +47,6 @@ ACTION_P(SimulateSessionsCommitDelayUpdate, poll) {
 
 }  // namespace test_util
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_SESSIONS_TEST_UTIL_H_

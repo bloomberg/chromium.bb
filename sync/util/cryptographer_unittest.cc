@@ -15,7 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -388,4 +388,4 @@ TEST_F(SyncCryptographerTest, UnknownSensitiveTypes) {
   cryptographer_.RemoveObserver(&observer);
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -15,7 +15,7 @@ namespace syncable {
 class Id;
 }
 
-namespace csync {
+namespace syncer {
 
 struct SyncEngineEvent {
   enum EventCause {
@@ -67,6 +67,6 @@ class SyncEngineEventListener {
   virtual ~SyncEngineEventListener() {}
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNC_ENGINE_EVENT_H_

@@ -23,10 +23,10 @@ static const int kNumUrls = 163;
 // This compile assert basically asserts that kNumUrls is right in the
 // middle between two multiples of kDefaultMaxCommitBatchSize.
 COMPILE_ASSERT(
-    ((kNumUrls % csync::kDefaultMaxCommitBatchSize) >=
-     (csync::kDefaultMaxCommitBatchSize / 2)) &&
-    ((kNumUrls % csync::kDefaultMaxCommitBatchSize) <=
-     ((csync::kDefaultMaxCommitBatchSize + 1) / 2)),
+    ((kNumUrls % syncer::kDefaultMaxCommitBatchSize) >=
+     (syncer::kDefaultMaxCommitBatchSize / 2)) &&
+    ((kNumUrls % syncer::kDefaultMaxCommitBatchSize) <=
+     ((syncer::kDefaultMaxCommitBatchSize + 1) / 2)),
     kNumUrlsShouldBeBetweenTwoMultiplesOfkDefaultMaxCommitBatchSize);
 
 class TypedUrlsSyncPerfTest : public SyncTest {

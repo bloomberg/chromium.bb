@@ -16,7 +16,7 @@ using syncable::MutableEntry;
 using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
-namespace csync {
+namespace syncer {
 
 TestEntryFactory::TestEntryFactory(syncable::Directory *dir)
     : directory_(dir), next_revision_(1) {
@@ -162,4 +162,4 @@ int64 TestEntryFactory::GetNextRevision() {
   return next_revision_++;
 }
 
-}  // namespace csync
+}  // namespace syncer

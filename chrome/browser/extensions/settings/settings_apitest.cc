@@ -33,35 +33,35 @@ namespace {
 // TODO(kalman): test both EXTENSION_SETTINGS and APP_SETTINGS.
 const syncable::ModelType kModelType = syncable::EXTENSION_SETTINGS;
 
-class NoopSyncChangeProcessor : public csync::SyncChangeProcessor {
+class NoopSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE {
-    return csync::SyncError();
+      const syncer::SyncChangeList& change_list) OVERRIDE {
+    return syncer::SyncError();
   }
 
   virtual ~NoopSyncChangeProcessor() {};
 };
 
-class SyncChangeProcessorDelegate : public csync::SyncChangeProcessor {
+class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
  public:
-  explicit SyncChangeProcessorDelegate(csync::SyncChangeProcessor* recipient)
+  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient)
       : recipient_(recipient) {
     DCHECK(recipient_);
   }
   virtual ~SyncChangeProcessorDelegate() {}
 
-  // csync::SyncChangeProcessor implementation.
-  virtual csync::SyncError ProcessSyncChanges(
+  // syncer::SyncChangeProcessor implementation.
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE {
+      const syncer::SyncChangeList& change_list) OVERRIDE {
     return recipient_->ProcessSyncChanges(from_here, change_list);
   }
 
  private:
   // The recipient of all sync changes.
-  csync::SyncChangeProcessor* recipient_;
+  syncer::SyncChangeProcessor* recipient_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
 };
@@ -99,7 +99,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
         settings_namespace, normal_action, incognito_action, NULL, true);
   }
 
-  void InitSync(csync::SyncChangeProcessor* sync_processor) {
+  void InitSync(syncer::SyncChangeProcessor* sync_processor) {
     MessageLoop::current()->RunAllPending();
     InitSyncWithSyncableService(
         sync_processor,
@@ -107,7 +107,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
               GetBackendForSync(kModelType));
   }
 
-  void SendChanges(const csync::SyncChangeList& change_list) {
+  void SendChanges(const syncer::SyncChangeList& change_list) {
     MessageLoop::current()->RunAllPending();
     SendChangesToSyncableService(
         change_list,
@@ -159,20 +159,20 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
   void InitSyncWithSyncableService(
-      csync::SyncChangeProcessor* sync_processor,
-      csync::SyncableService* settings_service) {
+      syncer::SyncChangeProcessor* sync_processor,
+      syncer::SyncableService* settings_service) {
     EXPECT_FALSE(settings_service->MergeDataAndStartSyncing(
         kModelType,
-        csync::SyncDataList(),
-        scoped_ptr<csync::SyncChangeProcessor>(
+        syncer::SyncDataList(),
+        scoped_ptr<syncer::SyncChangeProcessor>(
             new SyncChangeProcessorDelegate(sync_processor)),
-        scoped_ptr<csync::SyncErrorFactory>(
-            new csync::SyncErrorFactoryMock())).IsSet());
+        scoped_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock())).IsSet());
   }
 
   void SendChangesToSyncableService(
-      const csync::SyncChangeList& change_list,
-      csync::SyncableService* settings_service) {
+      const syncer::SyncChangeList& change_list,
+      syncer::SyncableService* settings_service) {
     EXPECT_FALSE(
         settings_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
   }
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   InitSync(&sync_processor);
 
   // Set "foo" to "bar" via sync.
-  csync::SyncChangeList sync_changes;
+  syncer::SyncChangeList sync_changes;
   StringValue bar("bar");
   sync_changes.push_back(settings_sync_util::CreateAdd(
       extension_id, "foo", bar, kModelType));
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   InitSync(&sync_processor);
 
   // Set "foo" to "bar" via sync.
-  csync::SyncChangeList sync_changes;
+  syncer::SyncChangeList sync_changes;
   StringValue bar("bar");
   sync_changes.push_back(settings_sync_util::CreateAdd(
       extension_id, "foo", bar, kModelType));

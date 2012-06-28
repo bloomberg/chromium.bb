@@ -12,7 +12,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace csync {
+namespace syncer {
 
 template<class Base>
 class IdWrapper : public Base {
@@ -82,6 +82,6 @@ typedef sync_pb::CommitResponse CommitResponse;
 typedef sync_pb::GetUpdatesResponse GetUpdatesResponse;
 typedef sync_pb::GetUpdatesMessage GetUpdatesMessage;
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNCPROTO_H_

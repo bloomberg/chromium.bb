@@ -4,10 +4,10 @@
 
 #include "sync/api/sync_change_processor.h"
 
-namespace csync {
+namespace syncer {
 
 SyncChangeProcessor::SyncChangeProcessor() {}
 
 SyncChangeProcessor::~SyncChangeProcessor() {}
 
-}  // namespace csync
+}  // namespace syncer

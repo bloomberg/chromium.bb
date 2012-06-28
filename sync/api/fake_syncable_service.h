@@ -8,7 +8,7 @@
 
 #include "sync/api/syncable_service.h"
 
-namespace csync {
+namespace syncer {
 
 class SyncErrorFactory;
 
@@ -47,6 +47,6 @@ class FakeSyncableService : public SyncableService {
   syncable::ModelType type_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_API_FAKE_SYNCABLE_SERVICE_H_

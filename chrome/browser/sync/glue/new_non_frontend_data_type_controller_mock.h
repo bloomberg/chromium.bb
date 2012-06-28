@@ -27,7 +27,7 @@ class NewNonFrontendDataTypeControllerMock
   MOCK_METHOD0(enabled, bool());
   MOCK_CONST_METHOD0(type, syncable::ModelType());
   MOCK_CONST_METHOD0(name, std::string());
-  MOCK_CONST_METHOD0(model_safe_group, csync::ModelSafeGroup());
+  MOCK_CONST_METHOD0(model_safe_group, syncer::ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());
   MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
                                           const std::string&));
@@ -40,13 +40,13 @@ class NewNonFrontendDataTypeControllerMock
   MOCK_METHOD0(StartAssociation, void());
   MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD2(StartFailed, void(StartResult result,
-                                 const csync::SyncError& error));
+                                 const syncer::SyncError& error));
   MOCK_METHOD3(StartDone, void(DataTypeController::StartResult result,
                                DataTypeController::State new_state,
-                               const csync::SyncError& error));
+                               const syncer::SyncError& error));
   MOCK_METHOD3(StartDoneImpl, void(DataTypeController::StartResult result,
                                    DataTypeController::State new_state,
-                                   const csync::SyncError& error));
+                                   const syncer::SyncError& error));
   MOCK_METHOD0(StopModels, void());
   MOCK_METHOD0(StopAssociationAsync, bool());
   MOCK_METHOD0(StopAssociation, void());
@@ -59,7 +59,7 @@ class NewNonFrontendDataTypeControllerMock
 
   // NewNonFrontendDataTypeController mocks.
   MOCK_CONST_METHOD0(GetWeakPtrToSyncableService,
-                     base::WeakPtr<csync::SyncableService>());
+                     base::WeakPtr<syncer::SyncableService>());
 
  protected:
   virtual ~NewNonFrontendDataTypeControllerMock();

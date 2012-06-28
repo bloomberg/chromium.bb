@@ -11,7 +11,7 @@
 #include "sync/test/engine/syncer_command_test.h"
 
 using ::testing::_;
-namespace csync {
+namespace syncer {
 
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
@@ -71,4 +71,4 @@ TEST_F(DownloadUpdatesCommandTest, VerifyAppendDebugInfo) {
   command_.AppendClientDebugInfoIfNeeded(session(), &debug_info);
 }
 
-}  // namespace csync
+}  // namespace syncer

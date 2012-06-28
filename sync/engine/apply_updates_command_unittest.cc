@@ -27,7 +27,7 @@
 #include "sync/util/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 using sessions::SyncSession;
 using std::string;
@@ -380,7 +380,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
     cryptographer = directory()->GetCryptographer(&trans);
   }
 
-  csync::KeyParams params = {"localhost", "dummy", "foobar"};
+  syncer::KeyParams params = {"localhost", "dummy", "foobar"};
   cryptographer->AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
@@ -856,4 +856,4 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   }
 }
 
-}  // namespace csync
+}  // namespace syncer

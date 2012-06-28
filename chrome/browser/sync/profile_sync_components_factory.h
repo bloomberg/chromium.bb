@@ -27,7 +27,7 @@ class SyncBackendHost;
 class DataTypeErrorHandler;
 }
 
-namespace csync {
+namespace syncer {
 class SyncableService;
 }
 
@@ -45,7 +45,7 @@ class ProfileSyncComponentsFactory {
   //
   // Note: This interface is deprecated in favor of the SyncableService API.
   // New datatypes that do not live on the UI thread should directly return a
-  // weak pointer to a csync::SyncableService. All others continue to return
+  // weak pointer to a syncer::SyncableService. All others continue to return
   // SyncComponents. It is safe to assume that the factory methods below are
   // called on the same thread in which the datatype resides.
   //
@@ -76,7 +76,7 @@ class ProfileSyncComponentsFactory {
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler,
-      const base::WeakPtr<csync::SyncableService>& local_service) = 0;
+      const base::WeakPtr<syncer::SyncableService>& local_service) = 0;
 
   virtual browser_sync::SharedChangeProcessor*
       CreateSharedChangeProcessor() = 0;
@@ -84,7 +84,7 @@ class ProfileSyncComponentsFactory {
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.
   // Note: Should only be called on the same thread on which a datatype resides.
-  virtual base::WeakPtr<csync::SyncableService> GetSyncableServiceForType(
+  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncable::ModelType type) = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.

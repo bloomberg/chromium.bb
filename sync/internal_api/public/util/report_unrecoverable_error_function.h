@@ -6,7 +6,7 @@
 #define SYNC_UTIL_REPORT_UNRECOVERABLE_ERROR_FUNCTION_H_
 #pragma once
 
-namespace csync {
+namespace syncer {
 
 // A ReportUnrecoverableErrorFunction is a function that is called
 // immediately when an unrecoverable error is encountered.  Unlike
@@ -14,6 +14,6 @@ namespace csync {
 // context surrounding it.
 typedef void (*ReportUnrecoverableErrorFunction)(void);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_REPORT_UNRECOVERABLE_ERROR_FUNCTION_H_

@@ -4,7 +4,7 @@
 
 #include "sync/test/engine/fake_model_worker.h"
 
-namespace csync {
+namespace syncer {
 
 FakeModelWorker::FakeModelWorker(ModelSafeGroup group) : group_(group) {}
 
@@ -28,4 +28,4 @@ ModelSafeGroup FakeModelWorker::GetModelSafeGroup() {
   return group_;
 }
 
-}  // namespace csync
+}  // namespace syncer

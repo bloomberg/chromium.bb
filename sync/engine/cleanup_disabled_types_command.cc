@@ -11,7 +11,7 @@
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/directory.h"
 
-namespace csync {
+namespace syncer {
 
 CleanupDisabledTypesCommand::CleanupDisabledTypesCommand() {}
 CleanupDisabledTypesCommand::~CleanupDisabledTypesCommand() {}
@@ -66,5 +66,5 @@ SyncerError CleanupDisabledTypesCommand::ExecuteImpl(
   return SYNCER_OK;
 }
 
-}  // namespace csync
+}  // namespace syncer
 

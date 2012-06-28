@@ -20,16 +20,16 @@ ExtensionSyncData::ExtensionSyncData()
       incognito_enabled_(false) {
 }
 
-ExtensionSyncData::ExtensionSyncData(const csync::SyncData& sync_data)
+ExtensionSyncData::ExtensionSyncData(const syncer::SyncData& sync_data)
     : uninstalled_(false),
       enabled_(false),
       incognito_enabled_(false) {
   PopulateFromSyncData(sync_data);
 }
 
-ExtensionSyncData::ExtensionSyncData(const csync::SyncChange& sync_change)
+ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
     : uninstalled_(
-        sync_change.change_type() == csync::SyncChange::ACTION_DELETE),
+        sync_change.change_type() == syncer::SyncChange::ACTION_DELETE),
       enabled_(false),
       incognito_enabled_(false) {
   PopulateFromSyncData(sync_change.sync_data());
@@ -49,16 +49,16 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
 
 ExtensionSyncData::~ExtensionSyncData() {}
 
-csync::SyncData ExtensionSyncData::GetSyncData() const {
+syncer::SyncData ExtensionSyncData::GetSyncData() const {
   sync_pb::EntitySpecifics specifics;
   PopulateExtensionSpecifics(specifics.mutable_extension());
 
-  return csync::SyncData::CreateLocalData(id_, name_, specifics);
+  return syncer::SyncData::CreateLocalData(id_, name_, specifics);
 }
 
-csync::SyncChange ExtensionSyncData::GetSyncChange(
-    csync::SyncChange::SyncChangeType change_type) const {
-  return csync::SyncChange(change_type, GetSyncData());
+syncer::SyncChange ExtensionSyncData::GetSyncChange(
+    syncer::SyncChange::SyncChangeType change_type) const {
+  return syncer::SyncChange(change_type, GetSyncData());
 }
 
 void ExtensionSyncData::PopulateExtensionSpecifics(
@@ -100,7 +100,8 @@ void ExtensionSyncData::set_uninstalled(bool uninstalled) {
   uninstalled_ = uninstalled;
 }
 
-void ExtensionSyncData::PopulateFromSyncData(const csync::SyncData& sync_data) {
+void ExtensionSyncData::PopulateFromSyncData(
+    const syncer::SyncData& sync_data) {
   const sync_pb::EntitySpecifics& entity_specifics = sync_data.GetSpecifics();
 
   if (entity_specifics.has_extension()) {

@@ -287,7 +287,7 @@ std::map<int64, base::Time> GetExpectedMetaTimes() {
            expected_meta_proto_times.begin();
        it != expected_meta_proto_times.end(); ++it) {
     expected_meta_times[it->first] =
-        csync::ProtoTimeToTime(it->second);
+        syncer::ProtoTimeToTime(it->second);
   }
   return expected_meta_times;
 }
@@ -327,8 +327,8 @@ std::map<int64, int64> GetMetaProtoTimes(sql::Connection *db) {
       << t1_expr << " and " << t2_expr
       << " (internal values: " << t1.ToInternalValue()
       << " and " << t2.ToInternalValue()
-      << ") (proto time: " << csync::TimeToProtoTime(t1)
-      << " and " << csync::TimeToProtoTime(t2)
+      << ") (proto time: " << syncer::TimeToProtoTime(t1)
+      << " and " << syncer::TimeToProtoTime(t2)
       << ") do not match";
 }
 

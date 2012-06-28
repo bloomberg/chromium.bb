@@ -8,7 +8,7 @@
 
 #include "sync/sessions/sync_session_context.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 // Installs a SyncEventListener to a given session context for the lifetime of
@@ -31,6 +31,6 @@ class TestScopedSessionEventListener {
 };
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_TEST_SESSIONS_TEST_SCOPED_SESSION_EVENT_LISTENER_H_

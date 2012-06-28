@@ -50,8 +50,8 @@ class SyncBackendRegistrarTest : public testing::Test {
 
   void ExpectRoutingInfo(
       SyncBackendRegistrar* registrar,
-      const csync::ModelSafeRoutingInfo& expected_routing_info) {
-    csync::ModelSafeRoutingInfo routing_info;
+      const syncer::ModelSafeRoutingInfo& expected_routing_info) {
+    syncer::ModelSafeRoutingInfo routing_info;
     registrar->GetModelSafeRoutingInfo(&routing_info);
     EXPECT_EQ(expected_routing_info, routing_info);
   }
@@ -66,7 +66,7 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  csync::TestUserShare test_user_share_;
+  syncer::TestUserShare test_user_share_;
 
  private:
   content::TestBrowserThread ui_thread_;
@@ -77,11 +77,11 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
   EXPECT_FALSE(registrar.IsNigoriEnabled());
   {
-    std::vector<csync::ModelSafeWorker*> workers;
+    std::vector<syncer::ModelSafeWorker*> workers;
     registrar.GetWorkers(&workers);
     EXPECT_EQ(4u, workers.size());
   }
-  ExpectRoutingInfo(&registrar, csync::ModelSafeRoutingInfo());
+  ExpectRoutingInfo(&registrar, syncer::ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();
@@ -93,14 +93,14 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   SyncBackendRegistrar registrar(initial_types, "test", &profile, &loop_);
   EXPECT_TRUE(registrar.IsNigoriEnabled());
   {
-    std::vector<csync::ModelSafeWorker*> workers;
+    std::vector<syncer::ModelSafeWorker*> workers;
     registrar.GetWorkers(&workers);
     EXPECT_EQ(4u, workers.size());
   }
   {
-    csync::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[BOOKMARKS] = csync::GROUP_PASSIVE;
-    expected_routing_info[NIGORI] = csync::GROUP_PASSIVE;
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[BOOKMARKS] = syncer::GROUP_PASSIVE;
+    expected_routing_info[NIGORI] = syncer::GROUP_PASSIVE;
     // Passwords dropped because of no password store.
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
@@ -118,10 +118,10 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   EXPECT_TRUE(
       registrar.ConfigureDataTypes(types1, ModelTypeSet()).Equals(types1));
   {
-    csync::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[BOOKMARKS] = csync::GROUP_PASSIVE;
-    expected_routing_info[NIGORI] = csync::GROUP_PASSIVE;
-    expected_routing_info[AUTOFILL] = csync::GROUP_PASSIVE;
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[BOOKMARKS] = syncer::GROUP_PASSIVE;
+    expected_routing_info[NIGORI] = syncer::GROUP_PASSIVE;
+    expected_routing_info[AUTOFILL] = syncer::GROUP_PASSIVE;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
@@ -130,16 +130,16 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   const ModelTypeSet types2(PREFERENCES, THEMES);
   EXPECT_TRUE(registrar.ConfigureDataTypes(types2, types1).Equals(types2));
   {
-    csync::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[PREFERENCES] = csync::GROUP_PASSIVE;
-    expected_routing_info[THEMES] = csync::GROUP_PASSIVE;
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[PREFERENCES] = syncer::GROUP_PASSIVE;
+    expected_routing_info[THEMES] = syncer::GROUP_PASSIVE;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   // Remove.
   EXPECT_TRUE(registrar.ConfigureDataTypes(ModelTypeSet(), types2).Empty());
-  ExpectRoutingInfo(&registrar, csync::ModelSafeRoutingInfo());
+  ExpectRoutingInfo(&registrar, syncer::ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   registrar.OnSyncerShutdownComplete();
@@ -148,7 +148,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
 
 void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
   registrar->OnChangesApplied(type, NULL,
-                              csync::ImmutableChangeRecordList());
+                              syncer::ImmutableChangeRecordList());
   registrar->OnChangesComplete(type);
 }
 
@@ -175,12 +175,12 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   const ModelTypeSet types(BOOKMARKS);
   EXPECT_TRUE(
       registrar.ConfigureDataTypes(types, ModelTypeSet()).Equals(types));
-  registrar.ActivateDataType(BOOKMARKS, csync::GROUP_UI,
+  registrar.ActivateDataType(BOOKMARKS, syncer::GROUP_UI,
                              &change_processor_mock,
                              test_user_share_.user_share());
   {
-    csync::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[BOOKMARKS] = csync::GROUP_UI;
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[BOOKMARKS] = syncer::GROUP_UI;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
   ExpectHasProcessorsForTypes(registrar, types);
@@ -188,7 +188,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   TriggerChanges(&registrar, BOOKMARKS);
 
   registrar.DeactivateDataType(BOOKMARKS);
-  ExpectRoutingInfo(&registrar, csync::ModelSafeRoutingInfo());
+  ExpectRoutingInfo(&registrar, syncer::ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   // Should do nothing.
@@ -222,12 +222,12 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   const ModelTypeSet types(AUTOFILL);
   EXPECT_TRUE(
       registrar.ConfigureDataTypes(types, ModelTypeSet()).Equals(types));
-  registrar.ActivateDataType(AUTOFILL, csync::GROUP_DB,
+  registrar.ActivateDataType(AUTOFILL, syncer::GROUP_DB,
                              &change_processor_mock,
                              test_user_share_.user_share());
   {
-    csync::ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[AUTOFILL] = csync::GROUP_DB;
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[AUTOFILL] = syncer::GROUP_DB;
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
   ExpectHasProcessorsForTypes(registrar, types);
@@ -235,7 +235,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   TriggerChanges(&registrar, AUTOFILL);
 
   registrar.DeactivateDataType(AUTOFILL);
-  ExpectRoutingInfo(&registrar, csync::ModelSafeRoutingInfo());
+  ExpectRoutingInfo(&registrar, syncer::ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
 
   // Should do nothing.

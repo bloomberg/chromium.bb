@@ -40,11 +40,11 @@ namespace content {
 class NavigationEntry;
 }  // namespace content
 
-namespace csync {
+namespace syncer {
 class BaseTransaction;
 class ReadNode;
 class WriteTransaction;
-}  // namespace csync
+}  // namespace syncer
 
 namespace sync_pb {
 class SessionHeader;
@@ -86,12 +86,12 @@ class SessionModelAssociator
   virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
   // Returns sync id for the given chrome model id.
-  // Returns csync::kInvalidId if the sync node is not found for the given
+  // Returns syncer::kInvalidId if the sync node is not found for the given
   // chrome id.
   virtual int64 GetSyncIdFromChromeId(const size_t& id) OVERRIDE;
 
   // Returns sync id for the given session tag.
-  // Returns csync::kInvalidId if the sync node is not found for the given
+  // Returns syncer::kInvalidId if the sync node is not found for the given
   // tag
   virtual int64 GetSyncIdFromSessionTag(const std::string& tag);
 
@@ -101,7 +101,7 @@ class SessionModelAssociator
 
   // Not used.
   virtual bool InitSyncNodeFromChromeId(const size_t& id,
-                                        csync::BaseNode* sync_node) OVERRIDE;
+                                        syncer::BaseNode* sync_node) OVERRIDE;
 
   // Not used.
   virtual void Associate(const SyncedTabDelegate* tab, int64 sync_id) OVERRIDE;
@@ -119,14 +119,14 @@ class SessionModelAssociator
   // |error| gets set if any association error occurred.
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
-  bool AssociateWindows(bool reload_tabs, csync::SyncError* error);
+  bool AssociateWindows(bool reload_tabs, syncer::SyncError* error);
 
   // Loads and reassociates the local tabs referenced in |tabs|.
   // |error| gets set if any association error occurred.
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
   bool AssociateTabs(const std::vector<SyncedTabDelegate*>& tabs,
-                     csync::SyncError* error);
+                     syncer::SyncError* error);
 
   // Reassociates a single tab with the sync model. Will check if the tab
   // already is associated with a sync node and allocate one if necessary.
@@ -134,23 +134,23 @@ class SessionModelAssociator
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
   bool AssociateTab(const SyncedTabDelegate& tab,
-                    csync::SyncError* error);
+                    syncer::SyncError* error);
 
   // Load any foreign session info stored in sync db and update the sync db
   // with local client data. Processes/reuses any sync nodes owned by this
   // client and creates any further sync nodes needed to store local header and
   // tab info.
-  virtual csync::SyncError AssociateModels() OVERRIDE;
+  virtual syncer::SyncError AssociateModels() OVERRIDE;
 
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(const std::string& id,
-                                        csync::BaseNode* sync_node);
+                                        syncer::BaseNode* sync_node);
 
   // Clear local sync data buffers. Does not delete sync nodes to avoid
   // tombstones. TODO(zea): way to eventually delete orphaned nodes.
-  virtual csync::SyncError DisassociateModels() OVERRIDE;
+  virtual syncer::SyncError DisassociateModels() OVERRIDE;
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.
@@ -312,7 +312,7 @@ class SessionModelAssociator
     // Returns the sync_id for the next free tab node. If none are available,
     // creates a new tab node.
     // Note: We make use of the following "id's"
-    // - a sync_id: an int64 used in |csync::InitByIdLookup|
+    // - a sync_id: an int64 used in |syncer::InitByIdLookup|
     // - a tab_id: created by session service, unique to this client
     // - a tab_node_id: the id for a particular sync tab node. This is used
     //   to generate the sync tab node tag through:
@@ -387,7 +387,7 @@ class SessionModelAssociator
   }
 
   // Initializes the tag corresponding to this machine.
-  void InitializeCurrentMachineTag(csync::WriteTransaction* trans);
+  void InitializeCurrentMachineTag(syncer::WriteTransaction* trans);
 
   // Initializes the user visible name for this session
   void InitializeCurrentSessionName();
@@ -395,21 +395,21 @@ class SessionModelAssociator
   // Updates the server data based upon the current client session.  If no node
   // corresponding to this machine exists in the sync model, one is created.
   // Returns true on success, false if association failed.
-  bool UpdateSyncModelDataFromClient(csync::SyncError* error);
+  bool UpdateSyncModelDataFromClient(syncer::SyncError* error);
 
   // Pulls the current sync model from the sync database and returns true upon
   // update of the client model. Will associate any foreign sessions as well as
   // keep track of any local tab nodes, adding them to our free tab node pool.
-  bool UpdateAssociationsFromSyncModel(const csync::ReadNode& root,
-                                       csync::WriteTransaction* trans,
-                                       csync::SyncError* error);
+  bool UpdateAssociationsFromSyncModel(const syncer::ReadNode& root,
+                                       syncer::WriteTransaction* trans,
+                                       syncer::SyncError* error);
 
   // Fills a tab sync node with data from a WebContents object. Updates
   // |tab_link| with the current url if it's valid and triggers a favicon
   // load if the url has changed.
   // Returns true on success, false if we need to reassociate due to corruption.
   bool WriteTabContentsToSyncModel(TabLink* tab_link,
-                                   csync::SyncError* error);
+                                   syncer::SyncError* error);
 
   // Decrements the favicon usage counters for the favicon used by |page_url|.
   // Deletes the favicon and associated pages from the favicon usage maps

@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "sync/engine/model_changing_syncer_command.h"
 
-namespace csync {
+namespace syncer {
 
 class ApplyUpdatesCommand : public ModelChangingSyncerCommand {
  public:
@@ -27,6 +27,6 @@ class ApplyUpdatesCommand : public ModelChangingSyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommand);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_APPLY_UPDATES_COMMAND_H_

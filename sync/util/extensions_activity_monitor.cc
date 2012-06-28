@@ -4,7 +4,7 @@
 
 #include "sync/util/extensions_activity_monitor.h"
 
-namespace csync {
+namespace syncer {
 
 ExtensionsActivityMonitor::Record::Record()
     : bookmark_write_count(0U) {}
@@ -13,4 +13,4 @@ ExtensionsActivityMonitor::Record::~Record() {}
 
 ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {}
 
-}  // namespace csync
+}  // namespace syncer

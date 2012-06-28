@@ -8,7 +8,7 @@
 
 // The intent of this is to keep all shared data types and enums for the syncer
 // in a single place without having dependencies between other files.
-namespace csync {
+namespace syncer {
 
 enum UpdateAttemptResponse {
   // Update was applied or safely ignored.
@@ -82,6 +82,6 @@ enum VerifyCommitResult {
   VERIFY_OK,
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNCER_TYPES_H_

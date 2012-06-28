@@ -12,7 +12,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 BackendUnrecoverableErrorHandler::BackendUnrecoverableErrorHandler(
-    const csync::WeakHandle<ProfileSyncService>& service) : service_(service) {
+    const syncer::WeakHandle<ProfileSyncService>& service) : service_(service) {
 }
 
 BackendUnrecoverableErrorHandler::~BackendUnrecoverableErrorHandler() {

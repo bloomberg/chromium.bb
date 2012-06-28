@@ -25,7 +25,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace csync {
+namespace syncer {
 class Encryptor;
 struct Experiments;
 class ExtensionsActivityMonitor;
@@ -35,17 +35,17 @@ class JsEventHandler;
 namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
-namespace csync {
+namespace syncer {
 class SyncNotifier;
-}  // namespace csync
+}  // namespace syncer
 
 namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
 
-namespace csync {
+namespace syncer {
 
 class BaseTransaction;
 class HttpPostProviderFactory;
@@ -58,7 +58,7 @@ enum ConnectionStatus {
   CONNECTION_SERVER_ERROR
 };
 
-// Reasons due to which csync::Cryptographer might require a passphrase.
+// Reasons due to which syncer::Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
   REASON_PASSPHRASE_NOT_REQUIRED = 0,  // Initial value.
   REASON_ENCRYPTION = 1,               // The cryptographer requires a
@@ -184,7 +184,7 @@ class SyncManager {
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
     virtual void OnSyncCycleCompleted(
-        const csync::sessions::SyncSessionSnapshot& snapshot) = 0;
+        const syncer::sessions::SyncSessionSnapshot& snapshot) = 0;
 
     // Called when the status of the connection to the sync server has
     // changed.
@@ -300,7 +300,7 @@ class SyncManager {
     // function getChildNodeIds(id);
 
     virtual void OnInitializationComplete(
-        const csync::WeakHandle<csync::JsBackend>&
+        const syncer::WeakHandle<syncer::JsBackend>&
             js_backend, bool success) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
@@ -334,7 +334,7 @@ class SyncManager {
     virtual void OnEncryptionComplete() = 0;
 
     virtual void OnActionableError(
-        const csync::SyncProtocolError& sync_protocol_error) = 0;
+        const syncer::SyncProtocolError& sync_protocol_error) = 0;
 
    protected:
     virtual ~Observer();
@@ -372,26 +372,26 @@ class SyncManager {
   // TODO(akalin): Replace the |post_factory| parameter with a
   // URLFetcher parameter.
   bool Init(const FilePath& database_location,
-            const csync::WeakHandle<csync::JsEventHandler>&
+            const syncer::WeakHandle<syncer::JsEventHandler>&
                 event_handler,
             const std::string& sync_server_and_path,
             int sync_server_port,
             bool use_ssl,
             const scoped_refptr<base::TaskRunner>& blocking_task_runner,
             HttpPostProviderFactory* post_factory,
-            const csync::ModelSafeRoutingInfo& model_safe_routing_info,
-            const std::vector<csync::ModelSafeWorker*>& workers,
-            csync::ExtensionsActivityMonitor*
+            const syncer::ModelSafeRoutingInfo& model_safe_routing_info,
+            const std::vector<syncer::ModelSafeWorker*>& workers,
+            syncer::ExtensionsActivityMonitor*
                 extensions_activity_monitor,
             ChangeDelegate* change_delegate,
             const SyncCredentials& credentials,
-            csync::SyncNotifier* sync_notifier,
+            syncer::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             TestingMode testing_mode,
-            csync::Encryptor* encryptor,
-            csync::UnrecoverableErrorHandler*
+            syncer::Encryptor* encryptor,
+            syncer::UnrecoverableErrorHandler*
                 unrecoverable_error_handler,
-            csync::ReportUnrecoverableErrorFunction
+            syncer::ReportUnrecoverableErrorFunction
                 report_unrecoverable_error_function);
 
   // Throw an unrecoverable error from a transaction (mostly used for
@@ -409,7 +409,7 @@ class SyncManager {
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally(
-      const csync::ModelSafeRoutingInfo& routing_info);
+      const syncer::ModelSafeRoutingInfo& routing_info);
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -436,12 +436,12 @@ class SyncManager {
 
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.
-  void RequestConfig(const csync::ModelSafeRoutingInfo& routing_info,
+  void RequestConfig(const syncer::ModelSafeRoutingInfo& routing_info,
                      const syncable::ModelTypeSet& types,
-                     csync::ConfigureReason reason);
+                     syncer::ConfigureReason reason);
 
   void RequestCleanupDisabledTypes(
-      const csync::ModelSafeRoutingInfo& routing_info);
+      const syncer::ModelSafeRoutingInfo& routing_info);
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
@@ -516,7 +516,7 @@ class SyncManager {
   // Reads the nigori node to determine if any experimental features should
   // be enabled.
   // Note: opens a transaction.  May be called on any thread.
-  bool ReceivedExperiment(csync::Experiments* experiments) const;
+  bool ReceivedExperiment(syncer::Experiments* experiments) const;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.
@@ -555,13 +555,13 @@ bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
 
 syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
     syncable::ModelTypeSet types,
-    csync::UserShare* share);
+    syncer::UserShare* share);
 
 const char* ConnectionStatusToString(ConnectionStatus status);
 
 // Returns the string representation of a PassphraseRequiredReason value.
 const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_

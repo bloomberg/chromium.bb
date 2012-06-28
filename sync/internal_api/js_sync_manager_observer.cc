@@ -18,9 +18,9 @@
 #include "sync/js/js_event_handler.h"
 #include "sync/sessions/session_state.h"
 
-namespace csync {
+namespace syncer {
 
-using csync::SyncProtocolError;
+using syncer::SyncProtocolError;
 
 JsSyncManagerObserver::JsSyncManagerObserver() {}
 
@@ -42,12 +42,12 @@ void JsSyncManagerObserver::OnSyncCycleCompleted(
 }
 
 void JsSyncManagerObserver::OnConnectionStatusChange(
-    csync::ConnectionStatus status) {
+    syncer::ConnectionStatus status) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("status", csync::ConnectionStatusToString(status));
+  details.SetString("status", syncer::ConnectionStatusToString(status));
   HandleJsEvent(FROM_HERE,
                 "onConnectionStatusChange", JsEventDetails(&details));
 }
@@ -62,14 +62,14 @@ void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
 }
 
 void JsSyncManagerObserver::OnPassphraseRequired(
-    csync::PassphraseRequiredReason reason,
+    syncer::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("reason",
-                     csync::PassphraseRequiredReasonToString(reason));
+                     syncer::PassphraseRequiredReasonToString(reason));
   HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
 }
 
@@ -153,4 +153,4 @@ void JsSyncManagerObserver::HandleJsEvent(
                       &JsEventHandler::HandleJsEvent, name, details);
 }
 
-}  // namespace csync
+}  // namespace syncer

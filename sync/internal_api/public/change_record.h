@@ -17,7 +17,7 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
-namespace csync {
+namespace syncer {
 
 // TODO(zea): One day get passwords playing nicely with the rest of encryption
 // and get rid of this.
@@ -60,8 +60,8 @@ struct ChangeRecord {
 
 typedef std::vector<ChangeRecord> ChangeRecordList;
 
-typedef csync::Immutable<ChangeRecordList> ImmutableChangeRecordList;
+typedef syncer::Immutable<ChangeRecordList> ImmutableChangeRecordList;
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_CHANGE_RECORD_H_

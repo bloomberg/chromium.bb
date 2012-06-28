@@ -33,7 +33,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace csync {
+namespace syncer {
 
 struct ServerConnectionEvent;
 
@@ -329,8 +329,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   void OnServerConnectionErrorFixed();
 
   // The pointer is owned by the caller.
-  csync::sessions::SyncSession* CreateSyncSession(
-      const csync::sessions::SyncSourceInfo& info);
+  syncer::sessions::SyncSession* CreateSyncSession(
+      const syncer::sessions::SyncSourceInfo& info);
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
@@ -402,6 +402,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   DISALLOW_COPY_AND_ASSIGN(SyncScheduler);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNC_SCHEDULER_H_

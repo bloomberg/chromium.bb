@@ -20,7 +20,7 @@ class ObjectId;
 
 }  // namespace invalidation
 
-namespace csync {
+namespace syncer {
 
 struct ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
@@ -40,6 +40,6 @@ std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 std::string InvalidationToString(
     const invalidation::Invalidation& invalidation);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_INVALIDATION_UTIL_H_

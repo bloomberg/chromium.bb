@@ -37,7 +37,7 @@ ModelTypeSet ModelTypePayloadMapToEnumSet(
 // Make a TypePayloadMap for all the enabled types in a
 // ModelSafeRoutingInfo using a default payload.
 ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
-    const csync::ModelSafeRoutingInfo& routes,
+    const syncer::ModelSafeRoutingInfo& routes,
     const std::string& payload);
 
 std::string ModelTypePayloadMapToString(
@@ -53,7 +53,7 @@ void CoalescePayloads(ModelTypePayloadMap* original,
                       const ModelTypePayloadMap& update);
 
 void PurgeStalePayload(ModelTypePayloadMap* original,
-                       const csync::ModelSafeRoutingInfo& routing_info);
+                       const syncer::ModelSafeRoutingInfo& routing_info);
 
 }  // namespace syncable
 

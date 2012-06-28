@@ -53,7 +53,7 @@ class SessionModelAssociator;
 namespace sessions { class SyncSessionSnapshot; }
 }
 
-namespace csync {
+namespace syncer {
 class BaseTransaction;
 struct SyncCredentials;
 struct UserShare;
@@ -147,7 +147,7 @@ class EncryptedData;
 //
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
-                           public csync::UnrecoverableErrorHandler,
+                           public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
                            public ProfileKeyedService {
  public:
@@ -254,15 +254,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(
-      const csync::WeakHandle<csync::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
   virtual void OnConnectionStatusChange(
-      csync::ConnectionStatus status) OVERRIDE;
+      syncer::ConnectionStatus status) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnPassphraseRequired(
-      csync::PassphraseRequiredReason reason,
+      syncer::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnEncryptedTypesChanged(
@@ -272,9 +272,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnMigrationNeededForTypes(
       syncable::ModelTypeSet types) OVERRIDE;
   virtual void OnExperimentsChanged(
-      const csync::Experiments& experiments) OVERRIDE;
+      const syncer::Experiments& experiments) OVERRIDE;
   virtual void OnActionableError(
-      const csync::SyncProtocolError& error) OVERRIDE;
+      const syncer::SyncProtocolError& error) OVERRIDE;
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
@@ -333,7 +333,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // we have an encrypted data type enabled.
   virtual bool IsPassphraseRequiredForDecryption() const;
 
-  csync::PassphraseRequiredReason passphrase_required_reason() const {
+  syncer::PassphraseRequiredReason passphrase_required_reason() const {
     return passphrase_required_reason_;
   }
 
@@ -355,7 +355,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns a weak pointer to the service's JsController.
   // Overrideable for testing purposes.
-  virtual base::WeakPtr<csync::JsController> GetJsController();
+  virtual base::WeakPtr<syncer::JsController> GetJsController();
 
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
@@ -369,7 +369,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // management. If so, the user is not allowed to configure sync.
   bool IsManaged() const;
 
-  // csync::UnrecoverableErrorHandler implementation.
+  // syncer::UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
@@ -388,13 +388,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // tests.  Figure out how to pass the handle to the ModelAssociators
   // directly, figure out how to expose this to tests, and remove this
   // function.
-  virtual csync::UserShare* GetUserShare() const;
+  virtual syncer::UserShare* GetUserShare() const;
 
   // TODO(akalin): These two functions are used only by
   // ProfileSyncServiceHarness.  Figure out a different way to expose
   // this info to that class, and remove these functions.
 
-  virtual csync::sessions::SyncSessionSnapshot
+  virtual syncer::sessions::SyncSessionSnapshot
       GetLastSessionSnapshot() const;
 
   // Returns whether or not the underlying sync engine has made any
@@ -406,7 +406,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   browser_sync::BackendMigrator* GetBackendMigratorForTest();
 
   // TODO(sync): This is only used in tests.  Can we remove it?
-  void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out) const;
+  void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
 
   // Returns a ListValue indicating the status of all registered types.
   //
@@ -424,7 +424,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void ActivateDataType(
-      syncable::ModelType type, csync::ModelSafeGroup group,
+      syncable::ModelType type, syncer::ModelSafeGroup group,
       browser_sync::ChangeProcessor* change_processor);
   virtual void DeactivateDataType(syncable::ModelType type);
 
@@ -458,7 +458,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // for sensitive data types. Caller must be holding a
   // syncapi::BaseTransaction to ensure thread safety.
   virtual bool IsCryptographerReady(
-      const csync::BaseTransaction* trans) const;
+      const syncer::BaseTransaction* trans) const;
 
   // Returns true if a secondary passphrase is being used. It is not legal
   // to call this method before the backend is initialized.
@@ -553,7 +553,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void ShutdownImpl(bool sync_disabled);
 
   // Return SyncCredentials from the TokenService.
-  csync::SyncCredentials GetCredentials();
+  syncer::SyncCredentials GetCredentials();
 
   // Test need to override this to create backends that allow setting up
   // initial conditions, such as populating sync nodes.
@@ -590,7 +590,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
   // because a new passphrase is required?
-  csync::PassphraseRequiredReason passphrase_required_reason_;
+  syncer::PassphraseRequiredReason passphrase_required_reason_;
 
  private:
   enum UnrecoverableErrorReason {
@@ -734,7 +734,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ObserverList<Observer> observers_;
 
-  csync::SyncJsController sync_js_controller_;
+  syncer::SyncJsController sync_js_controller_;
 
   content::NotificationRegistrar registrar_;
 
@@ -752,7 +752,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   std::string cached_passphrase_;
 
   // The current set of encrypted types.  Always a superset of
-  // csync::Cryptographer::SensitiveTypes().
+  // syncer::Cryptographer::SensitiveTypes().
   syncable::ModelTypeSet encrypted_types_;
 
   // Whether we want to encrypt everything.
@@ -773,7 +773,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
-  csync::SyncProtocolError last_actionable_error_;
+  syncer::SyncProtocolError last_actionable_error_;
 
   // This is used to show sync errors in the wrench menu.
   scoped_ptr<SyncGlobalError> sync_global_error_;
@@ -791,13 +791,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool setup_in_progress_;
 
   // The set of currently enabled sync experiments.
-  csync::Experiments current_experiments;
+  syncer::Experiments current_experiments;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 
 bool ShouldShowActionOnUI(
-    const csync::SyncProtocolError& error);
+    const syncer::SyncProtocolError& error);
 
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_

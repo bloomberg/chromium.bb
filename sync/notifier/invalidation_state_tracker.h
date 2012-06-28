@@ -14,7 +14,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "sync/notifier/invalidation_util.h"
 
-namespace csync {
+namespace syncer {
 
 typedef std::map<invalidation::ObjectId, int64, ObjectIdLessThan>
     InvalidationVersionMap;
@@ -41,6 +41,6 @@ class InvalidationStateTracker {
   virtual ~InvalidationStateTracker() {}
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_INVALIDATION_STATE_TRACKER_H_

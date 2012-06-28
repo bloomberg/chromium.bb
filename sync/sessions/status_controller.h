@@ -43,7 +43,7 @@
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/session_state.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 class StatusController {
@@ -234,7 +234,7 @@ class ScopedModelSafeGroupRestriction {
   DISALLOW_COPY_AND_ASSIGN(ScopedModelSafeGroupRestriction);
 };
 
-}
-}
+}  // namespace sessions
+}  // namespace syncer
 
 #endif  // SYNC_SESSIONS_STATUS_CONTROLLER_H_

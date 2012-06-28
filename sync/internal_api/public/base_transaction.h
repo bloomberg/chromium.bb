@@ -15,7 +15,7 @@ class BaseTransaction;
 class Directory;
 }
 
-namespace csync {
+namespace syncer {
 
 // Sync API's BaseTransaction, ReadTransaction, and WriteTransaction allow for
 // batching of several read and/or write operations.  The read and write
@@ -28,7 +28,7 @@ class BaseTransaction {
  public:
   // Provide access to the underlying syncable objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
-  csync::Cryptographer* GetCryptographer() const;
+  syncer::Cryptographer* GetCryptographer() const;
 
   syncable::Directory* GetDirectory() const {
     return directory_;
@@ -47,8 +47,8 @@ class BaseTransaction {
 };
 
 syncable::ModelTypeSet GetEncryptedTypes(
-    const csync::BaseTransaction* trans);
+    const syncer::BaseTransaction* trans);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_

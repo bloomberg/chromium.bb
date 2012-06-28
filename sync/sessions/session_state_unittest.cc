@@ -15,7 +15,7 @@
 #include "sync/internal_api/public/sessions/sync_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 namespace {
 
@@ -132,4 +132,4 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
 
 }  // namespace
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer

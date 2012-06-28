@@ -22,36 +22,36 @@ using ::testing::Return;
 
 namespace {
 
-// Extract notification guid from csync::SyncData.
-std::string GetGuid(const csync::SyncData& sync_data) {
+// Extract notification guid from syncer::SyncData.
+std::string GetGuid(const syncer::SyncData& sync_data) {
   return sync_data.GetSpecifics().app_notification().guid();
 }
 
 // Dummy SyncChangeProcessor used to help review what SyncChanges are pushed
 // back up to Sync.
-class TestChangeProcessor : public csync::SyncChangeProcessor {
+class TestChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   TestChangeProcessor() { }
   virtual ~TestChangeProcessor() { }
 
   // Store a copy of all the changes passed in so we can examine them later.
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) {
+      const syncer::SyncChangeList& change_list) {
     // change_map_.erase(change_map_.begin(), change_map_.end());
-    for (csync::SyncChangeList::const_iterator iter = change_list.begin();
+    for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
         iter != change_list.end(); ++iter) {
       change_map_[GetGuid(iter->sync_data())] = *iter;
     }
 
-    return csync::SyncError();
+    return syncer::SyncError();
   }
 
   bool ContainsGuid(const std::string& guid) {
     return change_map_.find(guid) != change_map_.end();
   }
 
-  csync::SyncChange GetChangeByGuid(const std::string& guid) {
+  syncer::SyncChange GetChangeByGuid(const std::string& guid) {
     DCHECK(ContainsGuid(guid));
     return change_map_[guid];
   }
@@ -60,29 +60,29 @@ class TestChangeProcessor : public csync::SyncChangeProcessor {
 
  private:
   // Track the changes received in ProcessSyncChanges.
-  std::map<std::string, csync::SyncChange> change_map_;
+  std::map<std::string, syncer::SyncChange> change_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
 };
 
-class SyncChangeProcessorDelegate : public csync::SyncChangeProcessor {
+class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
  public:
-  explicit SyncChangeProcessorDelegate(csync::SyncChangeProcessor* recipient)
+  explicit SyncChangeProcessorDelegate(syncer::SyncChangeProcessor* recipient)
       : recipient_(recipient) {
     DCHECK(recipient_);
   }
   virtual ~SyncChangeProcessorDelegate() {}
 
-  // csync::SyncChangeProcessor implementation.
-  virtual csync::SyncError ProcessSyncChanges(
+  // syncer::SyncChangeProcessor implementation.
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE {
+      const syncer::SyncChangeList& change_list) OVERRIDE {
     return recipient_->ProcessSyncChanges(from_here, change_list);
   }
 
  private:
   // The recipient of all sync changes.
-  csync::SyncChangeProcessor* recipient_;
+  syncer::SyncChangeProcessor* recipient_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
 };
@@ -135,8 +135,8 @@ class AppNotificationManagerSyncTest : public testing::Test {
   AppNotificationManager* model() { return model_.get(); }
   TestChangeProcessor* processor() { return sync_processor_.get(); }
 
-  scoped_ptr<csync::SyncChangeProcessor> PassProcessor() {
-    return sync_processor_delegate_.PassAs<csync::SyncChangeProcessor>();
+  scoped_ptr<syncer::SyncChangeProcessor> PassProcessor() {
+    return sync_processor_delegate_.PassAs<syncer::SyncChangeProcessor>();
   }
 
   // Creates a notification whose properties are set from the given integer.
@@ -188,29 +188,29 @@ class AppNotificationManagerSyncTest : public testing::Test {
     return notif;
   }
 
-  static csync::SyncData CreateSyncData(int suffix) {
+  static syncer::SyncData CreateSyncData(int suffix) {
     scoped_ptr<AppNotification> notif(CreateNotification(suffix));
     return AppNotificationManager::CreateSyncDataFromNotification(*notif);
   }
-  static csync::SyncData CreateSyncData(
+  static syncer::SyncData CreateSyncData(
       int suffix, const std::string& extension_id) {
     scoped_ptr<AppNotification> notif(
         CreateNotification(false, suffix, extension_id));
     return AppNotificationManager::CreateSyncDataFromNotification(*notif);
   }
 
-  // Helper to create csync::SyncChange. Takes ownership of |notif|.
-  static csync::SyncChange CreateSyncChange(
-      csync::SyncChange::SyncChangeType type,
+  // Helper to create syncer::SyncChange. Takes ownership of |notif|.
+  static syncer::SyncChange CreateSyncChange(
+      syncer::SyncChange::SyncChangeType type,
       AppNotification* notif) {
     // Take control of notif to clean it up after we create data out of it.
     scoped_ptr<AppNotification> scoped_notif(notif);
-    return csync::SyncChange(
+    return syncer::SyncChange(
         type, AppNotificationManager::CreateSyncDataFromNotification(*notif));
   }
 
-  void AssertSyncChange(const csync::SyncChange& change,
-                        csync::SyncChange::SyncChangeType type,
+  void AssertSyncChange(const syncer::SyncChange& change,
+                        syncer::SyncChange::SyncChangeType type,
                         const AppNotification& notif) {
     ASSERT_EQ(type, change.change_type());
     scoped_ptr<AppNotification> notif2(
@@ -235,11 +235,11 @@ class AppNotificationManagerSyncTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AppNotificationManagerSyncTest);
 };
 
-// Create an AppNotification, convert it to csync::SyncData and convert it back.
+// Create an AppNotification, convert it to SyncData and convert it back.
 TEST_F(AppNotificationManagerSyncTest, NotificationToSyncDataToNotification) {
   {  // Partial properties set.
     scoped_ptr<AppNotification> notif1(CreateNotificationNoLink(1));
-    csync::SyncData sync_data =
+    syncer::SyncData sync_data =
         AppNotificationManager::CreateSyncDataFromNotification(*notif1);
     scoped_ptr<AppNotification> notif2(
         AppNotificationManager::CreateNotificationFromSyncData(sync_data));
@@ -248,7 +248,7 @@ TEST_F(AppNotificationManagerSyncTest, NotificationToSyncDataToNotification) {
   }
   {  // All properties set.
     scoped_ptr<AppNotification> notif1(CreateNotification(1));
-    csync::SyncData sync_data =
+    syncer::SyncData sync_data =
         AppNotificationManager::CreateSyncDataFromNotification(*notif1);
     scoped_ptr<AppNotification> notif2(
         AppNotificationManager::CreateNotificationFromSyncData(sync_data));
@@ -262,12 +262,12 @@ TEST_F(AppNotificationManagerSyncTest, GetAllSyncDataNoLocal) {
   model()->Add(CreateNotificationNoLink(1));
   model()->Add(CreateNotification(2));
   model()->Add(CreateNotification(3));
-  csync::SyncDataList all_sync_data =
+  syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncable::APP_NOTIFICATIONS);
 
   EXPECT_EQ(3U, all_sync_data.size());
 
-  for (csync::SyncDataList::const_iterator iter = all_sync_data.begin();
+  for (syncer::SyncDataList::const_iterator iter = all_sync_data.begin();
       iter != all_sync_data.end(); ++iter) {
     scoped_ptr<AppNotification> notif1(
         AppNotificationManager::CreateNotificationFromSyncData(*iter));
@@ -287,12 +287,12 @@ TEST_F(AppNotificationManagerSyncTest, GetAllSyncDataSomeLocal) {
   model()->Add(CreateNotification(3));
   model()->Add(CreateNotification(true, 4));
   model()->Add(CreateNotification(5));
-  csync::SyncDataList all_sync_data =
+  syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncable::APP_NOTIFICATIONS);
 
   EXPECT_EQ(3U, all_sync_data.size());
 
-  for (csync::SyncDataList::const_iterator iter = all_sync_data.begin();
+  for (syncer::SyncDataList::const_iterator iter = all_sync_data.begin();
       iter != all_sync_data.end(); ++iter) {
     scoped_ptr<AppNotification> notif1(
         AppNotificationManager::CreateNotificationFromSyncData(*iter));
@@ -308,9 +308,9 @@ TEST_F(AppNotificationManagerSyncTest, GetAllSyncDataSomeLocal) {
 TEST_F(AppNotificationManagerSyncTest, ModelAssocBothEmpty) {
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),  // Empty.
+      syncer::SyncDataList(),  // Empty.
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(0U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
   EXPECT_EQ(0U, processor()->change_list_size());
@@ -318,7 +318,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothEmpty) {
 
 // Model assocation: empty sync model and non-empty local model.
 TEST_F(AppNotificationManagerSyncTest, ModelAssocModelEmpty) {
-  csync::SyncDataList initial_data;
+  syncer::SyncDataList initial_data;
   initial_data.push_back(CreateSyncData(1));
   initial_data.push_back(CreateSyncData(2));
   initial_data.push_back(CreateSyncData(3));
@@ -328,11 +328,11 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocModelEmpty) {
       syncable::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(4U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
   // Model should all of the initial sync data.
-  for (csync::SyncDataList::const_iterator iter = initial_data.begin();
+  for (syncer::SyncDataList::const_iterator iter = initial_data.begin();
       iter != initial_data.end(); ++iter) {
     scoped_ptr<AppNotification> notif1(
         AppNotificationManager::CreateNotificationFromSyncData(*iter));
@@ -356,7 +356,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyNoOverlap) {
   AppNotification* n3 = CreateNotification(3);
   model()->Add(n3);
 
-  csync::SyncDataList initial_data;
+  syncer::SyncDataList initial_data;
   initial_data.push_back(CreateSyncData(4));
   initial_data.push_back(CreateSyncData(5));
   initial_data.push_back(CreateSyncData(6));
@@ -366,10 +366,10 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyNoOverlap) {
       syncable::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(6U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  for (csync::SyncDataList::const_iterator iter = initial_data.begin();
+  for (syncer::SyncDataList::const_iterator iter = initial_data.begin();
       iter != initial_data.end(); ++iter) {
     scoped_ptr<AppNotification> notif1(
         AppNotificationManager::CreateNotificationFromSyncData(*iter));
@@ -385,11 +385,11 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyNoOverlap) {
 
   EXPECT_EQ(2U, processor()->change_list_size());
   EXPECT_TRUE(processor()->ContainsGuid(n1->guid()));
-  EXPECT_EQ(csync::SyncChange::ACTION_ADD,
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             processor()->GetChangeByGuid(n1->guid()).change_type());
   EXPECT_FALSE(processor()->ContainsGuid(n2->guid()));
   EXPECT_TRUE(processor()->ContainsGuid(n3->guid()));
-  EXPECT_EQ(csync::SyncChange::ACTION_ADD,
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             processor()->GetChangeByGuid(n3->guid()).change_type());
 }
 
@@ -405,7 +405,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptySomeOverlap) {
   AppNotification* n4 = CreateNotification(4);
   model()->Add(n4);
 
-  csync::SyncDataList initial_data;
+  syncer::SyncDataList initial_data;
   initial_data.push_back(CreateSyncData(5));
   initial_data.push_back(
       AppNotificationManager::CreateSyncDataFromNotification(*n1));
@@ -418,10 +418,10 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptySomeOverlap) {
       syncable::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_EQ(6U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  for (csync::SyncDataList::const_iterator iter = initial_data.begin();
+  for (syncer::SyncDataList::const_iterator iter = initial_data.begin();
       iter != initial_data.end(); ++iter) {
     scoped_ptr<AppNotification> notif1(
         AppNotificationManager::CreateNotificationFromSyncData(*iter));
@@ -440,7 +440,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptySomeOverlap) {
   EXPECT_FALSE(processor()->ContainsGuid(n1->guid()));
   EXPECT_FALSE(processor()->ContainsGuid(n2->guid()));
   EXPECT_TRUE(processor()->ContainsGuid(n3->guid()));
-  EXPECT_EQ(csync::SyncChange::ACTION_ADD,
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD,
             processor()->GetChangeByGuid(n3->guid()).change_type());
   EXPECT_FALSE(processor()->ContainsGuid(n4->guid()));
 }
@@ -453,7 +453,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyTitleMismatch) {
   AppNotification* n2 = CreateNotification(true, 2);
   model()->Add(n2);
 
-  csync::SyncDataList initial_data;
+  syncer::SyncDataList initial_data;
   initial_data.push_back(CreateSyncData(1));
   scoped_ptr<AppNotification> n1_a(CreateNotification(
       n1->is_local(), n1->creation_time().ToInternalValue(),
@@ -463,19 +463,19 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyTitleMismatch) {
   initial_data.push_back(
       AppNotificationManager::CreateSyncDataFromNotification(*n1_a));
 
-  scoped_ptr<csync::SyncErrorFactoryMock> error_handler(
-      new csync::SyncErrorFactoryMock());
+  scoped_ptr<syncer::SyncErrorFactoryMock> error_handler(
+      new syncer::SyncErrorFactoryMock());
   EXPECT_CALL(*error_handler, CreateAndUploadError(_, _)).
       WillOnce(
           Return(
-              csync::SyncError(
+              syncer::SyncError(
                   FROM_HERE, "error", syncable::APP_NOTIFICATIONS)));
 
-  csync::SyncError sync_error = model()->MergeDataAndStartSyncing(
+  syncer::SyncError sync_error = model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      error_handler.PassAs<csync::SyncErrorFactory>());
+      error_handler.PassAs<syncer::SyncErrorFactory>());
 
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncable::APP_NOTIFICATIONS, sync_error.type());
@@ -490,25 +490,25 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyMatchesLocal) {
   AppNotification* n2 = CreateNotification(true, 2);
   model()->Add(n2);
 
-  csync::SyncDataList initial_data;
+  syncer::SyncDataList initial_data;
   initial_data.push_back(CreateSyncData(1));
   scoped_ptr<AppNotification> n2_a(CreateNotification(2));
   initial_data.push_back(
       AppNotificationManager::CreateSyncDataFromNotification(*n2_a));
 
-  scoped_ptr<csync::SyncErrorFactoryMock> error_handler(
-      new csync::SyncErrorFactoryMock());
+  scoped_ptr<syncer::SyncErrorFactoryMock> error_handler(
+      new syncer::SyncErrorFactoryMock());
   EXPECT_CALL(*error_handler, CreateAndUploadError(_, _)).
       WillOnce(
           Return(
-              csync::SyncError(
+              syncer::SyncError(
                   FROM_HERE, "error", syncable::APP_NOTIFICATIONS)));
 
-  csync::SyncError sync_error = model()->MergeDataAndStartSyncing(
+  syncer::SyncError sync_error = model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      error_handler.PassAs<csync::SyncErrorFactory>());
+      error_handler.PassAs<syncer::SyncErrorFactory>());
 
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncable::APP_NOTIFICATIONS, sync_error.type());
@@ -520,18 +520,18 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesEmptyModel) {
   // We initially have no data.
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   // Set up a bunch of ADDs.
-  csync::SyncChangeList changes;
+  syncer::SyncChangeList changes;
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(1)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(1)));
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(2)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(2)));
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(3)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(3)));
 
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
@@ -547,18 +547,18 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesNonEmptyModel) {
   model()->Add(n2);
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   // Some adds and some deletes.
-  csync::SyncChangeList changes;
+  syncer::SyncChangeList changes;
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(3)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(3)));
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_DELETE, n1->Copy()));
+      syncer::SyncChange::ACTION_DELETE, n1->Copy()));
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(4)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(4)));
 
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
@@ -574,16 +574,16 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadAdd) {
   model()->Add(n2);
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   // Some adds and some deletes.
-  csync::SyncChangeList changes;
+  syncer::SyncChangeList changes;
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(1)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(1)));
 
-  csync::SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
+  syncer::SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_FALSE(error.IsSet());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
@@ -598,16 +598,16 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadDelete) {
   model()->Add(n2);
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   // Some adds and some deletes.
-  csync::SyncChangeList changes;
+  syncer::SyncChangeList changes;
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_DELETE, CreateNotification(3)));
+      syncer::SyncChange::ACTION_DELETE, CreateNotification(3)));
 
-  csync::SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
+  syncer::SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_FALSE(error.IsSet());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
@@ -622,20 +622,20 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadUpdates) {
   model()->Add(n2);
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   // Some adds and some deletes.
-  csync::SyncChangeList changes;
+  syncer::SyncChangeList changes;
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_UPDATE, CreateNotification(3)));
+      syncer::SyncChange::ACTION_UPDATE, CreateNotification(3)));
   AppNotification* n2_changed = n2->Copy();
   n2_changed->set_link_text(n2_changed->link_text() + "-changed");
   changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_UPDATE, n2_changed));
+      syncer::SyncChange::ACTION_UPDATE, n2_changed));
 
-  csync::SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
+  syncer::SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_FALSE(error.IsSet());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
@@ -647,14 +647,14 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesEmptyModelWithMax) {
   const std::string& ext_id = "e1";
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
   for (unsigned int i = 0;
        i < AppNotificationManager::kMaxNotificationPerApp * 2; i++) {
-    csync::SyncChangeList changes;
+    syncer::SyncChangeList changes;
     changes.push_back(CreateSyncChange(
-      csync::SyncChange::ACTION_ADD, CreateNotification(false, i, ext_id)));
+      syncer::SyncChange::ACTION_ADD, CreateNotification(false, i, ext_id)));
     model()->ProcessSyncChanges(FROM_HERE, changes);
     if (i < AppNotificationManager::kMaxNotificationPerApp) {
       EXPECT_EQ(i + 1,
@@ -678,9 +678,9 @@ TEST_F(AppNotificationManagerSyncTest, StopSyncing) {
 
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   EXPECT_TRUE(model()->sync_processor_.get());
   EXPECT_TRUE(model()->models_associated_);
@@ -694,9 +694,9 @@ TEST_F(AppNotificationManagerSyncTest, StopSyncing) {
 TEST_F(AppNotificationManagerSyncTest, AddsGetsSynced) {
   model()->MergeDataAndStartSyncing(
       syncable::APP_NOTIFICATIONS,
-      csync::SyncDataList(),
+      syncer::SyncDataList(),
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   AppNotification* n1 = CreateNotification(1);
   model()->Add(n1);
@@ -707,10 +707,10 @@ TEST_F(AppNotificationManagerSyncTest, AddsGetsSynced) {
 
   EXPECT_EQ(2U, processor()->change_list_size());
   EXPECT_TRUE(processor()->ContainsGuid(n1->guid()));
-  csync::SyncChange c1 = processor()->GetChangeByGuid(n1->guid());
-  AssertSyncChange(c1, csync::SyncChange::ACTION_ADD, *n1);
-  csync::SyncChange c2 = processor()->GetChangeByGuid(n2->guid());
-  AssertSyncChange(c2, csync::SyncChange::ACTION_ADD, *n2);
+  syncer::SyncChange c1 = processor()->GetChangeByGuid(n1->guid());
+  AssertSyncChange(c1, syncer::SyncChange::ACTION_ADD, *n1);
+  syncer::SyncChange c2 = processor()->GetChangeByGuid(n2->guid());
+  AssertSyncChange(c2, syncer::SyncChange::ACTION_ADD, *n2);
 }
 
 // Clear all gets pushed to sync.
@@ -721,7 +721,7 @@ TEST_F(AppNotificationManagerSyncTest, ClearAllGetsSynced) {
   scoped_ptr<AppNotification> n3(CreateNotification(false, 3, ext_id));
   scoped_ptr<AppNotification> n4(CreateNotification(4));
 
-  csync::SyncDataList initial_data;
+  syncer::SyncDataList initial_data;
   initial_data.push_back(
       AppNotificationManager::CreateSyncDataFromNotification(*n1));
   initial_data.push_back(
@@ -734,16 +734,16 @@ TEST_F(AppNotificationManagerSyncTest, ClearAllGetsSynced) {
       syncable::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      scoped_ptr<csync::SyncErrorFactory>(new csync::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
   model()->ClearAll(ext_id);
 
   EXPECT_EQ(3U, processor()->change_list_size());
   EXPECT_TRUE(processor()->ContainsGuid(n1->guid()));
-  csync::SyncChange c1 = processor()->GetChangeByGuid(n1->guid());
-  AssertSyncChange(c1, csync::SyncChange::ACTION_DELETE, *n1);
-  csync::SyncChange c2 = processor()->GetChangeByGuid(n2->guid());
-  AssertSyncChange(c2, csync::SyncChange::ACTION_DELETE, *n2);
-  csync::SyncChange c3 = processor()->GetChangeByGuid(n3->guid());
-  AssertSyncChange(c3, csync::SyncChange::ACTION_DELETE, *n3);
+  syncer::SyncChange c1 = processor()->GetChangeByGuid(n1->guid());
+  AssertSyncChange(c1, syncer::SyncChange::ACTION_DELETE, *n1);
+  syncer::SyncChange c2 = processor()->GetChangeByGuid(n2->guid());
+  AssertSyncChange(c2, syncer::SyncChange::ACTION_DELETE, *n2);
+  syncer::SyncChange c3 = processor()->GetChangeByGuid(n3->guid());
+  AssertSyncChange(c3, syncer::SyncChange::ACTION_DELETE, *n3);
 }

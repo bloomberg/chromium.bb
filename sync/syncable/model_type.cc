@@ -146,8 +146,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
 
 // Note: keep this consistent with GetModelType in syncable.cc!
 ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
-  const csync::SyncEntity& sync_entity =
-      static_cast<const csync::SyncEntity&>(sync_pb_entity);
+  const syncer::SyncEntity& sync_entity =
+      static_cast<const syncer::SyncEntity&>(sync_pb_entity);
   DCHECK(!sync_entity.id().IsRoot());  // Root shouldn't ever go over the wire.
 
   if (sync_entity.deleted())

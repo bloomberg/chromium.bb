@@ -25,7 +25,7 @@ const char kApplicationName[] = "chrome-sync";
 
 }  // namespace
 
-namespace csync {
+namespace syncer {
 
 ChromeInvalidationClient::Listener::~Listener() {}
 
@@ -52,7 +52,7 @@ void ChromeInvalidationClient::Start(
     const std::string& client_id, const std::string& client_info,
     const std::string& state,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const csync::WeakHandle<InvalidationStateTracker>&
+    const syncer::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     Listener* listener) {
   DCHECK(CalledOnValidThread());
@@ -359,4 +359,4 @@ void ChromeInvalidationClient::OnIncomingNotification(
   // Do nothing, since this is already handled by |invalidation_client_|.
 }
 
-}  // namespace csync
+}  // namespace syncer

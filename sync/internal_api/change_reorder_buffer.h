@@ -19,7 +19,7 @@
 #include "sync/internal_api/public/change_record.h"
 #include "sync/protocol/sync.pb.h"
 
-namespace csync {
+namespace syncer {
 
 // ChangeReorderBuffer is a utility type which accepts an unordered set
 // of changes (via its Push methods), and yields an ImmutableChangeRecordList
@@ -119,6 +119,6 @@ class ChangeReorderBuffer {
   DISALLOW_COPY_AND_ASSIGN(ChangeReorderBuffer);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_CHANGE_REORDER_BUFFER_H_

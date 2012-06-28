@@ -41,7 +41,7 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
   virtual ~FakeBackendDataTypeConfigurer() {}
 
   virtual void ConfigureDataTypes(
-      csync::ConfigureReason reason,
+      syncer::ConfigureReason reason,
       ModelTypeSet types_to_add,
       ModelTypeSet types_to_remove,
       NigoriState nigori_state,
@@ -118,8 +118,8 @@ class SyncDataTypeManagerImplTest
   // Configure the given DTM with the given desired types.
   void Configure(DataTypeManagerImpl* dtm,
                  const DataTypeManager::TypeSet& desired_types) {
-    const csync::ConfigureReason kReason =
-        csync::CONFIGURE_REASON_RECONFIGURATION;
+    const syncer::ConfigureReason kReason =
+        syncer::CONFIGURE_REASON_RECONFIGURATION;
     if (GetNigoriState() == BackendDataTypeConfigurer::WITH_NIGORI) {
       dtm->Configure(desired_types, kReason);
     } else {

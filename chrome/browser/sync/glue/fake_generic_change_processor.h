@@ -19,26 +19,26 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   virtual ~FakeGenericChangeProcessor();
 
   // Setters for GenericChangeProcessor implementation results.
-  void set_process_sync_changes_error(const csync::SyncError& error);
-  void set_get_sync_data_for_type_error(const csync::SyncError& error);
+  void set_process_sync_changes_error(const syncer::SyncError& error);
+  void set_get_sync_data_for_type_error(const syncer::SyncError& error);
   void set_sync_model_has_user_created_nodes(bool has_nodes);
   void set_sync_model_has_user_created_nodes_success(bool success);
   void set_crypto_ready_if_necessary(bool crypto_ready);
 
   // GenericChangeProcessor implementations.
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE;
-  virtual csync::SyncError GetSyncDataForType(
+      const syncer::SyncChangeList& change_list) OVERRIDE;
+  virtual syncer::SyncError GetSyncDataForType(
       syncable::ModelType type,
-      csync::SyncDataList* current_sync_data) OVERRIDE;
+      syncer::SyncDataList* current_sync_data) OVERRIDE;
   virtual bool SyncModelHasUserCreatedNodes(syncable::ModelType type,
                                             bool* has_nodes) OVERRIDE;
   virtual bool CryptoReadyIfNecessary(syncable::ModelType type) OVERRIDE;
 
  private:
-  csync::SyncError process_sync_changes_error_;
-  csync::SyncError get_sync_data_for_type_error_;
+  syncer::SyncError process_sync_changes_error_;
+  syncer::SyncError get_sync_data_for_type_error_;
   bool sync_model_has_user_created_nodes_;
   bool sync_model_has_user_created_nodes_success_;
   bool crypto_ready_if_necessary_;

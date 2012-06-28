@@ -37,7 +37,7 @@ namespace syncable {
 class WriteTransaction;
 }
 
-namespace csync {
+namespace syncer {
 class ModelSafeWorker;
 
 namespace sessions {
@@ -247,6 +247,6 @@ class ScopedSetSessionWriteTransaction {
 };
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_SESSIONS_SYNC_SESSION_H_

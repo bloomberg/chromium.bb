@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "sync/util/encryptor.h"
 
-namespace csync {
+namespace syncer {
 
 // Encryptor which simply base64-encodes the plaintext to get the
 // ciphertext.  Obviously, this should be used only for testing.
@@ -24,6 +24,6 @@ class FakeEncryptor : public Encryptor {
                              std::string* plaintext) OVERRIDE;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_TEST_FAKE_ENCRYPTOR_H_

@@ -4,11 +4,11 @@
 
 #include "sync/engine/sync_engine_event.h"
 
-namespace csync {
+namespace syncer {
 
 SyncEngineEvent::SyncEngineEvent(EventCause cause) : what_happened(cause) {
 }
 
 SyncEngineEvent::~SyncEngineEvent() {}
 
-}  // namespace csync
+}  // namespace syncer

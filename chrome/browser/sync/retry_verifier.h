@@ -8,11 +8,11 @@
 
 #include "base/time.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -34,9 +34,9 @@ class RetryVerifier {
 
   // Initialize with the current sync session snapshot. Using the snapshot
   // we will figure out when the first retry sync happened.
-  void Initialize(const csync::sessions::SyncSessionSnapshot& snap);
+  void Initialize(const syncer::sessions::SyncSessionSnapshot& snap);
   void VerifyRetryInterval(
-      const csync::sessions::SyncSessionSnapshot& snap);
+      const syncer::sessions::SyncSessionSnapshot& snap);
   bool done() const { return done_; }
   bool Succeeded() const { return done() && success_; }
 

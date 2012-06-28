@@ -28,7 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
-using csync::sessions::SyncSessionSnapshot;
+using syncer::sessions::SyncSessionSnapshot;
 
 // TODO(rsimha): Remove the following lines once crbug.com/91863 is fixed.
 // The amount of time for which we wait for a live sync operation to complete.
@@ -286,7 +286,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         break;
       }
       if (service()->passphrase_required_reason() ==
-              csync::REASON_DECRYPTION) {
+              syncer::REASON_DECRYPTION) {
         // A passphrase is required for decryption and we don't have it. Do not
         // wait any more.
         SignalStateCompleteWithNextState(SET_PASSPHRASE_FAILED);
@@ -399,7 +399,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_ACTIONABLE_ERROR: {
       DVLOG(1) << GetClientInfoString("WAITING_FOR_ACTIONABLE_ERROR");
       ProfileSyncService::Status status = GetStatus();
-      if (status.sync_protocol_error.action != csync::UNKNOWN_ACTION &&
+      if (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
           service_->HasUnrecoverableError() == true) {
         // An actionable error has been detected.
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
@@ -597,12 +597,12 @@ bool ProfileSyncServiceHarness::AwaitExponentialBackoffVerification() {
 
 bool ProfileSyncServiceHarness::AwaitActionableError() {
   ProfileSyncService::Status status = GetStatus();
-  CHECK(status.sync_protocol_error.action == csync::UNKNOWN_ACTION);
+  CHECK(status.sync_protocol_error.action == syncer::UNKNOWN_ACTION);
   wait_state_ = WAITING_FOR_ACTIONABLE_ERROR;
   AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
       "Waiting for actionable error");
   status = GetStatus();
-  return (status.sync_protocol_error.action != csync::UNKNOWN_ACTION &&
+  return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
           service_->HasUnrecoverableError());
 }
 
@@ -796,7 +796,7 @@ bool ProfileSyncServiceHarness::IsFullySynced() {
   // good chance that we're now fully up to date.
   bool is_fully_synced =
       snap.model_neutral_state().num_successful_commits == 0
-      && snap.model_neutral_state().commit_result == csync::SYNCER_OK
+      && snap.model_neutral_state().commit_result == syncer::SYNCER_OK
       && IsDataSyncedImpl(snap);
 
   DVLOG(1) << GetClientInfoString(
@@ -1002,7 +1002,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
        << ", did_commit: "
        << (snap.model_neutral_state().num_successful_commits == 0 &&
-           snap.model_neutral_state().commit_result == csync::SYNCER_OK)
+           snap.model_neutral_state().commit_result == syncer::SYNCER_OK)
        << ", encryption conflicts: "
        << snap.num_encryption_conflicts()
        << ", hierarchy conflicts: "
@@ -1014,7 +1014,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", num_updates_downloaded : "
        << snap.model_neutral_state().num_updates_downloaded_total
        << ", passphrase_required_reason: "
-       << csync::PassphraseRequiredReasonToString(
+       << syncer::PassphraseRequiredReasonToString(
            service()->passphrase_required_reason())
        << ", notifications_enabled: "
        << status.notifications_enabled

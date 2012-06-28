@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace csync {
+namespace syncer {
 
 const char* NotificationsDisabledReasonToString(
     NotificationsDisabledReason reason) {
@@ -38,4 +38,4 @@ NotificationsDisabledReason FromNotifierReason(
   }
 }
 
-}  // sync_notifier
+}  // namespace syncer

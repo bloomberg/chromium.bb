@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "sync/api/sync_error.h"
 
-namespace csync {
+namespace syncer {
 
 class SyncErrorFactory {
  public:
@@ -24,6 +24,6 @@ class SyncErrorFactory {
       const std::string& message) = 0;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_API_SYNC_ERROR_FACTORY_H_

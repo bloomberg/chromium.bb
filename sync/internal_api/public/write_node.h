@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace csync {
+namespace syncer {
 class Cryptographer;
 class TestBookmarkModelAssociator;
 }
@@ -38,7 +38,7 @@ class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
 
-namespace csync {
+namespace syncer {
 
 class WriteTransaction;
 
@@ -199,6 +199,6 @@ class WriteNode : public BaseNode {
   DISALLOW_COPY_AND_ASSIGN(WriteNode);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_WRITE_NODE_H_

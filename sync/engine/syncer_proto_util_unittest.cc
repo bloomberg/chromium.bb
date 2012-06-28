@@ -28,7 +28,7 @@
 using syncable::Blob;
 using ::testing::_;
 
-namespace csync {
+namespace syncer {
 using sessions::SyncSessionContext;
 
 class MockDelegate : public sessions::SyncSession::Delegate {
@@ -203,7 +203,7 @@ TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
   EXPECT_EQ(msg.store_birthday(), "meat");
 }
 
-class DummyConnectionManager : public csync::ServerConnectionManager {
+class DummyConnectionManager : public syncer::ServerConnectionManager {
  public:
   DummyConnectionManager()
       : ServerConnectionManager("unused", 0, false),
@@ -263,7 +263,7 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
 TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
   ThrottledDataTypeTracker tracker(NULL);
   SyncProtocolError error;
-  error.error_type = csync::THROTTLED;
+  error.error_type = syncer::THROTTLED;
   syncable::ModelTypeSet types;
   types.Put(syncable::BOOKMARKS);
   types.Put(syncable::PASSWORDS);
@@ -278,7 +278,7 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
   ThrottledDataTypeTracker tracker(NULL);
   MockDelegate delegate;
   SyncProtocolError error;
-  error.error_type = csync::THROTTLED;
+  error.error_type = syncer::THROTTLED;
 
   base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
 
@@ -287,4 +287,4 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
   SyncerProtoUtil::HandleThrottleError(error, ticks, &tracker, &delegate);
   EXPECT_TRUE(tracker.GetThrottledTypes().Empty());
 }
-}  // namespace csync
+}  // namespace syncer

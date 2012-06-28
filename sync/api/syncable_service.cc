@@ -4,8 +4,8 @@
 
 #include "sync/api/syncable_service.h"
 
-namespace csync {
+namespace syncer {
 
 SyncableService::~SyncableService() {}
 
-}  // namespace csync
+}  // namespace syncer

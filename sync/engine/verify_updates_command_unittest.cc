@@ -13,7 +13,7 @@
 #include "sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 using sessions::StatusController;
 using std::string;
@@ -105,4 +105,4 @@ TEST_F(VerifyUpdatesCommandTest, AllVerified) {
   }
 }
 
-}
+}  // namespace syncer

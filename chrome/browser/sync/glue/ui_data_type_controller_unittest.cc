@@ -105,7 +105,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   ModelLoadCallbackMock model_load_callback_;
   scoped_refptr<UIDataTypeController> preference_dtc_;
   scoped_ptr<FakeGenericChangeProcessor> change_processor_;
-  csync::FakeSyncableService syncable_service_;
+  syncer::FakeSyncableService syncable_service_;
 };
 
 // Start the DTC. Verify that the callback is called with OK, the
@@ -165,7 +165,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
-      csync::SyncError(FROM_HERE, "Error", type_));
+      syncer::SyncError(FROM_HERE, "Error", type_));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());

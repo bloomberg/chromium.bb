@@ -43,10 +43,10 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   // Overrides of NonFrontendDataTypeController methods.
   virtual void StartDone(DataTypeController::StartResult result,
                          DataTypeController::State new_state,
-                         const csync::SyncError& error) OVERRIDE;
+                         const syncer::SyncError& error) OVERRIDE;
   virtual void StartDoneImpl(DataTypeController::StartResult result,
                              DataTypeController::State new_state,
-                             const csync::SyncError& error) OVERRIDE;
+                             const syncer::SyncError& error) OVERRIDE;
 
  private:
   // This overrides the same method in |NonFrontendDataTypeController|.
@@ -93,7 +93,7 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   // DataType's thread.
   // Lifetime: it gets set in StartAssociation() and released in
   // StopLocalService().
-  base::WeakPtr<csync::SyncableService> local_service_;
+  base::WeakPtr<syncer::SyncableService> local_service_;
 };
 
 }  // namespace browser_sync

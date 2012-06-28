@@ -28,7 +28,7 @@ struct PasswordForm;
 }
 }
 
-namespace csync {
+namespace syncer {
 class WriteNode;
 class WriteTransaction;
 }
@@ -56,13 +56,13 @@ class PasswordModelAssociator
   // PerDataTypeAssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual csync::SyncError AssociateModels() OVERRIDE;
+  virtual syncer::SyncError AssociateModels() OVERRIDE;
 
   // Delete all password nodes.
-  bool DeleteAllNodes(csync::WriteTransaction* trans);
+  bool DeleteAllNodes(syncer::WriteTransaction* trans);
 
   // Clears all associations.
-  virtual csync::SyncError DisassociateModels() OVERRIDE;
+  virtual syncer::SyncError DisassociateModels() OVERRIDE;
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
@@ -79,9 +79,9 @@ class PasswordModelAssociator
 
   // Not implemented.
   virtual bool InitSyncNodeFromChromeId(const std::string& node_id,
-                                        csync::BaseNode* sync_node) OVERRIDE;
+                                        syncer::BaseNode* sync_node) OVERRIDE;
 
-  // Returns the sync id for the given password name, or csync::kInvalidId
+  // Returns the sync id for the given password name, or syncer::kInvalidId
   // if the password name is not associated to any sync id.
   virtual int64 GetSyncIdFromChromeId(const std::string& node_id) OVERRIDE;
 
@@ -95,7 +95,7 @@ class PasswordModelAssociator
   // |sync_id| with that node's id.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  csync::SyncError WriteToPasswordStore(const PasswordVector* new_passwords,
+  syncer::SyncError WriteToPasswordStore(const PasswordVector* new_passwords,
                                  const PasswordVector* updated_passwords,
                                  const PasswordVector* deleted_passwords);
 
@@ -114,7 +114,7 @@ class PasswordModelAssociator
                              const webkit::forms::PasswordForm& password_form,
                              webkit::forms::PasswordForm* new_password);
   static void WriteToSyncNode(const webkit::forms::PasswordForm& password_form,
-                              csync::WriteNode* node);
+                              syncer::WriteNode* node);
 
   // Called at various points in model association to determine if the
   // user requested an abort.

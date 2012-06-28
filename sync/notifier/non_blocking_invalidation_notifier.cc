@@ -13,7 +13,7 @@
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_notifier.h"
 
-namespace csync {
+namespace syncer {
 
 class NonBlockingInvalidationNotifier::Core
     : public base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>,
@@ -23,7 +23,7 @@ class NonBlockingInvalidationNotifier::Core
   // Called on parent thread.  |delegate_observer| should be
   // initialized.
   explicit Core(
-      const csync::WeakHandle<SyncNotifierObserver>&
+      const syncer::WeakHandle<SyncNotifierObserver>&
           delegate_observer);
 
   // Helpers called on I/O thread.
@@ -31,7 +31,7 @@ class NonBlockingInvalidationNotifier::Core
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const std::string& initial_invalidation_state,
-      const csync::WeakHandle<InvalidationStateTracker>&
+      const syncer::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
@@ -56,7 +56,7 @@ class NonBlockingInvalidationNotifier::Core
   ~Core();
 
   // The variables below should be used only on the I/O thread.
-  const csync::WeakHandle<SyncNotifierObserver> delegate_observer_;
+  const syncer::WeakHandle<SyncNotifierObserver> delegate_observer_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
@@ -64,7 +64,7 @@ class NonBlockingInvalidationNotifier::Core
 };
 
 NonBlockingInvalidationNotifier::Core::Core(
-    const csync::WeakHandle<SyncNotifierObserver>&
+    const syncer::WeakHandle<SyncNotifierObserver>&
         delegate_observer)
     : delegate_observer_(delegate_observer) {
   DCHECK(delegate_observer_.IsInitialized());
@@ -77,7 +77,7 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const csync::WeakHandle<InvalidationStateTracker>&
+    const syncer::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info) {
   DCHECK(notifier_options.request_context_getter);
@@ -155,12 +155,12 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const csync::WeakHandle<InvalidationStateTracker>&
+    const syncer::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
         : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
           core_(
-              new Core(csync::MakeWeakHandle(
+              new Core(syncer::MakeWeakHandle(
                   weak_ptr_factory_.GetWeakPtr()))),
           parent_task_runner_(
               base::ThreadTaskRunnerHandle::Get()),
@@ -275,4 +275,4 @@ void NonBlockingInvalidationNotifier::OnIncomingNotification(
                     OnIncomingNotification(type_payloads, source));
 }
 
-}  // namespace csync
+}  // namespace syncer

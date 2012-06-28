@@ -31,9 +31,9 @@ syncable::ModelType AutofillDataTypeController::type() const {
   return syncable::AUTOFILL;
 }
 
-csync::ModelSafeGroup AutofillDataTypeController::model_safe_group()
+syncer::ModelSafeGroup AutofillDataTypeController::model_safe_group()
     const {
-  return csync::GROUP_DB;
+  return syncer::GROUP_DB;
 }
 
 void AutofillDataTypeController::Observe(

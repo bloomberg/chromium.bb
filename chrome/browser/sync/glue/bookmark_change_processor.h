@@ -15,15 +15,15 @@
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 
-namespace csync {
+namespace syncer {
 class WriteNode;
 class WriteTransaction;
-}  // namespace csync
+}  // namespace syncer
 
 namespace browser_sync {
 
 // This class is responsible for taking changes from the BookmarkModel
-// and applying them to the csync 'syncable' model, and vice versa.
+// and applying them to the sync API 'syncable' model, and vice versa.
 // All operations and use of this class are from the UI thread.
 // This is currently bookmarks specific.
 class BookmarkChangeProcessor : public BookmarkModelObserver,
@@ -34,7 +34,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   virtual ~BookmarkChangeProcessor() {}
 
   // BookmarkModelObserver implementation.
-  // BookmarkModel -> csync model change application.
+  // BookmarkModel -> sync API model change application.
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
@@ -59,15 +59,15 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // The change processor implementation, responsible for applying changes from
   // the sync model to the bookmarks model.
   virtual void ApplyChangesFromSyncModel(
-      const csync::BaseTransaction* trans,
-      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::BaseTransaction* trans,
+      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // The following methods are static and hence may be invoked at any time,
   // and do not depend on having a running ChangeProcessor.
   // Creates a bookmark node under the given parent node from the given sync
   // node. Returns the newly created node.
   static const BookmarkNode* CreateBookmarkNode(
-      csync::BaseNode* sync_node,
+      syncer::BaseNode* sync_node,
       const BookmarkNode* parent,
       BookmarkModel* model,
       int index);
@@ -76,7 +76,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // Returns whether the favicon was set in the bookmark node.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
   // for the bookmark in question.
-  static bool SetBookmarkFavicon(csync::BaseNode* sync_node,
+  static bool SetBookmarkFavicon(syncer::BaseNode* sync_node,
                                  const BookmarkNode* bookmark_node,
                                  BookmarkModel* model);
 
@@ -91,7 +91,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // Sets the favicon of the given sync node from the given bookmark node.
   static void SetSyncNodeFavicon(const BookmarkNode* bookmark_node,
                                  BookmarkModel* model,
-                                 csync::WriteNode* sync_node);
+                                 syncer::WriteNode* sync_node);
 
   // Treat the |index|th child of |parent| as a newly added node, and create a
   // corresponding node in the sync domain using |trans|.  All properties
@@ -101,7 +101,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   static int64 CreateSyncNode(const BookmarkNode* parent,
                               BookmarkModel* model,
                               int index,
-                              csync::WriteTransaction* trans,
+                              syncer::WriteTransaction* trans,
                               BookmarkModelAssociator* associator,
                               DataTypeErrorHandler* error_handler);
 
@@ -118,7 +118,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // Create a bookmark node corresponding to |src| if one is not already
   // associated with |src|.  Returns the node that was created or updated.
   const BookmarkNode* CreateOrUpdateBookmarkNode(
-      csync::BaseNode* src,
+      syncer::BaseNode* src,
       BookmarkModel* model);
 
   // Helper function to determine the appropriate insertion index of sync node
@@ -128,7 +128,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // position.
   int CalculateBookmarkModelInsertionIndex(
       const BookmarkNode* parent,
-      const csync::BaseNode* node) const;
+      const syncer::BaseNode* node) const;
 
   // Helper function used to fix the position of a sync node so that it matches
   // the position of a corresponding bookmark model node. |parent| and
@@ -141,14 +141,14 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   static bool PlaceSyncNode(MoveOrCreate operation,
                             const BookmarkNode* parent,
                             int index,
-                            csync::WriteTransaction* trans,
-                            csync::WriteNode* dst,
+                            syncer::WriteTransaction* trans,
+                            syncer::WriteNode* dst,
                             BookmarkModelAssociator* associator);
 
   // Copy properties (but not position) from |src| to |dst|.
   static void UpdateSyncNodeProperties(const BookmarkNode* src,
                                        BookmarkModel* model,
-                                       csync::WriteNode* dst);
+                                       syncer::WriteNode* dst);
 
   // Helper function to encode a bookmark's favicon into a PNG byte vector.
   static void EncodeFavicon(const BookmarkNode* src,
@@ -157,7 +157,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
 
   // Remove the sync node corresponding to |node|.  It shouldn't have
   // any children.
-  void RemoveOneSyncNode(csync::WriteTransaction* trans,
+  void RemoveOneSyncNode(syncer::WriteTransaction* trans,
                          const BookmarkNode* node);
 
   // Remove all the sync nodes associated with |node| and its children.

@@ -23,7 +23,7 @@ using crypto::Encryptor;
 using crypto::HMAC;
 using crypto::SymmetricKey;
 
-namespace csync {
+namespace syncer {
 
 // NigoriStream simplifies the concatenation operation of the Nigori protocol.
 class NigoriStream {
@@ -254,4 +254,4 @@ bool Nigori::ExportKeys(std::string* user_key,
       mac_key_->GetRawKey(mac_key);
 }
 
-}  // namespace csync
+}  // namespace syncer

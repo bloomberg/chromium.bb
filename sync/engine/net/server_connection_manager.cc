@@ -20,7 +20,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 
-namespace csync {
+namespace syncer {
 
 using std::ostream;
 using std::string;
@@ -330,4 +330,4 @@ std::ostream& operator << (std::ostream& s, const struct HttpResponse& hr) {
   return s;
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-namespace csync {
+namespace syncer {
 
 SyncChange::SyncChange() : change_type_(ACTION_INVALID) {
 }
@@ -74,4 +74,4 @@ void PrintTo(const SyncChange& sync_change, std::ostream* os) {
   *os << sync_change.ToString();
 }
 
-}  // namespace csync
+}  // namespace syncer

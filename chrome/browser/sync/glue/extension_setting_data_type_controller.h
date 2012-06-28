@@ -15,7 +15,7 @@ class Profile;
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;
 
-namespace csync {
+namespace syncer {
 class SyncableService;
 }
 
@@ -37,7 +37,7 @@ class ExtensionSettingDataTypeController
 
   // NonFrontendDataTypeController implementation
   virtual syncable::ModelType type() const OVERRIDE;
-  virtual csync::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
  private:
   virtual ~ExtensionSettingDataTypeController();

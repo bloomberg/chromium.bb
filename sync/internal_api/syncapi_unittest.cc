@@ -67,24 +67,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ExpectDictStringValue;
-using csync::Cryptographer;
-using csync::FakeEncryptor;
-using csync::FakeExtensionsActivityMonitor;
-using csync::HasArgsAsList;
-using csync::HasDetailsAsDictionary;
-using csync::KeyParams;
-using csync::kNigoriTag;
-using csync::JsArgList;
-using csync::JsBackend;
-using csync::JsEventHandler;
-using csync::JsReplyHandler;
-using csync::MockJsEventHandler;
-using csync::MockJsReplyHandler;
-using csync::ModelSafeRoutingInfo;
-using csync::ModelSafeWorker;
-using csync::sessions::SyncSessionSnapshot;
-using csync::TestUnrecoverableErrorHandler;
-using csync::WeakHandle;
+using syncer::Cryptographer;
+using syncer::FakeEncryptor;
+using syncer::FakeExtensionsActivityMonitor;
+using syncer::HasArgsAsList;
+using syncer::HasDetailsAsDictionary;
+using syncer::KeyParams;
+using syncer::kNigoriTag;
+using syncer::JsArgList;
+using syncer::JsBackend;
+using syncer::JsEventHandler;
+using syncer::JsReplyHandler;
+using syncer::MockJsEventHandler;
+using syncer::MockJsReplyHandler;
+using syncer::ModelSafeRoutingInfo;
+using syncer::ModelSafeWorker;
+using syncer::sessions::SyncSessionSnapshot;
+using syncer::TestUnrecoverableErrorHandler;
+using syncer::WeakHandle;
 using syncable::IS_DEL;
 using syncable::IS_UNSYNCED;
 using syncable::kEncryptedString;
@@ -100,7 +100,7 @@ using testing::Invoke;
 using testing::SaveArg;
 using testing::StrictMock;
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -121,7 +121,7 @@ void ExpectTimeValue(const base::Time& expected_value,
                      const DictionaryValue& value, const std::string& key) {
   std::string time_str;
   EXPECT_TRUE(value.GetString(key, &time_str));
-  EXPECT_EQ(csync::GetTimeDebugString(expected_value), time_str);
+  EXPECT_EQ(syncer::GetTimeDebugString(expected_value), time_str);
 }
 
 // Makes a non-folder child of the root node.  Returns the id of the
@@ -133,9 +133,9 @@ int64 MakeNode(UserShare* share,
   ReadNode root_node(&trans);
   root_node.InitByRootLookup();
   WriteNode node(&trans);
-  csync::WriteNode::InitUniqueByCreationResult result =
+  syncer::WriteNode::InitUniqueByCreationResult result =
       node.InitUniqueByCreation(model_type, root_node, client_tag);
-  EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+  EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
   node.SetIsFolder(false);
   return node.GetId();
 }
@@ -150,9 +150,9 @@ int64 MakeNodeWithParent(UserShare* share,
   ReadNode parent_node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
-  csync::WriteNode::InitUniqueByCreationResult result =
+  syncer::WriteNode::InitUniqueByCreationResult result =
       node.InitUniqueByCreation(model_type, parent_node, client_tag);
-  EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+  EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
   node.SetIsFolder(false);
   return node.GetId();
 }
@@ -245,7 +245,7 @@ class SyncApiTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  csync::TestUserShare test_user_share_;
+  syncer::TestUserShare test_user_share_;
 };
 
 TEST_F(SyncApiTest, SanityCheckTest) {
@@ -381,9 +381,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
     folder_id = folder_node.GetId();
 
     WriteNode wnode(&trans);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         wnode.InitUniqueByCreation(syncable::BOOKMARKS, root_node, "testtag");
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     wnode.SetIsFolder(false);
     wnode.SetTitle(UTF8ToWide(test_title));
 
@@ -423,9 +423,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
     WriteNode wnode(&trans);
     // This will undelete the tag.
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         wnode.InitUniqueByCreation(syncable::BOOKMARKS, folder_node, "testtag");
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     EXPECT_EQ(wnode.GetIsFolder(), false);
     EXPECT_EQ(wnode.GetParentId(), folder_node.GetId());
     EXPECT_EQ(wnode.GetId(), node_id);
@@ -457,10 +457,10 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     root_node.InitByRootLookup();
 
     WriteNode password_node(&trans);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         password_node.InitUniqueByCreation(syncable::PASSWORDS,
                                            root_node, "foo");
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     sync_pb::PasswordSpecificsData data;
     data.set_password_value("secret");
     password_node.SetPasswordSpecifics(data);
@@ -493,16 +493,16 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     root_node.InitByRootLookup();
 
     WriteNode bookmark_node(&trans);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         bookmark_node.InitUniqueByCreation(syncable::BOOKMARKS,
                                            root_node, "foo");
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     bookmark_node.SetTitle(UTF8ToWide("foo"));
 
     WriteNode pref_node(&trans);
     result =
         pref_node.InitUniqueByCreation(syncable::PREFERENCES, root_node, "bar");
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     pref_node.SetTitle(UTF8ToWide("bar"));
   }
   {
@@ -640,9 +640,9 @@ TEST_F(SyncApiTest, EmptyTags) {
   root_node.InitByRootLookup();
   WriteNode node(&trans);
   std::string empty_tag;
-  csync::WriteNode::InitUniqueByCreationResult result =
+  syncer::WriteNode::InitUniqueByCreationResult result =
       node.InitUniqueByCreation(syncable::TYPED_URLS, root_node, empty_tag);
-  EXPECT_NE(csync::WriteNode::INIT_SUCCESS, result);
+  EXPECT_NE(syncer::WriteNode::INIT_SUCCESS, result);
   EXPECT_EQ(BaseNode::INIT_FAILED_PRECONDITION,
             node.InitByTagLookup(empty_tag));
 }
@@ -694,7 +694,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(const WeakHandle<JsBackend>&, bool));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
   MOCK_METHOD2(OnPassphraseRequired,
-               void(csync::PassphraseRequiredReason,
+               void(syncer::PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD0(OnPassphraseAccepted, void());  // NOLINT
   MOCK_METHOD1(OnBootstrapTokenUpdated, void(const std::string&));  // NOLINT
@@ -704,13 +704,13 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnActionableError,
-               void(const csync::SyncProtocolError&));  // NOLINT
+               void(const syncer::SyncProtocolError&));  // NOLINT
 };
 
-class SyncNotifierMock : public csync::SyncNotifier {
+class SyncNotifierMock : public syncer::SyncNotifier {
  public:
-  MOCK_METHOD1(AddObserver, void(csync::SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(csync::SyncNotifierObserver*));
+  MOCK_METHOD1(AddObserver, void(syncer::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(syncer::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials,
@@ -787,7 +787,7 @@ class SyncManagerTest : public testing::Test,
                        &extensions_activity_monitor_, this,
                        credentials,
                        sync_notifier_mock_, "",
-                       csync::SyncManager::TEST_IN_MEMORY,
+                       syncer::SyncManager::TEST_IN_MEMORY,
                        &encryptor_,
                        &handler_,
                        NULL);
@@ -814,12 +814,12 @@ class SyncManagerTest : public testing::Test,
   }
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
-    (*out)[syncable::NIGORI] = csync::GROUP_PASSIVE;
-    (*out)[syncable::BOOKMARKS] = csync::GROUP_PASSIVE;
-    (*out)[syncable::THEMES] = csync::GROUP_PASSIVE;
-    (*out)[syncable::SESSIONS] = csync::GROUP_PASSIVE;
-    (*out)[syncable::PASSWORDS] = csync::GROUP_PASSIVE;
-    (*out)[syncable::PREFERENCES] = csync::GROUP_PASSIVE;
+    (*out)[syncable::NIGORI] = syncer::GROUP_PASSIVE;
+    (*out)[syncable::BOOKMARKS] = syncer::GROUP_PASSIVE;
+    (*out)[syncable::THEMES] = syncer::GROUP_PASSIVE;
+    (*out)[syncable::SESSIONS] = syncer::GROUP_PASSIVE;
+    (*out)[syncable::PASSWORDS] = syncer::GROUP_PASSIVE;
+    (*out)[syncable::PREFERENCES] = syncer::GROUP_PASSIVE;
   }
 
   virtual void OnChangesApplied(
@@ -871,13 +871,13 @@ class SyncManagerTest : public testing::Test,
   }
 
   void SyncNotifierAddObserver(
-      csync::SyncNotifierObserver* sync_notifier_observer) {
+      syncer::SyncNotifierObserver* sync_notifier_observer) {
     EXPECT_EQ(NULL, sync_notifier_observer_);
     sync_notifier_observer_ = sync_notifier_observer;
   }
 
   void SyncNotifierRemoveObserver(
-      csync::SyncNotifierObserver* sync_notifier_observer) {
+      syncer::SyncNotifierObserver* sync_notifier_observer) {
     EXPECT_EQ(sync_notifier_observer_, sync_notifier_observer);
     sync_notifier_observer_ = NULL;
   }
@@ -942,7 +942,7 @@ class SyncManagerTest : public testing::Test,
   SyncManager sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
-  csync::SyncNotifierObserver* sync_notifier_observer_;
+  syncer::SyncNotifierObserver* sync_notifier_observer_;
   int update_enabled_types_call_count_;
 };
 
@@ -1266,17 +1266,17 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
 
   sync_manager_.SimulateEnableNotificationsForTest();
   sync_manager_.SimulateDisableNotificationsForTest(
-      csync::TRANSIENT_NOTIFICATION_ERROR);
+      syncer::TRANSIENT_NOTIFICATION_ERROR);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
   sync_manager_.SimulateEnableNotificationsForTest();
   sync_manager_.SimulateDisableNotificationsForTest(
-      csync::TRANSIENT_NOTIFICATION_ERROR);
+      syncer::TRANSIENT_NOTIFICATION_ERROR);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
   sync_manager_.SimulateEnableNotificationsForTest();
   sync_manager_.SimulateDisableNotificationsForTest(
-      csync::TRANSIENT_NOTIFICATION_ERROR);
+      syncer::TRANSIENT_NOTIFICATION_ERROR);
 
   // Should trigger the replies.
   PumpLoop();
@@ -1577,10 +1577,10 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
     root_node.InitByRootLookup();
 
     WriteNode password_node(&trans);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         password_node.InitUniqueByCreation(syncable::PASSWORDS,
                                            root_node, "foo");
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     sync_pb::PasswordSpecificsData data;
     data.set_password_value("secret");
     password_node.SetPasswordSpecifics(data);
@@ -1811,9 +1811,9 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
     root_node.InitByRootLookup();
 
     WriteNode password_node(&trans);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         password_node.InitUniqueByCreation(syncable::PASSWORDS, root_node, tag);
-    EXPECT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    EXPECT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     node_id = password_node.GetId();
   }
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
@@ -1843,7 +1843,7 @@ TEST_F(SyncManagerTest, NudgeDelayTest) {
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::AUTOFILL),
       base::TimeDelta::FromSeconds(
-          csync::kDefaultShortPollIntervalSeconds));
+          syncer::kDefaultShortPollIntervalSeconds));
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(syncable::PREFERENCES),
       base::TimeDelta::FromMilliseconds(
@@ -2462,7 +2462,7 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    csync::Cryptographer* crypto = trans.GetCryptographer();
+    syncer::Cryptographer* crypto = trans.GetCryptographer();
     sync_pb::EntitySpecifics bm_specifics;
     bm_specifics.mutable_bookmark()->set_title("title");
     bm_specifics.mutable_bookmark()->set_url("url");
@@ -2510,4 +2510,4 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
   }
 }
 
-}  // namespace csync
+}  // namespace syncer

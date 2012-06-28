@@ -9,7 +9,7 @@
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 
-namespace csync {
+namespace syncer {
 
 void PrintTo(const JsArgList& args, ::std::ostream* os) {
   *os << args.ToString();
@@ -133,5 +133,5 @@ WeakHandle<JsReplyHandler> MockJsReplyHandler::AsWeakHandle() {
   return MakeWeakHandle(AsWeakPtr());
 }
 
-}  // namespace csync
+}  // namespace syncer
 

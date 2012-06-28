@@ -25,7 +25,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace csync {
+namespace syncer {
 
 // The channel to use for sync notifications.
 extern const char* kSyncP2PNotificationChannel;
@@ -137,6 +137,6 @@ class P2PNotifier
   syncable::ModelTypeSet enabled_types_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_P2P_NOTIFIER_H_

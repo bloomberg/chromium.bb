@@ -9,7 +9,7 @@
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace csync {
+namespace syncer {
 
 class MockInvalidationStateTracker
     : public InvalidationStateTracker,
@@ -24,6 +24,6 @@ class MockInvalidationStateTracker
   MOCK_METHOD1(SetInvalidationState, void(const std::string&));
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_MOCK_INVALIDATION_STATE_TRACKER_H_

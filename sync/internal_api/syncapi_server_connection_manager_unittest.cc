@@ -17,11 +17,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
-using csync::HttpResponse;
-using csync::ServerConnectionManager;
-using csync::ScopedServerStatusWatcher;
+using syncer::HttpResponse;
+using syncer::ServerConnectionManager;
+using syncer::ScopedServerStatusWatcher;
 
-namespace csync {
+namespace syncer {
 namespace {
 
 class BlockingHttpPost : public HttpPostProviderInterface {
@@ -111,4 +111,4 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   abort_thread.Stop();
 }
 
-}  // namespace csync
+}  // namespace syncer

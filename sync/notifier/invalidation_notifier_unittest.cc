@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -48,7 +48,7 @@ class InvalidationNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             InvalidationVersionMap(),
             initial_invalidation_state,
-            csync::MakeWeakHandle(mock_tracker_.AsWeakPtr()),
+            syncer::MakeWeakHandle(mock_tracker_.AsWeakPtr()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }
@@ -127,4 +127,4 @@ TEST_F(InvalidationNotifierTest, MigrateState) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

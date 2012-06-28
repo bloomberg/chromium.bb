@@ -17,7 +17,7 @@ namespace syncable {
 class WriteTransaction;
 }
 
-namespace csync {
+namespace syncer {
 
 // Verifies the response from a GetUpdates request. All invalid updates will be
 // noted in the SyncSession after this command is executed.
@@ -45,6 +45,6 @@ class VerifyUpdatesCommand : public ModelChangingSyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(VerifyUpdatesCommand);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_VERIFY_UPDATES_COMMAND_H_

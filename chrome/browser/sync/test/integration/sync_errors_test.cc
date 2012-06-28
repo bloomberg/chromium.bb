@@ -61,9 +61,9 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   SetTitle(0, node1, L"new_title1");
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
 
-  csync::SyncProtocolError protocol_error;
-  protocol_error.error_type = csync::TRANSIENT_ERROR;
-  protocol_error.action = csync::UPGRADE_CLIENT;
+  syncer::SyncProtocolError protocol_error;
+  protocol_error.error_type = syncer::TRANSIENT_ERROR;
+  protocol_error.action = syncer::UPGRADE_CLIENT;
   protocol_error.error_description = "Not My Fault";
   protocol_error.url = "www.google.com";
   TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
@@ -84,8 +84,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, ErrorWhileSettingUp) {
   ASSERT_TRUE(SetupClients());
 
-  csync::SyncProtocolError protocol_error;
-  protocol_error.error_type = csync::TRANSIENT_ERROR;
+  syncer::SyncProtocolError protocol_error;
+  protocol_error.error_type = syncer::TRANSIENT_ERROR;
   protocol_error.error_description = "Not My Fault";
   protocol_error.url = "www.google.com";
 
@@ -120,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   SetTitle(0, node1, L"new_title1");
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
 
-  csync::SyncProtocolError protocol_error;
-  protocol_error.error_type = csync::NOT_MY_BIRTHDAY;
-  protocol_error.action = csync::DISABLE_SYNC_ON_CLIENT;
+  syncer::SyncProtocolError protocol_error;
+  protocol_error.error_type = syncer::NOT_MY_BIRTHDAY;
+  protocol_error.action = syncer::DISABLE_SYNC_ON_CLIENT;
   protocol_error.error_description = "Not My Fault";
   protocol_error.url = "www.google.com";
   TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);

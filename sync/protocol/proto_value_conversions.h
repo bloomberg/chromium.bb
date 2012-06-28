@@ -50,7 +50,7 @@ class TypedUrlSpecifics;
 //
 // TODO(akalin): Improve enum support.
 
-namespace csync {
+namespace syncer {
 
 // Ownership of all returned DictionaryValues are transferred to the
 // caller.
@@ -148,6 +148,6 @@ base::DictionaryValue* ClientToServerResponseToValue(
     bool include_specifics);
 
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_PROTOCOL_PROTO_VALUE_CONVERSIONS_H_

@@ -90,9 +90,9 @@ enum ModelType {
   MODEL_TYPE_COUNT,
 };
 
-typedef csync::EnumSet<
+typedef syncer::EnumSet<
   ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE> ModelTypeSet;
-typedef csync::EnumSet<
+typedef syncer::EnumSet<
   ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE> FullModelTypeSet;
 
 inline ModelType ModelTypeFromInt(int i) {

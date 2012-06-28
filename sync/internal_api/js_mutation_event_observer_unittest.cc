@@ -13,7 +13,7 @@
 #include "sync/js/js_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 using ::testing::InSequence;
@@ -46,22 +46,22 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   // We don't test with passwords as that requires additional setup.
 
   // Build a list of example ChangeRecords.
-  csync::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
+  syncer::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     changes[i].id = i;
     switch (i % 3) {
       case 0:
         changes[i].action =
-            csync::ChangeRecord::ACTION_ADD;
+            syncer::ChangeRecord::ACTION_ADD;
         break;
       case 1:
         changes[i].action =
-            csync::ChangeRecord::ACTION_UPDATE;
+            syncer::ChangeRecord::ACTION_UPDATE;
         break;
       default:
         changes[i].action =
-            csync::ChangeRecord::ACTION_DELETE;
+            syncer::ChangeRecord::ACTION_DELETE;
         break;
     }
   }
@@ -91,11 +91,11 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   // Fire OnChangesApplied() for each data type.
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    csync::ChangeRecordList
+    syncer::ChangeRecordList
         local_changes(changes + i, changes + arraysize(changes));
     js_mutation_event_observer_.OnChangesApplied(
         syncable::ModelTypeFromInt(i),
-        0, csync::ImmutableChangeRecordList(&local_changes));
+        0, syncer::ImmutableChangeRecordList(&local_changes));
   }
 
   PumpLoop();
@@ -124,4 +124,4 @@ TEST_F(JsMutationEventObserverTest, OnChangesComplete) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

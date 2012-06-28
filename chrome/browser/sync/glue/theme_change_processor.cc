@@ -41,11 +41,11 @@ void ThemeChangeProcessor::Observe(
   DCHECK(profile_);
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
-  csync::WriteTransaction trans(FROM_HERE, share_handle());
-  csync::WriteNode node(&trans);
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  syncer::WriteNode node(&trans);
   if (node.InitByClientTagLookup(syncable::THEMES,
                                  kCurrentThemeClientTag) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     std::string err = "Could not create node with client tag: ";
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                           err + kCurrentThemeClientTag);
@@ -66,8 +66,8 @@ void ThemeChangeProcessor::Observe(
 }
 
 void ThemeChangeProcessor::ApplyChangesFromSyncModel(
-    const csync::BaseTransaction* trans,
-    const csync::ImmutableChangeRecordList& changes) {
+    const syncer::BaseTransaction* trans,
+    const syncer::ImmutableChangeRecordList& changes) {
   if (!running()) {
     return;
   }
@@ -86,10 +86,10 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
     LOG(WARNING) << change_count << " theme changes detected; "
                  << "only applying the last one";
   }
-  const csync::ChangeRecord& change =
+  const syncer::ChangeRecord& change =
       changes.Get()[change_count - 1];
-  if (change.action != csync::ChangeRecord::ACTION_UPDATE &&
-      change.action != csync::ChangeRecord::ACTION_DELETE) {
+  if (change.action != syncer::ChangeRecord::ACTION_UPDATE &&
+      change.action != syncer::ChangeRecord::ACTION_DELETE) {
     std::string err = "strange theme change.action " +
         base::IntToString(change.action);
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE, err);
@@ -98,9 +98,9 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   sync_pb::ThemeSpecifics theme_specifics;
   // If the action is a delete, simply use the default values for
   // ThemeSpecifics, which would cause the default theme to be set.
-  if (change.action != csync::ChangeRecord::ACTION_DELETE) {
-    csync::ReadNode node(trans);
-    if (node.InitByIdLookup(change.id) != csync::BaseNode::INIT_OK) {
+  if (change.action != syncer::ChangeRecord::ACTION_DELETE) {
+    syncer::ReadNode node(trans);
+    if (node.InitByIdLookup(change.id) != syncer::BaseNode::INIT_OK) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Theme node lookup failed.");
       return;

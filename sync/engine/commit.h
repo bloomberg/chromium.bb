@@ -8,7 +8,7 @@
 
 #include "sync/internal_api/public/util/syncer_error.h"
 
-namespace csync {
+namespace syncer {
 
 namespace sessions {
 class SyncSession;
@@ -32,6 +32,6 @@ SyncerError BuildAndPostCommits(
     Syncer* syncer,
     sessions::SyncSession* session);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_COMMIT_H_

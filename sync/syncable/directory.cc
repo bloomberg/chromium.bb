@@ -21,9 +21,9 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 
-using csync::Encryptor;
-using csync::ReportUnrecoverableErrorFunction;
-using csync::UnrecoverableErrorHandler;
+using syncer::Encryptor;
+using syncer::ReportUnrecoverableErrorFunction;
+using syncer::UnrecoverableErrorHandler;
 using std::string;
 
 namespace syncable {
@@ -113,7 +113,7 @@ const FilePath::CharType Directory::kSyncDatabaseFilename[] =
 void Directory::InitKernelForTest(
     const std::string& name,
     DirectoryChangeDelegate* delegate,
-    const csync::WeakHandle<TransactionObserver>&
+    const syncer::WeakHandle<TransactionObserver>&
         transaction_observer) {
   DCHECK(!kernel_);
   kernel_ = new Kernel(name, KernelLoadInfo(), delegate, transaction_observer);
@@ -145,7 +145,7 @@ Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 Directory::Kernel::Kernel(
     const std::string& name,
     const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
-    const csync::WeakHandle<TransactionObserver>&
+    const syncer::WeakHandle<TransactionObserver>&
         transaction_observer)
     : next_write_transaction_id(0),
       name(name),
@@ -198,7 +198,7 @@ Directory::~Directory() {
 DirOpenResult Directory::Open(
     const string& name,
     DirectoryChangeDelegate* delegate,
-    const csync::WeakHandle<TransactionObserver>&
+    const syncer::WeakHandle<TransactionObserver>&
         transaction_observer) {
   TRACE_EVENT0("sync", "SyncDatabaseOpen");
 
@@ -232,7 +232,7 @@ void Directory::InitializeIndices() {
 DirOpenResult Directory::OpenImpl(
     const string& name,
     DirectoryChangeDelegate* delegate,
-    const csync::WeakHandle<TransactionObserver>&
+    const syncer::WeakHandle<TransactionObserver>&
         transaction_observer) {
 
   KernelLoadInfo info;
@@ -760,7 +760,7 @@ string Directory::cache_guid() const {
   return kernel_->cache_guid;
 }
 
-csync::Cryptographer* Directory::GetCryptographer(
+syncer::Cryptographer* Directory::GetCryptographer(
     const BaseTransaction* trans) {
   DCHECK_EQ(this, trans->directory());
   return &cryptographer_;

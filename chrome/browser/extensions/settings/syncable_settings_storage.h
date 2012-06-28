@@ -53,7 +53,7 @@ class SyncableSettingsStorage : public ValueStore {
   // can be called.
 
   // Must only be called if sync isn't already active.
-  csync::SyncError StartSyncing(
+  syncer::SyncError StartSyncing(
       const DictionaryValue& sync_state,
       scoped_ptr<SettingsSyncProcessor> sync_processor);
 
@@ -61,32 +61,32 @@ class SyncableSettingsStorage : public ValueStore {
   void StopSyncing();
 
   // May be called at any time; changes will be ignored if sync isn't active.
-  csync::SyncError ProcessSyncChanges(const SettingSyncDataList& sync_changes);
+  syncer::SyncError ProcessSyncChanges(const SettingSyncDataList& sync_changes);
 
  private:
   // Sends the changes from |result| to sync if it's enabled.
   void SyncResultIfEnabled(const ValueStore::WriteResult& result);
 
   // Sends all local settings to sync (synced settings assumed to be empty).
-  csync::SyncError SendLocalSettingsToSync(
+  syncer::SyncError SendLocalSettingsToSync(
       const DictionaryValue& settings);
 
   // Overwrites local state with sync state.
-  csync::SyncError OverwriteLocalSettingsWithSync(
+  syncer::SyncError OverwriteLocalSettingsWithSync(
       const DictionaryValue& sync_state, const DictionaryValue& settings);
 
   // Called when an Add/Update/Remove comes from sync.  Ownership of Value*s
   // are taken.
-  csync::SyncError OnSyncAdd(
+  syncer::SyncError OnSyncAdd(
       const std::string& key,
       Value* new_value,
       ValueStoreChangeList* changes);
-  csync::SyncError OnSyncUpdate(
+  syncer::SyncError OnSyncUpdate(
       const std::string& key,
       Value* old_value,
       Value* new_value,
       ValueStoreChangeList* changes);
-  csync::SyncError OnSyncDelete(
+  syncer::SyncError OnSyncDelete(
       const std::string& key,
       Value* old_value,
       ValueStoreChangeList* changes);

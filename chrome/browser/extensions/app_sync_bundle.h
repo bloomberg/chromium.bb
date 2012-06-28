@@ -19,7 +19,7 @@
 class ExtensionService;
 class ExtensionSet;
 
-namespace csync {
+namespace syncer {
 class SyncChangeProcessor;
 class SyncErrorFactory;
 }
@@ -35,26 +35,26 @@ class AppSyncBundle {
   virtual ~AppSyncBundle();
 
   // Setup this bundle to be sync application data.
-  void SetupSync(csync::SyncChangeProcessor* sync_proccessor,
-                 csync::SyncErrorFactory* sync_error_factory,
-                 const csync::SyncDataList& initial_sync_data);
+  void SetupSync(syncer::SyncChangeProcessor* sync_proccessor,
+                 syncer::SyncErrorFactory* sync_error_factory,
+                 const syncer::SyncDataList& initial_sync_data);
 
   // Resets this class back to it default values, which will disable all syncing
   // until a new sync processor is set.
   void Reset();
 
-  // Returns a csync::SyncChange that will delete the given application.
-  csync::SyncChange CreateSyncChangeToDelete(const Extension* extension) const;
+  // Returns a syncer::SyncChange that will delete the given application.
+  syncer::SyncChange CreateSyncChangeToDelete(const Extension* extension) const;
 
   // Process the sync deletion of the given application.
   void ProcessDeletion(
-      std::string extension_id, const csync::SyncChange& sync_change);
+      std::string extension_id, const syncer::SyncChange& sync_change);
 
   // Create a sync change based on |sync_data|.
-  csync::SyncChange CreateSyncChange(const csync::SyncData& sync_data);
+  syncer::SyncChange CreateSyncChange(const syncer::SyncData& sync_data);
 
   // Get all the sync data contained in this bundle.
-  csync::SyncDataList GetAllSyncData() const;
+  syncer::SyncDataList GetAllSyncData() const;
 
   // Sync a newly-installed application or change an existing one.
   void SyncChangeIfNeeded(const Extension& extension);
@@ -63,7 +63,7 @@ class AppSyncBundle {
   void ProcessSyncChange(AppSyncData app_sync_data);
 
   // Process the list of sync changes.
-  void ProcessSyncChangeList(csync::SyncChangeList sync_change_list);
+  void ProcessSyncChangeList(syncer::SyncChangeList sync_change_list);
 
   // Check to see if the given |id| is either synced or pending to be synced.
   bool HasExtensionId(const std::string& id) const;
@@ -95,8 +95,8 @@ class AppSyncBundle {
   void MarkPendingAppSynced(const std::string& id);
 
   ExtensionService* extension_service_; // Own us.
-  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<csync::SyncErrorFactory> sync_error_factory_;
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   std::set<std::string> synced_apps_;
   std::map<std::string, AppSyncData> pending_sync_data_;

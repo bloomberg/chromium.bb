@@ -13,7 +13,7 @@
 
 class CrxInstaller;
 
-namespace csync {
+namespace syncer {
 class SyncErrorFactory;
 }
 
@@ -52,17 +52,17 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void CheckAdminBlacklist() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
-  virtual csync::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const csync::SyncDataList& initial_sync_data,
-      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual csync::SyncDataList GetAllSyncData(
+  virtual syncer::SyncDataList GetAllSyncData(
       syncable::ModelType type) const OVERRIDE;
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) OVERRIDE;
 
   virtual bool is_ready() OVERRIDE;
 

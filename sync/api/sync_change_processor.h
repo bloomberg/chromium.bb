@@ -14,7 +14,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace csync {
+namespace syncer {
 
 class SyncChange;
 
@@ -38,6 +38,6 @@ class SyncChangeProcessor {
       const SyncChangeList& change_list) = 0;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_API_SYNC_CHANGE_PROCESSOR_H_

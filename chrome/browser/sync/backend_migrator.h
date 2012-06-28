@@ -15,9 +15,9 @@
 
 class ProfileSyncService;
 
-namespace csync {
+namespace syncer {
 struct UserShare;
-}  // namespace csync
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -48,7 +48,7 @@ class BackendMigrator {
 
   // TODO(akalin): Remove the dependency on |user_share|.
   BackendMigrator(const std::string& name,
-                  csync::UserShare* user_share,
+                  syncer::UserShare* user_share,
                   ProfileSyncService* service,
                   DataTypeManager* manager,
                   const base::Closure &migration_done_callback);
@@ -86,7 +86,7 @@ class BackendMigrator {
   void OnConfigureDoneImpl(const DataTypeManager::ConfigureResult& result);
 
   const std::string name_;
-  csync::UserShare* user_share_;
+  syncer::UserShare* user_share_;
   ProfileSyncService* service_;
   DataTypeManager* manager_;
 

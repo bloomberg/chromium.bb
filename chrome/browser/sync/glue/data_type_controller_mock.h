@@ -18,7 +18,7 @@ class StartCallbackMock {
   virtual ~StartCallbackMock();
 
   MOCK_METHOD2(Run, void(DataTypeController::StartResult result,
-                         const csync::SyncError& error));
+                         const syncer::SyncError& error));
 };
 
 class ModelLoadCallbackMock {
@@ -26,7 +26,7 @@ class ModelLoadCallbackMock {
   ModelLoadCallbackMock();
   virtual ~ModelLoadCallbackMock();
 
-  MOCK_METHOD2(Run, void(syncable::ModelType, csync::SyncError));
+  MOCK_METHOD2(Run, void(syncable::ModelType, syncer::SyncError));
 };
 
 }  // namespace browser_sync

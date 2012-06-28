@@ -17,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -66,7 +66,7 @@ class ChromeInvalidationClientTest : public testing::Test {
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
                   InvalidationVersionMap(),
-                  csync::MakeWeakHandle(
+                  syncer::MakeWeakHandle(
                       mock_invalidation_state_tracker_.AsWeakPtr()),
                   &mock_listener_);
   }
@@ -345,4 +345,4 @@ TEST_F(ChromeInvalidationClientTest, StateChangesAuthError) {
   client_.Ready(NULL);
 }
 
-}  // namespace csync
+}  // namespace syncer

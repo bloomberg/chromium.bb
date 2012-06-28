@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 
-namespace csync {
+namespace syncer {
 
 bool VlogIsOnForLocation(const tracked_objects::Location& from_here,
                          int verbose_level) {
@@ -15,4 +15,4 @@ bool VlogIsOnForLocation(const tracked_objects::Location& from_here,
               from_here.file_name(), ::strlen(from_here.file_name())));
 }
 
-}  // namespace csync
+}  // namespace syncer

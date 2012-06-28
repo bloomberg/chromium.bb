@@ -57,11 +57,11 @@ AutofillProfileSyncableService::AutofillProfileSyncableService()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
-csync::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
+syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
-    const csync::SyncDataList& initial_sync_data,
-    scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-    scoped_ptr<csync::SyncErrorFactory> sync_error_factory) {
+    const syncer::SyncDataList& initial_sync_data,
+    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
@@ -95,7 +95,7 @@ csync::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
   DataBundle bundle;
   // Go through and check for all the profiles that sync already knows about.
-  for (csync::SyncDataList::const_iterator sync_iter =
+  for (syncer::SyncDataList::const_iterator sync_iter =
            initial_sync_data.begin();
        sync_iter != initial_sync_data.end();
        ++sync_iter) {
@@ -136,22 +136,22 @@ csync::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
         "Failed to update webdata.");
   }
 
-  csync::SyncChangeList new_changes;
+  syncer::SyncChangeList new_changes;
   for (GUIDToProfileMap::iterator i = remaining_profiles.begin();
        i != remaining_profiles.end(); ++i) {
     new_changes.push_back(
-        csync::SyncChange(
-            csync::SyncChange::ACTION_ADD, CreateData(*(i->second))));
+        syncer::SyncChange(
+            syncer::SyncChange::ACTION_ADD, CreateData(*(i->second))));
     profiles_map_[i->first] = i->second;
   }
 
   for (size_t i = 0; i < bundle.profiles_to_sync_back.size(); ++i) {
     new_changes.push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_UPDATE,
+        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE,
                    CreateData(*(bundle.profiles_to_sync_back[i]))));
   }
 
-  csync::SyncError error;
+  syncer::SyncError error;
   if (!new_changes.empty())
     error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
 
@@ -170,13 +170,13 @@ void AutofillProfileSyncableService::StopSyncing(syncable::ModelType type) {
   profiles_map_.clear();
 }
 
-csync::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
+syncer::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_processor_.get());
   DCHECK_EQ(type, syncable::AUTOFILL_PROFILE);
 
-  csync::SyncDataList current_data;
+  syncer::SyncDataList current_data;
 
   for (GUIDToProfileMap::const_iterator i = profiles_map_.begin();
        i != profiles_map_.end(); ++i) {
@@ -185,27 +185,27 @@ csync::SyncDataList AutofillProfileSyncableService::GetAllSyncData(
   return current_data;
 }
 
-csync::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
+syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const csync::SyncChangeList& change_list) {
+    const syncer::SyncChangeList& change_list) {
   DCHECK(CalledOnValidThread());
   if (!sync_processor_.get()) {
-    csync::SyncError error(FROM_HERE, "Models not yet associated.",
+    syncer::SyncError error(FROM_HERE, "Models not yet associated.",
                     syncable::AUTOFILL_PROFILE);
     return error;
   }
 
   DataBundle bundle;
 
-  for (csync::SyncChangeList::const_iterator i = change_list.begin();
+  for (syncer::SyncChangeList::const_iterator i = change_list.begin();
        i != change_list.end(); ++i) {
     DCHECK(i->IsValid());
     switch (i->change_type()) {
-      case csync::SyncChange::ACTION_ADD:
-      case csync::SyncChange::ACTION_UPDATE:
+      case syncer::SyncChange::ACTION_ADD:
+      case syncer::SyncChange::ACTION_UPDATE:
         CreateOrUpdateProfile(i->sync_data(), &profiles_map_, &bundle);
         break;
-      case csync::SyncChange::ACTION_DELETE: {
+      case syncer::SyncChange::ACTION_DELETE: {
         std::string guid = i->sync_data().GetSpecifics().
              autofill_profile().guid();
         bundle.profiles_to_delete.push_back(guid);
@@ -216,7 +216,7 @@ csync::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
         return sync_error_factory_->CreateAndUploadError(
               FROM_HERE,
               "ProcessSyncChanges failed on ChangeType " +
-                  csync::SyncChange::ChangeTypeToString(i->change_type()));
+                  syncer::SyncChange::ChangeTypeToString(i->change_type()));
     }
   }
 
@@ -228,7 +228,7 @@ csync::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 void AutofillProfileSyncableService::Observe(int type,
@@ -370,7 +370,7 @@ void AutofillProfileSyncableService::CreateGUIDToProfileMap(
 
 AutofillProfileSyncableService::GUIDToProfileMap::iterator
 AutofillProfileSyncableService::CreateOrUpdateProfile(
-    const csync::SyncData& data,
+    const syncer::SyncData& data,
     GUIDToProfileMap* profile_map,
     DataBundle* bundle) {
   DCHECK(profile_map);
@@ -429,13 +429,13 @@ void AutofillProfileSyncableService::ActOnChange(
           !change.profile()) ||
          (change.type() != AutofillProfileChange::REMOVE && change.profile()));
   DCHECK(sync_processor_.get());
-  csync::SyncChangeList new_changes;
+  syncer::SyncChangeList new_changes;
   DataBundle bundle;
   switch (change.type()) {
     case AutofillProfileChange::ADD:
       new_changes.push_back(
-          csync::SyncChange(
-              csync::SyncChange::ACTION_ADD, CreateData(*(change.profile()))));
+          syncer::SyncChange(
+              syncer::SyncChange::ACTION_ADD, CreateData(*(change.profile()))));
       DCHECK(profiles_map_.find(change.profile()->guid()) ==
              profiles_map_.end());
       profiles_.push_back(new AutofillProfile(*(change.profile())));
@@ -447,21 +447,22 @@ void AutofillProfileSyncableService::ActOnChange(
       DCHECK(it != profiles_map_.end());
       *(it->second) = *(change.profile());
       new_changes.push_back(
-          csync::SyncChange(csync::SyncChange::ACTION_UPDATE,
+          syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE,
                      CreateData(*(change.profile()))));
       break;
     }
     case AutofillProfileChange::REMOVE: {
       AutofillProfile empty_profile(change.key());
-      new_changes.push_back(csync::SyncChange(csync::SyncChange::ACTION_DELETE,
-                                       CreateData(empty_profile)));
+      new_changes.push_back(
+          syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
+                             CreateData(empty_profile)));
       profiles_map_.erase(change.key());
       break;
     }
     default:
       NOTREACHED();
   }
-  csync::SyncError error =
+  syncer::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet()) {
     // TODO(isherman): Investigating http://crbug.com/121592
@@ -472,12 +473,12 @@ void AutofillProfileSyncableService::ActOnChange(
   }
 }
 
-csync::SyncData AutofillProfileSyncableService::CreateData(
+syncer::SyncData AutofillProfileSyncableService::CreateData(
     const AutofillProfile& profile) {
   sync_pb::EntitySpecifics specifics;
   WriteAutofillProfile(profile, &specifics);
   return
-      csync::SyncData::CreateLocalData(
+      syncer::SyncData::CreateLocalData(
           profile.guid(), profile.guid(), specifics);
 }
 

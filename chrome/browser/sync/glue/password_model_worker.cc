@@ -19,10 +19,10 @@ PasswordModelWorker::PasswordModelWorker(
   DCHECK(password_store);
 }
 
-csync::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
-    const csync::WorkCallback& work) {
+syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
+    const syncer::WorkCallback& work) {
   WaitableEvent done(false, false);
-  csync::SyncerError error = csync::UNSET;
+  syncer::SyncerError error = syncer::UNSET;
   password_store_->ScheduleTask(
       base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
                  this, work, &done, &error));
@@ -30,16 +30,16 @@ csync::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
   return error;
 }
 
-csync::ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
-  return csync::GROUP_PASSWORD;
+syncer::ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
+  return syncer::GROUP_PASSWORD;
 }
 
 PasswordModelWorker::~PasswordModelWorker() {}
 
 void PasswordModelWorker::CallDoWorkAndSignalTask(
-    const csync::WorkCallback& work,
+    const syncer::WorkCallback& work,
     WaitableEvent* done,
-    csync::SyncerError *error) {
+    syncer::SyncerError *error) {
   *error = work.Run();
   done->Signal();
 }

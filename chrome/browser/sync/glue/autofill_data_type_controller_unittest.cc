@@ -96,13 +96,13 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
   // Passed to AutofillDTC::Start().
   void OnStartFinished(DataTypeController::StartResult result,
-                       const csync::SyncError& error) {
+                       const syncer::SyncError& error) {
     last_start_result_ = result;
     last_start_error_ = error;
   }
 
   void OnLoadFinished(syncable::ModelType type,
-                      csync::SyncError error) {
+                      syncer::SyncError error) {
     EXPECT_FALSE(error.IsSet());
     EXPECT_EQ(type, syncable::AUTOFILL);
   }
@@ -131,7 +131,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
   // Stores arguments of most recent call of OnStartFinished().
   DataTypeController::StartResult last_start_result_;
-  csync::SyncError last_start_error_;
+  syncer::SyncError last_start_error_;
 };
 
 // Load the WDS's database, then start the Autofill DTC.  It should

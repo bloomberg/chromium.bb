@@ -8,7 +8,7 @@
 
 #include "sync/syncable/entry_kernel.h"
 
-namespace csync {
+namespace syncer {
 class ReadNode;
 }
 
@@ -141,7 +141,7 @@ class Entry {
 
  private:
   friend class Directory;
-  friend class csync::ReadNode;
+  friend class syncer::ReadNode;
   friend std::ostream& operator << (std::ostream& s, const Entry& e);
 
   DISALLOW_COPY_AND_ASSIGN(Entry);
@@ -149,6 +149,6 @@ class Entry {
 
 std::ostream& operator<<(std::ostream& os, const Entry& entry);
 
-} // namespace syncable
+}  // namespace syncable
 
 #endif  // SYNC_SYNCABLE_ENTRY_H_

@@ -11,7 +11,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/directory.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 namespace {
@@ -257,4 +257,4 @@ void SyncSession::SetFinished() {
 }
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer

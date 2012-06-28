@@ -48,7 +48,7 @@ void NonFrontendDataTypeController::LoadModels(
   start_association_called_.Reset();
   start_models_failed_ = false;
   if (state_ != NOT_RUNNING) {
-    model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
+    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                               "Model already loaded",
                                               type()));
     return;
@@ -63,14 +63,14 @@ void NonFrontendDataTypeController::LoadModels(
     // get a false it means they failed.
     DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING
            || state_ == DISABLED);
-    model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
+    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                               "Failed loading",
                                               type()));
     return;
   }
   state_ = MODEL_LOADED;
 
-  model_load_callback.Run(type(), csync::SyncError());
+  model_load_callback.Run(type(), syncer::SyncError());
 }
 
 void NonFrontendDataTypeController::OnModelLoaded() {
@@ -87,7 +87,7 @@ void NonFrontendDataTypeController::StartAssociating(
   state_ = ASSOCIATING;
   start_callback_ = start_callback;
   if (!StartAssociationAsync()) {
-    csync::SyncError error(
+    syncer::SyncError error(
         FROM_HERE, "Failed to post StartAssociation", type());
     StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
   }
@@ -101,7 +101,7 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
     if (model_associator_.get())
       model_associator_->AbortAssociation();
     if (!start_association_called_.IsSignaled()) {
-      StartDoneImpl(ABORTED, NOT_RUNNING, csync::SyncError());
+      StartDoneImpl(ABORTED, NOT_RUNNING, syncer::SyncError());
       return; // There is nothing more for us to do.
     }
   }
@@ -128,7 +128,7 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
 
   }
 
-  StartDoneImpl(ABORTED, STOPPING, csync::SyncError());
+  StartDoneImpl(ABORTED, STOPPING, syncer::SyncError());
 }
 
 namespace {
@@ -284,8 +284,9 @@ bool NonFrontendDataTypeController::StartModels() {
   return true;
 }
 
-void NonFrontendDataTypeController::StartFailed(StartResult result,
-                                                const csync::SyncError& error) {
+void NonFrontendDataTypeController::StartFailed(
+    StartResult result,
+    const syncer::SyncError& error) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (IsUnrecoverableResult(result))
@@ -299,7 +300,7 @@ void NonFrontendDataTypeController::StartFailed(StartResult result,
 void NonFrontendDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state,
-    const csync::SyncError& error) {
+    const syncer::SyncError& error) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   abort_association_complete_.Signal();
   base::AutoLock lock(abort_association_lock_);
@@ -316,7 +317,7 @@ void NonFrontendDataTypeController::StartDone(
 void NonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
     DataTypeController::State new_state,
-    const csync::SyncError& error) {
+    const syncer::SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // It's possible to have StartDoneImpl called first from the UI thread
   // (due to Stop being called) and then posted from the non-UI thread. In
@@ -440,19 +441,19 @@ void NonFrontendDataTypeController::StartAssociation() {
   DCHECK_EQ(state_, ASSOCIATING);
 
   if (!model_associator_->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, csync::SyncError());
+    StartFailed(NEEDS_CRYPTO, syncer::SyncError());
     return;
   }
 
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    csync::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  csync::SyncError error;
+  syncer::SyncError error;
   error = model_associator_->AssociateModels();
   // TODO(lipalani): crbug.com/122690 - handle abort.
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
@@ -463,7 +464,7 @@ void NonFrontendDataTypeController::StartAssociation() {
 
   profile_sync_service_->ActivateDataType(type(), model_safe_group(),
                                           change_processor());
-  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, csync::SyncError());
+  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, syncer::SyncError());
 }
 
 bool NonFrontendDataTypeController::StopAssociationAsync() {
@@ -496,7 +497,7 @@ void NonFrontendDataTypeController::StopAssociation() {
   DCHECK(!HasOneRef());
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (model_associator_.get()) {
-    csync::SyncError error;  // Not used.
+    syncer::SyncError error;  // Not used.
     error = model_associator_->DisassociateModels();
   }
   model_associator_.reset();

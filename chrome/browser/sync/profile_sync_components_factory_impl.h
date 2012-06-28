@@ -32,12 +32,12 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler,
-      const base::WeakPtr<csync::SyncableService>& local_service) OVERRIDE;
+      const base::WeakPtr<syncer::SyncableService>& local_service) OVERRIDE;
 
   virtual browser_sync::SharedChangeProcessor*
       CreateSharedChangeProcessor() OVERRIDE;
 
-  virtual base::WeakPtr<csync::SyncableService> GetSyncableServiceForType(
+  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncable::ModelType type) OVERRIDE;
 
   // Legacy datatypes that need to be converted to the SyncableService API.

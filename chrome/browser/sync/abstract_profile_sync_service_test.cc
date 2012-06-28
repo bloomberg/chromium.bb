@@ -16,9 +16,9 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/util/cryptographer.h"
 
-using csync::TestIdFactory;
+using syncer::TestIdFactory;
 using content::BrowserThread;
-using csync::UserShare;
+using syncer::UserShare;
 using syncable::BASE_VERSION;
 using syncable::CREATE;
 using syncable::IS_DEL;
@@ -70,26 +70,26 @@ bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
 }
 
 /* static */
-csync::ImmutableChangeRecordList
+syncer::ImmutableChangeRecordList
     ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
-        int64 node_id, csync::ChangeRecord::Action action) {
-  csync::ChangeRecord record;
+        int64 node_id, syncer::ChangeRecord::Action action) {
+  syncer::ChangeRecord record;
   record.action = action;
   record.id = node_id;
-  csync::ChangeRecordList records(1, record);
-  return csync::ImmutableChangeRecordList(&records);
+  syncer::ChangeRecordList records(1, record);
+  return syncer::ImmutableChangeRecordList(&records);
 }
 
 /* static */
-csync::ImmutableChangeRecordList
+syncer::ImmutableChangeRecordList
     ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
         int64 node_id, const sync_pb::EntitySpecifics& specifics) {
-  csync::ChangeRecord record;
-  record.action = csync::ChangeRecord::ACTION_DELETE;
+  syncer::ChangeRecord record;
+  record.action = syncer::ChangeRecord::ACTION_DELETE;
   record.id = node_id;
   record.specifics = specifics;
-  csync::ChangeRecordList records(1, record);
-  return csync::ImmutableChangeRecordList(&records);
+  syncer::ChangeRecordList records(1, record);
+  return syncer::ImmutableChangeRecordList(&records);
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()

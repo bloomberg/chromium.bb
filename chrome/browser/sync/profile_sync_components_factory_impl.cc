@@ -209,8 +209,8 @@ browser_sync::GenericChangeProcessor*
     ProfileSyncComponentsFactoryImpl::CreateGenericChangeProcessor(
         ProfileSyncService* profile_sync_service,
         browser_sync::DataTypeErrorHandler* error_handler,
-        const base::WeakPtr<csync::SyncableService>& local_service) {
-  csync::UserShare* user_share = profile_sync_service->GetUserShare();
+        const base::WeakPtr<syncer::SyncableService>& local_service) {
+  syncer::UserShare* user_share = profile_sync_service->GetUserShare();
   return new GenericChangeProcessor(error_handler,
                                     local_service,
                                     user_share);
@@ -221,10 +221,10 @@ browser_sync::SharedChangeProcessor* ProfileSyncComponentsFactoryImpl::
   return new SharedChangeProcessor();
 }
 
-base::WeakPtr<csync::SyncableService> ProfileSyncComponentsFactoryImpl::
+base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     GetSyncableServiceForType(syncable::ModelType type) {
   if (!profile_) {  // For tests.
-     return base::WeakPtr<csync::SyncableService>();
+     return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
     case syncable::PREFERENCES:
@@ -232,7 +232,7 @@ base::WeakPtr<csync::SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncable::AUTOFILL:
     case syncable::AUTOFILL_PROFILE: {
       if (!web_data_service_.get())
-        return base::WeakPtr<csync::SyncableService>();
+        return base::WeakPtr<syncer::SyncableService>();
       if (type == syncable::AUTOFILL) {
         return web_data_service_->GetAutocompleteSyncableService()->AsWeakPtr();
       } else {
@@ -254,14 +254,14 @@ base::WeakPtr<csync::SyncableService> ProfileSyncComponentsFactoryImpl::
           app_notification_manager()->AsWeakPtr();
     default:
       // The following datatypes still need to be transitioned to the
-      // csync::SyncableService API:
+      // syncer::SyncableService API:
       // Bookmarks
       // Passwords
       // Sessions
       // Themes
       // Typed URLs
       NOTREACHED();
-      return base::WeakPtr<csync::SyncableService>();
+      return base::WeakPtr<syncer::SyncableService>();
   }
 }
 
@@ -271,7 +271,7 @@ ProfileSyncComponentsFactory::SyncComponents
         DataTypeErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
       profile_sync_service->profile()->GetBookmarkModel();
-  csync::UserShare* user_share = profile_sync_service->GetUserShare();
+  syncer::UserShare* user_share = profile_sync_service->GetUserShare();
   // TODO(akalin): We may want to propagate this switch up eventually.
 #if defined(OS_ANDROID)
   const bool kExpectMobileBookmarksFolder = true;

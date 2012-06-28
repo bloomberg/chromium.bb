@@ -11,7 +11,7 @@
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -288,4 +288,4 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

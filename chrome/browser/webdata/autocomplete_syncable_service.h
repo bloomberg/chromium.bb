@@ -26,7 +26,7 @@
 
 class ProfileSyncServiceAutofillTest;
 
-namespace csync {
+namespace syncer {
 class SyncErrorFactory;
 }
 
@@ -41,7 +41,7 @@ class AutofillSpecifics;
 // TODO(georgey) : remove reliance on the notifications and make it to be called
 // from web_data_service directly.
 class AutocompleteSyncableService
-    : public csync::SyncableService,
+    : public syncer::SyncableService,
       public content::NotificationObserver,
       public base::NonThreadSafe {
  public:
@@ -50,18 +50,18 @@ class AutocompleteSyncableService
 
   static syncable::ModelType model_type() { return syncable::AUTOFILL; }
 
-  // csync::SyncableService implementation.
-  virtual csync::SyncError MergeDataAndStartSyncing(
+  // syncer::SyncableService implementation.
+  virtual syncer::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const csync::SyncDataList& initial_sync_data,
-      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-      scoped_ptr<csync::SyncErrorFactory> error_handler) OVERRIDE;
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual csync::SyncDataList GetAllSyncData(
+  virtual syncer::SyncDataList GetAllSyncData(
       syncable::ModelType type) const OVERRIDE;
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -94,7 +94,7 @@ class AutocompleteSyncableService
   // of the iterator is longer than the map object. The bool in the pair is used
   // to indicate if the item needs to be added (true) or updated (false).
   typedef std::map<AutofillKey,
-                  std::pair<csync::SyncChange::SyncChangeType,
+                  std::pair<syncer::SyncChange::SyncChangeType,
                             std::vector<AutofillEntry>::iterator> >
       AutocompleteEntryMap;
 
@@ -104,7 +104,7 @@ class AutocompleteSyncableService
   // |new_entries| - entries that came from the sync.
   // |ignored_entries| - entries that came from the sync, but too old to be
   // stored and immediately discarded.
-  void CreateOrUpdateEntry(const csync::SyncData& data,
+  void CreateOrUpdateEntry(const syncer::SyncData& data,
                            AutocompleteEntryMap* loaded_data,
                            std::vector<AutofillEntry>* new_entries);
 
@@ -113,10 +113,10 @@ class AutocompleteSyncableService
                                  sync_pb::EntitySpecifics* autofill_specifics);
 
   // Deletes the database entry corresponding to the |autofill| specifics.
-  csync::SyncError AutofillEntryDelete(
+  syncer::SyncError AutofillEntryDelete(
       const sync_pb::AutofillSpecifics& autofill);
 
-  csync::SyncData CreateSyncData(const AutofillEntry& entry) const;
+  syncer::SyncData CreateSyncData(const AutofillEntry& entry) const;
 
   // Syncs |changes| to the cloud.
   void ActOnChanges(const AutofillChangeList& changes);
@@ -126,7 +126,7 @@ class AutocompleteSyncableService
 
   // For unit-tests.
   AutocompleteSyncableService();
-  void set_sync_processor(csync::SyncChangeProcessor* sync_processor) {
+  void set_sync_processor(syncer::SyncChangeProcessor* sync_processor) {
     sync_processor_.reset(sync_processor);
   }
 
@@ -138,11 +138,11 @@ class AutocompleteSyncableService
 
   // We receive ownership of |sync_processor_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
-  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // We receive ownership of |error_handler_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
-  scoped_ptr<csync::SyncErrorFactory> error_handler_;
+  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncableService);
 };

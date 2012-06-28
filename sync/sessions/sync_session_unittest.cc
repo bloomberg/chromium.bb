@@ -23,7 +23,7 @@
 
 using syncable::WriteTransaction;
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 namespace {
 
@@ -536,4 +536,4 @@ TEST_F(SyncSessionTest, CoalescePayloads) {
 
 }  // namespace
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer

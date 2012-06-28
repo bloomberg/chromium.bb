@@ -11,7 +11,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 // Grouping of all state that applies to all model types.  Note that some
@@ -69,6 +69,6 @@ struct ModelNeutralState {
 };
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_SESSIONS_MODEL_NEUTRAL_STATE_H_

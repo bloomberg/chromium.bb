@@ -19,7 +19,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace csync {
+namespace syncer {
 
 // A PushClientChannel is an implementation of NetworkChannel that
 // routes messages through a PushClient.
@@ -99,6 +99,6 @@ class PushClientChannel
   DISALLOW_COPY_AND_ASSIGN(PushClientChannel);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_PUSH_CLIENT_CHANNEL_H_

@@ -9,7 +9,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
 
-namespace csync {
+namespace syncer {
 
 bool ObjectIdLessThan::operator()(const invalidation::ObjectId& lhs,
                                   const invalidation::ObjectId& rhs) const {
@@ -56,4 +56,4 @@ std::string InvalidationToString(
   return ss.str();
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -166,24 +166,24 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
 }
 
 void GetStatusForActionableError(
-    const csync::SyncProtocolError& error,
+    const syncer::SyncProtocolError& error,
     string16* status_label) {
   DCHECK(status_label);
   switch (error.action) {
-    case csync::STOP_AND_RESTART_SYNC:
+    case syncer::STOP_AND_RESTART_SYNC:
        status_label->assign(
            l10n_util::GetStringUTF16(IDS_SYNC_STOP_AND_RESTART_SYNC));
       break;
-    case csync::UPGRADE_CLIENT:
+    case syncer::UPGRADE_CLIENT:
        status_label->assign(
            l10n_util::GetStringFUTF16(IDS_SYNC_UPGRADE_CLIENT,
                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       break;
-    case csync::ENABLE_SYNC_ON_ACCOUNT:
+    case syncer::ENABLE_SYNC_ON_ACCOUNT:
        status_label->assign(
            l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC_ON_ACCOUNT));
     break;
-    case csync::CLEAR_USER_DATA_AND_RESYNC:
+    case syncer::CLEAR_USER_DATA_AND_RESYNC:
        status_label->assign(
            l10n_util::GetStringUTF16(IDS_SYNC_CLEAR_USER_DATA));
       break;
@@ -324,7 +324,7 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
 
   if (service->HasSyncSetupCompleted() &&
       service->IsPassphraseRequired()) {
-    if (service->passphrase_required_reason() == csync::REASON_ENCRYPTION) {
+    if (service->passphrase_required_reason() == syncer::REASON_ENCRYPTION) {
       // First machine migrating to passwords.  Show as a promotion.
       if (status_label && link_label) {
         status_label->assign(
@@ -519,7 +519,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // with the last snapshot emitted by the syncer.  Keep in mind, though, that
     // not all events that update these values will ping the UI thread, so you
     // might not see all intermediate values.
-    csync::SyncStatus full_status(service->QueryDetailedSyncStatus());
+    syncer::SyncStatus full_status(service->QueryDetailedSyncStatus());
 
     // This is a cache of the last snapshot of type SYNC_CYCLE_ENDED where
     // !snapshot.has_more_to_sync().  In other words, it's the last in this
@@ -532,10 +532,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // the values from a single sync cycle.
     //
     // |snapshot| could be NULL if sync is not yet initialized.
-    const csync::sessions::SyncSessionSnapshot& snapshot =
+    const syncer::sessions::SyncSessionSnapshot& snapshot =
         service->sync_initialized() ?
         service->GetLastSessionSnapshot() :
-        csync::sessions::SyncSessionSnapshot();
+        syncer::sessions::SyncSessionSnapshot();
 
     sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
                                        service->QuerySyncStatusSummary());
@@ -611,7 +611,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
         details, "Status from Last Completed Session");
     sync_ui_util::AddStringSyncDetails(
         cycles, "Sync Source",
-        csync::GetUpdatesSourceString(
+        syncer::GetUpdatesSourceString(
         snapshot.source().updates_source));
     sync_ui_util::AddStringSyncDetails(
         cycles, "Download Step Result",
@@ -716,18 +716,18 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
     // Now set the actionable errors.
     if ((full_status.sync_protocol_error.error_type !=
-         csync::UNKNOWN_ERROR) &&
+         syncer::UNKNOWN_ERROR) &&
         (full_status.sync_protocol_error.error_type !=
-         csync::SYNC_SUCCESS)) {
+         syncer::SYNC_SUCCESS)) {
       strings->Set("actionable_error_detected",
                    base::Value::CreateBooleanValue(true));
       ListValue* actionable_error = new ListValue();
       strings->Set("actionable_error", actionable_error);
       sync_ui_util::AddStringSyncDetails(actionable_error, "Error Type",
-          csync::GetSyncErrorTypeString(
+          syncer::GetSyncErrorTypeString(
               full_status.sync_protocol_error.error_type));
       sync_ui_util::AddStringSyncDetails(actionable_error, "Action",
-          csync::GetClientActionString(
+          syncer::GetClientActionString(
               full_status.sync_protocol_error.action));
       sync_ui_util::AddStringSyncDetails(actionable_error, "url",
           full_status.sync_protocol_error.url);

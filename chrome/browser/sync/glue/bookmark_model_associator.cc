@@ -84,7 +84,7 @@ class BookmarkNodeFinder {
   // Finds best matching node for the given sync node.
   // Returns the matching node if one exists; NULL otherwise. If a matching
   // node is found, it's removed for further matches.
-  const BookmarkNode* FindBookmarkNode(const csync::BaseNode& sync_node);
+  const BookmarkNode* FindBookmarkNode(const syncer::BaseNode& sync_node);
 
  private:
   typedef std::multiset<const BookmarkNode*, BookmarkComparer> BookmarkNodesSet;
@@ -120,7 +120,7 @@ BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
 }
 
 const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
-    const csync::BaseNode& sync_node) {
+    const syncer::BaseNode& sync_node) {
   // Create a bookmark node from the given sync node.
   BookmarkNode temp_node(sync_node.GetURL());
   temp_node.SetTitle(UTF8ToUTF16(sync_node.GetTitle()));
@@ -185,7 +185,7 @@ const BookmarkNode* BookmarkNodeIdIndex::Find(int64 id) const {
 
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
-    csync::UserShare* user_share,
+    syncer::UserShare* user_share,
     DataTypeErrorHandler* unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
@@ -213,16 +213,16 @@ void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
       id_map_.find(bookmark_model_->mobile_node()->id()) != id_map_.end());
 }
 
-csync::SyncError BookmarkModelAssociator::DisassociateModels() {
+syncer::SyncError BookmarkModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
   dirty_associations_sync_ids_.clear();
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 int64 BookmarkModelAssociator::GetSyncIdFromChromeId(const int64& node_id) {
   BookmarkIdToSyncIdMap::const_iterator iter = id_map_.find(node_id);
-  return iter == id_map_.end() ? csync::kInvalidId : iter->second;
+  return iter == id_map_.end() ? syncer::kInvalidId : iter->second;
 }
 
 const BookmarkNode* BookmarkModelAssociator::GetChromeNodeFromSyncId(
@@ -233,12 +233,12 @@ const BookmarkNode* BookmarkModelAssociator::GetChromeNodeFromSyncId(
 
 bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
     const int64& node_id,
-    csync::BaseNode* sync_node) {
+    syncer::BaseNode* sync_node) {
   DCHECK(sync_node);
   int64 sync_id = GetSyncIdFromChromeId(node_id);
-  if (sync_id == csync::kInvalidId)
+  if (sync_id == syncer::kInvalidId)
     return false;
-  if (sync_node->InitByIdLookup(sync_id) != csync::BaseNode::INIT_OK)
+  if (sync_node->InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK)
     return false;
   DCHECK(sync_node->GetId() == sync_id);
   return true;
@@ -248,7 +248,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
                                         int64 sync_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int64 node_id = node->id();
-  DCHECK_NE(sync_id, csync::kInvalidId);
+  DCHECK_NE(sync_id, syncer::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[node_id] = sync_id;
@@ -285,24 +285,24 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     has_mobile_folder = false;
   }
 
-  csync::ReadTransaction trans(FROM_HERE, user_share_);
+  syncer::ReadTransaction trans(FROM_HERE, user_share_);
 
-  csync::ReadNode bookmark_bar_node(&trans);
+  syncer::ReadNode bookmark_bar_node(&trans);
   if (bookmark_bar_node.InitByIdLookup(bookmark_bar_sync_id) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     return false;
   }
 
-  csync::ReadNode other_bookmarks_node(&trans);
+  syncer::ReadNode other_bookmarks_node(&trans);
   if (other_bookmarks_node.InitByIdLookup(other_bookmarks_sync_id) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     return false;
   }
 
-  csync::ReadNode mobile_bookmarks_node(&trans);
+  syncer::ReadNode mobile_bookmarks_node(&trans);
   if (has_mobile_folder &&
       mobile_bookmarks_node.InitByIdLookup(mobile_bookmarks_sync_id) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     return false;
   }
 
@@ -316,7 +316,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 bool BookmarkModelAssociator::NodesMatch(
     const BookmarkNode* bookmark,
-    const csync::BaseNode* sync_node) const {
+    const syncer::BaseNode* sync_node) const {
   if (bookmark->GetTitle() != UTF8ToUTF16(sync_node->GetTitle()))
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
@@ -331,12 +331,12 @@ bool BookmarkModelAssociator::NodesMatch(
   return true;
 }
 
-csync::SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
+syncer::SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
     const BookmarkNode* permanent_node, const std::string&tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
   int64 sync_id = GetSyncIdFromChromeId(permanent_node->id());
-  if (sync_id != csync::kInvalidId)
-    return csync::SyncError();
+  if (sync_id != syncer::kInvalidId)
+    return syncer::SyncError();
   if (!GetSyncIdForTaggedNode(tag, &sync_id))
     return unrecoverable_error_handler_->CreateAndUploadError(
         FROM_HERE,
@@ -344,26 +344,26 @@ csync::SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
         model_type());
 
   Associate(permanent_node, sync_id);
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  csync::ReadTransaction trans(FROM_HERE, user_share_);
-  csync::ReadNode sync_node(&trans);
-  if (sync_node.InitByTagLookup(tag.c_str()) != csync::BaseNode::INIT_OK)
+  syncer::ReadTransaction trans(FROM_HERE, user_share_);
+  syncer::ReadNode sync_node(&trans);
+  if (sync_node.InitByTagLookup(tag.c_str()) != syncer::BaseNode::INIT_OK)
     return false;
   *sync_id = sync_node.GetId();
   return true;
 }
 
-csync::SyncError BookmarkModelAssociator::AssociateModels() {
+syncer::SyncError BookmarkModelAssociator::AssociateModels() {
   scoped_ptr<ScopedAssociationUpdater> association_updater(
       new ScopedAssociationUpdater(bookmark_model_));
   // Try to load model associations from persisted associations first. If that
   // succeeds, we don't need to run the complex model matching algorithm.
   if (LoadAssociations())
-    return csync::SyncError();
+    return syncer::SyncError();
 
   DisassociateModels();
 
@@ -372,7 +372,7 @@ csync::SyncError BookmarkModelAssociator::AssociateModels() {
   return BuildAssociations();
 }
 
-csync::SyncError BookmarkModelAssociator::BuildAssociations() {
+syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each sync node for the current sync parent node, find the best
@@ -390,7 +390,7 @@ csync::SyncError BookmarkModelAssociator::BuildAssociations() {
   // This algorithm will not do well if the folder name has changes but the
   // children under them are all the same.
 
-  csync::SyncError error;
+  syncer::SyncError error;
   DCHECK(bookmark_model_->IsLoaded());
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
@@ -417,31 +417,31 @@ csync::SyncError BookmarkModelAssociator::BuildAssociations() {
 
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->bookmark_bar_node()->id());
-  DCHECK_NE(bookmark_bar_sync_id, csync::kInvalidId);
+  DCHECK_NE(bookmark_bar_sync_id, syncer::kInvalidId);
   int64 other_bookmarks_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->other_node()->id());
-  DCHECK_NE(other_bookmarks_sync_id, csync::kInvalidId);
+  DCHECK_NE(other_bookmarks_sync_id, syncer::kInvalidId);
   int64 mobile_bookmarks_sync_id = GetSyncIdFromChromeId(
        bookmark_model_->mobile_node()->id());
   if (expect_mobile_bookmarks_folder_) {
-    DCHECK_NE(csync::kInvalidId, mobile_bookmarks_sync_id);
+    DCHECK_NE(syncer::kInvalidId, mobile_bookmarks_sync_id);
   }
 
   std::stack<int64> dfs_stack;
-  if (mobile_bookmarks_sync_id != csync::kInvalidId)
+  if (mobile_bookmarks_sync_id != syncer::kInvalidId)
     dfs_stack.push(mobile_bookmarks_sync_id);
   dfs_stack.push(other_bookmarks_sync_id);
   dfs_stack.push(bookmark_bar_sync_id);
 
-  csync::WriteTransaction trans(FROM_HERE, user_share_);
+  syncer::WriteTransaction trans(FROM_HERE, user_share_);
 
   while (!dfs_stack.empty()) {
     int64 sync_parent_id = dfs_stack.top();
     dfs_stack.pop();
 
-    csync::ReadNode sync_parent(&trans);
+    syncer::ReadNode sync_parent(&trans);
     if (sync_parent.InitByIdLookup(sync_parent_id) !=
-            csync::BaseNode::INIT_OK) {
+            syncer::BaseNode::INIT_OK) {
       return unrecoverable_error_handler_->CreateAndUploadError(
           FROM_HERE,
           "Failed to lookup node.",
@@ -457,10 +457,10 @@ csync::SyncError BookmarkModelAssociator::BuildAssociations() {
 
     int index = 0;
     int64 sync_child_id = sync_parent.GetFirstChildId();
-    while (sync_child_id != csync::kInvalidId) {
-      csync::WriteNode sync_child_node(&trans);
+    while (sync_child_id != syncer::kInvalidId) {
+      syncer::WriteNode sync_child_node(&trans);
       if (sync_child_node.InitByIdLookup(sync_child_id) !=
-              csync::BaseNode::INIT_OK) {
+              syncer::BaseNode::INIT_OK) {
         return unrecoverable_error_handler_->CreateAndUploadError(
             FROM_HERE,
             "Failed to lookup node.",
@@ -509,7 +509,7 @@ csync::SyncError BookmarkModelAssociator::BuildAssociations() {
       sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
           parent_node, bookmark_model_, i, &trans, this,
           unrecoverable_error_handler_);
-      if (csync::kInvalidId == sync_child_id) {
+      if (syncer::kInvalidId == sync_child_id) {
         return unrecoverable_error_handler_->CreateAndUploadError(
             FROM_HERE,
             "Failed to create sync node.",
@@ -521,7 +521,7 @@ csync::SyncError BookmarkModelAssociator::BuildAssociations() {
     }
   }
 
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 void BookmarkModelAssociator::PostPersistAssociationsTask() {
@@ -545,14 +545,14 @@ void BookmarkModelAssociator::PersistAssociations() {
     return;
   }
 
-  csync::WriteTransaction trans(FROM_HERE, user_share_);
+  syncer::WriteTransaction trans(FROM_HERE, user_share_);
   DirtyAssociationsSyncIds::iterator iter;
   for (iter = dirty_associations_sync_ids_.begin();
        iter != dirty_associations_sync_ids_.end();
        ++iter) {
     int64 sync_id = *iter;
-    csync::WriteNode sync_node(&trans);
-    if (sync_node.InitByIdLookup(sync_id) != csync::BaseNode::INIT_OK) {
+    syncer::WriteNode sync_node(&trans);
+    if (sync_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
       unrecoverable_error_handler_->OnSingleDatatypeUnrecoverableError(
           FROM_HERE,
           "Could not lookup bookmark node for ID persistence.");
@@ -607,7 +607,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 
-  csync::ReadTransaction trans(FROM_HERE, user_share_);
+  syncer::ReadTransaction trans(FROM_HERE, user_share_);
 
   // Count total number of nodes in sync model so that we can compare that
   // with the total number of nodes in the bookmark model.
@@ -616,8 +616,8 @@ bool BookmarkModelAssociator::LoadAssociations() {
     int64 parent_id = dfs_stack.top();
     dfs_stack.pop();
     ++sync_node_count;
-    csync::ReadNode sync_parent(&trans);
-    if (sync_parent.InitByIdLookup(parent_id) != csync::BaseNode::INIT_OK) {
+    syncer::ReadNode sync_parent(&trans);
+    if (sync_parent.InitByIdLookup(parent_id) != syncer::BaseNode::INIT_OK) {
       return false;
     }
 
@@ -641,10 +641,10 @@ bool BookmarkModelAssociator::LoadAssociations() {
 
     // Add all children of the current node to the stack.
     int64 child_id = sync_parent.GetFirstChildId();
-    while (child_id != csync::kInvalidId) {
+    while (child_id != syncer::kInvalidId) {
       dfs_stack.push(child_id);
-      csync::ReadNode child_node(&trans);
-      if (child_node.InitByIdLookup(child_id) != csync::BaseNode::INIT_OK) {
+      syncer::ReadNode child_node(&trans);
+      if (child_node.InitByIdLookup(child_id) != syncer::BaseNode::INIT_OK) {
         return false;
       }
       child_id = child_node.GetSuccessorId();
@@ -662,9 +662,9 @@ bool BookmarkModelAssociator::LoadAssociations() {
 
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
-  csync::ReadTransaction trans(FROM_HERE, user_share_);
+  syncer::ReadTransaction trans(FROM_HERE, user_share_);
   const syncable::ModelTypeSet encrypted_types =
-      csync::GetEncryptedTypes(&trans);
+      syncer::GetEncryptedTypes(&trans);
   return !encrypted_types.Has(syncable::BOOKMARKS) ||
       trans.GetCryptographer()->is_ready();
 }

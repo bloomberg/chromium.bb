@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/engine/net/server_connection_manager.h"
 
-namespace csync {
+namespace syncer {
 
 class HttpPostProviderFactory;
 class HttpPostProviderInterface;
@@ -21,9 +21,9 @@ class HttpPostProviderInterface;
 // This provides HTTP Post functionality through the interface provided
 // to the sync API by the application hosting the syncer backend.
 class SyncAPIBridgedConnection
-    : public csync::ServerConnectionManager::Connection {
+    : public syncer::ServerConnectionManager::Connection {
  public:
-  SyncAPIBridgedConnection(csync::ServerConnectionManager* scm,
+  SyncAPIBridgedConnection(syncer::ServerConnectionManager* scm,
                            HttpPostProviderFactory* factory);
 
   virtual ~SyncAPIBridgedConnection();
@@ -31,7 +31,7 @@ class SyncAPIBridgedConnection
   virtual bool Init(const char* path,
                     const std::string& auth_token,
                     const std::string& payload,
-                    csync::HttpResponse* response) OVERRIDE;
+                    syncer::HttpResponse* response) OVERRIDE;
 
   virtual void Abort() OVERRIDE;
 
@@ -49,7 +49,7 @@ class SyncAPIBridgedConnection
 // subclass so that we can override MakePost() to generate a POST object using
 // an instance of the HttpPostProviderFactory class.
 class SyncAPIServerConnectionManager
-    : public csync::ServerConnectionManager {
+    : public syncer::ServerConnectionManager {
  public:
   // Takes ownership of factory.
   SyncAPIServerConnectionManager(const std::string& server,
@@ -72,6 +72,6 @@ class SyncAPIServerConnectionManager
   DISALLOW_COPY_AND_ASSIGN(SyncAPIServerConnectionManager);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_SYNCAPI_SERVER_CONNECTION_MANAGER_H_

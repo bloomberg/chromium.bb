@@ -16,7 +16,7 @@
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace csync {
+namespace syncer {
 
 class SyncErrorFactory;
 
@@ -64,6 +64,6 @@ class SyncableService : public SyncChangeProcessor,
   virtual ~SyncableService();
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_API_SYNCABLE_SERVICE_H_

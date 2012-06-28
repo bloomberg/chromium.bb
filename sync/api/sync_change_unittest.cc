@@ -13,7 +13,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 // Ordered list of SyncChange's.
 typedef std::vector<SyncChange> SyncChangeList;
@@ -129,4 +129,4 @@ TEST_F(SyncChangeTest, SyncerChanges) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

@@ -31,8 +31,8 @@
 namespace {
 
 using browser_sync::HasArgsAsList;
-using csync::JsArgList;
-using csync::JsEventDetails;
+using syncer::JsArgList;
+using syncer::JsEventDetails;
 using content::BrowserThread;
 using content::WebContents;
 using testing::_;

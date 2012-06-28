@@ -26,7 +26,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace csync {
+namespace syncer {
 
 class NonBlockingInvalidationNotifier
     : public SyncNotifier,
@@ -38,7 +38,7 @@ class NonBlockingInvalidationNotifier
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const std::string& initial_invalidation_state,
-      const csync::WeakHandle<InvalidationStateTracker>&
+      const syncer::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
 
@@ -81,6 +81,6 @@ class NonBlockingInvalidationNotifier
   DISALLOW_COPY_AND_ASSIGN(NonBlockingInvalidationNotifier);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_NON_BLOCKING_INVALIDATION_NOTIFIER_H_

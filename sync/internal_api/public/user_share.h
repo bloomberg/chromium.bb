@@ -14,7 +14,7 @@ namespace syncable {
 class Directory;
 }
 
-namespace csync {
+namespace syncer {
 
 // A UserShare encapsulates the syncable pieces that represent an authenticated
 // user and their data (share).
@@ -31,6 +31,6 @@ struct UserShare {
   std::string name;
 };
 
-}
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_

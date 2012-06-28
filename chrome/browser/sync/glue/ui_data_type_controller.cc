@@ -54,7 +54,7 @@ void UIDataTypeController::LoadModels(
   DCHECK(!model_load_callback.is_null());
   DCHECK(syncable::IsRealDataType(type_));
   if (state_ != NOT_RUNNING) {
-    model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
+    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                               "Model already loaded",
                                               type()));
     return;
@@ -79,7 +79,7 @@ void UIDataTypeController::LoadModels(
 
   state_ = MODEL_LOADED;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), csync::SyncError());
+  model_load_callback.Run(type(), syncer::SyncError());
 }
 
 void UIDataTypeController::OnModelLoaded() {
@@ -90,7 +90,7 @@ void UIDataTypeController::OnModelLoaded() {
   state_ = MODEL_LOADED;
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), csync::SyncError());
+  model_load_callback.Run(type(), syncer::SyncError());
 }
 
 void UIDataTypeController::StartAssociating(
@@ -118,33 +118,33 @@ void UIDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
 
   // Connect |shared_change_processor_| to the syncer and get the
-  // csync::SyncableService associated with type().
+  // syncer::SyncableService associated with type().
   local_service_ = shared_change_processor_->Connect(profile_sync_factory_,
                                                      sync_service_,
                                                      this,
                                                      type());
   if (!local_service_.get()) {
-    csync::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
+    syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
   if (!shared_change_processor_->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, csync::SyncError());
+    StartFailed(NEEDS_CRYPTO, syncer::SyncError());
     return;
   }
 
   bool sync_has_nodes = false;
   if (!shared_change_processor_->SyncModelHasUserCreatedNodes(
           &sync_has_nodes)) {
-    csync::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  csync::SyncError error;
-  csync::SyncDataList initial_sync_data;
+  syncer::SyncError error;
+  syncer::SyncDataList initial_sync_data;
   error = shared_change_processor_->GetSyncData(&initial_sync_data);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
@@ -155,9 +155,9 @@ void UIDataTypeController::Associate() {
   error = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
-      scoped_ptr<csync::SyncChangeProcessor>(
+      scoped_ptr<syncer::SyncChangeProcessor>(
           new SharedChangeProcessorRef(shared_change_processor_)),
-      scoped_ptr<csync::SyncErrorFactory>(
+      scoped_ptr<syncer::SyncErrorFactory>(
           new SharedChangeProcessorRef(shared_change_processor_)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
@@ -171,7 +171,7 @@ void UIDataTypeController::Associate() {
 }
 
 void UIDataTypeController::StartFailed(StartResult result,
-                                       const csync::SyncError& error) {
+                                       const syncer::SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (IsUnrecoverableResult(result))
     RecordUnrecoverableError(FROM_HERE, "StartFailed");
@@ -206,7 +206,7 @@ void UIDataTypeController::AbortModelLoad() {
 
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
+  model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                             "Aborted",
                                             type()));
 }
@@ -219,7 +219,7 @@ void UIDataTypeController::StartDone(StartResult result) {
   // confused by the non-NULL start_callback_.
   StartCallback callback = start_callback_;
   start_callback_.Reset();
-  callback.Run(result, csync::SyncError());
+  callback.Run(result, syncer::SyncError());
 }
 
 void UIDataTypeController::Stop() {
@@ -264,9 +264,9 @@ void UIDataTypeController::StopModels() {
   // Do nothing by default.
 }
 
-csync::ModelSafeGroup UIDataTypeController::model_safe_group() const {
+syncer::ModelSafeGroup UIDataTypeController::model_safe_group() const {
   DCHECK(syncable::IsRealDataType(type_));
-  return csync::GROUP_UI;
+  return syncer::GROUP_UI;
 }
 
 std::string UIDataTypeController::name() const {

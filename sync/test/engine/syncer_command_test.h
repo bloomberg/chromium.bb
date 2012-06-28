@@ -30,9 +30,9 @@
 
 using ::testing::NiceMock;
 
-namespace csync {
+namespace syncer {
 
-class MockDebugInfoGetter : public csync::sessions::DebugInfoGetter {
+class MockDebugInfoGetter : public syncer::sessions::DebugInfoGetter {
  public:
   MockDebugInfoGetter();
   virtual ~MockDebugInfoGetter();
@@ -233,6 +233,6 @@ class MockDirectorySyncerCommandTest : public SyncerCommandTestBase {
   MockDirectory mock_directory_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_TEST_ENGINE_SYNCER_COMMAND_TEST_H_

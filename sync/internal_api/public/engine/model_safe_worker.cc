@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
-namespace csync {
+namespace syncer {
 
 base::DictionaryValue* ModelSafeRoutingInfoToValue(
     const ModelSafeRoutingInfo& routing_info) {
@@ -72,4 +72,4 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
 
 ModelSafeWorker::~ModelSafeWorker() {}
 
-}  // namespace csync
+}  // namespace syncer

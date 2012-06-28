@@ -20,7 +20,7 @@ using std::pair;
 using std::queue;
 using std::set;
 
-namespace csync {
+namespace syncer {
 
 // Traversal provides a way to collect a set of nodes from the syncable
 // directory structure and then traverse them, along with any intermediate
@@ -226,4 +226,4 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
   return true;
 }
 
-}  // namespace csync
+}  // namespace syncer

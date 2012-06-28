@@ -23,10 +23,10 @@ class DataTypeErrorHandler {
       const tracked_objects::Location& from_here,
       const std::string& message) = 0;
 
-  // This will create a csync::SyncError object. This will also upload
+  // This will create a syncer::SyncError object. This will also upload
   // a breakpad call stack to crash server. A sync error usually means
   // that sync has to be disabled either for that type or completely.
-  virtual csync::SyncError CreateAndUploadError(
+  virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message,
       syncable::ModelType type) = 0;

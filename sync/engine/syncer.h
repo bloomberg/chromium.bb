@@ -24,7 +24,7 @@ class Entry;
 class MutableEntry;
 }  // namespace syncable
 
-namespace csync {
+namespace syncer {
 
 enum SyncerStep {
   SYNCER_BEGIN,
@@ -107,6 +107,6 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest);
 void ClearServerData(syncable::MutableEntry* entry);
 const char* SyncerStepToString(const SyncerStep);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNCER_H_

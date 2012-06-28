@@ -20,11 +20,11 @@
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;
 
-namespace csync {
+namespace syncer {
 class SyncData;
 class SyncableService;
 
-typedef std::vector<csync::SyncData> SyncDataList;
+typedef std::vector<syncer::SyncData> SyncDataList;
 }  // namespace
 
 namespace browser_sync {
@@ -57,10 +57,10 @@ class SharedChangeProcessor
 
   // Connect to the Syncer and prepare to handle changes for |type|. Will
   // create and store a new GenericChangeProcessor and return a weak pointer to
-  // the csync::SyncableService associated with |type|.
+  // the syncer::SyncableService associated with |type|.
   // Note: If this SharedChangeProcessor has been disconnected, or the
-  // csync::SyncableService was not alive, will return a null weak pointer.
-  virtual base::WeakPtr<csync::SyncableService> Connect(
+  // syncer::SyncableService was not alive, will return a null weak pointer.
+  virtual base::WeakPtr<syncer::SyncableService> Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
@@ -78,19 +78,20 @@ class SharedChangeProcessor
 
   // GenericChangeProcessor stubs (with disconnect support).
   // Should only be called on the same thread the datatype resides.
-  virtual csync::SyncError GetSyncData(csync::SyncDataList* current_sync_data);
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError GetSyncData(
+      syncer::SyncDataList* current_sync_data);
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list);
+      const syncer::SyncChangeList& change_list);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
   // Register |generic_change_processor_| as the change processor for the
   // current type on |model_safe_group|.
   // Does nothing if |disconnected_| is true.
-  virtual void ActivateDataType(csync::ModelSafeGroup model_safe_group);
+  virtual void ActivateDataType(syncer::ModelSafeGroup model_safe_group);
 
-  virtual csync::SyncError CreateAndUploadError(
+  virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message);
 

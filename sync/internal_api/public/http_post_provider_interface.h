@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace csync {
+namespace syncer {
 
 // An interface the embedding application (e.g. Chromium) implements to provide
 // required HTTP POST functionality to the syncer backend. This interface is
@@ -58,6 +58,6 @@ class HttpPostProviderInterface {
   virtual ~HttpPostProviderInterface() {}
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_HTTP_POST_PROVIDER_INTERFACE_H_

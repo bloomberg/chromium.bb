@@ -13,7 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-using csync::InvalidationVersionMap;
+using syncer::InvalidationVersionMap;
 
 namespace browser_sync {
 
@@ -203,7 +203,7 @@ void InvalidatorStorage::DeserializeMap(
       continue;
     }
     invalidation::ObjectId id;
-    if (!csync::RealModelTypeToObjectId(model_type, &id)) {
+    if (!syncer::RealModelTypeToObjectId(model_type, &id)) {
       DLOG(WARNING) << "Invalid model type: " << model_type;
       continue;
     }

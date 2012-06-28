@@ -298,8 +298,9 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
-  csync::SyncError error(FROM_HERE, "Association failed.", syncable::BOOKMARKS);
-  std::list<csync::SyncError> errors;
+  syncer::SyncError error(
+      FROM_HERE, "Association failed.", syncable::BOOKMARKS);
+  std::list<syncer::SyncError> errors;
   errors.push_back(error);
   browser_sync::DataTypeManager::ConfigureResult result(
       status,

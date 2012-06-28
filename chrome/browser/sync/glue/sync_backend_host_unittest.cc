@@ -34,15 +34,15 @@ class MockSyncFrontend : public SyncFrontend {
   virtual ~MockSyncFrontend() {}
 
   MOCK_METHOD2(OnBackendInitialized,
-               void(const csync::WeakHandle<csync::JsBackend>&, bool));
+               void(const syncer::WeakHandle<syncer::JsBackend>&, bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD1(OnConnectionStatusChange,
-               void(csync::ConnectionStatus status));
+               void(syncer::ConnectionStatus status));
   MOCK_METHOD0(OnStopSyncingPermanently, void());
   MOCK_METHOD0(OnClearServerDataSucceeded, void());
   MOCK_METHOD0(OnClearServerDataFailed, void());
   MOCK_METHOD2(OnPassphraseRequired,
-               void(csync::PassphraseRequiredReason,
+               void(syncer::PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));
   MOCK_METHOD0(OnPassphraseAccepted, void());
   MOCK_METHOD2(OnEncryptedTypesChanged,
@@ -50,9 +50,9 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD0(OnEncryptionComplete, void());
   MOCK_METHOD1(OnMigrationNeededForTypes, void(syncable::ModelTypeSet));
   MOCK_METHOD1(OnExperimentsChanged,
-      void(const csync::Experiments&));
+      void(const syncer::Experiments&));
   MOCK_METHOD1(OnActionableError,
-      void(const csync::SyncProtocolError& sync_error));
+      void(const syncer::SyncProtocolError& sync_error));
   MOCK_METHOD0(OnSyncConfigureRetry, void());
 };
 
@@ -101,12 +101,12 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
                           invalidator_storage.AsWeakPtr());
 
   MockSyncFrontend mock_frontend;
-  csync::SyncCredentials credentials;
+  syncer::SyncCredentials credentials;
   credentials.email = "user@example.com";
   credentials.sync_token = "sync_token";
-  csync::TestUnrecoverableErrorHandler handler;
+  syncer::TestUnrecoverableErrorHandler handler;
   backend.Initialize(&mock_frontend,
-                     csync::WeakHandle<csync::JsEventHandler>(),
+                     syncer::WeakHandle<syncer::JsEventHandler>(),
                      GURL(k_mock_url),
                      syncable::ModelTypeSet(),
                      credentials,

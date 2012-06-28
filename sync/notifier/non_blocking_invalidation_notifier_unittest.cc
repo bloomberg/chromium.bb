@@ -18,7 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -43,8 +43,8 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
             notifier_options,
             InvalidationVersionMap(),
             std::string(),  // initial_invalidation_state
-            csync::MakeWeakHandle(
-                base::WeakPtr<csync::InvalidationStateTracker>()),
+            syncer::MakeWeakHandle(
+                base::WeakPtr<syncer::InvalidationStateTracker>()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }
@@ -99,4 +99,4 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

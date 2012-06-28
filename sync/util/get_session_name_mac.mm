@@ -19,7 +19,7 @@
 - (NSString*)localizedName;
 @end
 
-namespace csync {
+namespace syncer {
 namespace internal {
 
 std::string GetHardwareModelName() {
@@ -48,4 +48,4 @@ std::string GetHardwareModelName() {
 }
 
 }  // namespace internal
-}  // namespace csync
+}  // namespace syncer

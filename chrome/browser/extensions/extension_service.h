@@ -72,7 +72,7 @@ class ExtensionBluetoothEventRouter;
 class ExtensionInputMethodEventRouter;
 }
 
-namespace csync {
+namespace syncer {
 class SyncData;
 class SyncErrorFactory;
 }
@@ -91,7 +91,7 @@ class WebNavigationEventRouter;
 
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
-class ExtensionServiceInterface : public csync::SyncableService {
+class ExtensionServiceInterface : public syncer::SyncableService {
  public:
   // A function that returns true if the given extension should be
   // included and false if it should be filtered out.  Identical to
@@ -421,18 +421,18 @@ class ExtensionService
 
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
-  // csync::SyncableService implementation.
-  virtual csync::SyncError MergeDataAndStartSyncing(
+  // syncer::SyncableService implementation.
+  virtual syncer::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const csync::SyncDataList& initial_sync_data,
-      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual csync::SyncDataList GetAllSyncData(
+  virtual syncer::SyncDataList GetAllSyncData(
       syncable::ModelType type) const OVERRIDE;
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) OVERRIDE;
 
   // Gets the sync data for the given extension, assuming that the extension is
   // syncable.
@@ -619,7 +619,7 @@ class ExtensionService
 
   AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
 
-  // Specialization of csync::SyncableService::AsWeakPtr.
+  // Specialization of syncer::SyncableService::AsWeakPtr.
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
  private:

@@ -15,7 +15,7 @@
 
 using sync_pb::DebugInfo;
 
-namespace csync {
+namespace syncer {
 using sessions::StatusController;
 using sessions::SyncSession;
 using std::string;
@@ -127,4 +127,4 @@ void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
 }
 
 
-}  // namespace csync
+}  // namespace syncer

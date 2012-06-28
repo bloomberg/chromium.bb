@@ -38,7 +38,7 @@ class FakeDataTypeController : public DataTypeController {
 
   virtual std::string name() const OVERRIDE;
 
-  virtual csync::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
   virtual State state() const OVERRIDE;
 

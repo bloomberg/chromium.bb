@@ -21,7 +21,7 @@ class MutableEntry;
 class Directory;
 }
 
-namespace csync {
+namespace syncer {
 
 namespace sessions {
 class OrderedCommitSet;
@@ -131,6 +131,6 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommand);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_PROCESS_COMMIT_RESPONSE_COMMAND_H_

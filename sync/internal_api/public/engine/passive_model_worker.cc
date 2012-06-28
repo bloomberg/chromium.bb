@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 
-namespace csync {
+namespace syncer {
 
 PassiveModelWorker::PassiveModelWorker(const MessageLoop* sync_loop)
     : sync_loop_(sync_loop) {}
@@ -25,4 +25,4 @@ ModelSafeGroup PassiveModelWorker::GetModelSafeGroup() {
   return GROUP_PASSIVE;
 }
 
-}  // namespace csync
+}  // namespace syncer

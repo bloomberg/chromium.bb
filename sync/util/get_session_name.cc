@@ -23,7 +23,7 @@
 #include "sync/util/session_utils_android.h"
 #endif
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -85,4 +85,4 @@ std::string GetSessionNameSynchronouslyForTesting() {
   return GetSessionNameSynchronously();
 }
 
-}  // namespace csync
+}  // namespace syncer

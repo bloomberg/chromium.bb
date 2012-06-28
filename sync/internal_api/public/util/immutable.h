@@ -26,7 +26,7 @@
 // undesirable.  Here's the above code re-written using Immutable<T>:
 //
 //   void ProcessStuff(
-//       const csync::Immutable<LargeObjectList>& stuff) {
+//       const syncer::Immutable<LargeObjectList>& stuff) {
 //     for (LargeObjectList::const_iterator it = stuff.Get().begin();
 //          it != stuff.Get().end(); ++it) {
 //       ... process it ...
@@ -72,7 +72,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
-namespace csync {
+namespace syncer {
 
 namespace internal {
 // This class is part of the Immutable implementation.  DO NOT USE
@@ -257,6 +257,6 @@ Immutable<T> MakeImmutable(T* t) {
   return Immutable<T>(t);
 }
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_IMMUTABLE_H_

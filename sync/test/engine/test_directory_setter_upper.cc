@@ -17,7 +17,7 @@
 using syncable::NullTransactionObserver;
 using syncable::ReadTransaction;
 
-namespace csync {
+namespace syncer {
 
 TestDirectorySetterUpper::TestDirectorySetterUpper() : name_("Test") {}
 
@@ -59,4 +59,4 @@ void TestDirectorySetterUpper::RunInvariantCheck() {
   }
 }
 
-}  // namespace csync
+}  // namespace syncer

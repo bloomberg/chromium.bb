@@ -19,19 +19,19 @@ class WaitableEvent;
 
 namespace browser_sync {
 
-// A csync::ModelSafeWorker for models that accept requests from the
+// A syncer::ModelSafeWorker for models that accept requests from the
 // syncapi that need to be fulfilled on a browser thread, for example
 // autofill on the DB thread.  TODO(sync): Try to generalize other
 // ModelWorkers (e.g. history, etc).
-class BrowserThreadModelWorker : public csync::ModelSafeWorker {
+class BrowserThreadModelWorker : public syncer::ModelSafeWorker {
  public:
   BrowserThreadModelWorker(content::BrowserThread::ID thread,
-                           csync::ModelSafeGroup group);
+                           syncer::ModelSafeGroup group);
 
-  // csync::ModelSafeWorker implementation. Called on the sync thread.
-  virtual csync::SyncerError DoWorkAndWaitUntilDone(
-      const csync::WorkCallback& work) OVERRIDE;
-  virtual csync::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  // syncer::ModelSafeWorker implementation. Called on the sync thread.
+  virtual syncer::SyncerError DoWorkAndWaitUntilDone(
+      const syncer::WorkCallback& work) OVERRIDE;
+  virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  protected:
   virtual ~BrowserThreadModelWorker();
@@ -40,13 +40,13 @@ class BrowserThreadModelWorker : public csync::ModelSafeWorker {
   // an implementation that subclasses should use.  This is so that
   // (subclass)::CallDoWorkAndSignalTask shows up in callstacks.
   virtual void CallDoWorkAndSignalTask(
-      const csync::WorkCallback& work,
+      const syncer::WorkCallback& work,
       base::WaitableEvent* done,
-      csync::SyncerError* error) = 0;
+      syncer::SyncerError* error) = 0;
 
  private:
   content::BrowserThread::ID thread_;
-  csync::ModelSafeGroup group_;
+  syncer::ModelSafeGroup group_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThreadModelWorker);
 };
@@ -60,9 +60,9 @@ class DatabaseModelWorker : public BrowserThreadModelWorker {
 
  protected:
   virtual void CallDoWorkAndSignalTask(
-      const csync::WorkCallback& work,
+      const syncer::WorkCallback& work,
       base::WaitableEvent* done,
-      csync::SyncerError* error) OVERRIDE;
+      syncer::SyncerError* error) OVERRIDE;
 
  private:
   virtual ~DatabaseModelWorker();
@@ -74,9 +74,9 @@ class FileModelWorker : public BrowserThreadModelWorker {
 
  protected:
   virtual void CallDoWorkAndSignalTask(
-      const csync::WorkCallback& work,
+      const syncer::WorkCallback& work,
       base::WaitableEvent* done,
-      csync::SyncerError* error) OVERRIDE;
+      syncer::SyncerError* error) OVERRIDE;
 
  private:
   virtual ~FileModelWorker();

@@ -19,7 +19,7 @@ DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
 DataTypeManager::ConfigureResult::ConfigureResult(
     ConfigureStatus status,
     TypeSet requested_types,
-    const std::list<csync::SyncError>& failed_data_types,
+    const std::list<syncer::SyncError>& failed_data_types,
     syncable::ModelTypeSet waiting_to_start)
     : status(status),
       requested_types(requested_types),

@@ -8,7 +8,7 @@
 
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace csync {
+namespace syncer {
 
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {
@@ -23,6 +23,6 @@ struct Experiments {
   bool sync_tab_favicons;
 };
 
-}
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_EXPERIMENTS_

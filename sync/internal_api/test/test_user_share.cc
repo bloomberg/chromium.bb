@@ -9,7 +9,7 @@
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 TestUserShare::TestUserShare() : dir_maker_(new TestDirectorySetterUpper()) {}
 
@@ -19,7 +19,7 @@ TestUserShare::~TestUserShare() {
 }
 
 void TestUserShare::SetUp() {
-  user_share_.reset(new csync::UserShare());
+  user_share_.reset(new syncer::UserShare());
   dir_maker_->SetUp();
 
   // The pointer is owned by dir_maker_, we should not be storing it in a
@@ -35,8 +35,8 @@ void TestUserShare::TearDown() {
   dir_maker_->TearDown();
 }
 
-csync::UserShare* TestUserShare::user_share() {
+syncer::UserShare* TestUserShare::user_share() {
   return user_share_.get();
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -14,7 +14,7 @@ class TransactionObserver;
 
 // Returns an initialized weak handle to a transaction observer that
 // does nothing.
-csync::WeakHandle<TransactionObserver> NullTransactionObserver();
+syncer::WeakHandle<TransactionObserver> NullTransactionObserver();
 
 }  // namespace syncable
 

@@ -257,8 +257,8 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_PROTOCOL_ERROR: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillOnce(Return(true));
-      csync::SyncProtocolError protocolError;
-      protocolError.action = csync::STOP_AND_RESTART_SYNC;
+      syncer::SyncProtocolError protocolError;
+      protocolError.action = syncer::STOP_AND_RESTART_SYNC;
       browser_sync::SyncBackendHost::Status status;
       status.sync_protocol_error = protocolError;
       EXPECT_CALL(service, QueryDetailedSyncStatus())

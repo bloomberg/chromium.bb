@@ -28,7 +28,7 @@
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;
 
-namespace csync {
+namespace syncer {
 
 // Helper function to look up the int64 metahandle of an object given the ID
 // string.
@@ -255,7 +255,7 @@ DictionaryValue* BaseNode::GetDetailsAsValue() const {
   DictionaryValue* node_info = GetSummaryAsValue();
   node_info->SetString(
       "modificationTime",
-      csync::GetTimeDebugString(GetModificationTime()));
+      syncer::GetTimeDebugString(GetModificationTime()));
   node_info->SetString("parentId", base::Int64ToString(GetParentId()));
   // Specifics are already in the Entry value, so no need to duplicate
   // it here.
@@ -352,4 +352,4 @@ void BaseNode::SetUnencryptedSpecifics(
   unencrypted_data_.CopyFrom(specifics);
 }
 
-}  // namespace csync
+}  // namespace syncer

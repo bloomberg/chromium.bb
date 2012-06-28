@@ -9,7 +9,7 @@
 #include "sync/syncable/entry.h"
 #include "sync/syncable/metahandle_set.h"
 
-namespace csync {
+namespace syncer {
 class WriteNode;
 }
 
@@ -89,7 +89,7 @@ class MutableEntry : public Entry {
  private:
   friend class Directory;
   friend class WriteTransaction;
-  friend class csync::WriteNode;
+  friend class syncer::WriteNode;
 
   // Don't allow creation on heap, except by sync API wrappers.
   void* operator new(size_t size) { return (::operator new)(size); }
@@ -114,6 +114,6 @@ class MutableEntry : public Entry {
 // This function sets only the flags needed to get this entry to sync.
 bool MarkForSyncing(syncable::MutableEntry* e);
 
-} // namespace syncable
+}  // namespace syncable
 
 #endif  // SYNC_SYNCABLE_MUTABLE_ENTRY_H_

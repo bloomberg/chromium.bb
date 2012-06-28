@@ -6,10 +6,10 @@
 
 #include "sync/syncable/directory.h"
 
-namespace csync {
+namespace syncer {
 
 UserShare::UserShare() {}
 
 UserShare::~UserShare() {}
 
-}
+}  // namespace syncer

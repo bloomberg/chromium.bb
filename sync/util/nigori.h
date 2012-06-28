@@ -14,7 +14,7 @@ namespace crypto {
 class SymmetricKey;
 }  // namespace crypto
 
-namespace csync {
+namespace syncer {
 
 // A (partial) implementation of Nigori, a protocol to securely store secrets in
 // the cloud. This implementation does not support server authentication or
@@ -81,6 +81,6 @@ class Nigori {
   scoped_ptr<crypto::SymmetricKey> mac_key_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_NIGORI_H_

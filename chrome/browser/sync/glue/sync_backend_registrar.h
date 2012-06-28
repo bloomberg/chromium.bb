@@ -20,9 +20,9 @@
 class MessageLoop;
 class Profile;
 
-namespace csync {
+namespace syncer {
 struct UserShare;
-}  // namespace csync
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -32,7 +32,7 @@ class UIModelWorker;
 // A class that keep track of the workers, change processors, and
 // routing info for the enabled sync types, and also routes change
 // events to the right processors.
-class SyncBackendRegistrar : public csync::SyncManager::ChangeDelegate {
+class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
  public:
   // |initial_types| contains the initial set of types to sync
   // (initially put in the passive group).  |name| is used for
@@ -79,9 +79,9 @@ class SyncBackendRegistrar : public csync::SyncManager::ChangeDelegate {
   // group) and starts the given change processor.  Must be called
   // from |group|'s native thread.
   void ActivateDataType(syncable::ModelType type,
-                        csync::ModelSafeGroup group,
+                        syncer::ModelSafeGroup group,
                         ChangeProcessor* change_processor,
-                        csync::UserShare* user_share);
+                        syncer::UserShare* user_share);
 
   // Deactivates the given type if necessary.  Must be called from the
   // UI thread and not |type|'s native thread.  Yes, this is
@@ -96,16 +96,16 @@ class SyncBackendRegistrar : public csync::SyncManager::ChangeDelegate {
   // any thread.
   virtual void OnChangesApplied(
       syncable::ModelType model_type,
-      const csync::BaseTransaction* trans,
-      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::BaseTransaction* trans,
+      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
-  void GetWorkers(std::vector<csync::ModelSafeWorker*>* out);
-  void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out);
+  void GetWorkers(std::vector<syncer::ModelSafeWorker*>* out);
+  void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
 
  private:
-  typedef std::map<csync::ModelSafeGroup,
-                   scoped_refptr<csync::ModelSafeWorker> > WorkerMap;
+  typedef std::map<syncer::ModelSafeGroup,
+                   scoped_refptr<syncer::ModelSafeWorker> > WorkerMap;
 
   // Returns the change processor for the given model, or NULL if none
   // exists.  Must be called from |group|'s native thread.
@@ -142,11 +142,11 @@ class SyncBackendRegistrar : public csync::SyncManager::ChangeDelegate {
   // destroyed.  Unless a worker is no longer needed because all types
   // that get routed to it have been disabled (from syncing). In that
   // case, we'll destroy on demand *after* routing any dependent types
-  // to csync::GROUP_PASSIVE, so that the syncapi doesn't call into garbage.
+  // to syncer::GROUP_PASSIVE, so that the syncapi doesn't call into garbage.
   // If a key is present, it means at least one ModelType that routes
   // to that model safe group is being synced.
   WorkerMap workers_;
- csync::ModelSafeRoutingInfo routing_info_;
+ syncer::ModelSafeRoutingInfo routing_info_;
 
   // The change processors that handle the different data types.
   std::map<syncable::ModelType, ChangeProcessor*> processors_;

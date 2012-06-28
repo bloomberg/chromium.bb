@@ -144,16 +144,16 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
  public:
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode typed_url_root(&trans);
-    ASSERT_EQ(csync::BaseNode::INIT_OK,
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode typed_url_root(&trans);
+    ASSERT_EQ(syncer::BaseNode::INIT_OK,
               typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
 
-    csync::WriteNode node(&trans);
+    syncer::WriteNode node(&trans);
     std::string tag = url.url().spec();
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::TYPED_URLS, typed_url_root, tag);
-    ASSERT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
   }
 
@@ -233,16 +233,16 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void GetTypedUrlsFromSyncDB(history::URLRows* urls) {
     urls->clear();
-    csync::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode typed_url_root(&trans);
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode typed_url_root(&trans);
     if (typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag) !=
-            csync::BaseNode::INIT_OK)
+            syncer::BaseNode::INIT_OK)
       return;
 
     int64 child_id = typed_url_root.GetFirstChildId();
-    while (child_id != csync::kInvalidId) {
-      csync::ReadNode child_node(&trans);
-      if (child_node.InitByIdLookup(child_id) != csync::BaseNode::INIT_OK)
+    while (child_id != syncer::kInvalidId) {
+      syncer::ReadNode child_node(&trans);
+      if (child_node.InitByIdLookup(child_id) != syncer::BaseNode::INIT_OK)
         return;
 
       const sync_pb::TypedUrlSpecifics& typed_url(
@@ -929,7 +929,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   sync_entries.push_back(sync_entry);
 
   EXPECT_CALL(error_handler_, CreateAndUploadError(_, _, _)).
-              WillOnce(Return(csync::SyncError(FROM_HERE,
+              WillOnce(Return(syncer::SyncError(FROM_HERE,
                                         "Unit test",
                                         syncable::TYPED_URLS)));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));

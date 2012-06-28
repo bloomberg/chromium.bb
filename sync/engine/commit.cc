@@ -16,7 +16,7 @@
 using syncable::SYNCER;
 using syncable::WriteTransaction;
 
-namespace csync {
+namespace syncer {
 
 using sessions::SyncSession;
 using sessions::StatusController;
@@ -156,4 +156,4 @@ SyncerError BuildAndPostCommits(Syncer* syncer,
   return result;
 }
 
-}  // namespace csync
+}  // namespace syncer

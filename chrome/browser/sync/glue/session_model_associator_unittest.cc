@@ -596,7 +596,7 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateNewTab) {
 
   sync_pb::SessionTab sync_tab;
   GURL new_url;
-  int64 now = csync::TimeToProtoTime(base::Time::Now());
+  int64 now = syncer::TimeToProtoTime(base::Time::Now());
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
 
   EXPECT_EQ(new_url, entry3->GetVirtualURL());
@@ -650,9 +650,9 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateExistingTab) {
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
 
   // Override the timestamps to arbitrary old values we can compare against.
-  prev_tab.synced_tab_navigations[0].set_timestamp(csync::ProtoTimeToTime(1));
-  prev_tab.synced_tab_navigations[1].set_timestamp(csync::ProtoTimeToTime(2));
-  prev_tab.synced_tab_navigations[2].set_timestamp(csync::ProtoTimeToTime(3));
+  prev_tab.synced_tab_navigations[0].set_timestamp(syncer::ProtoTimeToTime(1));
+  prev_tab.synced_tab_navigations[1].set_timestamp(syncer::ProtoTimeToTime(2));
+  prev_tab.synced_tab_navigations[2].set_timestamp(syncer::ProtoTimeToTime(3));
 
   // Now re-associate with the same data.
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
@@ -710,9 +710,9 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateAppendedTab) {
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
 
   // Override the timestamps to arbitrary old values we can compare against.
-  prev_tab.synced_tab_navigations[0].set_timestamp(csync::ProtoTimeToTime(1));
-  prev_tab.synced_tab_navigations[1].set_timestamp(csync::ProtoTimeToTime(2));
-  prev_tab.synced_tab_navigations[2].set_timestamp(csync::ProtoTimeToTime(3));
+  prev_tab.synced_tab_navigations[0].set_timestamp(syncer::ProtoTimeToTime(1));
+  prev_tab.synced_tab_navigations[1].set_timestamp(syncer::ProtoTimeToTime(2));
+  prev_tab.synced_tab_navigations[2].set_timestamp(syncer::ProtoTimeToTime(3));
 
   // Add a new entry and change the current navigation index.
   scoped_ptr<content::NavigationEntry> entry4(
@@ -724,7 +724,7 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateAppendedTab) {
   EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(3));
 
   // The new entry should have a timestamp later than this.
-  int64 now = csync::TimeToProtoTime(base::Time::Now());
+  int64 now = syncer::TimeToProtoTime(base::Time::Now());
 
   // Now re-associate with the new version.
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
@@ -792,10 +792,10 @@ TEST_F(SyncSessionModelAssociatorTest, AssociatePrunedTab) {
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
 
   // Override the timestamps to arbitrary old values we can compare against.
-  prev_tab.synced_tab_navigations[0].set_timestamp(csync::ProtoTimeToTime(1));
-  prev_tab.synced_tab_navigations[1].set_timestamp(csync::ProtoTimeToTime(2));
-  prev_tab.synced_tab_navigations[2].set_timestamp(csync::ProtoTimeToTime(3));
-  prev_tab.synced_tab_navigations[2].set_timestamp(csync::ProtoTimeToTime(4));
+  prev_tab.synced_tab_navigations[0].set_timestamp(syncer::ProtoTimeToTime(1));
+  prev_tab.synced_tab_navigations[1].set_timestamp(syncer::ProtoTimeToTime(2));
+  prev_tab.synced_tab_navigations[2].set_timestamp(syncer::ProtoTimeToTime(3));
+  prev_tab.synced_tab_navigations[2].set_timestamp(syncer::ProtoTimeToTime(4));
 
   // Reset new tab to have the oldest entry pruned, the current navigation
   // set to entry3, and a new entry added in place of entry4.
@@ -814,7 +814,7 @@ TEST_F(SyncSessionModelAssociatorTest, AssociatePrunedTab) {
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
 
   // The new entry should have a timestamp later than this.
-  int64 now = csync::TimeToProtoTime(base::Time::Now());
+  int64 now = syncer::TimeToProtoTime(base::Time::Now());
 
   // Now re-associate with the new version.
   AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);

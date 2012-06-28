@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace csync {
+namespace syncer {
 
 FakeExtensionsActivityMonitor::FakeExtensionsActivityMonitor() {}
 
@@ -28,4 +28,4 @@ void FakeExtensionsActivityMonitor::PutRecords(const Records& records) {
   }
 }
 
-}  // namespace csync
+}  // namespace syncer

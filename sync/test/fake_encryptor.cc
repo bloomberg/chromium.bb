@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 
-namespace csync {
+namespace syncer {
 
 FakeEncryptor::~FakeEncryptor() {}
 
@@ -20,4 +20,4 @@ bool FakeEncryptor::DecryptString(const std::string& ciphertext,
   return base::Base64Decode(ciphertext, plaintext);
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -8,8 +8,8 @@
 
 namespace syncable {
 
-csync::WeakHandle<TransactionObserver> NullTransactionObserver() {
-  return csync::MakeWeakHandle(base::WeakPtr<TransactionObserver>());
+syncer::WeakHandle<TransactionObserver> NullTransactionObserver() {
+  return syncer::MakeWeakHandle(base::WeakPtr<TransactionObserver>());
 }
 
 }  // namespace syncable

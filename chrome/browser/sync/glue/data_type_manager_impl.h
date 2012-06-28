@@ -32,12 +32,12 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // DataTypeManager interface.
   virtual void Configure(TypeSet desired_types,
-                         csync::ConfigureReason reason) OVERRIDE;
+                         syncer::ConfigureReason reason) OVERRIDE;
 
   // Needed only for backend migration.
   virtual void ConfigureWithoutNigori(
       TypeSet desired_types,
-      csync::ConfigureReason reason) OVERRIDE;
+      syncer::ConfigureReason reason) OVERRIDE;
 
   virtual void Stop() OVERRIDE;
   virtual State state() const OVERRIDE;
@@ -57,13 +57,13 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Stops all data types.
   void FinishStop();
   void Abort(ConfigureStatus status,
-             const csync::SyncError& error);
+             const syncer::SyncError& error);
 
   // If there's a pending reconfigure, processes it and returns true.
   // Otherwise, returns false.
   bool ProcessReconfigure();
 
-  void Restart(csync::ConfigureReason reason,
+  void Restart(syncer::ConfigureReason reason,
                BackendDataTypeConfigurer::NigoriState nigori_state);
   void DownloadReady(syncable::ModelTypeSet failed_configuration_types);
 
@@ -80,7 +80,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void ConfigureImpl(
       TypeSet desired_types,
-      csync::ConfigureReason reason,
+      syncer::ConfigureReason reason,
       BackendDataTypeConfigurer::NigoriState nigori_state);
 
   BackendDataTypeConfigurer* configurer_;
@@ -97,7 +97,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // The reason for the last reconfigure attempt. Not this will be set to a
   // valid value only when |needs_reconfigure_| is set.
-  csync::ConfigureReason last_configure_reason_;
+  syncer::ConfigureReason last_configure_reason_;
   // The value of |nigori_state| on the last reconfigure attempt.
   // Like |last_configure_reason_|, set to a valid value only when
   // |needs_reconfigure_| is set.
@@ -115,7 +115,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Collects the list of errors resulting from failing to start a type. This
   // would eventually be sent to the listeners after all the types have
   // been given a chance to start.
-  std::list<csync::SyncError> failed_datatypes_info_;
+  std::list<syncer::SyncError> failed_datatypes_info_;
   ModelAssociationManager model_association_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);

@@ -642,12 +642,12 @@ void SyncTest::TriggerNotification(
     syncable::ModelTypeSet changed_types) {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   const std::string& data =
-      csync::P2PNotificationData("from_server",
-                                         csync::NOTIFY_ALL,
+      syncer::P2PNotificationData("from_server",
+                                         syncer::NOTIFY_ALL,
                                          changed_types).ToString();
   const std::string& path =
       std::string("chromiumsync/sendnotification?channel=") +
-      csync::kSyncP2PNotificationChannel + "&data=" + data;
+      syncer::kSyncP2PNotificationChannel + "&data=" + data;
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   ASSERT_EQ("Notification sent",
             UTF16ToASCII(browser()->GetActiveWebContents()->GetTitle()));
@@ -704,21 +704,21 @@ namespace {
 
 sync_pb::SyncEnums::ErrorType
     GetClientToServerResponseErrorType(
-        csync::SyncProtocolErrorType error) {
+        syncer::SyncProtocolErrorType error) {
   switch (error) {
-    case csync::SYNC_SUCCESS:
+    case syncer::SYNC_SUCCESS:
       return sync_pb::SyncEnums::SUCCESS;
-    case csync::NOT_MY_BIRTHDAY:
+    case syncer::NOT_MY_BIRTHDAY:
       return sync_pb::SyncEnums::NOT_MY_BIRTHDAY;
-    case csync::THROTTLED:
+    case syncer::THROTTLED:
       return sync_pb::SyncEnums::THROTTLED;
-    case csync::CLEAR_PENDING:
+    case syncer::CLEAR_PENDING:
       return sync_pb::SyncEnums::CLEAR_PENDING;
-    case csync::TRANSIENT_ERROR:
+    case syncer::TRANSIENT_ERROR:
       return sync_pb::SyncEnums::TRANSIENT_ERROR;
-    case csync::MIGRATION_DONE:
+    case syncer::MIGRATION_DONE:
       return sync_pb::SyncEnums::MIGRATION_DONE;
-    case csync::UNKNOWN_ERROR:
+    case syncer::UNKNOWN_ERROR:
       return sync_pb::SyncEnums::UNKNOWN;
     default:
       NOTREACHED();
@@ -727,19 +727,19 @@ sync_pb::SyncEnums::ErrorType
 }
 
 sync_pb::SyncEnums::Action GetClientToServerResponseAction(
-    const csync::ClientAction& action) {
+    const syncer::ClientAction& action) {
   switch (action) {
-    case csync::UPGRADE_CLIENT:
+    case syncer::UPGRADE_CLIENT:
       return sync_pb::SyncEnums::UPGRADE_CLIENT;
-    case csync::CLEAR_USER_DATA_AND_RESYNC:
+    case syncer::CLEAR_USER_DATA_AND_RESYNC:
       return sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC;
-    case csync::ENABLE_SYNC_ON_ACCOUNT:
+    case syncer::ENABLE_SYNC_ON_ACCOUNT:
       return sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT;
-    case csync::STOP_AND_RESTART_SYNC:
+    case syncer::STOP_AND_RESTART_SYNC:
       return sync_pb::SyncEnums::STOP_AND_RESTART_SYNC;
-    case csync::DISABLE_SYNC_ON_CLIENT:
+    case syncer::DISABLE_SYNC_ON_CLIENT:
       return sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT;
-    case csync::UNKNOWN_ACTION:
+    case syncer::UNKNOWN_ACTION:
       return sync_pb::SyncEnums::UNKNOWN_ACTION;
     default:
       NOTREACHED();
@@ -749,7 +749,7 @@ sync_pb::SyncEnums::Action GetClientToServerResponseAction(
 
 }  // namespace
 
-void SyncTest::TriggerSyncError(const csync::SyncProtocolError& error,
+void SyncTest::TriggerSyncError(const syncer::SyncProtocolError& error,
                                 SyncErrorFrequency frequency) {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/error";

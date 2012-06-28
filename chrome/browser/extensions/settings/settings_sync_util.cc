@@ -41,7 +41,7 @@ void PopulateAppSettingSpecifics(
 
 }  // namespace
 
-csync::SyncData CreateData(
+syncer::SyncData CreateData(
     const std::string& extension_id,
     const std::string& key,
     const Value& value,
@@ -68,37 +68,37 @@ csync::SyncData CreateData(
       NOTREACHED();
   }
 
-  return csync::SyncData::CreateLocalData(
+  return syncer::SyncData::CreateLocalData(
       extension_id + "/" + key, key, specifics);
 }
 
-csync::SyncChange CreateAdd(
+syncer::SyncChange CreateAdd(
     const std::string& extension_id,
     const std::string& key,
     const Value& value,
     syncable::ModelType type) {
-  return csync::SyncChange(
-      csync::SyncChange::ACTION_ADD,
+  return syncer::SyncChange(
+      syncer::SyncChange::ACTION_ADD,
       CreateData(extension_id, key, value, type));
 }
 
-csync::SyncChange CreateUpdate(
+syncer::SyncChange CreateUpdate(
     const std::string& extension_id,
     const std::string& key,
     const Value& value,
     syncable::ModelType type) {
-  return csync::SyncChange(
-      csync::SyncChange::ACTION_UPDATE,
+  return syncer::SyncChange(
+      syncer::SyncChange::ACTION_UPDATE,
       CreateData(extension_id, key, value, type));
 }
 
-csync::SyncChange CreateDelete(
+syncer::SyncChange CreateDelete(
     const std::string& extension_id,
     const std::string& key,
     syncable::ModelType type) {
   DictionaryValue no_value;
-  return csync::SyncChange(
-      csync::SyncChange::ACTION_DELETE,
+  return syncer::SyncChange(
+      syncer::SyncChange::ACTION_DELETE,
       CreateData(extension_id, key, no_value, type));
 }
 

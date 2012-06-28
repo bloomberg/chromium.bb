@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 
-namespace csync {
+namespace syncer {
 
 // Converts a time object to the format used in sync protobufs (ms
 // since the Unix epoch).
@@ -24,6 +24,6 @@ base::Time ProtoTimeToTime(int64 proto_t);
 
 std::string GetTimeDebugString(const base::Time& t);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_TIME_H_

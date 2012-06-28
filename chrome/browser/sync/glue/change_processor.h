@@ -12,9 +12,9 @@
 
 class Profile;
 
-namespace csync {
+namespace syncer {
 class UnrecoverableErrorHandler;
-}  // namespace csync
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -36,7 +36,7 @@ class ChangeProcessor {
   // It is safe to call Start again after previously Stop()ing the
   // processor.  Subclasses can extract their associated chrome model
   // from |profile| in |StartImpl|.
-  void Start(Profile* profile, csync::UserShare* share_handle);
+  void Start(Profile* profile, syncer::UserShare* share_handle);
   void Stop();
   virtual bool IsRunning() const;
 
@@ -44,8 +44,8 @@ class ChangeProcessor {
   // applied to the frontend model. See syncapi.h for detailed instructions on
   // how to interpret and process |changes|.
   virtual void ApplyChangesFromSyncModel(
-      const csync::BaseTransaction* trans,
-      const csync::ImmutableChangeRecordList& changes) = 0;
+      const syncer::BaseTransaction* trans,
+      const syncer::ImmutableChangeRecordList& changes) = 0;
 
   // The changes found in ApplyChangesFromSyncModel may be too slow to be
   // performed while holding a [Read/Write]Transaction lock or may interact
@@ -82,7 +82,7 @@ class ChangeProcessor {
 
   bool running() const { return running_; }
   DataTypeErrorHandler* error_handler() const;
-  virtual csync::UserShare* share_handle() const;
+  virtual syncer::UserShare* share_handle() const;
 
  private:
   bool running_;  // True if we have been told it is safe to process changes.
@@ -90,7 +90,7 @@ class ChangeProcessor {
 
   // The sync model we are processing changes from. Non-NULL when |running_| is
   // true.
-  csync::UserShare* share_handle_;
+  syncer::UserShare* share_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeProcessor);
 };

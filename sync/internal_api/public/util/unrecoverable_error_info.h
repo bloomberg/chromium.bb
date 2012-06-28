@@ -12,7 +12,7 @@
 
 #include "base/location.h"
 
-namespace csync {
+namespace syncer {
 
 class UnrecoverableErrorInfo {
  public:
@@ -36,6 +36,6 @@ class UnrecoverableErrorInfo {
   bool is_set_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_UNRECOVERABLE_ERROR_INFO_H_

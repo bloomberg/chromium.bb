@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 ModelNeutralState::ModelNeutralState()
@@ -26,4 +26,4 @@ ModelNeutralState::ModelNeutralState()
 ModelNeutralState::~ModelNeutralState() {}
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer

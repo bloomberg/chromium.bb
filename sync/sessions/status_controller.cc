@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 using syncable::FIRST_REAL_MODEL_TYPE;
@@ -269,4 +269,4 @@ bool StatusController::debug_info_sent() const {
 }
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer

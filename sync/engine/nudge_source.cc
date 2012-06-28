@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace csync {
+namespace syncer {
 
 #define ENUM_CASE(x) case x: return #x; break
 
@@ -24,4 +24,4 @@ const char* GetNudgeSourceString(NudgeSource nudge_source) {
 
 #undef ENUM_CASE
 
-}  // namespace csync
+}  // namespace syncer

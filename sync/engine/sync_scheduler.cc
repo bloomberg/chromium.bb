@@ -23,7 +23,7 @@
 using base::TimeDelta;
 using base::TimeTicks;
 
-namespace csync {
+namespace syncer {
 
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
@@ -35,22 +35,22 @@ using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
 bool ShouldRequestEarlyExit(
-    const csync::SyncProtocolError& error) {
+    const syncer::SyncProtocolError& error) {
   switch (error.error_type) {
-    case csync::SYNC_SUCCESS:
-    case csync::MIGRATION_DONE:
-    case csync::THROTTLED:
-    case csync::TRANSIENT_ERROR:
+    case syncer::SYNC_SUCCESS:
+    case syncer::MIGRATION_DONE:
+    case syncer::THROTTLED:
+    case syncer::TRANSIENT_ERROR:
       return false;
-    case csync::NOT_MY_BIRTHDAY:
-    case csync::CLEAR_PENDING:
+    case syncer::NOT_MY_BIRTHDAY:
+    case syncer::CLEAR_PENDING:
       // If we send terminate sync early then |sync_cycle_ended| notification
       // would not be sent. If there were no actions then |ACTIONABLE_ERROR|
       // notification wouldnt be sent either. Then the UI layer would be left
       // waiting forever. So assert we would send something.
-      DCHECK(error.action != csync::UNKNOWN_ACTION);
+      DCHECK(error.action != syncer::UNKNOWN_ACTION);
       return true;
-    case csync::INVALID_CREDENTIAL:
+    case syncer::INVALID_CREDENTIAL:
       // The notification for this is handled by PostAndProcessHeaders|.
       // Server does no have to send any action for this.
       return true;
@@ -63,8 +63,8 @@ bool ShouldRequestEarlyExit(
 }
 
 bool IsActionableError(
-    const csync::SyncProtocolError& error) {
-  return (error.action != csync::UNKNOWN_ACTION);
+    const syncer::SyncProtocolError& error) {
+  return (error.action != syncer::UNKNOWN_ACTION);
 }
 }  // namespace
 
@@ -1141,4 +1141,4 @@ base::TimeDelta SyncScheduler::sessions_commit_delay() const {
 
 #undef ENUM_CASE
 
-}  // csync
+}  // namespace syncer

@@ -7,7 +7,7 @@
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 class DataTypeHistogramTest : public testing::Test {
@@ -60,4 +60,4 @@ TEST(DataTypeHistogramTest, BasicEnum) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

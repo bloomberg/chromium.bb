@@ -12,7 +12,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/sync_session.h"
 
-namespace csync {
+namespace syncer {
 
 TrafficRecorder::TrafficRecord::TrafficRecord(const std::string& message,
                                               TrafficMessageType message_type,
@@ -129,5 +129,5 @@ void TrafficRecorder::RecordClientToServerResponse(
   StoreProtoInQueue(response, CLIENT_TO_SERVER_RESPONSE);
 }
 
-}  // namespace csync
+}  // namespace syncer
 

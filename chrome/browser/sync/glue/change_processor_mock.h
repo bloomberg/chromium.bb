@@ -19,8 +19,8 @@ class ChangeProcessorMock
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
   MOCK_METHOD2(ApplyChangesFromSyncModel,
-               void(const csync::BaseTransaction*,
-                    const csync::ImmutableChangeRecordList&));
+               void(const syncer::BaseTransaction*,
+                    const syncer::ImmutableChangeRecordList&));
   MOCK_METHOD0(CommitChangesFromSyncModel, void());
   MOCK_METHOD1(StartImpl, void(Profile*));
   MOCK_METHOD0(StopImpl, void());
@@ -31,7 +31,7 @@ class ChangeProcessorMock
                      void(const tracked_objects::Location&,
                           const std::string&));
   MOCK_METHOD3(CreateAndUploadError,
-                   csync::SyncError(const tracked_objects::Location&,
+                   syncer::SyncError(const tracked_objects::Location&,
                              const std::string&,
                              syncable::ModelType));
 

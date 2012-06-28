@@ -39,7 +39,7 @@
 namespace {
 
 // Class to print received notifications events.
-class NotificationPrinter : public csync::SyncNotifierObserver {
+class NotificationPrinter : public syncer::SyncNotifierObserver {
  public:
   NotificationPrinter() {}
   virtual ~NotificationPrinter() {}
@@ -49,17 +49,17 @@ class NotificationPrinter : public csync::SyncNotifierObserver {
   }
 
   virtual void OnNotificationsDisabled(
-      csync::NotificationsDisabledReason reason) OVERRIDE {
+      syncer::NotificationsDisabledReason reason) OVERRIDE {
     LOG(INFO) << "Notifications disabled with reason "
-              << csync::NotificationsDisabledReasonToString(reason);
+              << syncer::NotificationsDisabledReasonToString(reason);
   }
 
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
-      csync::IncomingNotificationSource source) OVERRIDE {
+      syncer::IncomingNotificationSource source) OVERRIDE {
     for (syncable::ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
-      LOG(INFO) << (source == csync::REMOTE_NOTIFICATION ?
+      LOG(INFO) << (source == syncer::REMOTE_NOTIFICATION ?
                     "Remote" : "Local")
                 << " Notification: type = "
                 << syncable::ModelTypeToString(it->first)
@@ -73,21 +73,21 @@ class NotificationPrinter : public csync::SyncNotifierObserver {
 
 class NullInvalidationStateTracker
     : public base::SupportsWeakPtr<NullInvalidationStateTracker>,
-      public csync::InvalidationStateTracker {
+      public syncer::InvalidationStateTracker {
  public:
   NullInvalidationStateTracker() {}
   virtual ~NullInvalidationStateTracker() {}
 
-  virtual csync::InvalidationVersionMap
+  virtual syncer::InvalidationVersionMap
       GetAllMaxVersions() const OVERRIDE {
-    return csync::InvalidationVersionMap();
+    return syncer::InvalidationVersionMap();
   }
 
   virtual void SetMaxVersion(
       const invalidation::ObjectId& id,
       int64 max_invalidation_version) OVERRIDE {
     LOG(INFO) << "Setting max invalidation version for "
-              << csync::ObjectIdToString(id) << " to "
+              << syncer::ObjectIdToString(id) << " to "
               << max_invalidation_version;
   }
 
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
                 "[--%s=host:port] [--%s] [--%s]\n"
                 "[--%s=(server|p2p)]\n\n"
                 "Run chrome and set a breakpoint on\n"
-                "csync::SyncManager::SyncInternal::UpdateCredentials() "
+                "syncer::SyncManager::SyncInternal::UpdateCredentials() "
                 "after logging into\n"
                 "sync to get the token to pass into this utility.\n",
                 argv[0],
@@ -228,10 +228,10 @@ int main(int argc, char* argv[]) {
           new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
-  csync::SyncNotifierFactory sync_notifier_factory(
+  syncer::SyncNotifierFactory sync_notifier_factory(
       notifier_options, kClientInfo,
       null_invalidation_state_tracker.AsWeakPtr());
-  scoped_ptr<csync::SyncNotifier> sync_notifier(
+  scoped_ptr<syncer::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;
   sync_notifier->AddObserver(&notification_printer);

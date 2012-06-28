@@ -21,7 +21,7 @@
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/protocol/sync.pb.h"
 
-class MockConnectionManager : public csync::ServerConnectionManager {
+class MockConnectionManager : public syncer::ServerConnectionManager {
  public:
   class MidCommitObserver {
    public:
@@ -39,7 +39,7 @@ class MockConnectionManager : public csync::ServerConnectionManager {
       PostBufferParams*,
       const std::string& path,
       const std::string& auth_token,
-      csync::ScopedServerStatusWatcher* watcher) OVERRIDE;
+      syncer::ScopedServerStatusWatcher* watcher) OVERRIDE;
 
   // Control of commit response.
   // NOTE: Commit callback is invoked only once then reset.

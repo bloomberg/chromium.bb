@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
-namespace csync {
+namespace syncer {
 
 class SyncNotifier;
 
@@ -40,10 +40,10 @@ class SyncNotifierFactory {
   const std::string client_info_;
   const InvalidationVersionMap initial_max_invalidation_versions_;
   const std::string initial_invalidation_state_;
-  const csync::WeakHandle<InvalidationStateTracker>
+  const syncer::WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_FACTORY_H_

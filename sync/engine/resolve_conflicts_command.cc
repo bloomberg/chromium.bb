@@ -10,7 +10,7 @@
 #include "sync/syncable/directory.h"
 #include "sync/syncable/write_transaction.h"
 
-namespace csync {
+namespace syncer {
 
 ResolveConflictsCommand::ResolveConflictsCommand() {}
 ResolveConflictsCommand::~ResolveConflictsCommand() {}
@@ -38,4 +38,4 @@ SyncerError ResolveConflictsCommand::ModelChangingExecuteImpl(
   return SYNCER_OK;
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -63,11 +63,11 @@ void PasswordChangeProcessor::Observe(
 
   DCHECK(running());
 
-  csync::WriteTransaction trans(FROM_HERE, share_handle());
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
 
-  csync::ReadNode password_root(&trans);
+  syncer::ReadNode password_root(&trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Server did not create the top-level password node. "
         "We might be running against an out-of-date server.");
@@ -81,11 +81,11 @@ void PasswordChangeProcessor::Observe(
     std::string tag = PasswordModelAssociator::MakeTag(change->form());
     switch (change->type()) {
       case PasswordStoreChange::ADD: {
-        csync::WriteNode sync_node(&trans);
-        csync::WriteNode::InitUniqueByCreationResult result =
+        syncer::WriteNode sync_node(&trans);
+        syncer::WriteNode::InitUniqueByCreationResult result =
             sync_node.InitUniqueByCreation(syncable::PASSWORDS, password_root,
                                            tag);
-        if (result == csync::WriteNode::INIT_SUCCESS) {
+        if (result == syncer::WriteNode::INIT_SUCCESS) {
           PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
           model_associator_->Associate(&tag, sync_node.GetId());
           break;
@@ -101,14 +101,14 @@ void PasswordChangeProcessor::Observe(
           //
           // TODO: Remove this.  See crbug.com/87855.
           int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
-          if (csync::kInvalidId == sync_id) {
+          if (syncer::kInvalidId == sync_id) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Unable to create or retrieve password node");
             LOG(ERROR) << "Invalid sync id.";
             return;
           }
           if (sync_node.InitByIdLookup(sync_id) !=
-                  csync::BaseNode::INIT_OK) {
+                  syncer::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             LOG(ERROR) << "Password node lookup failed.";
@@ -119,16 +119,16 @@ void PasswordChangeProcessor::Observe(
         }
       }
       case PasswordStoreChange::UPDATE: {
-        csync::WriteNode sync_node(&trans);
+        syncer::WriteNode sync_node(&trans);
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
-        if (csync::kInvalidId == sync_id) {
+        if (syncer::kInvalidId == sync_id) {
           error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
               "Invalid sync id");
           LOG(ERROR) << "Invalid sync id.";
           return;
         } else {
           if (sync_node.InitByIdLookup(sync_id) !=
-                  csync::BaseNode::INIT_OK) {
+                  syncer::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             LOG(ERROR) << "Password node lookup failed.";
@@ -140,9 +140,9 @@ void PasswordChangeProcessor::Observe(
         break;
       }
       case PasswordStoreChange::REMOVE: {
-        csync::WriteNode sync_node(&trans);
+        syncer::WriteNode sync_node(&trans);
         int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
-        if (csync::kInvalidId == sync_id) {
+        if (syncer::kInvalidId == sync_id) {
           // We've been asked to remove a password that we don't know about.
           // That's weird, but apparently we were already in the requested
           // state, so it's not really an unrecoverable error. Just return.
@@ -150,7 +150,7 @@ void PasswordChangeProcessor::Observe(
           return;
         } else {
           if (sync_node.InitByIdLookup(sync_id) !=
-                  csync::BaseNode::INIT_OK) {
+                  syncer::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             return;
@@ -165,15 +165,15 @@ void PasswordChangeProcessor::Observe(
 }
 
 void PasswordChangeProcessor::ApplyChangesFromSyncModel(
-    const csync::BaseTransaction* trans,
-    const csync::ImmutableChangeRecordList& changes) {
+    const syncer::BaseTransaction* trans,
+    const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
 
-  csync::ReadNode password_root(trans);
+  syncer::ReadNode password_root(trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Password root node lookup failed.");
     return;
@@ -182,14 +182,14 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
   DCHECK(deleted_passwords_.empty() && new_passwords_.empty() &&
          updated_passwords_.empty());
 
-  for (csync::ChangeRecordList::const_iterator it =
+  for (syncer::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
-    if (csync::ChangeRecord::ACTION_DELETE ==
+    if (syncer::ChangeRecord::ACTION_DELETE ==
         it->action) {
       DCHECK(it->specifics.has_password())
           << "Password specifics data not present on delete!";
       DCHECK(it->extra.get());
-      csync::ExtraPasswordChangeRecordData* extra =
+      syncer::ExtraPasswordChangeRecordData* extra =
           it->extra.get();
       const sync_pb::PasswordSpecificsData& password = extra->unencrypted();
       webkit::forms::PasswordForm form;
@@ -199,8 +199,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
       continue;
     }
 
-    csync::ReadNode sync_node(trans);
-    if (sync_node.InitByIdLookup(it->id) != csync::BaseNode::INIT_OK) {
+    syncer::ReadNode sync_node(trans);
+    if (sync_node.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Password node lookup failed.");
       return;
@@ -215,12 +215,12 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     webkit::forms::PasswordForm password;
     PasswordModelAssociator::CopyPassword(password_data, &password);
 
-    if (csync::ChangeRecord::ACTION_ADD == it->action) {
+    if (syncer::ChangeRecord::ACTION_ADD == it->action) {
       std::string tag(PasswordModelAssociator::MakeTag(password));
       model_associator_->Associate(&tag, sync_node.GetId());
       new_passwords_.push_back(password);
     } else {
-      DCHECK_EQ(csync::ChangeRecord::ACTION_UPDATE, it->action);
+      DCHECK_EQ(syncer::ChangeRecord::ACTION_UPDATE, it->action);
       updated_passwords_.push_back(password);
     }
   }
@@ -232,7 +232,7 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
     return;
   ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
-  csync::SyncError error = model_associator_->WriteToPasswordStore(
+  syncer::SyncError error = model_associator_->WriteToPasswordStore(
       &new_passwords_,
       &updated_passwords_,
       &deleted_passwords_);

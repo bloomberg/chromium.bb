@@ -7,9 +7,9 @@
 #include "sync/syncable/directory.h"
 #include "sync/util/cryptographer.h"
 
-using csync::Cryptographer;
+using syncer::Cryptographer;
 
-namespace csync {
+namespace syncer {
 
 //////////////////////////////////////////////////////////////////////////
 // BaseTransaction member definitions
@@ -20,13 +20,13 @@ BaseTransaction::BaseTransaction(UserShare* share) {
 BaseTransaction::~BaseTransaction() {
 }
 
-csync::Cryptographer* BaseTransaction::GetCryptographer() const {
+syncer::Cryptographer* BaseTransaction::GetCryptographer() const {
   return directory_->GetCryptographer(this->GetWrappedTrans());
 }
 
 syncable::ModelTypeSet GetEncryptedTypes(
-    const csync::BaseTransaction* trans) {
+    const syncer::BaseTransaction* trans) {
   return trans->GetCryptographer()->GetEncryptedTypes();
 }
 
-} // namespace csync
+}  // namespace syncer

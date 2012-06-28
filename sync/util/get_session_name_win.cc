@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-namespace csync {
+namespace syncer {
 namespace internal {
 
 std::string GetComputerName() {
@@ -18,4 +18,4 @@ std::string GetComputerName() {
 }
 
 }  // namespace internal
-}  // namespace csync
+}  // namespace syncer

@@ -9,7 +9,7 @@
 #include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -45,4 +45,4 @@ TEST_F(GetSessionNameTest, GetSessionName) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

@@ -51,7 +51,7 @@ ScopedJavaLocalRef<jobject> GetContentResolver(JNIEnv* env) {
 
 }
 
-namespace csync {
+namespace syncer {
 namespace internal {
 
 std::string GetAndroidId() {
@@ -73,4 +73,4 @@ bool IsTabletUi() {
 }
 
 }  // namespace internal
-}  // namespace csync
+}  // namespace syncer

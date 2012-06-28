@@ -22,7 +22,7 @@ namespace base {
 class TimeDelta;
 }
 
-namespace csync {
+namespace syncer {
 class SyncError;
 }
 
@@ -39,7 +39,7 @@ class ChangeProcessor;
 //    syncable::ModelType type() const
 //    void CreateSyncComponents();
 // NOTE: This class is deprecated! New sync datatypes should be using the
-// csync::SyncableService API and the UIDataTypeController instead.
+// syncer::SyncableService API and the UIDataTypeController instead.
 // TODO(zea): Delete this once all types are on the new API.
 class FrontendDataTypeController : public DataTypeController {
  public:
@@ -54,7 +54,7 @@ class FrontendDataTypeController : public DataTypeController {
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
-  virtual csync::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
 
@@ -89,7 +89,7 @@ class FrontendDataTypeController : public DataTypeController {
   virtual void CleanUpState();
 
   // Helper methods for cleaning up state an running the start callback.
-  virtual void StartFailed(StartResult result, const csync::SyncError& error);
+  virtual void StartFailed(StartResult result, const syncer::SyncError& error);
   virtual void FinishStart(StartResult result);
 
   // Record association time.

@@ -16,7 +16,7 @@
 
 using std::vector;
 
-namespace csync {
+namespace syncer {
 
 UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
                                    Cryptographer* cryptographer,
@@ -189,4 +189,4 @@ bool UpdateApplicator::ResultTracker::no_conflicts() const {
   return conflicting_ids_.empty();
 }
 
-}  // namespace csync
+}  // namespace syncer

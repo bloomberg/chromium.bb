@@ -65,13 +65,13 @@ HttpBridgeFactory::HttpBridgeFactory(
 HttpBridgeFactory::~HttpBridgeFactory() {
 }
 
-csync::HttpPostProviderInterface* HttpBridgeFactory::Create() {
+syncer::HttpPostProviderInterface* HttpBridgeFactory::Create() {
   HttpBridge* http = new HttpBridge(request_context_getter_);
   http->AddRef();
   return http;
 }
 
-void HttpBridgeFactory::Destroy(csync::HttpPostProviderInterface* http) {
+void HttpBridgeFactory::Destroy(syncer::HttpPostProviderInterface* http) {
   static_cast<HttpBridge*>(http)->Release();
 }
 

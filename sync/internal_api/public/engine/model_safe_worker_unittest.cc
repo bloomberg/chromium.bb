@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 class ModelSafeWorkerTest : public ::testing::Test {
@@ -52,4 +52,4 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

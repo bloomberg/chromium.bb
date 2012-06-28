@@ -10,7 +10,7 @@
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session.h"
 
-namespace csync {
+namespace syncer {
 
 SyncerError ModelChangingSyncerCommand::ExecuteImpl(
     sessions::SyncSession* session) {
@@ -48,4 +48,4 @@ SyncerError ModelChangingSyncerCommand::ExecuteImpl(
   return result;
 }
 
-}  // namespace csync
+}  // namespace syncer

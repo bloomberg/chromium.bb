@@ -14,13 +14,13 @@
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
-namespace csync {
+namespace syncer {
 
 InvalidationNotifier::InvalidationNotifier(
     scoped_ptr<notifier::PushClient> push_client,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const csync::WeakHandle<InvalidationStateTracker>&
+    const syncer::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
     : state_(STOPPED),
@@ -105,7 +105,7 @@ void InvalidationNotifier::OnInvalidate(
   FOR_EACH_OBSERVER(
       SyncNotifierObserver, observers_,
       OnIncomingNotification(type_payloads,
-                             csync::REMOTE_NOTIFICATION));
+                             syncer::REMOTE_NOTIFICATION));
 }
 
 void InvalidationNotifier::OnNotificationsEnabled() {
@@ -121,4 +121,4 @@ void InvalidationNotifier::OnNotificationsDisabled(
                     OnNotificationsDisabled(reason));
 }
 
-}  // namespace csync
+}  // namespace syncer

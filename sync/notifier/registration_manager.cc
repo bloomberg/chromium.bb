@@ -16,7 +16,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "sync/notifier/invalidation_util.h"
 
-namespace csync {
+namespace syncer {
 
 RegistrationManager::PendingRegistrationInfo::PendingRegistrationInfo() {}
 
@@ -300,4 +300,4 @@ bool RegistrationManager::IsIdRegistered(
       it->second->state == invalidation::InvalidationListener::REGISTERED;
 }
 
-}  // namespace csync
+}  // namespace syncer

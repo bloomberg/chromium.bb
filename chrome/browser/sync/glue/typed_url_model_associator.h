@@ -28,7 +28,7 @@ class HistoryBackend;
 class URLRow;
 };
 
-namespace csync {
+namespace syncer {
 class WriteNode;
 class WriteTransaction;
 };
@@ -58,10 +58,10 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // AssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual csync::SyncError AssociateModels() OVERRIDE;
+  virtual syncer::SyncError AssociateModels() OVERRIDE;
 
   // Clears all associations.
-  virtual csync::SyncError DisassociateModels() OVERRIDE;
+  virtual syncer::SyncError DisassociateModels() OVERRIDE;
 
   // Called from the main thread, to abort the currently active model
   // association (for example, if we are shutting down).
@@ -74,7 +74,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
   // Delete all typed url nodes.
-  bool DeleteAllNodes(csync::WriteTransaction* trans);
+  bool DeleteAllNodes(syncer::WriteTransaction* trans);
 
   void WriteToHistoryBackend(const history::URLRows* new_urls,
                              const TypedUrlUpdateVector* updated_urls,
@@ -127,7 +127,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
                                std::vector<history::VisitInfo>* new_visits);
   static void WriteToSyncNode(const history::URLRow& url,
                               const history::VisitVector& visits,
-                              csync::WriteNode* node);
+                              syncer::WriteNode* node);
 
   // Diffs the set of visits between the history DB and the sync DB, using the
   // sync DB as the canonical copy. Result is the set of |new_visits| and
@@ -173,7 +173,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
  private:
 
   // Helper routine that actually does the work of associating models.
-  csync::SyncError DoAssociateModels();
+  syncer::SyncError DoAssociateModels();
 
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, because it contains invalid data or is import-only.

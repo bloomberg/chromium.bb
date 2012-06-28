@@ -9,9 +9,9 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/cryptographer.h"
 
-using csync::Cryptographer;
+using syncer::Cryptographer;
 
-namespace csync {
+namespace syncer {
 
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
@@ -33,9 +33,9 @@ static const char* kForbiddenServerNames[] = { "", ".", ".." };
 
 // When taking a name from the syncapi, append a space if it matches the
 // pattern of a server-illegal name followed by zero or more spaces.
-void SyncAPINameToServerName(const std::string& csync_name,
+void SyncAPINameToServerName(const std::string& syncer_name,
                              std::string* out) {
-  *out = csync_name;
+  *out = syncer_name;
   if (IsNameServerIllegalAfterTrimming(*out))
     out->append(" ");
 }
@@ -54,7 +54,7 @@ bool IsNameServerIllegalAfterTrimming(const std::string& name) {
 }
 
 // Compare the values of two EntitySpecifics, accounting for encryption.
-bool AreSpecificsEqual(const csync::Cryptographer* cryptographer,
+bool AreSpecificsEqual(const syncer::Cryptographer* cryptographer,
                        const sync_pb::EntitySpecifics& left,
                        const sync_pb::EntitySpecifics& right) {
   // Note that we can't compare encrypted strings directly as they are seeded
@@ -84,4 +84,4 @@ bool AreSpecificsEqual(const csync::Cryptographer* cryptographer,
   return false;
 }
 
-} // namespace csync
+}  // namespace syncer

@@ -51,8 +51,8 @@ TEST_F(AppSyncDataTest, SyncDataToExtensionSyncDataForApp) {
 
   SetRequiredExtensionValues(app_specifics->mutable_extension());
 
-  csync::SyncData sync_data =
-      csync::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
 
   AppSyncData app_sync_data(sync_data);
   EXPECT_EQ(app_specifics->app_launch_ordinal(),
@@ -81,11 +81,11 @@ TEST_F(AppSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
 
   SetRequiredExtensionValues(input_specifics->mutable_extension());
 
-  csync::SyncData sync_data =
-      csync::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
   AppSyncData app_sync_data(sync_data);
 
-  csync::SyncData output_sync_data = app_sync_data.GetSyncData();
+  syncer::SyncData output_sync_data = app_sync_data.GetSyncData();
   EXPECT_TRUE(sync_data.GetSpecifics().has_app());
   const sync_pb::AppSpecifics& output_specifics =
       output_sync_data.GetSpecifics().app();
@@ -108,8 +108,8 @@ TEST_F(AppSyncDataTest, ExtensionSyncDataInvalidOrdinal) {
 
   SetRequiredExtensionValues(app_specifics->mutable_extension());
 
-  csync::SyncData sync_data =
-      csync::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
 
   // There should be no issue loading the sync data.
   AppSyncData app_sync_data(sync_data);

@@ -78,7 +78,7 @@ using syncable::SPECIFICS;
 using syncable::UNITTEST;
 using syncable::WriterTag;
 using syncable::WriteTransaction;
-using csync::BaseNode;
+using syncer::BaseNode;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAre;
@@ -251,12 +251,12 @@ class WebDataServiceFake : public WebDataService {
 ACTION_P(MakeAutocompleteSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
-    return base::WeakPtr<csync::SyncableService>();
+    return base::WeakPtr<syncer::SyncableService>();
   return wds->GetAutocompleteSyncableService()->AsWeakPtr();
 }
 
 ACTION(MakeGenericChangeProcessor) {
-  csync::UserShare* user_share = arg0->GetUserShare();
+  syncer::UserShare* user_share = arg0->GetUserShare();
   return new GenericChangeProcessor(arg1, arg2, user_share);
 }
 
@@ -267,7 +267,7 @@ ACTION(MakeSharedChangeProcessor) {
 ACTION_P(MakeAutofillProfileSyncComponents, wds) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
-    return base::WeakPtr<csync::SyncableService>();;
+    return base::WeakPtr<syncer::SyncableService>();;
   return wds->GetAutofillProfileSyncableService()->AsWeakPtr();
 }
 
@@ -442,20 +442,20 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode autofill_root(&trans);
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode autofill_root(&trans);
     if (autofill_root.InitByTagLookup(
             syncable::ModelTypeToRootTag(syncable::AUTOFILL)) !=
                 BaseNode::INIT_OK) {
       return false;
     }
 
-    csync::WriteNode node(&trans);
+    syncer::WriteNode node(&trans);
     std::string tag = AutocompleteSyncableService::KeyToTag(
         UTF16ToUTF8(entry.key().name()), UTF16ToUTF8(entry.key().value()));
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag);
-    if (result != csync::WriteNode::INIT_SUCCESS)
+    if (result != syncer::WriteNode::INIT_SUCCESS)
       return false;
 
     sync_pb::EntitySpecifics specifics;
@@ -467,18 +467,18 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   bool AddAutofillSyncNode(const AutofillProfile& profile) {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode autofill_root(&trans);
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode autofill_root(&trans);
     if (autofill_root.InitByTagLookup(kAutofillProfileTag) !=
             BaseNode::INIT_OK) {
       return false;
     }
-    csync::WriteNode node(&trans);
+    syncer::WriteNode node(&trans);
     std::string tag = profile.guid();
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::AUTOFILL_PROFILE,
                                   autofill_root, tag);
-    if (result != csync::WriteNode::INIT_SUCCESS)
+    if (result != syncer::WriteNode::INIT_SUCCESS)
       return false;
 
     sync_pb::EntitySpecifics specifics;
@@ -491,8 +491,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   bool GetAutofillEntriesFromSyncDB(std::vector<AutofillEntry>* entries,
                                     std::vector<AutofillProfile>* profiles) {
-    csync::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode autofill_root(&trans);
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode autofill_root(&trans);
     if (autofill_root.InitByTagLookup(
             syncable::ModelTypeToRootTag(syncable::AUTOFILL)) !=
                 BaseNode::INIT_OK) {
@@ -500,8 +500,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     }
 
     int64 child_id = autofill_root.GetFirstChildId();
-    while (child_id != csync::kInvalidId) {
-      csync::ReadNode child_node(&trans);
+    while (child_id != syncer::kInvalidId) {
+      syncer::ReadNode child_node(&trans);
       if (child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK)
         return false;
 
@@ -531,16 +531,16 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   bool GetAutofillProfilesFromSyncDBUnderProfileNode(
       std::vector<AutofillProfile>* profiles) {
-    csync::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode autofill_root(&trans);
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode autofill_root(&trans);
     if (autofill_root.InitByTagLookup(kAutofillProfileTag) !=
             BaseNode::INIT_OK) {
       return false;
     }
 
     int64 child_id = autofill_root.GetFirstChildId();
-    while (child_id != csync::kInvalidId) {
-      csync::ReadNode child_node(&trans);
+    while (child_id != syncer::kInvalidId) {
+      syncer::ReadNode child_node(&trans);
       if (child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK)
         return false;
 
@@ -667,7 +667,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     // This gets called in a modelsafeworker thread.
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-    csync::UserShare* user_share = service_->GetUserShare();
+    syncer::UserShare* user_share = service_->GetUserShare();
     syncable::Directory* directory = user_share->directory.get();
 
     // Create autofill protobuf.

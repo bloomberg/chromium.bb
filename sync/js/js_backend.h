@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace csync {
+namespace syncer {
 
 class JsArgList;
 class JsEventHandler;
@@ -36,6 +36,6 @@ class JsBackend {
   virtual ~JsBackend() {}
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_JS_JS_BACKEND_H_

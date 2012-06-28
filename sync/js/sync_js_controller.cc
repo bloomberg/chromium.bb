@@ -8,7 +8,7 @@
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_details.h"
 
-namespace csync {
+namespace syncer {
 
 SyncJsController::PendingJsMessage::PendingJsMessage(
     const std::string& name, const JsArgList& args,
@@ -80,4 +80,4 @@ void SyncJsController::UpdateBackendEventHandler() {
   }
 }
 
-}  // namespace csync
+}  // namespace syncer

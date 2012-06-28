@@ -10,7 +10,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace csync {
+namespace syncer {
 
 class SyncErrorFactoryMock : public SyncErrorFactory {
  public:
@@ -22,6 +22,6 @@ class SyncErrorFactoryMock : public SyncErrorFactory {
       const std::string& message));
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_API_SYNC_ERROR_FACTORY_MOCK_H_

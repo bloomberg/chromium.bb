@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "sync/internal_api/public/util/immutable.h"
 
-namespace csync {
+namespace syncer {
 
 // A thin wrapper around Immutable<ListValue>.  Used for passing
 // around argument lists to different threads.
@@ -39,6 +39,6 @@ class JsArgList {
   ImmutableListValue args_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_JS_JS_ARG_LIST_H_

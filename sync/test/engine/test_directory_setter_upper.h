@@ -45,7 +45,7 @@ namespace syncable {
   class Directory;
 }
 
-namespace csync {
+namespace syncer {
 
 class TestDirectorySetterUpper {
  public:
@@ -76,6 +76,6 @@ class TestDirectorySetterUpper {
   DISALLOW_COPY_AND_ASSIGN(TestDirectorySetterUpper);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_

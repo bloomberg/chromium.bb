@@ -19,7 +19,7 @@ class EntitySpecifics;
 class SyncEntity;
 }  // namespace sync_pb
 
-namespace csync {
+namespace syncer {
 
 typedef syncable::ModelType SyncDataType;
 
@@ -100,7 +100,7 @@ class SyncData {
     static void Swap(sync_pb::SyncEntity* t1, sync_pb::SyncEntity* t2);
   };
 
-  typedef csync::Immutable<
+  typedef syncer::Immutable<
     sync_pb::SyncEntity, ImmutableSyncEntityTraits>
       ImmutableSyncEntity;
 
@@ -110,7 +110,7 @@ class SyncData {
   // Whether this SyncData holds valid data.
   bool is_valid_;
 
-  // Equal to csync::kInvalidId iff this is local.
+  // Equal to syncer::kInvalidId iff this is local.
   int64 id_;
 
   // The actual shared sync entity being held.
@@ -120,6 +120,6 @@ class SyncData {
 // gmock printer helper.
 void PrintTo(const SyncData& sync_data, std::ostream* os);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_API_SYNC_DATA_H_

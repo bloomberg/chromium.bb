@@ -33,19 +33,19 @@ class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
       : ChromeSyncNotificationBridge(&mock_profile_) {}
   virtual ~MockChromeSyncNotificationBridge() {}
 
-  MOCK_METHOD1(AddObserver, void(csync::SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(csync::SyncNotifierObserver*));
+  MOCK_METHOD1(AddObserver, void(syncer::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(syncer::SyncNotifierObserver*));
  private:
   NiceMock<ProfileMock> mock_profile_;
 };
 
-class MockSyncNotifier : public csync::SyncNotifier {
+class MockSyncNotifier : public syncer::SyncNotifier {
  public:
   MockSyncNotifier() {}
   virtual ~MockSyncNotifier() {}
 
-  MOCK_METHOD1(AddObserver, void(csync::SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(csync::SyncNotifierObserver*));
+  MOCK_METHOD1(AddObserver, void(syncer::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(syncer::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials, void(const std::string&, const std::string&));
@@ -73,14 +73,14 @@ class BridgedSyncNotifierTest : public testing::Test {
 };
 
 TEST_F(BridgedSyncNotifierTest, AddObserver) {
-  csync::MockSyncNotifierObserver observer;
+  syncer::MockSyncNotifierObserver observer;
   EXPECT_CALL(mock_bridge_, AddObserver(&observer));
   EXPECT_CALL(*mock_delegate_, AddObserver(&observer));
   bridged_notifier_.AddObserver(&observer);
 }
 
 TEST_F(BridgedSyncNotifierTest, RemoveObserver) {
-  csync::MockSyncNotifierObserver observer;
+  syncer::MockSyncNotifierObserver observer;
   EXPECT_CALL(mock_bridge_, RemoveObserver(&observer));
   EXPECT_CALL(*mock_delegate_, RemoveObserver(&observer));
   bridged_notifier_.RemoveObserver(&observer);

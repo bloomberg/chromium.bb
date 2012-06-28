@@ -13,7 +13,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 
-namespace csync {
+namespace syncer {
 
 JsMutationEventObserver::JsMutationEventObserver()
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
@@ -46,7 +46,7 @@ const size_t kChangeLimit = 100;
 void JsMutationEventObserver::OnChangesApplied(
     syncable::ModelType model_type,
     int64 write_transaction_id,
-    const csync::ImmutableChangeRecordList& changes) {
+    const syncer::ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
@@ -58,7 +58,7 @@ void JsMutationEventObserver::OnChangesApplied(
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
     ListValue* changes_list = new ListValue();
-    for (csync::ChangeRecordList::const_iterator it =
+    for (syncer::ChangeRecordList::const_iterator it =
              changes.Get().begin(); it != changes.Get().end(); ++it) {
       changes_list->Append(it->ToValue());
     }
@@ -109,4 +109,4 @@ void JsMutationEventObserver::HandleJsEvent(
                       &JsEventHandler::HandleJsEvent, name, details);
 }
 
-}  // namespace csync
+}  // namespace syncer

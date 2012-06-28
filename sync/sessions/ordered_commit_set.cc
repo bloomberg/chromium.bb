@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 OrderedCommitSet::OrderedCommitSet(
-    const csync::ModelSafeRoutingInfo& routes)
+    const syncer::ModelSafeRoutingInfo& routes)
     : routes_(routes) {
 }
 
@@ -32,7 +32,7 @@ void OrderedCommitSet::AddCommitItem(const int64 metahandle,
 }
 
 const OrderedCommitSet::Projection& OrderedCommitSet::GetCommitIdProjection(
-    csync::ModelSafeGroup group) const {
+    syncer::ModelSafeGroup group) const {
   Projections::const_iterator i = projections_.find(group);
   DCHECK(i != projections_.end());
   return i->second;
@@ -124,5 +124,5 @@ void OrderedCommitSet::operator=(const OrderedCommitSet& other) {
 }
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 

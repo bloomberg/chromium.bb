@@ -88,7 +88,7 @@ void TypedUrlChangeProcessor::Observe(
 void TypedUrlChangeProcessor::HandleURLsModified(
     history::URLsModifiedDetails* details) {
 
-  csync::WriteTransaction trans(FROM_HERE, share_handle());
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
   for (history::URLRows::iterator url = details->changed_urls.begin();
        url != details->changed_urls.end(); ++url) {
     if (url->typed_count() > 0) {
@@ -100,7 +100,7 @@ void TypedUrlChangeProcessor::HandleURLsModified(
 }
 
 bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
-    history::URLRow url, csync::WriteTransaction* trans) {
+    history::URLRow url, syncer::WriteTransaction* trans) {
   DCHECK_GT(url.typed_count(), 0);
   // Get the visits for this node.
   history::VisitVector visit_vector;
@@ -109,9 +109,9 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     return false;
   }
 
-  csync::ReadNode typed_url_root(trans);
+  syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Server did not create the top-level typed_url node. We "
          "might be running against an out-of-date server.");
@@ -125,14 +125,14 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     return true;
   DCHECK(!visit_vector.empty());
 
-  csync::WriteNode update_node(trans);
-  csync::BaseNode::InitByLookupResult result =
+  syncer::WriteNode update_node(trans);
+  syncer::BaseNode::InitByLookupResult result =
       update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag);
-  if (result == csync::BaseNode::INIT_OK) {
+  if (result == syncer::BaseNode::INIT_OK) {
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
-  } else if (result == csync::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
+  } else if (result == syncer::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
     // TODO(tim): Investigating bug 121587.
-    csync::Cryptographer* crypto = trans->GetCryptographer();
+    syncer::Cryptographer* crypto = trans->GetCryptographer();
     syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
     const sync_pb::EntitySpecifics& specifics =
         update_node.GetEntry()->Get(syncable::SPECIFICS);
@@ -165,11 +165,11 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
       LOG(ERROR) << "Case 4.";
     }
   } else {
-    csync::WriteNode create_node(trans);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode create_node(trans);
+    syncer::WriteNode::InitUniqueByCreationResult result =
         create_node.InitUniqueByCreation(syncable::TYPED_URLS,
                                          typed_url_root, tag);
-    if (result != csync::WriteNode::INIT_SUCCESS) {
+    if (result != syncer::WriteNode::INIT_SUCCESS) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Failed to create typed_url sync node.");
       return false;
@@ -183,7 +183,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
 
 void TypedUrlChangeProcessor::HandleURLsDeleted(
     history::URLsDeletedDetails* details) {
-  csync::WriteTransaction trans(FROM_HERE, share_handle());
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
 
   // Ignore archivals (we don't want to sync them as deletions, to avoid
   // extra traffic up to the server, and also to make sure that a client with
@@ -202,12 +202,12 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
   } else {
     for (history::URLRows::const_iterator row = details->rows.begin();
          row != details->rows.end(); ++row) {
-      csync::WriteNode sync_node(&trans);
+      syncer::WriteNode sync_node(&trans);
       // The deleted URL could have been non-typed, so it might not be found
       // in the sync DB.
       if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS,
                                           row->url().spec()) ==
-              csync::BaseNode::INIT_OK) {
+              syncer::BaseNode::INIT_OK) {
         sync_node.Remove();
       }
     }
@@ -219,7 +219,7 @@ void TypedUrlChangeProcessor::HandleURLsVisited(
   if (!ShouldSyncVisit(details))
     return;
 
-  csync::WriteTransaction trans(FROM_HERE, share_handle());
+  syncer::WriteTransaction trans(FROM_HERE, share_handle());
   CreateOrUpdateSyncNode(details->row, &trans);
 }
 
@@ -243,15 +243,15 @@ bool TypedUrlChangeProcessor::ShouldSyncVisit(
 }
 
 void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
-    const csync::BaseTransaction* trans,
-    const csync::ImmutableChangeRecordList& changes) {
+    const syncer::BaseTransaction* trans,
+    const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
   if (!running())
     return;
 
-  csync::ReadNode typed_url_root(trans);
+  syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
-          csync::BaseNode::INIT_OK) {
+          syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "TypedUrl root node lookup failed.");
     return;
@@ -261,9 +261,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
          pending_deleted_visits_.empty() && pending_updated_urls_.empty() &&
          pending_deleted_urls_.empty());
 
-  for (csync::ChangeRecordList::const_iterator it =
+  for (syncer::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
-    if (csync::ChangeRecord::ACTION_DELETE ==
+    if (syncer::ChangeRecord::ACTION_DELETE ==
         it->action) {
       DCHECK(it->specifics.has_typed_url()) <<
           "Typed URL delete change does not have necessary specifics.";
@@ -272,8 +272,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       continue;
     }
 
-    csync::ReadNode sync_node(trans);
-    if (sync_node.InitByIdLookup(it->id) != csync::BaseNode::INIT_OK) {
+    syncer::ReadNode sync_node(trans);
+    if (sync_node.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "TypedUrl node lookup failed.");
       return;

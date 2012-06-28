@@ -706,7 +706,7 @@ bool ExtensionService::UninstallExtension(
 
   // Extract the data we need for sync now, but don't actually sync until we've
   // completed the uninstallation.
-  csync::SyncChange sync_change;
+  syncer::SyncChange sync_change;
   if (app_sync_bundle_.HandlesApp(*extension)) {
     sync_change = app_sync_bundle_.CreateSyncChangeToDelete(extension);
   } else if (extension_sync_bundle_.HandlesExtension(*extension)) {
@@ -1191,11 +1191,11 @@ void ExtensionService::CheckForUpdatesSoon() {
   }
 }
 
-csync::SyncError ExtensionService::MergeDataAndStartSyncing(
+syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
     syncable::ModelType type,
-    const csync::SyncDataList& initial_sync_data,
-    scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-    scoped_ptr<csync::SyncErrorFactory> sync_error_factory) {
+    const syncer::SyncDataList& initial_sync_data,
+    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   CHECK(sync_processor.get());
   CHECK(sync_error_factory.get());
 
@@ -1219,9 +1219,9 @@ csync::SyncError ExtensionService::MergeDataAndStartSyncing(
   // Process local extensions.
   // TODO(yoz): Determine whether pending extensions should be considered too.
   //            See crbug.com/104399.
-  csync::SyncDataList sync_data_list = GetAllSyncData(type);
-  csync::SyncChangeList sync_change_list;
-  for (csync::SyncDataList::const_iterator i = sync_data_list.begin();
+  syncer::SyncDataList sync_data_list = GetAllSyncData(type);
+  syncer::SyncChangeList sync_change_list;
+  for (syncer::SyncDataList::const_iterator i = sync_data_list.begin();
        i != sync_data_list.end();
        ++i) {
     switch (type) {
@@ -1244,7 +1244,7 @@ csync::SyncError ExtensionService::MergeDataAndStartSyncing(
     app_sync_bundle_.ProcessSyncChangeList(sync_change_list);
   }
 
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 void ExtensionService::StopSyncing(syncable::ModelType type) {
@@ -1255,7 +1255,7 @@ void ExtensionService::StopSyncing(syncable::ModelType type) {
   }
 }
 
-csync::SyncDataList ExtensionService::GetAllSyncData(
+syncer::SyncDataList ExtensionService::GetAllSyncData(
     syncable::ModelType type) const {
   if (type == syncable::EXTENSIONS) {
     return extension_sync_bundle_.GetAllSyncData();
@@ -1267,13 +1267,13 @@ csync::SyncDataList ExtensionService::GetAllSyncData(
   // We should only get sync data for extensions and apps.
   NOTREACHED();
 
-  return csync::SyncDataList();
+  return syncer::SyncDataList();
 }
 
-csync::SyncError ExtensionService::ProcessSyncChanges(
+syncer::SyncError ExtensionService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const csync::SyncChangeList& change_list) {
-  for (csync::SyncChangeList::const_iterator i = change_list.begin();
+    const syncer::SyncChangeList& change_list) {
+  for (syncer::SyncChangeList::const_iterator i = change_list.begin();
       i != change_list.end();
       ++i) {
     syncable::ModelType type = i->sync_data().GetDataType();
@@ -1287,7 +1287,7 @@ csync::SyncError ExtensionService::ProcessSyncChanges(
 
   extension_prefs()->extension_sorting()->FixNTPOrdinalCollisions();
 
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 extensions::ExtensionSyncData ExtensionService::GetExtensionSyncData(

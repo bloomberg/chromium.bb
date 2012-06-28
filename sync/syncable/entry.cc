@@ -110,7 +110,7 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
   }
   for ( ; i < TIME_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "
-       << csync::GetTimeDebugString(
+       << syncer::GetTimeDebugString(
            kernel->ref(static_cast<TimeField>(i))) << ", ";
   }
   for ( ; i < ID_FIELDS_END; ++i) {

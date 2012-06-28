@@ -27,7 +27,7 @@ SharedChangeProcessor::SharedChangeProcessor()
 
 SharedChangeProcessor::~SharedChangeProcessor() {
   // We can either be deleted when the DTC is destroyed (on UI
-  // thread), or when the csync::SyncableService stop's syncing (datatype
+  // thread), or when the syncer::SyncableService stop's syncing (datatype
   // thread).  |generic_change_processor_|, if non-NULL, must be
   // deleted on |backend_loop_|.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -45,7 +45,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
   }
 }
 
-base::WeakPtr<csync::SyncableService> SharedChangeProcessor::Connect(
+base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
@@ -57,16 +57,16 @@ base::WeakPtr<csync::SyncableService> SharedChangeProcessor::Connect(
   backend_loop_ = base::MessageLoopProxy::current();
   AutoLock lock(monitor_lock_);
   if (disconnected_)
-    return base::WeakPtr<csync::SyncableService>();
+    return base::WeakPtr<syncer::SyncableService>();
   type_ = type;
   sync_service_ = sync_service;
   error_handler_ = error_handler;
-  base::WeakPtr<csync::SyncableService> local_service =
+  base::WeakPtr<syncer::SyncableService> local_service =
       sync_factory->GetSyncableServiceForType(type);
   if (!local_service.get()) {
     NOTREACHED() << "SyncableService destroyed before DTC was stopped.";
     disconnected_ = true;
-    return base::WeakPtr<csync::SyncableService>();
+    return base::WeakPtr<syncer::SyncableService>();
   }
   generic_change_processor_ =
       sync_factory->CreateGenericChangeProcessor(sync_service_,
@@ -85,29 +85,29 @@ bool SharedChangeProcessor::Disconnect() {
   return was_connected;
 }
 
-csync::SyncError SharedChangeProcessor::GetSyncData(
-    csync::SyncDataList* current_sync_data) {
+syncer::SyncError SharedChangeProcessor::GetSyncData(
+    syncer::SyncDataList* current_sync_data) {
   DCHECK(backend_loop_.get());
   DCHECK(backend_loop_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
-    csync::SyncError error(FROM_HERE, "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE, "Change processor disconnected.", type_);
     return error;
   }
   return generic_change_processor_->GetSyncDataForType(type_,
                                                        current_sync_data);
 }
 
-csync::SyncError SharedChangeProcessor::ProcessSyncChanges(
+syncer::SyncError SharedChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const csync::SyncChangeList& list_of_changes) {
+    const syncer::SyncChangeList& list_of_changes) {
   DCHECK(backend_loop_.get());
   DCHECK(backend_loop_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     // The DTC that disconnects us must ensure it posts a StopSyncing task.
     // If we reach this, it means it just hasn't executed yet.
-    csync::SyncError error(FROM_HERE, "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE, "Change processor disconnected.", type_);
     return error;
   }
   return generic_change_processor_->ProcessSyncChanges(
@@ -138,7 +138,7 @@ bool SharedChangeProcessor::CryptoReadyIfNecessary() {
 }
 
 void SharedChangeProcessor::ActivateDataType(
-    csync::ModelSafeGroup model_safe_group) {
+    syncer::ModelSafeGroup model_safe_group) {
   DCHECK(backend_loop_.get());
   DCHECK(backend_loop_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
@@ -151,14 +151,14 @@ void SharedChangeProcessor::ActivateDataType(
                                   generic_change_processor_);
 }
 
-csync::SyncError SharedChangeProcessor::CreateAndUploadError(
+syncer::SyncError SharedChangeProcessor::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message) {
   AutoLock lock(monitor_lock_);
   if (!disconnected_) {
     return error_handler_->CreateAndUploadError(location, message, type_);
   } else {
-    return csync::SyncError(location, message, type_);
+    return syncer::SyncError(location, message, type_);
   }
 }
 

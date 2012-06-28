@@ -20,7 +20,7 @@
 #include "sync/engine/syncproto.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 // Tracks progress of conflicts and their resolutions.
@@ -129,6 +129,6 @@ struct PerModelSafeGroupState {
 };
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_SESSIONS_SESSION_STATE_H_

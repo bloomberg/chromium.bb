@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 using std::string;
 using syncable::ModelType;
@@ -133,4 +133,4 @@ TEST_F(SyncErrorTest, ToString) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

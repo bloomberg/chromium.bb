@@ -19,7 +19,7 @@
 using std::set;
 using std::vector;
 
-namespace csync {
+namespace syncer {
 
 using sessions::OrderedCommitSet;
 using sessions::SyncSession;
@@ -432,4 +432,4 @@ void GetCommitIdsCommand::BuildCommitIds(
   AddDeletes(write_transaction, ready_unsynced_set);
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -20,7 +20,7 @@
 #include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/util/cryptographer.h"
 
-namespace csync {
+namespace syncer {
 class Encryptor;
 class UnrecoverableErrorHandler;
 }
@@ -202,9 +202,9 @@ class Directory {
   // |report_unrecoverable_error_function| may be NULL.
   // Takes ownership of |store|.
   Directory(
-      csync::Encryptor* encryptor,
-      csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
-      csync::ReportUnrecoverableErrorFunction
+      syncer::Encryptor* encryptor,
+      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
+      syncer::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function,
       DirectoryBackingStore* store);
   virtual ~Directory();
@@ -215,7 +215,7 @@ class Directory {
   // thread.  |transaction_observer| must be initialized.
   DirOpenResult Open(const std::string& name,
                      DirectoryChangeDelegate* delegate,
-                     const csync::WeakHandle<TransactionObserver>&
+                     const syncer::WeakHandle<TransactionObserver>&
                          transaction_observer);
 
   // Stops sending events to the delegate and the transaction
@@ -263,7 +263,7 @@ class Directory {
   // Returns a pointer to our cryptographer.  Does not transfer ownership.  The
   // cryptographer is not thread safe; it should not be accessed after the
   // transaction has been released.
-  csync::Cryptographer* GetCryptographer(const BaseTransaction* trans);
+  syncer::Cryptographer* GetCryptographer(const BaseTransaction* trans);
 
   // Returns true if the directory had encountered an unrecoverable error.
   // Note: Any function in |Directory| that can be called without holding a
@@ -309,7 +309,7 @@ class Directory {
   DirOpenResult OpenImpl(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const csync::WeakHandle<TransactionObserver>&
+      const syncer::WeakHandle<TransactionObserver>&
           transaction_observer);
 
  private:
@@ -477,7 +477,7 @@ class Directory {
   void InitKernelForTest(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
-      const csync::WeakHandle<TransactionObserver>&
+      const syncer::WeakHandle<TransactionObserver>&
           transaction_observer);
 
  private:
@@ -486,7 +486,7 @@ class Directory {
     // initialized.
     Kernel(const std::string& name, const KernelLoadInfo& info,
            DirectoryChangeDelegate* delegate,
-           const csync::WeakHandle<TransactionObserver>&
+           const syncer::WeakHandle<TransactionObserver>&
                transaction_observer);
 
     ~Kernel();
@@ -554,7 +554,7 @@ class Directory {
     DirectoryChangeDelegate* const delegate;
 
     // The transaction observer.
-    const csync::WeakHandle<TransactionObserver> transaction_observer;
+    const syncer::WeakHandle<TransactionObserver> transaction_observer;
   };
 
   // Helper method used to do searches on |parent_id_child_index|.
@@ -593,18 +593,18 @@ class Directory {
   EntryKernel* GetPossibleLastChildForTest(
       const ScopedKernelLock& lock, const Id& parent_id);
 
-  csync::Cryptographer cryptographer_;
+  syncer::Cryptographer cryptographer_;
 
   Kernel* kernel_;
 
   scoped_ptr<DirectoryBackingStore> store_;
 
-  csync::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
-  const csync::ReportUnrecoverableErrorFunction
+  syncer::UnrecoverableErrorHandler* const unrecoverable_error_handler_;
+  const syncer::ReportUnrecoverableErrorFunction
       report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
 };
 
-} // namespace syncable
+}  // namespace syncable
 
 #endif // SYNC_SYNCABLE_DIRECTORY_H_

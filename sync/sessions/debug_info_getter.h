@@ -7,7 +7,7 @@
 
 #include "sync/protocol/sync.pb.h"
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 // This is the interface that needs to be implemented by the event listener
@@ -21,7 +21,7 @@ class DebugInfoGetter {
 };
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_SESSIONS_DEBUG_INFO_GETTER_H_
 

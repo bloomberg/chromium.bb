@@ -8,12 +8,12 @@
 
 #include <string>
 
-namespace csync {
+namespace syncer {
 namespace internal {
 
 std::string GetComputerName();
 
 }  // namespace internal
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_GET_SESSION_NAME_WIN_H_

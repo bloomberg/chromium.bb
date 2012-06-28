@@ -33,7 +33,7 @@ using syncable::MutableEntry;
 using syncable::SPECIFICS;
 using syncable::UNSPECIFIED;
 
-namespace csync {
+namespace syncer {
 
 using sessions::SyncSession;
 
@@ -261,4 +261,4 @@ int64 BuildCommitCommand::InterpolatePosition(const int64 lo,
 }
 
 
-}  // namespace csync
+}  // namespace syncer

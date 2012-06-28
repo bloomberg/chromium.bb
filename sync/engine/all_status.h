@@ -19,7 +19,7 @@
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace csync {
+namespace syncer {
 
 class ScopedStatusLock;
 struct ServerConnectionEvent;
@@ -41,7 +41,7 @@ class AllStatus : public SyncEngineEventListener {
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 
-  csync::SyncStatus status() const;
+  syncer::SyncStatus status() const;
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
@@ -60,10 +60,10 @@ class AllStatus : public SyncEngineEventListener {
  protected:
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
-  csync::SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
-  csync::SyncStatus CreateBlankStatus() const;
+  syncer::SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
+  syncer::SyncStatus CreateBlankStatus() const;
 
-  csync::SyncStatus status_;
+  syncer::SyncStatus status_;
 
   mutable base::Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);
@@ -77,6 +77,6 @@ class ScopedStatusLock {
   AllStatus* allstatus_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_ALL_STATUS_H_

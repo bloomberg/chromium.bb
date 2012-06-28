@@ -18,29 +18,29 @@ namespace extensions {
 
 namespace settings_sync_util {
 
-// Creates a csync::SyncData object for an extension or app setting.
-csync::SyncData CreateData(
+// Creates a syncer::SyncData object for an extension or app setting.
+syncer::SyncData CreateData(
     const std::string& extension_id,
     const std::string& key,
     const base::Value& value,
     syncable::ModelType type);
 
 // Creates an "add" sync change for an extension or app setting.
-csync::SyncChange CreateAdd(
+syncer::SyncChange CreateAdd(
     const std::string& extension_id,
     const std::string& key,
     const base::Value& value,
     syncable::ModelType type);
 
 // Creates an "update" sync change for an extension or app setting.
-csync::SyncChange CreateUpdate(
+syncer::SyncChange CreateUpdate(
     const std::string& extension_id,
     const std::string& key,
     const base::Value& value,
     syncable::ModelType type);
 
 // Creates a "delete" sync change for an extension or app setting.
-csync::SyncChange CreateDelete(
+syncer::SyncChange CreateDelete(
     const std::string& extension_id,
     const std::string& key,
     syncable::ModelType type);

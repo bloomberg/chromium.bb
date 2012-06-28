@@ -110,24 +110,24 @@ TemplateURL* FirstPotentialDefaultEngine(
 //  3) There is an update after an update for the same GUID. We prune earlier
 //     ones just to save bandwidth (Sync would normally coalesce them).
 bool ShouldRemoveSyncChange(size_t index,
-                            csync::SyncChangeList* change_list,
+                            syncer::SyncChangeList* change_list,
                             const SyncDataMap* sync_data) {
   DCHECK(index < change_list->size());
-  const csync::SyncChange& change_i = (*change_list)[index];
+  const syncer::SyncChange& change_i = (*change_list)[index];
   const std::string guid = change_i.sync_data().GetSpecifics()
       .search_engine().sync_guid();
-  csync::SyncChange::SyncChangeType type = change_i.change_type();
-  if ((type == csync::SyncChange::ACTION_UPDATE ||
-       type == csync::SyncChange::ACTION_DELETE) &&
+  syncer::SyncChange::SyncChangeType type = change_i.change_type();
+  if ((type == syncer::SyncChange::ACTION_UPDATE ||
+       type == syncer::SyncChange::ACTION_DELETE) &&
        sync_data->find(guid) == sync_data->end())
     return true;
-  if (type == csync::SyncChange::ACTION_ADD &&
+  if (type == syncer::SyncChange::ACTION_ADD &&
       sync_data->find(guid) != sync_data->end())
     return true;
-  if (type == csync::SyncChange::ACTION_UPDATE) {
+  if (type == syncer::SyncChange::ACTION_UPDATE) {
     for (size_t j = index + 1; j < change_list->size(); j++) {
-      const csync::SyncChange& change_j = (*change_list)[j];
-      if ((csync::SyncChange::ACTION_UPDATE == change_j.change_type()) &&
+      const syncer::SyncChange& change_j = (*change_list)[j];
+      if ((syncer::SyncChange::ACTION_UPDATE == change_j.change_type()) &&
           (change_j.sync_data().GetSpecifics().search_engine().sync_guid() ==
               guid))
         return true;
@@ -137,12 +137,12 @@ bool ShouldRemoveSyncChange(size_t index,
 }
 
 // Remove SyncChanges that should not be sent to the server from |change_list|.
-// This is done to eliminate incorrect csync::SyncChanges added by the merge and
+// This is done to eliminate incorrect SyncChanges added by the merge and
 // conflict resolution logic when it is unsure of whether or not an entry is new
 // from Sync or originally from the local model. This also removes changes that
 // would be otherwise be coalesced by Sync in order to save bandwidth.
 void PruneSyncChanges(const SyncDataMap* sync_data,
-                      csync::SyncChangeList* change_list) {
+                      syncer::SyncChangeList* change_list) {
   for (size_t i = 0; i < change_list->size(); ) {
     if (ShouldRemoveSyncChange(i, change_list, sync_data))
       change_list->erase(change_list->begin() + i);
@@ -863,11 +863,11 @@ void TemplateURLService::Observe(int type,
   }
 }
 
-csync::SyncDataList TemplateURLService::GetAllSyncData(
+syncer::SyncDataList TemplateURLService::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK_EQ(syncable::SEARCH_ENGINES, type);
 
-  csync::SyncDataList current_data;
+  syncer::SyncDataList current_data;
   for (TemplateURLVector::const_iterator iter = template_urls_.begin();
       iter != template_urls_.end(); ++iter) {
     // We don't sync extension keywords.
@@ -884,11 +884,11 @@ csync::SyncDataList TemplateURLService::GetAllSyncData(
   return current_data;
 }
 
-csync::SyncError TemplateURLService::ProcessSyncChanges(
+syncer::SyncError TemplateURLService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const csync::SyncChangeList& change_list) {
+    const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
-    csync::SyncError error(FROM_HERE, "Models not yet associated.",
+    syncer::SyncError error(FROM_HERE, "Models not yet associated.",
                     syncable::SEARCH_ENGINES);
     return error;
   }
@@ -902,9 +902,9 @@ csync::SyncError TemplateURLService::ProcessSyncChanges(
   AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
       DSP_CHANGE_SYNC_UNINTENTIONAL);
 
-  csync::SyncChangeList new_changes;
-  csync::SyncError error;
-  for (csync::SyncChangeList::const_iterator iter = change_list.begin();
+  syncer::SyncChangeList new_changes;
+  syncer::SyncError error;
+  for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
       iter != change_list.end(); ++iter) {
     DCHECK_EQ(syncable::SEARCH_ENGINES, iter->sync_data().GetDataType());
 
@@ -923,7 +923,7 @@ csync::SyncError TemplateURLService::ProcessSyncChanges(
     // need to undergo conflict resolution.
     TemplateURL* existing_keyword_turl =
         FindNonExtensionTemplateURLForKeyword(turl->keyword());
-    if (iter->change_type() == csync::SyncChange::ACTION_DELETE) {
+    if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
       if (!existing_turl) {
         NOTREACHED() << "Unexpected sync change state.";
         error = sync_error_factory_->CreateAndUploadError(
@@ -948,7 +948,7 @@ csync::SyncError TemplateURLService::ProcessSyncChanges(
           SetDefaultSearchProvider(FindNewDefaultSearchProvider());
         }
       }
-    } else if (iter->change_type() == csync::SyncChange::ACTION_ADD) {
+    } else if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       if (existing_turl) {
         NOTREACHED() << "Unexpected sync change state.";
         error = sync_error_factory_->CreateAndUploadError(
@@ -968,7 +968,7 @@ csync::SyncError TemplateURLService::ProcessSyncChanges(
         // Possibly set the newly added |turl| as the default search provider.
         SetDefaultSearchProviderIfNewlySynced(guid);
       }
-    } else if (iter->change_type() == csync::SyncChange::ACTION_UPDATE) {
+    } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE) {
       if (!existing_turl) {
         NOTREACHED() << "Unexpected sync change state.";
         error = sync_error_factory_->CreateAndUploadError(
@@ -1010,11 +1010,11 @@ csync::SyncError TemplateURLService::ProcessSyncChanges(
   return error;
 }
 
-csync::SyncError TemplateURLService::MergeDataAndStartSyncing(
+syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
     syncable::ModelType type,
-    const csync::SyncDataList& initial_sync_data,
-    scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-    scoped_ptr<csync::SyncErrorFactory> sync_error_factory) {
+    const syncer::SyncDataList& initial_sync_data,
+    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(loaded_);
   DCHECK_EQ(type, syncable::SEARCH_ENGINES);
   DCHECK(!sync_processor_.get());
@@ -1045,9 +1045,9 @@ csync::SyncError TemplateURLService::MergeDataAndStartSyncing(
   AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
       DSP_CHANGE_SYNC_UNINTENTIONAL);
 
-  csync::SyncChangeList new_changes;
+  syncer::SyncChangeList new_changes;
 
-  // Build maps of our sync GUIDs to csync::SyncData.
+  // Build maps of our sync GUIDs to syncer::SyncData.
   SyncDataMap local_data_map = CreateGUIDToSyncDataMap(
       GetAllSyncData(syncable::SEARCH_ENGINES));
   SyncDataMap sync_data_map = CreateGUIDToSyncDataMap(initial_sync_data);
@@ -1066,8 +1066,9 @@ csync::SyncError TemplateURLService::MergeDataAndStartSyncing(
       // This entry was deleted before the initial sync began (possibly through
       // preprocessing in TemplateURLService's loading code). Ignore it and send
       // an ACTION_DELETE up to the server.
-      new_changes.push_back(csync::SyncChange(csync::SyncChange::ACTION_DELETE,
-                                       iter->second));
+      new_changes.push_back(
+          syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
+                             iter->second));
       continue;
     }
 
@@ -1088,7 +1089,7 @@ csync::SyncError TemplateURLService::MergeDataAndStartSyncing(
         // Otherwise, we know we have newer data, so update Sync with our
         // data fields.
         new_changes.push_back(
-            csync::SyncChange(csync::SyncChange::ACTION_UPDATE,
+            syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE,
             local_data_map[local_turl->sync_guid()]));
       }
       local_data_map.erase(iter->first);
@@ -1131,14 +1132,14 @@ csync::SyncError TemplateURLService::MergeDataAndStartSyncing(
   for (SyncDataMap::const_iterator iter = local_data_map.begin();
       iter != local_data_map.end(); ++iter) {
     new_changes.push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_ADD, iter->second));
+        syncer::SyncChange(syncer::SyncChange::ACTION_ADD, iter->second));
   }
 
   // Do some post-processing on the change list to ensure that we are sending
   // valid changes to sync_processor_.
   PruneSyncChanges(&sync_data_map, &new_changes);
 
-  csync::SyncError error =
+  syncer::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet())
     return error;
@@ -1148,7 +1149,7 @@ csync::SyncError TemplateURLService::MergeDataAndStartSyncing(
   pre_sync_deletes_.clear();
 
   models_associated_ = true;
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 void TemplateURLService::StopSyncing(syncable::ModelType type) {
@@ -1160,8 +1161,8 @@ void TemplateURLService::StopSyncing(syncable::ModelType type) {
 
 void TemplateURLService::ProcessTemplateURLChange(
     const TemplateURL* turl,
-    csync::SyncChange::SyncChangeType type) {
-  DCHECK_NE(type, csync::SyncChange::ACTION_INVALID);
+    syncer::SyncChange::SyncChangeType type) {
+  DCHECK_NE(type, syncer::SyncChange::ACTION_INVALID);
   DCHECK(turl);
 
   if (!models_associated_)
@@ -1180,16 +1181,16 @@ void TemplateURLService::ProcessTemplateURLChange(
   if (turl->created_by_policy())
     return;
 
-  csync::SyncChangeList changes;
+  syncer::SyncChangeList changes;
 
-  csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*turl);
-  changes.push_back(csync::SyncChange(type, sync_data));
+  syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*turl);
+  changes.push_back(syncer::SyncChange(type, sync_data));
 
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
 // static
-csync::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
+syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
     const TemplateURL& turl) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::SearchEngineSpecifics* se_specifics =
@@ -1208,7 +1209,7 @@ csync::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
   se_specifics->set_instant_url(turl.instant_url());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(turl.sync_guid());
-  return csync::SyncData::CreateLocalData(se_specifics->sync_guid(),
+  return syncer::SyncData::CreateLocalData(se_specifics->sync_guid(),
                                    se_specifics->keyword(),
                                    specifics);
 }
@@ -1217,8 +1218,8 @@ csync::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
 TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
     Profile* profile,
     TemplateURL* existing_turl,
-    const csync::SyncData& sync_data,
-    csync::SyncChangeList* change_list) {
+    const syncer::SyncData& sync_data,
+    syncer::SyncChangeList* change_list) {
   DCHECK(change_list);
 
   sync_pb::SearchEngineSpecifics specifics =
@@ -1228,7 +1229,7 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   // delete this data off the server.
   if (specifics.url().empty() || specifics.sync_guid().empty()) {
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_DELETE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_DELETE, sync_data));
     return NULL;
   }
 
@@ -1269,9 +1270,9 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   if (reset_keyword || deduped) {
     if (reset_keyword)
       turl->ResetKeywordIfNecessary(true);
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_UPDATE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
   } else if (turl->IsGoogleSearchURLWithReplaceableKeyword()) {
     if (!existing_turl) {
       // We're adding a new TemplateURL that uses the Google base URL, so set
@@ -1292,9 +1293,9 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
 
 // static
 SyncDataMap TemplateURLService::CreateGUIDToSyncDataMap(
-    const csync::SyncDataList& sync_data) {
+    const syncer::SyncDataList& sync_data) {
   SyncDataMap data_map;
-  for (csync::SyncDataList::const_iterator i(sync_data.begin());
+  for (syncer::SyncDataList::const_iterator i(sync_data.begin());
        i != sync_data.end();
        ++i)
     data_map[i->GetSpecifics().search_engine().sync_guid()] = *i;
@@ -1727,7 +1728,7 @@ bool TemplateURLService::UpdateNoNotify(
     service_->UpdateKeyword(existing_turl->data());
 
   // Inform sync of the update.
-  ProcessTemplateURLChange(existing_turl, csync::SyncChange::ACTION_UPDATE);
+  ProcessTemplateURLChange(existing_turl, syncer::SyncChange::ACTION_UPDATE);
 
   if (default_search_provider_ == existing_turl) {
     bool success = SetDefaultSearchProviderNoNotify(existing_turl);
@@ -2058,7 +2059,7 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
 
   // Inform sync the change to the show_in_default_list flag.
   if (url)
-    ProcessTemplateURLChange(url, csync::SyncChange::ACTION_UPDATE);
+    ProcessTemplateURLChange(url, syncer::SyncChange::ACTION_UPDATE);
   return true;
 }
 
@@ -2107,7 +2108,7 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
 
     // Inform sync of the addition. Note that this will assign a GUID to
     // template_url and add it to the guid_to_template_map_.
-    ProcessTemplateURLChange(template_url, csync::SyncChange::ACTION_ADD);
+    ProcessTemplateURLChange(template_url, syncer::SyncChange::ACTION_ADD);
   }
 
   return true;
@@ -2137,7 +2138,7 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
     service_->RemoveKeyword(template_url->id());
 
   // Inform sync of the deletion.
-  ProcessTemplateURLChange(template_url, csync::SyncChange::ACTION_DELETE);
+  ProcessTemplateURLChange(template_url, syncer::SyncChange::ACTION_DELETE);
 
   if (profile_) {
     content::Source<Profile> source(profile_);
@@ -2249,7 +2250,7 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl) {
 bool TemplateURLService::ResolveSyncKeywordConflict(
     TemplateURL* sync_turl,
     TemplateURL* local_turl,
-    csync::SyncChangeList* change_list) {
+    syncer::SyncChangeList* change_list) {
   DCHECK(loaded_);
   DCHECK(sync_turl);
   DCHECK(local_turl);
@@ -2263,9 +2264,9 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
       (local_turl == GetDefaultSearchProvider());
   const bool can_replace_local = CanReplace(local_turl);
   if (CanReplace(sync_turl) && (local_is_better || !can_replace_local)) {
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*sync_turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*sync_turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_DELETE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_DELETE, sync_data));
     return false;
   }
   if (can_replace_local) {
@@ -2276,9 +2277,9 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
     // than having just been brought down, then this is wrong, because the
     // server doesn't yet know about this entity; but in this case,
     // PruneSyncChanges() will prune out the ACTION_DELETE we create here.
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_DELETE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_DELETE, sync_data));
     Remove(local_turl);
   } else if (local_is_better) {
     string16 new_keyword = UniquifyKeyword(*sync_turl);
@@ -2286,9 +2287,9 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
     sync_turl->data_.SetKeyword(new_keyword);
     // If we update the cloud TURL, we need to push an update back to sync
     // informing it that something has changed.
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*sync_turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*sync_turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_UPDATE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
   } else {
     string16 new_keyword = UniquifyKeyword(*local_turl);
     TemplateURLData data(local_turl->data());
@@ -2305,9 +2306,9 @@ bool TemplateURLService::ResolveSyncKeywordConflict(
     // server won't know about this entity until it processes the ACTION_ADD our
     // caller will later generate; but in this case, PruneSyncChanges() will
     // prune out the ACTION_UPDATE we create here.
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_UPDATE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
   }
   return true;
 }
@@ -2322,7 +2323,7 @@ TemplateURL* TemplateURLService::FindDuplicateOfSyncTemplateURL(
 void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     TemplateURL* sync_turl,
     TemplateURL* local_turl,
-    csync::SyncChangeList* change_list) {
+    syncer::SyncChangeList* change_list) {
   DCHECK(loaded_);
   DCHECK(sync_turl);
   DCHECK(local_turl);
@@ -2340,9 +2341,9 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
 
     // See comments in ResolveSyncKeywordConflict() regarding generating an
     // ACTION_DELETE manually since Remove() won't do it.
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_DELETE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_DELETE, sync_data));
     Remove(local_turl);
 
     // Force the local ID to kInvalidTemplateURLID so we can add it.
@@ -2356,9 +2357,9 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     // the server, and the next time local_url is synced, it is recognized by
     // having the same GUID.
     ResetTemplateURLGUID(local_turl, sync_turl->sync_guid());
-    csync::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
     change_list->push_back(
-        csync::SyncChange(csync::SyncChange::ACTION_UPDATE, sync_data));
+        syncer::SyncChange(syncer::SyncChange::ACTION_UPDATE, sync_data));
   }
 }
 

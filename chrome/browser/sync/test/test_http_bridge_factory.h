@@ -12,9 +12,9 @@
 
 namespace browser_sync {
 
-class TestHttpBridge : public csync::HttpPostProviderInterface {
+class TestHttpBridge : public syncer::HttpPostProviderInterface {
  public:
-  // Begin csync::HttpPostProviderInterface implementation:
+  // Begin syncer::HttpPostProviderInterface implementation:
   virtual void SetExtraRequestHeaders(const char * headers) OVERRIDE {}
 
   virtual void SetURL(const char* url, int port) OVERRIDE {}
@@ -34,17 +34,17 @@ class TestHttpBridge : public csync::HttpPostProviderInterface {
       const std::string&) const OVERRIDE;
 
   virtual void Abort() OVERRIDE;
-  // End csync::HttpPostProviderInterface implementation.
+  // End syncer::HttpPostProviderInterface implementation.
 };
 
-class TestHttpBridgeFactory : public csync::HttpPostProviderFactory {
+class TestHttpBridgeFactory : public syncer::HttpPostProviderFactory {
  public:
   TestHttpBridgeFactory();
   virtual ~TestHttpBridgeFactory();
 
-  // csync::HttpPostProviderFactory:
-  virtual csync::HttpPostProviderInterface* Create() OVERRIDE;
-  virtual void Destroy(csync::HttpPostProviderInterface* http) OVERRIDE;
+  // syncer::HttpPostProviderFactory:
+  virtual syncer::HttpPostProviderInterface* Create() OVERRIDE;
+  virtual void Destroy(syncer::HttpPostProviderInterface* http) OVERRIDE;
 };
 
 }  // namespace browser_sync

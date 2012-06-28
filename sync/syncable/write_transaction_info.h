@@ -32,7 +32,7 @@ struct WriteTransactionInfo {
 };
 
 typedef
-    csync::Immutable<WriteTransactionInfo>
+    syncer::Immutable<WriteTransactionInfo>
     ImmutableWriteTransactionInfo;
 
 }  // namespace syncable

@@ -25,7 +25,7 @@ namespace base {
 class TimeDelta;
 }
 
-namespace csync {
+namespace syncer {
 class SyncError;
 }
 
@@ -56,7 +56,7 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
-  virtual csync::ModelSafeGroup model_safe_group() const = 0;
+  virtual syncer::ModelSafeGroup model_safe_group() const = 0;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
 
@@ -101,18 +101,18 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Start failed, make sure we record it, clean up state, and invoke the
   // callback on the frontend thread.
   // Note: this is performed on the datatype's thread.
-  virtual void StartFailed(StartResult result, const csync::SyncError& error);
+  virtual void StartFailed(StartResult result, const syncer::SyncError& error);
 
   // Start up complete, update the state and invoke the callback.
   // Note: this is performed on the datatype's thread.
   virtual void StartDone(DataTypeController::StartResult result,
                          DataTypeController::State new_state,
-                         const csync::SyncError& error);
+                         const syncer::SyncError& error);
 
   // UI thread implementation of StartDone.
   virtual void StartDoneImpl(DataTypeController::StartResult result,
                              DataTypeController::State new_state,
-                             const csync::SyncError& error);
+                             const syncer::SyncError& error);
 
   // Perform any DataType controller specific state cleanup before stopping
   // the datatype controller. The default implementation is a no-op.

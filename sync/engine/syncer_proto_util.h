@@ -25,7 +25,7 @@ class ClientToServerResponse;
 class EntitySpecifics;
 }  // namespace sync_pb
 
-namespace csync {
+namespace syncer {
 
 namespace sessions {
 class SyncProtocolError;
@@ -111,7 +111,7 @@ class SyncerProtoUtil {
 
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
-  static bool PostAndProcessHeaders(csync::ServerConnectionManager* scm,
+  static bool PostAndProcessHeaders(syncer::ServerConnectionManager* scm,
                                     sessions::SyncSession* session,
                                     const ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
@@ -122,7 +122,7 @@ class SyncerProtoUtil {
   static void HandleThrottleError(
       const SyncProtocolError& error,
       const base::TimeTicks& throttled_until,
-      csync::ThrottledDataTypeTracker* tracker,
+      syncer::ThrottledDataTypeTracker* tracker,
       sessions::SyncSession::Delegate* delegate);
 
   friend class SyncerProtoUtilTest;
@@ -135,6 +135,6 @@ class SyncerProtoUtil {
   DISALLOW_COPY_AND_ASSIGN(SyncerProtoUtil);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNCER_PROTO_UTIL_H_

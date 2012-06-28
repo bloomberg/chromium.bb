@@ -10,7 +10,7 @@
 
 #include "sync/internal_api/public/util/syncer_error.h"
 
-namespace csync {
+namespace syncer {
 
 namespace sessions {
 class SyncSession;
@@ -42,6 +42,6 @@ class SyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(SyncerCommand);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNCER_COMMAND_H_

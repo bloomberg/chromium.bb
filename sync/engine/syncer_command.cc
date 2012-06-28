@@ -4,7 +4,7 @@
 
 #include "sync/engine/syncer_command.h"
 
-namespace csync {
+namespace syncer {
 
 SyncerCommand::SyncerCommand() {}
 SyncerCommand::~SyncerCommand() {}
@@ -14,4 +14,4 @@ SyncerError SyncerCommand::Execute(sessions::SyncSession* session) {
   return result;
 }
 
-}  // namespace csync
+}  // namespace syncer

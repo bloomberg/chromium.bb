@@ -10,7 +10,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 class ProtoEnumConversionsTest : public testing::Test {
@@ -90,4 +90,4 @@ TEST_F(ProtoEnumConversionsTest, GetActionString) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

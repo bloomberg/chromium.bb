@@ -17,11 +17,11 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/syncable/directory.h"
 
-using csync::ModelSafeRoutingInfo;
-using csync::sessions::ModelNeutralState;
-using csync::sessions::SyncSessionSnapshot;
-using csync::sessions::SyncSourceInfo;
-using csync::UserShare;
+using syncer::ModelSafeRoutingInfo;
+using syncer::sessions::ModelNeutralState;
+using syncer::sessions::SyncSessionSnapshot;
+using syncer::sessions::SyncSourceInfo;
+using syncer::UserShare;
 using syncable::Directory;
 
 namespace browser_sync {
@@ -58,7 +58,7 @@ void SyncBackendHostForProfileSyncTest::
 
 namespace {
 
-csync::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
+syncer::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
   return new browser_sync::TestHttpBridgeFactory();
 }
 
@@ -73,8 +73,8 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   test_options.credentials.sync_token = "token";
   test_options.restored_key_for_bootstrapping = "";
   test_options.testing_mode =
-      use_real_database_ ? csync::SyncManager::TEST_ON_DISK
-                         : csync::SyncManager::TEST_IN_MEMORY;
+      use_real_database_ ? syncer::SyncManager::TEST_ON_DISK
+                         : syncer::SyncManager::TEST_IN_MEMORY;
   SyncBackendHost::InitCore(test_options);
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_init_) {
@@ -109,7 +109,7 @@ void SyncBackendHostForProfileSyncTest::SetHistoryServiceExpectations(
 
 }  // namespace browser_sync
 
-csync::TestIdFactory* TestProfileSyncService::id_factory() {
+syncer::TestIdFactory* TestProfileSyncService::id_factory() {
   return &id_factory_;
 }
 
@@ -155,7 +155,7 @@ void TestProfileSyncService::SetInitialSyncEndedForAllTypes() {
 }
 
 void TestProfileSyncService::OnBackendInitialized(
-    const csync::WeakHandle<csync::JsBackend>& backend,
+    const syncer::WeakHandle<syncer::JsBackend>& backend,
     bool success) {
   bool send_passphrase_required = false;
   if (success) {
@@ -190,7 +190,7 @@ void TestProfileSyncService::OnBackendInitialized(
 
   ProfileSyncService::OnBackendInitialized(backend, success);
   if (success && send_passphrase_required)
-    OnPassphraseRequired(csync::REASON_DECRYPTION, sync_pb::EncryptedData());
+    OnPassphraseRequired(syncer::REASON_DECRYPTION, sync_pb::EncryptedData());
 
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_backend_initialization_) {

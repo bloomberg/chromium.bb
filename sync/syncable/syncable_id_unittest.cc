@@ -16,7 +16,7 @@ using std::vector;
 
 namespace syncable {
 
-using csync::TestIdFactory;
+using syncer::TestIdFactory;
 
 class SyncableIdTest : public testing::Test { };
 

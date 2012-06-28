@@ -158,7 +158,7 @@ class SyncAppNotificationDataTypeControllerTest
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock service_;
   scoped_ptr<FakeGenericChangeProcessor> change_processor_;
-  csync::FakeSyncableService syncable_service_;
+  syncer::FakeSyncableService syncable_service_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
 };
@@ -218,7 +218,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
-      csync::SyncError(FROM_HERE, "Error", syncable::APP_NOTIFICATIONS));
+      syncer::SyncError(FROM_HERE, "Error", syncable::APP_NOTIFICATIONS));
 
   Start();
   EXPECT_EQ(DataTypeController::DISABLED, app_notif_dtc_->state());

@@ -12,14 +12,14 @@
 #include "sync/notifier/p2p_notifier.h"
 #include "sync/notifier/sync_notifier.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 SyncNotifier* CreateDefaultSyncNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
-    const csync::WeakHandle<InvalidationStateTracker>&
+    const syncer::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info) {
   if (notifier_options.notification_method == notifier::NOTIFICATION_P2P) {
@@ -73,4 +73,4 @@ SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
                                    client_info_);
 #endif
 }
-}  // namespace csync
+}  // namespace syncer

@@ -40,7 +40,7 @@ void FrontendDataTypeController::LoadModels(
   DCHECK(!model_load_callback.is_null());
 
   if (state_ != NOT_RUNNING) {
-    model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
+    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                               "Model already running",
                                               type()));
     return;
@@ -69,7 +69,7 @@ void FrontendDataTypeController::OnModelLoaded() {
   state_ = MODEL_LOADED;
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), csync::SyncError());
+  model_load_callback.Run(type(), syncer::SyncError());
 }
 
 void FrontendDataTypeController::StartAssociating(
@@ -110,7 +110,7 @@ void FrontendDataTypeController::Stop() {
   sync_service_->DeactivateDataType(type());
 
   if (model_associator()) {
-    csync::SyncError error;  // Not used.
+    syncer::SyncError error;  // Not used.
     error = model_associator()->DisassociateModels();
   }
 
@@ -120,9 +120,9 @@ void FrontendDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-csync::ModelSafeGroup FrontendDataTypeController::model_safe_group()
+syncer::ModelSafeGroup FrontendDataTypeController::model_safe_group()
     const {
-  return csync::GROUP_UI;
+  return syncer::GROUP_UI;
 }
 
 std::string FrontendDataTypeController::name() const {
@@ -162,19 +162,19 @@ bool FrontendDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
   CreateSyncComponents();
   if (!model_associator()->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, csync::SyncError());
+    StartFailed(NEEDS_CRYPTO, syncer::SyncError());
     return false;
   }
 
   bool sync_has_nodes = false;
   if (!model_associator()->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    csync::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return false;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  csync::SyncError error;
+  syncer::SyncError error;
   error = model_associator()->AssociateModels();
   // TODO(lipalani): crbug.com/122690 - handle abort.
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
@@ -209,7 +209,7 @@ void FrontendDataTypeController::CleanUp() {
 }
 
 void FrontendDataTypeController::StartFailed(StartResult result,
-                                             const csync::SyncError& error) {
+                                             const syncer::SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (IsUnrecoverableResult(result))
@@ -237,7 +237,7 @@ void FrontendDataTypeController::AbortModelLoad() {
   state_ = NOT_RUNNING;
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), csync::SyncError(FROM_HERE,
+  model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
                                             "Aborted",
                                             type()));
 }
@@ -250,7 +250,7 @@ void FrontendDataTypeController::FinishStart(StartResult result) {
   // confused by the non-NULL start_callback_.
   StartCallback callback = start_callback_;
   start_callback_.Reset();
-  callback.Run(result, csync::SyncError());
+  callback.Run(result, syncer::SyncError());
 }
 
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {

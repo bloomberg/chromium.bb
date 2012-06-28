@@ -15,7 +15,7 @@
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 
-namespace csync {
+namespace syncer {
 
 void SyncData::ImmutableSyncEntityTraits::InitializeWrapper(
     Wrapper* wrapper) {
@@ -44,7 +44,7 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
 
 SyncData::SyncData()
     : is_valid_(false),
-      id_(csync::kInvalidId) {}
+      id_(syncer::kInvalidId) {}
 
 SyncData::SyncData(int64 id, sync_pb::SyncEntity* entity)
     : is_valid_(true),
@@ -71,13 +71,13 @@ SyncData SyncData::CreateLocalData(
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(csync::kInvalidId, &entity);
+  return SyncData(syncer::kInvalidId, &entity);
 }
 
 // Static.
 SyncData SyncData::CreateRemoteData(
     int64 id, const sync_pb::EntitySpecifics& specifics) {
-  DCHECK_NE(id, csync::kInvalidId);
+  DCHECK_NE(id, syncer::kInvalidId);
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->CopyFrom(specifics);
   return SyncData(id, &entity);
@@ -112,7 +112,7 @@ int64 SyncData::GetRemoteId() const {
 }
 
 bool SyncData::IsLocal() const {
-  return id_ == csync::kInvalidId;
+  return id_ == syncer::kInvalidId;
 }
 
 std::string SyncData::ToString() const {
@@ -122,7 +122,7 @@ std::string SyncData::ToString() const {
   std::string type = syncable::ModelTypeToString(GetDataType());
   std::string specifics;
   scoped_ptr<DictionaryValue> value(
-      csync::EntitySpecificsToValue(GetSpecifics()));
+      syncer::EntitySpecificsToValue(GetSpecifics()));
   base::JSONWriter::WriteWithOptions(value.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &specifics);
@@ -141,4 +141,4 @@ void PrintTo(const SyncData& sync_data, std::ostream* os) {
   *os << sync_data.ToString();
 }
 
-}  // namespace csync
+}  // namespace syncer

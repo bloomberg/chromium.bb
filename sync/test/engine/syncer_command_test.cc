@@ -4,7 +4,7 @@
 
 #include "sync/test/engine/syncer_command_test.h"
 
-namespace csync {
+namespace syncer {
 
 const unsigned int kMaxMessages = 10;
 const unsigned int kMaxMessageSize = 5 * 1024;
@@ -63,4 +63,4 @@ Directory* MockDirectorySyncerCommandTest::directory() {
   return &mock_directory_;
 }
 
-}  // namespace csync
+}  // namespace syncer

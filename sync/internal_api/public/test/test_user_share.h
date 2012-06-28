@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // A handy class that takes care of setting up and destroying a
-// csync::UserShare instance for unit tests that require one.
+// syncer::UserShare instance for unit tests that require one.
 //
 // The expected usage is to make this a component of your test fixture:
 //
@@ -22,7 +22,7 @@
 // Then, in your tests:
 //
 //   TEST_F(AwesomenessTest, IsMaximal) {
-//     csync::ReadTransaction trans(test_user_share_.user_share());
+//     syncer::ReadTransaction trans(test_user_share_.user_share());
 //     ...
 //   }
 //
@@ -34,7 +34,7 @@
 #include "base/basictypes.h"
 #include "sync/internal_api/public/user_share.h"
 
-namespace csync {
+namespace syncer {
 
 class TestDirectorySetterUpper;
 
@@ -54,15 +54,15 @@ class TestUserShare {
   void TearDown();
 
   // Non-NULL iff called between a call to SetUp() and TearDown().
-  csync::UserShare* user_share();
+  syncer::UserShare* user_share();
 
  private:
   scoped_ptr<TestDirectorySetterUpper> dir_maker_;
-  scoped_ptr<csync::UserShare> user_share_;
+  scoped_ptr<syncer::UserShare> user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserShare);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_TEST_TEST_USER_SHARE_H_

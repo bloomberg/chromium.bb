@@ -14,7 +14,7 @@
 // Utility functions to get the string equivalent for some sync proto
 // enums.
 
-namespace csync {
+namespace syncer {
 
 // The returned strings (which don't have to be freed) are in ASCII.
 // The result of passing in an invalid enum value is undefined.
@@ -45,6 +45,6 @@ const char* GetDeviceTypeString(
 const char* GetFaviconTypeString(
     sync_pb::SessionTab::FaviconType favicon_type);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

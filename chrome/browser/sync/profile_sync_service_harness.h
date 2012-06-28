@@ -161,7 +161,7 @@ class ProfileSyncServiceHarness
   bool DisableSyncForAllDatatypes();
 
   // Returns a snapshot of the current sync session.
-  csync::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
+  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
 
   // Encrypt the datatype |type|. This method will block while the sync backend
   // host performs the encryption or a timeout is reached.
@@ -290,7 +290,7 @@ class ProfileSyncServiceHarness
 
   // A helper for implementing IsDataSynced() and IsFullySynced().
   bool IsDataSyncedImpl(
-      const csync::sessions::SyncSessionSnapshot& snapshot);
+      const syncer::sessions::SyncSessionSnapshot& snapshot);
 
   // Returns true if the sync client has no unsynced items.
   bool IsDataSynced();

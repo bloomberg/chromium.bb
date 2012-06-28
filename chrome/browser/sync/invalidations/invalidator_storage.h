@@ -30,7 +30,7 @@ namespace browser_sync {
 // services.  For now this is still tied to sync while we refactor, so minimize
 // churn and keep it here.
 class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
-                           public csync::InvalidationStateTracker {
+                           public syncer::InvalidationStateTracker {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no setter
   // methods should be called. Does not own |pref_service|.
@@ -41,7 +41,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   void Clear();
 
   // InvalidationStateTracker implementation.
-  virtual csync::InvalidationVersionMap GetAllMaxVersions() const
+  virtual syncer::InvalidationVersionMap GetAllMaxVersions() const
       OVERRIDE;
   virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) OVERRIDE;
@@ -72,16 +72,16 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   // Helpers to convert between InvalidationVersionMap <--> ListValue.
   static void DeserializeFromList(
       const base::ListValue& max_versions_list,
-      csync::InvalidationVersionMap* max_versions_map);
+      syncer::InvalidationVersionMap* max_versions_map);
   static void SerializeToList(
-      const csync::InvalidationVersionMap& max_versions_map,
+      const syncer::InvalidationVersionMap& max_versions_map,
       base::ListValue* max_versions_list);
 
   // Code for migrating from old MaxInvalidationVersions pref, which was a map
   // from sync types to max invalidation versions.
   void MigrateMaxInvalidationVersionsPref();
   static void DeserializeMap(const base::DictionaryValue* max_versions_dict,
-                             csync::InvalidationVersionMap* map);
+                             syncer::InvalidationVersionMap* map);
 
   // May be NULL.
   PrefService* const pref_service_;

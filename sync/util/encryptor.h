@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace csync {
+namespace syncer {
 
 class Encryptor {
  public:
@@ -23,6 +23,6 @@ class Encryptor {
   virtual ~Encryptor() {}
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_ENCRYPTOR_H_

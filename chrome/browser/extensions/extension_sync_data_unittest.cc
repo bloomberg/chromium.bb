@@ -44,8 +44,8 @@ TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForExtension) {
   extension_specifics->set_incognito_enabled(true);
   extension_specifics->set_version(kVersion1);
   extension_specifics->set_name(kName);
-  csync::SyncData sync_data =
-      csync::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
 
   extensions::ExtensionSyncData extension_sync_data(sync_data);
   EXPECT_EQ(extension_specifics->id(), extension_sync_data.id());
@@ -69,11 +69,11 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForExtension) {
   input_extension->set_incognito_enabled(false);
   input_extension->set_version(kVersion1);
   input_extension->set_name(kName);
-  csync::SyncData sync_data =
-      csync::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
   extensions::ExtensionSyncData extension_sync_data(sync_data);
 
-  csync::SyncData output_sync_data = extension_sync_data.GetSyncData();
+  syncer::SyncData output_sync_data = extension_sync_data.GetSyncData();
   const sync_pb::ExtensionSpecifics& output_specifics =
       output_sync_data.GetSpecifics().extension();
   EXPECT_EQ(extension_sync_data.id(), output_specifics.id());

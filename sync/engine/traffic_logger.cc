@@ -13,7 +13,7 @@
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 template <class T>
@@ -43,4 +43,4 @@ void LogClientToServerResponse(
           "******Server Response******");
 }
 
-}  // namespace csync
+}  // namespace syncer

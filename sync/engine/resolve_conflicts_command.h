@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "sync/engine/model_changing_syncer_command.h"
 
-namespace csync {
+namespace syncer {
 
 class ResolveConflictsCommand : public ModelChangingSyncerCommand {
  public:
@@ -28,6 +28,6 @@ class ResolveConflictsCommand : public ModelChangingSyncerCommand {
   DISALLOW_COPY_AND_ASSIGN(ResolveConflictsCommand);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_

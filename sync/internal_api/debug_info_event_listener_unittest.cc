@@ -8,9 +8,9 @@
 
 typedef testing::Test DebugInfoEventListenerTest;
 
-namespace csync {
+namespace syncer {
 TEST_F(DebugInfoEventListenerTest, VerifyEventsAdded) {
-  csync::DebugInfoEventListener debug_info_event_listener;
+  syncer::DebugInfoEventListener debug_info_event_listener;
   debug_info_event_listener.CreateAndAddEvent(
       sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);
@@ -21,17 +21,17 @@ TEST_F(DebugInfoEventListenerTest, VerifyEventsAdded) {
 }
 
 TEST_F(DebugInfoEventListenerTest, VerifyQueueSize) {
-  csync::DebugInfoEventListener debug_info_event_listener;
+  syncer::DebugInfoEventListener debug_info_event_listener;
   for (int i = 0; i < 10; ++i) {
     debug_info_event_listener.CreateAndAddEvent(
         sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   }
   ASSERT_EQ(debug_info_event_listener.events_.size(),
-      csync::kMaxEntries);
+      syncer::kMaxEntries);
 }
 
 TEST_F(DebugInfoEventListenerTest, VerifyGetAndClearEvents) {
-  csync::DebugInfoEventListener debug_info_event_listener;
+  syncer::DebugInfoEventListener debug_info_event_listener;
   debug_info_event_listener.CreateAndAddEvent(
       sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
   ASSERT_EQ(debug_info_event_listener.events_.size(), 1U);
@@ -44,4 +44,4 @@ TEST_F(DebugInfoEventListenerTest, VerifyGetAndClearEvents) {
       sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
 }
 
-}  // namespace csync
+}  // namespace syncer

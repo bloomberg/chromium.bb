@@ -4,9 +4,9 @@
 
 #include "sync/notifier/mock_sync_notifier_observer.h"
 
-namespace csync {
+namespace syncer {
 
 MockSyncNotifierObserver::MockSyncNotifierObserver() {}
 MockSyncNotifierObserver::~MockSyncNotifierObserver() {}
 
-}  // namespace csync
+}  // namespace syncer

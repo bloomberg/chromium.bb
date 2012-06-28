@@ -50,7 +50,7 @@ void BindFields(const EntryKernel& entry,
   }
   for ( ; i < TIME_FIELDS_END; ++i) {
     statement->BindInt64(index++,
-                         csync::TimeToProtoTime(
+                         syncer::TimeToProtoTime(
                              entry.ref(static_cast<TimeField>(i))));
   }
   for ( ; i < ID_FIELDS_END; ++i) {
@@ -80,7 +80,7 @@ EntryKernel* UnpackEntry(sql::Statement* statement) {
   }
   for ( ; i < TIME_FIELDS_END; ++i) {
     kernel->put(static_cast<TimeField>(i),
-                csync::ProtoTimeToTime(statement->ColumnInt64(i)));
+                syncer::ProtoTimeToTime(statement->ColumnInt64(i)));
   }
   for ( ; i < ID_FIELDS_END; ++i) {
     kernel->mutable_ref(static_cast<IdField>(i)).s_ =
@@ -996,7 +996,7 @@ bool DirectoryBackingStore::CreateTables() {
 
   {
     // Insert the entry for the root into the metas table.
-    const int64 now = csync::TimeToProtoTime(base::Time::Now());
+    const int64 now = syncer::TimeToProtoTime(base::Time::Now());
     sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO metas "
             "( id, metahandle, is_dir, ctime, mtime) "

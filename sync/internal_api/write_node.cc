@@ -21,13 +21,13 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/util/cryptographer.h"
 
-using csync::Cryptographer;
+using syncer::Cryptographer;
 using std::string;
 using std::vector;
 using syncable::kEncryptedString;
 using syncable::SPECIFICS;
 
-namespace csync {
+namespace syncer {
 
 static const char kDefaultNameForNewNodes[] = " ";
 
@@ -205,7 +205,7 @@ void WriteNode::SetEntitySpecifics(
   if (GetModelType() != syncable::UNSPECIFIED) {
     DCHECK_EQ(new_specifics_type, GetModelType());
   }
-  csync::Cryptographer* cryptographer =
+  syncer::Cryptographer* cryptographer =
       GetTransaction()->GetCryptographer();
 
   // Preserve unknown fields.
@@ -509,4 +509,4 @@ void WriteNode::MarkForSyncing() {
   syncable::MarkForSyncing(entry_);
 }
 
-} // namespace csync
+}  // namespace syncer

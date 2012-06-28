@@ -13,7 +13,7 @@
 
 using std::string;
 
-namespace csync {
+namespace syncer {
 
 namespace {
 // Parameters that the server understands. (here, a-Z)
@@ -54,4 +54,4 @@ string MakeSyncQueryString(const string& client_id) {
   return query;
 }
 
-}  // namespace csync
+}  // namespace syncer

@@ -4,8 +4,8 @@
 
 #include "sync/internal_api/debug_info_event_listener.h"
 
-using csync::sessions::SyncSessionSnapshot;
-namespace csync {
+using syncer::sessions::SyncSessionSnapshot;
+namespace syncer {
 
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
@@ -44,18 +44,18 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
 }
 
 void DebugInfoEventListener::OnInitializationComplete(
-    const csync::WeakHandle<csync::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     bool success) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::INITIALIZATION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnConnectionStatusChange(
-    csync::ConnectionStatus status) {
+    syncer::ConnectionStatus status) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::CONNECTION_STATUS_CHANGE);
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(
-    csync::PassphraseRequiredReason reason,
+    syncer::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_REQUIRED);
 }
@@ -88,7 +88,7 @@ void DebugInfoEventListener::OnEncryptionComplete() {
 }
 
 void DebugInfoEventListener::OnActionableError(
-    const csync::SyncProtocolError& sync_error) {
+    const syncer::SyncProtocolError& sync_error) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
 }
 
@@ -124,7 +124,7 @@ void DebugInfoEventListener::OnIncomingNotification(
 
 void DebugInfoEventListener::GetAndClearDebugInfo(
     sync_pb::DebugInfo* debug_info) {
-  DCHECK(events_.size() <= csync::kMaxEntries);
+  DCHECK(events_.size() <= syncer::kMaxEntries);
   while (!events_.empty()) {
     sync_pb::DebugEventInfo* event_info = debug_info->add_events();
     const sync_pb::DebugEventInfo& debug_event_info = events_.front();
@@ -149,7 +149,7 @@ void DebugInfoEventListener::CreateAndAddEvent(
 
 void DebugInfoEventListener::AddEventToQueue(
   const sync_pb::DebugEventInfo& event_info) {
-  if (events_.size() >= csync::kMaxEntries) {
+  if (events_.size() >= syncer::kMaxEntries) {
     DVLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
              << "because of full queue";
 
@@ -158,4 +158,4 @@ void DebugInfoEventListener::AddEventToQueue(
   }
   events_.push(event_info);
 }
-}  // namespace csync
+}  // namespace syncer

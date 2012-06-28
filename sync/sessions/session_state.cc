@@ -13,7 +13,7 @@
 using std::set;
 using std::vector;
 
-namespace csync {
+namespace syncer {
 namespace sessions {
 
 ConflictProgress::ConflictProgress()
@@ -139,4 +139,4 @@ PerModelSafeGroupState::~PerModelSafeGroupState() {
 }
 
 }  // namespace sessions
-}  // namespace csync
+}  // namespace syncer

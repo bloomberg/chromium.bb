@@ -19,21 +19,21 @@ class ChromeSyncNotificationBridge;
 // with the exception of AddObserver/RemoveObserver, which also result in
 // the observer being registered/deregistered with the
 // ChromeSyncNotificationBridge.
-class BridgedSyncNotifier : public csync::SyncNotifier {
+class BridgedSyncNotifier : public syncer::SyncNotifier {
  public:
   // Does not take ownership of |bridge|. Takes ownership of |delegate|.
   // |delegate| may be NULL.
   BridgedSyncNotifier(ChromeSyncNotificationBridge* bridge,
-                      csync::SyncNotifier* delegate);
+                      syncer::SyncNotifier* delegate);
   virtual ~BridgedSyncNotifier();
 
   // SyncNotifier implementation. Passes through all calls to the delegate.
   // AddObserver/RemoveObserver will also register/deregister |observer| with
   // the bridge.
   virtual void AddObserver(
-      csync::SyncNotifierObserver* observer) OVERRIDE;
+      syncer::SyncNotifierObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
-      csync::SyncNotifierObserver* observer) OVERRIDE;
+      syncer::SyncNotifierObserver* observer) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
@@ -48,7 +48,7 @@ class BridgedSyncNotifier : public csync::SyncNotifier {
   ChromeSyncNotificationBridge* bridge_;
 
   // The delegate we are wrapping.
-  scoped_ptr<csync::SyncNotifier> delegate_;
+  scoped_ptr<syncer::SyncNotifier> delegate_;
 };
 
 }  // namespace browser_sync

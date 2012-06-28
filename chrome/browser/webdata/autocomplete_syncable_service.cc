@@ -107,11 +107,11 @@ AutocompleteSyncableService::AutocompleteSyncableService()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
-csync::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
+syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
-    const csync::SyncDataList& initial_sync_data,
-    scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-    scoped_ptr<csync::SyncErrorFactory> error_handler) {
+    const syncer::SyncDataList& initial_sync_data,
+    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
@@ -130,7 +130,7 @@ csync::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   for (std::vector<AutofillEntry>::iterator it = entries.begin();
        it != entries.end(); ++it) {
     new_db_entries[it->key()] =
-        std::make_pair(csync::SyncChange::ACTION_ADD, it);
+        std::make_pair(syncer::SyncChange::ACTION_ADD, it);
   }
 
   sync_processor_ = sync_processor.Pass();
@@ -139,7 +139,7 @@ csync::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   // Go through and check for all the entries that sync already knows about.
   // CreateOrUpdateEntry() will remove entries that are same with the synced
   // ones from |new_db_entries|.
-  for (csync::SyncDataList::const_iterator sync_iter =
+  for (syncer::SyncDataList::const_iterator sync_iter =
            initial_sync_data.begin();
        sync_iter != initial_sync_data.end(); ++sync_iter) {
     CreateOrUpdateEntry(*sync_iter, &new_db_entries, &new_synced_entries);
@@ -153,11 +153,11 @@ csync::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
-  csync::SyncChangeList new_changes;
+  syncer::SyncChangeList new_changes;
   for (AutocompleteEntryMap::iterator i = new_db_entries.begin();
        i != new_db_entries.end(); ++i) {
     new_changes.push_back(
-        csync::SyncChange(
+        syncer::SyncChange(
             i->second.first, CreateSyncData(*(i->second.second))));
   }
 
@@ -167,7 +167,7 @@ csync::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
     web_data_service_->RemoveExpiredFormElements();
   }
 
-  csync::SyncError error =
+  syncer::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
 
   return error;
@@ -181,13 +181,13 @@ void AutocompleteSyncableService::StopSyncing(syncable::ModelType type) {
   error_handler_.reset();
 }
 
-csync::SyncDataList AutocompleteSyncableService::GetAllSyncData(
+syncer::SyncDataList AutocompleteSyncableService::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_processor_.get());
   DCHECK_EQ(type, syncable::AUTOFILL);
 
-  csync::SyncDataList current_data;
+  syncer::SyncDataList current_data;
 
   std::vector<AutofillEntry> entries;
   if (!LoadAutofillData(&entries))
@@ -201,14 +201,14 @@ csync::SyncDataList AutocompleteSyncableService::GetAllSyncData(
   return current_data;
 }
 
-csync::SyncError AutocompleteSyncableService::ProcessSyncChanges(
+syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const csync::SyncChangeList& change_list) {
+    const syncer::SyncChangeList& change_list) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_processor_.get());
 
   if (!sync_processor_.get()) {
-    csync::SyncError error(FROM_HERE, "Models not yet associated.",
+    syncer::SyncError error(FROM_HERE, "Models not yet associated.",
                     syncable::AUTOFILL);
     return error;
   }
@@ -218,14 +218,14 @@ csync::SyncError AutocompleteSyncableService::ProcessSyncChanges(
   scoped_ptr<AutocompleteEntryMap> db_entries;
   std::vector<AutofillEntry> new_entries;
 
-  csync::SyncError list_processing_error;
+  syncer::SyncError list_processing_error;
 
-  for (csync::SyncChangeList::const_iterator i = change_list.begin();
+  for (syncer::SyncChangeList::const_iterator i = change_list.begin();
        i != change_list.end() && !list_processing_error.IsSet(); ++i) {
     DCHECK(i->IsValid());
     switch (i->change_type()) {
-      case csync::SyncChange::ACTION_ADD:
-      case csync::SyncChange::ACTION_UPDATE:
+      case syncer::SyncChange::ACTION_ADD:
+      case syncer::SyncChange::ACTION_UPDATE:
         if (!db_entries.get()) {
           if (!LoadAutofillData(&entries)) {
             return error_handler_->CreateAndUploadError(
@@ -236,12 +236,12 @@ csync::SyncError AutocompleteSyncableService::ProcessSyncChanges(
           for (std::vector<AutofillEntry>::iterator it = entries.begin();
                it != entries.end(); ++it) {
             (*db_entries)[it->key()] =
-                std::make_pair(csync::SyncChange::ACTION_ADD, it);
+                std::make_pair(syncer::SyncChange::ACTION_ADD, it);
           }
         }
         CreateOrUpdateEntry(i->sync_data(), db_entries.get(), &new_entries);
         break;
-      case csync::SyncChange::ACTION_DELETE: {
+      case syncer::SyncChange::ACTION_DELETE: {
         DCHECK(i->sync_data().GetSpecifics().has_autofill())
             << "Autofill specifics data not present on delete!";
         const sync_pb::AutofillSpecifics& autofill =
@@ -258,7 +258,7 @@ csync::SyncError AutocompleteSyncableService::ProcessSyncChanges(
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType " +
-                 csync::SyncChange::ChangeTypeToString(i->change_type()));
+                 syncer::SyncChange::ChangeTypeToString(i->change_type()));
     }
   }
 
@@ -319,7 +319,7 @@ bool AutocompleteSyncableService::SaveChangesToWebData(
 
 // Creates or updates an autocomplete entry based on |data|.
 void AutocompleteSyncableService::CreateOrUpdateEntry(
-    const csync::SyncData& data,
+    const syncer::SyncData& data,
     AutocompleteEntryMap* loaded_data,
     std::vector<AutofillEntry>* new_entries) {
   const sync_pb::EntitySpecifics& specifics = data.GetSpecifics();
@@ -360,7 +360,7 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
       new_entries->push_back(new_entry);
       // Update the sync db if the list of timestamps have changed.
       *(it->second.second) = new_entry;
-      it->second.first = csync::SyncChange::ACTION_UPDATE;
+      it->second.first = syncer::SyncChange::ACTION_UPDATE;
     } else {
       loaded_data->erase(it);
     }
@@ -381,7 +381,7 @@ void AutocompleteSyncableService::WriteAutofillEntry(
   }
 }
 
-csync::SyncError AutocompleteSyncableService::AutofillEntryDelete(
+syncer::SyncError AutocompleteSyncableService::AutofillEntryDelete(
     const sync_pb::AutofillSpecifics& autofill) {
   if (!web_data_service_->GetDatabase()->GetAutofillTable()->RemoveFormElement(
           UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
@@ -389,13 +389,13 @@ csync::SyncError AutocompleteSyncableService::AutofillEntryDelete(
         FROM_HERE,
         "Could not remove autocomplete entry from WebDatabase.");
   }
-  return csync::SyncError();
+  return syncer::SyncError();
 }
 
 void AutocompleteSyncableService::ActOnChanges(
      const AutofillChangeList& changes) {
   DCHECK(sync_processor_.get());
-  csync::SyncChangeList new_changes;
+  syncer::SyncChangeList new_changes;
   for (AutofillChangeList::const_iterator change = changes.begin();
        change != changes.end(); ++change) {
     switch (change->type()) {
@@ -411,10 +411,11 @@ void AutocompleteSyncableService::ActOnChanges(
           return;
         }
         AutofillEntry entry(change->key(), timestamps);
-        csync::SyncChange::SyncChangeType change_type =
+        syncer::SyncChange::SyncChangeType change_type =
            (change->type() == AutofillChange::ADD) ?
-               csync::SyncChange::ACTION_ADD : csync::SyncChange::ACTION_UPDATE;
-        new_changes.push_back(csync::SyncChange(change_type,
+            syncer::SyncChange::ACTION_ADD :
+            syncer::SyncChange::ACTION_UPDATE;
+        new_changes.push_back(syncer::SyncChange(change_type,
                                          CreateSyncData(entry)));
         break;
       }
@@ -422,7 +423,7 @@ void AutocompleteSyncableService::ActOnChanges(
         std::vector<base::Time> timestamps;
         AutofillEntry entry(change->key(), timestamps);
         new_changes.push_back(
-            csync::SyncChange(csync::SyncChange::ACTION_DELETE,
+            syncer::SyncChange(syncer::SyncChange::ACTION_DELETE,
                               CreateSyncData(entry)));
         break;
       }
@@ -431,7 +432,7 @@ void AutocompleteSyncableService::ActOnChanges(
         break;
     }
   }
-  csync::SyncError error =
+  syncer::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet()) {
     DLOG(WARNING) << "[AUTOCOMPLETE SYNC]"
@@ -440,13 +441,13 @@ void AutocompleteSyncableService::ActOnChanges(
   }
 }
 
-csync::SyncData AutocompleteSyncableService::CreateSyncData(
+syncer::SyncData AutocompleteSyncableService::CreateSyncData(
     const AutofillEntry& entry) const {
   sync_pb::EntitySpecifics autofill_specifics;
   WriteAutofillEntry(entry, &autofill_specifics);
   std::string tag(KeyToTag(UTF16ToUTF8(entry.key().name()),
                            UTF16ToUTF8(entry.key().value())));
-  return csync::SyncData::CreateLocalData(tag, tag, autofill_specifics);
+  return syncer::SyncData::CreateLocalData(tag, tag, autofill_specifics);
 }
 
 // static

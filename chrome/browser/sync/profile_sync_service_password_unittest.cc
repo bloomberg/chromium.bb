@@ -71,7 +71,7 @@ ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
 ACTION_P(AcquireSyncTransaction, password_test_service) {
   // Check to make sure we can aquire a transaction (will crash if a transaction
   // is already held by this thread, deadlock if held by another thread).
-  csync::WriteTransaction trans(
+  syncer::WriteTransaction trans(
       FROM_HERE, password_test_service->GetUserShare());
   DVLOG(1) << "Sync transaction acquired.";
 }
@@ -112,21 +112,21 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
 
 class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
  public:
-  csync::UserShare* GetUserShare() {
+  syncer::UserShare* GetUserShare() {
     return service_->GetUserShare();
   }
 
   void AddPasswordSyncNode(const PasswordForm& entry) {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode password_root(&trans);
-    ASSERT_EQ(csync::BaseNode::INIT_OK,
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode password_root(&trans);
+    ASSERT_EQ(syncer::BaseNode::INIT_OK,
               password_root.InitByTagLookup(browser_sync::kPasswordTag));
 
-    csync::WriteNode node(&trans);
+    syncer::WriteNode node(&trans);
     std::string tag = PasswordModelAssociator::MakeTag(entry);
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::PASSWORDS, password_root, tag);
-    ASSERT_EQ(csync::WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(syncer::WriteNode::INIT_SUCCESS, result);
     PasswordModelAssociator::WriteToSyncNode(entry, &node);
   }
 
@@ -222,15 +222,15 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   void GetPasswordEntriesFromSyncDB(std::vector<PasswordForm>* entries) {
-    csync::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode password_root(&trans);
-    ASSERT_EQ(csync::BaseNode::INIT_OK,
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode password_root(&trans);
+    ASSERT_EQ(syncer::BaseNode::INIT_OK,
               password_root.InitByTagLookup(browser_sync::kPasswordTag));
 
     int64 child_id = password_root.GetFirstChildId();
-    while (child_id != csync::kInvalidId) {
-      csync::ReadNode child_node(&trans);
-      ASSERT_EQ(csync::BaseNode::INIT_OK,
+    while (child_id != syncer::kInvalidId) {
+      syncer::ReadNode child_node(&trans);
+      ASSERT_EQ(syncer::BaseNode::INIT_OK,
                 child_node.InitByIdLookup(child_id));
 
       const sync_pb::PasswordSpecificsData& password =

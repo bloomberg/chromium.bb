@@ -1039,8 +1039,8 @@ name=http://crbug.com/79933 (2)
 *!TestURLRequestContextGetter::GetURLRequestContext
 *!notifier::SingleLoginAttempt::SingleLoginAttempt
 *!notifier::Login::StartConnection
-*!csync::InvalidationNotifier::UpdateCredentials
-*!csync::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+*!syncer::InvalidationNotifier::UpdateCredentials
+*!syncer::NonBlockingInvalidationNotifier::Core::UpdateCredentials
 
 LEAK
 name=http://crbug.com/79933 (3)
@@ -1201,7 +1201,7 @@ name=http://crbug.com/91465
 *!operator new
 *!browser_sync::internal::WeakHandleCore<browser_sync::JsBackend>::*
 *!browser_sync::WeakHandle<browser_sync::JsBackend>::*
-*!csync::SyncManager::SyncInternal::Init
+*!syncer::SyncManager::SyncInternal::Init
 
 LEAK
 name=http://crbug.com/91491

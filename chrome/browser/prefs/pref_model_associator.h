@@ -29,23 +29,23 @@ class Value;
 // TODO(sync): Merge this into PrefService once we separate the profile
 // PrefService from the local state PrefService.
 class PrefModelAssociator
-    : public csync::SyncableService,
+    : public syncer::SyncableService,
       public base::NonThreadSafe {
  public:
   PrefModelAssociator();
   virtual ~PrefModelAssociator();
 
-  // csync::SyncableService implementation.
-  virtual csync::SyncDataList GetAllSyncData(
+  // syncer::SyncableService implementation.
+  virtual syncer::SyncDataList GetAllSyncData(
       syncable::ModelType type) const OVERRIDE;
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE;
-  virtual csync::SyncError MergeDataAndStartSyncing(
+      const syncer::SyncChangeList& change_list) OVERRIDE;
+  virtual syncer::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const csync::SyncDataList& initial_sync_data,
-      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
   // Returns the list of preference names that are registered as syncable, and
@@ -85,7 +85,7 @@ class PrefModelAssociator
   // provided.
   static bool CreatePrefSyncData(const std::string& name,
                                  const base::Value& value,
-                                 csync::SyncData* sync_data);
+                                 syncer::SyncData* sync_data);
 
   // Extract preference value and name from sync specifics.
   base::Value* ReadPreferenceSpecifics(
@@ -95,7 +95,7 @@ class PrefModelAssociator
  protected:
   friend class ProfileSyncServicePreferenceTest;
 
-  typedef std::map<std::string, csync::SyncData> SyncDataMap;
+  typedef std::map<std::string, syncer::SyncData> SyncDataMap;
 
   // Create an association for a given preference. If |sync_pref| is valid,
   // signifying that sync has data for this preference, we reconcile their data
@@ -105,9 +105,9 @@ class PrefModelAssociator
   // Note: We do not modify the sync data for preferences that are either
   // controlled by policy (are not user modifiable) or have their default value
   // (are not user controlled).
-  void InitPrefAndAssociate(const csync::SyncData& sync_pref,
+  void InitPrefAndAssociate(const syncer::SyncData& sync_pref,
                             const std::string& pref_name,
-                            csync::SyncChangeList* sync_changes);
+                            syncer::SyncChangeList* sync_changes);
 
   static base::Value* MergeListValues(
       const base::Value& from_value, const base::Value& to_value);
@@ -142,11 +142,11 @@ class PrefModelAssociator
   // The PrefService we are syncing to.
   PrefService* pref_service_;
 
-  // Sync's csync::SyncChange handler. We push all our changes through this.
-  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
+  // Sync's syncer::SyncChange handler. We push all our changes through this.
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Sync's error handler. We use this to create sync errors.
-  scoped_ptr<csync::SyncErrorFactory> sync_error_factory_;
+  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };

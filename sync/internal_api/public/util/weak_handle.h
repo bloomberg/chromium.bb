@@ -68,7 +68,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace csync {
+namespace syncer {
 
 template <typename T> class WeakHandle;
 
@@ -286,7 +286,7 @@ class WeakHandle {
   // Note that this doesn't override the regular copy constructor, so
   // that one can be called on any thread.
   template <typename U>
-  WeakHandle(const csync::WeakHandle<U>& other)  // NOLINT
+  WeakHandle(const syncer::WeakHandle<U>& other)  // NOLINT
       : core_(
           other.IsInitialized() ?
           new internal::WeakHandleCore<T>(other.Get()) :
@@ -374,6 +374,6 @@ WeakHandle<T> MakeWeakHandle(const base::WeakPtr<T>& ptr) {
   return WeakHandle<T>(ptr);
 }
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_UTIL_WEAK_HANDLE_H_

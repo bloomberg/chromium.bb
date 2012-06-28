@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/session_state.h"
 
-namespace csync {
+namespace syncer {
 
 AllStatus::AllStatus() {
   status_.initial_sync_ended = true;
@@ -24,11 +24,11 @@ AllStatus::AllStatus() {
 AllStatus::~AllStatus() {
 }
 
-csync::SyncStatus AllStatus::CreateBlankStatus() const {
+syncer::SyncStatus AllStatus::CreateBlankStatus() const {
   // Status is initialized with the previous status value.  Variables
   // whose values accumulate (e.g. lifetime counters like updates_received)
   // are not to be cleared here.
-  csync::SyncStatus status = status_;
+  syncer::SyncStatus status = status_;
   status.encryption_conflicts = 0;
   status.hierarchy_conflicts = 0;
   status.simple_conflicts = 0;
@@ -39,9 +39,9 @@ csync::SyncStatus AllStatus::CreateBlankStatus() const {
   return status;
 }
 
-csync::SyncStatus AllStatus::CalcSyncing(
+syncer::SyncStatus AllStatus::CalcSyncing(
     const SyncEngineEvent &event) const {
-  csync::SyncStatus status = CreateBlankStatus();
+  syncer::SyncStatus status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
   status.hierarchy_conflicts = snapshot.num_hierarchy_conflicts();
@@ -120,7 +120,7 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
   }
 }
 
-csync::SyncStatus AllStatus::status() const {
+syncer::SyncStatus AllStatus::status() const {
   base::AutoLock lock(mutex_);
   return status_;
 }
@@ -169,4 +169,4 @@ ScopedStatusLock::~ScopedStatusLock() {
   allstatus_->mutex_.Release();
 }
 
-}  // namespace csync
+}  // namespace syncer

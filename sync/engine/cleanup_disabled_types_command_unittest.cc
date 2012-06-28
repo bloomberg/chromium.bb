@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -74,4 +74,4 @@ TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

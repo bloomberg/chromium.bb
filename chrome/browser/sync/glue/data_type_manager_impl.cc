@@ -35,7 +35,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
-      last_configure_reason_(csync::CONFIGURE_REASON_UNKNOWN),
+      last_configure_reason_(syncer::CONFIGURE_REASON_UNKNOWN),
       last_nigori_state_(BackendDataTypeConfigurer::WITHOUT_NIGORI),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       model_association_manager_(controllers,
@@ -46,20 +46,20 @@ DataTypeManagerImpl::DataTypeManagerImpl(
 DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(TypeSet desired_types,
-                                    csync::ConfigureReason reason) {
+                                    syncer::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason,
                 BackendDataTypeConfigurer::WITH_NIGORI);
 }
 
 void DataTypeManagerImpl::ConfigureWithoutNigori(TypeSet desired_types,
-    csync::ConfigureReason reason) {
+    syncer::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason,
                 BackendDataTypeConfigurer::WITHOUT_NIGORI);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(
     TypeSet desired_types,
-    csync::ConfigureReason reason,
+    syncer::ConfigureReason reason,
     BackendDataTypeConfigurer::NigoriState nigori_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
@@ -70,7 +70,7 @@ void DataTypeManagerImpl::ConfigureImpl(
 
   if (state_ == CONFIGURED &&
       last_requested_types_.Equals(desired_types) &&
-      reason == csync::CONFIGURE_REASON_RECONFIGURATION) {
+      reason == syncer::CONFIGURE_REASON_RECONFIGURATION) {
     // If we're already configured and the types haven't changed, we can exit
     // out early.
     NotifyStart();
@@ -94,7 +94,7 @@ void DataTypeManagerImpl::ConfigureImpl(
 }
 
 void DataTypeManagerImpl::Restart(
-    csync::ConfigureReason reason,
+    syncer::ConfigureReason reason,
     BackendDataTypeConfigurer::NigoriState nigori_state) {
   DVLOG(1) << "Restarting...";
   model_association_manager_.Initialize(last_requested_types_);
@@ -160,7 +160,7 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
                  last_nigori_state_));
 
   needs_reconfigure_ = false;
-  last_configure_reason_ = csync::CONFIGURE_REASON_UNKNOWN;
+  last_configure_reason_ = syncer::CONFIGURE_REASON_UNKNOWN;
   last_nigori_state_ = BackendDataTypeConfigurer::WITHOUT_NIGORI;
   return true;
 }
@@ -197,7 +197,7 @@ void DataTypeManagerImpl::DownloadReady(
     std::string error_msg =
         "Configuration failed for types " +
         syncable::ModelTypeSetToString(failed_configuration_types);
-    csync::SyncError error(FROM_HERE, error_msg,
+    syncer::SyncError error(FROM_HERE, error_msg,
                     failed_configuration_types.First().Get());
     Abort(UNRECOVERABLE_ERROR, error);
     return;
@@ -212,7 +212,7 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   if (result.status == ABORTED || result.status == UNRECOVERABLE_ERROR) {
     Abort(result.status, result.failed_data_types.size() >= 1 ?
                          result.failed_data_types.front() :
-                         csync::SyncError());
+                         syncer::SyncError());
     return;
   }
 
@@ -248,7 +248,7 @@ void DataTypeManagerImpl::OnTypesLoaded() {
     return;
   }
 
-  Restart(csync::CONFIGURE_REASON_RECONFIGURATION,
+  Restart(syncer::CONFIGURE_REASON_RECONFIGURATION,
           last_nigori_state_);
 }
 
@@ -274,7 +274,7 @@ void DataTypeManagerImpl::Stop() {
     // If Stop() is called while waiting for download, cancel all
     // outstanding tasks.
     weak_ptr_factory_.InvalidateWeakPtrs();
-    Abort(ABORTED, csync::SyncError());
+    Abort(ABORTED, syncer::SyncError());
     return;
   }
 
@@ -291,10 +291,10 @@ void DataTypeManagerImpl::FinishStop() {
 }
 
 void DataTypeManagerImpl::Abort(ConfigureStatus status,
-                                const csync::SyncError& error) {
+                                const syncer::SyncError& error) {
   DCHECK_NE(OK, status);
   FinishStop();
-  std::list<csync::SyncError> error_list;
+  std::list<syncer::SyncError> error_list;
   if (error.IsSet())
     error_list.push_back(error);
   ConfigureResult result(status,

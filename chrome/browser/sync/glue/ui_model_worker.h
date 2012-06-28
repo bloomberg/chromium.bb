@@ -17,7 +17,7 @@ class MessageLoop;
 
 namespace browser_sync {
 
-// A csync::ModelSafeWorker for UI models (e.g. bookmarks) that
+// A syncer::ModelSafeWorker for UI models (e.g. bookmarks) that
 // accepts work requests from the syncapi that need to be fulfilled
 // from the MessageLoop home to the native model.
 //
@@ -25,7 +25,7 @@ namespace browser_sync {
 // SyncerThread. When the SyncerThread _object_ is destroyed, the
 // UIModelWorker will be destroyed. The SyncerThread object is destroyed
 // after the actual syncer pthread has exited.
-class UIModelWorker : public csync::ModelSafeWorker {
+class UIModelWorker : public syncer::ModelSafeWorker {
  public:
   UIModelWorker();
 
@@ -35,12 +35,12 @@ class UIModelWorker : public csync::ModelSafeWorker {
   // processed and that syncapi will not schedule any further work for us to do.
   void Stop();
 
-  // csync::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual csync::SyncerError DoWorkAndWaitUntilDone(
-      const csync::WorkCallback& work) OVERRIDE;
-  virtual csync::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+  // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  virtual syncer::SyncerError DoWorkAndWaitUntilDone(
+      const syncer::WorkCallback& work) OVERRIDE;
+  virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
-  // Upon receiving this idempotent call, the csync::ModelSafeWorker can
+  // Upon receiving this idempotent call, the syncer::ModelSafeWorker can
   // assume no work will ever be scheduled again from now on. If it has any work
   // that it has not yet completed, it must make sure to run it as soon as
   // possible as the Syncer is trying to shut down. Called from the CoreThread.

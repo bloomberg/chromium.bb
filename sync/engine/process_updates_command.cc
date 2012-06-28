@@ -21,7 +21,7 @@
 
 using std::vector;
 
-namespace csync {
+namespace syncer {
 
 using sessions::SyncSession;
 using sessions::StatusController;
@@ -182,4 +182,4 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   return SUCCESS_PROCESSED;
 }
 
-}  // namespace csync
+}  // namespace syncer

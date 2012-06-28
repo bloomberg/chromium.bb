@@ -16,7 +16,7 @@
 #include "sync/protocol/sync_protocol_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 using ::testing::InSequence;
@@ -92,9 +92,9 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnActionableError) {
-  csync::SyncProtocolError sync_error;
-  sync_error.action = csync::CLEAR_USER_DATA_AND_RESYNC;
-  sync_error.error_type = csync::TRANSIENT_ERROR;
+  syncer::SyncProtocolError sync_error;
+  sync_error.action = syncer::CLEAR_USER_DATA_AND_RESYNC;
+  sync_error.error_type = syncer::TRANSIENT_ERROR;
   DictionaryValue expected_details;
   expected_details.Set("syncError", sync_error.ToValue());
 
@@ -108,11 +108,11 @@ TEST_F(JsSyncManagerObserverTest, OnActionableError) {
 
 
 TEST_F(JsSyncManagerObserverTest, OnConnectionStatusChange) {
-  const csync::ConnectionStatus kStatus =
-      csync::CONNECTION_AUTH_ERROR;
+  const syncer::ConnectionStatus kStatus =
+      syncer::CONNECTION_AUTH_ERROR;
   DictionaryValue expected_details;
   expected_details.SetString("status",
-                             csync::ConnectionStatusToString(kStatus));
+                             syncer::ConnectionStatusToString(kStatus));
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onConnectionStatusChange",
@@ -131,14 +131,14 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
 
   reason_passphrase_not_required_details.SetString(
       "reason",
-      csync::PassphraseRequiredReasonToString(
-          csync::REASON_PASSPHRASE_NOT_REQUIRED));
+      syncer::PassphraseRequiredReasonToString(
+          syncer::REASON_PASSPHRASE_NOT_REQUIRED));
   reason_encryption_details.SetString(
       "reason",
-      csync::PassphraseRequiredReasonToString(csync::REASON_ENCRYPTION));
+      syncer::PassphraseRequiredReasonToString(syncer::REASON_ENCRYPTION));
   reason_decryption_details.SetString(
       "reason",
-      csync::PassphraseRequiredReasonToString(csync::REASON_DECRYPTION));
+      syncer::PassphraseRequiredReasonToString(syncer::REASON_DECRYPTION));
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
@@ -152,11 +152,11 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
                            HasDetailsAsDictionary(reason_decryption_details)));
 
   js_sync_manager_observer_.OnPassphraseRequired(
-      csync::REASON_PASSPHRASE_NOT_REQUIRED,
+      syncer::REASON_PASSPHRASE_NOT_REQUIRED,
       sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(csync::REASON_ENCRYPTION,
+  js_sync_manager_observer_.OnPassphraseRequired(syncer::REASON_ENCRYPTION,
                                                  sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(csync::REASON_DECRYPTION,
+  js_sync_manager_observer_.OnPassphraseRequired(syncer::REASON_DECRYPTION,
                                                  sync_pb::EncryptedData());
   PumpLoop();
 }
@@ -206,4 +206,4 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

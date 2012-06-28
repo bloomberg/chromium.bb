@@ -38,9 +38,9 @@ syncable::ModelType ExtensionSettingDataTypeController::type() const {
   return type_;
 }
 
-csync::ModelSafeGroup
+syncer::ModelSafeGroup
 ExtensionSettingDataTypeController::model_safe_group() const {
-  return csync::GROUP_FILE;
+  return syncer::GROUP_FILE;
 }
 
 ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}

@@ -30,7 +30,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace csync {
+namespace syncer {
 
 // This class must live on the IO thread.
 class InvalidationNotifier
@@ -43,7 +43,7 @@ class InvalidationNotifier
       scoped_ptr<notifier::PushClient> push_client,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const std::string& initial_invalidation_state,
-      const csync::WeakHandle<InvalidationStateTracker>&
+      const syncer::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
 
@@ -84,7 +84,7 @@ class InvalidationNotifier
   const InvalidationVersionMap initial_max_invalidation_versions_;
 
   // Passed to |invalidation_client_|.
-  const csync::WeakHandle<InvalidationStateTracker>
+  const syncer::WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
 
   // Passed to |invalidation_client_|.
@@ -107,6 +107,6 @@ class InvalidationNotifier
   DISALLOW_COPY_AND_ASSIGN(InvalidationNotifier);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_INVALIDATION_NOTIFIER_H_

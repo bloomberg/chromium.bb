@@ -6,7 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_UTIL_SYNCER_ERROR_H_
 #pragma once
 
-namespace csync {
+namespace syncer {
 
 // This enum describes all the ways a SyncerCommand can fail.
 //
@@ -41,6 +41,6 @@ enum SyncerError {
 
 const char * GetSyncerErrorString(SyncerError);
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_SYNCER_ERROR_H_

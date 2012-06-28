@@ -19,7 +19,7 @@
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/syncable_id.h"
 
-namespace csync {
+namespace syncer {
 
 class Cryptographer;
 class SyncEntity;
@@ -123,6 +123,6 @@ class SyncerUtil {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncerUtil);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNCER_UTIL_H_

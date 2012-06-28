@@ -18,7 +18,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
-namespace csync {
+namespace syncer {
 class SyncError;
 }
 
@@ -64,10 +64,10 @@ class DataTypeController
   };
 
   typedef base::Callback<void(StartResult,
-                              const csync::SyncError&)> StartCallback;
+                              const syncer::SyncError&)> StartCallback;
 
   typedef base::Callback<void(syncable::ModelType,
-                              csync::SyncError)> ModelLoadCallback;
+                              syncer::SyncError)> ModelLoadCallback;
 
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;
@@ -103,14 +103,14 @@ class DataTypeController
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
   // model.
-  virtual csync::ModelSafeGroup model_safe_group() const = 0;
+  virtual syncer::ModelSafeGroup model_safe_group() const = 0;
 
   // Current state of the data type controller.
   virtual State state() const = 0;
 
   // Partial implementation of DataTypeErrorHandler.
   // This is thread safe.
-  virtual csync::SyncError CreateAndUploadError(
+  virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message,
       syncable::ModelType type) OVERRIDE;

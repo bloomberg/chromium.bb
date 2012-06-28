@@ -16,19 +16,19 @@
 
 ACTION_P2(InvokeCallback, datatype, callback_result) {
   if (callback_result != browser_sync::DataTypeController::OK) {
-    csync::SyncError error(FROM_HERE, "Error message", datatype);
+    syncer::SyncError error(FROM_HERE, "Error message", datatype);
     arg0.Run(callback_result, error);
   } else {
-    arg0.Run(callback_result, csync::SyncError());
+    arg0.Run(callback_result, syncer::SyncError());
   }
 }
 
 ACTION_P3(InvokeCallbackPointer, callback, datatype, callback_result) {
   if (callback_result != browser_sync::DataTypeController::OK) {
-    csync::SyncError error(FROM_HERE, "Error message", datatype);
+    syncer::SyncError error(FROM_HERE, "Error message", datatype);
     callback.Run(callback_result, error);
   } else {
-    callback.Run(callback_result, csync::SyncError());
+    callback.Run(callback_result, syncer::SyncError());
   }
 }
 
@@ -53,9 +53,9 @@ class DataTypeManagerMock : public DataTypeManager {
   DataTypeManagerMock();
   virtual ~DataTypeManagerMock();
 
-  MOCK_METHOD2(Configure, void(TypeSet, csync::ConfigureReason));
+  MOCK_METHOD2(Configure, void(TypeSet, syncer::ConfigureReason));
   MOCK_METHOD2(ConfigureWithoutNigori,
-               void(TypeSet, csync::ConfigureReason));
+               void(TypeSet, syncer::ConfigureReason));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(controllers, const DataTypeController::TypeMap&());
   MOCK_CONST_METHOD0(state, State());

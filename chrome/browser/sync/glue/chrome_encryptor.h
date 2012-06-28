@@ -12,7 +12,7 @@
 namespace browser_sync {
 
 // Encryptor that uses the Chrome password manager's encryptor.
-class ChromeEncryptor : public csync::Encryptor {
+class ChromeEncryptor : public syncer::Encryptor {
  public:
   virtual ~ChromeEncryptor();
 

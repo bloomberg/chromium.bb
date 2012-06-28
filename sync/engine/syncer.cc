@@ -42,7 +42,7 @@ using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 
-namespace csync {
+namespace syncer {
 
 using sessions::ScopedSessionContextConflictResolver;
 using sessions::StatusController;
@@ -296,4 +296,4 @@ void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(SERVER_POSITION_IN_PARENT, 0);
 }
 
-}  // namespace csync
+}  // namespace syncer

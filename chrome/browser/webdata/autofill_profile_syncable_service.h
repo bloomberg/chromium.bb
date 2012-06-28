@@ -38,7 +38,7 @@ extern const char kAutofillProfileTag[];
 // local->cloud syncs. Then for each cloud change we receive
 // ProcessSyncChanges() and for each local change Observe() is called.
 class AutofillProfileSyncableService
-    : public csync::SyncableService,
+    : public syncer::SyncableService,
       public content::NotificationObserver,
       public base::NonThreadSafe {
  public:
@@ -47,18 +47,18 @@ class AutofillProfileSyncableService
 
   static syncable::ModelType model_type() { return syncable::AUTOFILL_PROFILE; }
 
-  // csync::SyncableService implementation.
-  virtual csync::SyncError MergeDataAndStartSyncing(
+  // syncer::SyncableService implementation.
+  virtual syncer::SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
-      const csync::SyncDataList& initial_sync_data,
-      scoped_ptr<csync::SyncChangeProcessor> sync_processor,
-      scoped_ptr<csync::SyncErrorFactory> sync_error_factory) OVERRIDE;
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-  virtual csync::SyncDataList GetAllSyncData(
+  virtual syncer::SyncDataList GetAllSyncData(
       syncable::ModelType type) const OVERRIDE;
-  virtual csync::SyncError ProcessSyncChanges(
+  virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const csync::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -123,15 +123,15 @@ class AutofillProfileSyncableService
   // found substitutes it for the new one, otherwise adds a new profile. Returns
   // iterator pointing to added/updated profile.
   GUIDToProfileMap::iterator CreateOrUpdateProfile(
-      const csync::SyncData& data,
+      const syncer::SyncData& data,
       GUIDToProfileMap* profile_map,
       DataBundle* bundle);
 
   // Syncs |change| to the cloud.
   void ActOnChange(const AutofillProfileChange& change);
 
-  // Creates csync::SyncData based on supplied |profile|.
-  static csync::SyncData CreateData(const AutofillProfile& profile);
+  // Creates syncer::SyncData based on supplied |profile|.
+  static syncer::SyncData CreateData(const AutofillProfile& profile);
 
   AutofillTable* GetAutofillTable() const;
 
@@ -154,7 +154,7 @@ class AutofillProfileSyncableService
 
   // For unit-tests.
   AutofillProfileSyncableService();
-  void set_sync_processor(csync::SyncChangeProcessor* sync_processor) {
+  void set_sync_processor(syncer::SyncChangeProcessor* sync_processor) {
     sync_processor_.reset(sync_processor);
   }
 
@@ -166,9 +166,9 @@ class AutofillProfileSyncableService
   ScopedVector<AutofillProfile> profiles_;
   GUIDToProfileMap profiles_map_;
 
-  scoped_ptr<csync::SyncChangeProcessor> sync_processor_;
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
-  scoped_ptr<csync::SyncErrorFactory> sync_error_factory_;
+  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileSyncableService);
 };

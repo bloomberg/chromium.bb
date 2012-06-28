@@ -17,12 +17,12 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using csync::HttpResponse;
-using csync::ServerConnectionManager;
-using csync::ServerConnectionEventListener;
-using csync::ServerConnectionEvent;
-using csync::SyncerProtoUtil;
-using csync::TestIdFactory;
+using syncer::HttpResponse;
+using syncer::ServerConnectionManager;
+using syncer::ServerConnectionEventListener;
+using syncer::ServerConnectionEvent;
+using syncer::SyncerProtoUtil;
+using syncer::TestIdFactory;
 using std::map;
 using std::string;
 using sync_pb::ClientToServerMessage;
@@ -85,7 +85,7 @@ void MockConnectionManager::SetMidCommitObserver(
 bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     const string& path,
     const string& auth_token,
-    csync::ScopedServerStatusWatcher* watcher) {
+    syncer::ScopedServerStatusWatcher* watcher) {
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
   CHECK(post.has_protocol_version());

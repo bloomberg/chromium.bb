@@ -59,14 +59,14 @@ class DataTypeManager {
                     TypeSet requested_types);
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types,
-                    const std::list<csync::SyncError>& failed_data_types,
+                    const std::list<syncer::SyncError>& failed_data_types,
                     syncable::ModelTypeSet waiting_to_start);
     ~ConfigureResult();
     ConfigureStatus status;
     TypeSet requested_types;
 
     // These types encountered a failure in association.
-    std::list<csync::SyncError> failed_data_types;
+    std::list<syncer::SyncError> failed_data_types;
 
     // List of types that failed to start association with in our alloted
     // time period(see kDataTypeLoadWaitTimeInSeconds). We move
@@ -94,10 +94,10 @@ class DataTypeManager {
   // progress.  Configuration will be complete only when the
   // desired_types supplied in the last call to Configure is achieved.
   virtual void Configure(TypeSet desired_types,
-                         csync::ConfigureReason reason) = 0;
+                         syncer::ConfigureReason reason) = 0;
 
   virtual void ConfigureWithoutNigori(TypeSet desired_types,
-                                      csync::ConfigureReason reason) = 0;
+                                      syncer::ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the

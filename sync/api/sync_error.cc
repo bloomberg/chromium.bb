@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace csync {
+namespace syncer {
 
 SyncError::SyncError() {
   Clear();
@@ -109,4 +109,4 @@ void PrintTo(const SyncError& sync_error, std::ostream* os) {
   *os << sync_error.ToString();
 }
 
-}  // namespace csync
+}  // namespace syncer

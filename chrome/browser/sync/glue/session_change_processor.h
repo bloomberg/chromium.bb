@@ -22,7 +22,7 @@ class SessionModelAssociator;
 class DataTypeErrorHandler;
 
 // This class is responsible for taking changes from the
-// SessionService and applying them to the csync 'syncable'
+// SessionService and applying them to the sync API 'syncable'
 // model, and vice versa. All operations and use of this class are
 // from the UI thread.
 class SessionChangeProcessor : public ChangeProcessor,
@@ -40,16 +40,16 @@ class SessionChangeProcessor : public ChangeProcessor,
   virtual ~SessionChangeProcessor();
 
   // content::NotificationObserver implementation.
-  // BrowserSessionProvider -> csync model change application.
+  // BrowserSessionProvider -> sync API model change application.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // ChangeProcessor implementation.
-  // csync model -> BrowserSessionProvider change application.
+  // sync API model -> BrowserSessionProvider change application.
   virtual void ApplyChangesFromSyncModel(
-      const csync::BaseTransaction* trans,
-      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::BaseTransaction* trans,
+      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
  protected:
   // ChangeProcessor implementation.

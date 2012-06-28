@@ -22,7 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 using ::testing::Mock;
@@ -54,7 +54,7 @@ TEST_F(SyncNotifierFactoryTest, Basic) {
   SyncNotifierFactory factory(
       notifier_options_,
       "test client info",
-      base::WeakPtr<csync::InvalidationStateTracker>());
+      base::WeakPtr<syncer::InvalidationStateTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
 #if defined(OS_ANDROID)
   ASSERT_FALSE(notifier.get());
@@ -71,7 +71,7 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
   SyncNotifierFactory factory(
       notifier_options_,
       "test client info",
-      base::WeakPtr<csync::InvalidationStateTracker>());
+      base::WeakPtr<syncer::InvalidationStateTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
 #if defined(OS_ANDROID)
   ASSERT_FALSE(notifier.get());
@@ -83,4 +83,4 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

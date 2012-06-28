@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 using base::ExpectDictDictionaryValue;
@@ -61,7 +61,7 @@ void CheckChangeRecordValue(
     EXPECT_TRUE(Value::Equals(extra_value, expected_extra_value.get()));
 
     scoped_ptr<DictionaryValue> expected_specifics_value(
-        csync::EntitySpecificsToValue(record.specifics));
+        syncer::EntitySpecificsToValue(record.specifics));
     ExpectDictDictionaryValue(*expected_specifics_value,
                               value, "specifics");
   }
@@ -134,4 +134,4 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
 }
 
 }  // namespace
-}  // namespace csync
+}  // namespace syncer

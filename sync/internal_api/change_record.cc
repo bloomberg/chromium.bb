@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/read_node.h"
 #include "sync/protocol/proto_value_conversions.h"
 
-namespace csync {
+namespace syncer {
 
 ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
@@ -42,7 +42,7 @@ DictionaryValue* ChangeRecord::ToValue() const {
       value->Set("extra", extra->ToValue());
     }
     value->Set("specifics",
-               csync::EntitySpecificsToValue(specifics));
+               syncer::EntitySpecificsToValue(specifics));
   }
   return value;
 }
@@ -57,7 +57,7 @@ ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
 ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
 
 DictionaryValue* ExtraPasswordChangeRecordData::ToValue() const {
-  return csync::PasswordSpecificsDataToValue(unencrypted_);
+  return syncer::PasswordSpecificsDataToValue(unencrypted_);
 }
 
 const sync_pb::PasswordSpecificsData&
@@ -65,5 +65,5 @@ const sync_pb::PasswordSpecificsData&
   return unencrypted_;
 }
 
-}  // namespace csync
+}  // namespace syncer
 

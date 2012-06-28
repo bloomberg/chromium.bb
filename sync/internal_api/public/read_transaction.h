@@ -12,7 +12,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace csync {
+namespace syncer {
 
 struct UserShare;
 
@@ -41,6 +41,6 @@ class ReadTransaction : public BaseTransaction {
   DISALLOW_COPY_AND_ASSIGN(ReadTransaction);
 };
 
-} // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_

@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "sync/api/sync_error_factory.h"
 
-namespace csync {
+namespace syncer {
 
 FakeSyncableService::FakeSyncableService()
     : syncing_(false),
@@ -59,4 +59,4 @@ SyncError FakeSyncableService::ProcessSyncChanges(
   return process_sync_changes_error_;
 }
 
-}  // namespace csync
+}  // namespace syncer

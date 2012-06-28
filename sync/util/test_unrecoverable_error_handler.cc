@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 TestUnrecoverableErrorHandler::TestUnrecoverableErrorHandler() {}
 
@@ -19,5 +19,5 @@ void TestUnrecoverableErrorHandler::OnUnrecoverableError(
       << from_here.function_name() << ": " << message;
 }
 
-}  // namespace csync
+}  // namespace syncer
 

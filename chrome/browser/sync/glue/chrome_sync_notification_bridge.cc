@@ -16,7 +16,7 @@ namespace browser_sync {
 ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
     const Profile* profile)
     : observers_(
-        new ObserverListThreadSafe<csync::SyncNotifierObserver>()) {
+        new ObserverListThreadSafe<syncer::SyncNotifierObserver>()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
@@ -34,12 +34,12 @@ void ChromeSyncNotificationBridge::UpdateEnabledTypes(
 }
 
 void ChromeSyncNotificationBridge::AddObserver(
-    csync::SyncNotifierObserver* observer) {
+    syncer::SyncNotifierObserver* observer) {
   observers_->AddObserver(observer);
 }
 
 void ChromeSyncNotificationBridge::RemoveObserver(
-    csync::SyncNotifierObserver* observer) {
+    syncer::SyncNotifierObserver* observer) {
   observers_->RemoveObserver(observer);
 }
 
@@ -49,11 +49,11 @@ void ChromeSyncNotificationBridge::Observe(
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  csync::IncomingNotificationSource notification_source;
+  syncer::IncomingNotificationSource notification_source;
   if (type == chrome::NOTIFICATION_SYNC_REFRESH_LOCAL) {
-    notification_source = csync::LOCAL_NOTIFICATION;
+    notification_source = syncer::LOCAL_NOTIFICATION;
   } else if (type == chrome::NOTIFICATION_SYNC_REFRESH_REMOTE) {
-    notification_source = csync::REMOTE_NOTIFICATION;
+    notification_source = syncer::REMOTE_NOTIFICATION;
   } else {
     NOTREACHED() << "Unexpected notification type:" << type;
     return;
@@ -70,7 +70,7 @@ void ChromeSyncNotificationBridge::Observe(
   }
 
   observers_->Notify(
-      &csync::SyncNotifierObserver::OnIncomingNotification,
+      &syncer::SyncNotifierObserver::OnIncomingNotification,
       payload_map, notification_source);
 }
 

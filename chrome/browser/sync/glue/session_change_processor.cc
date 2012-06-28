@@ -240,7 +240,7 @@ void SessionChangeProcessor::Observe(
 
   if (reassociation_needed) {
     LOG(WARNING) << "Reassociation of local models triggered.";
-    csync::SyncError error;
+    syncer::SyncError error;
     error = session_model_associator_->DisassociateModels();
     error = session_model_associator_->AssociateModels();
     if (error.IsSet()) {
@@ -252,8 +252,8 @@ void SessionChangeProcessor::Observe(
 }
 
 void SessionChangeProcessor::ApplyChangesFromSyncModel(
-    const csync::BaseTransaction* trans,
-    const csync::ImmutableChangeRecordList& changes) {
+    const syncer::BaseTransaction* trans,
+    const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!running()) {
     return;
@@ -261,19 +261,19 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
 
   ScopedStopObserving<SessionChangeProcessor> stop_observing(this);
 
-  csync::ReadNode root(trans);
-  if (root.InitByTagLookup(kSessionsTag) != csync::BaseNode::INIT_OK) {
+  syncer::ReadNode root(trans);
+  if (root.InitByTagLookup(kSessionsTag) != syncer::BaseNode::INIT_OK) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Sessions root node lookup failed.");
     return;
   }
 
   std::string local_tag = session_model_associator_->GetCurrentMachineTag();
-  for (csync::ChangeRecordList::const_iterator it =
+  for (syncer::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
-    const csync::ChangeRecord& change = *it;
-    csync::ChangeRecord::Action action(change.action);
-    if (csync::ChangeRecord::ACTION_DELETE == action) {
+    const syncer::ChangeRecord& change = *it;
+    syncer::ChangeRecord::Action action(change.action);
+    if (syncer::ChangeRecord::ACTION_DELETE == action) {
       // Deletions are all or nothing (since we only ever delete entire
       // sessions). Therefore we don't care if it's a tab node or meta node,
       // and just ensure we've disassociated.
@@ -294,8 +294,8 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     }
 
     // Handle an update or add.
-    csync::ReadNode sync_node(trans);
-    if (sync_node.InitByIdLookup(change.id) != csync::BaseNode::INIT_OK) {
+    syncer::ReadNode sync_node(trans);
+    if (sync_node.InitByIdLookup(change.id) != syncer::BaseNode::INIT_OK) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Session node lookup failed.");
       return;

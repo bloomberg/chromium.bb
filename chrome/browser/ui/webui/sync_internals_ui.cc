@@ -29,10 +29,10 @@
 #include "sync/js/js_event_details.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using csync::JsArgList;
-using csync::JsEventDetails;
-using csync::JsReplyHandler;
-using csync::WeakHandle;
+using syncer::JsArgList;
+using syncer::JsEventDetails;
+using syncer::JsReplyHandler;
+using syncer::WeakHandle;
 using content::WebContents;
 
 namespace {

@@ -10,7 +10,7 @@
 #include "chrome/common/string_ordinal.h"
 #include "sync/api/sync_change.h"
 
-namespace csync {
+namespace syncer {
 class SyncData;
 }
 
@@ -27,8 +27,8 @@ class ExtensionSyncData;
 class AppSyncData {
  public:
   AppSyncData();
-  explicit AppSyncData(const csync::SyncData& sync_data);
-  explicit AppSyncData(const csync::SyncChange& sync_change);
+  explicit AppSyncData(const syncer::SyncData& sync_data);
+  explicit AppSyncData(const syncer::SyncChange& sync_change);
   AppSyncData(const Extension& extension,
               bool enabled,
               bool incognito_enabled,
@@ -39,9 +39,9 @@ class AppSyncData {
   ~AppSyncData();
 
   // Retrive sync data from this class.
-  csync::SyncData GetSyncData() const;
-  csync::SyncChange GetSyncChange(
-      csync::SyncChange::SyncChangeType change_type) const;
+  syncer::SyncData GetSyncData() const;
+  syncer::SyncChange GetSyncChange(
+      syncer::SyncChange::SyncChangeType change_type) const;
 
   const std::string& id() const { return extension_sync_data_.id(); }
 
@@ -73,7 +73,7 @@ class AppSyncData {
   // Populate this class from sync inputs.
   void PopulateFromAppSpecifics(
       const sync_pb::AppSpecifics& specifics);
-  void PopulateFromSyncData(const csync::SyncData& sync_data);
+  void PopulateFromSyncData(const syncer::SyncData& sync_data);
 
   ExtensionSyncData extension_sync_data_;
   std::string notifications_client_id_;

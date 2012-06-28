@@ -10,7 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/util/extensions_activity_monitor.h"
 
-namespace csync {
+namespace syncer {
 
 // Fake non-thread-safe implementation of ExtensionsActivityMonitor
 // suitable to be used in single-threaded sync tests.
@@ -29,6 +29,6 @@ class FakeExtensionsActivityMonitor
   Records records_;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_TEST_FAKE_EXTENSIONS_ACTIVITY_MONITOR_H_

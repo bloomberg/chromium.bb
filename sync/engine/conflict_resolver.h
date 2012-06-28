@@ -24,7 +24,7 @@ class MutableEntry;
 class WriteTransaction;
 }  // namespace syncable
 
-namespace csync {
+namespace syncer {
 
 class Cryptographer;
 
@@ -84,6 +84,6 @@ class ConflictResolver {
   DISALLOW_COPY_AND_ASSIGN(ConflictResolver);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_ENGINE_CONFLICT_RESOLVER_H_

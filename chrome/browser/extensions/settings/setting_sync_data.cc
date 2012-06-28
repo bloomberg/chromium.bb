@@ -14,18 +14,18 @@
 namespace extensions {
 
 SettingSyncData::SettingSyncData(
-    const csync::SyncChange& sync_change) {
+    const syncer::SyncChange& sync_change) {
   Init(sync_change.change_type(), sync_change.sync_data());
 }
 
 SettingSyncData::SettingSyncData(
-    const csync::SyncData& sync_data) {
-  Init(csync::SyncChange::ACTION_INVALID, sync_data);
+    const syncer::SyncData& sync_data) {
+  Init(syncer::SyncChange::ACTION_INVALID, sync_data);
 }
 
 void SettingSyncData::Init(
-    csync::SyncChange::SyncChangeType change_type,
-    const csync::SyncData& sync_data) {
+    syncer::SyncChange::SyncChangeType change_type,
+    const syncer::SyncData& sync_data) {
   DCHECK(!internal_.get());
   sync_pb::EntitySpecifics specifics = sync_data.GetSpecifics();
   // The data must only be either extension or app specfics.
@@ -43,7 +43,7 @@ void SettingSyncData::Init(
 }
 
 void SettingSyncData::InitFromExtensionSettingSpecifics(
-    csync::SyncChange::SyncChangeType change_type,
+    syncer::SyncChange::SyncChangeType change_type,
     const sync_pb::ExtensionSettingSpecifics& specifics) {
   DCHECK(!internal_.get());
   scoped_ptr<Value> value(
@@ -61,7 +61,7 @@ void SettingSyncData::InitFromExtensionSettingSpecifics(
 }
 
 SettingSyncData::SettingSyncData(
-    csync::SyncChange::SyncChangeType change_type,
+    syncer::SyncChange::SyncChangeType change_type,
     const std::string& extension_id,
     const std::string& key,
     scoped_ptr<Value> value)
@@ -69,7 +69,7 @@ SettingSyncData::SettingSyncData(
 
 SettingSyncData::~SettingSyncData() {}
 
-csync::SyncChange::SyncChangeType SettingSyncData::change_type() const {
+syncer::SyncChange::SyncChangeType SettingSyncData::change_type() const {
   return internal_->change_type_;
 }
 
@@ -86,7 +86,7 @@ const Value& SettingSyncData::value() const {
 }
 
 SettingSyncData::Internal::Internal(
-    csync::SyncChange::SyncChangeType change_type,
+    syncer::SyncChange::SyncChangeType change_type,
     const std::string& extension_id,
     const std::string& key,
     scoped_ptr<Value> value)

@@ -43,7 +43,7 @@ using base::JSONReader;
 using browser_sync::GenericChangeProcessor;
 using browser_sync::SharedChangeProcessor;
 using browser_sync::UIDataTypeController;
-using csync::ChangeRecord;
+using syncer::ChangeRecord;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -51,7 +51,7 @@ using testing::Return;
 typedef std::map<const std::string, const Value*> PreferenceValues;
 
 ACTION_P(CreateAndSaveChangeProcessor, change_processor) {
-  csync::UserShare* user_share = arg0->GetUserShare();
+  syncer::UserShare* user_share = arg0->GetUserShare();
   *change_processor = new GenericChangeProcessor(arg1, arg2, user_share);
   return *change_processor;
 }
@@ -61,27 +61,27 @@ class ProfileSyncServicePreferenceTest
     : public AbstractProfileSyncServiceTest {
  public:
   int64 SetSyncedValue(const std::string& name, const Value& value) {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode root(&trans);
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode root(&trans);
     if (root.InitByTagLookup(syncable::ModelTypeToRootTag(
-            syncable::PREFERENCES)) != csync::BaseNode::INIT_OK) {
-      return csync::kInvalidId;
+            syncable::PREFERENCES)) != syncer::BaseNode::INIT_OK) {
+      return syncer::kInvalidId;
     }
 
-    csync::WriteNode tag_node(&trans);
-    csync::WriteNode node(&trans);
+    syncer::WriteNode tag_node(&trans);
+    syncer::WriteNode node(&trans);
 
     if (tag_node.InitByClientTagLookup(syncable::PREFERENCES, name) ==
-            csync::BaseNode::INIT_OK) {
+            syncer::BaseNode::INIT_OK) {
       return WriteSyncedValue(name, value, &tag_node);
     }
 
-    csync::WriteNode::InitUniqueByCreationResult result =
+    syncer::WriteNode::InitUniqueByCreationResult result =
         node.InitUniqueByCreation(syncable::PREFERENCES, root, name);
-    if (result == csync::WriteNode::INIT_SUCCESS)
+    if (result == syncer::WriteNode::INIT_SUCCESS)
       return WriteSyncedValue(name, value, &node);
 
-    return csync::kInvalidId;
+    return syncer::kInvalidId;
   }
 
  protected:
@@ -160,11 +160,11 @@ class ProfileSyncServicePreferenceTest
 
   // Caller gets ownership of the returned value.
   const Value* GetSyncedValue(const std::string& name) {
-    csync::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
-    csync::ReadNode node(&trans);
+    syncer::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::ReadNode node(&trans);
 
     if (node.InitByClientTagLookup(syncable::PREFERENCES, name) !=
-            csync::BaseNode::INIT_OK) {
+            syncer::BaseNode::INIT_OK) {
       return NULL;
     }
 
@@ -176,12 +176,12 @@ class ProfileSyncServicePreferenceTest
 
   int64 WriteSyncedValue(const std::string& name,
                          const Value& value,
-                         csync::WriteNode* node) {
-    csync::SyncData sync_data;
+                         syncer::WriteNode* node) {
+    syncer::SyncData sync_data;
     if (!PrefModelAssociator::CreatePrefSyncData(name,
                                                  value,
                                                  &sync_data)) {
-      return csync::kInvalidId;
+      return syncer::kInvalidId;
     }
     node->SetEntitySpecifics(sync_data.GetSpecifics());
     return node->GetId();
@@ -235,7 +235,7 @@ class AddPreferenceEntriesHelper {
 
     for (PreferenceValues::const_iterator i = entries.begin();
          i != entries.end(); ++i) {
-      if (test->SetSyncedValue(i->first, *i->second) == csync::kInvalidId)
+      if (test->SetSyncedValue(i->first, *i->second) == syncer::kInvalidId)
         return;
     }
     success_ = true;
@@ -253,7 +253,7 @@ TEST_F(ProfileSyncServicePreferenceTest, CreatePrefSyncData) {
 
   const PrefService::Preference* pref =
       prefs_->FindPreference(prefs::kHomePage);
-  csync::SyncData sync_data;
+  syncer::SyncData sync_data;
   EXPECT_TRUE(PrefModelAssociator::CreatePrefSyncData(pref->name(),
       *pref->GetValue(), &sync_data));
   EXPECT_EQ(std::string(prefs::kHomePage), sync_data.GetTag());
@@ -393,9 +393,9 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
 
   scoped_ptr<Value> expected(Value::CreateStringValue(example_url1_));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *expected);
-  ASSERT_NE(node_id, csync::kInvalidId);
+  ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -414,9 +414,9 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
 
   scoped_ptr<Value> expected(Value::CreateStringValue(example_url0_));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *expected);
-  ASSERT_NE(node_id, csync::kInvalidId);
+  ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -437,9 +437,9 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
 
   scoped_ptr<Value> expected(Value::CreateStringValue(example_url0_));
   int64 node_id = SetSyncedValue("unknown preference", *expected);
-  ASSERT_NE(node_id, csync::kInvalidId);
+  ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -472,9 +472,9 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
   scoped_ptr<Value> sync_value(
       Value::CreateStringValue("http://crbug.com"));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
-  ASSERT_NE(node_id, csync::kInvalidId);
+  ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
@@ -535,9 +535,9 @@ TEST_F(ProfileSyncServicePreferenceTest,
   scoped_ptr<Value> sync_value(
       Value::CreateStringValue("http://example.com/sync"));
   int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
-  ASSERT_NE(node_id, csync::kInvalidId);
+  ASSERT_NE(node_id, syncer::kInvalidId);
   {
-    csync::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(

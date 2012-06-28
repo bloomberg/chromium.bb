@@ -35,7 +35,7 @@ namespace notifier {
 class PushClient;
 }  // namespace notifier
 
-namespace csync {
+namespace syncer {
 
 using invalidation::InvalidationListener;
 
@@ -74,7 +74,7 @@ class ChromeInvalidationClient
       const std::string& client_id, const std::string& client_info,
       const std::string& state,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const csync::WeakHandle<InvalidationStateTracker>&
+      const syncer::WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       Listener* listener);
 
@@ -141,7 +141,7 @@ class ChromeInvalidationClient
   notifier::PushClient* const push_client_;
   ChromeSystemResources chrome_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
-  csync::WeakHandle<InvalidationStateTracker>
+  syncer::WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
   Listener* listener_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
@@ -160,6 +160,6 @@ class ChromeInvalidationClient
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_

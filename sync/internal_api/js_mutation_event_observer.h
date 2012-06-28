@@ -20,7 +20,7 @@ namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
 
-namespace csync {
+namespace syncer {
 
 class JsEventDetails;
 class JsEventHandler;
@@ -28,7 +28,7 @@ class JsEventHandler;
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
 class JsMutationEventObserver
-    : public csync::SyncManager::ChangeObserver,
+    : public syncer::SyncManager::ChangeObserver,
       public syncable::TransactionObserver,
       public base::NonThreadSafe {
  public:
@@ -42,11 +42,11 @@ class JsMutationEventObserver
 
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
-  // csync::SyncManager::ChangeObserver implementation.
+  // syncer::SyncManager::ChangeObserver implementation.
   virtual void OnChangesApplied(
       syncable::ModelType model_type,
       int64 write_transaction_id,
-      const csync::ImmutableChangeRecordList& changes) OVERRIDE;
+      const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncable::ModelType model_type) OVERRIDE;
 
   // syncable::TransactionObserver implementation.
@@ -65,6 +65,6 @@ class JsMutationEventObserver
   DISALLOW_COPY_AND_ASSIGN(JsMutationEventObserver);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_JS_MUTATION_EVENT_OBSERVER_H_

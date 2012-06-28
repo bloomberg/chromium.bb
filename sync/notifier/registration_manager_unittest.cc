@@ -17,7 +17,7 @@
 #include "sync/notifier/invalidation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 namespace {
 
 // Fake registration manager that lets you override jitter.
@@ -422,4 +422,4 @@ TEST_F(RegistrationManagerTest, DisableId) {
 }
 
 }  // namespace
-}  // namespace notifier
+}  // namespace syncer

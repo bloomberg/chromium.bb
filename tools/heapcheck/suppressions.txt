@@ -998,8 +998,8 @@
    fun:TestURLRequestContextGetter::GetURLRequestContext
    fun:*SingleLoginAttempt
    fun:notifier::Login::StartConnection
-   fun:csync::InvalidationNotifier::UpdateCredentials
-   fun:csync::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+   fun:syncer::InvalidationNotifier::UpdateCredentials
+   fun:syncer::NonBlockingInvalidationNotifier::Core::UpdateCredentials
    fun:void DispatchToMethod
 }
 {
@@ -1345,8 +1345,8 @@
    fun:TestURLRequestContextGetter::GetURLRequestContext
    ...
    fun:notifier::Login::StartConnection
-   fun:csync::InvalidationNotifier::UpdateCredentials
-   fun:csync::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+   fun:syncer::InvalidationNotifier::UpdateCredentials
+   fun:syncer::NonBlockingInvalidationNotifier::Core::UpdateCredentials
 }
 {
    bug_124758

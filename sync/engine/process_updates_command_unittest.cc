@@ -13,7 +13,7 @@
 #include "sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace csync {
+namespace syncer {
 
 namespace {
 
@@ -49,4 +49,4 @@ TEST_F(ProcessUpdatesCommandTest, GetGroupsToChange) {
 
 }  // namespace
 
-}  // namespace csync
+}  // namespace syncer

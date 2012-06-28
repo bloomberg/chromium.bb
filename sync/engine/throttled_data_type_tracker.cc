@@ -7,7 +7,7 @@
 #include "sync/engine/all_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 
-namespace csync {
+namespace syncer {
 
 ThrottledDataTypeTracker::ThrottledDataTypeTracker(AllStatus *allstatus)
     : allstatus_(allstatus) {
@@ -69,4 +69,4 @@ syncable::ModelTypeSet ThrottledDataTypeTracker::GetThrottledTypes() const {
   return types;
 }
 
-}  // namespace csync
+}  // namespace syncer

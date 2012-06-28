@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace csync {
+namespace syncer {
 
 class JsEventDetails;
 
@@ -25,6 +25,6 @@ class JsEventHandler {
   virtual ~JsEventHandler() {}
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_JS_JS_EVENT_HANDLER_H_

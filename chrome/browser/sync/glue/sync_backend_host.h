@@ -62,7 +62,8 @@ class SyncFrontend {
   // from the 'Backend' in 'OnBackendInitialized' (unfortunately).  It
   // is initialized only if |success| is true.
   virtual void OnBackendInitialized(
-      const csync::WeakHandle<csync::JsBackend>& js_backend, bool success) = 0;
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      bool success) = 0;
 
   // The backend queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
@@ -73,7 +74,7 @@ class SyncFrontend {
 
   // The status of the connection to the sync server has changed.
   virtual void OnConnectionStatusChange(
-      csync::ConnectionStatus status) = 0;
+      syncer::ConnectionStatus status) = 0;
 
   // We are no longer permitted to communicate with the server. Sync should
   // be disabled and state cleaned up at once.
@@ -86,7 +87,7 @@ class SyncFrontend {
   // cryptographer's pending keys to be passed on to the frontend in order to
   // be cached.
   virtual void OnPassphraseRequired(
-      csync::PassphraseRequiredReason reason,
+      syncer::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) = 0;
 
   // Called when the passphrase provided by the user is
@@ -100,11 +101,11 @@ class SyncFrontend {
   // below).
   //
   // |encrypted_types| will always be a superset of
-  // csync::Cryptographer::SensitiveTypes().  If |encrypt_everything| is
+  // syncer::Cryptographer::SensitiveTypes().  If |encrypt_everything| is
   // true, |encrypted_types| will be the set of all known types.
   //
   // Until this function is called, observers can assume that the set
-  // of encrypted types is csync::Cryptographer::SensitiveTypes() and that
+  // of encrypted types is syncer::Cryptographer::SensitiveTypes() and that
   // the encrypt everything flag is false.
   virtual void OnEncryptedTypesChanged(
       syncable::ModelTypeSet encrypted_types,
@@ -120,11 +121,11 @@ class SyncFrontend {
 
   // Inform the Frontend that new datatypes are available for registration.
   virtual void OnExperimentsChanged(
-      const csync::Experiments& experiments) = 0;
+      const syncer::Experiments& experiments) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(
-      const csync::SyncProtocolError& error) = 0;
+      const syncer::SyncProtocolError& error) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -140,7 +141,7 @@ class SyncFrontend {
 // that the SyncFrontend is only accessed on the UI loop.
 class SyncBackendHost : public BackendDataTypeConfigurer {
  public:
-  typedef csync::SyncStatus Status;
+  typedef syncer::SyncStatus Status;
 
   // Create a SyncBackendHost with a reference to the |frontend| that
   // it serves and communicates to via the SyncFrontend interface (on
@@ -164,18 +165,19 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Optionally delete the Sync Data folder (if it's corrupt).
   // |report_unrecoverable_error_function| can be NULL.
   // Note: |unrecoverable_error_handler| may be invoked from any thread.
-  void Initialize(SyncFrontend* frontend,
-                  const csync::WeakHandle<csync::JsEventHandler>& event_handler,
-                  const GURL& service_url,
-                  syncable::ModelTypeSet initial_types,
-                  const csync::SyncCredentials& credentials,
-                  bool delete_sync_data_folder,
-                  csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
-                  csync::ReportUnrecoverableErrorFunction
-                      report_unrecoverable_error_function);
+  void Initialize(
+      SyncFrontend* frontend,
+      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const GURL& service_url,
+      syncable::ModelTypeSet initial_types,
+      const syncer::SyncCredentials& credentials,
+      bool delete_sync_data_folder,
+      syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
+      syncer::ReportUnrecoverableErrorFunction
+          report_unrecoverable_error_function);
 
   // Called from |frontend_loop| to update SyncCredentials.
-  void UpdateCredentials(const csync::SyncCredentials& credentials);
+  void UpdateCredentials(const syncer::SyncCredentials& credentials);
 
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
@@ -221,7 +223,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // set of all types that failed configuration (i.e., if its argument
   // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
-      csync::ConfigureReason reason,
+      syncer::ConfigureReason reason,
       syncable::ModelTypeSet types_to_add,
       syncable::ModelTypeSet types_to_remove,
       NigoriState nigori_state,
@@ -240,7 +242,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // no changes are dropped between model association and change
   // processor activation.
   void ActivateDataType(
-      syncable::ModelType type, csync::ModelSafeGroup group,
+      syncable::ModelType type, syncer::ModelSafeGroup group,
       ChangeProcessor* change_processor);
 
   // Deactivates change processing for the given data type.
@@ -248,12 +250,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
-  csync::UserShare* GetUserShare() const;
+  syncer::UserShare* GetUserShare() const;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
   Status GetDetailedStatus();
-  csync::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
+  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
@@ -269,9 +271,9 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
   // using a token previously received.
-  bool IsCryptographerReady(const csync::BaseTransaction* trans) const;
+  bool IsCryptographerReady(const syncer::BaseTransaction* trans) const;
 
-  void GetModelSafeRoutingInfo(csync::ModelSafeRoutingInfo* out) const;
+  void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
 
  protected:
   // The types and functions below are protected so that test
@@ -280,48 +282,48 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // TODO(akalin): Figure out a better way for tests to hook into
   // SyncBackendHost.
 
-  typedef base::Callback<csync::HttpPostProviderFactory*(void)>
+  typedef base::Callback<syncer::HttpPostProviderFactory*(void)>
       MakeHttpBridgeFactoryFn;
 
   struct DoInitializeOptions {
     DoInitializeOptions(
         MessageLoop* sync_loop,
         SyncBackendRegistrar* registrar,
-        const csync::ModelSafeRoutingInfo& routing_info,
-        const std::vector<csync::ModelSafeWorker*>& workers,
-        csync::ExtensionsActivityMonitor* extensions_activity_monitor,
-        const csync::WeakHandle<csync::JsEventHandler>& event_handler,
+        const syncer::ModelSafeRoutingInfo& routing_info,
+        const std::vector<syncer::ModelSafeWorker*>& workers,
+        syncer::ExtensionsActivityMonitor* extensions_activity_monitor,
+        const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
-        const csync::SyncCredentials& credentials,
+        const syncer::SyncCredentials& credentials,
         ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
-        csync::SyncNotifierFactory* sync_notifier_factory,
+        syncer::SyncNotifierFactory* sync_notifier_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
-        csync::SyncManager::TestingMode testing_mode,
-        csync::UnrecoverableErrorHandler* unrecoverable_error_handler,
-        csync::ReportUnrecoverableErrorFunction
+        syncer::SyncManager::TestingMode testing_mode,
+        syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
+        syncer::ReportUnrecoverableErrorFunction
             report_unrecoverable_error_function);
     ~DoInitializeOptions();
 
     MessageLoop* sync_loop;
     SyncBackendRegistrar* registrar;
-   csync::ModelSafeRoutingInfo routing_info;
-    std::vector<csync::ModelSafeWorker*> workers;
-    csync::ExtensionsActivityMonitor* extensions_activity_monitor;
-    csync::WeakHandle<csync::JsEventHandler> event_handler;
+   syncer::ModelSafeRoutingInfo routing_info;
+    std::vector<syncer::ModelSafeWorker*> workers;
+    syncer::ExtensionsActivityMonitor* extensions_activity_monitor;
+    syncer::WeakHandle<syncer::JsEventHandler> event_handler;
     GURL service_url;
     // Overridden by tests.
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
-    csync::SyncCredentials credentials;
+    syncer::SyncCredentials credentials;
     ChromeSyncNotificationBridge* const chrome_sync_notification_bridge;
-    csync::SyncNotifierFactory* const sync_notifier_factory;
+    syncer::SyncNotifierFactory* const sync_notifier_factory;
     std::string lsid;
     bool delete_sync_data_folder;
     std::string restored_key_for_bootstrapping;
-    csync::SyncManager::TestingMode testing_mode;
-    csync::UnrecoverableErrorHandler* unrecoverable_error_handler;
-    csync::ReportUnrecoverableErrorFunction
+    syncer::SyncManager::TestingMode testing_mode;
+    syncer::UnrecoverableErrorHandler* unrecoverable_error_handler;
+    syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function;
   };
 
@@ -331,7 +333,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
   // thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
-      const csync::sessions::SyncSessionSnapshot& snapshot);
+      const syncer::sessions::SyncSessionSnapshot& snapshot);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.
@@ -382,7 +384,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
     // Additional details about which types were added.
     syncable::ModelTypeSet added_types;
-    csync::ConfigureReason reason;
+    syncer::ConfigureReason reason;
     bool retry_in_progress;
   };
 
@@ -398,7 +400,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
   virtual void HandleInitializationCompletedOnFrontendLoop(
-      const csync::WeakHandle<csync::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       bool success);
 
   // Helpers to persist a token that can be used to bootstrap sync encryption
@@ -412,7 +414,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Let the front end handle the actionable error event.
   void HandleActionableErrorEventOnFrontendLoop(
-      const csync::SyncProtocolError& sync_error);
+      const syncer::SyncProtocolError& sync_error);
 
   // Checks if |passphrase| can be used to decrypt the cryptographer's pending
   // keys that were cached during NotifyPassphraseRequired. Returns true if
@@ -427,7 +429,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // cached by the frontend. If there are no pending keys, or if the passphrase
   // required reason is REASON_ENCRYPTION, an empty EncryptedData object is
   // passed.
-  void NotifyPassphraseRequired(csync::PassphraseRequiredReason reason,
+  void NotifyPassphraseRequired(syncer::PassphraseRequiredReason reason,
                                 sync_pb::EncryptedData pending_keys);
 
   // Invoked when the passphrase provided by the user has been accepted.
@@ -450,12 +452,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.
   void HandleConnectionStatusChangeOnFrontendLoop(
-      csync::ConnectionStatus status);
+      syncer::ConnectionStatus status);
 
   // Called when configuration of the Nigori node has completed as
   // part of the initialization process.
   void HandleNigoriConfigurationCompletedOnFrontendLoop(
-      const csync::WeakHandle<csync::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       syncable::ModelTypeSet failed_configuration_types);
 
   // Must be called on |frontend_loop_|.  |done_callback| is called on
@@ -491,7 +493,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // chrome events.
   ChromeSyncNotificationBridge chrome_sync_notification_bridge_;
 
-  csync::SyncNotifierFactory sync_notifier_factory_;
+  syncer::SyncNotifierFactory sync_notifier_factory_;
 
   ChromeExtensionsActivityMonitor extensions_activity_monitor_;
 
@@ -514,7 +516,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   sync_pb::EncryptedData cached_pending_keys_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
-  csync::sessions::SyncSessionSnapshot last_snapshot_;
+  syncer::sessions::SyncSessionSnapshot last_snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

@@ -4,7 +4,7 @@
 
 #include "sync/api/sync_error_factory.h"
 
-namespace csync {
+namespace syncer {
 
 SyncErrorFactory::SyncErrorFactory() {
 }
@@ -12,4 +12,4 @@ SyncErrorFactory::SyncErrorFactory() {
 SyncErrorFactory::~SyncErrorFactory() {
 }
 
-}  // namespace csync
+}  // namespace syncer

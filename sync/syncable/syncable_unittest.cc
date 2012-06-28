@@ -38,9 +38,9 @@
 
 using base::ExpectDictBooleanValue;
 using base::ExpectDictStringValue;
-using csync::FakeEncryptor;
-using csync::TestIdFactory;
-using csync::TestUnrecoverableErrorHandler;
+using syncer::FakeEncryptor;
+using syncer::TestIdFactory;
+using syncer::TestUnrecoverableErrorHandler;
 
 namespace syncable {
 
@@ -1152,14 +1152,14 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
     server_item.Put(SERVER_IS_DEL, false);
     ASSERT_EQ(datatype, server_item.GetServerModelType());
 
-    csync::SyncEntity folder_entity;
+    syncer::SyncEntity folder_entity;
     folder_entity.set_id(id_factory.NewServerId());
     folder_entity.set_deleted(false);
     folder_entity.set_folder(true);
     folder_entity.mutable_specifics()->CopyFrom(specifics);
     ASSERT_EQ(datatype, folder_entity.GetModelType());
 
-    csync::SyncEntity item_entity;
+    syncer::SyncEntity item_entity;
     item_entity.set_id(id_factory.NewServerId());
     item_entity.set_deleted(false);
     item_entity.set_folder(false);

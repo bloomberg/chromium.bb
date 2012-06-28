@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 
-namespace csync {
+namespace syncer {
 
 // Status encapsulates detailed state about the internals of the SyncManager.
 //
@@ -29,7 +29,7 @@ struct SyncStatus {
   // Notifications counters updated by the actions in synapi.
   int notifications_received;
 
-  csync::SyncProtocolError sync_protocol_error;
+  syncer::SyncProtocolError sync_protocol_error;
 
   // Number of encryption conflicts counted during most recent sync cycle.
   int encryption_conflicts;
@@ -91,6 +91,6 @@ struct SyncStatus {
   std::string unique_id;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_STATUS_SUMMARY_H_

@@ -6,7 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_HTTP_POST_PROVIDER_FACTORY_H_
 #pragma once
 
-namespace csync {
+namespace syncer {
 
 class HttpPostProviderInterface;
 
@@ -29,6 +29,6 @@ class HttpPostProviderFactory {
   virtual void Destroy(HttpPostProviderInterface* http) = 0;
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_HTTP_POST_PROVIDER_FACTORY_H_

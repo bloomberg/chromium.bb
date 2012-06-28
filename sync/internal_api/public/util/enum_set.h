@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
-namespace csync {
+namespace syncer {
 
 // Forward declarations needed for friend declarations.
 template <typename E, E MinEnumValue, E MaxEnumValue>
@@ -281,6 +281,6 @@ EnumSet<E, Min, Max> Difference(EnumSet<E, Min, Max> set1,
   return EnumSet<E, Min, Max>(set1.enums_ & ~set2.enums_);
 }
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_ENUM_SET_H_

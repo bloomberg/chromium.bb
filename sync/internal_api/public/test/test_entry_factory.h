@@ -16,7 +16,7 @@ class Directory;
 class Id;
 }
 
-namespace csync {
+namespace syncer {
 
 class TestEntryFactory {
  public:
@@ -65,6 +65,6 @@ class TestEntryFactory {
   DISALLOW_COPY_AND_ASSIGN(TestEntryFactory);
 };
 
-}  // namespace csync
+}  // namespace syncer
 
 #endif  // SYNC_TEST_TEST_ENTRY_FACTORY_H_
