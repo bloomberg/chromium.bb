@@ -46,6 +46,8 @@
         '..',
       ],
       'sources': [
+        'shell/geolocation/shell_access_token_store.cc',
+        'shell/geolocation/shell_access_token_store.h',
         'shell/layout_test_controller.cc',
         'shell/layout_test_controller.h',
         'shell/layout_test_controller_bindings.cc',

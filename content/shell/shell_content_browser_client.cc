@@ -7,8 +7,10 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/shell/geolocation/shell_access_token_store.h"
 #include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell.h"
+#include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
@@ -56,6 +58,10 @@ std::string ShellContentBrowserClient::GetDefaultDownloadName() {
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();
+}
+
+AccessTokenStore* ShellContentBrowserClient::CreateAccessTokenStore() {
+  return new ShellAccessTokenStore(browser_context()->GetRequestContext());
 }
 
 }  // namespace content
