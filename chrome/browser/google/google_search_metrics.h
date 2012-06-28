@@ -21,6 +21,8 @@ class GoogleSearchMetrics {
     AP_HOME_PAGE_INSTANT,
     AP_SEARCH_APP,
     AP_SEARCH_APP_INSTANT,
+    AP_OTHER,
+    AP_OTHER_INSTANT,
     AP_BOUNDARY,
   };
 

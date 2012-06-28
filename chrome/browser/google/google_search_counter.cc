@@ -15,11 +15,13 @@
 namespace {
 
 // Returns true iff |entry| represents a Google search from the Omnibox.
+// This method assumes that we have already verified that |entry|'s URL is a
+// Google search URL.
 bool IsOmniboxGoogleSearchNavigation(const content::NavigationEntry& entry) {
-  content::PageTransition stripped_transition =
+  const content::PageTransition stripped_transition =
       PageTransitionStripQualifier(entry.GetTransitionType());
-  return stripped_transition == content::PAGE_TRANSITION_GENERATED &&
-      google_util::IsGoogleSearchUrl(entry.GetURL().spec());
+  DCHECK(google_util::IsGoogleSearchUrl(entry.GetURL().spec()));
+  return stripped_transition == content::PAGE_TRANSITION_GENERATED;
 }
 
 }  // namespace
@@ -46,14 +48,23 @@ void GoogleSearchCounter::ProcessCommittedEntry(
     const content::NotificationDetails& details) {
   const content::LoadCommittedDetails* commit =
       content::Details<content::LoadCommittedDetails>(details).ptr();
+  const content::NavigationEntry& entry = *commit->entry;
+
+  // First see if this is a Google search URL at all.
+  if (!google_util::IsGoogleSearchUrl(entry.GetURL().spec()))
+    return;
 
   // If the commit is a GENERATED commit with a Google search URL, we know it's
   // an Omnibox search.
-  if (IsOmniboxGoogleSearchNavigation(*commit->entry)) {
+  if (IsOmniboxGoogleSearchNavigation(entry)) {
     // Note that GoogleSearchMetrics logs metrics through UMA, which will only
     // transmit these counts to the server if the user has opted into sending
     // usage stats.
     search_metrics_->RecordGoogleSearch(GoogleSearchMetrics::AP_OMNIBOX);
+  } else {
+    // For all other cases that we have not yet implemented or care to measure,
+    // we log a generic "catch-all" metric.
+    search_metrics_->RecordGoogleSearch(GoogleSearchMetrics::AP_OTHER);
   }
 }
 
