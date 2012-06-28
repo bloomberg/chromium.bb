@@ -71,12 +71,13 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 @implementation ChromeToMobileBubbleController
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                   profile:(Profile*)profile {
+                   browser:(Browser*)browser {
   self = [super initWithWindowNibPath:@"ChromeToMobileBubble"
                          parentWindow:parentWindow
                            anchoredAt:NSZeroPoint];
   if (self) {
-    service_ = ChromeToMobileServiceFactory::GetForProfile(profile);
+    browser_ = browser;
+    service_ = ChromeToMobileServiceFactory::GetForProfile(browser->profile());
   }
   return self;
 }
@@ -153,7 +154,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
       self, @selector(cancel:)));
 
   // Generate the MHTML snapshot now to report its size in the bubble.
-  service_->GenerateSnapshot(bridge_->AsWeakPtr());
+  service_->GenerateSnapshot(browser_, bridge_->AsWeakPtr());
 
   // Request a mobile device list update.
   service_->RequestMobileListUpdate();
@@ -168,7 +169,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   string16 mobileId;
   mobiles_[index]->GetString("id", &mobileId);
   FilePath path = ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath();
-  service_->SendToMobile(mobileId, path, bridge_->AsWeakPtr());
+  service_->SendToMobile(mobileId, path, browser_, bridge_->AsWeakPtr());
 
   // Update the bubble's contents to show the "Sending..." progress animation.
   [cancel_ setEnabled:NO];
@@ -255,6 +256,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
                          parentWindow:parentWindow
                            anchoredAt:NSZeroPoint];
   if (self) {
+    browser_ = NULL;
     service_ = service;
   }
   return self;

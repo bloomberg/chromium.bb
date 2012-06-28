@@ -90,6 +90,11 @@ WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
   return tab_contents ? tab_contents->web_contents() : NULL;
 }
 
+Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
+  WebContents* contents = GetWebContentsFromDelegate(delegate);
+  return browser::FindBrowserWithWebContents(contents);
+}
+
 // Height of the location bar's round corner region.
 const int kBorderRoundCornerHeight = 5;
 // Width of location bar's round corner region.
@@ -450,7 +455,8 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {
-  browser::ShowChromeToMobileBubbleView(chrome_to_mobile_view_, profile_);
+  Browser* browser = GetBrowserFromDelegate(delegate_);
+  browser::ShowChromeToMobileBubbleView(chrome_to_mobile_view_, browser);
 }
 
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {
@@ -1089,8 +1095,7 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
 void LocationBarView::ShowFirstRunBubbleInternal() {
 #if !defined(OS_CHROMEOS)
   // First run bubble doesn't make sense for Chrome OS.
-  WebContents* contents = GetWebContentsFromDelegate(delegate_);
-  Browser* browser = browser::FindBrowserWithWebContents(contents);
+  Browser* browser = GetBrowserFromDelegate(delegate_);
   FirstRunBubble::ShowBubble(browser, profile_, location_icon_view_);
 #endif
 }

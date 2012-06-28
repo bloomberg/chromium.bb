@@ -17,6 +17,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -24,6 +25,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class OAuth2AccessTokenFetcher;
+class Browser;
 class CloudPrintURL;
 class MockChromeToMobileService;
 class Profile;
@@ -105,14 +107,16 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Virtual for unit test mocking.
   virtual void RequestMobileListUpdate();
 
-  // Callback with an MHTML snapshot of the profile's selected WebContents.
+  // Callback with an MHTML snapshot of the browser's selected WebContents.
   // Virtual for unit test mocking.
-  virtual void GenerateSnapshot(base::WeakPtr<Observer> observer);
+  virtual void GenerateSnapshot(Browser* browser,
+                                base::WeakPtr<Observer> observer);
 
-  // Send the profile's selected WebContents to the specified mobile device.
+  // Send the browser's selected WebContents to the specified mobile device.
   // Virtual for unit test mocking.
   virtual void SendToMobile(const string16& mobile_id,
                             const FilePath& snapshot,
+                            Browser* browser,
                             base::WeakPtr<Observer> observer);
 
   // Delete the snapshot file (should be called on observer destruction).
@@ -141,6 +145,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Handle the attempted creation of a temporary file for snapshot generation.
   // Alert the observer of failure or generate MHTML with an observer callback.
   void SnapshotFileCreated(base::WeakPtr<Observer> observer,
+                           SessionID::id_type browser_id,
                            const FilePath& path,
                            bool success);
 

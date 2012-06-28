@@ -19,9 +19,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Browser;
 @class ChromeToMobileBubbleController;
 class ChromeToMobileService;
-class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -88,6 +88,9 @@ class ChromeToMobileBubbleNotificationBridge
   // A bridge used to observe Chrome and Service changes.
   scoped_ptr<ChromeToMobileBubbleNotificationBridge> bridge_;
 
+  // The browser that opened this bubble.
+  Browser* browser_;
+
   // The Chrome To Mobile service associated with this bubble.
   ChromeToMobileService* service_;
 
@@ -104,7 +107,7 @@ class ChromeToMobileBubbleNotificationBridge
 // The owner of this object is responsible for showing the bubble. It is not
 // shown by the init routine. The window closes automatically on deallocation.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                   profile:(Profile*)profile;
+                   browser:(Browser*)browser;
 
 // Actions for buttons in the dialog.
 - (IBAction)send:(id)sender;

@@ -1274,8 +1274,7 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
 }
 
 void LocationBarViewGtk::ShowChromeToMobileBubble() {
-  ChromeToMobileBubbleGtk::Show(GTK_IMAGE(chrome_to_mobile_image_),
-                                browser_->profile());
+  ChromeToMobileBubbleGtk::Show(GTK_IMAGE(chrome_to_mobile_image_), browser_);
 }
 
 void LocationBarViewGtk::SetZoomIconTooltipPercent(int zoom_percent) {

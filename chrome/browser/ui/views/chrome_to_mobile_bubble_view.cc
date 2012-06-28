@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/animation/throb_animation.h"
@@ -82,8 +82,8 @@ void SetImageViewToId(views::View* image_view, int id) {
 
 namespace browser {
 
-void ShowChromeToMobileBubbleView(views::View* anchor_view, Profile* profile) {
-  ChromeToMobileBubbleView::ShowBubble(anchor_view, profile);
+void ShowChromeToMobileBubbleView(views::View* anchor_view, Browser* browser) {
+  ChromeToMobileBubbleView::ShowBubble(anchor_view, browser);
 }
 
 void HideChromeToMobileBubbleView() {
@@ -104,13 +104,13 @@ ChromeToMobileBubbleView::~ChromeToMobileBubbleView() {}
 
 // static
 void ChromeToMobileBubbleView::ShowBubble(views::View* anchor_view,
-                                          Profile* profile) {
+                                          Browser* browser) {
   if (IsShowing())
     return;
 
   // Show the lit mobile device icon during the bubble's lifetime.
   SetImageViewToId(anchor_view, IDR_MOBILE_LIT);
-  bubble_ = new ChromeToMobileBubbleView(anchor_view, profile);
+  bubble_ = new ChromeToMobileBubbleView(anchor_view, browser);
   views::BubbleDelegateView::CreateBubble(bubble_);
   bubble_->Show();
 }
@@ -310,10 +310,11 @@ void ChromeToMobileBubbleView::Init() {
 }
 
 ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
-                                                   Profile* profile)
+                                                   Browser* browser)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      service_(ChromeToMobileServiceFactory::GetForProfile(profile)),
+      browser_(browser),
+      service_(ChromeToMobileServiceFactory::GetForProfile(browser->profile())),
       selected_mobile_(NULL),
       send_copy_(NULL),
       send_(NULL),
@@ -321,7 +322,7 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
   service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   // Generate the MHTML snapshot now to report its size in the bubble.
-  service_->GenerateSnapshot(weak_ptr_factory_.GetWeakPtr());
+  service_->GenerateSnapshot(browser_, weak_ptr_factory_.GetWeakPtr());
 
   // Request a mobile device list update.
   service_->RequestMobileListUpdate();
@@ -344,7 +345,8 @@ void ChromeToMobileBubbleView::Send() {
   string16 mobile_id;
   selected_mobile_->GetString("id", &mobile_id);
   FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
-  service_->SendToMobile(mobile_id, snapshot, weak_ptr_factory_.GetWeakPtr());
+  service_->SendToMobile(mobile_id, snapshot, browser_,
+                         weak_ptr_factory_.GetWeakPtr());
 
   // Update the view's contents to show the "Sending..." progress animation.
   cancel_->SetEnabled(false);

@@ -27,7 +27,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class Profile;
+class Browser;
 
 namespace base {
 class DictionaryValue;
@@ -46,7 +46,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
  public:
   // Shows the Chrome to Mobile bubble, pointing at |anchor_widget|.
   // |anchor_image| is updated to show the lit icon during the bubble lifetime.
-  static void Show(GtkImage* anchor_image, Profile* profile);
+  static void Show(GtkImage* anchor_image, Browser* browser);
 
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -64,7 +64,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   virtual void OnSendComplete(bool success) OVERRIDE;
 
  private:
-  ChromeToMobileBubbleGtk(GtkImage* anchor_image, Profile* profile);
+  ChromeToMobileBubbleGtk(GtkImage* anchor_image, Browser* browser);
   virtual ~ChromeToMobileBubbleGtk();
 
   // Notified when |content_| is destroyed so we can delete our instance.
@@ -74,6 +74,9 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(ChromeToMobileBubbleGtk, void, OnSendClicked);
 
   base::WeakPtrFactory<ChromeToMobileBubbleGtk> weak_ptr_factory_;
+
+  // The browser that opened this bubble.
+  Browser* browser_;
 
   // The Chrome To Mobile service associated with this bubble.
   ChromeToMobileService* service_;

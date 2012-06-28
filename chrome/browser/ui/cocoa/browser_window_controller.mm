@@ -1635,7 +1635,7 @@ enum {
   chromeToMobileBubbleController_ =
       [[ChromeToMobileBubbleController alloc]
           initWithParentWindow:[self window]
-                       profile:[self profile]];
+                       browser:browser_.get()];
   [chromeToMobileBubbleController_ showWindow:self];
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];

@@ -17,7 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -53,10 +53,10 @@ const GdkColor kErrorColor = GDK_COLOR_RGB(0xFF, 0x00, 0x00);
 }  // namespace
 
 // static
-void ChromeToMobileBubbleGtk::Show(GtkImage* anchor_image, Profile* profile) {
+void ChromeToMobileBubbleGtk::Show(GtkImage* anchor_image, Browser* browser) {
   // Do not construct a new bubble if one is already being shown.
   if (!g_bubble)
-    g_bubble = new ChromeToMobileBubbleGtk(anchor_image, profile);
+    g_bubble = new ChromeToMobileBubbleGtk(anchor_image, browser);
 }
 
 void ChromeToMobileBubbleGtk::BubbleClosing(BubbleGtk* bubble,
@@ -143,10 +143,11 @@ void ChromeToMobileBubbleGtk::OnSendComplete(bool success) {
 }
 
 ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
-                                                 Profile* profile)
+                                                 Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      service_(ChromeToMobileServiceFactory::GetForProfile(profile)),
-      theme_service_(GtkThemeService::GetFrom(profile)),
+      browser_(browser),
+      service_(ChromeToMobileServiceFactory::GetForProfile(browser->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser->profile())),
       selected_mobile_(NULL),
       anchor_image_(anchor_image),
       send_copy_(NULL),
@@ -157,7 +158,7 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   // Generate the MHTML snapshot now to report its size in the bubble.
-  service_->GenerateSnapshot(weak_ptr_factory_.GetWeakPtr());
+  service_->GenerateSnapshot(browser_, weak_ptr_factory_.GetWeakPtr());
 
   // Request a mobile device list update.
   service_->RequestMobileListUpdate();
@@ -303,7 +304,7 @@ void ChromeToMobileBubbleGtk::OnSendClicked(GtkWidget* widget) {
   selected_mobile_->GetString("id", &mobile_id);
   bool send_copy = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_copy_));
   service_->SendToMobile(mobile_id, send_copy ? snapshot_path_ : FilePath(),
-                         weak_ptr_factory_.GetWeakPtr());
+                         browser_, weak_ptr_factory_.GetWeakPtr());
 
   // Update the view's contents to show the "Sending..." progress animation.
   gtk_widget_set_sensitive(cancel_, FALSE);

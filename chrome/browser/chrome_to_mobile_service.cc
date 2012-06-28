@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
@@ -227,11 +228,13 @@ void ChromeToMobileService::RequestMobileListUpdate() {
     RequestSearch();
 }
 
-void ChromeToMobileService::GenerateSnapshot(base::WeakPtr<Observer> observer) {
+void ChromeToMobileService::GenerateSnapshot(Browser* browser,
+                                             base::WeakPtr<Observer> observer) {
   // Callback SnapshotFileCreated from CreateSnapshotFile to continue.
   CreateSnapshotFileCallback callback =
       base::Bind(&ChromeToMobileService::SnapshotFileCreated,
-                 weak_ptr_factory_.GetWeakPtr(), observer);
+                 weak_ptr_factory_.GetWeakPtr(), observer,
+                 browser->session_id().id());
   // Create a temporary file via the blocking pool for snapshot storage.
   content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(&CreateSnapshotFile, callback));
@@ -239,14 +242,14 @@ void ChromeToMobileService::GenerateSnapshot(base::WeakPtr<Observer> observer) {
 
 void ChromeToMobileService::SendToMobile(const string16& mobile_id,
                                          const FilePath& snapshot,
+                                         Browser* browser,
                                          base::WeakPtr<Observer> observer) {
   LogMetric(SENDING_URL);
 
   DCHECK(!access_token_.empty());
   RequestData data;
   data.mobile_id = mobile_id;
-  content::WebContents* web_contents =
-      browser::FindLastActiveWithProfile(profile_)->GetActiveWebContents();
+  content::WebContents* web_contents = browser->GetActiveWebContents();
   data.url = web_contents->GetURL();
   data.title = web_contents->GetTitle();
   data.snapshot_path = snapshot;
@@ -326,14 +329,14 @@ void ChromeToMobileService::OnGetTokenFailure(
 
 void ChromeToMobileService::SnapshotFileCreated(
     base::WeakPtr<Observer> observer,
+    SessionID::id_type browser_id,
     const FilePath& path,
     bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Track the set of temporary files to be deleted later.
   snapshots_.insert(path);
 
-  // TODO(jam): This is bad and should be replaced with some sort of context.
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindBrowserWithID(browser_id);
   if (success && browser && browser->GetActiveWebContents()) {
     // Generate the snapshot and have the observer be called back on completion.
     browser->GetActiveWebContents()->GenerateMHTML(path,
@@ -472,14 +475,15 @@ void ChromeToMobileService::HandleSearchResponse() {
     }
     mobiles_ = mobiles.Pass();
 
-    if (!mobiles_.empty())
+    bool found = !mobiles_.empty();
+    if (found)
       LogMetric(DEVICES_AVAILABLE);
 
-    // TODO(jam): This is bad and should be replaced with some sort of context.
-    Browser* browser = browser::FindLastActiveWithProfile(profile_);
-    if (browser) {
-      browser->command_controller()->SendToMobileStateChanged(
-          !mobiles_.empty());
+    for (BrowserList::const_iterator i = BrowserList::begin();
+         i != BrowserList::end(); ++i) {
+      Browser* browser = *i;
+      if (browser->profile() == profile_)
+        browser->command_controller()->SendToMobileStateChanged(found);
     }
   }
 }

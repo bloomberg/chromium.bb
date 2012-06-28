@@ -15,7 +15,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
-class Profile;
+class Browser;
 
 namespace base {
 class DictionaryValue;
@@ -39,7 +39,7 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
  public:
   virtual ~ChromeToMobileBubbleView();
 
-  static void ShowBubble(views::View* anchor_view, Profile* profile);
+  static void ShowBubble(views::View* anchor_view, Browser* browser);
   static bool IsShowing();
   static void Hide();
 
@@ -63,7 +63,7 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   virtual void Init() OVERRIDE;
 
  private:
-  ChromeToMobileBubbleView(views::View* anchor_view, Profile* profile);
+  ChromeToMobileBubbleView(views::View* anchor_view, Browser* browser);
 
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);
@@ -75,6 +75,9 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   static ChromeToMobileBubbleView* bubble_;
 
   base::WeakPtrFactory<ChromeToMobileBubbleView> weak_ptr_factory_;
+
+  // The browser that opened this bubble.
+  Browser* browser_;
 
   // The Chrome To Mobile service associated with this bubble.
   ChromeToMobileService* service_;
