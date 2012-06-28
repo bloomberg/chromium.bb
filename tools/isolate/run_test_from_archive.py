@@ -296,8 +296,8 @@ class Profiler(object):
 
   def __exit__(self, _exc_type, _exec_value, _traceback):
     time_taken = time.time() - self.start_time
-    logging.debug('Profiling: Section %s took %i seconds',
-                  self.name, time_taken)
+    logging.info('Profiling: Section %s took %i seconds',
+                 self.name, time_taken)
 
 
 def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
