@@ -67,12 +67,6 @@ name=http://crbug.com/131304
 avcodec-54.dll!avpriv_vorbis_parse_reset
 avcodec-54.dll!avpriv_vorbis_parse_reset
 
-# prefetch of unaddressable memory
-WARNING
-name=http://crbug.com/134979
-avcodec-54.dll!avpriv_vorbis_parse_reset
-avcodec-54.dll!avpriv_vorbis_parse_reset
-
 ############################
 # TODO(timurrrr): investigate these
 UNADDRESSABLE ACCESS
@@ -247,6 +241,12 @@ WARNING
 name=prefetches in igdumd32.dll
 instruction=prefetch*
 igdumd32.dll!*
+
+# prefetch of unaddressable memory in ffmpeg
+WARNING
+name=http://crbug.com/134979 prefetches in ffmpeg
+instruction=prefetch*
+avcodec-*.dll!*
 
 UNADDRESSABLE ACCESS
 name=http://code.google.com/p/drmemory/issues/detail?id=582 bizarre cl-generated read-beyond-TOS
