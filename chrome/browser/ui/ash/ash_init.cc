@@ -35,7 +35,7 @@
 #endif
 
 
-namespace browser {
+namespace chrome {
 
 bool ShouldOpenAshOnStartup() {
 #if defined(OS_CHROMEOS)
@@ -105,4 +105,4 @@ void CloseAsh() {
     ash::Shell::DeleteInstance();
 }
 
-}  // namespace browser
+}  // namespace chrome

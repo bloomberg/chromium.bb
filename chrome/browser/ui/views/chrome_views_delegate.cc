@@ -168,7 +168,7 @@ views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
     views::NativeWidgetAura* native_widget) {
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
 #if defined(USE_ASH)
-  if (!browser::ShouldOpenAshOnStartup())
+  if (!chrome::ShouldOpenAshOnStartup())
 #endif
     return new views::DesktopNativeWidgetHelperAura(native_widget);
 #if defined(USE_ASH)

@@ -2497,7 +2497,7 @@ gfx::Size BrowserView::GetResizeCornerSize() const {
 
 void BrowserView::CreateLauncherIcon() {
 #if defined(USE_ASH)
-  if (browser::IsNativeWindowInAsh(GetNativeWindow()) &&
+  if (chrome::IsNativeWindowInAsh(GetNativeWindow()) &&
       !launcher_item_controller_.get()) {
     launcher_item_controller_.reset(
         BrowserLauncherItemController::Create(browser_.get()));

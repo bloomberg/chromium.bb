@@ -213,7 +213,7 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds) const {
 void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
 #if defined(USE_ASH)
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  if (browser::ShouldOpenAshOnStartup()) {
+  if (chrome::ShouldOpenAshOnStartup()) {
     GetDefaultWindowBoundsAsh(default_bounds);
     return;
   }
@@ -330,7 +330,7 @@ bool WindowSizer::GetBoundsIgnoringPreviousState(
     gfx::Rect* bounds) const {
 #if defined(USE_ASH)
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  if (browser::ShouldOpenAshOnStartup())
+  if (chrome::ShouldOpenAshOnStartup())
     return GetBoundsIgnoringPreviousStateAsh(specified_bounds, bounds);
 #endif
   return false;

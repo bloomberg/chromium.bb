@@ -7,13 +7,13 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace browser {
+namespace chrome {
 
 // Returns true if |native_view/native_window| exists within the Ash
 // environment.
 bool IsNativeViewInAsh(gfx::NativeView native_view);
 bool IsNativeWindowInAsh(gfx::NativeWindow native_window);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ASH_ASH_UTIL_H_

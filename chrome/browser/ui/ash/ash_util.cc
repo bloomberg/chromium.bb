@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ui/aura/root_window.h"
 
-namespace browser {
+namespace chrome {
 
 bool IsNativeViewInAsh(gfx::NativeView native_view) {
 #if defined(OS_CHROMEOS)
@@ -34,4 +34,4 @@ bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
   return IsNativeViewInAsh(native_window);
 }
 
-}  // namespace browser
+}  // namespace chrome

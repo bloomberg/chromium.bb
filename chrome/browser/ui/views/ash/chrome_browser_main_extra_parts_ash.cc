@@ -20,8 +20,8 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
-  if (browser::ShouldOpenAshOnStartup()) {
-    browser::OpenAsh();
+  if (chrome::ShouldOpenAshOnStartup()) {
+    chrome::OpenAsh();
   } else {
     aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
     stacking_client_.reset(new aura::DesktopStackingClient);
@@ -33,7 +33,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
-  browser::CloseAsh();
+  chrome::CloseAsh();
 }
 
 namespace browser {
