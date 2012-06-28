@@ -598,8 +598,12 @@ def _ExtractImportantEnvironment(output_of_set):
           # python here so that if it's not in the path when ninja is run
           # later, python will still be found.
           setting = os.path.dirname(sys.executable) + os.pathsep + setting
-        env[var] = setting
+        env[var.upper()] = setting
         break
+  for required in ('SYSTEMROOT', 'TEMP', 'TMP'):
+    if required not in env:
+      raise Exception('Environment variable "%s" '
+                      'required to be set to valid path' % required)
   return env
 
 def _FormatAsEnvironmentBlock(envvar_dict):
