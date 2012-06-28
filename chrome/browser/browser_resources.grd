@@ -91,6 +91,8 @@
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_SEARCH_HTML" file="resources\ntp_search\new_tab.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_SEARCH_THEME_CSS" file="resources\ntp_search\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
