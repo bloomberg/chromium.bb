@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
@@ -195,11 +196,11 @@ class ThroughputTest : public BrowserPerfTest {
   }
 
   void Wait(int ms) {
+    base::RunLoop run_loop;
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        MessageLoop::QuitClosure(),
+        FROM_HERE, run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(ms));
-    ui_test_utils::RunMessageLoop();
+    ui_test_utils::RunThisRunLoop(&run_loop);
   }
 
   // Take snapshot of the current tab, encode it as PNG, and save to a SkBitmap.
@@ -468,13 +469,7 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_TestURL) {
   RunTestWithURL(kAllowExternalDNS);
 }
 
-// crbug.com/124049
-#if defined(OS_MACOSX)
-#define MAYBE_Particles DISABLED_Particles
-#else
-#define MAYBE_Particles Particles
-#endif
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE_Particles) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, Particles) {
   RunTest("particles", kInternal);
 }
 
@@ -527,13 +522,7 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasTextSW) {
   RunTest("canvas2d_balls_text", kNone);
 }
 
-// crbug.com/124049
-#if defined(OS_MACOSX)
-#define MAYBE_CanvasTextGPU DISABLED_CanvasTextGPU
-#else
-#define MAYBE_CanvasTextGPU CanvasTextGPU
-#endif
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE_CanvasTextGPU) {
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasTextGPU) {
   RunTest("canvas2d_balls_text", kNone | kIsGpuCanvasTest);
 }
 

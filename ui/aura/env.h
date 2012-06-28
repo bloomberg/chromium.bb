@@ -68,9 +68,8 @@ class AURA_EXPORT Env {
   CursorManager* cursor_manager() { return &cursor_manager_; }
 
   // Returns the native event dispatcher. The result should only be passed to
-  // MessageLoopForUI::RunWithDispatcher() or
-  // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
-  // an event by |Dispatch(const NativeEvent&)| on it. It must never be stored.
+  // base::RunLoop(dispatcher), or used to dispatch an event by
+  // |Dispatch(const NativeEvent&)| on it. It must never be stored.
 #if !defined(OS_MACOSX)
   MessageLoop::Dispatcher* GetDispatcher();
 #endif

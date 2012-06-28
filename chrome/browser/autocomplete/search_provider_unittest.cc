@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/search_provider.h"
 
+#include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -178,13 +179,12 @@ void SearchProviderTest::RunTillProviderDone() {
     return;
 
   quit_when_done_ = true;
-#if defined(OS_MACOSX)
-  message_loop_.Run();
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Android doesn't have Run(), only Start().
   message_loop_.Start();
 #else
-  message_loop_.RunWithDispatcher(NULL);
+  base::RunLoop run_loop;
+  run_loop.Run();
 #endif
 }
 

@@ -5,6 +5,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
@@ -78,8 +79,10 @@ void AuraTestHelper::TearDown() {
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {
 #if !defined(OS_MACOSX)
-  message_loop_->RunAllPendingWithDispatcher(
-      Env::GetInstance()->GetDispatcher());
+  // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
+  //              use run_loop.QuitClosure().
+  base::RunLoop run_loop(Env::GetInstance()->GetDispatcher());
+  run_loop.RunUntilIdle();
 #endif
 }
 

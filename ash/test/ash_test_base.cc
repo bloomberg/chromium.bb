@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/run_loop.h"
 #include "base/string_split.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/env.h"
@@ -90,8 +91,9 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
 
 void AshTestBase::RunAllPendingInMessageLoop() {
 #if !defined(OS_MACOSX)
-  message_loop_.RunAllPendingWithDispatcher(
-      aura::Env::GetInstance()->GetDispatcher());
+  DCHECK(MessageLoopForUI::current() == &message_loop_);
+  base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
+  run_loop.RunUntilIdle();
 #endif
 }
 

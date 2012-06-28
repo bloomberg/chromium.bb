@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
@@ -35,6 +36,17 @@ using content::RenderViewHost;
 using content::WebContents;
 
 namespace {
+
+// Allow some pending tasks up to |num_deferrals| generations to complete.
+void DeferredQuitRunLoop(const base::Closure& quit_task,
+                         int num_quit_deferrals) {
+  if (num_quit_deferrals <= 0) {
+    quit_task.Run();
+  } else {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&DeferredQuitRunLoop, quit_task, num_quit_deferrals - 1));
+  }
+}
 
 // This callback just adds another callback to the event queue. This is useful
 // if you want to ensure that any callbacks added to the event queue after this
@@ -139,6 +151,11 @@ void AutomationProvider::WindowSimulateDrag(
     if (press_escape_en_route) {
       // Press Escape, making sure we wait until chrome processes the escape.
       // TODO(phajdan.jr): make this use ui_test_utils::SendKeyPressSync.
+      views::AcceleratorHandler handler;
+      base::RunLoop run_loop(&handler);
+      // Number of times to repost Quit task to allow pending tasks to complete.
+      // See kNumQuitDeferrals in ui_test_utils.cc for explanation.
+      int num_quit_deferrals = 10;
       ui_controls::SendKeyPressNotifyWhenDone(
           window, ui::VKEY_ESCAPE,
           ((flags & ui::EF_CONTROL_DOWN) ==
@@ -147,11 +164,11 @@ void AutomationProvider::WindowSimulateDrag(
            ui::EF_SHIFT_DOWN),
           ((flags & ui::EF_ALT_DOWN) == ui::EF_ALT_DOWN),
           false,
-          MessageLoop::QuitClosure());
+          base::Bind(&DeferredQuitRunLoop, run_loop.QuitClosure(),
+                     num_quit_deferrals));
       MessageLoopForUI* loop = MessageLoopForUI::current();
-      views::AcceleratorHandler handler;
       MessageLoop::ScopedNestableTaskAllower allow(loop);
-      loop->RunWithDispatcher(&handler);
+      run_loop.Run();
     }
     SendMessage(top_level_hwnd, up_message, wparam_flags,
                 MAKELPARAM(end.x, end.y));

@@ -18,6 +18,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/process_util.h"
 #include "base/time.h"
 #include "base/test/test_reg_util_win.h"

@@ -42,7 +42,7 @@ void TestWebDialogObserver::Observe(
       // If the message loop is running stop it.
       if (running_) {
         running_ = false;
-        MessageLoopForUI::current()->Quit();
+        message_loop_runner_->Quit();
       }
       break;
     default:
@@ -73,7 +73,8 @@ content::WebUI* TestWebDialogObserver::GetWebUI() {
   if (!done_) {
     EXPECT_FALSE(running_);
     running_ = true;
-    ui_test_utils::RunMessageLoop();
+    message_loop_runner_ = new ui_test_utils::MessageLoopRunner;
+    message_loop_runner_->Run();
   }
   return web_ui_;
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/user_data_dir_dialog_view.h"
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "grit/chromium_strings.h"
@@ -100,10 +101,12 @@ void UserDataDirDialogView::FileSelectionCanceled(void* params) {
 namespace browser {
 
 FilePath ShowUserDataDirDialog(const FilePath& user_data_dir) {
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
   // When the window closes, it will delete itself.
   UserDataDirDialogView* dialog = new UserDataDirDialogView(user_data_dir);
   views::Widget::CreateWindow(dialog)->Show();
-  MessageLoopForUI::current()->RunWithDispatcher(dialog);
+  base::RunLoop run_loop(dialog);
+  run_loop.Run();
   return dialog->user_data_dir();
 }
 

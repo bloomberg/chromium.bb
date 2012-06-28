@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -378,9 +379,11 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   DCHECK(GetBookmarkModel());
   if (GetBookmarkModel()->IsLoaded())
     return;
-  BookmarkLoadObserver observer;
+  base::RunLoop run_loop;
+  BookmarkLoadObserver observer(
+      ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
   GetBookmarkModel()->AddObserver(&observer);
-  MessageLoop::current()->Run();
+  run_loop.Run();
   GetBookmarkModel()->RemoveObserver(&observer);
   DCHECK(GetBookmarkModel()->IsLoaded());
 }

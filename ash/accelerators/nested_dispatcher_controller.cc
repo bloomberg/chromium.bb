@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_dispatcher.h"
 #include "ash/shell.h"
+#include "base/run_loop.h"
 
 namespace ash {
 
@@ -25,7 +26,10 @@ void NestedDispatcherController::RunWithDispatcher(
 
   AcceleratorDispatcher dispatcher(nested_dispatcher, associated_window);
 
-  loop->RunWithDispatcher(&dispatcher);
+  // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
+  //              use run_loop.QuitClosure().
+  base::RunLoop run_loop(&dispatcher);
+  run_loop.Run();
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
@@ -13,6 +14,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+namespace {
+
+// Allow some pending tasks up to |num_deferrals| generations to complete.
+void DeferredQuitRunLoop(const base::Closure& quit_task,
+                         int num_quit_deferrals) {
+  if (num_quit_deferrals <= 0) {
+    quit_task.Run();
+  } else {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&DeferredQuitRunLoop, quit_task, num_quit_deferrals - 1));
+  }
+}
+
+}  // namespace
 
 // This class observes |render_view_host| and calls OnJsInjectionReady() of
 // |js_injection_ready_observer| when the time is right to inject JavaScript
@@ -84,11 +100,14 @@ void TestNavigationObserver::WaitForObservation(
 }
 
 void TestNavigationObserver::Wait() {
+  base::RunLoop run_loop;
+  // Number of times to repost Quit task to allow pending tasks to complete. See
+  // kNumQuitDeferrals in ui_test_utils.cc for explanation.
+  const int num_quit_deferrals = 10;
   WaitForObservation(
-      base::Bind(&MessageLoop::Run,
-                 base::Unretained(MessageLoop::current())),
-      base::Bind(&MessageLoop::Quit,
-                 base::Unretained(MessageLoop::current())));
+      base::Bind(&base::RunLoop::Run, base::Unretained(&run_loop)),
+      base::Bind(&DeferredQuitRunLoop, run_loop.QuitClosure(),
+                 num_quit_deferrals));
 }
 
 TestNavigationObserver::TestNavigationObserver(
@@ -131,8 +150,10 @@ void TestNavigationObserver::Observe(
           ++navigations_completed_ == number_of_navigations_) {
         navigation_started_ = false;
         done_ = true;
-        if (running_)
+        if (running_) {
+          running_ = false;
           done_callback_.Run();
+        }
       }
       break;
     case NOTIFICATION_RENDER_VIEW_HOST_CREATED:

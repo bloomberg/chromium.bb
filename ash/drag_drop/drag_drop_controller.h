@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "base/callback.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -98,6 +99,9 @@ class ASH_EXPORT DragDropController
   // Indicates whether the caller should be blocked on a drag/drop session.
   // Only be used for tests.
   bool should_block_during_drag_drop_;
+
+  // Closure for quitting nested message loop.
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropController);
 };

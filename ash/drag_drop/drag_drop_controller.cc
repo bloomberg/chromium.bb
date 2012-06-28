@@ -7,6 +7,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/cursor_manager.h"
@@ -82,9 +83,11 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
+    base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
+    quit_closure_ = run_loop.QuitClosure();
     MessageLoopForUI* loop = MessageLoopForUI::current();
     MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-    loop->RunWithDispatcher(aura::Env::GetInstance()->GetDispatcher());
+    run_loop.Run();
   }
 #endif  // !defined(OS_MACOSX)
 
@@ -163,7 +166,7 @@ void DragDropController::Drop(aura::Window* target,
 
   Cleanup();
   if (should_block_during_drag_drop_)
-    MessageLoop::current()->QuitNow();
+    quit_closure_.Run();
 }
 
 void DragDropController::DragCancel() {
@@ -181,7 +184,7 @@ void DragDropController::DragCancel() {
   drag_operation_ = 0;
   StartCanceledAnimation();
   if (should_block_during_drag_drop_)
-    MessageLoop::current()->QuitNow();
+    quit_closure_.Run();
 }
 
 bool DragDropController::IsDragDropInProgress() {

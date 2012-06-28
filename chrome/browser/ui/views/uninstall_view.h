@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -25,7 +26,8 @@ class UninstallView : public views::ButtonListener,
                       public views::DialogDelegateView,
                       public ui::ComboboxModel {
  public:
-  explicit UninstallView(int* user_selection);
+  explicit UninstallView(int* user_selection,
+                         const base::Closure& quit_closure);
   virtual ~UninstallView();
 
   // Overridden form views::ButtonListener.
@@ -56,6 +58,7 @@ class UninstallView : public views::ButtonListener,
   typedef std::map<std::wstring, std::wstring> BrowsersMap;
   scoped_ptr<BrowsersMap> browsers_;
   int& user_selection_;
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UninstallView);
 };

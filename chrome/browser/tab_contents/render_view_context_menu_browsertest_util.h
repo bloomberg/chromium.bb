@@ -15,14 +15,7 @@ class RenderViewContextMenu;
 class ContextMenuNotificationObserver : public content::NotificationObserver {
  public:
   // Wait for a context menu to be shown, and then execute |command_to_execute|.
-  // As the context menu might spin a nested message loop, the usual way to wait
-  // for the result of the |command_to_execute|, i.e. running
-  // ui_test_utils::WindowedNotificationObserver::Wait, won't work. The
-  // ContextMenuNotificationObserver can work around this problem. In order to
-  // do so, you need to also specify what notification the
-  // WindowedNotificationObserver is waiting for.
-  ContextMenuNotificationObserver(int command_to_execute,
-                                  int expected_notification);
+  explicit ContextMenuNotificationObserver(int command_to_execute);
   virtual ~ContextMenuNotificationObserver();
 
  private:
@@ -34,8 +27,6 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
   int command_to_execute_;
-  int expected_notification_;
-  bool seen_expected_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuNotificationObserver);
 };

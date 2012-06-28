@@ -6,6 +6,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
+#include "base/run_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/dragdrop/drag_utils.h"
@@ -343,7 +344,8 @@ MenuItemView* MenuController::Run(Widget* parent,
   {
     MessageLoopForUI* loop = MessageLoopForUI::current();
     MessageLoop::ScopedNestableTaskAllower allow(loop);
-    loop->RunWithDispatcher(this);
+    base::RunLoop run_loop(this);
+    run_loop.Run();
   }
 #endif
   message_loop_depth_--;

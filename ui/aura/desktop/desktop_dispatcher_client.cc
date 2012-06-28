@@ -4,6 +4,8 @@
 
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 
+#include "base/run_loop.h"
+
 namespace aura {
 
 DesktopDispatcherClient::DesktopDispatcherClient() {}
@@ -24,7 +26,8 @@ void DesktopDispatcherClient::RunWithDispatcher(
 
   // DefaultAcceleratorDispatcher dispatcher(nested_dispatcher,
   //                                         associated_window);
-  loop->RunWithDispatcher(nested_dispatcher);
+  base::RunLoop run_loop(nested_dispatcher);
+  run_loop.Run();
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 

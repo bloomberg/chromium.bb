@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/web_dialogs/web_dialog_observer.h"
@@ -55,6 +56,7 @@ class TestWebDialogObserver : public content::NotificationObserver,
   content::WebUI* web_ui_;
   bool done_;
   bool running_;
+  scoped_refptr<ui_test_utils::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebDialogObserver);
 };

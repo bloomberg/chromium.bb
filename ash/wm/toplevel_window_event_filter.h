@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_move_client.h"
@@ -91,6 +92,8 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   int grid_size_;
 
   scoped_ptr<WindowResizer> window_resizer_;
+
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
 };

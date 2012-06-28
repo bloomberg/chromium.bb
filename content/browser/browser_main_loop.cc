@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_thread_impl.h"
@@ -634,16 +635,16 @@ void BrowserMainLoop::InitializeToolkit() {
 }
 
 void BrowserMainLoop::MainMessageLoopRun() {
-  if (parameters_.ui_task)
-    MessageLoopForUI::current()->PostTask(FROM_HERE, *parameters_.ui_task);
-
-#if defined(OS_MACOSX)
-  MessageLoopForUI::current()->Run();
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Android's main message loop is the Java message loop.
   NOTREACHED();
 #else
-  MessageLoopForUI::current()->RunWithDispatcher(NULL);
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+  if (parameters_.ui_task)
+    MessageLoopForUI::current()->PostTask(FROM_HERE, *parameters_.ui_task);
+
+  base::RunLoop run_loop;
+  run_loop.Run();
 #endif
 }
 

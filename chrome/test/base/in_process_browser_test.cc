@@ -374,6 +374,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   autorelease_pool_->Recycle();
 #endif
 
+  // Sometimes tests leave Quit tasks in the MessageLoop (for shame), so let's
+  // run all pending messages here to avoid preempting the QuitBrowsers tasks.
+  // TODO(jbates) Once crbug.com/134753 is fixed, this can be removed because it
+  // will not be possible to post Quit tasks.
+  ui_test_utils::RunAllPendingInMessageLoop();
+
   QuitBrowsers();
   CHECK(BrowserList::empty());
 }

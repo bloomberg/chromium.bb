@@ -255,8 +255,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickTargetBlankOrigin) {
 // Context menu, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuOrigin) {
   ContextMenuNotificationObserver context_menu_observer(
-      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-      chrome::NOTIFICATION_TAB_ADDED);
+      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest("origin", false, false, false, true,
                   WebKit::WebMouseEvent::ButtonRight,
                   EXPECT_ORIGIN_AS_REFERRER);
@@ -265,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuOrigin) {
 // Context menu, from HTTPS to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_HttpsContextMenuOrigin) {
   ContextMenuNotificationObserver context_menu_observer(
-      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-      chrome::NOTIFICATION_TAB_ADDED);
+      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest("origin", true, false, false, true,
                   WebKit::WebMouseEvent::ButtonRight,
                   EXPECT_ORIGIN_AS_REFERRER);
@@ -352,8 +350,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 // Context menu, from HTTP to HTTP via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuRedirect) {
   ContextMenuNotificationObserver context_menu_observer(
-      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-      chrome::NOTIFICATION_TAB_ADDED);
+      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest("origin", false, false, true, true,
                   WebKit::WebMouseEvent::ButtonRight,
                   EXPECT_ORIGIN_AS_REFERRER);
@@ -362,8 +359,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_ContextMenuRedirect) {
 // Context menu, from HTTPS to HTTP via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_HttpsContextMenuRedirect) {
   ContextMenuNotificationObserver context_menu_observer(
-      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-      chrome::NOTIFICATION_TAB_ADDED);
+      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   RunReferrerTest("origin", true, false, true, true,
                   WebKit::WebMouseEvent::ButtonRight,
                   EXPECT_ORIGIN_AS_REFERRER);

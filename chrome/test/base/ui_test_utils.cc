@@ -93,6 +93,17 @@ using content::WebContents;
 
 static const int kDefaultWsPort = 8880;
 
+// Number of times to repost a Quit task so that the MessageLoop finishes up
+// pending tasks and tasks posted by those pending tasks without risking the
+// potential hang behavior of MessageLoop::QuitWhenIdle.
+// The criteria for choosing this number: it should be high enough to make the
+// quit act like QuitWhenIdle, while taking into account that any page which is
+// animating may be rendering another frame for each quit deferral. For an
+// animating page, the potential delay to quitting the RunLoop would be
+// kNumQuitDeferrals * frame_render_time. Some perf tests run slow, such as
+// 200ms/frame.
+static const int kNumQuitDeferrals = 10;
+
 namespace ui_test_utils {
 
 namespace {
@@ -106,7 +117,8 @@ class DOMOperationObserver : public content::NotificationObserver,
         did_respond_(false) {
     registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));
-    ui_test_utils::RunMessageLoop();
+    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_->Run();
   }
 
   virtual void Observe(int type,
@@ -116,12 +128,12 @@ class DOMOperationObserver : public content::NotificationObserver,
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
     response_ = dom_op_details->json;
     did_respond_ = true;
-    MessageLoopForUI::current()->Quit();
+    message_loop_runner_->Quit();
   }
 
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
-    MessageLoopForUI::current()->Quit();
+    message_loop_runner_->Quit();
   }
 
   bool GetResponse(std::string* response) WARN_UNUSED_RESULT {
@@ -133,6 +145,7 @@ class DOMOperationObserver : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   std::string response_;
   bool did_respond_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMOperationObserver);
 };
@@ -147,7 +160,8 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
         parent_tab->find_tab_helper()->current_find_request_id();
     registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
                    content::Source<WebContents>(parent_tab_->web_contents()));
-    ui_test_utils::RunMessageLoop();
+    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_->Run();
   }
 
   int active_match_ordinal() const { return active_match_ordinal_; }
@@ -165,7 +179,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
           active_match_ordinal_ = find_details->active_match_ordinal();
         if (find_details->final_update()) {
           number_of_matches_ = find_details->number_of_matches();
-          MessageLoopForUI::current()->Quit();
+          message_loop_runner_->Quit();
         } else {
           DVLOG(1) << "Ignoring, since we only care about the final message";
         }
@@ -185,6 +199,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   // The id of the current find request, obtained from WebContents. Allows us
   // to monitor when the search completes.
   int current_find_request_id_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
@@ -263,39 +278,52 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   return true;
 }
 
-void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id) {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id,
+                                     const base::Closure& quit_task) {
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   MessageLoop::QuitWhenIdleClosure());
   RunMessageLoop();
-  content::BrowserThread::PostTask(thread_id, FROM_HERE,
-                                   MessageLoop::QuitClosure());
+  content::BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
 }
 
 }  // namespace
 
 void RunMessageLoop() {
-  MessageLoop* loop = MessageLoop::current();
-  MessageLoopForUI* ui_loop =
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ?
-          MessageLoopForUI::current() : NULL;
-  MessageLoop::ScopedNestableTaskAllower allow(loop);
-  if (ui_loop) {
-#if defined(USE_AURA)
-    ui_loop->Run();
-#elif defined(TOOLKIT_VIEWS)
-    views::AcceleratorHandler handler;
-    ui_loop->RunWithDispatcher(&handler);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    ui_loop->RunWithDispatcher(NULL);
-#else
-    ui_loop->Run();
+  base::RunLoop run_loop;
+  RunThisRunLoop(&run_loop);
+}
+
+void RunThisRunLoop(base::RunLoop* run_loop) {
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
+  scoped_ptr<views::AcceleratorHandler> handler;
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    handler.reset(new views::AcceleratorHandler);
+    run_loop->set_dispatcher(handler.get());
+  }
 #endif
+  run_loop->Run();
+}
+
+// TODO(jbates) move this to a new test_utils.cc in content/test/
+static void DeferredQuitRunLoop(const base::Closure& quit_task,
+                                int num_quit_deferrals) {
+  if (num_quit_deferrals <= 0) {
+    quit_task.Run();
   } else {
-    loop->Run();
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&DeferredQuitRunLoop, quit_task, num_quit_deferrals - 1));
   }
 }
 
+base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {
+  return base::Bind(&DeferredQuitRunLoop, run_loop->QuitClosure(),
+                    kNumQuitDeferrals);
+}
+
 void RunAllPendingInMessageLoop() {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   MessageLoop::QuitWhenIdleClosure());
   ui_test_utils::RunMessageLoop();
 }
 
@@ -309,10 +337,12 @@ void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
     NOTREACHED();
     return;
   }
-  content::BrowserThread::PostTask(thread_id, FROM_HERE,
-      base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id));
 
-  ui_test_utils::RunMessageLoop();
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTask(thread_id, FROM_HERE,
+      base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id,
+                 run_loop.QuitClosure()));
+  ui_test_utils::RunThisRunLoop(&run_loop);
 }
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
@@ -331,10 +361,10 @@ void WaitForNavigations(NavigationController* controller,
   content::TestNavigationObserver observer(
       content::Source<NavigationController>(controller), NULL,
       number_of_navigations);
+  base::RunLoop run_loop;
   observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunMessageLoop),
-      base::Bind(&MessageLoop::Quit,
-                 base::Unretained(MessageLoopForUI::current())));
+      base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),
+      ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
 }
 
 void WaitForNewTab(Browser* browser) {
@@ -377,11 +407,10 @@ void NavigateToURL(browser::NavigateParams* params) {
   content::TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);
   browser::Navigate(params);
+  base::RunLoop run_loop;
   observer.WaitForObservation(
-      base::Bind(&ui_test_utils::RunMessageLoop),
-      base::Bind(&MessageLoop::Quit,
-                 base::Unretained(MessageLoopForUI::current())));
-
+      base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),
+      ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {
@@ -451,10 +480,10 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     web_contents = browser->GetActiveWebContents();
   }
   if (disposition == CURRENT_TAB) {
+    base::RunLoop run_loop;
     same_tab_observer.WaitForObservation(
-        base::Bind(&ui_test_utils::RunMessageLoop),
-        base::Bind(&MessageLoop::Quit,
-                   base::Unretained(MessageLoopForUI::current())));
+        base::Bind(&ui_test_utils::RunThisRunLoop, base::Unretained(&run_loop)),
+        ui_test_utils::GetQuitTaskForRunLoop(&run_loop));
     return;
   } else if (web_contents) {
     NavigationController* controller = &web_contents->GetController();
@@ -704,9 +733,10 @@ void RegisterAndWait(content::NotificationObserver* observer,
 void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   if (model->IsLoaded())
     return;
-  BookmarkLoadObserver observer;
+  base::RunLoop run_loop;
+  BookmarkLoadObserver observer(GetQuitTaskForRunLoop(&run_loop));
   model->AddObserver(&observer);
-  RunMessageLoop();
+  RunThisRunLoop(&run_loop);
   model->RemoveObserver(&observer);
   ASSERT_TRUE(model->IsLoaded());
 }
@@ -764,14 +794,14 @@ bool SendKeyPressSync(const Browser* browser,
   gfx::NativeWindow window = NULL;
   if (!GetNativeWindow(browser, &window))
     return false;
-
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   bool result;
   result = ui_controls::SendKeyPressNotifyWhenDone(
-      window, key, control, shift, alt, command, MessageLoop::QuitClosure());
+      window, key, control, shift, alt, command, runner->QuitClosure());
 #if defined(OS_WIN)
   if (!result && BringBrowserWindowToFront(browser)) {
     result = ui_controls::SendKeyPressNotifyWhenDone(
-        window, key, control, shift, alt, command, MessageLoop::QuitClosure());
+        window, key, control, shift, alt, command, runner->QuitClosure());
   }
 #endif
   if (!result) {
@@ -782,7 +812,7 @@ bool SendKeyPressSync(const Browser* browser,
   // Run the message loop. It'll stop running when either the key was received
   // or the test timed out (in which case testing::Test::HasFatalFailure should
   // be set).
-  RunMessageLoop();
+  runner->Run();
   return !testing::Test::HasFatalFailure();
 }
 
@@ -804,51 +834,41 @@ bool SendKeyPressAndWait(const Browser* browser,
 }
 
 bool SendMouseMoveSync(const gfx::Point& location) {
-  if (!ui_controls::SendMouseMoveNotifyWhenDone(location.x(), location.y(),
-                                                MessageLoop::QuitClosure())) {
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  if (!ui_controls::SendMouseMoveNotifyWhenDone(
+          location.x(), location.y(), runner->QuitClosure())) {
     return false;
   }
-  RunMessageLoop();
+  runner->Run();
   return !testing::Test::HasFatalFailure();
 }
 
 bool SendMouseEventsSync(ui_controls::MouseButton type, int state) {
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   if (!ui_controls::SendMouseEventsNotifyWhenDone(
-          type, state, MessageLoop::QuitClosure())) {
+          type, state, runner->QuitClosure())) {
     return false;
   }
-  RunMessageLoop();
+  runner->Run();
   return !testing::Test::HasFatalFailure();
 }
 
-TimedMessageLoopRunner::TimedMessageLoopRunner()
-    : loop_(new MessageLoopForUI()),
-      owned_(true),
-      quit_loop_invoked_(false) {
+MessageLoopRunner::MessageLoopRunner() {
 }
 
-TimedMessageLoopRunner::~TimedMessageLoopRunner() {
-  if (owned_)
-    delete loop_;
+MessageLoopRunner::~MessageLoopRunner() {
 }
 
-void TimedMessageLoopRunner::RunFor(int ms) {
-  QuitAfter(ms);
-  quit_loop_invoked_ = false;
-  loop_->Run();
+void MessageLoopRunner::Run() {
+  ui_test_utils::RunThisRunLoop(&run_loop_);
 }
 
-void TimedMessageLoopRunner::Quit() {
-  quit_loop_invoked_ = true;
-  loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+base::Closure MessageLoopRunner::QuitClosure() {
+  return base::Bind(&MessageLoopRunner::Quit, this);
 }
 
-void TimedMessageLoopRunner::QuitAfter(int ms) {
-  quit_loop_invoked_ = true;
-  loop_->PostDelayedTask(
-      FROM_HERE,
-      MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(ms));
+void MessageLoopRunner::Quit() {
+  ui_test_utils::GetQuitTaskForRunLoop(&run_loop_).Run();
 }
 
 TestWebSocketServer::TestWebSocketServer()
@@ -1013,7 +1033,8 @@ void WindowedNotificationObserver::Wait() {
     return;
 
   running_ = true;
-  ui_test_utils::RunMessageLoop();
+  message_loop_runner_ = new MessageLoopRunner;
+  message_loop_runner_->Run();
   EXPECT_TRUE(seen_);
 }
 
@@ -1027,7 +1048,7 @@ void WindowedNotificationObserver::Observe(
   if (!running_)
     return;
 
-  MessageLoopForUI::current()->Quit();
+  message_loop_runner_->Quit();
   running_ = false;
 }
 
@@ -1078,7 +1099,8 @@ const string16& TitleWatcher::WaitAndGetTitle() {
   if (expected_title_observed_)
     return observed_title_;
   quit_loop_on_observation_ = true;
-  ui_test_utils::RunMessageLoop();
+  message_loop_runner_ = new MessageLoopRunner;
+  message_loop_runner_->Run();
   return observed_title_;
 }
 
@@ -1104,8 +1126,11 @@ void TitleWatcher::Observe(int type,
     return;
   observed_title_ = *it;
   expected_title_observed_ = true;
-  if (quit_loop_on_observation_)
-    MessageLoopForUI::current()->Quit();
+  if (quit_loop_on_observation_) {
+    // Only call Quit once, on first Observe:
+    quit_loop_on_observation_ = false;
+    message_loop_runner_->Quit();
+  }
 }
 
 BrowserAddedObserver::BrowserAddedObserver()
@@ -1140,7 +1165,7 @@ void DOMMessageQueue::Observe(int type,
   message_queue_.push(dom_op_details->json);
   if (waiting_for_message_) {
     waiting_for_message_ = false;
-    MessageLoopForUI::current()->Quit();
+    message_loop_runner_->Quit();
   }
 }
 
@@ -1152,7 +1177,8 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   if (message_queue_.empty()) {
     waiting_for_message_ = true;
     // This will be quit when a new message comes in.
-    RunMessageLoop();
+    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_->Run();
   }
   // The queue should not be empty, unless we were quit because of a timeout.
   if (message_queue_.empty())
@@ -1180,7 +1206,8 @@ class SnapshotTaker {
         base::Bind(&SnapshotTaker::OnSnapshotTaken, base::Unretained(this)),
         page_size,
         desired_size);
-    ui_test_utils::RunMessageLoop();
+    message_loop_runner_ = new MessageLoopRunner;
+    message_loop_runner_->Run();
     return snapshot_taken_;
   }
 
@@ -1215,13 +1242,14 @@ class SnapshotTaker {
   void OnSnapshotTaken(const SkBitmap& bitmap) {
     *bitmap_ = bitmap;
     snapshot_taken_ = true;
-    MessageLoop::current()->Quit();
+    message_loop_runner_->Quit();
   }
 
   SkBitmap* bitmap_;
   // Whether the snapshot was actually taken and received by this SnapshotTaker.
   // This will be false if the test times out.
   bool snapshot_taken_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotTaker);
 };
@@ -1247,9 +1275,9 @@ void OverrideGeolocation(double latitude, double longitude) {
   position.altitude = 0.;
   position.accuracy = 0.;
   position.timestamp = base::Time::Now();
-  content::OverrideLocationForTesting(position,
-                                      base::Bind(MessageLoop::QuitClosure()));
-  RunMessageLoop();
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  content::OverrideLocationForTesting(position, runner->QuitClosure());
+  runner->Run();
 }
 
 namespace internal {

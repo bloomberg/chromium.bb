@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
@@ -23,19 +24,21 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
-UninstallView::UninstallView(int* user_selection)
+UninstallView::UninstallView(int* user_selection,
+                             const base::Closure& quit_closure)
     : confirm_label_(NULL),
       delete_profile_(NULL),
       change_default_browser_(NULL),
       browsers_combo_(NULL),
       browsers_(NULL),
-      user_selection_(*user_selection) {
+      user_selection_(*user_selection),
+      quit_closure_(quit_closure) {
   SetupControls();
 }
 
 UninstallView::~UninstallView() {
   // Exit the message loop we were started with so that uninstall can continue.
-  MessageLoop::current()->Quit();
+  quit_closure_.Run();
 }
 
 void UninstallView::SetupControls() {
@@ -164,10 +167,13 @@ string16 UninstallView::GetItemAt(int index) {
 namespace browser {
 
 int ShowUninstallBrowserPrompt() {
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
   int result = content::RESULT_CODE_NORMAL_EXIT;
-  views::Widget::CreateWindow(new UninstallView(&result))->Show();
   views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  base::RunLoop run_loop(&accelerator_handler);
+  UninstallView* view = new UninstallView(&result, run_loop.QuitClosure());
+  views::Widget::CreateWindow(view)->Show();
+  run_loop.Run();
   return result;
 }
 

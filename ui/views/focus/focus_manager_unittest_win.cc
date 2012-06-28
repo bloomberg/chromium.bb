@@ -4,6 +4,8 @@
 
 #include "ui/views/focus/focus_manager.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/focus/accelerator_handler.h"
@@ -215,8 +217,8 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyDown(ui::VKEY_9);
   PostKeyUp(ui::VKEY_9);
   AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop(&accelerator_handler));
+  run_loop->RunUntilIdle();
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(1U, mtv->keys_pressed().size());
   EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[0]);
@@ -234,8 +236,8 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(ui::VKEY_9);
   PostKeyUp(ui::VKEY_7);
   PostKeyUp(ui::VKEY_8);
-  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  run_loop.reset(new base::RunLoop(&accelerator_handler));
+  run_loop->RunUntilIdle();
   // Make sure we get a key-up and key-down.
   ASSERT_EQ(5U, mtv->keys_pressed().size());
   EXPECT_EQ(ui::VKEY_9, mtv->keys_pressed()[0]);
@@ -253,8 +255,8 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   // Now send an accelerator key sequence.
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_0);
-  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  run_loop.reset(new base::RunLoop(&accelerator_handler));
+  run_loop->RunUntilIdle();
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
   EXPECT_TRUE(mtv->accelerator_pressed());
@@ -268,8 +270,8 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyDown(ui::VKEY_0);
   PostKeyUp(ui::VKEY_1);
   PostKeyUp(ui::VKEY_0);
-  MessageLoopForUI::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  run_loop.reset(new base::RunLoop(&accelerator_handler));
+  run_loop->RunUntilIdle();
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
   EXPECT_TRUE(mtv->accelerator_pressed());

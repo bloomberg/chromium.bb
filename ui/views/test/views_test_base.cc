@@ -4,6 +4,8 @@
 
 #include "ui/views/test/views_test_base.h"
 
+#include "base/run_loop.h"
+
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_helper.h"
@@ -47,12 +49,11 @@ void ViewsTestBase::TearDown() {
 }
 
 void ViewsTestBase::RunPendingMessages() {
+  base::RunLoop run_loop;
 #if defined(USE_AURA)
-  message_loop_.RunAllPendingWithDispatcher(
-      aura::Env::GetInstance()->GetDispatcher());
-#else
-  message_loop_.RunAllPending();
+  run_loop.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
 #endif
+  run_loop.RunUntilIdle();
 }
 
 }  // namespace views

@@ -12,6 +12,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -98,7 +99,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
                        DRAG_COMPLETE : DRAG_REVERT,
                    event->flags());
       if (in_move_loop_) {
-        MessageLoop::current()->Quit();
+        quit_closure_.Run();
         in_move_loop_ = false;
       }
       // Completing the drag may result in hiding the window. If this happens
@@ -154,7 +155,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
         return ui::GESTURE_STATUS_UNKNOWN;
       CompleteDrag(DRAG_COMPLETE, event->flags());
       if (in_move_loop_) {
-        MessageLoop::current()->Quit();
+        quit_closure_.Run();
         in_move_loop_ = false;
       }
       in_gesture_resize_ = false;
@@ -220,7 +221,9 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
 #if !defined(OS_MACOSX)
   MessageLoopForUI* loop = MessageLoopForUI::current();
   MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-  loop->RunWithDispatcher(aura::Env::GetInstance()->GetDispatcher());
+  base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
 #endif  // !defined(OS_MACOSX)
   in_gesture_resize_ = in_move_loop_ = false;
 }
@@ -234,7 +237,7 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
     window_resizer_->RevertDrag();
     window_resizer_.reset();
   }
-  MessageLoopForUI::current()->Quit();
+  quit_closure_.Run();
 }
 
 // static

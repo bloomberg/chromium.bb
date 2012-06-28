@@ -101,8 +101,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        MAYBE_RealMenu) {
   ContextMenuNotificationObserver menu_observer(
-      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-      chrome::NOTIFICATION_TAB_ADDED);
+      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
       content::NotificationService::AllSources());
 

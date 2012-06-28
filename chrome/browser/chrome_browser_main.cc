@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/process_info.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
@@ -1900,16 +1901,14 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // UI thread message loop as possible to get a stable measurement
   // across versions.
   RecordBrowserStartupTime();
-#if defined(USE_AURA)
-  MessageLoopForUI::current()->Run();
-#elif defined(TOOLKIT_VIEWS)
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+#if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
-#elif defined(USE_X11)
-  MessageLoopForUI::current()->RunWithDispatcher(NULL);
-#elif defined(OS_POSIX)
-  MessageLoopForUI::current()->Run();
+  base::RunLoop run_loop(&accelerator_handler);
+#else
+  base::RunLoop run_loop;
 #endif
+  run_loop.Run();
 
   return true;
 }

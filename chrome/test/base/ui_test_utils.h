@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
 #include "base/process.h"
+#include "base/run_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -95,6 +95,13 @@ enum BrowserTestWaitFlags {
 // to what they were originally. Prefer this over MessageLoop::Run for in
 // process browser tests that need to block until a condition is met.
 void RunMessageLoop();
+
+// Variant of RunMessageLoop that takes RunLoop.
+void RunThisRunLoop(base::RunLoop* run_loop);
+
+// Get task to quit the given RunLoop. It allows a few generations of pending
+// tasks to run as opposed to run_loop->QuitClosure().
+base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
 
 // Turns on nestable tasks, runs all pending tasks in the message loop,
 // then resets nestable tasks to what they were originally. Prefer this
@@ -300,37 +307,34 @@ bool SendMouseMoveSync(const gfx::Point& location) WARN_UNUSED_RESULT;
 bool SendMouseEventsSync(ui_controls::MouseButton type,
                          int state) WARN_UNUSED_RESULT;
 
-// Run a message loop only for the specified amount of time.
-class TimedMessageLoopRunner {
+// Helper class to Run and Quit the message loop. Run and Quit can only happen
+// once per instance. Make a new instance for each use. Calling Quit after Run
+// has returned is safe and has no effect.
+class MessageLoopRunner
+    : public base::RefCounted<MessageLoopRunner> {
  public:
-  // Create new MessageLoopForUI and attach to it.
-  TimedMessageLoopRunner();
+  MessageLoopRunner();
 
-  // Attach to an existing message loop.
-  explicit TimedMessageLoopRunner(MessageLoop* loop)
-      : loop_(loop), owned_(false), quit_loop_invoked_(false) {}
+  // Run the current MessageLoop.
+  void Run();
 
-  ~TimedMessageLoopRunner();
-
-  // Run the message loop for ms milliseconds.
-  void RunFor(int ms);
-
-  // Post Quit task to the message loop.
+  // Quit the matching call to Run (nested MessageLoops are unaffected).
   void Quit();
 
-  // Post delayed Quit task to the message loop.
-  void QuitAfter(int ms);
-
-  bool WasTimedOut() const {
-    return !quit_loop_invoked_;
-  }
+  // Hand this closure off to code that uses callbacks to notify completion.
+  // Example:
+  //   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+  //   kick_off_some_api(runner.QuitNowClosure());
+  //   runner.Run();
+  base::Closure QuitClosure();
 
  private:
-  MessageLoop* loop_;
-  bool owned_;
-  bool quit_loop_invoked_;
+  friend class base::RefCounted<MessageLoopRunner>;
+  ~MessageLoopRunner();
 
-  DISALLOW_COPY_AND_ASSIGN(TimedMessageLoopRunner);
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageLoopRunner);
 };
 
 // This is a utility class for running a python websocket server
@@ -445,6 +449,7 @@ class WindowedNotificationObserver : public content::NotificationObserver {
 
   content::NotificationSource source_;
   content::NotificationDetails details_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
 };
@@ -538,6 +543,7 @@ class TitleWatcher : public content::NotificationObserver {
   content::WebContents* web_contents_;
   std::vector<string16> expected_titles_;
   content::NotificationRegistrar notification_registrar_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   // The most recently observed expected title, if any.
   string16 observed_title_;
@@ -637,6 +643,7 @@ class DOMMessageQueue : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   std::queue<std::string> message_queue_;
   bool waiting_for_message_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
 };

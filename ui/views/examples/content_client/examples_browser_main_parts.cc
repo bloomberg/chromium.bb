@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -77,10 +78,11 @@ bool ExamplesBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // xxx: Hax here because this kills event handling.
 #if !defined(USE_AURA)
   views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  base::RunLoop run_loop(&accelerator_handler);
 #else
-  MessageLoopForUI::current()->Run();
+  base::RunLoop run_loop;
 #endif
+  run_loop.Run();
   return true;
 }
 
