@@ -118,6 +118,49 @@ struct type_name connector_type_names[] = {
 
 type_name_fn(connector_type)
 
+#define bit_name_fn(res)					\
+char * res##_str(int type) {					\
+	int i;							\
+	const char *sep = "";					\
+	for (i = 0; i < ARRAY_SIZE(res##_names); i++) {		\
+		if (type & (1 << i)) {				\
+			printf("%s%s", sep, res##_names[i]);	\
+			sep = ", ";				\
+		}						\
+	}							\
+}
+
+static const char *mode_type_names[] = {
+	"builtin",
+	"clock_c",
+	"crtc_c",
+	"preferred",
+	"default",
+	"userdef",
+	"driver",
+};
+
+bit_name_fn(mode_type)
+
+static const char *mode_flag_names[] = {
+	"phsync",
+	"nhsync",
+	"pvsync",
+	"nvsync",
+	"interlace",
+	"dblscan",
+	"csync",
+	"pcsync",
+	"ncsync",
+	"hskew",
+	"bcast",
+	"pixmux",
+	"dblclk",
+	"clkdiv2"
+};
+
+bit_name_fn(mode_flag)
+
 void dump_encoders(void)
 {
 	drmModeEncoder *encoder;
@@ -146,7 +189,7 @@ void dump_encoders(void)
 
 void dump_mode(drmModeModeInfo *mode)
 {
-	printf("\t%s %d %d %d %d %d %d %d %d %d\n",
+	printf("  %s %d %d %d %d %d %d %d %d %d",
 	       mode->name,
 	       mode->vrefresh,
 	       mode->hdisplay,
@@ -157,6 +200,12 @@ void dump_mode(drmModeModeInfo *mode)
 	       mode->vsync_start,
 	       mode->vsync_end,
 	       mode->vtotal);
+
+	printf(" flags: ");
+	mode_flag_str(mode->flags);
+	printf("; type: ");
+	mode_type_str(mode->type);
+	printf("\n");
 }
 
 static void
