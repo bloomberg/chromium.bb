@@ -62,8 +62,10 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
   else
     waiting_for_wallpaper_load_ = false;
 
-  registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-                 content::NotificationService::AllSources());
+  if (waiting_for_wallpaper_load_) {
+    registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+                   content::NotificationService::AllSources());
+  }
 }
 
 WebUILoginDisplayHost::~WebUILoginDisplayHost() {
@@ -165,7 +167,8 @@ void WebUILoginDisplayHost::Observe(
   BaseLoginDisplayHost::Observe(type, source, details);
   if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
     is_wallpaper_loaded_ = true;
-    StartPostponedWebUI();
+    if (waiting_for_wallpaper_load_)
+      StartPostponedWebUI();
     registrar_.Remove(this,
                       chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                       content::NotificationService::AllSources());
