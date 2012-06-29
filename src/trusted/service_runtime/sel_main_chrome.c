@@ -280,8 +280,22 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
     goto done;
   }
 
-  /* Load the integrated runtime (IRT) library. */
-  NaClLoadIrt(nap, args->irt_fd);
+  /*
+   * Load the integrated runtime (IRT) library.
+   * We check if there is a segment gap before trying to load the IRT.  This
+   * is to support IRT-less / segment-gap-free PNaCl translator nexes.
+   * TODO(mseaborn): Plumb through a flag from Chrome in such cases,
+   * instead of looking for the absence of a segment gap, when the nexe does
+   * not follow NaCl's stable ABI.
+   */
+  if (NULL != nap->text_shm) {
+    NaClLoadIrt(nap, args->irt_fd);
+  } else {
+    NaClLog(
+        LOG_WARNING,
+        "Main executable has no segment gap; skipping loading IRT library. "
+        "This is expected for PNaCl's translator nexes.\n");
+  }
 
   NaClEnvCleanserCtor(&env_cleanser, 1);
   if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
