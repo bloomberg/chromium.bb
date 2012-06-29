@@ -462,8 +462,8 @@ void GDataFileSystemProxy::CreateWritableSnapshotFile(
 }
 
 GDataFileSystemProxy::~GDataFileSystemProxy() {
-  // Should be deleted from the CrosMountPointProvider on IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Should be deleted from the CrosMountPointProvider on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 // static.
