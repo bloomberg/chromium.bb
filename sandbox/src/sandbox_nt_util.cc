@@ -72,12 +72,25 @@ void* AllocateNearTo(void* source, size_t size) {
 void* AllocateNearTo(void* source, size_t size) {
   using sandbox::g_nt;
   UNREFERENCED_PARAMETER(source);
-  void* base = 0;
-  SIZE_T actual_size = size;
-  ULONG_PTR zero_bits = 0;  // Not the correct type if used.
-  NTSTATUS ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base,
-                                            zero_bits, &actual_size,
-                                            MEM_COMMIT, PAGE_READWRITE);
+
+  // In 32-bit processes allocations below 512k are predictable, so mark
+  // anything in that range as reserved and retry until we get a good address.
+  const void* const kMinAddress = reinterpret_cast<void*>(512 * 1024);
+  NTSTATUS ret;
+  SIZE_T actual_size;
+  void* base;
+  do {
+    base = NULL;
+    actual_size = 64 * 1024;
+    ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base, 0, &actual_size,
+                                     MEM_RESERVE, PAGE_NOACCESS);
+    if (!NT_SUCCESS(ret))
+      return NULL;
+  } while (base < kMinAddress);
+
+  actual_size = size;
+  ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base, 0, &actual_size,
+                                   MEM_COMMIT, PAGE_READWRITE);
   if (!NT_SUCCESS(ret))
     return NULL;
   return base;
