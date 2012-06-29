@@ -1,0 +1,11 @@
+{
+  "name": "downloads incognito split apitest",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "downloads incognito split apitest",
+  "incognito": "split",
+  "permissions": [
+    "http://*/*",
+    "file://*"
+  ]
+}

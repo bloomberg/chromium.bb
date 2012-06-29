@@ -37,9 +37,11 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -913,29 +915,19 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
   SendResponse(error_.empty());
 }
 
-ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
+ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
+    Profile* profile,
+    DownloadManager* manager)
   : profile_(profile),
-    manager_(NULL) {
+    manager_(manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  // Register a callback with the DownloadService for this profile to be called
-  // when it creates the DownloadManager, or now if the manager already exists.
-  DownloadServiceFactory::GetForProfile(profile)->OnManagerCreated(base::Bind(
-      &ExtensionDownloadsEventRouter::Init, base::Unretained(this)));
-}
-
-// The only public methods on this class are ModelChanged() and
-// ManagerGoingDown(), and they are only called by DownloadManager, so
-// there's no way for any methods on this class to be called before
-// DownloadService calls Init() via the OnManagerCreated Callback above.
-void ExtensionDownloadsEventRouter::Init(DownloadManager* manager) {
-  DCHECK(manager_ == NULL);
-  manager_ = manager;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(manager_);
   manager_->AddObserver(this);
 }
 
 ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (manager_ != NULL)
     manager_->RemoveObserver(this);
   for (ItemMap::const_iterator iter = downloads_.begin();
@@ -958,8 +950,7 @@ ExtensionDownloadsEventRouter::OnChangedStat::~OnChangedStat() {
 }
 
 void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
-  if (!profile_)
-    return;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int download_id = item->GetId();
   if (item->GetState() == DownloadItem::REMOVING) {
     // The REMOVING state indicates that this item is being erased.
@@ -1025,11 +1016,10 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
 }
 
 void ExtensionDownloadsEventRouter::OnDownloadOpened(DownloadItem* item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
-  if (!profile_)
-    return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(manager_ == manager);
   typedef std::set<int> DownloadIdSet;
@@ -1084,15 +1074,14 @@ void ExtensionDownloadsEventRouter::ModelChanged(DownloadManager* manager) {
 
 void ExtensionDownloadsEventRouter::ManagerGoingDown(
     DownloadManager* manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manager_->RemoveObserver(this);
   manager_ = NULL;
-  profile_ = NULL;
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(
     const char* event_name, base::Value* arg) {
-  if (!profile_ || !profile_->GetExtensionEventRouter())
-    return;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::ListValue args;
   args.Append(arg);
   std::string json_args;
@@ -1102,4 +1091,12 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
       json_args,
       profile_,
       GURL());
+
+  DownloadsNotificationSource notification_source;
+  notification_source.event_name = event_name;
+  notification_source.profile = profile_;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
+      content::Source<DownloadsNotificationSource>(&notification_source),
+      content::Details<std::string>(&json_args));
 }

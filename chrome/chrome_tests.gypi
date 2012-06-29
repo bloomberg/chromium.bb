@@ -2688,7 +2688,6 @@
         'browser/debugger/devtools_sanity_browsertest.cc',
         'browser/download/download_browsertest.cc',
         'browser/download/download_danger_prompt_browsertest.cc',
-        'browser/extensions/api/downloads/downloads_apitest.cc',
         'browser/extensions/api/downloads/downloads_api_unittest.cc',
         'browser/download/download_query_unittest.cc',
         'browser/download/download_test_observer.cc',
