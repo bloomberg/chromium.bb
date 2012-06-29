@@ -29,9 +29,6 @@ using std::string;
 namespace syncable {
 
 namespace {
-// Max number of milliseconds to spend checking syncable entry invariants
-const int kInvariantCheckMaxMs = 50;
-
 // Helper function to add an item to the index, if it ought to be added.
 template<typename Indexer>
 void InitializeIndexEntry(EntryKernel* entry,
@@ -188,7 +185,8 @@ Directory::Directory(
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(
           report_unrecoverable_error_function),
-      unrecoverable_error_set_(false) {
+      unrecoverable_error_set_(false),
+      invariant_check_level_(VERIFY_CHANGES) {
 }
 
 Directory::~Directory() {
@@ -851,56 +849,39 @@ class SomeIdsFilter : public IdFilter {
   std::vector<Id> ids_;
 };
 
-bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
-                                    const EntryKernelMutationMap& mutations) {
+bool Directory::CheckInvariantsOnTransactionClose(
+    syncable::BaseTransaction* trans,
+    const EntryKernelMutationMap& mutations) {
+  // NOTE: The trans may be in the process of being destructed.  Be careful if
+  // you wish to call any of its virtual methods.
   MetahandleSet handles;
-  SomeIdsFilter filter;
-  filter.ids_.reserve(mutations.size());
-  for (EntryKernelMutationMap::const_iterator it = mutations.begin(),
-         end = mutations.end(); it != end; ++it) {
-    filter.ids_.push_back(it->second.mutated.ref(ID));
-    handles.insert(it->first);
+
+  switch (invariant_check_level_) {
+  case FULL_DB_VERIFICATION:
+    GetAllMetaHandles(trans, &handles);
+    break;
+  case VERIFY_CHANGES:
+    for (EntryKernelMutationMap::const_iterator i = mutations.begin();
+         i != mutations.end(); ++i) {
+      handles.insert(i->first);
+    }
+    break;
+  case OFF:
+    break;
   }
-  std::sort(filter.ids_.begin(), filter.ids_.end());
-  if (!CheckTreeInvariants(trans, handles, filter))
-    return false;
-  return true;
+
+  return CheckTreeInvariants(trans, handles);
 }
 
-bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
-                                    bool full_scan) {
-  // TODO(timsteele):  This is called every time a WriteTransaction finishes.
-  // The performance hit is substantial given that we now examine every single
-  // syncable entry.  Need to redesign this.
+bool Directory::FullyCheckTreeInvariants(syncable::BaseTransaction* trans) {
   MetahandleSet handles;
   GetAllMetaHandles(trans, &handles);
-  if (full_scan) {
-    FullScanFilter fullfilter;
-    if (!CheckTreeInvariants(trans, handles, fullfilter))
-      return false;
-  } else {
-    SomeIdsFilter filter;
-    MetahandleSet::iterator i;
-    for (i = handles.begin() ; i != handles.end() ; ++i) {
-      Entry e(trans, GET_BY_HANDLE, *i);
-      if (!SyncAssert(e.good(), FROM_HERE, "Entry is bad", trans))
-        return false;
-      filter.ids_.push_back(e.Get(ID));
-    }
-    std::sort(filter.ids_.begin(), filter.ids_.end());
-    if (!CheckTreeInvariants(trans, handles, filter))
-      return false;
-  }
-  return true;
+  return CheckTreeInvariants(trans, handles);
 }
 
 bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
-                                    const MetahandleSet& handles,
-                                    const IdFilter& idfilter) {
-  const int64 max_ms = kInvariantCheckMaxMs;
-  PerfTimer check_timer;
+                                    const MetahandleSet& handles) {
   MetahandleSet::const_iterator i;
-  int entries_done = 0;
   for (i = handles.begin() ; i != handles.end() ; ++i) {
     int64 metahandle = *i;
     Entry e(trans, GET_BY_HANDLE, metahandle);
@@ -922,7 +903,6 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       "Entry should be sycned",
                       trans))
          return false;
-      ++entries_done;
       continue;
     }
 
@@ -937,13 +917,13 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         return false;
       int safety_count = handles.size() + 1;
       while (!parentid.IsRoot()) {
-        if (!idfilter.ShouldConsider(parentid))
-          break;
         Entry parent(trans, GET_BY_ID, parentid);
         if (!SyncAssert(parent.good(), FROM_HERE,
                         "Parent entry is not valid.",
                         trans))
           return false;
+        if (handles.end() == handles.find(parent.Get(META_HANDLE)))
+            break; // Skip further checking if parent was unmodified.
         if (!SyncAssert(parent.Get(IS_DIR), FROM_HERE,
                         "Parent should be a directory",
                         trans))
@@ -1024,17 +1004,12 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       trans))
         return false;
     }
-    ++entries_done;
-    int64 elapsed_ms = check_timer.Elapsed().InMilliseconds();
-    if (elapsed_ms > max_ms) {
-      DVLOG(1) << "Cutting Invariant check short after " << elapsed_ms
-               << "ms. Processed " << entries_done << "/" << handles.size()
-               << " entries";
-      return true;
-    }
-
   }
   return true;
+}
+
+void Directory::SetInvariantCheckLevel(InvariantCheckLevel check_level) {
+  invariant_check_level_ = check_level;
 }
 
 bool Directory::UnlinkEntryFromOrder(EntryKernel* entry,

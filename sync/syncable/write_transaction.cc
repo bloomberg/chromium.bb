@@ -11,14 +11,6 @@
 
 namespace syncable {
 
-enum InvariantCheckLevel {
-  OFF = 0,
-  VERIFY_IN_MEMORY = 1,
-  FULL_DB_VERIFICATION = 2
-};
-
-const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
-
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
     : BaseTransaction(location, "WriteTransaction", writer, directory) {
@@ -116,16 +108,7 @@ void WriteTransaction::NotifyTransactionComplete(
 
 WriteTransaction::~WriteTransaction() {
   const ImmutableEntryKernelMutationMap& mutations = RecordMutations();
-
-  if (!unrecoverable_error_set_) {
-    if (OFF != kInvariantCheckLevel) {
-      const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);
-      if (full_scan)
-        directory()->CheckTreeInvariants(this, full_scan);
-      else
-        directory()->CheckTreeInvariants(this, mutations.Get());
-    }
-  }
+  directory()->CheckInvariantsOnTransactionClose(this, mutations.Get());
 
   // |CheckTreeInvariants| could have thrown an unrecoverable error.
   if (unrecoverable_error_set_) {

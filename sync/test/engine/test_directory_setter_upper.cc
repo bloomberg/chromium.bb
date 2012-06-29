@@ -35,28 +35,23 @@ void TestDirectorySetterUpper::TearDown() {
   if (!directory()->good())
     return;
 
-  {
-    RunInvariantCheck();
-    directory()->SaveChanges();
-    RunInvariantCheck();
-    directory()->SaveChanges();
-  }
+  RunInvariantCheck();
+  directory()->SaveChanges();
+  RunInvariantCheck();
+  directory()->SaveChanges();
+
   directory_.reset();
 
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
 void TestDirectorySetterUpper::RunInvariantCheck() {
-  {
-    // Check invariants for in-memory items.
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    directory()->CheckTreeInvariants(&trans, false);
-  }
-  {
-    // Check invariants for all items.
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    directory()->CheckTreeInvariants(&trans, true);
-  }
+  // Check invariants for all items.
+  syncable::ReadTransaction trans(FROM_HERE, directory());
+
+  // The TestUnrecoverableErrorHandler that this directory was constructed with
+  // will handle error reporting, so we can safely ignore the return value.
+  directory()->FullyCheckTreeInvariants(&trans);
 }
 
 }  // namespace syncer

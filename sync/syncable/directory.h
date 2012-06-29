@@ -121,7 +121,14 @@ class EntryKernelLessByMetaHandle {
     return a.ref(META_HANDLE) < b.ref(META_HANDLE);
   }
 };
+
 typedef std::set<EntryKernel, EntryKernelLessByMetaHandle> EntryKernelSet;
+
+enum InvariantCheckLevel {
+  OFF = 0,            // No checking.
+  VERIFY_CHANGES = 1, // Checks only mutated entries.  Does not check hierarchy.
+  FULL_DB_VERIFICATION = 2 // Check every entry.  This can be expensive.
+};
 
 class Directory {
   friend class BaseTransaction;
@@ -395,21 +402,19 @@ class Directory {
                                      FullModelTypeSet server_types,
                                      std::vector<int64>* result);
 
-  // Checks tree metadata consistency.
-  // If full_scan is false, the function will avoid pulling any entries from the
-  // db and scan entries currently in ram.
-  // If full_scan is true, all entries will be pulled from the database.
-  // No return value, CHECKs will be triggered if we're given bad
-  // information.
-  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
-                           bool full_scan);
+  // Sets the level of invariant checking performed after transactions.
+  void SetInvariantCheckLevel(InvariantCheckLevel check_level);
 
-  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
-                           const EntryKernelMutationMap& mutations);
+  // Checks tree metadata consistency following a transaction.  It is intended
+  // to provide a reasonable tradeoff between performance and comprehensiveness
+  // and may be used in release code.
+  bool CheckInvariantsOnTransactionClose(
+      syncable::BaseTransaction* trans,
+      const EntryKernelMutationMap& mutations);
 
-  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
-                           const MetahandleSet& handles,
-                           const IdFilter& idfilter);
+  // Forces a full check of the directory.  This operation may be slow and
+  // should not be invoked outside of tests.
+  bool FullyCheckTreeInvariants(BaseTransaction *trans);
 
   // Purges all data associated with any entries whose ModelType or
   // ServerModelType is found in |types|, from _both_ memory and disk.
@@ -421,6 +426,10 @@ class Directory {
   virtual void PurgeEntriesWithTypeIn(ModelTypeSet types);
 
  private:
+  // A helper that implements the logic of checking tree invariants.
+  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
+                           const MetahandleSet& handles);
+
   // Helper to prime ids_index, parent_id_and_names_index, unsynced_metahandles
   // and unapplied_metahandles from metahandles_index.
   void InitializeIndices();
@@ -603,6 +612,8 @@ class Directory {
   const syncer::ReportUnrecoverableErrorFunction
       report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
+
+  InvariantCheckLevel invariant_check_level_;
 };
 
 }  // namespace syncable
