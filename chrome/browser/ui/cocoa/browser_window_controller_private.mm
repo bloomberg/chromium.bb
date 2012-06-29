@@ -66,9 +66,6 @@ const CGFloat kAvatarRightOffset = 4;
 // incognito badge is present.
 const CGFloat kAvatarTabStripShrink = 18;
 
-// The amount by which to shift the avatar to the right if on Lion.
-const CGFloat kAvatarShiftForLion = 20;
-
 // Insets for the location bar, used when the full toolbar is hidden.
 // TODO(viettrungluu): We can argue about the "correct" insetting; I like the
 // following best, though arguably 0 inset is better/more correct.
@@ -309,14 +306,14 @@ willPositionSheet:(NSWindow*)sheet
   // Calculate the right indentation.  The default indentation built into the
   // tabstrip leaves enough room for the fullscreen button or presentation mode
   // toggle button on Lion.  On non-Lion systems, the default indentation also
-  // looks fine.  If an avatar button is present, indent enough to account for
-  // its width.
-  const CGFloat possibleExtraShiftForLion =
-      base::mac::IsOSLionOrLater() ? kAvatarShiftForLion : 0;
-
+  // looks fine.
   CGFloat rightIndent = 0;
-  if ([self shouldShowAvatar])
-    rightIndent += (kAvatarTabStripShrink + possibleExtraShiftForLion);
+  if (base::mac::IsOSLionOrLater()) {
+    FramedBrowserWindow* window =
+        static_cast<FramedBrowserWindow*>([self window]);
+    DCHECK([window isKindOfClass:[FramedBrowserWindow class]]);
+    rightIndent += -[window fullScreenButtonOriginAdjustment].x;
+  }
   [tabStripController_ setRightIndentForControls:rightIndent];
 
   // Go ahead and layout the tabs.
@@ -330,10 +327,8 @@ willPositionSheet:(NSWindow*)sheet
     [avatarButton setFrameSize:NSMakeSize(profiles::kAvatarIconWidth,
                                           buttonHeight)];
 
-    // Actually place the badge *above* |maxY|, by +2 to miss the divider.  On
-    // Lion or later, shift the badge left to move it away from the fullscreen
-    // button.
-    CGFloat badgeXOffset = -(kAvatarRightOffset + possibleExtraShiftForLion);
+    // Actually place the badge *above* |maxY|, by +2 to miss the divider.
+    CGFloat badgeXOffset = -kAvatarRightOffset;
     CGFloat badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
     NSPoint origin =
         NSMakePoint(width - NSWidth([avatarButton frame]) + badgeXOffset,

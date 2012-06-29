@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
@@ -22,6 +23,11 @@
 @interface NSWindow (LionSDKDeclarations)
 - (void)toggleFullScreen:(id)sender;
 @end
+
+enum {
+  NSWindowDocumentVersionsButton = 6,
+  NSWindowFullScreenButton
+};
 
 #endif  // MAC_OS_X_VERSION_10_7
 
@@ -314,6 +320,26 @@ const CGFloat kWindowGradientHeight = 24.0;
 - (void)toggleSystemFullScreen {
   if ([super respondsToSelector:@selector(toggleFullScreen:)])
     [super toggleFullScreen:nil];
+}
+
+- (NSPoint)fullScreenButtonOriginAdjustment {
+  if (!hasTabStrip_)
+    return NSZeroPoint;
+
+  // Vertically center the button.
+  NSPoint origin = NSMakePoint(0, -7);
+
+  // If there is a profile avatar present, shift the button over by its
+  // width and some padding.
+  BrowserWindowController* bwc =
+      static_cast<BrowserWindowController*>([self windowController]);
+  if ([bwc shouldShowAvatar]) {
+    AvatarButtonController* avatarButtonVC = [bwc avatarButtonController];
+    NSView* avatarButton = [avatarButtonVC view];
+    origin.x = -(NSWidth([avatarButton frame]) + 3);
+  }
+
+  return origin;
 }
 
 - (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view {

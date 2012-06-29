@@ -45,6 +45,10 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 // Calls the superclass's implementation of |-toggleFullScreen:|.
 - (void)toggleSystemFullScreen;
 
+// Called by CustomFrameView to determine a custom location for the Lion
+// fullscreen button. Returns NSZeroPoint to use the Lion default.
+- (NSPoint)fullScreenButtonOriginAdjustment;
+
 // Draws the window theme into the specified rect. Returns whether a theme was
 // drawn (whether incognito or full pattern theme; an overlay image doesn't
 // count).

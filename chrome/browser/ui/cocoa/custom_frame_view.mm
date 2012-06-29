@@ -18,6 +18,11 @@ BOOL gCanGetCornerRadius = NO;
 
 @interface NSView (Swizzles)
 - (void)drawRectOriginal:(NSRect)rect;
+- (NSPoint)_fullScreenButtonOriginOriginal;
+@end
+
+@interface NSWindow (FramedBrowserWindow)
+- (NSPoint)fullScreenButtonOriginAdjustment;
 @end
 
 @implementation NSWindow (CustomFrameView)
@@ -67,6 +72,26 @@ BOOL gCanGetCornerRadius = NO;
       }
     }
   }
+
+  // Swizzle the method that sets the origin for the Lion fullscreen button. Do
+  // nothing if it cannot be found.
+  m0 = class_getInstanceMethod([self class],
+                               @selector(_fullScreenButtonOrigin));
+  if (m0) {
+    BOOL didAdd = class_addMethod(borderViewClass,
+                                  @selector(_fullScreenButtonOriginOriginal),
+                                  method_getImplementation(m0),
+                                  method_getTypeEncoding(m0));
+    if (didAdd) {
+      Method m1 = class_getInstanceMethod(borderViewClass,
+                                          @selector(_fullScreenButtonOrigin));
+      Method m2 = class_getInstanceMethod(borderViewClass,
+          @selector(_fullScreenButtonOriginOriginal));
+      if (m1 && m2) {
+        method_exchangeImplementations(m1, m2);
+      }
+    }
+  }
 }
 
 + (BOOL)canDrawTitle {
@@ -94,6 +119,20 @@ BOOL gCanGetCornerRadius = NO;
   // Delegate drawing to the window, whose default implementation (above) is to
   // call into the original implementation.
   [[self window] drawCustomFrameRect:rect forView:self];
+}
+
+// Override to move the fullscreen button to the left of the profile avatar.
+- (NSPoint)_fullScreenButtonOrigin {
+  NSWindow* window = [self window];
+  NSPoint offset = NSZeroPoint;
+
+  if ([window respondsToSelector:@selector(fullScreenButtonOriginAdjustment)])
+    offset = [window fullScreenButtonOriginAdjustment];
+
+  NSPoint origin = [self _fullScreenButtonOriginOriginal];
+  origin.x += offset.x;
+  origin.y += offset.y;
+  return origin;
 }
 
 @end

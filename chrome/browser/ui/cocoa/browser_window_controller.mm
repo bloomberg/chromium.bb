@@ -256,18 +256,6 @@ enum {
     if ([window respondsToSelector:@selector(setAnimationBehavior:)])
       [window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
 
-    // Set the window to participate in Lion Fullscreen mode.  Setting this flag
-    // has no effect on Snow Leopard or earlier.  Panels can share a fullscreen
-    // space with a tabbed window, but they can not be primary fullscreen
-    // windows.
-    NSUInteger collectionBehavior = [window collectionBehavior];
-    collectionBehavior |=
-       browser_->type() == Browser::TYPE_TABBED ||
-           browser_->type() == Browser::TYPE_POPUP ?
-               NSWindowCollectionBehaviorFullScreenPrimary :
-               NSWindowCollectionBehaviorFullScreenAuxiliary;
-    [window setCollectionBehavior:collectionBehavior];
-
     // Get the most appropriate size for the window, then enforce the
     // minimum width and height. The window shim will handle flipping
     // the coordinates for us so we can use it to save some code.
@@ -363,6 +351,19 @@ enum {
 
     // Force a relayout of all the various bars.
     [self layoutSubviews];
+
+    // Set the window to participate in Lion Fullscreen mode.  Setting this flag
+    // has no effect on Snow Leopard or earlier.  Panels can share a fullscreen
+    // space with a tabbed window, but they can not be primary fullscreen
+    // windows.  Do this after |-layoutSubviews| so that the fullscreen button
+    // can be adjusted in FramedBrowserWindow.
+    NSUInteger collectionBehavior = [window collectionBehavior];
+    collectionBehavior |=
+       browser_->type() == Browser::TYPE_TABBED ||
+           browser_->type() == Browser::TYPE_POPUP ?
+               NSWindowCollectionBehaviorFullScreenPrimary :
+               NSWindowCollectionBehaviorFullScreenAuxiliary;
+    [window setCollectionBehavior:collectionBehavior];
 
     // For a popup window, |desiredContentRect| contains the desired height of
     // the content, not of the whole window.  Now that all the views are laid
