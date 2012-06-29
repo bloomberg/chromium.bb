@@ -152,8 +152,6 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
 
-  WebContents* tab = browser()->GetActiveWebContents();
-
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
 
   // Lock the mouse without a user gesture, expect no response.
@@ -180,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
 
   // Enter fullscreen mode, mouse lock should be dropped to present buttons.
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_TRUE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   ASSERT_FALSE(IsMouseLocked());
@@ -263,6 +261,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsFullscreenPermissionRequested());
 }
 
+// Tests mouse lock can be exited and re-entered by an application silently
+// with no UI distraction for users.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        MouseLockSilentAfterTargetUnlock) {
   ASSERT_TRUE(test_server()->Start());
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
-  // Unlock the mouse from target, make sure it's unloacked
+  // Unlock the mouse from target, make sure it's unlocked.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_U, false, false, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsMouseLocked());
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
 
-  // Lock mouse again, make sure it works with no bubble
+  // Lock mouse again, make sure it works with no bubble.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_1, false, false, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -301,14 +301,14 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
 
-  // Unlock the mouse again by target
+  // Unlock the mouse again by target.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_U, false, false, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
         content::NotificationService::AllSources()));
   ASSERT_FALSE(IsMouseLocked());
 
-  // Lock from target, not user gesture, make sure it works
+  // Lock from target, not user gesture, make sure it works.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_D, false, false, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -316,14 +316,14 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
 
-  // Unlock by escape
+  // Unlock by escape.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
           browser(), ui::VKEY_ESCAPE, false, false, false, false,
           chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
           content::NotificationService::AllSources()));
   ASSERT_FALSE(IsMouseLocked());
 
-  // Lock the mouse with a user gesture, make sure we see bubble again
+  // Lock the mouse with a user gesture, make sure we see bubble again.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), ui::VKEY_1, false, false, false, false,
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
@@ -504,11 +504,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   GURL url = test_server()->GetURL("simple.html");
   AddTabAtIndexAndWait(0, url, content::PAGE_TRANSITION_TYPED);
-  WebContents* tab = browser()->GetActiveWebContents();
 
   // Validate that going fullscreen for a URL defaults to asking permision.
   ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(tab, true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(true));
   ASSERT_TRUE(IsFullscreenPermissionRequested());
-  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(tab, false));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(false));
 }
