@@ -2294,6 +2294,19 @@
             '../skia/ext/platform_canvas_unittest.cc',
           ],
         }],
+        ['OS=="win" and component!="shared_library"', {
+          # Unit_tests pdb files can get too big when incremental linking is
+          # on, disabling for this target.
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }],
         ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
