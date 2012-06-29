@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
+#include "base/string16.h"
 #include "chrome/common/metrics/variation_ids.h"
 
 // This namespace provides various helpers that extend the functionality around
@@ -101,6 +102,11 @@ void AssociateGoogleVariationIDForce(const std::string& trial_name,
 chrome_variations::ID GetGoogleVariationID(const std::string& trial_name,
                                            const std::string& group_name);
 
+// Generates experiment chunks from |experiment_strings| that are suitable for
+// crash reporting.
+void GenerateExperimentChunks(const std::vector<string16>& experiment_strings,
+                              std::vector<string16>* chunks);
+
 // Get the current set of chosen FieldTrial groups (aka experiments) and send
 // them to the child process logging module so it can save it for crash dumps.
 void SetChildProcessLoggingExperimentList();
@@ -117,6 +123,6 @@ void TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
 
 uint32 TestHashName(const std::string& name);
 
-}
+}  // namespace testing
 
 #endif  // CHROME_COMMON_METRICS_EXPERIMENTS_HELPER_H_

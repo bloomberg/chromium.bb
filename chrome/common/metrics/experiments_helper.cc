@@ -4,6 +4,7 @@
 
 #include "chrome/common/metrics/experiments_helper.h"
 
+#include <map>
 #include <vector>
 
 #include "base/memory/singleton.h"
@@ -128,6 +129,25 @@ chrome_variations::ID GetGoogleVariationID(const std::string& trial_name,
                                            const std::string& group_name) {
   return GroupMapAccessor::GetInstance()->GetID(
       MakeSelectedGroupId(trial_name, group_name));
+}
+
+void GenerateExperimentChunks(const std::vector<string16>& experiments,
+                              std::vector<string16>* chunks) {
+  string16 current_chunk;
+  for (size_t i = 0; i < experiments.size(); ++i) {
+    const size_t needed_length =
+        (current_chunk.empty() ? 1 : 0) + experiments[i].length();
+    if (current_chunk.length() + needed_length > kMaxExperimentChunkSize) {
+      chunks->push_back(current_chunk);
+      current_chunk = experiments[i];
+    } else {
+      if (!current_chunk.empty())
+        current_chunk.push_back(',');
+      current_chunk += experiments[i];
+    }
+  }
+  if (!current_chunk.empty())
+    chunks->push_back(current_chunk);
 }
 
 void SetChildProcessLoggingExperimentList() {

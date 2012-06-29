@@ -10,17 +10,19 @@
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/metrics/experiments_helper.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace experiments_helper {
 
 namespace {
 
 // Convenience helper to retrieve the chrome_variations::ID for a FieldTrial.
 // Note that this will do the group assignment in |trial| if not already done.
 chrome_variations::ID GetIDForTrial(base::FieldTrial* trial) {
-  return experiments_helper::GetGoogleVariationID(trial->name(),
-                                                  trial->group_name());
+  return GetGoogleVariationID(trial->name(), trial->group_name());
 }
 
 }  // namespace
@@ -72,8 +74,7 @@ TEST_F(ExperimentsHelperTest, HashName) {
 }
 
 TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
-  typedef std::set<experiments_helper::SelectedGroupId,
-      experiments_helper::SelectedGroupIdCompare> SelectedGroupIdSet;
+  typedef std::set<SelectedGroupId, SelectedGroupIdCompare> SelectedGroupIdSet;
   std::string trial_one("trial one");
   std::string group_one("group one");
   std::string trial_two("trial two");
@@ -91,7 +92,7 @@ TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
 
   // Create our expected groups of IDs.
   SelectedGroupIdSet expected_groups;
-  experiments_helper::SelectedGroupId name_group_id;
+  SelectedGroupId name_group_id;
   name_group_id.name = testing::TestHashName(trial_one);
   name_group_id.group = testing::TestHashName(group_one);
   expected_groups.insert(name_group_id);
@@ -99,7 +100,7 @@ TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
   name_group_id.group = testing::TestHashName(group_two);
   expected_groups.insert(name_group_id);
 
-  std::vector<experiments_helper::SelectedGroupId> selected_group_ids;
+  std::vector<SelectedGroupId> selected_group_ids;
   testing::TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
       selected_groups, &selected_group_ids);
   EXPECT_EQ(2U, selected_group_ids.size());
@@ -137,9 +138,9 @@ TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
       base::FieldTrialList::FactoryGetFieldTrial("trial", 100, default_name,
                                                  next_year_, 12, 12, NULL));
   trial->AppendGroup(non_default_name, 100);
-  experiments_helper::AssociateGoogleVariationID(
+  AssociateGoogleVariationID(
       trial->name(), default_name, chrome_variations::kTestValueA);
-  experiments_helper::AssociateGoogleVariationID(
+  AssociateGoogleVariationID(
       trial->name(), non_default_name, chrome_variations::kTestValueB);
   ASSERT_EQ(non_default_name, trial->group_name());
   ASSERT_EQ(chrome_variations::kTestValueB, GetIDForTrial(trial.get()));
@@ -158,9 +159,9 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleVariationID) {
   int winner_group = trial_true->AppendGroup(winner, 10);
 
   // Set GoogleVariationIDs so we can verify that they were chosen correctly.
-  experiments_helper::AssociateGoogleVariationID(
+  AssociateGoogleVariationID(
       trial_true->name(), default_name1, chrome_variations::kTestValueA);
-  experiments_helper::AssociateGoogleVariationID(
+  AssociateGoogleVariationID(
       trial_true->name(), winner, chrome_variations::kTestValueB);
 
   EXPECT_EQ(winner_group, trial_true->group());
@@ -174,9 +175,9 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleVariationID) {
   const std::string loser = "ALoser";
   int loser_group = trial_false->AppendGroup(loser, 0);
 
-  experiments_helper::AssociateGoogleVariationID(
+  AssociateGoogleVariationID(
       trial_false->name(), default_name2, chrome_variations::kTestValueA);
-  experiments_helper::AssociateGoogleVariationID(
+  AssociateGoogleVariationID(
       trial_false->name(), loser, chrome_variations::kTestValueB);
 
   EXPECT_NE(loser_group, trial_false->group());
@@ -203,17 +204,72 @@ TEST_F(ExperimentsHelperTest, NoAssociation) {
 // Ensure that the AssociateGoogleVariationIDForce works as expected.
 TEST_F(ExperimentsHelperTest, ForceAssociation) {
   EXPECT_EQ(chrome_variations::kEmptyID,
-      experiments_helper::GetGoogleVariationID("trial", "group"));
-  experiments_helper::AssociateGoogleVariationID("trial", "group",
-      chrome_variations::kTestValueA);
+            GetGoogleVariationID("trial", "group"));
+  AssociateGoogleVariationID("trial", "group",
+                             chrome_variations::kTestValueA);
   EXPECT_EQ(chrome_variations::kTestValueA,
-      experiments_helper::GetGoogleVariationID("trial", "group"));
-  experiments_helper::AssociateGoogleVariationID("trial", "group",
-      chrome_variations::kTestValueB);
+            GetGoogleVariationID("trial", "group"));
+  AssociateGoogleVariationID("trial", "group", chrome_variations::kTestValueB);
   EXPECT_EQ(chrome_variations::kTestValueA,
-      experiments_helper::GetGoogleVariationID("trial", "group"));
-  experiments_helper::AssociateGoogleVariationIDForce("trial", "group",
-      chrome_variations::kTestValueB);
+            GetGoogleVariationID("trial", "group"));
+  AssociateGoogleVariationIDForce("trial", "group",
+                                  chrome_variations::kTestValueB);
   EXPECT_EQ(chrome_variations::kTestValueB,
-      experiments_helper::GetGoogleVariationID("trial", "group"));
+            GetGoogleVariationID("trial", "group"));
 }
+
+TEST_F(ExperimentsHelperTest, GenerateExperimentChunks) {
+  const char* kExperimentStrings[] = {
+      "1d3048f1-9de009d0",
+      "cd73da34-cf196cb",
+      "6214fa18-9e6dc24d",
+      "4dcb0cd6-d31c4ca1",
+      "9d5bce6-30d7d8ac",
+  };
+  const char* kExpectedChunks1[] = {
+      "1d3048f1-9de009d0",
+  };
+  const char* kExpectedChunks2[] = {
+      "1d3048f1-9de009d0,cd73da34-cf196cb",
+  };
+  const char* kExpectedChunks3[] = {
+      "1d3048f1-9de009d0,cd73da34-cf196cb,6214fa18-9e6dc24d",
+  };
+  const char* kExpectedChunks4[] = {
+      "1d3048f1-9de009d0,cd73da34-cf196cb,6214fa18-9e6dc24d",
+      "4dcb0cd6-d31c4ca1",
+  };
+  const char* kExpectedChunks5[] = {
+      "1d3048f1-9de009d0,cd73da34-cf196cb,6214fa18-9e6dc24d",
+      "4dcb0cd6-d31c4ca1,9d5bce6-30d7d8ac",
+  };
+
+  struct {
+    size_t strings_length;
+    size_t expected_chunks_length;
+    const char** expected_chunks;
+  } cases[] = {
+    { 0, 0, NULL },
+    { 1, arraysize(kExpectedChunks1), kExpectedChunks1 },
+    { 2, arraysize(kExpectedChunks2), kExpectedChunks2 },
+    { 3, arraysize(kExpectedChunks3), kExpectedChunks3 },
+    { 4, arraysize(kExpectedChunks4), kExpectedChunks4 },
+    { 5, arraysize(kExpectedChunks5), kExpectedChunks5 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    ASSERT_LE(cases[i].strings_length, arraysize(kExperimentStrings));
+
+    std::vector<string16> experiments;
+    for (size_t j = 0; j < cases[i].strings_length; ++j)
+      experiments.push_back(UTF8ToUTF16(kExperimentStrings[j]));
+
+    std::vector<string16> chunks;
+    GenerateExperimentChunks(experiments, &chunks);
+    ASSERT_EQ(cases[i].expected_chunks_length, chunks.size());
+    for (size_t j = 0; j < chunks.size(); ++j)
+      EXPECT_EQ(UTF8ToUTF16(cases[i].expected_chunks[j]), chunks[j]);
+  }
+}
+
+}  // namespace experiments_helper

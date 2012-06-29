@@ -31,6 +31,11 @@ static const int kMaxReportedActiveExtensions = 10;
 // dependency.
 static const int kMaxReportedExperimentChunks = 15;
 
+// The maximum size of an experiment chunk. This size was picked to be
+// consistent between platforms and the value was chosen from the Windows
+// limit of google_breakpad::CustomInfoEntry::kValueMaxLength.
+static const size_t kMaxExperimentChunkSize = 64;
+
 // The maximum number of prn-info-* records.
 static const size_t kMaxReportedPrinterRecords = 4;
 
