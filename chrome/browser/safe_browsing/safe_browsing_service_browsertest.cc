@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_temp_dir.h"
+#include "base/test/thread_test_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -274,19 +275,6 @@ MATCHER_P(IsUnsafeResourceFor, url, "") {
           arg.threat_type != SafeBrowsingService::SAFE);
 }
 
-namespace {
-
-void QuitUIThread() {
-  MessageLoopForUI::current()->Quit();
-}
-
-void QuitFromIOThread() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(&QuitUIThread));
-}
-
-}  // namespace
-
 // Tests the safe browsing blocking page in a browser.
 class SafeBrowsingServiceTest : public InProcessBrowserTest {
  public:
@@ -413,9 +401,9 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // Waits for pending tasks on the IO thread to complete. This is useful
   // to wait for the SafeBrowsingService to finish loading/stopping.
   void WaitForIOThread() {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(&QuitFromIOThread));
-    ui_test_utils::RunMessageLoop();  // Will stop from |QuitUIThread|.
+    scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    ASSERT_TRUE(io_helper->Run());
   }
 
  private:
