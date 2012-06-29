@@ -2279,8 +2279,9 @@ recompute_selection(struct terminal *terminal)
 	side_margin = allocation.x + (allocation.width - width) / 2;
 	top_margin = allocation.y + (allocation.height - height) / 2;
 
-	start_row = (terminal->selection_start_y - top_margin) / ch;
-	end_row = (terminal->selection_end_y - top_margin) / ch;
+	start_row = (terminal->selection_start_y - top_margin + ch) / ch - 1;
+	end_row = (terminal->selection_end_y - top_margin + ch) / ch - 1;
+
 	if (start_row < end_row ||
 	    (start_row == end_row &&
 	     terminal->selection_start_x < terminal->selection_end_x)) {
@@ -2295,39 +2296,50 @@ recompute_selection(struct terminal *terminal)
 		end_x = terminal->selection_start_x;
 	}
 
-	x = side_margin + cw / 2;
-	data = terminal_get_row(terminal, terminal->selection_start_row);
-	word_start = 0;
-	for (col = 0; col < terminal->width; col++, x += cw) {
-		if (col == 0 || wordsep(data[col - 1].ch))
-			word_start = col;
-		if (start_x < x)
-			break;
-	}
-
-	switch (terminal->dragging) {
-	case SELECT_LINE:
+	if (terminal->selection_start_row < 0) {
+		terminal->selection_start_row = 0;
 		terminal->selection_start_col = 0;
-		break;
-	case SELECT_WORD:
-		terminal->selection_start_col = word_start;
-		break;
-	case SELECT_CHAR:
-		terminal->selection_start_col = col;
-		break;
+	} else {
+		x = side_margin + cw / 2;
+		data = terminal_get_row(terminal,
+					terminal->selection_start_row);
+		word_start = 0;
+		for (col = 0; col < terminal->width; col++, x += cw) {
+			if (col == 0 || wordsep(data[col - 1].ch))
+				word_start = col;
+			if (start_x < x)
+				break;
+		}
+
+		switch (terminal->dragging) {
+		case SELECT_LINE:
+			terminal->selection_start_col = 0;
+			break;
+		case SELECT_WORD:
+			terminal->selection_start_col = word_start;
+			break;
+		case SELECT_CHAR:
+			terminal->selection_start_col = col;
+			break;
+		}
 	}
 
-	x = side_margin + cw / 2;
-	data = terminal_get_row(terminal, terminal->selection_end_row);
-	for (col = 0; col < terminal->width; col++, x += cw) {
-		if (terminal->dragging == SELECT_CHAR && end_x < x)
-			break;
-		if (terminal->dragging == SELECT_WORD &&
-		    end_x < x && wordsep(data[col].ch))
-			break;
-	}
+	if (terminal->selection_end_row >= terminal->height) {
+		terminal->selection_end_row = terminal->height;
+		terminal->selection_end_col = 0;
+	} else {
+		x = side_margin + cw / 2;
+		data = terminal_get_row(terminal, terminal->selection_end_row);
+		for (col = 0; col < terminal->width; col++, x += cw) {
+			if (terminal->dragging == SELECT_CHAR && end_x < x)
+				break;
+			if (terminal->dragging == SELECT_WORD &&
+			    end_x < x && wordsep(data[col].ch))
+				break;
+		}
 
-	terminal->selection_end_col = col;
+		terminal->selection_end_col = col;
+	}
 
 	return 1;
 }
