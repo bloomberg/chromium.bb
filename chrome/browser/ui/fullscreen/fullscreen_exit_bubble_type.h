@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
+#ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
+#define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
 #pragma once
 
 #include "base/string16.h"
@@ -18,8 +18,9 @@ class ExtensionService;
 enum FullscreenExitBubbleType {
   FEB_TYPE_NONE = 0,
 
-  // For tab fullscreen mode. (More comments about tab and browser fullscreen
-  // mode can be found in chrome/browser/ui/fullscreen_controller.h.)
+  // For tab fullscreen mode.
+  // More comments about tab and browser fullscreen mode can be found in
+  // chrome/browser/ui/fullscreen/fullscreen_controller.h.
   FEB_TYPE_FULLSCREEN_BUTTONS,
   FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS,
   FEB_TYPE_MOUSELOCK_BUTTONS,
@@ -45,4 +46,4 @@ void PermissionRequestedByType(FullscreenExitBubbleType type,
 
 }  // namespace fullscreen_bubble
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_TYPE_H_
+#endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_TYPE_H_

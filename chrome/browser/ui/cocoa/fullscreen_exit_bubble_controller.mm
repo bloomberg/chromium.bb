@@ -18,7 +18,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"

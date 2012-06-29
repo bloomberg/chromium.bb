@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_CONTROLLER_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
+#define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -170,4 +170,4 @@ class FullscreenController : public base::RefCounted<FullscreenController>,
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_

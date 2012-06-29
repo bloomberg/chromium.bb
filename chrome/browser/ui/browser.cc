@@ -112,7 +112,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/fullscreen_controller.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"

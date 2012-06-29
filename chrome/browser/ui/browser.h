@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
-#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"

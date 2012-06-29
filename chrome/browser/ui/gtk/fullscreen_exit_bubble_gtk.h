@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 #pragma once
 
-#include "chrome/browser/ui/fullscreen_exit_bubble.h"
-#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_H_
-#define CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
+#define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
 #pragma once
 
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/point.h"
@@ -106,4 +106,4 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   FullscreenExitBubbleType bubble_type_;
 };
 
-#endif  // CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_

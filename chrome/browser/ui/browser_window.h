@@ -10,7 +10,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
-#include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/content_settings_types.h"
