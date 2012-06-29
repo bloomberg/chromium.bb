@@ -97,12 +97,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   // Request to lock the mouse and enter fullscreen.
   {
     FullscreenNotificationObserver fullscreen_observer;
-fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_B, false, true, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
         content::NotificationService::AllSources()));
-fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     fullscreen_observer.Wait();
   }
   ASSERT_TRUE(IsFullscreenPermissionRequested());
@@ -112,7 +110,6 @@ fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   {
     FullscreenNotificationObserver fullscreen_observer;
     SendEscapeToFullscreenController();
-fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     fullscreen_observer.Wait();
   }
   ASSERT_FALSE(IsFullscreenPermissionRequested());
@@ -121,12 +118,10 @@ fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   // Request to lock the mouse and enter fullscreen.
   {
     FullscreenNotificationObserver fullscreen_observer;
-fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_B, false, true, false, false,
         chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
         content::NotificationService::AllSources()));
-fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     fullscreen_observer.Wait();
   }
   ASSERT_TRUE(IsFullscreenPermissionRequested());
@@ -143,7 +138,6 @@ fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   {
     FullscreenNotificationObserver fullscreen_observer;
     SendEscapeToFullscreenController();
-fprintf(stderr, "%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     fullscreen_observer.Wait();
   }
   ASSERT_FALSE(IsMouseLocked());
