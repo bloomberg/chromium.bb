@@ -77,9 +77,16 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 
+// Times out sometimes on Linux. http://crbug.com/135115
+#if defined(OS_LINUX)
+#define MAYBE_EscapingMouseLockAndFullscreen \
+    DISABLED_EscapingMouseLockAndFullscreen
+#else
+#define MAYBE_EscapingMouseLockAndFullscreen EscapingMouseLockAndFullscreen
+#endif
 // Tests mouse lock and fullscreen modes can be escaped with ESC key.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       EscapingMouseLockAndFullscreen) {
+                       MAYBE_EscapingMouseLockAndFullscreen) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
@@ -138,9 +145,15 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 
+// Times out sometimes on Linux. http://crbug.com/135115
+#if defined(OS_LINUX)
+#define MAYBE_MouseLockThenFullscreen DISABLED_MouseLockThenFullscreen
+#else
+#define MAYBE_MouseLockThenFullscreen MouseLockThenFullscreen
+#endif
 // Tests mouse lock then fullscreen.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       MouseLockThenFullscreen) {
+                       MAYBE_MouseLockThenFullscreen) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
@@ -472,9 +485,15 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   }
 }
 
+// Fails sometimes on Linux. http://crbug.com/135115
+#if defined(OS_LINUX)
+#define MAYBE_ToggleFullscreenModeForTab DISABLED_ToggleFullscreenModeForTab
+#else
+#define MAYBE_ToggleFullscreenModeForTab ToggleFullscreenModeForTab
+#endif
 // Tests ToggleFullscreenModeForTab always causes window to change.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       ToggleFullscreenModeForTab) {
+                       MAYBE_ToggleFullscreenModeForTab) {
   // Most fullscreen tests run sharded in fullscreen_controller_browsertest.cc
   // but flakiness required a while loop in
   // FullscreenControllerTest::ToggleTabFullscreen. This test verifies that
