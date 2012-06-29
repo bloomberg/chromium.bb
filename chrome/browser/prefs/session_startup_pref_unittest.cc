@@ -19,14 +19,16 @@ class SessionStartupPrefTest : public testing::Test {
     pref_service_.reset(new TestingPrefService);
     SessionStartupPref::RegisterUserPrefs(pref_service_.get());
     pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
+    // Make the tests independent of the Mac startup pref migration (see
+    // SessionStartupPref::MigrateMacDefaultPrefIfNecessary).
+    pref_service_->RegisterStringPref(prefs::kProfileCreatedByVersion,
+                                      "22.0.0.0");
   }
 
   bool IsUseLastOpenDefault() {
-    // On ChromeOS and OS X 10.7+, the default SessionStartupPref is LAST.
+    // On ChromeOS, the default SessionStartupPref is LAST.
 #if defined(OS_CHROMEOS)
     return true;
-#elif defined(OS_MACOSX)
-    return restore_utils::IsWindowRestoreEnabled();
 #else
     return false;
 #endif
