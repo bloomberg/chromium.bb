@@ -32,7 +32,6 @@ namespace ash {
 namespace internal {
 class FocusCycler;
 class LauncherView;
-class ShelfLayoutManager;
 }
 
 class LauncherIconObserver;
@@ -41,8 +40,7 @@ class LauncherModel;
 
 class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
  public:
-  explicit Launcher(aura::Window* window_container,
-                    internal::ShelfLayoutManager* shelf_layout_manager);
+  explicit Launcher(aura::Window* window_container);
   virtual ~Launcher();
 
   // Sets the focus cycler.  Also adds the launcher to the cycle.

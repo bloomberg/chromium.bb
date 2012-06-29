@@ -260,9 +260,7 @@ class LauncherView::StartFadeAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-LauncherView::LauncherView(LauncherModel* model,
-                           LauncherDelegate* delegate,
-                           ShelfLayoutManager* shelf_layout_manager)
+LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
     : model_(model),
       delegate_(delegate),
       view_model_(new views::ViewModel),
@@ -279,7 +277,7 @@ LauncherView::LauncherView(LauncherModel* model,
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
-  tooltip_.reset(new LauncherTooltipManager(alignment_, shelf_layout_manager));
+  tooltip_.reset(new LauncherTooltipManager(alignment_));
 }
 
 LauncherView::~LauncherView() {

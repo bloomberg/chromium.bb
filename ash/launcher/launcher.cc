@@ -95,8 +95,7 @@ void Launcher::DelegateView::Layout() {
 
 // Launcher --------------------------------------------------------------------
 
-Launcher::Launcher(aura::Window* window_container,
-                   internal::ShelfLayoutManager* shelf_layout_manager)
+Launcher::Launcher(aura::Window* window_container)
     : widget_(NULL),
       window_container_(window_container),
       delegate_view_(NULL),
@@ -120,8 +119,7 @@ Launcher::Launcher(aura::Window* window_container,
   params.parent = Shell::GetContainer(
       window_container_->GetRootWindow(),
       ash::internal::kShellWindowId_LauncherContainer);
-  launcher_view_ = new internal::LauncherView(
-      model_.get(), delegate_.get(), shelf_layout_manager);
+  launcher_view_ = new internal::LauncherView(model_.get(), delegate_.get());
   launcher_view_->Init();
   delegate_view_ = new DelegateView(this);
   delegate_view_->AddChildView(launcher_view_);

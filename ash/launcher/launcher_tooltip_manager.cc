@@ -7,8 +7,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
-#include "base/bind.h"
-#include "base/message_loop.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/aura/window.h"
@@ -104,20 +102,13 @@ void LauncherTooltipManager::LauncherTooltipBubble::WindowClosing() {
   host_->OnBubbleClosed(this);
 }
 
-LauncherTooltipManager::LauncherTooltipManager(
-    ShelfAlignment alignment, ShelfLayoutManager* shelf_layout_manager)
+LauncherTooltipManager::LauncherTooltipManager(ShelfAlignment alignment)
     : view_(NULL),
       anchor_(NULL),
-      alignment_(alignment),
-      shelf_layout_manager_(shelf_layout_manager) {
-  if (shelf_layout_manager)
-    shelf_layout_manager->AddObserver(this);
-}
+      alignment_(alignment) {}
 
 LauncherTooltipManager::~LauncherTooltipManager() {
   Close();
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->RemoveObserver(this);
 }
 
 void LauncherTooltipManager::ShowDelayed(views::View* anchor,
@@ -128,9 +119,6 @@ void LauncherTooltipManager::ShowDelayed(views::View* anchor,
     else
       Close();
   }
-
-  if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
-    return;
 
   CreateBubble(anchor, text);
   gfx::NativeView native_view = view_->GetWidget()->GetNativeView();
@@ -144,9 +132,6 @@ void LauncherTooltipManager::ShowImmediately(views::View* anchor,
                                              const string16& text) {
   if (view_ && IsVisible())
       Close();
-
-  if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
-    return;
 
   CreateBubble(anchor, text);
   gfx::NativeView native_view = view_->GetWidget()->GetNativeView();
@@ -184,10 +169,6 @@ void LauncherTooltipManager::ResetTimer() {
     return;
   }
 
-  // We don't start the timer if the shelf isn't visible.
-  if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
-    return;
-
   base::OneShotTimer<LauncherTooltipManager>* new_timer =
       new base::OneShotTimer<LauncherTooltipManager>();
   new_timer->Start(
@@ -207,27 +188,6 @@ bool LauncherTooltipManager::IsVisible() {
     return false;
 
   return view_ && view_->GetWidget() && view_->GetWidget()->IsVisible();
-}
-
-void LauncherTooltipManager::WillVisibilityStateChange(
-    ShelfLayoutManager::VisibilityState new_state) {
-  if (new_state == ShelfLayoutManager::HIDDEN) {
-    StopTimer();
-    Close();
-  }
-}
-
-void LauncherTooltipManager::OnAutoHideStateChanged(
-    ShelfLayoutManager::AutoHideState new_state) {
-  if (new_state == ShelfLayoutManager::AUTO_HIDE_HIDDEN) {
-    StopTimer();
-    // AutoHide state change happens during an event filter, so immediate close
-    // may cause a crash in the HandleMouseEvent() after the filter.  So we just
-    // schedule the Close here.
-    MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&LauncherTooltipManager::Close, base::Unretained(this)));
-  }
 }
 
 void LauncherTooltipManager::ShowInternal() {

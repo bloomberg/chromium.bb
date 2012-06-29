@@ -7,7 +7,6 @@
 #pragma once
 
 #include "ash/ash_export.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
@@ -33,10 +32,9 @@ namespace internal {
 
 // LauncherTooltipManager manages the tooltip balloon poping up on launcher
 // items.
-class ASH_EXPORT LauncherTooltipManager : public ShelfLayoutManager::Observer {
+class ASH_EXPORT LauncherTooltipManager {
  public:
-  LauncherTooltipManager(ShelfAlignment alignment,
-                         ShelfLayoutManager* shelf_layout_manager);
+  LauncherTooltipManager(ShelfAlignment alignment);
   ~LauncherTooltipManager();
 
   // Called when the bubble is closed.
@@ -65,13 +63,6 @@ class ASH_EXPORT LauncherTooltipManager : public ShelfLayoutManager::Observer {
   // Returns true if the tooltip is currently visible.
   bool IsVisible();
 
-protected:
-  // ShelfLayoutManager::Observer overrides:
-  virtual void WillVisibilityStateChange(
-      ShelfLayoutManager::VisibilityState new_state) OVERRIDE;
-  virtual void OnAutoHideStateChanged(
-      ShelfLayoutManager::AutoHideState new_state) OVERRIDE;
-
  private:
   class LauncherTooltipBubble;
   friend class test::LauncherViewTest;
@@ -84,8 +75,6 @@ protected:
   string16 text_;
   ShelfAlignment alignment_;
   scoped_ptr<base::Timer> timer_;
-
-  ShelfLayoutManager* shelf_layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTooltipManager);
 };

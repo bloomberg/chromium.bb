@@ -12,7 +12,6 @@
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/observer_list.h"
 #include "base/timer.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
@@ -58,15 +57,6 @@ class ASH_EXPORT ShelfLayoutManager :
   enum AutoHideState {
     AUTO_HIDE_SHOWN,
     AUTO_HIDE_HIDDEN,
-  };
-
-  class Observer {
-   public:
-    // Called when the visibility change is scheduled.
-    virtual void WillVisibilityStateChange(VisibilityState new_state) {}
-
-    // Called when the auto hide state is changed.
-    virtual void OnAutoHideStateChanged(AutoHideState new_state) {}
   };
 
   // We reserve a small area at the bottom of the workspace area to ensure that
@@ -139,9 +129,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
   void SetWindowOverlapsShelf(bool value);
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -264,8 +251,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // EventFilter used to detect when user moves the mouse over the launcher to
   // trigger showing the launcher.
   scoped_ptr<AutoHideEventFilter> event_filter_;
-
-  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
