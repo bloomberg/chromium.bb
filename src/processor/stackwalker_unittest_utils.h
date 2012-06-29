@@ -176,6 +176,29 @@ class MockSymbolSupplier: public google_breakpad::SymbolSupplier {
                                                   string *symbol_file,
                                                   char **symbol_data));
   MOCK_METHOD1(FreeSymbolData, void(const CodeModule *module));
+
+  // Copies the passed string contents into a newly allocated buffer.
+  // The newly allocated buffer will be freed during destruction.
+  char* CopySymbolDataAndOwnTheCopy(const std::string &info) {
+    unsigned int buffer_size = info.size() + 1;
+    char *symbol_data = new char [buffer_size];
+    strcpy(symbol_data, info.c_str());
+    symbol_data_to_free_.push_back(symbol_data);
+    return symbol_data;
+  }
+
+  virtual ~MockSymbolSupplier() {
+    for (SymbolDataVector::const_iterator i = symbol_data_to_free_.begin();
+         i != symbol_data_to_free_.end(); i++) {
+      char* symbol_data = *i;
+      delete [] symbol_data;
+    }
+  }
+
+ private:
+  // List of symbol data to be freed upon destruction
+  typedef std::vector<char*> SymbolDataVector;
+  SymbolDataVector symbol_data_to_free_;
 };
 
 #endif // PROCESSOR_STACKWALKER_UNITTEST_UTILS_H_

@@ -92,9 +92,7 @@ class StackwalkerAMD64Fixture {
   // Set the Breakpad symbol information that supplier should return for
   // MODULE to INFO.
   void SetModuleSymbols(MockCodeModule *module, const string &info) {
-    unsigned int buffer_size = info.size() + 1;
-    char *buffer = reinterpret_cast<char*>(operator new(buffer_size));
-    strcpy(buffer, info.c_str());
+    char *buffer = supplier.CopySymbolDataAndOwnTheCopy(info);
     EXPECT_CALL(supplier, GetCStringSymbolData(module, &system_info, _, _))
       .WillRepeatedly(DoAll(SetArgumentPointee<3>(buffer),
                             Return(MockSymbolSupplier::FOUND)));
