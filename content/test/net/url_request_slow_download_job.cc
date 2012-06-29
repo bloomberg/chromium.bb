@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 
 using content::BrowserThread;
@@ -79,7 +80,7 @@ void URLRequestSlowDownloadJob::FinishPendingRequests() {
 }
 
 URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       bytes_already_sent_(0),
       should_finish_download_(false),
       buffer_size_(0),

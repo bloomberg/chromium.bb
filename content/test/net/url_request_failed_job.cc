@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 
 namespace {
@@ -42,7 +43,7 @@ GURL GetMockUrl(const std::string& scheme, int net_error) {
 
 URLRequestFailedJob::URLRequestFailedJob(net::URLRequest* request,
                                          int net_error)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       net_error_(net_error),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 

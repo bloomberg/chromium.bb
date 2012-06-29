@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +19,7 @@ namespace {
 class MockURLRequestJob : public URLRequestJob {
  public:
   MockURLRequestJob(URLRequest* request, const URLRequestStatus& status)
-      : URLRequestJob(request),
+      : URLRequestJob(request, request->context()->network_delegate()),
         status_(status),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 

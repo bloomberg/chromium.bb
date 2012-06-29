@@ -44,6 +44,8 @@
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
@@ -216,7 +218,7 @@ void URLRequestTimeoutOnDemandJob::AbandonJobs(int expected_num_jobs) {
 
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
     net::URLRequest* request)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       next_job_(NULL) {
 }
 

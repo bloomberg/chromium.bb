@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ namespace {
 class ViewHttpCacheJob : public net::URLRequestJob {
  public:
   explicit ViewHttpCacheJob(net::URLRequest* request)
-      : net::URLRequestJob(request),
+      : net::URLRequestJob(request, request->context()->network_delegate()),
         core_(new Core),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
         ALLOW_THIS_IN_INITIALIZER_LIST(

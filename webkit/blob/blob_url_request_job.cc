@@ -18,6 +18,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/blob/local_file_stream_reader.h"
@@ -49,7 +50,7 @@ BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
     BlobData* blob_data,
     base::MessageLoopProxy* file_thread_proxy)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),

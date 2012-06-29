@@ -18,6 +18,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/appcache/appcache_service.h"
 
@@ -25,7 +26,8 @@ namespace appcache {
 
 AppCacheURLRequestJob::AppCacheURLRequestJob(
     net::URLRequest* request, AppCacheStorage* storage)
-    : net::URLRequestJob(request), storage_(storage),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
+      storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
       group_id_(0), cache_id_(kNoCacheId), is_fallback_(false),

@@ -34,6 +34,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 
 using content::BrowserThread;
@@ -222,7 +223,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 };
 
 GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataURLRequestJob>(this))),
       file_system_(NULL),

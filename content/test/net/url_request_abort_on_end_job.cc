@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
@@ -13,6 +13,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -57,7 +59,8 @@ void URLRequestAbortOnEndJob::GetResponseInfoConst(
 }
 
 URLRequestAbortOnEndJob::URLRequestAbortOnEndJob(net::URLRequest* request)
-    : URLRequestJob(request), sent_data_(false),
+    : URLRequestJob(request, request->context()->network_delegate()),
+      sent_data_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 

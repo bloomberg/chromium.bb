@@ -31,6 +31,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -223,7 +224,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
                                          ChromeURLDataManagerBackend* backend)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       data_offset_(0),
       pending_buf_size_(0),
       allow_caching_(true),

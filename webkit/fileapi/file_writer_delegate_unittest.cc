@@ -144,7 +144,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
  public:
   FileWriterDelegateTestJob(net::URLRequest* request,
                             const std::string& content)
-      : net::URLRequestJob(request),
+      : net::URLRequestJob(request, request->context()->network_delegate()),
         content_(content),
         remaining_bytes_(content.length()),
         cursor_(0) {

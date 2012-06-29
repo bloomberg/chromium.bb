@@ -26,6 +26,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/blob/file_stream_reader.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -55,7 +56,7 @@ static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
 
 FileSystemURLRequestJob::FileSystemURLRequestJob(
     URLRequest* request, FileSystemContext* file_system_context)
-    : URLRequestJob(request),
+    : URLRequestJob(request, request->context()->network_delegate()),
       file_system_context_(file_system_context),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       is_directory_(false),

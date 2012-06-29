@@ -75,12 +75,13 @@ class AppCacheRequestHandlerTest : public testing::Test {
    public:
     MockURLRequestJob(net::URLRequest* request,
                       int response_code)
-        : net::URLRequestJob(request),
+        : net::URLRequestJob(request, request->context()->network_delegate()),
           response_code_(response_code),
           has_response_info_(false) {}
     MockURLRequestJob(net::URLRequest* request,
                       const net::HttpResponseInfo& info)
-        : net::URLRequestJob(request),
+        : net::URLRequestJob(request,
+                             request->context()->network_delegate()),
           response_code_(info.headers->response_code()),
           has_response_info_(true),
           response_info_(info) {}

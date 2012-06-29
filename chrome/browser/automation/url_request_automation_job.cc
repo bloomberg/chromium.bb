@@ -20,6 +20,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
 using base::Time;
@@ -55,7 +56,7 @@ URLRequestAutomationJob::URLRequestAutomationJob(
     int request_id,
     AutomationResourceMessageFilter* filter,
     bool is_pending)
-    : net::URLRequestJob(request),
+    : net::URLRequestJob(request, request->context()->network_delegate()),
       id_(0),
       tab_(tab),
       message_filter_(filter),
