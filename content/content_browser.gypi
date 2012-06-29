@@ -188,6 +188,8 @@
     'browser/accessibility/browser_accessibility_win.h',
     'browser/android/android_browser_process.cc',
     'browser/android/android_browser_process.h',
+    'browser/android/browser_jni_registrar.cc',
+    'browser/android/browser_jni_registrar.h',
     'browser/android/content_settings.cc',
     'browser/android/content_settings.h',
     'browser/android/content_startup_flags.cc',

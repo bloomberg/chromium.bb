@@ -13,8 +13,8 @@
     '../ui/ui.gyp:ui',
   ],
   'sources': [
-    'app/android/content_jni_registrar.cc',
-    'app/android/content_jni_registrar.h',
+    'app/android/app_jni_registrar.cc',
+    'app/android/app_jni_registrar.h',
     'app/android/content_main.cc',
     'app/android/content_main.h',
     'app/android/library_loader_hooks.cc',

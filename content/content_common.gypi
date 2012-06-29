@@ -102,6 +102,8 @@
     'common/android/address_parser_internal.h',
     'common/android/command_line.cc',
     'common/android/command_line.h',
+    'common/android/common_jni_registrar.cc',
+    'common/android/common_jni_registrar.h',
     'common/android/surface_callback.cc',
     'common/android/surface_callback.h',
     'common/android/surface_texture_peer.cc',

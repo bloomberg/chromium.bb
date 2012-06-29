@@ -17,7 +17,9 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
-#include "content/app/android/content_jni_registrar.h"
+#include "content/app/android/app_jni_registrar.h"
+#include "content/browser/android/browser_jni_registrar.h"
+#include "content/common/android/common_jni_registrar.h"
 #include "content/common/android/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
@@ -64,7 +66,13 @@ jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
   if (!net::android::RegisterJni(env))
     return JNI_FALSE;
 
-  if (!content::android::RegisterJni(env))
+  if (!content::android::RegisterCommonJni(env))
+    return JNI_FALSE;
+
+  if (!content::android::RegisterBrowserJni(env))
+    return JNI_FALSE;
+
+  if (!content::android::RegisterAppJni(env))
     return JNI_FALSE;
 
   if (!media::RegisterJni(env))
