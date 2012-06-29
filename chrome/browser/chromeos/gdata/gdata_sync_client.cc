@@ -89,6 +89,8 @@ GDataSyncClient::GDataSyncClient(Profile* profile,
 
 GDataSyncClient::~GDataSyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (file_system_)
+    file_system_->RemoveObserver(this);
   if (cache_)
     cache_->RemoveObserver(this);
 
