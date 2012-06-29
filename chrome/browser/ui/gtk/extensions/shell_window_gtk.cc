@@ -113,8 +113,11 @@ void ShellWindowGtk::Close() {
   // destruction, set window_ to NULL before any handlers will run.
   window_ = NULL;
 
-  gtk_widget_destroy(window);
+  // OnNativeClose does a delete this so no other members should
+  // be accessed after. gtk_widget_destroy is safe (and must
+  // be last).
   OnNativeClose();
+  gtk_widget_destroy(window);
 }
 
 void ShellWindowGtk::Activate() {
