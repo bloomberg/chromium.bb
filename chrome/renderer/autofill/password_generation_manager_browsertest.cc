@@ -106,6 +106,7 @@ const char kAccountCreationFormHTML[] =
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size=5/> "
     "  <INPUT type = 'password' id = 'second_password' size=5/> "
+    "  <INPUT type = 'text' id = 'address'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
@@ -210,6 +211,13 @@ TEST_F(PasswordGenerationManagerTest, FillTest) {
   EXPECT_EQ(password, second_password_element.value());
   EXPECT_TRUE(first_password_element.isAutofilled());
   EXPECT_TRUE(second_password_element.isAutofilled());
+
+  // Focus moved to the next input field.
+  // TODO(zysxqn): Change this back to the address element once Bug 90224
+  // https://bugs.webkit.org/show_bug.cgi?id=90224 has been fixed.
+  element = document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  EXPECT_EQ(element, document.focusedNode());
 }
 
 TEST_F(PasswordGenerationManagerTest, BlacklistedTest) {

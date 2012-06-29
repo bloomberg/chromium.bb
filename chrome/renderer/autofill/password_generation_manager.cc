@@ -56,8 +56,9 @@ bool GetAccountCreationPasswordFields(
 PasswordGenerationManager::PasswordGenerationManager(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
+      render_view_(render_view),
       enabled_(false) {
-  render_view->GetWebView()->addTextFieldDecoratorClient(this);
+  render_view_->GetWebView()->addTextFieldDecoratorClient(this);
 }
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
@@ -189,6 +190,9 @@ void PasswordGenerationManager::OnPasswordAccepted(const string16& password) {
        it != passwords_.end(); ++it) {
     it->setValue(password);
     it->setAutofilled(true);
+    // Advance focus to the next input field. We assume password fields in
+    // an account creation form are always adjacent.
+    render_view_->GetWebView()->advanceFocus(false);
   }
 }
 

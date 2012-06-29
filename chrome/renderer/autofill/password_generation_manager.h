@@ -68,6 +68,8 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   // Helper function to decide whether we should show password generation icon.
   void MaybeShowIcon();
 
+  content::RenderView* render_view_;
+
   // True if password generation is enabled for the profile associated
   // with this renderer.
   bool enabled_;
