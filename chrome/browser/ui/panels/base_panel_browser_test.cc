@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
@@ -396,7 +397,7 @@ NativePanelTesting* BasePanelBrowserTest::CreateNativePanelTesting(
 void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
   TabContents* tab_contents = new TabContents(
       WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
-  browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
+  chrome::AddTab(browser, tab_contents, content::PAGE_TRANSITION_LINK);
 }
 
 scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(

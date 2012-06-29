@@ -15,6 +15,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -229,8 +230,8 @@ void ShellWindow::AddNewContents(WebContents* source,
   // new window.
   disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  browser->AddWebContents(
-      new_contents, disposition, initial_pos, user_gesture);
+  chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
+                         user_gesture);
 }
 
 void ShellWindow::OnNativeClose() {

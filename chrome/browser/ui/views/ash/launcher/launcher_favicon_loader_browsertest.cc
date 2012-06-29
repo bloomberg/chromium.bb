@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -86,7 +87,7 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     // Load initial tab contents before setting the observer.
     ui_test_utils::NavigateToURL(panel_browser, GURL());
     contents_observer_.reset(
-        new ContentsObserver(panel_browser->GetWebContentsAt(0)));
+        new ContentsObserver(chrome::GetWebContentsAt(panel_browser, 0)));
     NavigateTo(panel_browser, url);
     *result = panel_browser;
   }

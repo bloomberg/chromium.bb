@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -69,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 
   // Grab the tab_id of whatever tab happens to be first.
-  WebContents* web_contents = browser()->GetWebContentsAt(0);
+  WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
   ASSERT_TRUE(web_contents);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
@@ -128,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 
   // Grab the tab_id of whatever tab happens to be first.
-  WebContents* web_contents = browser()->GetWebContentsAt(0);
+  WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
   ASSERT_TRUE(web_contents);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 

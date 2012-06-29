@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -149,7 +150,8 @@ void DriveTaskExecutor::OnAppAuthorized(
   }
 
   Browser* browser = GetBrowser();
-  browser->AddSelectedTabWithURL(open_with_url, content::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(browser, open_with_url,
+                                content::PAGE_TRANSITION_LINK);
   // If the current browser is not tabbed then the new tab will be created
   // in a different browser. Make sure it is visible.
   browser->window()->Show();

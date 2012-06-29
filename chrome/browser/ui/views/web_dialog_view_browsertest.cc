@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -99,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   TestWebDialogView* view =
       new TestWebDialogView(browser()->profile(), delegate);
-  WebContents* web_contents = browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
       view, web_contents->GetView()->GetTopLevelNativeWindow());

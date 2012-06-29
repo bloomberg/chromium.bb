@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -138,7 +139,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         content::NotificationService::AllSources());
 
     string16 expected_title = GetExpectedTitle(start_url, expected_referrer);
-    content::WebContents* tab = browser()->GetActiveWebContents();
+    content::WebContents* tab = chrome::GetActiveWebContents(browser());
     ui_test_utils::TitleWatcher title_watcher(tab, expected_title);
 
     // Watch for all possible outcomes to avoid timeouts if something breaks.
@@ -378,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
 
   string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
-  content::WebContents* tab = browser()->GetActiveWebContents();
+  content::WebContents* tab = chrome::GetActiveWebContents(browser());
   scoped_ptr<ui_test_utils::TitleWatcher> title_watcher(
       new ui_test_utils::TitleWatcher(tab, expected_title));
 

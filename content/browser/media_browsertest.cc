@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/test/layout_browsertest.h"
 #include "googleurl/src/gurl.h"
@@ -30,7 +31,7 @@ class MediaTest : public InProcessBrowserTest {
     const string16 kFailed = ASCIIToUTF16("FAILED");
     const string16 kError = ASCIIToUTF16("ERROR");
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetActiveWebContents(), kPlaying);
+        chrome::GetActiveWebContents(browser()), kPlaying);
     title_watcher.AlsoWaitForTitle(kFailed);
     title_watcher.AlsoWaitForTitle(kError);
 

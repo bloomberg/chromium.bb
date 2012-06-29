@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -140,8 +141,8 @@ void MediaPlayer::PopupMediaPlayer() {
                  chrome::NOTIFICATION_BROWSER_CLOSED,
                  content::Source<Browser>(mediaplayer_browser_));
 
-  mediaplayer_browser_->AddSelectedTabWithURL(GetMediaPlayerUrl(),
-                                              content::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(mediaplayer_browser_, GetMediaPlayerUrl(),
+                                content::PAGE_TRANSITION_LINK);
   mediaplayer_browser_->window()->Show();
 }
 

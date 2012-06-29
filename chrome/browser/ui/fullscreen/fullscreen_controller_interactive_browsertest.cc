@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,7 +24,7 @@ class FullscreenControllerInteractiveTest
     // Verify that IsMouseLocked is consistent between the
     // Fullscreen Controller and the Render View Host View.
     EXPECT_TRUE(browser()->IsMouseLocked() ==
-                browser()->GetActiveWebContents()->
+                chrome::GetActiveWebContents(browser())->
                     GetRenderViewHost()->GetView()->IsMouseLocked());
     return browser()->IsMouseLocked();
   }

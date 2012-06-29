@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -145,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   std::string cookie_value;
   automation_util::GetCookies(
       set_cookie_url,
-      browser()->GetWebContentsAt(0),
+      chrome::GetWebContentsAt(browser(), 0),
       &cookie_size,
       &cookie_value);
   ASSERT_EQ("testCookie=1", cookie_value);

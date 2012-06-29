@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
@@ -1220,8 +1221,8 @@ private:
   NSInteger activeIndex = [self indexFromModelIndex:modelIndex];
 
   if (oldContents) {
-    int oldModelIndex = browser_->GetIndexOfController(
-        &(oldContents->web_contents()->GetController()));
+    int oldModelIndex =
+        chrome::GetIndexOfTab(browser_, oldContents->web_contents());
     if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
       NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
       TabContentsController* oldController =

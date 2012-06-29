@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_events.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(AutomationMiscBrowserTest, ProcessMouseEvent) {
       .Times(2);
 
   content::RenderViewHost* view =
-      browser()->GetActiveWebContents()->GetRenderViewHost();
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       view,
       L"",

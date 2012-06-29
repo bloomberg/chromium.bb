@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_toolbar_model_delegate.h"
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 
 BrowserToolbarModelDelegate::BrowserToolbarModelDelegate(Browser* browser)
     : browser_(browser) {
@@ -15,5 +16,5 @@ BrowserToolbarModelDelegate::~BrowserToolbarModelDelegate() {
 
 content::WebContents*
 BrowserToolbarModelDelegate::GetActiveWebContents() const {
-  return browser_->GetActiveWebContents();
+  return chrome::GetActiveWebContents(browser_);
 }

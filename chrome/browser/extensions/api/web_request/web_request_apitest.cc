@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -99,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_newTab.html"))
       << message_;
 
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;

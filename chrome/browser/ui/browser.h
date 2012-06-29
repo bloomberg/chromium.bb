@@ -351,79 +351,6 @@ class Browser : public TabStripModelDelegate,
 
   int tab_count() const;
   int active_index() const;
-  int GetIndexOfController(
-      const content::NavigationController* controller) const;
-
-  TabContents* GetActiveTabContents() const;
-  // A convenient version of the above which returns the TabContents's
-  // WebContents.
-  content::WebContents* GetActiveWebContents() const;
-  TabContents* GetTabContentsAt(int index) const;
-  // A convenient version of the above which returns the TabContents's
-  // WebContents.
-  content::WebContents* GetWebContentsAt(int index) const;
-  void ActivateTabAt(int index, bool user_gesture);
-  bool IsTabPinned(int index) const;
-  bool IsTabDiscarded(int index) const;
-  void CloseAllTabs();
-
-  // Tab adding/showing functions /////////////////////////////////////////////
-
-  // Returns true if the tab strip is editable (for extensions).
-  bool IsTabStripEditable() const;
-
-  // Returns the index to insert a tab at during session restore and startup.
-  // |relative_index| gives the index of the url into the number of tabs that
-  // are going to be opened. For example, if three urls are passed in on the
-  // command line this is invoked three times with the values 0, 1 and 2.
-  int GetIndexForInsertionDuringRestore(int relative_index);
-
-  // Adds a selected tab with the specified URL and transition, returns the
-  // created TabContents.
-  TabContents* AddSelectedTabWithURL(const GURL& url,
-                                     content::PageTransition transition);
-
-  // Add a new tab, given a TabContents. A WebContents appropriate to
-  // display the last committed entry is created and returned.
-  content::WebContents* AddTab(TabContents* tab_contents,
-                               content::PageTransition type);
-
-  // Add a tab with its session history restored from the SessionRestore
-  // system. If select is true, the tab is selected. |tab_index| gives the index
-  // to insert the tab at. |selected_navigation| is the index of the
-  // TabNavigation in |navigations| to select. If |extension_app_id| is
-  // non-empty the tab is an app tab and |extension_app_id| is the id of the
-  // extension. If |pin| is true and |tab_index|/ is the last pinned tab, then
-  // the newly created tab is pinned. If |from_last_session| is true,
-  // |navigations| are from the previous session.
-  content::WebContents* AddRestoredTab(
-      const std::vector<TabNavigation>& navigations,
-      int tab_index,
-      int selected_navigation,
-      const std::string& extension_app_id,
-      bool select,
-      bool pin,
-      bool from_last_session,
-      content::SessionStorageNamespace* storage_namespace);
-
-  // Creates a new tab with the already-created WebContents 'new_contents'.
-  // The window for the added contents will be reparented correctly when this
-  // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
-  // initial position.
-  void AddWebContents(content::WebContents* new_contents,
-                      WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_pos,
-                      bool user_gesture);
-  void CloseTabContents(content::WebContents* contents);
-
-  // Replaces the state of the currently selected tab with the session
-  // history restored from the SessionRestore system.
-  void ReplaceRestoredTab(
-      const std::vector<TabNavigation>& navigations,
-      int selected_navigation,
-      bool from_last_session,
-      const std::string& extension_app_id,
-      content::SessionStorageNamespace* session_storage_namespace);
 
   // Invoked when the fullscreen state of the window changes.
   // BrowserWindow::EnterFullscreen invokes this after the window has become
@@ -516,15 +443,6 @@ class Browser : public TabStripModelDelegate,
   // Overridden from content::PageNavigator:
   virtual content::WebContents* OpenURL(
       const content::OpenURLParams& params) OVERRIDE;
-
-  // Centralized method for creating a TabContents, configuring and
-  // installing all its supporting objects and observers.
-  static TabContents* TabContentsFactory(
-      Profile* profile,
-      content::SiteInstance* site_instance,
-      int routing_id,
-      const content::WebContents* base_web_contents,
-      content::SessionStorageNamespace* session_storage_namespace);
 
   // Overridden from TabStripModelDelegate:
   virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;

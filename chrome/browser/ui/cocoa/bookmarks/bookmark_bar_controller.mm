@@ -19,6 +19,7 @@
 #import "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
@@ -789,7 +790,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   GURL url;
   string16 title;
   bookmark_utils::GetURLAndTitleToBookmark(
-      browser_->GetActiveWebContents(), &url, &title);
+      chrome::GetActiveWebContents(browser_), &url, &title);
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        BookmarkEditor::EditDetails::AddNodeInFolder(
@@ -2293,7 +2294,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 #pragma mark BookmarkBarToolbarViewController Protocol
 
 - (int)currentTabContentsHeight {
-  WebContents* wc = browser_->GetActiveWebContents();
+  WebContents* wc = chrome::GetActiveWebContents(browser_);
   return wc ? wc->GetView()->GetContainerSize().height() : 0;
 }
 

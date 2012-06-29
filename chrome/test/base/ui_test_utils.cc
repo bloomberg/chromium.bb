@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -346,7 +347,7 @@ void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
 }
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
-  WebContents* web_contents = browser->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser);
   if (!web_contents)
     return false;
   NavigationEntry* last_entry = web_contents->GetController().GetActiveEntry();
@@ -400,7 +401,8 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   chrome::OpenURLOffTheRecord(profile, url);
   Browser* browser = browser::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(), false);
-  WaitForNavigations(&browser->GetActiveWebContents()->GetController(), 1);
+  WaitForNavigations(&chrome::GetActiveWebContents(browser)->GetController(),
+                     1);
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
@@ -428,11 +430,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int number_of_navigations,
     WindowOpenDisposition disposition,
     int browser_test_flags) {
-  if (disposition == CURRENT_TAB && browser->GetActiveWebContents())
-    WaitForLoadStop(browser->GetActiveWebContents());
+  if (disposition == CURRENT_TAB && chrome::GetActiveWebContents(browser))
+    WaitForLoadStop(chrome::GetActiveWebContents(browser));
   NavigationController* controller =
-      browser->GetActiveWebContents() ?
-      &browser->GetActiveWebContents()->GetController() : NULL;
+      chrome::GetActiveWebContents(browser) ?
+      &chrome::GetActiveWebContents(browser)->GetController() : NULL;
   content::TestNavigationObserver same_tab_observer(
       content::Source<NavigationController>(controller),
       NULL,
@@ -468,7 +470,8 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   WebContents* web_contents = NULL;
   if (disposition == NEW_BACKGROUND_TAB) {
     // We've opened up a new tab, but not selected it.
-    web_contents = browser->GetWebContentsAt(browser->active_index() + 1);
+    web_contents =
+        chrome::GetWebContentsAt(browser, browser->active_index() + 1);
     EXPECT_TRUE(web_contents != NULL)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";
@@ -477,7 +480,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       (disposition == NEW_FOREGROUND_TAB) ||
       (disposition == SINGLETON_TAB)) {
     // The currently selected tab is the right one.
-    web_contents = browser->GetActiveWebContents();
+    web_contents = chrome::GetActiveWebContents(browser);
   }
   if (disposition == CURRENT_TAB) {
     base::RunLoop run_loop;
@@ -521,7 +524,7 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
 DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
   JavaScriptExecutionController* executor =
       new InProcessJavaScriptExecutionController(
-          browser->GetActiveWebContents()->GetRenderViewHost());
+          chrome::GetActiveWebContents(browser)->GetRenderViewHost());
   int element_handle;
   executor->ExecuteJavaScriptAndGetReturn("document;", &element_handle);
   return executor->GetObjectProxy<DOMElementProxy>(element_handle);

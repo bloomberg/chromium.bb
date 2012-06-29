@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -41,7 +42,7 @@ void OldPanel::Initialize(const gfx::Rect& bounds, Browser* browser) {
 }
 
 content::WebContents* OldPanel::WebContents() const {
-  return browser_->GetActiveWebContents();
+  return chrome::GetActiveWebContents(browser_);
 }
 
 bool OldPanel::ShouldCloseWindow() {

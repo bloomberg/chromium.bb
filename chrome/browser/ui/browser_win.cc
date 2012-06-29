@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 
@@ -62,7 +63,7 @@ void PinCurrentPageToStartScreen(Browser* browser) {
   if (metro_module) {
     GURL url;
     string16 title;
-    TabContents* tab = browser->GetActiveTabContents();
+    TabContents* tab = chrome::GetActiveTabContents(browser);
     bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
 
     typedef BOOL (*MetroPinUrlToStartScreen)(const string16&, const string16&);

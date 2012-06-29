@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/browser/ui/browser.h",
+  "+chrome/browser/ui/browser_tabstrip.h",
   # Testing utilities can access anything in content/
   "+content",
   "+media/base",  # For ChannelLayout in WebRTC tests.

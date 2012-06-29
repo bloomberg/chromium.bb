@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -1417,7 +1418,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   panel_browser->tab_strip_model()->InsertTabContentsAt(
       0, contents, TabStripModel::ADD_NONE);
   chrome::SelectNumberedTab(panel_browser, 0);
-  EXPECT_EQ(contents, panel_browser->GetActiveTabContents());
+  EXPECT_EQ(contents, chrome::GetActiveTabContents(panel_browser));
   EXPECT_EQ(1, PanelManager::GetInstance()->num_panels());
 
   // Ensure that the tab contents were noticed by the panel by
@@ -1428,7 +1429,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel_browser->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(panel_browser)->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(50);"));
   enlarge.Wait();
@@ -1443,7 +1444,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   EXPECT_EQ(0, PanelManager::GetInstance()->num_panels());
 
   Browser* tabbed_browser = browser::FindTabbedBrowser(profile, false);
-  EXPECT_EQ(contents, tabbed_browser->GetActiveTabContents());
+  EXPECT_EQ(contents, chrome::GetActiveTabContents(tabbed_browser));
   tabbed_browser->window()->Close();
 }
 

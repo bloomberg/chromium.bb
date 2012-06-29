@@ -105,6 +105,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -485,7 +486,7 @@ void TestingAutomationProvider::ActivateTab(int handle,
   if (browser_tracker_->ContainsHandle(handle) && at_index > -1) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (at_index >= 0 && at_index < browser->tab_count()) {
-      browser->ActivateTabAt(at_index, true);
+      chrome::ActivateTabAt(browser, at_index, true);
       *status = 0;
     }
   }
@@ -501,8 +502,8 @@ void TestingAutomationProvider::AppendTab(int handle,
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = new TabAppendedNotificationObserver(browser, this,
                                                    reply_message);
-    TabContents* contents =
-        browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
+    TabContents* contents = chrome::AddSelectedTabWithURL(
+        browser, url, content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response = GetIndexForNavigationController(
           &contents->web_contents()->GetController(), browser);
@@ -547,7 +548,7 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
         controller->GetWebContents());
     DCHECK(browser);
     new TabClosedNotificationObserver(this, wait_until_closed, reply_message);
-    browser->CloseTabContents(controller->GetWebContents());
+    chrome::CloseWebContents(browser, controller->GetWebContents());
     return;
   }
 
@@ -1058,7 +1059,7 @@ void TestingAutomationProvider::GetTab(int win_handle,
   if (browser_tracker_->ContainsHandle(win_handle) && (tab_index >= 0)) {
     Browser* browser = browser_tracker_->GetResource(win_handle);
     if (tab_index < browser->tab_count()) {
-      WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+      WebContents* web_contents = chrome::GetWebContentsAt(browser, tab_index);
       *tab_handle = tab_tracker_->Add(&web_contents->GetController());
     }
   }
@@ -1087,7 +1088,7 @@ void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = browser::FindBrowserWithWebContents(
         tab->GetWebContents());
-    *tabstrip_index = browser->GetIndexOfController(tab);
+    *tabstrip_index = chrome::GetIndexOfTab(browser, tab->GetWebContents());
   }
 }
 
@@ -2217,7 +2218,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
   if (!tab_contents) {
     reply.SendError(StringPrintf("No such tab at index %d", tab_index));
     return;
@@ -2413,14 +2414,14 @@ void TestingAutomationProvider::GetBrowserInfo(
     // one dictionary item per tab.
     ListValue* tabs = new ListValue;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      WebContents* wc = browser->GetWebContentsAt(i);
+      WebContents* wc = chrome::GetWebContentsAt(browser, i);
       DictionaryValue* tab = new DictionaryValue;
       tab->SetInteger("index", i);
       tab->SetString("url", wc->GetURL().spec());
       tab->SetInteger("renderer_pid",
                       base::GetProcId(wc->GetRenderProcessHost()->GetHandle()));
       tab->Set("infobars", GetInfobarsInfo(wc));
-      tab->SetBoolean("pinned", browser->IsTabPinned(i));
+      tab->SetBoolean("pinned", browser->tab_strip_model()->IsTabPinned(i));
       tabs->Append(tab);
     }
     browser_item->Set("tabs", tabs);
@@ -2548,7 +2549,7 @@ void TestingAutomationProvider::GetNavigationInfo(
   int tab_index;
   WebContents* web_contents = NULL;
   if (!args->GetInteger("tab_index", &tab_index) ||
-      !(web_contents = browser->GetWebContentsAt(tab_index))) {
+      !(web_contents = chrome::GetWebContentsAt(browser, tab_index))) {
     reply.SendError("tab_index missing or invalid.");
     return;
   }
@@ -3187,7 +3188,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   NavigationController& controller =
-      browser->GetActiveWebContents()->GetController();
+      chrome::GetActiveWebContents(browser)->GetController();
   LocationBar* loc_bar = browser->window()->GetLocationBar();
   if (!loc_bar) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -3362,7 +3363,7 @@ void TestingAutomationProvider::SaveTabContents(
         .SendError("tab_index or filename param missing");
     return;
   } else {
-    web_contents = browser->GetWebContentsAt(tab_index);
+    web_contents = chrome::GetWebContentsAt(browser, tab_index);
     if (!web_contents) {
       AutomationJSONReply(this, reply_message).SendError("no tab at tab_index");
       return;
@@ -3675,7 +3676,7 @@ TabContents* GetTabContentsFromDict(const Browser* browser,
     return NULL;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
   if (!tab_contents) {
     *error_message = StringPrintf("No tab at index %d.", tab_index);
     return NULL;
@@ -4516,8 +4517,7 @@ void TestingAutomationProvider::GetAutofillProfile(
     return;
   }
 
-  TabContents* tab_contents =
-      browser->GetTabContentsAt(tab_index);
+  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
   if (tab_contents) {
     PersonalDataManager* pdm = PersonalDataManagerFactory::GetForProfile(
         tab_contents->profile()->GetOriginalProfile());
@@ -4582,7 +4582,7 @@ void TestingAutomationProvider::FillAutofillProfile(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
 
   if (tab_contents) {
     PersonalDataManager* pdm =
@@ -4626,7 +4626,7 @@ void TestingAutomationProvider::SubmitAutofillForm(
         .SendError("'tab_index' missing or invalid.");
     return;
   }
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
   if (!tab_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
@@ -4681,7 +4681,7 @@ void TestingAutomationProvider::AutofillTriggerSuggestions(
     return;
   }
 
-  WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+  WebContents* web_contents = chrome::GetWebContentsAt(browser, tab_index);
   if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
@@ -4705,7 +4705,7 @@ void TestingAutomationProvider::AutofillHighlightSuggestion(
     return;
   }
 
-  WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+  WebContents* web_contents = chrome::GetWebContentsAt(browser, tab_index);
   if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
@@ -4738,7 +4738,7 @@ void TestingAutomationProvider::AutofillAcceptSelection(
     return;
   }
 
-  WebContents* web_contents = browser->GetWebContentsAt(tab_index);
+  WebContents* web_contents = chrome::GetWebContentsAt(browser, tab_index);
   if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
@@ -5446,8 +5446,8 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   }
   // The key events will be sent to the browser window, we need the current tab
   // containing the element we send the text in to be shown.
-  browser->ActivateTabAt(
-      browser->GetIndexOfController(&web_contents->GetController()), true);
+  chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, web_contents),
+                        true);
 
   BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
@@ -5704,7 +5704,7 @@ void TestingAutomationProvider::LaunchApp(
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
 
-  WebContents* old_contents = browser->GetActiveWebContents();
+  WebContents* old_contents = chrome::GetActiveWebContents(browser);
   if (!old_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         "Cannot identify selected tab contents.");
@@ -5791,7 +5791,7 @@ void TestingAutomationProvider::GetV8HeapStats(
     return;
   }
 
-  web_contents = browser->GetWebContentsAt(tab_index);
+  web_contents = chrome::GetWebContentsAt(browser, tab_index);
   if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("Could not get WebContents at tab index %d", tab_index));
@@ -5825,7 +5825,7 @@ void TestingAutomationProvider::GetFPS(
     return;
   }
 
-  web_contents = browser->GetWebContentsAt(tab_index);
+  web_contents = chrome::GetWebContentsAt(browser, tab_index);
   if (!web_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("Could not get WebContents at tab index %d", tab_index));
@@ -5864,7 +5864,7 @@ void TestingAutomationProvider::IsMouseLocked(Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   DictionaryValue dict;
-  dict.SetBoolean("result", browser->GetActiveWebContents()->
+  dict.SetBoolean("result", chrome::GetActiveWebContents(browser)->
       GetRenderViewHost()->GetView()->IsMouseLocked());
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
@@ -5921,7 +5921,7 @@ void TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest(
     Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
-  WebContents* fullscreen_tab = browser->GetActiveWebContents();
+  WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser);
   FullscreenExitBubbleType type =
       browser->fullscreen_controller_->GetFullscreenExitBubbleType();
   browser->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
@@ -6064,7 +6064,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
   for (; iter != BrowserList::end(); ++iter, ++browser_index) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContents* tab = browser->GetTabContentsAt(tab_index);
+      TabContents* tab = chrome::GetTabContentsAt(browser, tab_index);
       if (tab->restore_tab_helper()->session_id().id() == id) {
         DictionaryValue dict;
         dict.SetInteger("windex", browser_index);
@@ -6410,7 +6410,7 @@ void TestingAutomationProvider::GetTabIds(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      int id = browser->GetTabContentsAt(i)->restore_tab_helper()->
+      int id = chrome::GetTabContentsAt(browser, i)->restore_tab_helper()->
           session_id().id();
       id_list->Append(Value::CreateIntegerValue(id));
     }
@@ -6429,7 +6429,7 @@ void TestingAutomationProvider::GetViews(
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = browser->GetTabContentsAt(i);
+      TabContents* tab = chrome::GetTabContentsAt(browser, i);
       DictionaryValue* dict = new DictionaryValue();
       AutomationId id = automation_util::GetIdForTab(tab);
       dict->Set("auto_id", id.ToValue());
@@ -6482,7 +6482,7 @@ void TestingAutomationProvider::IsTabIdValid(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = browser->GetTabContentsAt(i);
+      TabContents* tab = chrome::GetTabContentsAt(browser, i);
       if (tab->restore_tab_helper()->session_id().id() == id) {
         is_valid = true;
         break;
@@ -6518,7 +6518,7 @@ void TestingAutomationProvider::CloseTabJSON(
   std::string error;
   // Close tabs synchronously.
   if (GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
-    browser->CloseTabContents(tab);
+    chrome::CloseWebContents(browser, tab);
     reply.SendSuccess(NULL);
     return;
   }
@@ -6598,8 +6598,8 @@ void TestingAutomationProvider::ActivateTabJSON(
     reply.SendError(error);
     return;
   }
-  browser->ActivateTabAt(
-      browser->GetIndexOfController(&web_contents->GetController()), true);
+  chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, web_contents),
+                        true);
   reply.SendSuccess(NULL);
 }
 
@@ -6737,8 +6737,6 @@ void TestingAutomationProvider::OnRemoveProvider() {
 
 void TestingAutomationProvider::EnsureTabSelected(Browser* browser,
                                                   WebContents* tab) {
-  if (browser->GetActiveWebContents() != tab) {
-    browser->ActivateTabAt(browser->GetIndexOfController(
-        &tab->GetController()), true);
-  }
+  if (chrome::GetActiveWebContents(browser) != tab)
+    chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, tab), true);
 }

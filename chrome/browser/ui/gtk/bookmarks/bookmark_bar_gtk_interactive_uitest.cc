@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -37,10 +38,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkInteractiveUITest, FindBarTest) {
 
   // Create new tab with an arbitrary URL.
   GURL url = test_server()->GetURL(kSimplePage);
-  browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
+  chrome::AddSelectedTabWithURL(browser(), url, content::PAGE_TRANSITION_TYPED);
 
   // Switch back to the NTP with the active findbar.
-  browser()->ActivateTabAt(1, false);
+  chrome::ActivateTabAt(browser(), 1, false);
 
   // Wait for the findbar to show.
   MessageLoop::current()->RunAllPending();

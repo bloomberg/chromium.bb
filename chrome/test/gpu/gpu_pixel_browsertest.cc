@@ -9,6 +9,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
@@ -166,7 +167,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     js_call << ");";
 
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-        browser()->GetActiveWebContents()->GetRenderViewHost(),
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
         L"", js_call.str()));
 
     std::string message;
@@ -373,7 +374,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   // have if the tab contents have the desired size.
   gfx::Rect GetNewTabContainerBounds(const gfx::Size& desired_size) {
     gfx::Rect container_rect;
-    browser()->GetActiveWebContents()->GetContainerBounds(&container_rect);
+    chrome::GetActiveWebContents(browser())->GetContainerBounds(&container_rect);
     // Size cannot be negative, so use a point.
     gfx::Point correction(
         desired_size.width() - container_rect.size().width(),
@@ -393,7 +394,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     gfx::Rect root_bounds = browser()->window()->GetBounds();
     gfx::Rect tab_contents_bounds;
-    browser()->GetActiveWebContents()->GetContainerBounds(
+    chrome::GetActiveWebContents(browser())->GetContainerBounds(
         &tab_contents_bounds);
 
     gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),

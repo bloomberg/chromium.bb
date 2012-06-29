@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -84,7 +85,7 @@ class DumpAccessibilityTreeTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        PlatformTreeDifferenceTest) {
   RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
-          browser()->GetActiveWebContents()->GetRenderWidgetHostView());
+      chrome::GetActiveWebContents(browser())->GetRenderWidgetHostView());
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
   RenderViewHostImpl* view_host =
       static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(host));

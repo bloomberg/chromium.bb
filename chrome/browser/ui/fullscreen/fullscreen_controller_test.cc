@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,7 +55,7 @@ void FullscreenControllerTest::ToggleBrowserFullscreen(bool enter_fullscreen) {
 void FullscreenControllerTest::RequestToLockMouse(
     bool user_gesture,
     bool last_unlocked_by_target) {
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   browser()->RequestToLockMouse(tab, user_gesture,
       last_unlocked_by_target);
 }
@@ -109,7 +110,7 @@ bool FullscreenControllerTest::IsFullscreenBubbleDisplayingButtons() {
 }
 
 void FullscreenControllerTest::AcceptCurrentFullscreenOrMouseLockRequest() {
-  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
+  WebContents* fullscreen_tab = chrome::GetActiveWebContents(browser());
   FullscreenExitBubbleType type =
       browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
   browser()->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
@@ -151,7 +152,7 @@ void FullscreenControllerTest::Reload() {
 
 void FullscreenControllerTest::ToggleTabFullscreen_Internal(
     bool enter_fullscreen, bool retry_until_success) {
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   if (IsFullscreenForBrowser()) {
     // Changing tab fullscreen state will not actually change the window
     // when browser fullscreen is in effect.

@@ -7,7 +7,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabrestore.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 
 using content::NavigationController;
@@ -36,15 +39,15 @@ std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
 
 WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
     int index) const {
-  return browser_->GetWebContentsAt(index);
+  return chrome::GetWebContentsAt(browser_, index);
 }
 
 WebContents* BrowserTabRestoreServiceDelegate::GetActiveWebContents() const {
-  return browser_->GetActiveWebContents();
+  return chrome::GetActiveWebContents(browser_);
 }
 
 bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {
-  return browser_->IsTabPinned(index);
+  return browser_->tab_strip_model()->IsTabPinned(index);
 }
 
 WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
@@ -56,9 +59,9 @@ WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
       bool pin,
       bool from_last_session,
       SessionStorageNamespace* storage_namespace) {
-  return browser_->AddRestoredTab(navigations, tab_index, selected_navigation,
-                                  extension_app_id, select, pin,
-                                  from_last_session, storage_namespace);
+  return chrome::AddRestoredTab(browser_, navigations, tab_index,
+                                selected_navigation, extension_app_id, select,
+                                pin, from_last_session, storage_namespace);
 }
 
 void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
@@ -67,9 +70,9 @@ void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
       bool from_last_session,
       const std::string& extension_app_id,
       SessionStorageNamespace* session_storage_namespace) {
-  browser_->ReplaceRestoredTab(navigations, selected_navigation,
-                               from_last_session, extension_app_id,
-                               session_storage_namespace);
+  chrome::ReplaceRestoredTab(browser_, navigations, selected_navigation,
+                             from_last_session, extension_app_id,
+                             session_storage_namespace);
 }
 
 void BrowserTabRestoreServiceDelegate::CloseTab() {

@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/pref_names.h"
@@ -386,14 +387,14 @@ void OpenAll(gfx::NativeWindow parent,
   NewBrowserPageNavigator navigator_impl(profile);
   if (!navigator) {
     Browser* browser = browser::FindTabbedBrowser(profile, false);
-    if (!browser || !browser->GetActiveWebContents()) {
+    if (!browser || !chrome::GetActiveWebContents(browser)) {
       navigator = &navigator_impl;
     } else {
       if (initial_disposition != NEW_WINDOW &&
           initial_disposition != OFF_THE_RECORD) {
         browser->window()->Activate();
       }
-      navigator = browser->GetActiveWebContents();
+      navigator = chrome::GetActiveWebContents(browser);
     }
   }
 
@@ -664,8 +665,9 @@ void GetURLsForOpenTabs(
     std::vector<std::pair<GURL, string16> >* urls) {
   for (int i = 0; i < browser->tab_count(); ++i) {
     std::pair<GURL, string16> entry;
-    GetURLAndTitleToBookmark(browser->GetWebContentsAt(i), &(entry.first),
-                             &(entry.second));
+    GetURLAndTitleToBookmark(
+        chrome::GetWebContentsAt(browser, i), &(entry.first),
+        &(entry.second));
     urls->push_back(entry);
   }
 }

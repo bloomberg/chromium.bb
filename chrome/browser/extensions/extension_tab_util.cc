@@ -11,6 +11,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -155,7 +156,7 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
   DCHECK(browser);
   DCHECK(contents);
 
-  *contents = browser->GetActiveTabContents();
+  *contents = chrome::GetActiveTabContents(browser);
   if (*contents) {
     if (tab_id)
       *tab_id = ExtensionTabUtil::GetTabId((*contents)->web_contents());

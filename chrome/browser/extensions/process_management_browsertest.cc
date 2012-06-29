@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -109,25 +110,25 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ProcessOverflow) {
   // Get tab processes.
   ASSERT_EQ(9, browser()->tab_count());
   content::RenderProcessHost* isolated1_host =
-      browser()->GetWebContentsAt(0)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 0)->GetRenderProcessHost();
   content::RenderProcessHost* ntp1_host =
-      browser()->GetWebContentsAt(1)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 1)->GetRenderProcessHost();
   content::RenderProcessHost* hosted1_host =
-      browser()->GetWebContentsAt(2)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 2)->GetRenderProcessHost();
   content::RenderProcessHost* web1_host =
-      browser()->GetWebContentsAt(3)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 3)->GetRenderProcessHost();
 
   content::RenderProcessHost* isolated2_host =
-      browser()->GetWebContentsAt(4)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 4)->GetRenderProcessHost();
   content::RenderProcessHost* ntp2_host =
-      browser()->GetWebContentsAt(5)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 5)->GetRenderProcessHost();
   content::RenderProcessHost* hosted2_host =
-      browser()->GetWebContentsAt(6)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 6)->GetRenderProcessHost();
   content::RenderProcessHost* web2_host =
-      browser()->GetWebContentsAt(7)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 7)->GetRenderProcessHost();
 
   content::RenderProcessHost* second_isolated1_host =
-      browser()->GetWebContentsAt(8)->GetRenderProcessHost();
+      chrome::GetWebContentsAt(browser(), 8)->GetRenderProcessHost();
 
   // Get extension processes.
   ExtensionProcessManager* process_manager =

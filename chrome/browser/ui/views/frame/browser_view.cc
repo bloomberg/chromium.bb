@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
@@ -214,7 +215,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
     int height = 0;
-    WebContents* contents = browser_->GetActiveWebContents();
+    WebContents* contents = chrome::GetActiveWebContents(browser_);
     if (contents && contents->GetView())
       height = contents->GetView()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
@@ -528,11 +529,11 @@ bool BrowserView::ActivateAppModalDialog() const {
 }
 
 WebContents* BrowserView::GetActiveWebContents() const {
-  return browser_->GetActiveWebContents();
+  return chrome::GetActiveWebContents(browser_.get());
 }
 
 TabContents* BrowserView::GetActiveTabContents() const {
-  return browser_->GetActiveTabContents();
+  return chrome::GetActiveTabContents(browser_.get());
 }
 
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
@@ -651,7 +652,7 @@ void BrowserView::BookmarkBarStateChanged(
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(), change_type);
   }
-  if (MaybeShowBookmarkBar(browser_->GetActiveTabContents()))
+  if (MaybeShowBookmarkBar(chrome::GetActiveTabContents(browser_.get())))
     Layout();
 }
 
@@ -830,7 +831,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
       is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
   if (use_fast_resize)
     contents_container_->SetFastResize(true);
-  UpdateUIForContents(browser_->GetActiveTabContents());
+  UpdateUIForContents(chrome::GetActiveTabContents(browser_.get()));
   if (use_fast_resize)
     contents_container_->SetFastResize(false);
 
@@ -1526,7 +1527,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
   if (browser_->is_app()) {
-    TabContents* contents = browser_->GetActiveTabContents();
+    TabContents* contents = chrome::GetActiveTabContents(browser_.get());
     if (contents && contents->extension_tab_helper()->GetExtensionAppIcon())
       return *contents->extension_tab_helper()->GetExtensionAppIcon();
   }
@@ -2003,7 +2004,7 @@ void BrowserView::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    WebContents* web_contents = browser_->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
     // GetActiveWebContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on a timer
     // through LoadingAnimationCallback.

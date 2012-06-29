@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/navigation_controller.h"
@@ -76,8 +77,8 @@ void WebIntentInlineDispositionDelegate::AddNewContents(
   // requested.
   disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  browser->AddWebContents(
-      new_contents, disposition, initial_pos, user_gesture);
+  chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
+                         user_gesture);
 }
 
 void WebIntentInlineDispositionDelegate::LoadingStateChanged(

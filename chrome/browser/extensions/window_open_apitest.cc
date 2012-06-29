@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -263,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
   WebContents* newtab;
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetActiveWebContents(),
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
                           start_url.Resolve("newtab.html"), true, &newtab));
 
   bool result = false;
@@ -281,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   GURL start_url(std::string("chrome-extension://") +
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetActiveWebContents(),
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
       GURL("chrome-extension://thisissurelynotavalidextensionid/newtab.html"),
       false, NULL));
 
@@ -298,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   WebContents* newtab;
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetActiveWebContents(),
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
           "/newtab.html"), false, &newtab));
 

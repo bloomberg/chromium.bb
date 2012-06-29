@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -242,8 +243,8 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
 
     if (disposition == CURRENT_TAB) {
       // If current tab is not NTP, change disposition to NEW_FOREGROUND_TAB.
-      const GURL& url = browser->GetActiveWebContents() ?
-          browser->GetActiveWebContents()->GetURL() : GURL();
+      const GURL& url = chrome::GetActiveWebContents(browser) ?
+          chrome::GetActiveWebContents(browser)->GetURL() : GURL();
       if (!url.SchemeIs(chrome::kChromeUIScheme) ||
           url.host() != chrome::kChromeUINewTabHost) {
         disposition = NEW_FOREGROUND_TAB;

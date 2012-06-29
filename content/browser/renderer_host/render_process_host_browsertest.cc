@@ -8,6 +8,7 @@
 #include "base/process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -46,7 +47,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
   // handle.
   base::ProcessHandle ShowSingletonTab(const GURL& page) {
     chrome::ShowSingletonTab(browser(), page);
-    WebContents* wc = browser()->GetActiveWebContents();
+    WebContents* wc = chrome::GetActiveWebContents(browser());
     CHECK(wc->GetURL() == page);
 
     // Ensure that the backgrounding / foregrounding gets a chance to run.
@@ -75,7 +76,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     GURL newtab(chrome::kTestNewTabURL);
     ui_test_utils::NavigateToURL(browser(), newtab);
     EXPECT_EQ(tab_count, browser()->tab_count());
-    tab1 = browser()->GetWebContentsAt(tab_count - 1);
+    tab1 = chrome::GetWebContentsAt(browser(), tab_count - 1);
     rph1 = tab1->GetRenderProcessHost();
     EXPECT_EQ(tab1->GetURL(), newtab);
     EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -88,7 +89,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     tab_count++;
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_count());
-    tab1 = browser()->GetWebContentsAt(tab_count - 1);
+    tab1 = chrome::GetWebContentsAt(browser(), tab_count - 1);
     rph2 = tab1->GetRenderProcessHost();
     EXPECT_EQ(tab1->GetURL(), page1);
     EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -101,7 +102,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
     EXPECT_EQ(tab_count, browser()->tab_count());
-    tab2 = browser()->GetWebContentsAt(tab_count - 1);
+    tab2 = chrome::GetWebContentsAt(browser(), tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), page2);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_EQ(tab2->GetRenderProcessHost(), rph2);
@@ -116,7 +117,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
     EXPECT_EQ(tab_count, browser()->tab_count());
-    tab2 = browser()->GetWebContentsAt(tab_count - 1);
+    tab2 = chrome::GetWebContentsAt(browser(), tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), history);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_EQ(tab2->GetRenderProcessHost(), rph1);
@@ -130,7 +131,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     tab_count++;
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_count());
-    tab1 = browser()->GetWebContentsAt(tab_count - 1);
+    tab1 = chrome::GetWebContentsAt(browser(), tab_count - 1);
     rph3 = tab1->GetRenderProcessHost();
     EXPECT_EQ(tab1->GetURL(), bookmarks);
     EXPECT_EQ(host_count, RenderProcessHostCount());

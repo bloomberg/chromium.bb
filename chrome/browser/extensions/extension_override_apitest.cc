@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -52,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     // Navigate to the new tab page.  The overridden new tab page
     // will call chrome.test.notifyPass() .
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
-    WebContents* tab = browser()->GetActiveWebContents();
+    WebContents* tab = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(tab->GetController().GetActiveEntry());
     EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
                 SchemeIs(chrome::kExtensionScheme));
@@ -79,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
                                      GURL("chrome://newtab/"));
   Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
-  WebContents* tab = otr_browser->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(otr_browser);
   ASSERT_TRUE(tab->GetController().GetActiveEntry());
   EXPECT_FALSE(tab->GetController().GetActiveEntry()->GetURL().
                SchemeIs(chrome::kExtensionScheme));

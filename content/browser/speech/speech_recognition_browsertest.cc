@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -202,7 +203,7 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
     mouse_event.x = 0;
     mouse_event.y = 0;
     mouse_event.clickCount = 1;
-    WebContents* web_contents = browser()->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser());
 
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -225,7 +226,7 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
     // then sets the URL fragment as 'pass' if it received the expected string.
     LoadAndStartSpeechRecognitionTest(filename);
 
-    EXPECT_EQ("pass", browser()->GetActiveWebContents()->GetURL().ref());
+    EXPECT_EQ("pass", chrome::GetActiveWebContents(browser())->GetURL().ref());
   }
 
   // InProcessBrowserTest methods.

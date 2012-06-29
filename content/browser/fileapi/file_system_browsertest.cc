@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -40,11 +41,12 @@ class FileSystemBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         the_browser, test_url, 2);
     LOG(INFO) << "Navigation done.";
-    std::string result = the_browser->GetActiveWebContents()->GetURL().ref();
+    std::string result =
+        chrome::GetActiveWebContents(the_browser)->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          the_browser->GetActiveWebContents()->GetRenderViewHost(), L"",
+          chrome::GetActiveWebContents(the_browser)->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }

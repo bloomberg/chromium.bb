@@ -6,6 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -199,6 +200,6 @@ class EncodingMenuModelTest : public BrowserWithTestWindowTest,
 
 TEST_F(EncodingMenuModelTest, IsCommandIdCheckedWithNoTabs) {
   EncodingMenuModel model(browser());
-  ASSERT_EQ(NULL, browser()->GetActiveWebContents());
+  ASSERT_EQ(NULL, chrome::GetActiveWebContents(browser()));
   EXPECT_FALSE(model.IsCommandIdChecked(IDC_ENCODING_ISO88591));
 }

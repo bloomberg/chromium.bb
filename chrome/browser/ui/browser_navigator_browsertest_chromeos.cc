@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 
@@ -54,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_EQ(incognito_browser, p.browser);
   EXPECT_EQ(2, incognito_browser->tab_count());
   EXPECT_EQ(GURL("chrome://chrome/settings"),
-            incognito_browser->GetActiveWebContents()->GetURL());
+            chrome::GetActiveWebContents(incognito_browser)->GetURL());
 }
 
 }  // namespace

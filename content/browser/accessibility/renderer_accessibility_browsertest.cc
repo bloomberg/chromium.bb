@@ -7,6 +7,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -42,7 +43,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
     content::RenderWidgetHostView* host_view =
-        browser()->GetActiveWebContents()->GetRenderWidgetHostView();
+        chrome::GetActiveWebContents(browser())->GetRenderWidgetHostView();
     RenderWidgetHostImpl* host =
         RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
     RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(host);

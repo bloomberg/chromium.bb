@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -61,7 +62,7 @@ class AutofillPopupViewBrowserTest : public InProcessBrowserTest {
   virtual ~AutofillPopupViewBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    web_contents_ = browser()->GetActiveWebContents();
+    web_contents_ = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(web_contents_ != NULL);
 
     autofill_popup_view_.reset(new TestAutofillPopupView(
@@ -82,8 +83,8 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<content::WebContents>(web_contents_));
-  browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
-                                   content::PAGE_TRANSITION_START_PAGE);
+  chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
+                                content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
 
   // The mock verifies that the call was made.

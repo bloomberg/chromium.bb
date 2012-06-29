@@ -17,6 +17,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
@@ -320,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnSubmitEvent)) {
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetActiveWebContents());
+  EXPECT_EQ(preview_tab, chrome::GetActiveWebContents(browser()));
 
   // We should have two entries. One corresponding to the page the user was
   // first on, and one for the search page.
@@ -358,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetActiveWebContents());
+  EXPECT_EQ(preview_tab, chrome::GetActiveWebContents(browser()));
 
   // Check that the value is reflected and oncancel is called.
   EXPECT_EQ("true 0 1 1 true d false def false 3 3",
@@ -721,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   EXPECT_FALSE(preview());
 
   // The searchBox actually gets cleared on commit.
-  ASSERT_TRUE(GetStringFromJavascript(browser()->GetActiveWebContents(),
+  ASSERT_TRUE(GetStringFromJavascript(chrome::GetActiveWebContents(browser()),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 
@@ -729,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL("files/empty.html"));
 
-  ASSERT_TRUE(GetStringFromJavascript(browser()->GetActiveWebContents(),
+  ASSERT_TRUE(GetStringFromJavascript(chrome::GetActiveWebContents(browser()),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 }
@@ -792,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
 
   // Initially navigate to the empty page which should be visible.
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(""));
-  WebContents* initial_contents = browser()->GetActiveWebContents();
+  WebContents* initial_contents = chrome::GetActiveWebContents(browser());
 
   ASSERT_TRUE(CheckVisibilityIs(initial_contents, true));
 
@@ -817,7 +818,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
 
   // Commit the preview.
   ASSERT_TRUE(PressEnter());
-  EXPECT_EQ(preview_contents, browser()->GetActiveWebContents());
+  EXPECT_EQ(preview_contents, chrome::GetActiveWebContents(browser()));
   ASSERT_TRUE(CheckVisibilityIs(preview_contents, true));
 }
 

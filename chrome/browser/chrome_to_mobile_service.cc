@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
@@ -249,7 +250,7 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   DCHECK(!access_token_.empty());
   RequestData data;
   data.mobile_id = mobile_id;
-  content::WebContents* web_contents = browser->GetActiveWebContents();
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
   data.url = web_contents->GetURL();
   data.title = web_contents->GetTitle();
   data.snapshot_path = snapshot;
@@ -337,9 +338,9 @@ void ChromeToMobileService::SnapshotFileCreated(
   snapshots_.insert(path);
 
   Browser* browser = browser::FindBrowserWithID(browser_id);
-  if (success && browser && browser->GetActiveWebContents()) {
+  if (success && browser && chrome::GetActiveWebContents(browser)) {
     // Generate the snapshot and have the observer be called back on completion.
-    browser->GetActiveWebContents()->GenerateMHTML(path,
+    chrome::GetActiveWebContents(browser)->GenerateMHTML(path,
         base::Bind(&Observer::SnapshotGenerated, observer));
   } else if (observer.get()) {
     // Signal snapshot generation failure.

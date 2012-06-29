@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
@@ -23,7 +24,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void NavigateAndCheckText(const std::string& url,
                             const std::string& expected_text,
                             bool should_display) {
-    WebContents* contents = browser()->GetWebContentsAt(0);
+    WebContents* contents = chrome::GetWebContentsAt(browser(), 0);
     browser()->OpenURL(OpenURLParams(
         GURL(url), Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
         false));

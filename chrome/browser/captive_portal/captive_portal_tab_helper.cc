@@ -11,6 +11,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -160,15 +161,15 @@ void CaptivePortalTabHelper::OpenLoginTab() {
   // TODO(mmenke):  Consider focusing that tab, at least if this is the tab
   //                helper for the currently active tab for the profile.
   for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContents* tab_contents = browser->GetTabContentsAt(i);
+    TabContents* tab_contents = chrome::GetTabContentsAt(browser, i);
     if (tab_contents->captive_portal_tab_helper()->IsLoginTab())
       return;
   }
 
   // Otherwise, open a login tab.  Only end up here when a captive portal result
   // was received, so it's safe to assume |profile_| has a CaptivePortalService.
-  TabContents* tab_contents =
-      browser->AddSelectedTabWithURL(
+  TabContents* tab_contents = chrome::AddSelectedTabWithURL(
+          browser,
           CaptivePortalServiceFactory::GetForProfile(profile_)->test_url(),
           content::PAGE_TRANSITION_TYPED);
   tab_contents->captive_portal_tab_helper()->SetIsLoginTab();

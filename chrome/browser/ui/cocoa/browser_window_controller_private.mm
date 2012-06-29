@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
@@ -482,7 +483,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // If the relayout shifts the content area up or down, let the renderer know.
   if (contentShifted) {
-    if (WebContents* contents = browser_->GetActiveWebContents()) {
+    if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->WindowFrameChanged();
     }
@@ -497,7 +498,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (BOOL)shouldShowDetachedBookmarkBar {
   DCHECK(browser_.get());
-  TabContents* tab = browser_->GetActiveTabContents();
+  TabContents* tab = chrome::GetActiveTabContents(browser_.get());
   return (tab && tab->bookmark_tab_helper()->ShouldShowBookmarkBar() &&
           ![previewableContentsController_ isShowingPreview]);
 }

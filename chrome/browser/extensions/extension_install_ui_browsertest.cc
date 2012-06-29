@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -24,7 +25,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   // Checks that a theme info bar is currently visible and issues an undo to
   // revert to the previous theme.
   void VerifyThemeInfoBarAndUndoInstall() {
-    TabContents* tab = browser()->GetActiveTabContents();
+    TabContents* tab = chrome::GetActiveTabContents(browser());
     ASSERT_TRUE(tab);
     InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
     ASSERT_EQ(1U, infobar_helper->infobar_count());
@@ -50,7 +51,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_TestThemeInstallUndoResetsToDefault) {
-  ui_test_utils::CloseAllInfoBars(browser()->GetActiveTabContents());
+  ui_test_utils::CloseAllInfoBars(chrome::GetActiveTabContents(browser()));
 
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
@@ -79,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        TestThemeInstallUndoResetsToPreviousTheme) {
-  ui_test_utils::CloseAllInfoBars(browser()->GetActiveTabContents());
+  ui_test_utils::CloseAllInfoBars(chrome::GetActiveTabContents(browser()));
 
   // Install first theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme");
@@ -109,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_tabs + 1, browser()->tab_count());
-    WebContents* web_contents = browser()->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(web_contents);
     EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                                 "chrome://newtab/", false));
@@ -134,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
   if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
-    WebContents* web_contents = browser()->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(web_contents);
     EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                                 "chrome://newtab/", false));

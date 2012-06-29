@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -221,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
 
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -258,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlank) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
       << message_;
 
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -302,9 +303,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
       "files/extensions/api_test/webnavigation/targetBlank/a.html");
 
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
-  WebContents* tab = browser::FindTabbedBrowser(
-      browser()->profile()->GetOffTheRecordProfile(), false)->
-          GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false));
 
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.

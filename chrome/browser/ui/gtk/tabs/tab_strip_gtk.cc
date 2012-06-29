@@ -23,6 +23,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -2198,7 +2199,7 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
 
       Browser* browser = window_->browser();
       DCHECK(browser);
-      browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
+      chrome::AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_TYPED);
       break;
     }
     default:

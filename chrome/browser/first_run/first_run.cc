@@ -29,6 +29,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -513,7 +514,7 @@ void FirstRunBubbleLauncher::Observe(
     return;
   }
 
-  content::WebContents* contents = browser->GetActiveWebContents();
+  content::WebContents* contents = chrome::GetActiveWebContents(browser);
   if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
     // Suppress the first run bubble if the sync promo is showing.
     if (contents->GetURL().host() == chrome::kChromeUISyncPromoHost)

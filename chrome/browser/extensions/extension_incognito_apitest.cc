@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -33,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
 
   Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
-  WebContents* tab = otr_browser->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(otr_browser);
 
   // Verify the script didn't run.
   bool result = false;
@@ -70,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
 
   Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
-  WebContents* tab = otr_browser->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(otr_browser);
 
   // Verify the script ran.
   bool result = false;

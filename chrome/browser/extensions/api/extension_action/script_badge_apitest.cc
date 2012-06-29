@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -24,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ScriptBadge) {
   const ExtensionAction* script_badge = extension->script_badge();
   ASSERT_TRUE(script_badge);
 
-  const int tab_id = browser()->GetActiveTabContents()->
+  const int tab_id = chrome::GetActiveTabContents(browser())->
       extension_tab_helper()->tab_id();
   EXPECT_EQ(GURL(extension->GetResourceURL("default_popup.html")),
             script_badge->GetPopupUrl(tab_id));

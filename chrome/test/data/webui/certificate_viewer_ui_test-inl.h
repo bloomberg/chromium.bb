@@ -4,6 +4,7 @@
 
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
@@ -38,7 +39,7 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   CertificateViewerDialog* dialog = new CertificateViewerDialog(
       google_cert);
   dialog->AddObserver(&dialog_observer);
-  dialog->Show(browser()->GetActiveWebContents(),
+  dialog->Show(chrome::GetActiveWebContents(browser()),
                browser()->window()->GetNativeWindow());
   dialog->RemoveObserver(&dialog_observer);
   content::WebUI* webui = dialog_observer.GetWebUI();

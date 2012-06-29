@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
@@ -416,7 +417,7 @@ WebContents* BackForwardMenuModel::GetWebContents() const {
   // We use the test web contents if the unit test has specified it.
   return test_web_contents_ ?
       test_web_contents_ :
-      browser_->GetActiveWebContents();
+      chrome::GetActiveWebContents(browser_);
 }
 
 int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {

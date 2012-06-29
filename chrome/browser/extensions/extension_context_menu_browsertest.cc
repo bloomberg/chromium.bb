@@ -15,6 +15,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
@@ -143,7 +144,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
                                         const GURL& page_url,
                                         const GURL& link_url,
                                         const GURL& frame_url) {
-    WebContents* web_contents = browser->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser);
     WebContextMenuData data;
     content::ContextMenuParams params(data);
     params.page_url = page_url;

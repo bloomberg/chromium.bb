@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -115,7 +116,7 @@ std::string GetUserEmail() {
 int GetIndexOfFeedbackTab(Browser* browser) {
   GURL feedback_url(chrome::kChromeUIFeedbackURL);
   for (int i = 0; i < browser->tab_count(); ++i) {
-    WebContents* tab = browser->GetWebContentsAt(i);
+    WebContents* tab = chrome::GetWebContentsAt(browser, i);
     if (tab && tab->GetURL().GetWithEmptyPath() == feedback_url)
       return i;
   }
@@ -145,7 +146,7 @@ void ShowWebFeedbackView(Browser* browser,
   int feedback_tab_index = GetIndexOfFeedbackTab(browser);
   if (feedback_tab_index >= 0) {
     // Do not refresh screenshot, do not create a new tab
-    browser->ActivateTabAt(feedback_tab_index, true);
+    chrome::ActivateTabAt(browser, feedback_tab_index, true);
     return;
   }
 
@@ -385,7 +386,7 @@ bool FeedbackHandler::Init() {
   if (!browser || index >= browser->tab_count())
     return false;
 
-  WebContents* target_tab = browser->GetWebContentsAt(index);
+  WebContents* target_tab = chrome::GetWebContentsAt(browser, index);
   if (target_tab) {
     target_tab_url_ = target_tab->GetURL().spec();
   }

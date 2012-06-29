@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
@@ -58,7 +59,7 @@ void WebIntentSheetControllerBrowserTest::CreatePicker() {
 }
 
 IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest, CloseWillClose) {
-  CreateBubble(browser()->GetActiveTabContents());
+  CreateBubble(chrome::GetActiveTabContents(browser()));
 
   EXPECT_CALL(delegate_, OnPickerClosed()).Times(0);
   EXPECT_CALL(delegate_, OnClosing());
@@ -69,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest, CloseWillClose) {
 
 IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest,
     DontCancelAfterServiceInvokation) {
-  CreateBubble(browser()->GetActiveTabContents());
+  CreateBubble(chrome::GetActiveTabContents(browser()));
 
   GURL url;
   model_.AddInstalledService(string16(), url,

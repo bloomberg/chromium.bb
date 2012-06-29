@@ -6,6 +6,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -59,7 +60,7 @@ class SearchProviderTest : public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
     // Bundle up information needed to verify the result.
-    content::WebContents* tab = browser->GetActiveWebContents();
+    content::WebContents* tab = chrome::GetActiveWebContents(browser);
     return IsSearchProviderTestData(tab, host, test_url);
   }
 

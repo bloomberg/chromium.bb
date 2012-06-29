@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -829,8 +830,7 @@ void BrowserWindowGtk::BookmarkBarStateChanged(
 }
 
 void BrowserWindowGtk::UpdateDevTools() {
-  UpdateDevToolsForContents(
-      browser_->GetActiveWebContents());
+  UpdateDevToolsForContents(chrome::GetActiveWebContents(browser_.get()));
 }
 
 void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side) {
@@ -873,7 +873,7 @@ void BrowserWindowGtk::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    WebContents* web_contents = browser_->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
     // GetSelectedTabContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on
     // a timer through LoadingAnimationCallback.
@@ -1286,7 +1286,7 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
     autofill::PasswordGenerator* password_generator,
     const webkit::forms::PasswordForm& form) {
-  WebContents* web_contents = browser_->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
   if (!web_contents || !web_contents->GetContentNativeView()) {
     return;
   }
@@ -1327,7 +1327,8 @@ void BrowserWindowGtk::Observe(int type,
 void BrowserWindowGtk::TabDetachedAt(TabContents* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
-  // browser_->GetActiveWebContents() will return NULL or something else.
+  // chrome::GetActiveWebContents(browser_.get()) will return NULL or something
+  // else.
   if (index == browser_->active_index()) {
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
@@ -2220,8 +2221,7 @@ gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
 
   // If a widget besides the native view is focused, we have to try to handle
   // the custom accelerators before letting it handle them.
-  WebContents* current_web_contents =
-      browser()->GetActiveWebContents();
+  WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
   // The current tab might not have a render view if it crashed.
   if (!current_web_contents || !current_web_contents->GetContentNativeView() ||
       !gtk_widget_is_focus(current_web_contents->GetContentNativeView())) {

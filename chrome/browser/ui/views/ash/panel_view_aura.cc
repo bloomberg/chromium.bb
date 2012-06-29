@@ -17,6 +17,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -145,9 +146,10 @@ void PanelHost::AddNewContents(content::WebContents* source,
                                bool user_gesture) {
   Browser* browser = browser::FindLastActiveWithProfile(
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
-  if (!browser)
-    return;
-  browser->AddWebContents(new_contents, disposition, initial_pos, user_gesture);
+  if (browser) {
+    chrome::AddWebContents(browser, NULL, new_contents, disposition,
+                           initial_pos, user_gesture);
+  }
 }
 
 void PanelHost::RenderViewCreated(content::RenderViewHost* render_view_host) {

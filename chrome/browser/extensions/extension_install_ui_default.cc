@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -149,7 +150,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
     return;
 
   Browser* browser = browser::FindLastActiveWithProfile(browser_->profile());
-  TabContents* tab_contents = browser->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
   if (!tab_contents)
     return;
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
@@ -177,7 +178,7 @@ void ExtensionInstallUIDefault::ShowThemeInfoBar(
   if (!browser)
     return;
 
-  TabContents* tab_contents = browser->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
   if (!tab_contents)
     return;
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();

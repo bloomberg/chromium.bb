@@ -8,6 +8,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -38,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   ui_test_utils::NavigateToURL(browser(),
       net::FilePathToFileURL(extension_dir.AppendASCII("test.html")));
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
 
   // With no extensions, the plugin should not be loaded.
   bool result = false;
@@ -80,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
-            &browser()->GetActiveWebContents()->GetController()));
+            &chrome::GetActiveWebContents(browser())->GetController()));
     chrome::Reload(browser(), CURRENT_TAB);
     observer.Wait();
   }
@@ -112,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
   // Load the test page through the extension URL, and the plugin should work.
   ui_test_utils::NavigateToURL(browser(),
       extension->GetResourceURL("test.html"));
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));

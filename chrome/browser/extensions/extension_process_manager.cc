@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -297,7 +298,7 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                        content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   browser->window()->Show();
-  WebContents* web_contents = browser->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser);
   web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 

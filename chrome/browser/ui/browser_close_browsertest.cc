@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -170,10 +171,10 @@ class BrowserCloseTest : public InProcessBrowserTest {
   // Create a Browser (with associated window) on the specified profile.
   Browser* CreateBrowserOnProfile(Profile* profile) {
     Browser* new_browser = Browser::Create(profile);
-    new_browser->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
-                                       content::PAGE_TRANSITION_START_PAGE);
+    chrome::AddSelectedTabWithURL(new_browser, GURL(chrome::kAboutBlankURL),
+                                  content::PAGE_TRANSITION_START_PAGE);
     ui_test_utils::WaitForLoadStop(
-        new_browser->GetActiveWebContents());
+        chrome::GetActiveWebContents(new_browser));
     new_browser->window()->Show();
     return new_browser;
   }

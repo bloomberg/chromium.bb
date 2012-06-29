@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -638,7 +639,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
     RenderViewHost* render_view_host =
-        current_browser()->GetActiveWebContents()->GetRenderViewHost();
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16("ClickOpenLink()"));
@@ -670,8 +671,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        current_browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
-        L"window.domAutomationController.send(IsOriginalPrerenderPage())",
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost(),
+        L"", L"window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
   }
@@ -680,7 +681,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // in. This must be called when the prerendered page is the current page
   // in the active tab.
   void GoBackToPageBeforePrerender() {
-    WebContents* tab = current_browser()->GetActiveWebContents();
+    WebContents* tab = chrome::GetActiveWebContents(current_browser());
     ASSERT_TRUE(tab);
     EXPECT_FALSE(tab->IsLoading());
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
@@ -728,16 +729,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   PrerenderManager* GetPrerenderManager() const {
-    Profile* profile = current_browser()->GetActiveTabContents()->profile();
     PrerenderManager* prerender_manager =
-        PrerenderManagerFactory::GetForProfile(profile);
+        PrerenderManagerFactory::GetForProfile(current_browser()->profile());
     return prerender_manager;
   }
 
   const PrerenderLinkManager* GetPrerenderLinkManager() const {
-    Profile* profile = current_browser()->GetActiveTabContents()->profile();
     PrerenderLinkManager* prerender_link_manager =
-        PrerenderLinkManagerFactory::GetForProfile(profile);
+        PrerenderLinkManagerFactory::GetForProfile(
+            current_browser()->profile());
     return prerender_link_manager;
   }
 
@@ -948,7 +948,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(prerender_contents != NULL);
 
     RenderViewHost* render_view_host =
-        current_browser()->GetActiveWebContents()->GetRenderViewHost();
+        chrome::GetActiveWebContents(current_browser())->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16(javascript_function_name));
@@ -1113,7 +1113,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
   // TODO(mmenke):  While this should reliably fail on regressions, the
   //                reliability depends on the specifics of ppapi plugin
   //                loading.  It would be great if we could avoid that.
-  WebContents* web_contents = browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
   bool display_test_result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       web_contents->GetRenderViewHost(), L"",
@@ -1606,7 +1606,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
 #else
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
 #endif
-  ui_test_utils::CloseAllInfoBars(browser()->GetActiveTabContents());
+  ui_test_utils::CloseAllInfoBars(chrome::GetActiveTabContents(browser()));
 
   PrerenderTestURL("files/prerender/prerender_size.html",
                    FINAL_STATUS_USED,
@@ -2034,7 +2034,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderUnload) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   string16 expected_title = ASCIIToUTF16("Unloaded");
   ui_test_utils::TitleWatcher title_watcher(
-      current_browser()->GetActiveWebContents(), expected_title);
+      chrome::GetActiveWebContents(current_browser()), expected_title);
   NavigateToDestURL();
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -2161,7 +2161,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
-  WebContents* web_contents = current_browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(current_browser());
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
       web_contents->GetRenderViewHost());
   DevToolsManager* manager = DevToolsManager::GetInstance();
@@ -2229,7 +2229,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
 
   // To avoid any chance of a race, we have to let the script send its response
   // asynchronously.
-  WebContents* web_contents = browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
   bool display_test_result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       web_contents->GetRenderViewHost(), L"",

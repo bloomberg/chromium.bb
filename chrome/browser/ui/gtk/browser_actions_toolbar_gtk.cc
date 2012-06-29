@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
@@ -582,7 +583,7 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
 }
 
 int BrowserActionsToolbarGtk::GetCurrentTabId() {
-  TabContents* active_tab = browser_->GetActiveTabContents();
+  TabContents* active_tab = chrome::GetActiveTabContents(browser_);
   if (!active_tab)
     return -1;
 

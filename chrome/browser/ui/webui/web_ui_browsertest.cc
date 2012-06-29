@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
@@ -197,7 +198,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   content::TestNavigationObserver navigation_observer(
       content::Source<NavigationController>(
-          &browser()->GetActiveWebContents()->GetController()),
+          &chrome::GetActiveWebContents(browser())->GetController()),
       this, 1);
   browser::NavigateParams params(
       browser(), GURL(browse_to), content::PAGE_TRANSITION_TYPED);
@@ -224,7 +225,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
   TabContents* preview_tab = tab_controller->GetPrintPreviewForTab(
-      browser()->GetActiveTabContents());
+      chrome::GetActiveTabContents(browser()));
   ASSERT_TRUE(preview_tab);
   SetWebUIInstance(preview_tab->web_contents()->GetWebUI());
 }
@@ -465,7 +466,7 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
 void WebUIBrowserTest::SetupHandlers() {
   content::WebUI* web_ui_instance = override_selected_web_ui_ ?
       override_selected_web_ui_ :
-      browser()->GetActiveWebContents()->GetWebUI();
+      chrome::GetActiveWebContents(browser())->GetWebUI();
   ASSERT_TRUE(web_ui_instance != NULL);
 
   test_handler_->set_web_ui(web_ui_instance);

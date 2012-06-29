@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -625,8 +626,8 @@ bool CreateWindowFunction::RunImpl() {
                                             extension_id);
 
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
-    TabContents* tab = new_window->AddSelectedTabWithURL(
-        *i, content::PAGE_TRANSITION_LINK);
+    TabContents* tab = chrome::AddSelectedTabWithURL(
+        new_window, *i, content::PAGE_TRANSITION_LINK);
     if (window_type == Browser::TYPE_PANEL)
       tab->extension_tab_helper()->SetExtensionAppIconById(extension_id);
   }
@@ -1400,7 +1401,7 @@ bool MoveTabsFunction::RunImpl() {
       return false;
 
     // Don't let the extension move the tab if the user is dragging tabs.
-    if (!source_browser->IsTabStripEditable()) {
+    if (!chrome::IsTabStripEditable(source_browser)) {
       error_ = keys::kTabStripNotEditableError;
       return false;
     }
@@ -1417,7 +1418,7 @@ bool MoveTabsFunction::RunImpl() {
       if (!GetBrowserFromWindowID(this, window_id, &target_browser))
         return false;
 
-      if (!target_browser->IsTabStripEditable()) {
+      if (!chrome::IsTabStripEditable(target_browser)) {
         error_ = keys::kTabStripNotEditableError;
         return false;
       }
@@ -1561,14 +1562,14 @@ bool RemoveTabsFunction::RunImpl() {
       return false;
 
     // Don't let the extension remove a tab if the user is dragging tabs around.
-    if (!browser->IsTabStripEditable()) {
+    if (!chrome::IsTabStripEditable(browser)) {
       error_ = keys::kTabStripNotEditableError;
       return false;
     }
 
     // There's a chance that the tab is being dragged, or we're in some other
     // nested event loop. This code path ensures that the tab is safely closed
-    // under such circumstances, whereas |Browser::CloseTabContents()| does not.
+    // under such circumstances, whereas |chrome::CloseWebContents()| does not.
     contents->web_contents()->Close();
   }
   return true;
@@ -1586,13 +1587,13 @@ bool CaptureVisibleTabFunction::GetTabToCapture(
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  *web_contents = browser->GetActiveWebContents();
+  *web_contents = chrome::GetActiveWebContents(browser);
   if (*web_contents == NULL) {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;
   }
 
-  *tab_contents = browser->GetActiveTabContents();
+  *tab_contents = chrome::GetActiveTabContents(browser);
 
   return true;
 };

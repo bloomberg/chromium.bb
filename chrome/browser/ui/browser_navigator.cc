@@ -23,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -104,8 +105,7 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
   // GetBrowserForDisposition() has a chance to replace |params->browser| with
   // another one.
   if (!params->source_contents && params->browser)
-    params->source_contents =
-        params->browser->GetActiveTabContents();
+    params->source_contents = chrome::GetActiveTabContents(params->browser);
 
   Profile* profile =
       params->browser ? params->browser->profile() : params->profile;
@@ -502,7 +502,7 @@ void Navigate(NavigateParams* params) {
       WebContents* source_contents = params->source_contents ?
           params->source_contents->web_contents() : NULL;
       params->target_contents =
-          Browser::TabContentsFactory(
+          chrome::TabContentsFactory(
               params->browser->profile(),
               tab_util::GetSiteInstanceForNewTab(
                   params->browser->profile(), url),
@@ -586,7 +586,8 @@ void Navigate(NavigateParams* params) {
   }
 
   if (singleton_index >= 0) {
-    WebContents* target = params->browser->GetWebContentsAt(singleton_index);
+    WebContents* target =
+        chrome::GetWebContentsAt(params->browser, singleton_index);
 
     if (target->IsCrashed()) {
       target->GetController().Reload(true);
@@ -598,7 +599,7 @@ void Navigate(NavigateParams* params) {
 
     // If the singleton tab isn't already selected, select it.
     if (params->source_contents != params->target_contents)
-      params->browser->ActivateTabAt(singleton_index, user_initiated);
+      chrome::ActivateTabAt(params->browser, singleton_index, user_initiated);
   }
 
   if (params->disposition != CURRENT_TAB) {

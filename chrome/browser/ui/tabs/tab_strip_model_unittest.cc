@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
@@ -122,13 +123,13 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   TabContents* CreateTabContents() {
-    return Browser::TabContentsFactory(
+    return chrome::TabContentsFactory(
         profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   }
 
   TabContents* CreateTabContentsWithSharedRPH(
       WebContents* web_contents) {
-    TabContents* retval = Browser::TabContentsFactory(profile(),
+    TabContents* retval = chrome::TabContentsFactory(profile(),
         web_contents->GetRenderViewHost()->GetSiteInstance(), MSG_ROUTING_NONE,
         NULL, NULL);
     EXPECT_EQ(retval->web_contents()->GetRenderProcessHost(),
@@ -570,10 +571,8 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(1));
     EXPECT_EQ(0, tabstrip.GetIndexOfTabContents(contents2));
     EXPECT_EQ(1, tabstrip.GetIndexOfTabContents(contents1));
-    EXPECT_EQ(0, tabstrip.GetIndexOfController(
-                     &contents2->web_contents()->GetController()));
-    EXPECT_EQ(1, tabstrip.GetIndexOfController(
-                     &contents1->web_contents()->GetController()));
+    EXPECT_EQ(0, tabstrip.GetIndexOfWebContents(contents2->web_contents()));
+    EXPECT_EQ(1, tabstrip.GetIndexOfWebContents(contents1->web_contents()));
   }
 
   // Test UpdateTabContentsStateAt

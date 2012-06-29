@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -282,7 +283,7 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
     case WebIntentPickerModel::DISPOSITION_WINDOW: {
       Browser* browser = browser::FindBrowserWithWebContents(
           tab_contents_->web_contents());
-      TabContents* contents = Browser::TabContentsFactory(
+      TabContents* contents = chrome::TabContentsFactory(
           tab_contents_->profile(),
           tab_util::GetSiteInstanceForNewTab(
               tab_contents_->profile(), url),
@@ -428,7 +429,7 @@ void WebIntentPickerController::OnSendReturnMessage(
       if (source_browser) {
         int source_index = source_browser->tab_strip_model()->
             GetIndexOfTabContents(tab_contents_);
-        source_browser->ActivateTabAt(source_index, false);
+        chrome::ActivateTabAt(source_browser, source_index, false);
       }
     }
     service_tab_ = NULL;

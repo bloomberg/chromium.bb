@@ -4,6 +4,7 @@
 
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -31,13 +32,13 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   // That's considered a user gesture to webkit, and should produce an infobar.
   bool result;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(request());",
       &result));
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(1U, browser()->GetTabContentsAt(0)->infobar_tab_helper()->
+  EXPECT_EQ(1U, chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
             infobar_count());
 }
 
@@ -52,6 +53,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
       test_server()->GetURL(
           "files/notifications/notifications_request_inline.html"));
 
-  EXPECT_EQ(0U, browser()->GetTabContentsAt(0)->infobar_tab_helper()->
+  EXPECT_EQ(0U, chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
             infobar_count());
 }

@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -829,7 +830,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   // Get tab id.
   Browser* current_browser = GetBrowser();
   if (current_browser) {
-    WebContents* contents = current_browser->GetActiveWebContents();
+    WebContents* contents = chrome::GetActiveWebContents(current_browser);
     if (contents)
       details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
   }

@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -100,7 +101,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   }
 
   WebContents* GetCurrentTab() const {
-    WebContents* current_tab = browser()->GetActiveWebContents();
+    WebContents* current_tab = chrome::GetActiveWebContents(browser());
     EXPECT_TRUE(current_tab);
     return current_tab;
   }

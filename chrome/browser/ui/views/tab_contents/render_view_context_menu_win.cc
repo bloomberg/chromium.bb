@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/web_contents.h"
 
@@ -66,7 +67,7 @@ void RenderViewContextMenuWin::ExecuteCommand(int command_id,
           NEW_FOREGROUND_TAB,
           content::PAGE_TRANSITION_LINK,
           false);
-      WebContents* source_web_contents = browser->GetActiveWebContents();
+      WebContents* source_web_contents = chrome::GetActiveWebContents(browser);
       WebContents* new_contents = source_web_contents->OpenURL(url_params);
       DCHECK(new_contents);
       return;

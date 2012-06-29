@@ -23,6 +23,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -552,7 +553,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
   void SetUpExtensionFunction(UIThreadExtensionFunction* function) {
     if (extension_) {
       // Recreate the tab each time for insulation.
-      TabContents* tab = current_browser()->AddSelectedTabWithURL(
+      TabContents* tab = chrome::AddSelectedTabWithURL(
+          current_browser(),
           extension_->GetResourceURL("empty.html"),
           content::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);

@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -294,7 +295,7 @@ void AutomationProvider::DisableInitialLoadObservers() {
 int AutomationProvider::GetIndexForNavigationController(
     const NavigationController* controller, const Browser* parent) const {
   DCHECK(parent);
-  return parent->GetIndexOfController(controller);
+  return chrome::GetIndexOfTab(parent, controller->GetWebContents());
 }
 
 // TODO(phajdan.jr): move to TestingAutomationProvider.

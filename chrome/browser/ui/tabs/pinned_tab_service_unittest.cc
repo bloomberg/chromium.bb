@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
@@ -65,7 +66,7 @@ TEST_F(PinnedTabServiceTest, Popup) {
   EXPECT_EQ("http://www.google.com/::pinned:", result);
 
   // Close the popup. This shouldn't reset the saved state.
-  popup->CloseAllTabs();
+  chrome::CloseAllTabs(popup.get());
   popup.reset(NULL);
   popup_window.reset(NULL);
 

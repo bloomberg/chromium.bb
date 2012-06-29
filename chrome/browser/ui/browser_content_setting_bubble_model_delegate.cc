@@ -7,6 +7,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 
 // The URL for when the user clicks "learn more" on the mixed scripting page
@@ -34,7 +35,7 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     // blocking, so bounce to an explanatory page for now.
     GURL url(google_util::AppendGoogleLocaleParam(
         GURL(kInsecureScriptHelpUrl)));
-    browser_->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
+    chrome::AddSelectedTabWithURL(browser_, url, content::PAGE_TRANSITION_LINK);
   } else {
     chrome::ShowContentSettings(browser_, type);
   }

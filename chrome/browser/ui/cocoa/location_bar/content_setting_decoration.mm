@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -262,7 +263,7 @@ bool ContentSettingDecoration::AcceptsMousePress() {
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
   Browser* browser = browser::GetLastActiveBrowser();
-  TabContents* tabContents = browser->GetActiveTabContents();
+  TabContents* tabContents = chrome::GetActiveTabContents(browser);
   if (!tabContents)
     return true;
 

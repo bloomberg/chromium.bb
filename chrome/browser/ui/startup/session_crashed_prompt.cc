@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -72,7 +73,7 @@ bool SessionCrashedInfoBarDelegate::Accept() {
   Browser* browser =
       browser::FindBrowserWithWebContents(owner()->web_contents());
   if (browser->tab_count() == 1 &&
-      browser->GetWebContentsAt(0)->GetURL() ==
+      chrome::GetWebContentsAt(browser, 0)->GetURL() ==
           GURL(chrome::kChromeUINewTabURL)) {
     // There is only one tab and its the new tab page, make session restore
     // clobber it.
@@ -96,7 +97,7 @@ void ShowSessionCrashedPrompt(Browser* browser) {
 
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  TabContents* tab = browser->GetActiveTabContents();
+  TabContents* tab = chrome::GetActiveTabContents(browser);
   if (!tab)
     return;
 

@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/speech/speech_recognition_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -153,7 +154,7 @@ class SpeechRecognitionBubbleControllerTest
     // the bubble controller registers for tab close notifications which need
     // a valid WebContents.
     TabContents* tab_contents =
-        test_fixture_->browser()->GetActiveTabContents();
+        chrome::GetActiveTabContents(test_fixture_->browser());
     if (tab_contents)
       web_contents = tab_contents->web_contents();
     return new MockSpeechRecognitionBubble(web_contents, delegate,

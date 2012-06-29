@@ -7,11 +7,12 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetAlertsForTab) {
-  TabContents* tab = browser()->GetActiveTabContents();
+  TabContents* tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(tab);
   InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
 

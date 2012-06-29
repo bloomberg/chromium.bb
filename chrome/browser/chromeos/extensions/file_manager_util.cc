@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -202,7 +203,7 @@ void OpenNewTab(const GURL& url, Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = browser::FindOrCreateTabbedBrowser(
       profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord());
-  browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
   // If the current browser is not tabbed then the new tab will be created
   // in a different browser. Make sure it is visible.
   browser->window()->Show();

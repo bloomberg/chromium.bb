@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -266,7 +267,7 @@ void SelectFileDialogExtension::SelectFileImpl(
           BrowserList::GetLastActive());
   if (owner_browser) {
     base_window = owner_browser->window();
-    tab = owner_browser->GetActiveTabContents();
+    tab = chrome::GetActiveTabContents(owner_browser);
     profile_ = tab->profile();
   } else if (owner_window) {
     // If an owner_window was supplied but we couldn't find a browser, this

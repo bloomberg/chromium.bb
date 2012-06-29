@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -692,7 +693,7 @@ bool BookmarkBarGtk::GetTabContentsSize(gfx::Size* size) {
     NOTREACHED();
     return false;
   }
-  WebContents* web_contents = browser->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser);
   if (!web_contents) {
     // It is possible to have a browser but no WebContents while under testing,
     // so don't NOTREACHED() and error the program.

@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -155,8 +156,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
-                                   content::PAGE_TRANSITION_START_PAGE);
+  chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
+                                content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
   EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL), location_entry->GetText());
   chrome::CloseTab(browser());

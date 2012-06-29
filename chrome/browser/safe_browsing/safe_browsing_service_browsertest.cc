@@ -22,6 +22,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -361,7 +362,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   bool ShowingInterstitialPage() {
-    WebContents* contents = browser()->GetActiveWebContents();
+    WebContents* contents = chrome::GetActiveWebContents(browser());
     InterstitialPage* interstitial_page = contents->GetInterstitialPage();
     return interstitial_page != NULL;
   }

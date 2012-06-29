@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -420,7 +421,7 @@ enum {
 }
 
 - (void)dealloc {
-  browser_->CloseAllTabs();
+  chrome::CloseAllTabs(browser_.get());
   [downloadShelfController_ exiting];
 
   // Explicitly release |presentationModeController_| here, as it may call back
@@ -598,7 +599,7 @@ enum {
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to activate.
-  if (WebContents* contents = browser_->GetActiveWebContents()) {
+  if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
@@ -615,7 +616,7 @@ enum {
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to deactivate.
-  if (WebContents* contents = browser_->GetActiveWebContents()) {
+  if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }
@@ -626,7 +627,7 @@ enum {
   [self saveWindowPositionIfNeeded];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetActiveWebContents()) {
+  if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(false);
   }
@@ -635,7 +636,7 @@ enum {
 // Called when we have been unminimized.
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetActiveWebContents()) {
+  if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(true);
   }
@@ -646,7 +647,7 @@ enum {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-    if (WebContents* contents = browser_->GetActiveWebContents()) {
+    if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(false);
     }
@@ -658,7 +659,7 @@ enum {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-    if (WebContents* contents = browser_->GetActiveWebContents()) {
+    if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(true);
     }
@@ -703,7 +704,7 @@ enum {
       std::max(kProportion * NSWidth(frame),
                std::min(kProportion * NSHeight(frame), NSWidth(frame)));
 
-  WebContents* contents = browser_->GetActiveWebContents();
+  WebContents* contents = chrome::GetActiveWebContents(browser_.get());
   if (contents) {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
@@ -940,7 +941,8 @@ enum {
 
   if (resizeRectDirty) {
     // Send new resize rect to foreground tab.
-    if (content::WebContents* contents = browser_->GetActiveWebContents()) {
+    if (content::WebContents* contents =
+            chrome::GetActiveWebContents(browser_.get())) {
       if (content::RenderViewHost* rvh = contents->GetRenderViewHost()) {
         rvh->ResizeRectChanged(windowShim_->GetRootWindowResizerRect());
       }
@@ -980,7 +982,7 @@ enum {
     DCHECK(browser_.get());
     Profile* profile = browser_->profile();
     DCHECK(profile);
-    WebContents* current_tab = browser_->GetActiveWebContents();
+    WebContents* current_tab = chrome::GetActiveWebContents(browser_.get());
     if (!current_tab) {
       return;
     }
@@ -1233,7 +1235,8 @@ enum {
     if (!isBrowser) return;
     BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
     int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
-    TabContents* contents = dragBWC->browser_->GetTabContentsAt(index);
+    TabContents* contents =
+        chrome::GetTabContentsAt(dragBWC->browser_.get(), index);
     // The tab contents may have gone away if given a window.close() while it
     // is being dragged. If so, bail, we've got nothing to drop.
     if (!contents)
@@ -1254,7 +1257,7 @@ enum {
 
     // Before the tab is detached from its originating tab strip, store the
     // pinned state so that it can be maintained between the windows.
-    bool isPinned = dragBWC->browser_->IsTabPinned(index);
+    bool isPinned = dragBWC->browser_->tab_strip_model()->IsTabPinned(index);
 
     // Now that we have enough information about the tab, we can remove it from
     // the dragging window. We need to do this *before* we add it to the new
@@ -1311,7 +1314,7 @@ enum {
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
-  TabContents* contents = browser_->GetTabContentsAt(index);
+  TabContents* contents = chrome::GetTabContentsAt(browser_.get(), index);
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what
@@ -1334,7 +1337,7 @@ enum {
                                 -tabOverflow.width, -tabOverflow.height);
 
   // Before detaching the tab, store the pinned state.
-  bool isPinned = browser_->IsTabPinned(index);
+  bool isPinned = browser_->tab_strip_model()->IsTabPinned(index);
 
   // Detach it from the source window, which just updates the model without
   // deleting the tab contents. This needs to come before creating the new
@@ -1494,7 +1497,7 @@ enum {
 }
 
 - (NSString*)activeTabTitle {
-  WebContents* contents = browser_->GetActiveWebContents();
+  WebContents* contents = chrome::GetActiveWebContents(browser_.get());
   return base::SysUTF16ToNSString(contents->GetTitle());
 }
 
@@ -1767,7 +1770,7 @@ enum {
   }
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetActiveWebContents()) {
+  if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
@@ -1821,7 +1824,7 @@ enum {
     [self resetWindowGrowthState];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetActiveWebContents()) {
+  if (WebContents* contents = chrome::GetActiveWebContents(browser_.get())) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }

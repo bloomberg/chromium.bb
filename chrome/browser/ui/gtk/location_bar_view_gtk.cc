@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
@@ -461,7 +462,7 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
 }
 
 WebContents* LocationBarViewGtk::GetWebContents() const {
-  return browser_->GetActiveWebContents();
+  return chrome::GetActiveWebContents(browser_);
 }
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
@@ -667,7 +668,7 @@ InstantController* LocationBarViewGtk::GetInstant() {
 }
 
 TabContents* LocationBarViewGtk::GetTabContents() const {
-  return browser_->GetActiveTabContents();
+  return chrome::GetActiveTabContents(browser_);
 }
 
 void LocationBarViewGtk::ShowFirstRunBubble() {
@@ -757,7 +758,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   WebContents* contents = GetWebContents();
   if (!page_action_views_.empty() && contents) {
-    GURL url = browser()->GetActiveWebContents()->GetURL();
+    GURL url = chrome::GetActiveWebContents(browser())->GetURL();
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(

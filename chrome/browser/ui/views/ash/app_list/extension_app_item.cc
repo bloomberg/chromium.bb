@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
@@ -171,8 +172,8 @@ void ExtensionAppItem::ShowExtensionOptions() {
     browser->window()->Show();
   }
 
-  browser->AddSelectedTabWithURL(extension->options_url(),
-                                 content::PAGE_TRANSITION_LINK);
+  chrome::AddSelectedTabWithURL(browser, extension->options_url(),
+                                content::PAGE_TRANSITION_LINK);
   browser->window()->Activate();
 }
 

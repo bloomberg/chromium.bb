@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -81,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
 
   // Verify the command worked.
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
@@ -147,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 
   // Go back to first tab, changed title should reappear.
-  browser()->ActivateTabAt(0, true);
+  chrome::ActivateTabAt(browser(), 0, true);
   EXPECT_EQ("Showing icon 2", GetBrowserActionsBar().GetTooltip(0));
 
   // Reload that tab, default title should come back.
@@ -197,7 +198,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(
+      chrome::GetActiveWebContents(browser()));
 
   ExtensionAction* browser_action = extension->browser_action();
   ASSERT_TRUE(browser_action)
@@ -252,7 +254,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(
+      chrome::GetActiveWebContents(browser()));
 
   ExtensionAction* browser_action = extension->browser_action();
   ASSERT_TRUE(browser_action)

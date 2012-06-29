@@ -11,6 +11,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -72,7 +73,7 @@ bool FullscreenController::IsFullscreenForTabOrPending(
       TabContents::FromWebContents(web_contents);
   if (!tab_contents || (tab_contents != fullscreened_tab_))
     return false;
-  DCHECK(web_contents == browser_->GetActiveWebContents());
+  DCHECK(web_contents == chrome::GetActiveWebContents(browser_));
   return true;
 }
 
@@ -153,7 +154,7 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
 
 void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
                                                       bool enter_fullscreen) {
-  if (web_contents != browser_->GetActiveWebContents())
+  if (web_contents != chrome::GetActiveWebContents(browser_))
     return;
 
 #if defined(OS_WIN)
@@ -562,7 +563,7 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
 
   GURL url;
   if (for_tab) {
-    url = browser_->GetActiveWebContents()->GetURL();
+    url = chrome::GetActiveWebContents(browser_)->GetURL();
     tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   } else {

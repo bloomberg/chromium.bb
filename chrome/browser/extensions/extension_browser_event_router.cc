@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -97,7 +98,8 @@ void ExtensionBrowserEventRouter::Init() {
     Browser* browser = *iter;
     if (browser->tab_strip_model()) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-        WebContents* contents = browser->GetTabContentsAt(i)->web_contents();
+        WebContents* contents =
+            chrome::GetTabContentsAt(browser, i)->web_contents();
         int tab_id = ExtensionTabUtil::GetTabId(contents);
         tab_entries_[tab_id] = TabEntry();
       }
@@ -143,7 +145,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
 
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     RegisterForTabNotifications(
-        browser->GetTabContentsAt(i)->web_contents());
+        chrome::GetTabContentsAt(browser, i)->web_contents());
   }
 }
 

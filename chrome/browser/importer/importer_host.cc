@@ -21,6 +21,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -165,7 +166,8 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
     DCHECK(profile_);
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser)
-      browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
+      chrome::AddSelectedTabWithURL(browser, url,
+                                    content::PAGE_TRANSITION_TYPED);
 
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &ImporterHost::OnImportLockDialogEnd, this, false));

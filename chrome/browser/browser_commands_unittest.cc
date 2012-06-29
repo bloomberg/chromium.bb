@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -36,7 +37,7 @@ TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
   AddTab(browser(), about_blank);
 
   // Select the second tab.
-  browser()->ActivateTabAt(1, false);
+  chrome::ActivateTabAt(browser(), 1, false);
 
   CommandUpdater* updater = browser()->command_controller()->command_updater();
 
@@ -82,7 +83,7 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
 
   // Verify the stack of urls.
   content::NavigationController& controller =
-      browser()->GetWebContentsAt(1)->GetController();
+      chrome::GetWebContentsAt(browser(), 1)->GetController();
   ASSERT_EQ(3, controller.GetEntryCount());
   ASSERT_EQ(2, controller.GetCurrentEntryIndex());
   ASSERT_TRUE(url1 == controller.GetEntryAtIndex(0)->GetURL());
@@ -123,19 +124,19 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   ASSERT_EQ(2, browser()->tab_count());
 
   // The original tab should be unchanged.
-  WebContents* zeroth = browser()->GetWebContentsAt(0);
+  WebContents* zeroth = chrome::GetWebContentsAt(browser(), 0);
   EXPECT_EQ(url2, zeroth->GetURL());
   EXPECT_TRUE(zeroth->GetController().CanGoBack());
   EXPECT_FALSE(zeroth->GetController().CanGoForward());
 
   // The new tab should be like the first one but navigated back.
-  WebContents* first = browser()->GetWebContentsAt(1);
-  EXPECT_EQ(url1, browser()->GetWebContentsAt(1)->GetURL());
+  WebContents* first = chrome::GetWebContentsAt(browser(), 1);
+  EXPECT_EQ(url1, chrome::GetWebContentsAt(browser(), 1)->GetURL());
   EXPECT_FALSE(first->GetController().CanGoBack());
   EXPECT_TRUE(first->GetController().CanGoForward());
 
   // Select the second tab and make it go forward in a new background tab.
-  browser()->ActivateTabAt(1, true);
+  chrome::ActivateTabAt(browser(), 1, true);
   // TODO(brettw) bug 11055: It should not be necessary to commit the load here,
   // but because of this bug, it will assert later if we don't. When the bug is
   // fixed, one of the three commits here related to this bug should be removed
@@ -152,25 +153,25 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 
   // There should be a new tab navigated forward.
   ASSERT_EQ(3, browser()->tab_count());
-  WebContents* second = browser()->GetWebContentsAt(2);
+  WebContents* second = chrome::GetWebContentsAt(browser(), 2);
   EXPECT_EQ(url2, second->GetURL());
   EXPECT_TRUE(second->GetController().CanGoBack());
   EXPECT_FALSE(second->GetController().CanGoForward());
 
   // Now do back in a new foreground tab. Don't bother re-checking every sngle
   // thing above, just validate that it's opening properly.
-  browser()->ActivateTabAt(2, true);
+  chrome::ActivateTabAt(browser(), 2, true);
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&second->GetController());
   chrome::GoBack(browser(), NEW_FOREGROUND_TAB);
   ASSERT_EQ(3, browser()->active_index());
-  ASSERT_EQ(url1, browser()->GetActiveWebContents()->GetURL());
+  ASSERT_EQ(url1, chrome::GetActiveWebContents(browser())->GetURL());
 
   // Same thing again for forward.
   // TODO(brettw) bug 11055: see the comment above about why we need this.
-  CommitPendingLoad(&browser()->GetActiveWebContents()->GetController());
+  CommitPendingLoad(&chrome::GetActiveWebContents(browser())->GetController());
   chrome::GoForward(browser(), NEW_FOREGROUND_TAB);
   ASSERT_EQ(4, browser()->active_index());
-  ASSERT_EQ(url2, browser()->GetActiveWebContents()->GetURL());
+  ASSERT_EQ(url2, chrome::GetActiveWebContents(browser())->GetURL());
 }
 

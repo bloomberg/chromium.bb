@@ -98,7 +98,7 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
     // If we can't find a subsequent group member, just fall back to the
     // parent_opener itself. Note that we use "group" here since opener is
     // reset by select operations..
-    index = tabstrip_->GetIndexOfController(parent_opener);
+    index = tabstrip_->GetIndexOfWebContents(parent_opener->GetWebContents());
     if (index != TabStripModel::kNoTab)
       return GetValidIndex(index, removing_index);
   }

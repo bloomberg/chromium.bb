@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/applescript/browsercrapplication+applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
@@ -34,8 +35,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   }
 
   // Close the additional browsers.
-  b1->CloseAllTabs();
-  b2->CloseAllTabs();
+  chrome::CloseAllTabs(b1);
+  chrome::CloseAllTabs(b2);
 }
 
 // Insert a new window.

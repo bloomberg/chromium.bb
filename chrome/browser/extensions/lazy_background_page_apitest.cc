@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -111,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
   EXPECT_EQ("chrome://chrome/extensions/",
-            browser()->GetActiveWebContents()->GetURL().spec());
+            chrome::GetActiveWebContents(browser())->GetURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
@@ -192,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
 
   // The extension should've opened a new tab to an extension page.
   EXPECT_EQ(extension->GetResourceURL("extension_page.html").spec(),
-            browser()->GetActiveWebContents()->GetURL().spec());
+            chrome::GetActiveWebContents(browser())->GetURL().spec());
 
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.
@@ -201,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
   EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 
   // Close the new tab.
-  browser()->CloseTabContents(browser()->GetActiveWebContents());
+  chrome::CloseWebContents(browser(), chrome::GetActiveWebContents(browser()));
   page_complete.Wait();
 
   // Lazy Background Page has been shut down.

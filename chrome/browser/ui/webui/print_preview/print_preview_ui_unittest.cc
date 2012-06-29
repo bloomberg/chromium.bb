@@ -9,6 +9,7 @@
 #include "chrome/browser/printing/print_preview_unit_test_base.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -46,7 +47,7 @@ class PrintPreviewUIUnitTest : public PrintPreviewUnitTestBase {
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
 
@@ -100,7 +101,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
 // Set and get the individual draft pages.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* controller =
@@ -160,7 +161,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
 // Test the browser-side print preview cancellation functionality.
 TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* controller =
@@ -218,10 +219,8 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
       WebContentsTester::CreateTestWebContentsCountFocus(profile(), NULL);
   WebContentsTester* initiator_tester =
       WebContentsTester::For(initiator_contents);
-  browser()->AddWebContents(initiator_contents,
-                            NEW_FOREGROUND_TAB,
-                            gfx::Rect(),
-                            false);
+  chrome::AddWebContents(browser(), NULL, initiator_contents,
+                         NEW_FOREGROUND_TAB, gfx::Rect(), false);
   TabContents* initiator_tab = TabContents::FromWebContents(initiator_contents);
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(2, browser()->tab_count());

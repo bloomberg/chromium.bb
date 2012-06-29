@@ -5,6 +5,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
@@ -75,7 +76,7 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
 }
 
 void SessionsSyncPerfTest::RemoveTabs(int profile) {
-  GetBrowser(profile)->CloseAllTabs();
+  chrome::CloseAllTabs(GetBrowser(profile));
 }
 
 int SessionsSyncPerfTest::GetTabCount(int profile) {

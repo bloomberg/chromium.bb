@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -314,8 +315,8 @@ Panel* OldBasePanelBrowserTest::CreatePanelWithParams(
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    panel_browser->AddSelectedTabWithURL(params.url,
-                                         content::PAGE_TRANSITION_START_PAGE);
+    chrome::AddSelectedTabWithURL(panel_browser, params.url,
+                                  content::PAGE_TRANSITION_START_PAGE);
     observer.Wait();
   }
 
@@ -406,7 +407,7 @@ NativePanelTesting* OldBasePanelBrowserTest::CreateNativePanelTesting(
 void OldBasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
   TabContents* tab_contents = new TabContents(
       WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
-  browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
+  chrome::AddTab(browser, tab_contents, content::PAGE_TRANSITION_LINK);
 }
 
 scoped_refptr<Extension> OldBasePanelBrowserTest::CreateExtension(

@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -44,7 +45,7 @@ void ShowSingletonTabRespectRef(Browser* browser, const GURL& url) {
 void ShowSingletonTabOverwritingNTP(Browser* browser,
                                     const browser::NavigateParams& params) {
   browser::NavigateParams local_params(params);
-  content::WebContents* contents = browser->GetActiveWebContents();
+  content::WebContents* contents = chrome::GetActiveWebContents(browser);
   if (contents) {
     const GURL& contents_url = contents->GetURL();
     if ((contents_url == GURL(chrome::kChromeUINewTabURL) ||
@@ -89,7 +90,7 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
   int tab_count = params->browser->tab_count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;
-    TabContents* tab = params->browser->GetTabContentsAt(tab_index);
+    TabContents* tab = chrome::GetTabContentsAt(params->browser, tab_index);
 
     url_canon::Replacements<char> replacements;
     if (params->ref_behavior == browser::NavigateParams::IGNORE_REF)

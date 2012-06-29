@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -99,7 +100,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 
     bool embedded_plugin_created = false;
     bool content_handler_plugin_created = false;
-    WebContents* web_contents = browser()->GetActiveWebContents();
+    WebContents* web_contents = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         web_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(EmbeddedPluginCreated());",

@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -146,7 +147,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
   WebContents* GetInspectedTab() {
-    return browser()->GetWebContentsAt(0);
+    return chrome::GetWebContentsAt(browser(), 0);
   }
 
   void CloseDevToolsWindow() {
@@ -406,7 +407,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   void CloseDevToolsWindow() {
     Browser* browser = window_->browser();
-    browser->CloseAllTabs();
+    chrome::CloseAllTabs(browser);
     BrowserClosedObserver close_observer(browser);
   }
 
@@ -534,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetActiveWebContents()->GetController()));
+          &chrome::GetActiveWebContents(browser())->GetController()));
   chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
 

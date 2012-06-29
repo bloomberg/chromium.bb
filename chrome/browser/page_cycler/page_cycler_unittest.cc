@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_cycler/page_cycler.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -108,7 +109,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), kAboutURL);
-    ASSERT_FALSE(browser()->GetActiveWebContents() == NULL);
+    ASSERT_FALSE(chrome::GetActiveWebContents(browser()) == NULL);
   }
 
   void InitFilePaths(const FilePath& temp_path) {

@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -1111,7 +1112,7 @@ void LocationBarView::RefreshPageActionViews() {
   WebContents* contents = GetWebContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
     Browser* browser = browser::FindBrowserWithWebContents(contents);
-    GURL url = browser->GetActiveWebContents()->GetURL();
+    GURL url = chrome::GetActiveWebContents(browser)->GetURL();
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {

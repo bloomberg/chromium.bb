@@ -14,6 +14,7 @@
 #include "base/timer.h"
 #include "base/version.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -601,7 +602,7 @@ void LatencyTest::GetMeanFrameTimeMicros(int* frame_time) const {
 
 void LatencyTest::SendInput() {
   content::RenderViewHost* rvh =
-      browser()->GetActiveWebContents()->GetRenderViewHost();
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
   WebKit::WebMouseEvent mouse_event;
   mouse_event.movementX = 1;
   mouse_x_ += mouse_event.movementX;

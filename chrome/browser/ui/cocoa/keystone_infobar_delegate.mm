@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -191,7 +192,7 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
     Browser* browser = browser::GetLastActiveBrowser();
     if (browser) {
-      TabContents* tabContents = browser->GetActiveTabContents();
+      TabContents* tabContents = chrome::GetActiveTabContents(browser);
 
       // Only show if no other info bars are showing, because that's how the
       // default browser info bar works.

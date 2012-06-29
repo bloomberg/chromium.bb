@@ -22,6 +22,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -173,7 +174,7 @@ DevToolsWindow* DevToolsWindow::Create(
     bool shared_worker_frontend) {
   // Create TabContents with devtools.
   TabContents* tab_contents =
-      Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+      chrome::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
   tab_contents->web_contents()->GetController().LoadURL(
@@ -257,7 +258,7 @@ void DevToolsWindow::InspectedContentsClosing() {
     // for us.
     Browser* browser = browser_;
     delete this;
-    browser->CloseAllTabs();
+    chrome::CloseAllTabs(browser);
   }
 }
 
@@ -388,11 +389,9 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
   if (!inspected_tab_)
     return false;
 
-  const NavigationController& controller =
-      inspected_tab_->web_contents()->GetController();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
-    int tab_index = (*it)->GetIndexOfController(&controller);
+    int tab_index = chrome::GetIndexOfTab(*it, inspected_tab_->web_contents());
     if (tab_index != TabStripModel::kNoTab) {
       *browser = *it;
       *tab = tab_index;

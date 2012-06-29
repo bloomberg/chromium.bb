@@ -6,6 +6,7 @@
 
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -45,7 +46,7 @@ class BookmarksTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BookmarksTest, ShouldRedirectToExtension) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIBookmarksURL));
-  AssertIsBookmarksPage(browser()->GetActiveWebContents());
+  AssertIsBookmarksPage(chrome::GetActiveWebContents(browser()));
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandOpensBookmarksTab) {
@@ -54,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandOpensBookmarksTab) {
   // Bring up the bookmarks manager tab.
   OpenBookmarksManager();
   ASSERT_EQ(1, browser()->tab_count());
-  AssertIsBookmarksPage(browser()->GetActiveWebContents());
+  AssertIsBookmarksPage(chrome::GetActiveWebContents(browser()));
 }
 
 // If this flakes on Mac, use: http://crbug.com/87200
@@ -69,10 +70,10 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandAgainGoesBackToBookmarksTab) {
   OpenBookmarksManager();
   ASSERT_EQ(2, browser()->tab_count());
 
-  AssertIsBookmarksPage(browser()->GetActiveWebContents());
+  AssertIsBookmarksPage(chrome::GetActiveWebContents(browser()));
 
   // Switch to first tab and run command again.
-  browser()->ActivateTabAt(0, true);
+  chrome::ActivateTabAt(browser(), 0, true);
   chrome::ShowBookmarkManager(browser());
 
   // Ensure the bookmarks ui tab is active.
@@ -93,5 +94,5 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, TwoCommandsOneTab) {
 IN_PROC_BROWSER_TEST_F(BookmarksTest, BookmarksLoaded) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIBookmarksURL));
   ASSERT_EQ(1, browser()->tab_count());
-  AssertIsBookmarksPage(browser()->GetActiveWebContents());
+  AssertIsBookmarksPage(chrome::GetActiveWebContents(browser()));
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
@@ -837,7 +838,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (int)currentTabId {
-  TabContents* selected_tab = browser_->GetActiveTabContents();
+  TabContents* selected_tab = chrome::GetActiveTabContents(browser_);
   if (!selected_tab)
     return -1;
 

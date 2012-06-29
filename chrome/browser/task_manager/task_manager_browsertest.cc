@@ -21,6 +21,7 @@
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -103,9 +104,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 
   // Close the tab and verify that we notice.
-  WebContents* first_tab = browser()->GetTabContentsAt(0)->web_contents();
+  WebContents* first_tab =
+      chrome::GetTabContentsAt(browser(), 0)->web_contents();
   ASSERT_TRUE(first_tab);
-  browser()->CloseTabContents(first_tab);
+  chrome::CloseWebContents(browser(), first_tab);
   TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 }
 
@@ -394,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // manager is still visible. Make sure we don't crash and the extension
   // gets reloaded and noticed in the task manager.
   InfoBarTabHelper* infobar_helper =
-      browser()->GetActiveTabContents()->infobar_tab_helper();
+      chrome::GetActiveTabContents(browser())->infobar_tab_helper();
   ASSERT_EQ(1U, infobar_helper->infobar_count());
   ConfirmInfoBarDelegate* delegate = infobar_helper->
       GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();

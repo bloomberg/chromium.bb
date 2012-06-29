@@ -27,6 +27,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -1382,11 +1383,11 @@ void SessionService::BuildCommandsForBrowser(
 
   bool added_to_windows_to_track = false;
   for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContents* tab = browser->GetTabContentsAt(i);
+    TabContents* tab = chrome::GetTabContentsAt(browser, i);
     DCHECK(tab);
     if (tab->profile() == profile() || profile() == NULL) {
       BuildCommandsForTab(browser->session_id(), tab, i,
-                          browser->IsTabPinned(i),
+                          browser->tab_strip_model()->IsTabPinned(i),
                           commands, tab_to_available_range);
       if (windows_to_track && !added_to_windows_to_track) {
         windows_to_track->insert(browser->session_id().id());

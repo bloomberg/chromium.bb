@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -950,7 +951,7 @@ bool BrowserTitlebar::IsCommandIdChecked(int command_id) const {
   EncodingMenuController controller;
   if (controller.DoesCommandBelongToEncodingMenu(command_id)) {
     WebContents* web_contents =
-        browser_window_->browser()->GetActiveWebContents();
+        chrome::GetActiveWebContents(browser_window_->browser());
     if (web_contents) {
       return controller.IsItemChecked(browser_window_->browser()->profile(),
                                       web_contents->GetEncoding(),

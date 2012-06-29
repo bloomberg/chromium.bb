@@ -5,6 +5,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -32,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
       GURL("javascript:document.getElementById('form').submit()"));
 
   // Try to reload it twice, checking for repost.
-  content::WebContents* web_contents = browser()->GetActiveWebContents();
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   web_contents->GetController().Reload(true);
   web_contents->GetController().Reload(true);
 
@@ -64,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
       GURL("javascript:document.getElementById('form').submit()"));
 
   // Try to reload it, checking for repost.
-  content::WebContents* web_contents = browser()->GetActiveWebContents();
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   web_contents->GetController().Reload(true);
 
   // Navigate to a page that requires authentication, bringing up another

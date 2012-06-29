@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -99,7 +100,7 @@ int CurrentTabId() {
   Browser* browser = browser::GetLastActiveBrowser();
   if(!browser)
     return -1;
-  WebContents* contents = browser->GetActiveWebContents();
+  WebContents* contents = chrome::GetActiveWebContents(browser);
   if (!contents)
     return -1;
   return ExtensionTabUtil::GetTabId(contents);

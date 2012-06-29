@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -426,7 +427,7 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
 // ToolbarView, LocationBarView::Delegate implementation:
 
 TabContents* ToolbarView::GetTabContents() const {
-  return browser_->GetActiveTabContents();
+  return chrome::GetActiveTabContents(browser_);
 }
 
 InstantController* ToolbarView::GetInstant() {
@@ -929,7 +930,7 @@ void ToolbarView::UpdateAppMenuState() {
 void ToolbarView::LayoutLocationBarNTP() {
   // TODO(kuan): this likely needs to cancel animations.
 
-  WebContents* contents = browser_->GetActiveWebContents();
+  WebContents* contents = chrome::GetActiveWebContents(browser_);
 #if defined(USE_AURA)
   // Under aura we can't use WebContentsView::GetContainerBounds since it is
   // affected by any animations that scale the window (such as during startup).

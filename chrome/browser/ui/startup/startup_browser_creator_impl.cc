@@ -44,6 +44,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabrestore.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
@@ -696,7 +698,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     add_types |= TabStripModel::ADD_FORCE_INDEX;
     if (tabs[i].is_pinned)
       add_types |= TabStripModel::ADD_PINNED;
-    int index = browser->GetIndexForInsertionDuringRestore(i);
+    int index = chrome::GetIndexForInsertionDuringRestore(browser, i);
 
     browser::NavigateParams params(browser, tabs[i].url,
                                    content::PAGE_TRANSITION_START_PAGE);
@@ -709,18 +711,18 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 
     first_tab = false;
   }
-  if (!browser->GetActiveWebContents()) {
+  if (!chrome::GetActiveWebContents(browser)) {
     // TODO: this is a work around for 110909. Figure out why it's needed.
     if (!browser->tab_count())
       browser->AddBlankTab(true);
     else
-      browser->ActivateTabAt(0, false);
+      chrome::ActivateTabAt(browser, 0, false);
   }
 
   browser->window()->Show();
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  browser->GetActiveWebContents()->GetView()->SetInitialFocus();
+  chrome::GetActiveWebContents(browser)->GetView()->SetInitialFocus();
 
   return browser;
 }

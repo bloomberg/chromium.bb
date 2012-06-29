@@ -28,6 +28,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
@@ -322,7 +323,7 @@ InstantController* LocationBarViewMac::GetInstant() {
 }
 
 TabContents* LocationBarViewMac::GetTabContents() const {
-  return browser_->GetActiveTabContents();
+  return chrome::GetActiveTabContents(browser_);
 }
 
 void LocationBarViewMac::Revert() {
@@ -356,7 +357,7 @@ int LocationBarViewMac::PageActionVisibleCount() {
 }
 
 WebContents* LocationBarViewMac::GetWebContents() const {
-  return browser_->GetActiveWebContents();
+  return chrome::GetActiveWebContents(browser_);
 }
 
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
@@ -574,7 +575,7 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   const bool input_in_progress = toolbar_model_->input_in_progress();
   WebContents* web_contents =
-      input_in_progress ? NULL : browser_->GetActiveWebContents();
+      input_in_progress ? NULL : chrome::GetActiveWebContents(browser_);
   bool icons_updated = false;
   for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
     icons_updated |=

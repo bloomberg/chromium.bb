@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -60,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
       browser(), ui::VKEY_F, true, true, false, false));
 
   // Verify the command worked.
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
@@ -101,8 +102,8 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, PageAction) {
 
   // Make sure it appears and is the right one.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-  int tab_id = browser()->GetActiveTabContents()->
-      restore_tab_helper()->session_id().id();
+  int tab_id = chrome::GetActiveTabContents(browser())->restore_tab_helper()->
+      session_id().id();
   ExtensionAction* action = extension->page_action();
   ASSERT_TRUE(action);
   EXPECT_EQ("Make this page red", action->GetTitle(tab_id));
@@ -112,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, PageAction) {
       browser(), ui::VKEY_F, true, true, false, false));
 
   // Verify the command worked (the page action turns the page red).
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",

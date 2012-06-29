@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -55,11 +56,11 @@ class SessionHistoryTest : public InProcessBrowserTest {
   }
 
   std::string GetTabTitle() {
-    return UTF16ToASCII(browser()->GetActiveWebContents()->GetTitle());
+    return UTF16ToASCII(chrome::GetActiveWebContents(browser())->GetTitle());
   }
 
   GURL GetTabURL() {
-    return browser()->GetActiveWebContents()->GetURL();
+    return chrome::GetActiveWebContents(browser())->GetURL();
   }
 
   GURL GetURL(const std::string file) {
@@ -70,7 +71,7 @@ class SessionHistoryTest : public InProcessBrowserTest {
                              const std::string& expected_title) {
     string16 expected_title16(ASCIIToUTF16(expected_title));
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetActiveWebContents(), expected_title16);
+        chrome::GetActiveWebContents(browser()), expected_title16);
     ui_test_utils::NavigateToURL(browser(), GetURL(filename));
     ASSERT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
@@ -435,14 +436,14 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   int length;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(1, length);
 
   ui_test_utils::NavigateToURL(browser(), GetURL("title1.html"));
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 
@@ -450,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   ui_test_utils::NavigateToURL(browser(), GetURL("record_length.html"));
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(3, length);
 
@@ -461,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   ui_test_utils::NavigateToURL(browser(), GetURL("title2.html"));
 
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 }

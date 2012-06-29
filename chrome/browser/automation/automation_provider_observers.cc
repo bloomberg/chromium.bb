@@ -57,6 +57,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -970,7 +971,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_FORWARD:
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
-          &browser->GetActiveWebContents()->GetController(),
+          &chrome::GetActiveWebContents(browser)->GetController(),
           automation, reply_message, 1, false, false);
       break;
     }
@@ -2583,7 +2584,7 @@ AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
        ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab_contents = browser->GetTabContentsAt(i);
+      TabContents* tab_contents = chrome::GetTabContentsAt(browser, i);
       StartObserving(tab_contents->automation_tab_helper());
       if (tab_contents->automation_tab_helper()->has_pending_loads())
         pending_tabs_.insert(tab_contents->web_contents());

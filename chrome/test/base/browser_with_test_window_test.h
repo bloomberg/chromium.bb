@@ -41,7 +41,7 @@ class WebContents;
 //   // Add a new tab and navigate it. This will be at index 0.
 //   AddTab(browser(), GURL("http://foo/1"));
 //   NavigationController* controller =
-//       &browser()->GetTabContentsAt(0)->GetController();
+//       &chrome::GetTabContentsAt(browser(), 0)->GetController();
 //
 //   // Navigate somewhere else.
 //   GURL url2("http://foo/2");

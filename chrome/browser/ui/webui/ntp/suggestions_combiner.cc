@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source_discovery.h"
@@ -162,7 +163,7 @@ bool SuggestionsCombiner::IsURLAlreadyOpen(const GURL &url) {
       continue;
 
     for (int i = 0; i < browser->tab_count(); i++) {
-      const content::WebContents* tab = browser->GetWebContentsAt(i);
+      const content::WebContents* tab = chrome::GetWebContentsAt(browser, i);
       if (tab->GetURL() == url)
         return true;
     }

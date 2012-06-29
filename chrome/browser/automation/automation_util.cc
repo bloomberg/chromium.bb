@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
@@ -145,7 +146,7 @@ WebContents* GetWebContentsAt(int browser_index, int tab_index) {
   Browser* browser = GetBrowserAt(browser_index);
   if (!browser || tab_index >= browser->tab_count())
     return NULL;
-  return browser->GetWebContentsAt(tab_index);
+  return chrome::GetWebContentsAt(browser, tab_index);
 }
 
 Browser* GetBrowserForTab(WebContents* tab) {
@@ -153,7 +154,7 @@ Browser* GetBrowserForTab(WebContents* tab) {
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      if (browser->GetWebContentsAt(tab_index) == tab)
+      if (chrome::GetWebContentsAt(browser, tab_index) == tab)
         return browser;
     }
   }
@@ -452,7 +453,7 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+      TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
       if (base::IntToString(
               tab_contents->restore_tab_helper()->session_id().id()) ==
                   id.id()) {

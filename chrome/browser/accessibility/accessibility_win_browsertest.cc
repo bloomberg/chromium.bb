@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -210,10 +211,10 @@ void RecursiveFindNodeInAccessibilityTree(
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
   content::RenderViewHostTester::EnableAccessibilityUpdatedNotifications(
-      browser()->GetActiveWebContents()->GetRenderViewHost());
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost());
 
   HWND hwnd_render_widget_host_view =
-      browser()->GetActiveWebContents()->GetRenderWidgetHostView()->
+      chrome::GetActiveWebContents(browser())->GetRenderWidgetHostView()->
           GetNativeView();
 
   // Invoke windows screen reader detection by sending the WM_GETOBJECT message
@@ -233,7 +234,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(wstring script) {
-  browser()->GetActiveWebContents()->GetRenderViewHost()->
+  chrome::GetActiveWebContents(browser())->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(L"", script);
 }
 

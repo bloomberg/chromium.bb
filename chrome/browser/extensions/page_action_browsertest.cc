@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -186,7 +187,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->description().c_str());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
                extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(
+      chrome::GetActiveWebContents(browser()));
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->page_action()->GetTitle(tab_id).c_str());
 }

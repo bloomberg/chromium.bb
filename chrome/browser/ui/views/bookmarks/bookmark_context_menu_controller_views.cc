@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
@@ -114,7 +115,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       GURL url;
       string16 title;
       bookmark_utils::GetURLAndTitleToBookmark(
-          browser_->GetActiveWebContents(), &url, &title);
+          chrome::GetActiveWebContents(browser_), &url, &title);
       BookmarkEditor::Show(
           parent_widget_->GetNativeWindow(),
           profile_,

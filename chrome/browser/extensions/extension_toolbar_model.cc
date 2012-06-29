@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -88,7 +89,7 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     const Extension* extension,
     Browser* browser,
     GURL* popup_url_out) {
-  TabContents* tab_contents = browser->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
   if (!tab_contents)
     return ACTION_NONE;
 

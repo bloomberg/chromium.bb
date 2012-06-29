@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,7 +85,7 @@ class PluginTest : public InProcessBrowserTest {
   void LoadAndWait(const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetActiveWebContents(), expected_title);
+        chrome::GetActiveWebContents(browser()), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("plugin_not_found"));
     ui_test_utils::NavigateToURL(browser(), url);
@@ -175,9 +176,9 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 
   string16 expected_title(ASCIIToUTF16("OK"));
   ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetActiveWebContents(), expected_title);
+      chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
-  ui_test_utils::SimulateMouseClick(browser()->GetActiveWebContents());
+  ui_test_utils::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
 
   string16 expected_title(ASCIIToUTF16("OK"));
   ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetActiveWebContents(), expected_title);
+      chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   ui_test_utils::WaitForAppModalDialogAndCloseIt();
@@ -400,12 +401,12 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_PluginConvertPointTest) {
 
   string16 expected_title(ASCIIToUTF16("OK"));
   ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetActiveWebContents(), expected_title);
+      chrome::GetActiveWebContents(browser()), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   // TODO(stuartmorgan): When the automation system supports sending clicks,
   // change the test to trigger on mouse-down rather than window focus.
   static_cast<content::WebContentsDelegate*>(browser())->
-      ActivateContents(browser()->GetActiveWebContents());
+      ActivateContents(chrome::GetActiveWebContents(browser()));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif

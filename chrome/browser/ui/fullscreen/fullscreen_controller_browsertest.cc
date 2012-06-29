@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -301,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(
   AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
-  WebContents* tab = browser()->GetActiveWebContents();
+  WebContents* tab = chrome::GetActiveWebContents(browser());
 
   {
     FullscreenNotificationObserver fullscreen_observer;
@@ -339,20 +340,20 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        content::PAGE_TRANSITION_TYPED);
   AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                        content::PAGE_TRANSITION_TYPED);
-  WebContents* tab1 = browser()->GetActiveWebContents();
+  WebContents* tab1 = chrome::GetActiveWebContents(browser());
 
   // Request mouse lock. Bubble is displayed.
   RequestToLockMouse(true, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
   // Activate current tab. Mouse lock bubble remains.
-  browser()->ActivateTabAt(0, true);
+  chrome::ActivateTabAt(browser(), 0, true);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
   // Activate second tab. Mouse lock bubble clears.
   {
     MouseLockNotificationObserver mouse_lock_observer;
-    browser()->ActivateTabAt(1, true);
+    chrome::ActivateTabAt(browser(), 1, true);
     mouse_lock_observer.Wait();
   }
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
@@ -364,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 
   // Close first tab while second active. Mouse lock bubble remains.
-  browser()->CloseTabContents(tab1);
+  chrome::CloseWebContents(browser(), tab1);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 }
 

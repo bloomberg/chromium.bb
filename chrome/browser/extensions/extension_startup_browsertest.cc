@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -117,7 +118,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     bool result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.defaultView.getComputedStyle(document.body, null)."
         L"getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
@@ -126,7 +127,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(document.title == 'Modified')",
         &result));
     EXPECT_EQ(expect_script, result);

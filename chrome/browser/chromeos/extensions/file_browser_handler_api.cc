@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -119,7 +120,7 @@ bool FileSelectorImpl::DoSelectFile(const FilePath& suggested_name,
   if (!browser->window())
     return false;
 
-  TabContents* tab_contents = browser->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
   if (!tab_contents)
     return false;
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/automation/mock_tab_event_observer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -91,7 +92,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
     std::string script = base::StringPrintf("runTestCase(%d);",
                                             test_case_number);
     content::RenderViewHost* host =
-        browser()->GetActiveWebContents()->GetRenderViewHost();
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost();
     if (wait_for_response) {
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
           host, L"", ASCIIToWide(script)));
@@ -104,7 +105,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
 
   // Returns the |AutomationTabHelper| for the first browser's first tab.
   AutomationTabHelper* tab_helper() {
-    return browser()->GetTabContentsAt(0)->automation_tab_helper();
+    return chrome::GetTabContentsAt(browser(), 0)->automation_tab_helper();
   }
 
  protected:

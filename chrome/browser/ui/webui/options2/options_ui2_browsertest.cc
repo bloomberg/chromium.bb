@@ -7,6 +7,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +28,7 @@ void OptionsBrowserTest::NavigateToSettings() {
 void OptionsBrowserTest::VerifyNavbar() {
   bool navbar_exist = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       L"",
       L"domAutomationController.send("
       L"!!document.getElementById('navigation'))", &navbar_exist));
@@ -35,7 +36,7 @@ void OptionsBrowserTest::VerifyNavbar() {
 }
 
 void OptionsBrowserTest::VerifyTitle() {
-  string16 title = browser()->GetActiveWebContents()->GetTitle();
+  string16 title = chrome::GetActiveWebContents(browser())->GetTitle();
   string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
   EXPECT_NE(title.find(expected_title), string16::npos);
 }

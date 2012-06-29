@@ -16,6 +16,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -220,7 +221,7 @@ void NotifyNotDefaultBrowserCallback() {
 
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  TabContents* tab = browser->GetActiveTabContents();
+  TabContents* tab = chrome::GetActiveTabContents(browser);
   if (!tab)
     return;
 

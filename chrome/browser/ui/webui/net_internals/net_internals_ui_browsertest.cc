@@ -14,6 +14,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
@@ -245,7 +246,7 @@ void NetInternalsTest::MessageHandler::PrerenderPage(
 void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const ListValue* list_value) {
   content::RenderViewHost* host =
-      browser()->GetWebContentsAt(1)->GetRenderViewHost();
+      chrome::GetWebContentsAt(browser(), 1)->GetRenderViewHost();
   host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
 }
 
@@ -262,7 +263,7 @@ void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(
 void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
     const ListValue* list_value) {
   ASSERT_TRUE(incognito_browser_);
-  incognito_browser_->CloseAllTabs();
+  chrome::CloseAllTabs(incognito_browser_);
   // Closing all a Browser's tabs will ultimately result in its destruction,
   // thought it may not have been destroyed yet.
   incognito_browser_ = NULL;
@@ -324,7 +325,7 @@ void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
 void NetInternalsTest::SetUpOnMainThread() {
   // Increase the memory allowed in a prerendered page above normal settings,
   // as debug builds use more memory and often go over the usual limit.
-  Profile* profile = browser()->GetActiveTabContents()->profile();
+  Profile* profile = browser()->profile();
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;

@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -33,8 +34,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   }
 
   // Test that we received the changes.
-  int tab_id = browser()->GetActiveTabContents()->
-      restore_tab_helper()->session_id().id();
+  int tab_id = chrome::GetActiveTabContents(browser())->restore_tab_helper()->
+      session_id().id();
   ExtensionAction* action = extension->page_action();
   ASSERT_TRUE(action);
   EXPECT_EQ("Modified", action->GetTitle(tab_id));
@@ -43,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
     int tab_id =
-        ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+        ExtensionTabUtil::GetTabId(chrome::GetActiveWebContents(browser()));
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), *action, tab_id, "", 0);
@@ -59,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   }
 
   // Test that we received the changes.
-  tab_id = browser()->GetActiveTabContents()->restore_tab_helper()->
+  tab_id = chrome::GetActiveTabContents(browser())->restore_tab_helper()->
       session_id().id();
   EXPECT_FALSE(action->GetIcon(tab_id).isNull());
 }
@@ -71,7 +72,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionAddPopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(
+      chrome::GetActiveWebContents(browser()));
 
   ExtensionAction* page_action = extension->page_action();
   ASSERT_TRUE(page_action)
@@ -117,7 +119,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionRemovePopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(
+      chrome::GetActiveWebContents(browser()));
 
   ExtensionAction* page_action = extension->page_action();
   ASSERT_TRUE(page_action)
@@ -158,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
   {
     ResultCatcher catcher;
     int tab_id =
-        ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+        ExtensionTabUtil::GetTabId(chrome::GetActiveWebContents(browser()));
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
         browser()->profile(), *extension->page_action(), tab_id, "", 1);

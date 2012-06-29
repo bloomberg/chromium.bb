@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -83,7 +84,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   void VerifySnapshot(const std::string& expected_filename) {
     snapshot_different_ = true;
     expected_filename_ = expected_filename;
-    TabContents* tab_contents =  browser()->GetActiveTabContents();
+    TabContents* tab_contents =  chrome::GetActiveTabContents(browser());
     tab_contents->snapshot_tab_helper()->CaptureSnapshot();
     ui_test_utils::RegisterAndWait(
         this,
@@ -107,7 +108,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     string16 query = UTF8ToUTF16(
         std::string("xyzxyz" + base::IntToString(next_dummy_search_value_++)));
     ASSERT_EQ(0, ui_test_utils::FindInPage(
-        browser()->GetActiveTabContents(), query, true, false, NULL));
+        chrome::GetActiveTabContents(browser()), query, true, false, NULL));
   }
 
  private:
@@ -237,13 +238,13 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   wheel_event.type = WebKit::WebInputEvent::MouseWheel;
   wheel_event.deltaY = -200;
   wheel_event.wheelTicksY = -2;
-  WebContents* web_contents = browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
   web_contents->GetRenderViewHost()->ForwardWheelEvent(wheel_event);
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   int y_offset = 0;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       std::wstring(),
       L"window.domAutomationController.send(plugin.pageYOffset())",
       &y_offset));
@@ -260,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   ASSERT_NO_FATAL_FAILURE(Load());
   // Verifies that find in page works.
   ASSERT_EQ(3, ui_test_utils::FindInPage(
-      browser()->GetActiveTabContents(), UTF8ToUTF16("adipiscing"),
+      chrome::GetActiveTabContents(browser()), UTF8ToUTF16("adipiscing"),
       true, false, NULL));
 
   // Verify that copying selected text works.
@@ -272,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   objects[ui::Clipboard::CBF_TEXT] = params;
   clipboard.WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
 
-  browser()->GetActiveWebContents()->GetRenderViewHost()->Copy();
+  chrome::GetActiveWebContents(browser())->GetRenderViewHost()->Copy();
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
   std::string text;
@@ -288,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
-      &(browser()->GetActiveWebContents()->GetController());
+      &(chrome::GetActiveWebContents(browser())->GetController());
   content::NotificationRegistrar registrar;
   registrar.Add(this,
                 content::NOTIFICATION_LOAD_STOP,
@@ -323,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
       // and before creating a byte-range request loader.
       bool complete = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetActiveWebContents()->GetRenderViewHost(),
+          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
           std::wstring(),
           L"window.domAutomationController.send(plugin.documentLoadComplete())",
           &complete));
@@ -334,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
       // nested message loop for the JS call.
       if (last_count != load_stop_notification_count())
         continue;
-      ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
+      ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
     }
   }
 }
@@ -349,14 +350,15 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_OnLoadAndReload) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetActiveWebContents()->GetController()));
+          &chrome::GetActiveWebContents(browser())->GetController()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       std::wstring(),
       L"reloadPDF();"));
   observer.Wait();
 
-  ASSERT_EQ("success", browser()->GetActiveWebContents()->GetURL().query());
+  ASSERT_EQ("success",
+            chrome::GetActiveWebContents(browser())->GetURL().query());
 }
 
 }  // namespace

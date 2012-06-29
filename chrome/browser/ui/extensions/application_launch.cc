@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -209,8 +210,8 @@ WebContents* OpenApplicationWindow(
   if (app_browser)
     *app_browser = browser;
 
-  TabContents* tab_contents =
-      browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_START_PAGE);
+  TabContents* tab_contents = chrome::AddSelectedTabWithURL(
+      browser, url, content::PAGE_TRANSITION_START_PAGE);
   WebContents* contents = tab_contents->web_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
@@ -303,7 +304,7 @@ WebContents* OpenApplicationTab(Profile* profile,
   params.disposition = disposition;
 
   if (disposition == CURRENT_TAB) {
-    WebContents* existing_tab = browser->GetActiveWebContents();
+    WebContents* existing_tab = chrome::GetActiveWebContents(browser);
     TabStripModel* model = browser->tab_strip_model();
     int tab_index = model->GetIndexOfWebContents(existing_tab);
 
@@ -313,7 +314,7 @@ WebContents* OpenApplicationTab(Profile* profile,
                             WebKit::WebReferrerPolicyDefault),
           disposition, content::PAGE_TRANSITION_LINK, false));
     // Reset existing_tab as OpenURL() may have clobbered it.
-    existing_tab = browser->GetActiveWebContents();
+    existing_tab = chrome::GetActiveWebContents(browser);
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       // Pinning may have moved the tab.

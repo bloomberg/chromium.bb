@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -88,9 +89,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ASSERT_EQ(3, browser()->tab_count());
 
   // Ensure first two tabs have installed apps.
-  WebContents* tab1 = browser()->GetWebContentsAt(0);
-  WebContents* tab2 = browser()->GetWebContentsAt(1);
-  WebContents* tab3 = browser()->GetWebContentsAt(2);
+  WebContents* tab1 = chrome::GetWebContentsAt(browser(), 0);
+  WebContents* tab2 = chrome::GetWebContentsAt(browser(), 1);
+  WebContents* tab3 = chrome::GetWebContentsAt(browser(), 2);
   ASSERT_TRUE(GetInstalledApp(tab1));
   ASSERT_TRUE(GetInstalledApp(tab2));
   ASSERT_TRUE(!GetInstalledApp(tab3));
@@ -124,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetActiveWebContents()->GetController()));
+          &chrome::GetActiveWebContents(browser())->GetController()));
   chrome::Reload(browser(), CURRENT_TAB);
   observer.Wait();
   EXPECT_TRUE(HasCookie(tab1, "app1=3"));
@@ -159,15 +160,15 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
   ASSERT_EQ(3, browser()->tab_count());
 
   // Check that tabs see each others' cookies.
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(0), "app2=4"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(0), "normalPage=5"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(0), "nonAppFrame=6"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(1), "app1=3"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(1), "normalPage=5"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(1), "nonAppFrame=6"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(2), "app1=3"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(2), "app2=4"));
-  EXPECT_TRUE(HasCookie(browser()->GetWebContentsAt(2), "nonAppFrame=6"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 0), "app2=4"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 0), "normalPage=5"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 0), "nonAppFrame=6"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 1), "app1=3"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 1), "normalPage=5"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 1), "nonAppFrame=6"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 2), "app1=3"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 2), "app2=4"));
+  EXPECT_TRUE(HasCookie(chrome::GetWebContentsAt(browser(), 2), "nonAppFrame=6"));
 }
 
 // Tests that isolated apps processes do not render top-level non-app pages.
@@ -196,31 +197,31 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, IsolatedAppProcessModel) {
       browser(), base_url.Resolve("app1/main.html"),
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   // For the third tab, use window.open to keep it in process with an opener.
-  OpenWindow(browser()->GetWebContentsAt(0),
+  OpenWindow(chrome::GetWebContentsAt(browser(), 0),
              base_url.Resolve("app1/main.html"), true, NULL);
 
   // In a fourth tab, use window.open to a non-app URL.  It should open in a
   // separate process, even though this would trigger the OAuth workaround
   // for hosted apps (from http://crbug.com/59285).
-  OpenWindow(browser()->GetWebContentsAt(0),
+  OpenWindow(chrome::GetWebContentsAt(browser(), 0),
              base_url.Resolve("non_app/main.html"), false, NULL);
 
   // We should now have four tabs, the first and third sharing a process.
   // The second one is an independent instance in a separate process.
   ASSERT_EQ(4, browser()->tab_count());
   int process_id_0 =
-      browser()->GetWebContentsAt(0)->GetRenderProcessHost()->GetID();
+      chrome::GetWebContentsAt(browser(), 0)->GetRenderProcessHost()->GetID();
   int process_id_1 =
-      browser()->GetWebContentsAt(1)->GetRenderProcessHost()->GetID();
+      chrome::GetWebContentsAt(browser(), 1)->GetRenderProcessHost()->GetID();
   EXPECT_NE(process_id_0, process_id_1);
   EXPECT_EQ(process_id_0,
-            browser()->GetWebContentsAt(2)->GetRenderProcessHost()->GetID());
+            chrome::GetWebContentsAt(browser(), 2)->GetRenderProcessHost()->GetID());
   EXPECT_NE(process_id_0,
-            browser()->GetWebContentsAt(3)->GetRenderProcessHost()->GetID());
+            chrome::GetWebContentsAt(browser(), 3)->GetRenderProcessHost()->GetID());
 
   // Navigating the second tab out of the app should cause a process swap.
   const GURL& non_app_url(base_url.Resolve("non_app/main.html"));
-  NavigateInRenderer(browser()->GetWebContentsAt(1), non_app_url);
+  NavigateInRenderer(chrome::GetWebContentsAt(browser(), 1), non_app_url);
   EXPECT_NE(process_id_1,
-            browser()->GetWebContentsAt(1)->GetRenderProcessHost()->GetID());
+            chrome::GetWebContentsAt(browser(), 1)->GetRenderProcessHost()->GetID());
 }

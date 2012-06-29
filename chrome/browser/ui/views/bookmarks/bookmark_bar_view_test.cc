@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -216,7 +217,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   virtual void TearDown() {
     // Destroy everything, then run the message loop to ensure we delete all
     // Tasks and fully shut down.
-    browser_->CloseAllTabs();
+    chrome::CloseAllTabs(browser_.get());
     bb_view_.reset();
     browser_.reset();
     profile_.reset();

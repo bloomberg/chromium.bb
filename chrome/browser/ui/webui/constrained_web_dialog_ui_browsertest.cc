@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
@@ -59,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
   // The delegate deletes itself.
   WebDialogDelegate* delegate = new test::TestWebDialogDelegate(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
-  TabContents* tab_contents = browser()->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(tab_contents);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
@@ -78,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   // The delegate deletes itself.
   WebDialogDelegate* delegate = new test::TestWebDialogDelegate(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
-  TabContents* tab_contents = browser()->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(tab_contents);
 
   ConstrainedWebDialogDelegate* dialog_delegate =

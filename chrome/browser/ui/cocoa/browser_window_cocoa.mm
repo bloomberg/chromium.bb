@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
@@ -231,7 +232,7 @@ void BrowserWindowCocoa::BookmarkBarStateChanged(
 
 void BrowserWindowCocoa::UpdateDevTools() {
   [controller_ updateDevToolsForContents:
-      browser_->GetActiveWebContents()];
+      chrome::GetActiveWebContents(browser_)];
 }
 
 void BrowserWindowCocoa::SetDevToolsDockSide(DevToolsDockSide side) {

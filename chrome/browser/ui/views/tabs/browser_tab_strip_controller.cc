@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -447,7 +448,7 @@ void BrowserTabStripController::ModeChanged(const chrome::search::Mode& mode) {
   // repainting of tab's background.
   int active_index = GetActiveIndex();
   DCHECK_NE(active_index, -1);
-  SetTabDataAt(browser_->GetTabContentsAt(active_index), active_index);
+  SetTabDataAt(chrome::GetTabContentsAt(browser_, active_index), active_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -459,7 +460,7 @@ void BrowserTabStripController::OnToolbarBackgroundAnimatorProgressed() {
   // background.
   int active_index = GetActiveIndex();
   DCHECK_NE(active_index, -1);
-  SetTabDataAt(browser_->GetTabContentsAt(active_index), active_index);
+  SetTabDataAt(chrome::GetTabContentsAt(browser_, active_index), active_index);
 }
 
 void BrowserTabStripController::OnToolbarBackgroundAnimatorCanceled(
@@ -477,8 +478,8 @@ void BrowserTabStripController::OnToolbarBackgroundAnimatorCanceled(
                              GetActiveIndex();
   if (index == -1)
     return;
-  SetTabDataAt(tab_contents ? tab_contents : browser_->GetTabContentsAt(index),
-               index);
+  SetTabDataAt(tab_contents ? tab_contents :
+      chrome::GetTabContentsAt(browser_, index), index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

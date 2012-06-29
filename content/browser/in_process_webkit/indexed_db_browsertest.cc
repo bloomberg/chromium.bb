@@ -12,6 +12,7 @@
 #include "base/test/thread_test_helper.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -54,11 +55,12 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         the_browser, test_url, 2);
     LOG(INFO) << "Navigation done.";
-    std::string result = the_browser->GetActiveWebContents()->GetURL().ref();
+    std::string result =
+        chrome::GetActiveWebContents(the_browser)->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          the_browser->GetActiveWebContents()->GetRenderViewHost(), L"",
+          chrome::GetActiveWebContents(the_browser)->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }
@@ -115,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ValueSizeTest) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(GetTestURL(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
-  ui_test_utils::CrashTab(browser()->GetActiveWebContents());
+  ui_test_utils::CrashTab(chrome::GetActiveWebContents(browser()));
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -571,7 +572,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
         web_ui()->GetWebContents());
     WebContents* old_contents = NULL;
     if (browser)
-      old_contents = browser->GetActiveWebContents();
+      old_contents = chrome::GetActiveWebContents(browser);
 
     WebContents* new_contents = application_launch::OpenApplication(
         profile, extension, launch_container, GURL(url),
@@ -579,7 +580,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
     // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser && browser->tab_count() > 1)
-      browser->CloseTabContents(old_contents);
+      chrome::CloseWebContents(browser, old_contents);
   }
 }
 

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
@@ -285,8 +286,8 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
        content::NotificationService::AllSources());
-  browser->AddSelectedTabWithURL(
-      GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_START_PAGE);
+  chrome::AddSelectedTabWithURL(browser, GURL(chrome::kAboutBlankURL),
+                                content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
 
   browser->window()->Show();
@@ -349,7 +350,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   if (!BrowserList::empty()) {
     browser_ = *BrowserList::begin();
-    ui_test_utils::WaitForLoadStop(browser_->GetActiveWebContents());
+    ui_test_utils::WaitForLoadStop(chrome::GetActiveWebContents(browser_));
   }
 
   // Pump any pending events that were created as a result of creating a

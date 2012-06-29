@@ -27,6 +27,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -679,8 +680,8 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
     NOTREACHED();
     return;
   }
-  browser->AddSelectedTabWithURL(GURL(report_error_url),
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::AddSelectedTabWithURL(browser, GURL(report_error_url),
+                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 void TranslateManager::DoTranslatePage(WebContents* web_contents,

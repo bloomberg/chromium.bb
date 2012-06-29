@@ -4,7 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/tabpose_window.h"
 
-#import "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,9 +25,8 @@ class TabposeWindowTest : public CocoaProfileTest {
   }
 
   void AppendTabToStrip() {
-    TabContents* tab_contents = Browser::TabContentsFactory(
-        profile(), site_instance_, MSG_ROUTING_NONE,
-        NULL, NULL);
+    TabContents* tab_contents = chrome::TabContentsFactory(
+        profile(), site_instance_, MSG_ROUTING_NONE, NULL, NULL);
     browser()->tab_strip_model()->AppendTabContents(
         tab_contents, /*foreground=*/true);
   }

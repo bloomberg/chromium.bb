@@ -12,6 +12,7 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -30,7 +31,7 @@ static void ShowGenericExtensionInstalledInfoBar(
     const extensions::Extension* new_extension,
     Browser* browser,
     const SkBitmap& icon) {
-  TabContents* tab_contents = browser->GetActiveTabContents();
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
   if (!tab_contents)
     return;
 

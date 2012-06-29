@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -56,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/google/google.html"));
 
-  WebContents* web_contents = browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
   web_contents->GenerateMHTML(path,
                               base::Bind(&MHTMLGenerationTest::MHTMLGenerated,
                                          this));

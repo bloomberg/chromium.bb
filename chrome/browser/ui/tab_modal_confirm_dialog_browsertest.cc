@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,9 +40,9 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(
-      browser()->GetActiveWebContents());
+      chrome::GetActiveWebContents(browser()));
   dialog_ = CreateTestDialog(delegate_,
-                             browser()->GetActiveTabContents());
+                             chrome::GetActiveTabContents(browser()));
   ui_test_utils::RunAllPendingInMessageLoop();
 }
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser_tabstrip.h"
+
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
@@ -18,7 +20,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
                extension->description().c_str());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
                extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(
+      chrome::GetActiveWebContents(browser()));
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->browser_action()->GetTitle(tab_id).c_str());
 }

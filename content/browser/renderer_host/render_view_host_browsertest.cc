@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -33,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   ui_test_utils::NavigateToURL(browser(), empty_url);
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      browser()->GetActiveWebContents()->GetRenderViewHost());
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost());
 
   {
     scoped_ptr<Value> value(
@@ -206,7 +207,7 @@ class RenderViewHostTestWebContentsObserver
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(
-      browser()->GetActiveWebContents());
+      chrome::GetActiveWebContents(browser()));
 
   GURL test_url = test_server()->GetURL("files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -219,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(
-      browser()->GetActiveWebContents());
+      chrome::GetActiveWebContents(browser()));
 
   // Base URL is not set if it is the same as the URL.
   GURL test_url = test_server()->GetURL("files/simple.html");

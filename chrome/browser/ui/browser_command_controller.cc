@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -228,7 +229,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
   // tab.  However, Ben says he tried removing this before and got lots of
   // crashes, e.g. from Windows sending WM_COMMANDs at random times during
   // window construction.  This probably could use closer examination someday.
-  if (!browser_->GetActiveTabContents())
+  if (!chrome::GetActiveTabContents(browser_))
     return;
 
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
@@ -856,7 +857,7 @@ void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
 }
 
 void BrowserCommandController::UpdateCommandsForTabState() {
-  TabContents* current_tab_contents = browser_->GetActiveTabContents();
+  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser_);
   if (!current_tab_contents)  // May be NULL during tab restore.
     return;
   WebContents* current_web_contents = current_tab_contents->web_contents();

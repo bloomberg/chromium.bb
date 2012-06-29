@@ -380,17 +380,6 @@ int TabStripModel::GetIndexOfWebContents(const WebContents* contents) const {
   return kNoTab;
 }
 
-int TabStripModel::GetIndexOfController(
-    const NavigationController* controller) const {
-  int index = 0;
-  TabContentsDataVector::const_iterator iter = contents_data_.begin();
-  for (; iter != contents_data_.end(); ++iter, ++index) {
-    if (&(*iter)->contents->web_contents()->GetController() == controller)
-      return index;
-  }
-  return kNoTab;
-}
-
 void TabStripModel::UpdateTabContentsStateAt(int index,
     TabStripModelObserver::TabChangeType change_type) {
   DCHECK(ContainsIndex(index));

@@ -15,6 +15,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -154,7 +155,7 @@ void CheckAutoLaunchCallback(Profile* profile) {
   // We must not use GetLastActive here because this is at Chrome startup and
   // no window might have been made active yet. We'll settle for any window.
   Browser* browser = browser::FindAnyBrowser(profile, true);
-  TabContents* tab = browser->GetActiveTabContents();
+  TabContents* tab = chrome::GetActiveTabContents(browser);
 
   // Don't show the info-bar if there are already info-bars showing.
   InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();

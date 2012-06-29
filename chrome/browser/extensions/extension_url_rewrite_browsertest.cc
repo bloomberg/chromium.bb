@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -33,7 +34,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   }
 
   content::NavigationController* GetNavigationController() const {
-    return &browser()->GetActiveWebContents()->GetController();
+    return &chrome::GetActiveWebContents(browser())->GetController();
   }
 
   NavigationEntry* GetNavigationEntry() const {

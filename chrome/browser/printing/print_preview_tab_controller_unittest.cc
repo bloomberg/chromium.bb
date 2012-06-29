@@ -7,6 +7,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -42,7 +43,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
 
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
@@ -77,11 +78,11 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   EXPECT_EQ(0, browser()->tab_count());
 
   chrome::NewTab(browser());
-  TabContents* tab_contents_1 = browser()->GetActiveTabContents();
+  TabContents* tab_contents_1 = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(tab_contents_1);
 
   chrome::NewTab(browser());
-  TabContents* tab_contents_2 = browser()->GetActiveTabContents();
+  TabContents* tab_contents_2 = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(tab_contents_2);
   EXPECT_EQ(2, browser()->tab_count());
 
@@ -134,7 +135,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
 
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();

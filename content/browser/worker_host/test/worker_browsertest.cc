@@ -12,6 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service_impl.h"
@@ -287,7 +288,7 @@ class WorkerTest : public InProcessBrowserTest {
     GURL url = GetTestURL(test_case, query);
     const string16 expected_title = ASCIIToUTF16("OK");
     ui_test_utils::TitleWatcher title_watcher(
-        browser->GetActiveWebContents(), expected_title);
+        chrome::GetActiveWebContents(browser), expected_title);
     ui_test_utils::NavigateToURL(browser, url);
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, final_title);

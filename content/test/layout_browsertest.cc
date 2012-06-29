@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/layout_test_http_server.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -187,7 +188,7 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
   LOG(INFO) << "Navigating to URL " << url << " and blocking.";
   const string16 expected_title = ASCIIToUTF16("done");
   ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetActiveWebContents(), expected_title);
+      chrome::GetActiveWebContents(browser()), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
   LOG(INFO) << "Navigation completed, now waiting for title.";
   string16 final_title = title_watcher.WaitAndGetTitle();

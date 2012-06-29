@@ -7,6 +7,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -57,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* tab_controller =
@@ -99,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetActiveTabContents();
+  TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* tab_controller =

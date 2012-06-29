@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -77,7 +78,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
         UTF8ToWide(script), &result));
     EXPECT_TRUE(result);
   }
@@ -142,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
   if (browser()->tab_strip_model()->count() == 1) {
     ui_test_utils::WaitForNewTab(browser());
   }
-  WebContents* web_contents = browser()->GetActiveWebContents();
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
   EXPECT_EQ(GURL("http://cws.com/show-me-the-money"), web_contents->GetURL());
 }
 

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -245,7 +246,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // any other value indicates completion (in this case it will start with
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
   TestFinishObserver observer(
-      browser()->GetActiveWebContents()->GetRenderViewHost(), kTimeoutMs);
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(), kTimeoutMs);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -1088,7 +1089,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   // The plugin will be loaded in the foreground tab and will send us a message.
   TestFinishObserver observer(
-      browser()->GetActiveWebContents()->GetRenderViewHost(),
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
       TestTimeouts::action_max_timeout_ms());
 
   GURL url = GetTestFileUrl("View_PageHideShow");
@@ -1113,7 +1114,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   observer.Reset();
 
   // Switch back to the test tab.
-  browser()->ActivateTabAt(0, true);
+  chrome::ActivateTabAt(browser(), 0, true);
 
   ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
   EXPECT_STREQ("PASS", observer.result().c_str());
@@ -1128,7 +1129,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
                                  };
 
   for (size_t i = 0; i < arraysize(positive_tests); ++i) {
-    RenderViewHost* host = browser()->GetActiveWebContents()->
+    RenderViewHost* host = chrome::GetActiveWebContents(browser())->
         GetRenderViewHost();
     RunTest(positive_tests[i]);
     EXPECT_TRUE(content::RenderViewHostTester::HasTouchEventHandler(host));
@@ -1136,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
 
   std::string negative_tests[] = { "InputEvent_AcceptTouchEvent_2" };
   for (size_t i = 0; i < arraysize(negative_tests); ++i) {
-    RenderViewHost* host = browser()->GetActiveWebContents()->
+    RenderViewHost* host = chrome::GetActiveWebContents(browser())->
         GetRenderViewHost();
     RunTest(negative_tests[i]);
     EXPECT_FALSE(content::RenderViewHostTester::HasTouchEventHandler(host));

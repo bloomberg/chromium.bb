@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -74,7 +75,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // homepage, we just disable this menu item.
     return extension->GetHomepageURL().is_valid();
   } else if (command_id == INSPECT_POPUP) {
-    TabContents* tab_contents = browser_->GetActiveTabContents();
+    TabContents* tab_contents = chrome::GetActiveTabContents(browser_);
     if (!tab_contents)
       return false;
 

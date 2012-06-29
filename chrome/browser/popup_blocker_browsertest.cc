@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -36,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
   // to the original URL.
   EXPECT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(1, browser()->tab_count());
-  WebContents* cur_tab = browser()->GetActiveWebContents();
+  WebContents* cur_tab = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(cur_tab);
   EXPECT_EQ(url, cur_tab->GetURL());
 }

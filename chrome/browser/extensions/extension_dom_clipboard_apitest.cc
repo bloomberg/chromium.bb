@@ -5,6 +5,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
@@ -66,7 +67,7 @@ bool ClipboardApiTest::ExecutePasteInSelectedTab(bool* result) {
 bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::wstring& script,
                                                   bool* result) {
   if (!ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetActiveWebContents()->GetRenderViewHost(),
+          chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
           L"",
           script,
           result)) {

@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#import "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -118,9 +119,8 @@ class TabStripControllerTest : public CocoaProfileTest {
 TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
   SiteInstance* instance = SiteInstance::Create(profile());
-  TabContents* tab_contents =
-      Browser::TabContentsFactory(profile(), instance,
-          MSG_ROUTING_NONE, NULL, NULL);
+  TabContents* tab_contents = chrome::TabContentsFactory(
+      profile(), instance, MSG_ROUTING_NONE, NULL, NULL);
   model_->AppendTabContents(tab_contents, true);
   EXPECT_EQ(model_->count(), 1);
 }
@@ -136,16 +136,14 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
 TEST_F(TabStripControllerTest, CorrectToolTipText) {
   // Create tab 1.
   SiteInstance* instance = SiteInstance::Create(profile());
-  TabContents* tab_contents =
-      Browser::TabContentsFactory(profile(), instance,
-                                  MSG_ROUTING_NONE, NULL, NULL);
+  TabContents* tab_contents = chrome::TabContentsFactory(
+      profile(), instance, MSG_ROUTING_NONE, NULL, NULL);
   model_->AppendTabContents(tab_contents, true);
 
   // Create tab 2.
   SiteInstance* instance2 = SiteInstance::Create(profile());
-  TabContents* tab_contents2 =
-      Browser::TabContentsFactory(profile(), instance2,
-                                  MSG_ROUTING_NONE, NULL, NULL);
+  TabContents* tab_contents2 = chrome::TabContentsFactory(
+      profile(), instance2, MSG_ROUTING_NONE, NULL, NULL);
   model_->AppendTabContents(tab_contents2, true);
 
   // Set tab 1 tooltip.

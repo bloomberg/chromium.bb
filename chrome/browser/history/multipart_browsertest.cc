@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -34,11 +35,11 @@ IN_PROC_BROWSER_TEST_F(MultipartResponseTest, SingleVisit) {
   // creates one entry in the visits table.
   ASSERT_TRUE(test_server()->Start());
 
-  Observe(browser()->GetActiveWebContents());
+  Observe(chrome::GetActiveWebContents(browser()));
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL("multipart"));
 
   EXPECT_EQ(ASCIIToUTF16("page 9"),
-            browser()->GetActiveWebContents()->GetTitle());
+            chrome::GetActiveWebContents(browser())->GetTitle());
   EXPECT_EQ(1, update_history_count_);
   EXPECT_GT(did_navigate_any_frame_count_, update_history_count_);
 }

@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/perf/perf_test.h"
@@ -30,7 +31,7 @@ using content::WebContents;
 
 PageCycler::PageCycler(Browser* browser,
                        const FilePath& urls_file)
-    : content::WebContentsObserver(browser->GetActiveWebContents()),
+    : content::WebContentsObserver(chrome::GetActiveWebContents(browser)),
       browser_(browser),
       urls_file_(urls_file),
       url_index_(0),
@@ -130,7 +131,7 @@ void PageCycler::BeginCycle() {
   // result in the browser being in a state of loading when PageCycler is ready
   // to start. Instead of interrupting the load, we wait for it to finish, and
   // will call LoadNextURL() from DidFinishLoad() or DidFailProvisionalLoad().
-  if (browser_->GetActiveWebContents()->IsLoading())
+  if (chrome::GetActiveWebContents(browser_)->IsLoading())
     return;
   LoadNextURL();
 }
