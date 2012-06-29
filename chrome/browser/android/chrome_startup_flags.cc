@@ -21,29 +21,38 @@ void SetCommandLineSwitch(const std::string& switch_string) {
     command_line->AppendSwitch(switch_string);
 }
 
+void SetCommandLineSwitchASCII(const std::string& switch_string,
+                               const std::string& value) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switch_string))
+    command_line->AppendSwitchASCII(switch_string, value);
+}
+
 bool IsTabletUi() {
   NOTIMPLEMENTED() << "TODO(yfriedman): Upstream this";
   return false;
 }
-} // namespace
+
+}  // namespace
 
 void SetChromeSpecificCommandLineFlags() {
-  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+  // Always enable SPDY.
+  SetCommandLineSwitch(switches::kEnableNpn);
 
-  // Always enable SPDY
-  parsed_command_line->AppendSwitch(switches::kEnableNpn);
-
-  // Turn on autofill
+  // Turn on autofill.
   SetCommandLineSwitch(switches::kExternalAutofillPopup);
+
+  // Turn on autologin.
+  SetCommandLineSwitch(switches::kEnableAutologin);
 
   // Tablet UI switch (used for using correct version of NTP HTML).
   if (IsTabletUi())
-    parsed_command_line->AppendSwitch(switches::kTabletUi);
+    SetCommandLineSwitch(switches::kTabletUi);
 
   // Enable prerender for the omnibox.
-  parsed_command_line->AppendSwitchASCII(
+  SetCommandLineSwitchASCII(
       switches::kPrerenderMode, switches::kPrerenderModeSwitchValueEnabled);
-  parsed_command_line->AppendSwitchASCII(
+  SetCommandLineSwitchASCII(
       switches::kPrerenderFromOmnibox,
       switches::kPrerenderFromOmniboxSwitchValueEnabled);
 }

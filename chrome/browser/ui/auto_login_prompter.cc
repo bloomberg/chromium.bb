@@ -39,13 +39,35 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::WebContents;
 
+namespace {
+
+bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
+  // In an incognito window, there may not be a profile sync service and/or
+  // signin manager.
+  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+      profile)) {
+    return false;
+  }
+
+  if (!TokenServiceFactory::GetForProfile(profile)->AreCredentialsValid())
+    return false;
+
+  SigninManager* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
+  if (!signin_manager)
+    return false;
+
+  *output = signin_manager->GetAuthenticatedUsername();
+  return true;
+}
+
+}  // namespace
+
 AutoLoginPrompter::AutoLoginPrompter(
     WebContents* web_contents,
-    const std::string& username,
-    const std::string& args)
+    const Params& params)
     : web_contents_(web_contents),
-      username_(username),
-      args_(args) {
+      params_(params) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
                     &web_contents_->GetController()));
@@ -68,48 +90,22 @@ void AutoLoginPrompter::ShowInfoBarIfPossible(net::URLRequest* request,
   // suggest auto-login, if available.
   std::string value;
   request->GetResponseHeaderByName("X-Auto-Login", &value);
-  if (value.empty())
-    return;
-
-  std::vector<std::pair<std::string, std::string> > pairs;
-  if (!base::SplitStringIntoKeyValuePairs(value, '=', '&', &pairs))
-    return;
-
-  // Parse the information from the value string.
-  std::string realm;
-  std::string account;
-  std::string args;
-  for (size_t i = 0; i < pairs.size(); ++i) {
-    const std::pair<std::string, std::string>& pair = pairs[i];
-    if (pair.first == "realm") {
-      realm = net::UnescapeURLComponent(pair.second,
-                                        net::UnescapeRule::URL_SPECIAL_CHARS);
-    } else if (pair.first == "account") {
-      account = net::UnescapeURLComponent(pair.second,
-                                          net::UnescapeRule::URL_SPECIAL_CHARS);
-    } else if (pair.first == "args") {
-      args = pair.second;
-    }
-  }
-
-  // Currently we only accept GAIA credentials.
-  if (realm != "com.google")
+  Params params;
+  if (!ParseAutoLoginHeader(value, &params))
     return;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&AutoLoginPrompter::ShowInfoBarUIThread, account, args,
-                 request->url(), child_id, route_id));
+      base::Bind(&ShowInfoBarUIThread,
+                 params, request->url(), child_id, route_id));
 }
 
 // static
-void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
-                                            const std::string& args,
+void AutoLoginPrompter::ShowInfoBarUIThread(Params params,
                                             const GURL& url,
                                             int child_id,
                                             int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   WebContents* web_contents = tab_util::GetWebContentsByID(child_id, route_id);
   if (!web_contents)
     return;
@@ -120,33 +116,23 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
   if (!profile->GetPrefs()->GetBoolean(prefs::kAutologinEnabled))
     return;
 
-  // In an incognito window, there may not be a profile sync service and/or
-  // signin manager.
-  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-      profile)) {
+#if !defined(OS_ANDROID)
+  // On Android, the username is fetched on the Java side from the
+  // AccountManager provided by the platform.
+  if (!FetchUsernameThroughSigninManager(profile, &params.username))
     return;
-  }
-
-  if (!TokenServiceFactory::GetForProfile(profile)->AreCredentialsValid())
-    return;
-
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetInstance()->GetForProfile(profile);
-  if (!signin_manager)
-    return;
-
-  const std::string& username = signin_manager->GetAuthenticatedUsername();
+#endif
 
   // Make sure that |account|, if specified, matches the logged in user.
   // However, |account| is usually empty.
-  if (!account.empty() && (username != account))
+  if (!params.username.empty() && !params.account.empty() &&
+      params.username != params.account)
     return;
-
   // We can't add the infobar just yet, since we need to wait for the tab to
   // finish loading.  If we don't, the info bar appears and then disappears
   // immediately.  Create an AutoLoginPrompter instance to listen for the
   // relevant notifications; it will delete itself.
-  new AutoLoginPrompter(web_contents, username, args);
+  new AutoLoginPrompter(web_contents, params);
 }
 
 void AutoLoginPrompter::Observe(int type,
@@ -157,13 +143,49 @@ void AutoLoginPrompter::Observe(int type,
     // |tab_contents| is NULL for WebContents hosted in WebDialog.
     if (tab_contents) {
       InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
-      infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(infobar_helper,
-                                                              username_,
-                                                              args_));
+      infobar_helper->AddInfoBar(
+          new AutoLoginInfoBarDelegate(infobar_helper, params_));
     }
   }
   // Either we couldn't add the infobar, we added the infobar, or the tab
   // contents was destroyed before the navigation completed.  In any case
   // there's no reason to live further.
   delete this;
+}
+
+// static
+bool AutoLoginPrompter::ParseAutoLoginHeader(const std::string& input,
+                                             Params* output) {
+  // TODO(pliard): Investigate/fix potential internationalization issue. It
+  // seems that "account" from the x-auto-login header might contain non-ASCII
+  // characters.
+  if (input.empty())
+    return false;
+
+  std::vector<std::pair<std::string, std::string> > pairs;
+  if (!base::SplitStringIntoKeyValuePairs(input, '=', '&', &pairs))
+    return false;
+
+  // Parse the information from the |input| string.
+  Params params;
+  for (size_t i = 0; i < pairs.size(); ++i) {
+    const std::pair<std::string, std::string>& pair = pairs[i];
+    std::string unescaped_value(net::UnescapeURLComponent(
+          pair.second, net::UnescapeRule::URL_SPECIAL_CHARS));
+    if (pair.first == "realm") {
+      // Currently we only accept GAIA credentials.
+      if (unescaped_value != "com.google")
+        return false;
+      params.realm = unescaped_value;
+    } else if (pair.first == "account") {
+      params.account = unescaped_value;
+    } else if (pair.first == "args") {
+      params.args = unescaped_value;
+    }
+  }
+  if (params.realm.empty() || params.args.empty())
+    return false;
+
+  *output = params;
+  return true;
 }

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_AUTO_LOGIN_PROMPTER_H_
 
 #include <string>
+
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/auto_login_info_bar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -26,6 +28,8 @@ class URLRequest;
 // tokens that would allow a one-click login.
 class AutoLoginPrompter : public content::NotificationObserver {
  public:
+  typedef AutoLoginInfoBarDelegate::Params Params;
+
   // Looks for the X-Auto-Login response header in the request, and if found,
   // tries to display an infobar in the tab contents identified by the
   // child/route id.
@@ -34,16 +38,14 @@ class AutoLoginPrompter : public content::NotificationObserver {
                                     int route_id);
 
  private:
-  AutoLoginPrompter(content::WebContents* web_contents,
-                    const std::string& username,
-                    const std::string& args);
+  friend class AutoLoginPrompterTest;
+
+  AutoLoginPrompter(content::WebContents* web_contents, const Params& params);
 
   virtual ~AutoLoginPrompter();
 
-  // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
-  static void ShowInfoBarUIThread(const std::string& account,
-                                  const std::string& args,
-                                  const GURL& original_url,
+  static void ShowInfoBarUIThread(Params params,
+                                  const GURL& url,
                                   int child_id,
                                   int route_id);
 
@@ -52,9 +54,11 @@ class AutoLoginPrompter : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Returns whether parsing succeeded.
+  static bool ParseAutoLoginHeader(const std::string& input, Params* output);
+
   content::WebContents* web_contents_;
-  const std::string username_;
-  const std::string args_;
+  const Params params_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginPrompter);

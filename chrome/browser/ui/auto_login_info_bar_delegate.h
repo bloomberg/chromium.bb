@@ -18,29 +18,51 @@ class NavigationController;
 // This is the actual infobar displayed to prompt the user to auto-login.
 class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  AutoLoginInfoBarDelegate(InfoBarTabHelper* owner,
-                           const std::string& username,
-                           const std::string& args);
+  struct Params {
+    Params();
+    ~Params();
+
+    // "realm" string from x-auto-login (e.g. "com.google").
+    std::string realm;
+
+    // "account" string from x-auto-login.
+    std::string account;
+
+    // "args" string from x-auto-login to be passed to MergeSession. This string
+    // should be considered opaque and not be cracked open to look inside.
+    std::string args;
+
+    // Username to display in the infobar indicating user to be logged in as.
+    // This is initially fetched from sign-in on non-Android platforms. Note
+    // that on Android this field is not used.
+    std::string username;
+  };
+
+  AutoLoginInfoBarDelegate(InfoBarTabHelper* owner, const Params& params);
   virtual ~AutoLoginInfoBarDelegate();
 
- private:
-  // ConfirmInfoBarDelegate overrides.
+  // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
+  virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate() OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
+  // All the methods below are used by the Android implementation of the
+  // AutoLogin bar on the app side.
+  string16 GetMessageText(const std::string& username) const;
+
+  const std::string& realm() const { return params_.realm; }
+  const std::string& account() const { return params_.account; }
+  const std::string& args() const { return params_.args; }
+
+ private:
   void RecordHistogramAction(int action);
 
-  // Username to display in the infobar indicating user to be logged in as.
-  std::string username_;
-
-  // "args" string from x-auto-login to be passed to MergeSession.  This
-  // string should be considered opaque and not be cracked open to look inside.
-  std::string args_;
+  const Params params_;
 
   // Whether any UI controls in the infobar were pressed or not.
   bool button_pressed_;

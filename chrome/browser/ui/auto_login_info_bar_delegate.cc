@@ -123,13 +123,10 @@ void AutoLoginRedirector::OnUbertokenFailure(
 }
 
 void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
-  // The args are URL encoded, so we need to decode them before use.
-  std::string unescaped_args =
-      net::UnescapeURLComponent(args_, net::UnescapeRule::URL_SPECIAL_CHARS);
   // TODO(rogerta): what is the correct page transition?
   navigation_controller_->LoadURL(
       GURL(GaiaUrls::GetInstance()->merge_session_url() +
-          "?source=chrome&uberauth=" + token + "&" + unescaped_args),
+          "?source=chrome&uberauth=" + token + "&" + args_),
       content::Referrer(), content::PAGE_TRANSITION_AUTO_BOOKMARK,
       std::string());
 }
@@ -139,13 +136,16 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 
 // AutoLoginInfoBarDelegate ---------------------------------------------------
 
+// AutoLoginInfoBarDelegate::Params -------------------------------------------
+
+AutoLoginInfoBarDelegate::Params::Params() {}
+AutoLoginInfoBarDelegate::Params::~Params() {}
+
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
     InfoBarTabHelper* owner,
-    const std::string& username,
-    const std::string& args)
+    const Params& params)
     : ConfirmInfoBarDelegate(owner),
-      username_(username),
-      args_(args),
+      params_(params),
       button_pressed_(false) {
   RecordHistogramAction(HISTOGRAM_SHOWN);
 }
@@ -153,6 +153,11 @@ AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
 AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
   if (!button_pressed_)
     RecordHistogramAction(HISTOGRAM_IGNORED);
+}
+
+AutoLoginInfoBarDelegate*
+    AutoLoginInfoBarDelegate::AsAutoLoginInfoBarDelegate() {
+  return this;
 }
 
 void AutoLoginInfoBarDelegate::InfoBarDismissed() {
@@ -170,8 +175,7 @@ InfoBarDelegate::Type AutoLoginInfoBarDelegate::GetInfoBarType() const {
 }
 
 string16 AutoLoginInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(username_));
+  return GetMessageText(params_.username);
 }
 
 string16 AutoLoginInfoBarDelegate::GetButtonLabel(
@@ -182,7 +186,8 @@ string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 
 bool AutoLoginInfoBarDelegate::Accept() {
   // AutoLoginRedirector deletes itself.
-  new AutoLoginRedirector(&owner()->web_contents()->GetController(), args_);
+  new AutoLoginRedirector(&owner()->web_contents()->GetController(),
+                          params_.args);
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
   button_pressed_ = true;
   return true;
@@ -195,6 +200,12 @@ bool AutoLoginInfoBarDelegate::Cancel() {
   RecordHistogramAction(HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
+}
+
+string16 AutoLoginInfoBarDelegate::GetMessageText(
+    const std::string& username) const {
+  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
+                                    UTF8ToUTF16(username));
 }
 
 void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
