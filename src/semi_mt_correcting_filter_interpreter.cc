@@ -37,6 +37,7 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
 
   if (is_semi_mt_device_) {
     if (interpreter_enabled_.val_) {
+      EnforceBoundingBoxFormat(hwstate);
       LowPressureFilter(hwstate);
       AssignTrackingId(hwstate);
       if (clip_non_linear_edge_.val_)
@@ -266,6 +267,26 @@ void SemiMtCorrectingFilterInterpreter::SuppressOneToTwoFingerJump(
     hwstate->fingers[1].flags |=
         GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
   }
+}
+
+void SemiMtCorrectingFilterInterpreter::EnforceBoundingBoxFormat(
+    HardwareState* hwstate) {
+  if (hwstate->finger_cnt != 2)
+    return;
+  struct FingerState* finger0 = &hwstate->fingers[0];
+  struct FingerState* finger1 = &hwstate->fingers[1];
+  // Force incoming samples to "semi-mt" kernel format.
+  // i.e., finger0 = (min_x, max_y), finger1 (max_x, min_y)
+  // Forcing this format allows the semi-mt interpreter to work with kernel
+  // drivers that provide data in either semi-mt or (two-finger) MT-B format.
+  float min_x = std::min(finger0->position_x, finger1->position_x);
+  float max_x = std::max(finger0->position_x, finger1->position_x);
+  float min_y = std::min(finger0->position_y, finger1->position_y);
+  float max_y = std::max(finger0->position_y, finger1->position_y);
+  finger0->position_x = min_x;
+  finger0->position_y = max_y;
+  finger1->position_x = max_x;
+  finger1->position_y = min_y;
 }
 
 void SemiMtCorrectingFilterInterpreter::CorrectFingerPosition(

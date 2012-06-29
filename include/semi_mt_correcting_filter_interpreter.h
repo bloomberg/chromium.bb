@@ -130,6 +130,12 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // cursor or scroll jumps.
   void ClipNonLinearFingerPosition(HardwareState* hwstate);
 
+  // Change the input data to the pattern of bottom-left-top-right. This is in
+  // preparation of a future change to the Cr48 touchpad kernel driver, which
+  // may start to provide the original fingers as reported by the firmware, and
+  // not a bounding box.
+  void EnforceBoundingBoxFormat(HardwareState* hwstate);
+
   // Update all active fingers based on previous finger positions. The main
   // entry of the finger correction method. The method is to manipulate the
   // reported fingers to reflect the real finger positions as the semi_mt with
