@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -211,23 +212,26 @@ class SuggestionsCombinerTest : public testing::Test {
   }
 
  protected:
+  Profile* profile_;
   SuggestionsHandler* suggestions_handler_;
   SuggestionsCombiner* combiner_;
 
   void Reset() {
     delete combiner_;
-    combiner_ = new SuggestionsCombiner(suggestions_handler_);
+    combiner_ = new SuggestionsCombiner(suggestions_handler_, profile_);
   }
 
  private:
   virtual void SetUp() {
+    profile_ = new TestingProfile();
     suggestions_handler_ = new SuggestionsHandler();
-    combiner_ = new SuggestionsCombiner(suggestions_handler_);
+    combiner_ = new SuggestionsCombiner(suggestions_handler_, profile_);
   }
 
   virtual void TearDown() {
     delete combiner_;
     delete suggestions_handler_;
+    delete profile_;
   }
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsCombinerTest);

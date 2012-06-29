@@ -13,6 +13,10 @@
 
 class Profile;
 
+namespace base {
+class ListValue;
+}
+
 // UI Handler for chrome://suggestions-internals/
 class SuggestionsInternalsUIHandler : public content::WebUIMessageHandler,
                                       public SuggestionsCombiner::Delegate {

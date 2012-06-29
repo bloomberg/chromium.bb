@@ -61,6 +61,16 @@ cr.define('suggestionsInternals', function() {
     'score'
   ];
 
+  function setBooleanColumn(column, value) {
+    if (value) {
+      column.innerText = 'Y';
+      column.classList.add('boolean-property-true');
+    } else {
+      column.innerText = 'N';
+      column.classList.add('boolean-property-false');
+    }
+  }
+
   /**
    * Called by Chrome code, with a ranked list of suggestions. The columns
    * to be displayed are calculated automatically from the properties of the
@@ -133,9 +143,11 @@ cr.define('suggestionsInternals', function() {
         }
         // Only add the column if the current suggestion has this property
         // (otherwise, leave the cell empty).
-        if (data) {
-          // If the text is a URL, make it an anchor element.
-          if (/^https?:\/\/.+$/.test(data)) {
+        if (typeof(data) != 'undefined') {
+          if (typeof(data) == 'boolean') {
+            setBooleanColumn(column, data);
+          } else if (/^https?:\/\/.+$/.test(data)) {
+            // If the text is a URL, make it an anchor element.
             var anchor = document.createElement('a');
             anchor.href = data;
             anchor.innerText = data;
@@ -148,11 +160,8 @@ cr.define('suggestionsInternals', function() {
         } else if (column_name == 'screenshot') {
           var thumbnailUrl = 'chrome://thumb/' + entry.url;
           var img = document.createElement('img');
-          img.onload = function() {
-            column.innerText = 'Y';
-            column.classList.add('has-screenshot');
-          }
-          img.onerror = function() { column.innerText = 'N'; }
+          img.onload = function() { setBooleanColumn(column, true); }
+          img.onerror = function() { setBooleanColumn(column, false); }
           img.src = thumbnailUrl;
         } else if (column_name == 'favicon') {
           var faviconUrl = 'chrome://favicon/size/16/' + entry.url;

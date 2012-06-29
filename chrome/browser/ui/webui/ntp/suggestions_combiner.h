@@ -12,12 +12,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
+class GURL;
 class SuggestionsHandler;
 class SuggestionsSource;
 class Profile;
 
 namespace base {
-  class ListValue;
+class DictionaryValue;
+class ListValue;
 }
 
 // Combines many different sources of suggestions and generates data from it.
@@ -64,12 +66,21 @@ class SuggestionsCombiner {
  private:
   friend class SuggestionsCombinerTest;
 
-  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate);
+  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate,
+                               Profile* profile);
 
   // Fill the page values from the suggestion sources so they can be sent to
   // the JavaScript side. This should only be called when all the suggestion
   // sources have items ready.
   void FillPageValues();
+
+  // Add extra information to page values that should be common across all
+  // suggestion sources.
+  void AddExtendedInformation(base::DictionaryValue* page_value);
+
+  // Checks if a URL is already open for the current profile. URLs open in an
+  // incognito window are not reported.
+  bool IsURLAlreadyOpen(const GURL& url);
 
   typedef ScopedVector<SuggestionsSource> SuggestionsSources;
 
@@ -94,6 +105,8 @@ class SuggestionsCombiner {
   // Whether debug mode is enabled or not (debug mode provides more data in the
   // results).
   bool debug_enabled_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsCombiner);
 };

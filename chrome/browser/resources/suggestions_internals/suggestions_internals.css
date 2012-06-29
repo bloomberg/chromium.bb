@@ -23,6 +23,15 @@ p {
   margin-bottom: 1em;
 }
 
-.has-screenshot {
+.boolean-property-true {
   background-color: rgb(146, 205, 0);
+}
+
+.boolean-property-false {
+  background-color: rgb(205, 74, 0);
+}
+
+.boolean-property-true,
+.boolean-property-false {
+  text-align: center;
 }

@@ -10,10 +10,13 @@
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source_discovery.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source_top_sites.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -22,12 +25,14 @@ static const size_t kSuggestionsCount = 8;
 }  // namespace
 
 SuggestionsCombiner::SuggestionsCombiner(
-    SuggestionsCombiner::Delegate* delegate)
+    SuggestionsCombiner::Delegate* delegate,
+    Profile* profile)
     : sources_fetching_count_(0),
       delegate_(delegate),
       suggestions_count_(kSuggestionsCount),
       page_values_(new base::ListValue()),
-      debug_enabled_(false) {
+      debug_enabled_(false),
+      profile_(profile) {
 }
 
 SuggestionsCombiner::~SuggestionsCombiner() {
@@ -73,7 +78,7 @@ void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
 // static
 SuggestionsCombiner* SuggestionsCombiner::Create(
     SuggestionsCombiner::Delegate* delegate, Profile* profile) {
-  SuggestionsCombiner* combiner = new SuggestionsCombiner(delegate);
+  SuggestionsCombiner* combiner = new SuggestionsCombiner(delegate, profile);
   combiner->AddSource(new SuggestionsSourceTopSites());
 
   extensions::SuggestedLinksRegistry* registry =
@@ -128,4 +133,39 @@ void SuggestionsCombiner::FillPageValues() {
       extra_items_added++;
     }
   }
+
+  // Add page value information common to all sources.
+  for (size_t i = 0; i < page_values_->GetSize(); i++) {
+    base::DictionaryValue* page_value;
+    if (page_values_->GetDictionary(i, &page_value))
+      AddExtendedInformation(page_value);
+  }
+}
+
+void SuggestionsCombiner::AddExtendedInformation(
+    base::DictionaryValue* page_value) {
+  if (debug_enabled_) {
+    std::string url_string;
+    if (page_value->GetString("url", &url_string)) {
+      GURL url(url_string);
+      page_value->SetBoolean("already_open", IsURLAlreadyOpen(url));
+    }
+  }
+}
+
+bool SuggestionsCombiner::IsURLAlreadyOpen(const GURL &url) {
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    const Browser* browser = *it;
+    if (browser->profile()->IsOffTheRecord() ||
+        !browser->profile()->IsSameProfile(profile_))
+      continue;
+
+    for (int i = 0; i < browser->tab_count(); i++) {
+      const content::WebContents* tab = browser->GetWebContentsAt(i);
+      if (tab->GetURL() == url)
+        return true;
+    }
+  }
+  return false;
 }
