@@ -2226,7 +2226,8 @@ data_offer_destroy(struct data_offer *offer)
 
 static void
 data_device_data_offer(void *data,
-		       struct wl_data_device *data_device, uint32_t id)
+		       struct wl_data_device *data_device,
+		       struct wl_data_offer *_offer)
 {
 	struct data_offer *offer;
 
@@ -2235,12 +2236,7 @@ data_device_data_offer(void *data,
 	wl_array_init(&offer->types);
 	offer->refcount = 1;
 	offer->input = data;
-
-	/* FIXME: Generate typesafe wrappers for this */
-	offer->offer = (struct wl_data_offer *)
-		wl_proxy_create_for_id((struct wl_proxy *) data_device,
-				       id, &wl_data_offer_interface);
-
+	offer->offer = _offer;
 	wl_data_offer_add_listener(offer->offer,
 				   &data_offer_listener, offer);
 }
