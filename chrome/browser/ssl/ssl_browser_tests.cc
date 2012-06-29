@@ -841,7 +841,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
       test_server()->host_port_pair(),
       &replacement_path));
 
-  // Create a new tab in the same process.
+  // Create a new tab in the same process.  Using a NEW_FOREGROUND_TAB
+  // disposition won't usually stay in the same process, but this works
+  // because we are using process-per-site in SetUpCommandLine.
   GURL url = https_server_.GetURL(replacement_path);
   browser::NavigateParams params(
       browser(), url, content::PAGE_TRANSITION_TYPED);
@@ -853,6 +855,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   browser::Navigate(&params);
   TabContents* tab2 = params.target_contents;
   observer.Wait();
+
+  // Both tabs should have the same process.
+  EXPECT_EQ(tab1->web_contents()->GetRenderProcessHost(),
+            tab2->web_contents()->GetRenderProcessHost());
 
   // The new tab has insecure content.
   CheckAuthenticationBrokenState(tab2->web_contents(), 0, true, false);

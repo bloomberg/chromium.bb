@@ -157,6 +157,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ProcessOverflow) {
   EXPECT_NE(ntp1_host, extension1_host);
 
   // Hosted apps only share with each other.
+  // Note that hosted2_host's app has the background permission and will use
+  // process-per-site mode, but it should still share with hosted1_host's app.
   EXPECT_EQ(hosted1_host, hosted2_host);
   EXPECT_NE(hosted1_host, web1_host);
   EXPECT_NE(hosted1_host, extension1_host);

@@ -12,12 +12,15 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
 
+using content::RenderProcessHost;
 using content::RenderProcessHostImpl;
 using content::SiteInstance;
+using content::WebUIControllerFactory;
 
 static bool IsURLSameAsAnySiteInstance(const GURL& url) {
   if (!url.is_valid())
@@ -64,10 +67,23 @@ int32 SiteInstanceImpl::GetId() {
 }
 
 bool SiteInstanceImpl::HasProcess() const {
-  return (process_ != NULL);
+  if (process_ != NULL)
+    return true;
+
+  // If we would use process-per-site for this site, also check if there is an
+  // existing process that we would use if GetProcess() were called.
+  content::BrowserContext* browser_context =
+      browsing_instance_->browser_context();
+  if (has_site_ &&
+      RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context, site_) &&
+      RenderProcessHostImpl::GetProcessHostForSite(browser_context, site_)) {
+    return true;
+  }
+
+  return false;
 }
 
-content::RenderProcessHost* SiteInstanceImpl::GetProcess() {
+RenderProcessHost* SiteInstanceImpl::GetProcess() {
   // TODO(erikkay) It would be nice to ensure that the renderer type had been
   // properly set before we get here.  The default tab creation case winds up
   // with no site set at this point, so it will default to TYPE_NORMAL.  This
@@ -77,22 +93,44 @@ content::RenderProcessHost* SiteInstanceImpl::GetProcess() {
 
   // Create a new process if ours went away or was reused.
   if (!process_) {
-    // See if we should reuse an old process
-    if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
-            browsing_instance_->browser_context(), site_))
-      process_ = content::RenderProcessHost::GetExistingProcessHost(
-          browsing_instance_->browser_context(), site_);
+    content::BrowserContext* browser_context =
+        browsing_instance_->browser_context();
+
+    // If we should use process-per-site mode (either in general or for the
+    // given site), then look for an existing RenderProcessHost for the site.
+    bool use_process_per_site = has_site_ &&
+        RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context, site_);
+    if (use_process_per_site) {
+      process_ = RenderProcessHostImpl::GetProcessHostForSite(browser_context,
+                                                              site_);
+    }
+
+    // If not (or if none found), see if we should reuse an existing process.
+    if (!process_ && RenderProcessHostImpl::ShouldTryToUseExistingProcessHost(
+            browser_context, site_)) {
+      process_ = RenderProcessHostImpl::GetExistingProcessHost(browser_context,
+                                                               site_);
+    }
 
     // Otherwise (or if that fails), create a new one.
     if (!process_) {
       if (render_process_host_factory_) {
         process_ = render_process_host_factory_->CreateRenderProcessHost(
-            browsing_instance_->browser_context());
+            browser_context);
       } else {
         process_ =
-            new RenderProcessHostImpl(browsing_instance_->browser_context(),
+            new RenderProcessHostImpl(browser_context,
                                       site_.SchemeIs(chrome::kGuestScheme));
       }
+    }
+    CHECK(process_);
+
+    // If we are using process-per-site, we need to register this process
+    // for the current site so that we can find it again.  (If no site is set
+    // at this time, we will register it in SetSite().)
+    if (use_process_per_site) {
+      RenderProcessHostImpl::RegisterProcessHostForSite(browser_context,
+                                                        process_, site_);
     }
 
     content::GetContentClient()->browser()->SiteInstanceGotProcess(this);
@@ -116,7 +154,9 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // Remember that this SiteInstance has been used to load a URL, even if the
   // URL is invalid.
   has_site_ = true;
-  site_ = GetSiteForURL(browsing_instance_->browser_context(), url);
+  content::BrowserContext* browser_context =
+      browsing_instance_->browser_context();
+  site_ = GetSiteForURL(browser_context, url);
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -124,8 +164,16 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // BrowsingInstance can script each other.
   browsing_instance_->RegisterSiteInstance(this);
 
-  if (process_)
+  if (process_) {
     LockToOrigin();
+
+    // Ensure the process is registered for this site if necessary.
+    if (RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context,
+                                                       site_)) {
+      RenderProcessHostImpl::RegisterProcessHostForSite(
+          browser_context, process_, site_);
+    }
+  }
 }
 
 const GURL& SiteInstanceImpl::GetSite() const {
@@ -266,8 +314,7 @@ void SiteInstanceImpl::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  content::RenderProcessHost* rph =
-      content::Source<content::RenderProcessHost>(source).ptr();
+  RenderProcessHost* rph = content::Source<RenderProcessHost>(source).ptr();
   if (rph == process_)
     process_ = NULL;
 }

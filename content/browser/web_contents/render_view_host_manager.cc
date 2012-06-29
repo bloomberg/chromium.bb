@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -29,6 +30,8 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::RenderProcessHost;
+using content::RenderProcessHostImpl;
 using content::RenderViewHost;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHostView;
@@ -255,7 +258,7 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
 }
 
 void RenderViewHostManager::RendererProcessClosing(
-    content::RenderProcessHost* render_process_host) {
+    RenderProcessHost* render_process_host) {
   // Remove any swapped out RVHs from this process, so that we don't try to
   // swap them back in while the process is exiting.  Start by finding them,
   // since there could be more than one.
@@ -344,7 +347,7 @@ void RenderViewHostManager::Observe(
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSING:
       RendererProcessClosing(
-          content::Source<content::RenderProcessHost>(source).ptr());
+          content::Source<RenderProcessHost>(source).ptr());
       break;
 
     default:
@@ -463,8 +466,19 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // to compare against the current URL and not the SiteInstance's site.  In
     // this case, there is no current URL, so comparing against the site is ok.
     // See additional comments below.)
-    if (curr_site_instance->HasRelatedSiteInstance(dest_url))
+    //
+    // Also, if the URL should use process-per-site mode and there is an
+    // existing process for the site, we should use it.  We can call
+    // GetRelatedSiteInstance() for this, which will eagerly set the site and
+    // thus use the correct process.
+    bool use_process_per_site =
+        RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context,
+                                                       dest_url) &&
+        RenderProcessHostImpl::GetProcessHostForSite(browser_context, dest_url);
+    if (curr_site_instance->HasRelatedSiteInstance(dest_url) ||
+        use_process_per_site) {
       return curr_site_instance->GetRelatedSiteInstance(dest_url);
+    }
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
     // not want to use the curr_instance if it has no site, since it will have a

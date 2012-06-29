@@ -153,7 +153,7 @@ CONTENT_EXPORT extern const char kPpapiOutOfProcess[];
 extern const char kPpapiPluginLauncher[];
 CONTENT_EXPORT extern const char kPpapiPluginProcess[];
 extern const char kPpapiStartupDialog[];
-extern const char kProcessPerSite[];
+CONTENT_EXPORT extern const char kProcessPerSite[];
 CONTENT_EXPORT extern const char kProcessPerTab[];
 CONTENT_EXPORT extern const char kProcessType[];
 CONTENT_EXPORT extern const char kRegisterPepperPlugins[];

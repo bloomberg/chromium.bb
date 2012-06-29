@@ -83,18 +83,18 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(1, browser()->GetWebContentsAt(2)->GetMaxPageID());
 
-  // At this point, opening another NTP will use the old SiteInstance in the
-  // existing Web UI process, but the page IDs shouldn't affect each other.
+  // At this point, opening another NTP will use the existing WebUI process
+  // but its own SiteInstance, so the page IDs shouldn't affect each other.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(1, browser()->GetWebContentsAt(3)->GetMaxPageID());
 
-  // Only navigating to the NTP in the original tab should have a higher
-  // page ID.
+  // Navigating to the NTP in the original tab causes a BrowsingInstance
+  // swap, so it gets a new SiteInstance starting with page ID 1 again.
   browser()->ActivateTabAt(1, true);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  EXPECT_EQ(2, browser()->GetWebContentsAt(1)->GetMaxPageID());
+  EXPECT_EQ(1, browser()->GetWebContentsAt(1)->GetMaxPageID());
 }
 
 // Loads chrome://hang/ into two NTP tabs, ensuring we don't crash.

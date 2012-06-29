@@ -35,6 +35,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/supports_user_data.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -91,6 +92,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -121,6 +123,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 extern bool g_exited_main_message_loop;
+
+static const char* kSiteProcessMapKeyName = "content_site_process_map";
 
 namespace content {
 
@@ -207,6 +211,61 @@ class RendererURLRequestContextSelector
 // the global list of all renderer processes
 base::LazyInstance<IDMap<RenderProcessHost> >::Leaky
     g_all_hosts = LAZY_INSTANCE_INITIALIZER;
+
+// Map of site to process, to ensure we only have one RenderProcessHost per
+// site in process-per-site mode.  Each map is specific to a BrowserContext.
+class SiteProcessMap : public base::SupportsUserData::Data {
+ public:
+  typedef base::hash_map<std::string, RenderProcessHost*> SiteToProcessMap;
+  SiteProcessMap() {}
+
+  void RegisterProcess(std::string site, RenderProcessHost* process) {
+    map_[site] = process;
+  }
+
+  RenderProcessHost* FindProcess(std::string site) {
+    SiteToProcessMap::iterator i = map_.find(site);
+    if (i != map_.end())
+      return i->second;
+    return NULL;
+  }
+
+  void RemoveProcess(RenderProcessHost* host) {
+    // Find all instances of this process in the map, then separately remove
+    // them.
+    std::set<std::string> sites;
+    for (SiteToProcessMap::const_iterator i = map_.begin();
+         i != map_.end();
+         i++) {
+      if (i->second == host)
+        sites.insert(i->first);
+    }
+    for (std::set<std::string>::iterator i = sites.begin();
+         i != sites.end();
+         i++) {
+      SiteToProcessMap::iterator iter = map_.find(*i);
+      if (iter != map_.end()) {
+        DCHECK_EQ(iter->second, host);
+        map_.erase(iter);
+      }
+    }
+  }
+
+ private:
+  SiteToProcessMap map_;
+};
+
+// Find the SiteProcessMap specific to the given context.
+SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
+  DCHECK(context);
+  SiteProcessMap* map = static_cast<SiteProcessMap*>(
+      context->GetUserData(kSiteProcessMapKeyName));
+  if (!map) {
+    map = new SiteProcessMap();
+    context->SetUserData(kSiteProcessMapKeyName, map);
+  }
+  return map;
+}
 
 }  // namespace
 
@@ -1079,7 +1138,7 @@ void RenderProcessHostImpl::Cleanup() {
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
-    g_all_hosts.Get().Remove(GetID());
+    UnregisterHost(GetID());
   }
 }
 
@@ -1139,8 +1198,18 @@ void RenderProcessHostImpl::RegisterHost(int host_id, RenderProcessHost* host) {
 
 // static
 void RenderProcessHostImpl::UnregisterHost(int host_id) {
-  if (g_all_hosts.Get().Lookup(host_id))
-    g_all_hosts.Get().Remove(host_id);
+  RenderProcessHost* host = g_all_hosts.Get().Lookup(host_id);
+  if (!host)
+    return;
+
+  g_all_hosts.Get().Remove(host_id);
+
+  // Look up the map of site to process for the given browser_context,
+  // in case we need to remove this process from it.  It will be registered
+  // under any sites it rendered that use process-per-site mode.
+  SiteProcessMap* map =
+      GetSiteProcessMapForBrowserContext(host->GetBrowserContext());
+  map->RemoveProcess(host);
 }
 
 // static
@@ -1243,10 +1312,75 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
   return NULL;
 }
 
+// static
+bool RenderProcessHostImpl::ShouldUseProcessPerSite(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // Returns true if we should use the process-per-site model.  This will be
+  // the case if the --process-per-site switch is specified, or in
+  // process-per-site-instance for particular sites (e.g., WebUI).
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kProcessPerSite))
+    return true;
+
+  // We want to consolidate particular sites like WebUI when we are using
+  // process-per-tab or process-per-site-instance models.
+  // Note that --single-process is handled in ShouldTryToUseExistingProcessHost.
+
+  if (content::GetContentClient()->browser()->
+          ShouldUseProcessPerSite(browser_context, url)) {
+    return true;
+  }
+
+  // DevTools pages have WebUI type but should not reuse the same host.
+  WebUIControllerFactory* factory =
+      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (factory &&
+      factory->UseWebUIForURL(browser_context, url) &&
+      !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
+    return true;
+  }
+
+  // In all other cases, don't use process-per-site logic.
+  return false;
+}
+
+// static
+RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // Look up the map of site to process for the given browser_context.
+  SiteProcessMap* map =
+      GetSiteProcessMapForBrowserContext(browser_context);
+
+  // See if we have an existing process for this site.  If not, the caller
+  // should create a new process and register it.
+  std::string site = SiteInstanceImpl::GetSiteForURL(browser_context, url)
+      .possibly_invalid_spec();
+  return map->FindProcess(site);
+}
+
+void RenderProcessHostImpl::RegisterProcessHostForSite(
+    BrowserContext* browser_context,
+    RenderProcessHost* process,
+    const GURL& url) {
+  // Look up the map of site to process for the given browser_context.
+  SiteProcessMap* map =
+      GetSiteProcessMapForBrowserContext(browser_context);
+
+  // TODO(creis): Determine if it's better to allow registration of
+  // empty sites or not.  For now, group anything from which we can't parse
+  // a site into the same process, when using --process-per-site.
+  std::string site = SiteInstanceImpl::GetSiteForURL(browser_context, url)
+      .possibly_invalid_spec();
+  map->RegisterProcess(site, process);
+}
+
 void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
-                                           base::TerminationStatus status,
-                                           int exit_code,
-                                           bool was_alive) {
+                                        base::TerminationStatus status,
+                                        int exit_code,
+                                        bool was_alive) {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync

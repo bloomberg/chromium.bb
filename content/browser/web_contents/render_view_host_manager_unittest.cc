@@ -238,7 +238,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
                    dest_rvh2->GetSiteInstance()));
 
   // Navigate both to the new tab page, and verify that they share a
-  // SiteInstance.
+  // RenderProcessHost (not a SiteInstance).
   NavigateActiveAndCommit(kNtpUrl);
 
   contents2.GetController().LoadURL(
@@ -249,8 +249,10 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
      pending_render_view_host())->SendNavigate(102, kNtpUrl);
   dest_rvh2->OnSwapOutACK();
 
-  EXPECT_EQ(active_rvh()->GetSiteInstance(),
-      contents2.GetRenderViewHost()->GetSiteInstance());
+  EXPECT_NE(active_rvh()->GetSiteInstance(),
+            contents2.GetRenderViewHost()->GetSiteInstance());
+  EXPECT_EQ(active_rvh()->GetSiteInstance()->GetProcess(),
+            contents2.GetRenderViewHost()->GetSiteInstance()->GetProcess());
 }
 
 // Ensure that the browser ignores most IPC messages that arrive from a

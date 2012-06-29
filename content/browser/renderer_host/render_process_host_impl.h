@@ -132,6 +132,32 @@ class CONTENT_EXPORT RenderProcessHostImpl
                              BrowserContext* browser_context,
                              const GURL& site_url);
 
+  // Returns whether the process-per-site model is in use (globally or just for
+  // the current site), in which case we should ensure there is only one
+  // RenderProcessHost per site for the entire browser context.
+  static bool ShouldUseProcessPerSite(BrowserContext* browser_context,
+                                      const GURL& url);
+
+  // Returns an existing RenderProcessHost for |url| in |browser_context|,
+  // if one exists.  Otherwise a new RenderProcessHost should be created and
+  // registered using RegisterProcessHostForSite().
+  // This should only be used for process-per-site mode, which can be enabled
+  // globally with a command line flag or per-site, as determined by
+  // SiteInstanceImpl::ShouldUseProcessPerSite.
+  static RenderProcessHost* GetProcessHostForSite(
+      BrowserContext* browser_context,
+      const GURL& url);
+
+  // Registers the given |process| to be used for any instance of |url|
+  // within |browser_context|.
+  // This should only be used for process-per-site mode, which can be enabled
+  // globally with a command line flag or per-site, as determined by
+  // SiteInstanceImpl::ShouldUseProcessPerSite.
+  static void RegisterProcessHostForSite(
+      BrowserContext* browser_context,
+      RenderProcessHost* process,
+      const GURL& url);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

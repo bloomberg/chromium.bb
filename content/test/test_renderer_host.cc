@@ -150,6 +150,10 @@ void RenderViewHostTestHarness::TearDown() {
   // before we destroy the browser context.
   MessageLoop::current()->RunAllPending();
 
+  // Delete any RenderProcessHosts before the BrowserContext goes away.
+  if (rvh_test_enabler_.rph_factory_.get())
+    rvh_test_enabler_.rph_factory_.reset();
+
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
