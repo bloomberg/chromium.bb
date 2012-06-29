@@ -124,9 +124,9 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Get all the plugins synchronously, loading them if necessary.
   void GetPlugins(std::vector<webkit::WebPluginInfo>* plugins);
 
-  // Returns true if the list of plugins is cached and is copied into the out
-  // pointer; returns false if the plugin list needs to be refreshed.
-  virtual bool GetPluginsIfNoRefreshNeeded(
+  // Copies the list of plug-ins into |plugins| without loading them.
+  // Returns true if the list of plugins is up-to-date.
+  virtual bool GetPluginsNoRefresh(
       std::vector<webkit::WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for

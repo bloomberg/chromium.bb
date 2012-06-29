@@ -486,7 +486,7 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
 bool PluginServiceImpl::GetPluginInfoByPath(const FilePath& plugin_path,
                                             webkit::WebPluginInfo* info) {
   std::vector<webkit::WebPluginInfo> plugins;
-  plugin_list_->GetPluginsIfNoRefreshNeeded(&plugins);
+  plugin_list_->GetPluginsNoRefresh(&plugins);
 
   for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end();
@@ -530,7 +530,7 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 #elif defined(OS_POSIX)
   std::vector<webkit::WebPluginInfo> cached_plugins;
-  if (plugin_list_->GetPluginsIfNoRefreshNeeded(&cached_plugins)) {
+  if (plugin_list_->GetPluginsNoRefresh(&cached_plugins)) {
     // Can't assume the caller is reentrant.
     target_loop->PostTask(FROM_HERE,
         base::Bind(callback, cached_plugins));

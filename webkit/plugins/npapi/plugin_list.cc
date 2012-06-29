@@ -445,18 +445,15 @@ void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
   }
 }
 
-bool PluginList::GetPluginsIfNoRefreshNeeded(
+bool PluginList::GetPluginsNoRefresh(
     std::vector<webkit::WebPluginInfo>* plugins) {
   base::AutoLock lock(lock_);
-  if (loading_state_ != LOADING_STATE_UP_TO_DATE)
-    return false;
-
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& gr_plugins =
         plugin_groups_[i]->web_plugin_infos();
     plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
   }
-  return true;
+  return loading_state_ == LOADING_STATE_UP_TO_DATE;
 }
 
 void PluginList::GetPluginInfoArray(
