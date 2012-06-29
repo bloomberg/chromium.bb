@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
@@ -19,10 +17,8 @@ def fetch(url):
   result = memcache.get(url, namespace=__name__)
   if result is not None:
     return result
-  logging.info('Fetch cache miss: ' + url)
 
   result = urlfetch.fetch(url)
-
   if result.status_code != 200:
     raise _FetchException(url)
 

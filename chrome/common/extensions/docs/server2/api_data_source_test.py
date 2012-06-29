@@ -6,6 +6,7 @@
 import json
 import os
 import unittest
+from collections import OrderedDict
 
 from fetcher_cache import FetcherCache
 from local_fetcher import LocalFetcher
@@ -25,10 +26,11 @@ class APIDataSourceTest(unittest.TestCase):
     data_source = APIDataSource(cache_builder, ['./'])
 
     # Take the dict out of the list.
-    expected = json.loads(self._ReadLocalFile('expected_test_file.json'))
-    self.assertEqual(expected, data_source['test_file'])
-    self.assertEqual(expected, data_source['testFile'])
-    self.assertEqual(expected, data_source['testFile.html'])
+    expected = json.loads(self._ReadLocalFile('expected_test_file.json'),
+                          object_pairs_hook=OrderedDict)
+    self.assertEqual(expected, OrderedDict(data_source['test_file']))
+    self.assertEqual(expected, OrderedDict(data_source['testFile']))
+    self.assertEqual(expected, OrderedDict(data_source['testFile.html']))
 
     self.assertEqual(None, data_source['junk'])
 

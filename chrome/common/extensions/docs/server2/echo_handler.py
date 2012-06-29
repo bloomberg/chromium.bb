@@ -13,7 +13,6 @@ if os.path.abspath(SERVER_PATH) not in sys.path:
   sys.path.append(os.path.abspath(SERVER_PATH))
 
 import branch_utility
-import logging
 import urlfetch
 
 from google.appengine.ext import webapp
@@ -60,7 +59,7 @@ class Server(webapp.RequestHandler):
     SERVER_INSTANCES[branch] = ServerInstance(
         api_data_source,
         template_data_source,
-        fetcher)
+        cache_builder)
     return SERVER_INSTANCES[branch]
 
   def _HandleRequest(self, path):
