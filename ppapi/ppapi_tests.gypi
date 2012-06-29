@@ -4,59 +4,6 @@
 
 {
   'targets': [
-     {
-      'target_name': 'ppapi_example',
-      'dependencies': [
-        'ppapi.gyp:ppapi_cpp'
-      ],
-      'xcode_settings': {
-        'INFOPLIST_FILE': 'example/Info.plist',
-      },
-      'sources': [
-        'example/example.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'type': 'shared_library',
-          'sources': [
-            'example/example.rc',
-          ],
-          'run_as': {
-            'action': [
-              '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
-              '--register-pepper-plugins=$(TargetPath);application/x-ppapi-example',
-              'file://$(ProjectDir)/example/example.html',
-            ],
-          },
-        }],
-        ['os_posix == 1 and OS != "mac"', {
-          'type': 'shared_library',
-          'cflags': ['-fvisibility=hidden'],
-          # -gstabs, used in the official builds, causes an ICE. Simply remove
-          # it.
-          'cflags!': ['-gstabs'],
-        }],
-        ['OS=="mac"', {
-          'type': 'loadable_module',
-          'mac_bundle': 1,
-          'product_name': 'PPAPIExample',
-          'product_extension': 'plugin',
-          'sources+': [
-            'example/Info.plist'
-          ],
-        }],
-      ],
-      # See README for instructions on how to run and debug on the Mac.
-      #'conditions' : [
-      #  ['OS=="mac"', {
-      #    'target_name' : 'Chromium',
-      #    'type' : 'executable',
-      #    'xcode_settings' : {
-      #      'ARGUMENTS' : '--renderer-startup-dialog --internal-pepper --no-sandbox file://${SRCROOT}/test_page.html'
-      #    },
-      #  }],
-      #],
-    },
     {
       'target_name': 'ppapi_tests',
       'type': 'loadable_module',
