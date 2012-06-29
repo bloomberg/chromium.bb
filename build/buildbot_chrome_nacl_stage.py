@@ -253,6 +253,9 @@ def BuildAndTest(options):
   # The chromium bots don't get the pnacl compiler, but the integration
   # bots do. So, only run pnacl tests on the integration bot.
   if (not options.disable_pnacl and options.integration_bot):
+    # TODO(dschuff): remove this when streaming is the default
+    os.environ['NACL_STREAMING_TRANSLATION'] = 'true'
+
     sys.stdout.write('\n\nBuilding files needed for pnacl testing...\n\n')
     RunCommand(pnacl_cmd + ['bitcode=1', 'do_not_run_tests=1', '-j8'],
                nacl_dir, env)
