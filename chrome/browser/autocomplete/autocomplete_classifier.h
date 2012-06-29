@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CLASSIFIER_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"

@@ -6,16 +6,23 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_HOME_PAGE_OVERLAY_HANDLER2_H_
 #pragma once
 
-#include "base/values.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 
+class AutocompleteController;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+}
+
 namespace options2 {
 
-class HomePageOverlayHandler
-    : public OptionsPageUIHandler,
-      public AutocompleteControllerDelegate {
+class HomePageOverlayHandler : public OptionsPageUIHandler,
+                               public AutocompleteControllerDelegate {
  public:
   HomePageOverlayHandler();
   virtual ~HomePageOverlayHandler();
@@ -29,7 +36,7 @@ class HomePageOverlayHandler
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
  private:
-  void RequestAutocompleteSuggestions(const ListValue* args);
+  void RequestAutocompleteSuggestions(const base::ListValue* args);
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 

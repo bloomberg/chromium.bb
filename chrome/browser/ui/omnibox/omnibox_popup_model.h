@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 
 class OmniboxPopupView;
@@ -21,8 +22,7 @@ class OmniboxPopupModel {
     KEYWORD
   };
 
-  OmniboxPopupModel(OmniboxPopupView* popup_view,
-                    OmniboxEditModel* edit_model);
+  OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
   ~OmniboxPopupModel();
 
   // Returns true if the popup is currently open.
@@ -39,21 +39,15 @@ class OmniboxPopupModel {
     return autocomplete_controller()->result();
   }
 
-  size_t hovered_line() const {
-    return hovered_line_;
-  }
+  size_t hovered_line() const { return hovered_line_; }
 
   // Call to change the hovered line.  |line| should be within the range of
   // valid lines (to enable hover) or kNoMatch (to disable hover).
   void SetHoveredLine(size_t line);
 
-  size_t selected_line() const {
-    return selected_line_;
-  }
+  size_t selected_line() const { return selected_line_; }
 
-  LineState selected_line_state() const {
-    return selected_line_state_;
-  }
+  LineState selected_line_state() const { return selected_line_state_; }
 
   // Call to change the selected line.  This will update all state and repaint
   // the necessary parts of the window, as well as updating the edit with the

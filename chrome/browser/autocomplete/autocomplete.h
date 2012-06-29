@@ -6,18 +6,14 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_H_
 #pragma once
 
-#include <map>
 #include <string>
 
-#include "base/gtest_prod_util.h"
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_types.h"
-#include "chrome/browser/sessions/session_id.h"
-#include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 
@@ -186,18 +182,8 @@
 //     on how many times the URL for the Extension App has been typed and how
 //     many of the letters match.
 
-class AutocompleteController;
-class AutocompleteControllerDelegate;
-class AutocompleteInput;
 struct AutocompleteMatch;
 class AutocompleteProvider;
-class AutocompleteResult;
-class KeywordProvider;
-class OmniboxUIHandler;
-class Profile;
-struct ProviderInfo;
-class SearchProvider;
-class TemplateURL;
 
 // AutocompleteInput ----------------------------------------------------------
 
@@ -487,180 +473,6 @@ class AutocompleteResult {
   GURL alternate_nav_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
-};
-
-// AutocompleteController -----------------------------------------------------
-
-// The coordinator for autocomplete queries, responsible for combining the
-// matches from a series of providers into one AutocompleteResult.
-class AutocompleteController : public AutocompleteProviderListener {
- public:
-  // Used to indicate an index that is not selected in a call to Update().
-  static const int kNoItemSelected;
-
-  // Normally, you will call the first constructor.  Unit tests can use the
-  // second to set the providers to some known testing providers.  The default
-  // providers will be overridden and the controller will take ownership of the
-  // providers, Release()ing them on destruction.
-  AutocompleteController(Profile* profile,
-                         AutocompleteControllerDelegate* delegate);
-#ifdef UNIT_TEST
-  AutocompleteController(const ACProviders& providers, Profile* profile)
-      : delegate_(NULL),
-        providers_(providers),
-        keyword_provider_(NULL),
-        search_provider_(NULL),
-        done_(true),
-        in_start_(false),
-        profile_(profile) {
-  }
-#endif
-  ~AutocompleteController();
-
-  // Starts an autocomplete query, which continues until all providers are
-  // done or the query is Stop()ed.  It is safe to Start() a new query without
-  // Stop()ing the previous one.
-  //
-  // See AutocompleteInput::desired_tld() for meaning of |desired_tld|.
-  //
-  // |prevent_inline_autocomplete| is true if the generated result set should
-  // not require inline autocomplete for the default match.  This is difficult
-  // to explain in the abstract; the practical use case is that after the user
-  // deletes text in the edit, the HistoryURLProvider should make sure not to
-  // promote a match requiring inline autocomplete too highly.
-  //
-  // |prefer_keyword| should be true when the keyword UI is onscreen; this will
-  // bias the autocomplete result set toward the keyword provider when the input
-  // string is a bare keyword.
-  //
-  // |allow_exact_keyword_match| should be false when triggering keyword mode on
-  // the input string would be surprising or wrong, e.g. when highlighting text
-  // in a page and telling the browser to search for it or navigate to it. This
-  // parameter only applies to substituting keywords.
-
-  // If |matches_requested| is BEST_MATCH or SYNCHRONOUS_MATCHES the controller
-  // asks the providers to only return matches which are synchronously
-  // available, which should mean that all providers will be done immediately.
-  //
-  // The controller calls AutocompleteControllerDelegate::OnResultChanged() from
-  // inside this call at least once. If matches are available later on that
-  // result in changing the result set the delegate is notified again. When the
-  // controller is done the notification AUTOCOMPLETE_CONTROLLER_RESULT_READY is
-  // sent.
-  void Start(const string16& text,
-             const string16& desired_tld,
-             bool prevent_inline_autocomplete,
-             bool prefer_keyword,
-             bool allow_exact_keyword_match,
-             AutocompleteInput::MatchesRequested matches_requested);
-
-  // Cancels the current query, ensuring there will be no future notifications
-  // fired.  If new matches have come in since the most recent notification was
-  // fired, they will be discarded.
-  //
-  // If |clear_result| is true, the controller will also erase the result set.
-  void Stop(bool clear_result);
-
-  // Asks the relevant provider to delete |match|, and ensures observers are
-  // notified of resulting changes immediately.  This should only be called when
-  // no query is running.
-  void DeleteMatch(const AutocompleteMatch& match);
-
-  // Removes any entries that were copied from the last result. This is used by
-  // the popup to ensure it's not showing an out-of-date query.
-  void ExpireCopiedEntries();
-
-#ifdef UNIT_TEST
-  void set_search_provider(SearchProvider* provider) {
-    search_provider_ = provider;
-  }
-  void set_keyword_provider(KeywordProvider* provider) {
-    keyword_provider_ = provider;
-  }
-#endif
-  SearchProvider* search_provider() const { return search_provider_; }
-  KeywordProvider* keyword_provider() const { return keyword_provider_; }
-
-  const AutocompleteInput& input() const { return input_; }
-  const AutocompleteResult& result() const { return result_; }
-  bool done() const { return done_; }
-  const ACProviders* providers() const { return &providers_; }
-
-  // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
-
-  // Called when an omnibox event log entry is generated.
-  // Populates provider_info with diagnostic information about the status
-  // of various providers.  In turn, calls
-  // AutocompleteProvider::AddProviderInfo() so each provider can add
-  // provider-specific information, information we want to log for a
-  // particular provider but not others.
-  void AddProvidersInfo(ProvidersInfo* provider_info) const;
-
- private:
-  friend class AutocompleteProviderTest;
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
-                           RedundantKeywordsIgnoredInResult);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
-
-  // Updates |result_| to reflect the current provider state.  Resets timers and
-  // fires notifications as necessary.  |is_synchronous_pass| is true only when
-  // Start() is calling this to get the synchronous result.
-  void UpdateResult(bool is_synchronous_pass);
-
-  // Updates |result| to populate each match's |associated_keyword| if that
-  // match can show a keyword hint.  |result| should be sorted by
-  // relevance before this is called.
-  void UpdateAssociatedKeywords(AutocompleteResult* result);
-
-  // For each group of contiguous matches from the same TemplateURL, show the
-  // provider name as a description on the first match in the group.
-  void UpdateKeywordDescriptions(AutocompleteResult* result);
-
-  // For each AutocompleteMatch returned by SearchProvider, updates the
-  // destination_url iff the provider's TemplateURL supports assisted query
-  // stats.
-  void UpdateAssistedQueryStats(AutocompleteResult* result);
-
-  // Calls AutocompleteControllerDelegate::OnResultChanged() and if done sends
-  // AUTOCOMPLETE_CONTROLLER_RESULT_READY.
-  void NotifyChanged(bool notify_default_match);
-
-  // Updates |done_| to be accurate with respect to current providers' statuses.
-  void CheckIfDone();
-
-  // Starts the expire timer.
-  void StartExpireTimer();
-
-  AutocompleteControllerDelegate* delegate_;
-
-  // A list of all providers.
-  ACProviders providers_;
-
-  KeywordProvider* keyword_provider_;
-
-  SearchProvider* search_provider_;
-
-  // Input passed to Start.
-  AutocompleteInput input_;
-
-  // Data from the autocomplete query.
-  AutocompleteResult result_;
-
-  // Timer used to remove any matches copied from the last result. When run
-  // invokes |ExpireCopiedEntries|.
-  base::OneShotTimer<AutocompleteController> expire_timer_;
-
-  // True if a query is not currently running.
-  bool done_;
-
-  // Are we in Start()? This is used to avoid updating |result_| and sending
-  // notifications until Start() has been invoked on all providers.
-  bool in_start_;
-
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_H_

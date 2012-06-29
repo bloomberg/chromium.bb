@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "googleurl/src/gurl.h"
 

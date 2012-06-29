@@ -118,6 +118,8 @@
         'browser/autocomplete/autocomplete_classifier.h',
         'browser/autocomplete/autocomplete_classifier_factory.cc',
         'browser/autocomplete/autocomplete_classifier_factory.h',
+        'browser/autocomplete/autocomplete_controller.cc',
+        'browser/autocomplete/autocomplete_controller.h',
         'browser/autocomplete/autocomplete_controller_delegate.h',
         'browser/autocomplete/autocomplete_field_trial.cc',
         'browser/autocomplete/autocomplete_field_trial.h',

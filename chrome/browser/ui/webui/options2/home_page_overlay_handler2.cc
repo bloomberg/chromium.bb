@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
@@ -42,7 +43,7 @@ void HomePageOverlayHandler::GetLocalizedValues(
 }
 
 void HomePageOverlayHandler::RequestAutocompleteSuggestions(
-    const ListValue* args) {
+    const base::ListValue* args) {
   string16 input;
   CHECK_EQ(args->GetSize(), 1U);
   CHECK(args->GetString(0, &input));
