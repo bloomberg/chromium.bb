@@ -231,8 +231,18 @@
     "description": "Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting."
   },
   "HOST_SETUP_DIALOG_DESCRIPTION": {
-    "message": "To protect access to this computer, please choose a PIN. This PIN will be required when connecting from another location.",
-    "description": "Explanatory text displayed when the user enables remote access or changes the PIN."
+    "message": "To protect access to this computer, please choose a PIN of $boldStart$at least six digits$boldEnd$. This PIN will be required when connecting from another location.",
+    "description": "Explanatory text displayed when the user enables remote access or changes the PIN.",
+    "placeholders": {
+      "boldStart": {
+        "content": "$1",
+        "example": "<b>"
+      },
+      "boldEnd": {
+        "content": "$2",
+        "example": "</b>"
+      }
+    }
   },
   "HOST_SETUP_HOST_FAILED": {
     "message": "Failed to start remote access service.",
@@ -311,7 +321,7 @@
     "description": "Instructions shown below the access code when it is ready to be conveyed to the client."
   },
   "INVALID_PIN": {
-    "message": "Please enter a PIN consisting of four or more digits.",
+    "message": "Please enter a PIN consisting of six or more digits.",
     "description": "An error message displayed if the user enters an invalid PIN while setting up a host."
   },
   "IT2ME_FIRST_RUN": {
