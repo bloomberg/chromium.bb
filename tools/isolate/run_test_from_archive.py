@@ -198,9 +198,11 @@ class Cache(object):
     self.state = []
 
     # Profiling values.
-    self.files_added = None
-    self.files_removed = None
-    self.time_retrieving_files = None
+    # The files added and removed are stored as tuples of the filename and
+    # the file size.
+    self.files_added = []
+    self.files_removed = []
+    self.time_retrieving_files = 0
 
     if not os.path.isdir(self.cache_dir):
       os.makedirs(self.cache_dir)
@@ -214,11 +216,6 @@ class Cache(object):
       self.trim()
 
   def __enter__(self):
-    # The files added and removed are stored as tuples of the filename and
-    # the file size.
-    self.files_added = []
-    self.files_removed = []
-    self.time_retrieving_files = 0
     return self
 
   def __exit__(self, _exc_type, _exec_value, _traceback):
