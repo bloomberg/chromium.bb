@@ -88,7 +88,6 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
       stun_address_resolver_(instance_),
       stun_port_(0),
       relay_response_received_(false) {
-  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP);
   if (stun_hosts.size() > 0) {
     stun_address_ = stun_hosts[0];
   }
@@ -325,6 +324,12 @@ PepperPortAllocator::PepperPortAllocator(
       instance_(instance),
       network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()) {
+  // TCP transport is disabled becase PseudoTCP works poorly over
+  // it. ENABLE_SHARED_UFRAG flag is specified so that the same
+  // username fragment is shared between all candidates for this
+  // channel.
+  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
+            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG);
 }
 
 PepperPortAllocator::~PepperPortAllocator() {
