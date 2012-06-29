@@ -98,7 +98,8 @@ TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
       callback_type_(PP_OPTIONAL),
       post_quit_task_(false),
       run_count_(0),  // TODO(dmichael): Remove when all tests are updated.
-      instance_(instance) {
+      instance_(instance),
+      delegate_(NULL) {
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
@@ -108,7 +109,8 @@ TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
       result_(PP_OK_COMPLETIONPENDING),
       callback_type_(force_async ? PP_REQUIRED : PP_OPTIONAL),
       post_quit_task_(false),
-      instance_(instance) {
+      instance_(instance),
+      delegate_(NULL) {
 }
 
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
@@ -118,7 +120,8 @@ TestCompletionCallback::TestCompletionCallback(PP_Instance instance,
       result_(PP_OK_COMPLETIONPENDING),
       callback_type_(callback_type),
       post_quit_task_(false),
-      instance_(instance) {
+      instance_(instance),
+      delegate_(NULL) {
 }
 
 int32_t TestCompletionCallback::WaitForResult() {
@@ -200,6 +203,7 @@ void TestCompletionCallback::Reset() {
   have_result_ = false;
   post_quit_task_ = false;
   run_count_ = 0;  // TODO(dmichael): Remove when all tests are updated.
+  delegate_ = NULL;
   errors_.clear();
 }
 
@@ -213,6 +217,8 @@ void TestCompletionCallback::Handler(void* user_data, int32_t result) {
   callback->result_ = result;
   callback->have_result_ = true;
   callback->run_count_++;  // TODO(dmichael): Remove when all tests are updated.
+  if (callback->delegate_)
+    callback->delegate_->OnCallback(user_data, result);
   if (callback->post_quit_task_) {
     callback->post_quit_task_ = false;
     GetTestingInterface()->QuitMessageLoop(callback->instance_);

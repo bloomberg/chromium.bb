@@ -80,6 +80,25 @@ struct WebSocketEvent {
   pp::Var var;
 };
 
+class ReleaseResourceDelegate : public TestCompletionCallback::Delegate {
+ public:
+  explicit ReleaseResourceDelegate(const PPB_Core* core_interface,
+                                   PP_Resource resource)
+      : core_interface_(core_interface),
+        resource_(resource) {
+  }
+
+  // TestCompletionCallback::Delegate implementation.
+  virtual void OnCallback(void* user_data, int32_t result) {
+    if (resource_)
+      core_interface_->ReleaseResource(resource_);
+  }
+
+ private:
+  const PPB_Core* core_interface_;
+  PP_Resource resource_;
+};
+
 class TestWebSocketAPI : public pp::WebSocketAPI {
  public:
   explicit TestWebSocketAPI(pp::Instance* instance)
@@ -937,6 +956,41 @@ std::string TestWebSocket::TestAbortCalls() {
   core_interface_->ReleaseResource(ws);
   receive_callback.WaitForResult(result);
   ASSERT_EQ(PP_ERROR_ABORTED, receive_callback.result());
+
+  // Release the resource in the close completion callback.
+  ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(
+      ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeUndefined(),
+      close_callback.GetCallback().pp_completion_callback());
+  ReleaseResourceDelegate close_delegate(core_interface_, ws);
+  close_callback.SetDelegate(&close_delegate);
+  close_callback.WaitForResult(result);
+  CHECK_CALLBACK_BEHAVIOR(close_callback);
+  ASSERT_EQ(PP_OK, close_callback.result());
+
+  // Release the resource in the aborting receive completion callback which is
+  // introduced by calling Close().
+  ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->ReceiveMessage(
+      ws, &receive_var,
+      receive_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  ReleaseResourceDelegate receive_delegate(core_interface_, ws);
+  receive_callback.SetDelegate(&receive_delegate);
+  result = websocket_interface_->Close(
+      ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeUndefined(),
+      close_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  receive_callback.WaitForResult(result);
+  CHECK_CALLBACK_BEHAVIOR(receive_callback);
+  ASSERT_EQ(PP_ERROR_ABORTED, receive_callback.result());
+  close_callback.WaitForResult(result);
+  CHECK_CALLBACK_BEHAVIOR(close_callback);
+  ASSERT_EQ(PP_ERROR_ABORTED, close_callback.result());
 
   // Test the behavior where receive process might be in-flight.
   const char* text = "yukarin";

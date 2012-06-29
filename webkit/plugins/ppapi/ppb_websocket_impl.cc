@@ -502,6 +502,10 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
   PP_WebSocketReadyState state = state_;
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED;
 
+  // User handlers may release WebSocket PP_Resource in the following
+  // completion callbacks. Retain |this| here to assure that this object
+  // keep on being valid in this function.
+  scoped_refptr<PPB_WebSocket_Impl> retain_this(this);
   if (state == PP_WEBSOCKETREADYSTATE_CONNECTING)
     TrackedCallback::ClearAndRun(&connect_callback_, PP_ERROR_FAILED);
 

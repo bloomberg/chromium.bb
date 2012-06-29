@@ -62,11 +62,21 @@ class NestedEvent {
 enum CallbackType { PP_REQUIRED, PP_OPTIONAL, PP_BLOCKING };
 class TestCompletionCallback {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void OnCallback(void* user_data, int32_t result) = 0;
+  };
   explicit TestCompletionCallback(PP_Instance instance);
   // TODO(dmichael): Remove this constructor.
   TestCompletionCallback(PP_Instance instance, bool force_async);
 
   TestCompletionCallback(PP_Instance instance, CallbackType callback_type);
+
+  // Sets a Delegate instance. OnCallback() of this instance will be invoked
+  // when the completion callback is invoked.
+  // The delegate will be reset when Reset() or GetCallback() is called.
+  void SetDelegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Waits for the callback to be called and returns the
   // result. Returns immediately if the callback was previously called
@@ -153,6 +163,7 @@ class TestCompletionCallback {
   std::string errors_;
   unsigned run_count_;
   PP_Instance instance_;
+  Delegate* delegate_;
 };
 
 // Verifies that the callback didn't record any errors. If the callback is run
