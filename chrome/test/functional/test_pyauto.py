@@ -42,15 +42,6 @@ class PyAutoTest(pyauto.PyUITest):
         pyauto_errors.JSONInterfaceError,
         lambda: self.FindInPage('some text', windex=1))  # invalid window
 
-  def testJSONInterfaceTimeout(self):
-    """Verify that an exception is raised when the JSON interface times out."""
-    self.ClearEventQueue()
-    self.AddDomEventObserver('foo')
-    self.assertRaises(
-        pyauto_errors.JSONInterfaceError,
-        lambda: self.GetNextEvent(timeout=2000))  # event queue is empty
-
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()

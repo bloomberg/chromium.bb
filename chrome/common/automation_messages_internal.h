@@ -857,7 +857,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_RemoveBrowsingData,
 // Generic pyauto pattern to help avoid future addition of
 // automation messages.
 IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequest,
-                            int /* window_index */,
+                            int /* browser_handle */,
                             std::string /* JSON request */,
                             std::string /* JSON response */,
                             bool /* success */)
@@ -949,14 +949,6 @@ IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_GetTracingOutput,
 // process.
 IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetMachPortCount,
                             int /* number of Mach ports */)
-
-// Generic pyauto pattern to help avoid future addition of
-// automation messages.
-IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequestWithBrowserHandle,
-                            int /* browser_handle */,
-                            std::string /* JSON request */,
-                            std::string /* JSON response */,
-                            bool /* success */)
 
 // Browser -> renderer messages.
 

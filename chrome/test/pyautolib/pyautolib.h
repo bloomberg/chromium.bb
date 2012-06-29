@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui/ui_test_suite.h"
 
@@ -212,16 +211,6 @@ class PyUITestBase : public UITestBase {
   virtual void SetLaunchSwitches() OVERRIDE;
 
  private:
-  // Create JSON error responses.
-  void ErrorResponse(const std::string& error_string,
-                     const std::string& request,
-                     std::string* response);
-  void RequestFailureResponse(
-      const std::string& request,
-      const base::TimeDelta& duration,
-      const base::TimeDelta& timeout,
-      std::string* response);
-
   // Gets the current state of the bookmark bar. Returns false if it failed.
   bool GetBookmarkBarState(bool* visible, bool* detached, int window_index = 0);
 

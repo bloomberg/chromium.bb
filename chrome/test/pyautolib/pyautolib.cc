@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -371,51 +370,33 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
                                            const std::string& request,
                                            int timeout) {
   std::string response;
-  bool success;
-  AutomationMessageSender* automation_sender = automation();
-  base::TimeTicks time = base::TimeTicks::Now();
-
-  if (!automation_sender) {
-    ErrorResponse("The automation proxy does not exist", request, &response);
-  } else if (!automation_sender->Send(
-      new AutomationMsg_SendJSONRequest(window_index, request, &response,
-                                        &success),
-      timeout)) {
-    RequestFailureResponse(request, base::TimeTicks::Now() - time,
-                           base::TimeDelta::FromMilliseconds(timeout),
-                           &response);
+  base::TimeTicks time;
+  if (window_index < 0) {  // Do not need to target a browser window.
+    time = base::TimeTicks::Now();
+    if (!automation()->SendJSONRequest(request, timeout, &response)) {
+        LOG(WARNING) << "SendJSONRequest returned false after "
+                     << (base::TimeTicks::Now() - time).InSeconds()
+                     << " seconds: " << request;
+    }
+  } else {
+    scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
+    if (!browser_proxy.get()) {
+      base::DictionaryValue error_dict;
+      std::string error_string = StringPrintf(
+          "No browser at windex=%d for %s", window_index, request.c_str());
+      LOG(WARNING) << error_string;
+      error_dict.SetString("error", error_string);
+      base::JSONWriter::Write(&error_dict, &response);
+    } else {
+      time = base::TimeTicks::Now();
+      if (!browser_proxy->SendJSONRequest(request, timeout, &response)) {
+        LOG(WARNING) << "SendJSONRequest returned false after "
+                     << (base::TimeTicks::Now() - time).InSeconds()
+                     << " seconds: " << request;
+      }
+    }
   }
   return response;
-}
-
-void PyUITestBase::ErrorResponse(
-    const std::string& error_string,
-    const std::string& request,
-    std::string* response) {
-  base::DictionaryValue error_dict;
-  LOG(ERROR) << "Error during automation: " << response;
-  error_dict.SetString("error",
-                       StringPrintf("%s for %s",
-                                    error_string.c_str(),
-                                    request.c_str()));
-  base::JSONWriter::Write(&error_dict, response);
-}
-
-void PyUITestBase::RequestFailureResponse(
-    const std::string& request,
-    const base::TimeDelta& duration,
-    const base::TimeDelta& timeout,
-    std::string* response) {
-  // TODO(craigdh): Determine timeout directly from IPC's Send().
-  if (duration >= timeout) {
-    ErrorResponse(
-        StringPrintf("Request timed out after %d seconds",
-                     static_cast<int>(duration.InSeconds())),
-        request, response);
-  } else {
-    // TODO(craigdh): Determine specific cause.
-    ErrorResponse("Chrome failed to respond", request, response);
-  }
 }
 
 bool PyUITestBase::ResetToDefaultTheme() {
