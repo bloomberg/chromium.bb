@@ -98,6 +98,13 @@ class BrowserActionButton : public views::MenuButton,
  private:
   virtual ~BrowserActionButton();
 
+  // Register an extension command if the extension has an active one.
+  void MaybeRegisterExtensionCommand();
+
+  // Unregisters an extension command, if the extension has registered one and
+  // it is active.
+  void MaybeUnregisterExtensionCommand(bool only_if_active);
+
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
   ExtensionAction* browser_action_;

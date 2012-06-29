@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -45,11 +46,16 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
                  content::Source<ExtensionAction>(browser_action_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+                 content::Source<Profile>(
+                     panel_->profile()->GetOriginalProfile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+                 content::Source<Profile>(
+                     panel_->profile()->GetOriginalProfile()));
 }
 
 void BrowserActionButton::Destroy() {
-  if (keybinding_.get() && panel_->GetFocusManager())
-    panel_->GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
+  MaybeUnregisterExtensionCommand(false);
 
   if (context_menu_) {
     context_menu_->Cancel();
@@ -81,20 +87,7 @@ void BrowserActionButton::ViewHierarchyChanged(
       UpdateState();
     }
 
-    extensions::CommandService* command_service =
-        extensions::CommandServiceFactory::GetForProfile(
-            panel_->browser()->profile());
-    extensions::Command browser_action_command;
-    if (command_service->GetBrowserActionCommand(
-            extension_->id(),
-            extensions::CommandService::ACTIVE_ONLY,
-            &browser_action_command,
-            NULL)) {
-      keybinding_.reset(new ui::Accelerator(
-          browser_action_command.accelerator()));
-      panel_->GetFocusManager()->RegisterAccelerator(
-          *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
-    }
+    MaybeRegisterExtensionCommand();
   }
 
   MenuButton::ViewHierarchyChanged(is_add, parent, child);
@@ -185,11 +178,32 @@ GURL BrowserActionButton::GetPopupUrl() {
 void BrowserActionButton::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
-  UpdateState();
-  // The browser action may have become visible/hidden so we need to make
-  // sure the state gets updated.
-  panel_->OnBrowserActionVisibilityChanged();
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED:
+      UpdateState();
+      // The browser action may have become visible/hidden so we need to make
+      // sure the state gets updated.
+      panel_->OnBrowserActionVisibilityChanged();
+      break;
+    case chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED:
+    case chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
+      std::pair<const std::string, const std::string>* payload =
+          content::Details<std::pair<const std::string, const std::string> >(
+              details).ptr();
+      if (extension_->id() == payload->first &&
+          payload->second ==
+              extension_manifest_values::kBrowserActionKeybindingEvent) {
+        if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
+          MaybeRegisterExtensionCommand();
+        else
+          MaybeUnregisterExtensionCommand(true);
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 bool BrowserActionButton::Activate() {
@@ -286,6 +300,42 @@ void BrowserActionButton::SetButtonNotPushed() {
 
 BrowserActionButton::~BrowserActionButton() {
 }
+
+void BrowserActionButton::MaybeRegisterExtensionCommand() {
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(
+          panel_->browser()->profile());
+  extensions::Command browser_action_command;
+  if (command_service->GetBrowserActionCommand(
+          extension_->id(),
+          extensions::CommandService::ACTIVE_ONLY,
+          &browser_action_command,
+          NULL)) {
+    keybinding_.reset(new ui::Accelerator(
+        browser_action_command.accelerator()));
+    panel_->GetFocusManager()->RegisterAccelerator(
+        *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
+  }
+}
+
+void BrowserActionButton::MaybeUnregisterExtensionCommand(bool only_if_active) {
+  if (!keybinding_.get() || !panel_->GetFocusManager())
+    return;
+
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(
+          panel_->browser()->profile());
+
+  extensions::Command browser_action_command;
+  if (!only_if_active || !command_service->GetBrowserActionCommand(
+          extension_->id(),
+          extensions::CommandService::ACTIVE_ONLY,
+          &browser_action_command,
+          NULL)) {
+    panel_->GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView

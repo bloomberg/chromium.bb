@@ -53,9 +53,11 @@ class ExtensionKeybindingRegistryGtk
  protected:
   // Overridden from ExtensionKeybindingRegistry:
   virtual void AddExtensionKeybinding(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      const std::string& command_name) OVERRIDE;
   virtual void RemoveExtensionKeybinding(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      const std::string& command_name) OVERRIDE;
 
  private:
   // The accelerator handler for when the extension command shortcuts are

@@ -555,6 +555,16 @@ enum NotificationType {
   // ExtensionAction* that changed. The details are a WebContents*.
   NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
 
+  // Sent when an extension command has been removed. The source is the profile
+  // and the details is a std::pair of two std::string objects (an extension ID
+  // and the name of the command being removed).
+  NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+
+  // Sent when an extension command has been added. The source is the profile
+  // and the details is a std::pair of two std::string objects (an extension ID
+  // and the name of the command being added).
+  NOTIFICATION_EXTENSION_COMMAND_ADDED,
+
   // A new extension RenderViewHost has been registered. The details are
   // the RenderViewHost*.
   NOTIFICATION_EXTENSION_VIEW_REGISTERED,

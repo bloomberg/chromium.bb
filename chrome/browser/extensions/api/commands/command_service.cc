@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 
 using extensions::Extension;
@@ -120,6 +121,15 @@ bool CommandService::AddKeybindingPref(
   keybinding->SetString(kCommandName, command_name);
 
   bindings->Set(key, keybinding);
+
+  std::pair<const std::string, const std::string> details =
+      std::make_pair(extension_id, command_name);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+      content::Source<Profile>(profile_),
+      content::Details<
+          std::pair<const std::string, const std::string> >(&details));
+
   return true;
 }
 
@@ -243,7 +253,16 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
 
   for (KeysToRemove::const_iterator it = keys_to_remove.begin();
        it != keys_to_remove.end(); ++it) {
-    bindings->Remove(*it, NULL);
+    std::string key = *it;
+    bindings->Remove(key, NULL);
+
+    std::pair<const std::string, const std::string> details =
+        std::make_pair(extension_id, command_name);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+        content::Source<Profile>(profile_),
+        content::Details<
+            std::pair<const std::string, const std::string> >(&details));
   }
 }
 

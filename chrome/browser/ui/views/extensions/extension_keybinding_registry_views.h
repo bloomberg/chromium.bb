@@ -44,9 +44,11 @@ class ExtensionKeybindingRegistryViews
  private:
   // Overridden from ExtensionKeybindingRegistry:
   virtual void AddExtensionKeybinding(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      const std::string& command_name) OVERRIDE;
   virtual void RemoveExtensionKeybinding(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      const std::string& command_name) OVERRIDE;
 
   // Weak pointer to the our profile. Not owned by us.
   Profile* profile_;
