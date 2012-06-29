@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_METADATA_H_
 #pragma once
 
-#include <map>
-#include <string>
-
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
@@ -97,26 +94,18 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const IterateCallback& callback) OVERRIDE;
 
-  // A map table of cache file's resource id to its CacheEntry* entry.
-  typedef std::map<std::string, GDataCache::CacheEntry> CacheMap;
-
-  // A map table of resource ID to file path.
-  typedef std::map<std::string, FilePath> ResourceIdToFilePathMap;
-
  private:
   friend class GDataCacheMetadataMapTest;
   FRIEND_TEST_ALL_PREFIXES(GDataCacheMetadataMapTest, RemoveTemporaryFilesTest);
 
+   // A map table of cache file's resource id to its CacheEntry* entry.
+  typedef std::map<std::string, GDataCache::CacheEntry> CacheMap;
+
   // Scans cache subdirectory and build or update |cache_map|
   // with found file blobs or symlinks.
-  //
-  // The resource IDs and file paths of discovered files are collected as a
-  // ResourceIdToFilePathMap, if these are processed properly.
-  static void ScanCacheDirectory(
-      const std::vector<FilePath>& cache_paths,
-      GDataCache::CacheSubDirectoryType sub_dir_type,
-      CacheMap* cache_map,
-      ResourceIdToFilePathMap* processed_file_map);
+  void ScanCacheDirectory(const std::vector<FilePath>& cache_paths,
+                          GDataCache::CacheSubDirectoryType sub_dir_type,
+                          CacheMap* cache_map);
 
   // Returns true if |md5| matches the one in |cache_entry| with some
   // exceptions. See the function definition for details.

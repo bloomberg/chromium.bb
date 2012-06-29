@@ -353,17 +353,6 @@ class GDataCache {
   // TODO(satorux): Write a unit test for this.
   static FilePath GetCacheRootPath(Profile* profile);
 
-  // Returns file paths for all the cache sub directories under
-  // |cache_root_path|.
-  static std::vector<FilePath> GetCachePaths(const FilePath& cache_root_path);
-
-  // Creates cache directory and its sub-directories if they don't exist.
-  // TODO(glotov): take care of this when the setup and cleanup part is
-  // landed, noting that these directories need to be created for development
-  // in linux box and unittest. (http://crosbug.com/27577)
-  static bool CreateCacheDirectories(
-      const std::vector<FilePath>& paths_to_create);
-
  private:
   GDataCache(
       const FilePath& cache_root_path,

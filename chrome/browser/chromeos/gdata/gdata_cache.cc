@@ -24,6 +24,8 @@ using content::BrowserThread;
 namespace gdata {
 namespace {
 
+const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
+
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
 const FilePath::CharType kGDataCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
@@ -59,6 +61,21 @@ std::string CacheSubDirectoryTypeToString(
   }
   NOTREACHED();
   return "unknown subdir";
+}
+
+// Returns file paths for all the cache sub directories under
+// |cache_root_path|.
+std::vector<FilePath> GetCachePaths(const FilePath& cache_root_path) {
+  std::vector<FilePath> cache_paths;
+  // The order should match GDataCache::CacheSubDirectoryType enum.
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheMetaDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCachePinnedDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheOutgoingDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCachePersistentDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDownloadsDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDocumentsDir));
+  return cache_paths;
 }
 
 // Returns the home directory path, or an empty string if the home directory
@@ -188,10 +205,30 @@ base::PlatformFileError ModifyCacheState(
 
   // Remove symlink regardless of |create_symlink| because creating a link will
   // not overwrite an existing one.
+
+  // Cannot use file_util::Delete which uses stat64 to check if path exists
+  // before deleting it.  If path is a symlink, stat64 dereferences it to the
+  // target file, so it's in essence checking if the target file exists.
+  // Here in this function, if |symlink_path| references |source_path| and
+  // |source_path| has just been moved to |dest_path| (e.g. during unpinning),
+  // symlink will dereference to a non-existent file.  This results in stat64
+  // failing and file_util::Delete bailing out without deleting the symlink.
+  // We clearly want the symlink deleted even if it dereferences to nothing.
+  // Unfortunately, deleting the symlink before moving the files won't work for
+  // the case where move operation fails, but the symlink has already been
+  // deleted, which shouldn't happen.  An example scenario is where an existing
+  // file is stored to cache and pinned for a specific resource id and md5, then
+  // a non-existent file is stored to cache for the same resource id and md5.
+  // The 2nd store-to-cache operation fails when moving files, but the symlink
+  // created by previous pin operation has already been deleted.
+  // We definitely want to keep the pinned state of the symlink if subsequent
+  // operations fail.
+  // This problem is filed at http://crbug.com/119430.
+
   // We try to save one file operation by not checking if link exists before
   // deleting it, so unlink may return error if link doesn't exist, but it
   // doesn't really matter to us.
-  bool deleted = util::DeleteSymlink(symlink_path);
+  bool deleted = HANDLE_EINTR(unlink(symlink_path.value().c_str())) == 0;
   if (deleted) {
     DVLOG(1) << "Deleted symlink " << symlink_path.value();
   } else {
@@ -929,7 +966,7 @@ void GDataCache::Pin(const std::string& resource_id,
     //    are the same.
     // 2) symlinks to /dev/null will be picked up by GDataSyncClient to download
     //    pinned files that don't exist in cache.
-    dest_path = FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull);
+    dest_path = FilePath(kSymLinkToDevNull);
     source_path = dest_path;
 
     // Set sub_dir_type to PINNED to indicate that the file doesn't exist.
@@ -1528,41 +1565,6 @@ FilePath GDataCache::GetCacheRootPath(Profile* profile) {
   FilePath cache_root_path =
       cache_base_path.Append(chrome::kGDataCacheDirname);
   return cache_root_path.Append(kGDataCacheVersionDir);
-}
-
-// static
-std::vector<FilePath> GDataCache::GetCachePaths(
-    const FilePath& cache_root_path) {
-  std::vector<FilePath> cache_paths;
-  // The order should match GDataCache::CacheSubDirectoryType enum.
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheMetaDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCachePinnedDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheOutgoingDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCachePersistentDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDownloadsDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDocumentsDir));
-  return cache_paths;
-}
-
-// static
-bool GDataCache::CreateCacheDirectories(
-    const std::vector<FilePath>& paths_to_create) {
-  bool success = true;
-
-  for (size_t i = 0; i < paths_to_create.size(); ++i) {
-    if (file_util::DirectoryExists(paths_to_create[i]))
-      continue;
-
-    if (!file_util::CreateDirectory(paths_to_create[i])) {
-      // Error creating this directory, record error and proceed with next one.
-      success = false;
-      PLOG(ERROR) << "Error creating directory " << paths_to_create[i].value();
-    } else {
-      DVLOG(1) << "Created directory " << paths_to_create[i].value();
-    }
-  }
-  return success;
 }
 
 void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter) {
