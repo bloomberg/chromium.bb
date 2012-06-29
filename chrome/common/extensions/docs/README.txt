@@ -22,10 +22,11 @@ The key features of all of this are:
 * All docs are editable by anyone with commit access to Chrome. The server
   starts serving new docs automatically as soon as its cache expires.
 
-* The doc sources branch with the code. developer.chrome.com/extensions/beta
-  always shows beta extension docs, no matter what branch that currently is.
-  There's no release process for docs, they automatically percolate to the
-  correct URLs.
+* The docs branch with the code. developer.chrome.com/extensions/beta always
+  shows the docs related to the code in the current Chrome beta, no matter what
+  branch that currently is. Same for /stable, /dev and /trunk. There's no
+  release process specific to docs that makes this happen; it's a natural
+  consequence Chrome's source branching for each release.
 
 
 Directory Layout
