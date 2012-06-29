@@ -504,7 +504,6 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
       initiator_tab->web_contents()->GetView()->GetTopLevelNativeWindow() :
       NULL;
   browser::ShowPrintErrorDialog(parent);
-  delete preview_tab_contents();
 }
 
 void PrintPreviewHandler::HandleSaveLastPrinter(const ListValue* args) {
