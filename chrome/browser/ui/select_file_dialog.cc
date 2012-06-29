@@ -15,7 +15,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/dialogs/selected_file_info.h"
-#include "ui/base/dialogs/select_file_policy.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
@@ -41,14 +40,25 @@ void SelectFileDialog::Listener::MultiFilesSelectedWithExtraInfo(
   MultiFilesSelected(file_paths, params);
 }
 
-SelectFileDialog::SelectFileDialog(Listener* listener,
-                                   ui::SelectFilePolicy* policy)
-    : listener_(listener),
-      select_file_policy_(policy) {
+SelectFileDialog::SelectFileDialog(Listener* listener)
+    : listener_(listener) {
   DCHECK(listener_);
 }
 
 SelectFileDialog::~SelectFileDialog() {}
+
+bool SelectFileDialog::CanOpenSelectFileDialog() {
+  DCHECK(g_browser_process);
+
+  // local_state() can return NULL for tests.
+  if (!g_browser_process->local_state())
+    return false;
+
+  return !g_browser_process->local_state()->FindPreference(
+             prefs::kAllowFileSelectionDialogs) ||
+         g_browser_process->local_state()->GetBoolean(
+             prefs::kAllowFileSelectionDialogs);
+}
 
 void SelectFileDialog::SelectFile(Type type,
                                   const string16& title,
@@ -56,13 +66,25 @@ void SelectFileDialog::SelectFile(Type type,
                                   const FileTypeInfo* file_types,
                                   int file_type_index,
                                   const FilePath::StringType& default_extension,
+                                  WebContents* source_contents,
                                   gfx::NativeWindow owning_window,
                                   void* params) {
   DCHECK(listener_);
 
-  if (select_file_policy_.get() &&
-      !select_file_policy_->CanOpenSelectFileDialog()) {
-    select_file_policy_->SelectFileDenied();
+  if (!CanOpenSelectFileDialog()) {
+    // Show the InfoBar saying that file-selection dialogs are disabled.
+    if (source_contents) {
+      TabContents* tab_contents = TabContents::FromWebContents(source_contents);
+      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+      infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+          infobar_helper,
+          NULL,
+          l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR),
+          true));
+    } else {
+      LOG(WARNING) << "File-selection dialogs are disabled but no WebContents "
+                   << "is given to display the InfoBar.";
+    }
 
     // Inform the listener that no file was selected.
     // Post a task rather than calling FileSelectionCanceled directly to ensure
@@ -72,7 +94,6 @@ void SelectFileDialog::SelectFile(Type type,
                               params));
     return;
   }
-
   // Call the platform specific implementation of the file selection dialog.
   SelectFileImpl(type, title, default_path, file_types, file_type_index,
                  default_extension, owning_window, params);

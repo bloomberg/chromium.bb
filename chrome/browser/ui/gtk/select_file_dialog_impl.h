@@ -18,13 +18,10 @@
 class SelectFileDialogImpl : public SelectFileDialog {
  public:
   // Factory method for creating a GTK-styled SelectFileDialogImpl
-  static SelectFileDialogImpl* NewSelectFileDialogImplGTK(
-      Listener* listener,
-      ui::SelectFilePolicy* policy);
+  static SelectFileDialogImpl* NewSelectFileDialogImplGTK(Listener* listener);
   // Factory method for creating a KDE-styled SelectFileDialogImpl
   static SelectFileDialogImpl* NewSelectFileDialogImplKDE(
       Listener* listener,
-      ui::SelectFilePolicy* policy,
       base::nix::DesktopEnvironment desktop);
 
   // Returns true if the SelectFileDialog class returned by
@@ -36,8 +33,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
   virtual void ListenerDestroyed() OVERRIDE;
 
  protected:
-  explicit SelectFileDialogImpl(Listener* listener,
-                                ui::SelectFilePolicy* policy);
+  explicit SelectFileDialogImpl(Listener* listener);
   virtual ~SelectFileDialogImpl();
 
   // SelectFileDialog implementation.

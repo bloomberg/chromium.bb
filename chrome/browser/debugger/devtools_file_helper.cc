@@ -5,7 +5,6 @@
 #include "chrome/browser/debugger/devtools_file_helper.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/md5.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/common/pref_names.h"
 
@@ -33,8 +31,7 @@ class DevToolsFileHelper::SaveAsDialog : public SelectFileDialog::Listener,
  public:
   explicit SaveAsDialog(DevToolsFileHelper* helper)
       : helper_(helper) {
-    select_file_dialog_ = SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(NULL));
+    select_file_dialog_ = SelectFileDialog::Create(this);
   }
 
   void ResetHelper() {
@@ -55,6 +52,7 @@ class DevToolsFileHelper::SaveAsDialog : public SelectFileDialog::Listener,
                                     NULL,
                                     0,
                                     FILE_PATH_LITERAL(""),
+                                    NULL,
                                     NULL,
                                     NULL);
   }

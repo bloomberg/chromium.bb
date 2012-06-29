@@ -13,8 +13,7 @@ class SelectFileDialogExtensionTest : public testing::Test {
   static SelectFileDialogExtension* CreateDialog(
       SelectFileDialog::Listener* listener,
       int32 tab_id) {
-    SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener,
-                                                                      NULL);
+    SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener);
     // Simulate the dialog opening.
     EXPECT_FALSE(SelectFileDialogExtension::PendingExists(tab_id));
     dialog->AddPending(tab_id);

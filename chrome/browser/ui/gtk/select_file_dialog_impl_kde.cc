@@ -16,8 +16,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
-
-// TODO(erg): Move all of this into WorkerPool.
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,7 +41,6 @@ const char kKdialogBinary[] = "kdialog";
 class SelectFileDialogImplKDE : public SelectFileDialogImpl {
  public:
   SelectFileDialogImplKDE(Listener* listener,
-                          ui::SelectFilePolicy* policy,
                           base::nix::DesktopEnvironment desktop);
 
  protected:
@@ -159,17 +156,14 @@ bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
 
 // static
 SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
-    Listener* listener,
-    ui::SelectFilePolicy* policy,
-    base::nix::DesktopEnvironment desktop) {
-  return new SelectFileDialogImplKDE(listener, policy, desktop);
+    Listener* listener, base::nix::DesktopEnvironment desktop) {
+  return new SelectFileDialogImplKDE(listener, desktop);
 }
 
 SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     Listener* listener,
-    ui::SelectFilePolicy* policy,
     base::nix::DesktopEnvironment desktop)
-    : SelectFileDialogImpl(listener, policy),
+    : SelectFileDialogImpl(listener),
       desktop_(desktop) {
   DCHECK(desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
          desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE4);

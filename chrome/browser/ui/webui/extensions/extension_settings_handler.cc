@@ -31,7 +31,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -731,11 +730,10 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
 
   const int kFileTypeIndex = 0;  // No file type information to index.
   const SelectFileDialog::Type kSelectType = SelectFileDialog::SELECT_FOLDER;
-  load_extension_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(
       kSelectType, select_title, last_unpacked_directory_, NULL,
-      kFileTypeIndex, FILE_PATH_LITERAL(""),
+      kFileTypeIndex, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 

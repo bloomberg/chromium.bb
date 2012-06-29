@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -372,8 +371,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     return;
   }
 
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents_));
+  if (!select_file_dialog_.get())
+    select_file_dialog_ = SelectFileDialog::Create(this);
 
   switch (params.mode) {
     case FileChooserParams::Open:
@@ -406,6 +405,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       select_file_types_.get(),
       select_file_types_.get() ? 1 : 0,  // 1-based index.
       FILE_PATH_LITERAL(""),
+      web_contents_,
       owning_window,
 #if defined(OS_ANDROID)
       const_cast<content::FileChooserParams*>(&params));

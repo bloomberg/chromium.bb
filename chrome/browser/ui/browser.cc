@@ -107,7 +107,6 @@
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -956,8 +955,8 @@ void Browser::OverrideEncoding(int encoding_id) {
 
 void Browser::OpenFile() {
   content::RecordAction(UserMetricsAction("OpenFile"));
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(GetActiveWebContents()));
+  if (!select_file_dialog_.get())
+    select_file_dialog_ = SelectFileDialog::Create(this);
 
   const FilePath directory = profile_->last_selected_directory();
 
@@ -966,6 +965,7 @@ void Browser::OpenFile() {
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                                   string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
+                                  GetActiveWebContents(),
                                   parent_window, NULL);
 }
 

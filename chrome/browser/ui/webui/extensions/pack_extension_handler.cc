@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/extensions/pack_extension_handler.h"
 
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
@@ -178,13 +177,11 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
     NOTREACHED();
   }
 
-  load_extension_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(
       type, select_title, FilePath(), &info, file_type_index,
-      FILE_PATH_LITERAL(""),
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
-      NULL);
+      FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void PackExtensionHandler::ShowAlert(const std::string& message) {

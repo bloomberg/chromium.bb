@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
@@ -85,25 +84,21 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
 // TODO(jamescook): Change all instances of SelectFileDialog::Create to return
 // scoped_refptr<SelectFileDialog> as object is ref-counted.
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
+SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return SelectFileDialogExtension::Create(listener, policy);
+  return SelectFileDialogExtension::Create(listener);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 // static
 SelectFileDialogExtension* SelectFileDialogExtension::Create(
-    Listener* listener,
-    ui::SelectFilePolicy* policy) {
-  return new SelectFileDialogExtension(listener, policy);
+    Listener* listener) {
+  return new SelectFileDialogExtension(listener);
 }
 
-SelectFileDialogExtension::SelectFileDialogExtension(
-    Listener* listener,
-    ui::SelectFilePolicy* policy)
-    : SelectFileDialog(listener, policy),
+SelectFileDialogExtension::SelectFileDialogExtension(Listener* listener)
+    : SelectFileDialog(listener),
       has_multiple_file_type_choices_(false),
       tab_id_(0),
       profile_(NULL),

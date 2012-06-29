@@ -9,18 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/base/dialogs/base_shell_dialog.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace ui {
-class SelectFilePolicy;
-}
 
 namespace content {
 class WebContents;
@@ -93,10 +86,8 @@ class SelectFileDialog
   };
 
   // Creates a dialog box helper. This object is ref-counted, but the returned
-  // object will have no reference (refcount is 0). |policy| is an optional
-  // class that can prevent showing a dialog.
-  static SelectFileDialog* Create(Listener* listener,
-                                  ui::SelectFilePolicy* policy);
+  // object will have no reference (refcount is 0).
+  static SelectFileDialog* Create(Listener* listener);
 
   // Holds information about allowed extensions on a file save dialog.
   // |extensions| is a list of allowed extensions. For example, it might be
@@ -138,6 +129,9 @@ class SelectFileDialog
   // |default_extension| is the default extension to add to the file if the
   //   user doesn't type one. This should NOT include the '.'. On Windows, if
   //   you specify this you must also specify |file_types|.
+  // |source_contents| is the WebContents the call is originating from, i.e.
+  //   where the InfoBar should be shown in case file-selection dialogs are
+  //   forbidden by policy, or NULL if no InfoBar should be shown.
   // |owning_window| is the window the dialog is modal to, or NULL for a
   //   modeless dialog.
   // |params| is data from the calling context which will be passed through to
@@ -150,14 +144,14 @@ class SelectFileDialog
                   const FileTypeInfo* file_types,
                   int file_type_index,
                   const FilePath::StringType& default_extension,
+                  content::WebContents* source_contents,
                   gfx::NativeWindow owning_window,
                   void* params);
   bool HasMultipleFileTypeChoices();
 
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
-  explicit SelectFileDialog(Listener* listener,
-                            ui::SelectFilePolicy* policy);
+  explicit SelectFileDialog(Listener* listener);
   virtual ~SelectFileDialog();
 
   // Displays the actual file-selection dialog.
@@ -188,10 +182,6 @@ class SelectFileDialog
 
   // Returns true if the dialog has multiple file type choices.
   virtual bool HasMultipleFileTypeChoicesImpl() = 0;
-
-  scoped_ptr<ui::SelectFilePolicy> select_file_policy_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectFileDialog);
 };
 
 #endif  // CHROME_BROWSER_UI_SELECT_FILE_DIALOG_H_

@@ -13,7 +13,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/download_manager.h"
@@ -157,14 +156,14 @@ SavePackageFilePicker::SavePackageFilePicker(
   }
 
   if (g_should_prompt_for_filename) {
-    select_file_dialog_ = SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(web_contents));
+    select_file_dialog_ = SelectFileDialog::Create(this);
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path,
                                     &file_type_info,
                                     file_type_index,
                                     default_extension,
+                                    web_contents,
                                     platform_util::GetTopLevel(
                                         web_contents->GetNativeView()),
                                     NULL);

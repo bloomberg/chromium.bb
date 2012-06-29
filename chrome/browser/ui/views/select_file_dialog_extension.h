@@ -23,7 +23,6 @@ class RenderViewHost;
 
 namespace ui {
 struct SelectedFileInfo;
-class SelectFilePolicy;
 }
 
 // Shows a dialog box for selecting a file or a folder, using the
@@ -33,8 +32,7 @@ class SelectFileDialogExtension
       public ExtensionDialogObserver {
  public:
   static SelectFileDialogExtension* Create(
-      SelectFileDialog::Listener* listener,
-      ui::SelectFilePolicy* policy);
+      SelectFileDialog::Listener* listener);
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow owner_window) const OVERRIDE;
@@ -74,8 +72,7 @@ class SelectFileDialogExtension
   friend class SelectFileDialogExtensionTest;
 
   // Object is ref-counted, use Create().
-  explicit SelectFileDialogExtension(SelectFileDialog::Listener* listener,
-                                     ui::SelectFilePolicy* policy);
+  explicit SelectFileDialogExtension(SelectFileDialog::Listener* listener);
   virtual ~SelectFileDialogExtension();
 
   // Invokes the appropriate file selection callback on our listener.

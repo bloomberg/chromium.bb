@@ -25,8 +25,7 @@
 // choosing a file or folder. This acts as a modal dialog.
 class SelectFileDialogImplGTK : public SelectFileDialogImpl {
  public:
-  explicit SelectFileDialogImplGTK(Listener* listener,
-                                   ui::SelectFilePolicy* policy);
+  explicit SelectFileDialogImplGTK(Listener* listener);
 
  protected:
   virtual ~SelectFileDialogImplGTK();
@@ -133,13 +132,12 @@ static const int kPreviewWidth = 256;
 static const int kPreviewHeight = 512;
 
 SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplGTK(
-    Listener* listener, ui::SelectFilePolicy* policy) {
-  return new SelectFileDialogImplGTK(listener, policy);
+    Listener* listener) {
+  return new SelectFileDialogImplGTK(listener);
 }
 
-SelectFileDialogImplGTK::SelectFileDialogImplGTK(Listener* listener,
-                                                 ui::SelectFilePolicy* policy)
-    : SelectFileDialogImpl(listener, policy),
+SelectFileDialogImplGTK::SelectFileDialogImplGTK(Listener* listener)
+    : SelectFileDialogImpl(listener),
       preview_(NULL) {
 }
 

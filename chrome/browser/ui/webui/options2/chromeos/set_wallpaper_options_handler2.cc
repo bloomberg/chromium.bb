@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -177,8 +176,8 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
 
 void SetWallpaperOptionsHandler::HandleChooseFile(const ListValue* args) {
   DCHECK(args && args->empty());
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  if (!select_file_dialog_.get())
+    select_file_dialog_ = SelectFileDialog::Create(this);
 
   FilePath downloads_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path))
@@ -192,6 +191,7 @@ void SetWallpaperOptionsHandler::HandleChooseFile(const ListValue* args) {
                                   l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE),
                                   downloads_path, &file_type_info, 0,
                                   FILE_PATH_LITERAL(""),
+                                  web_ui()->GetWebContents(),
                                   GetBrowserWindow(), NULL);
 }
 

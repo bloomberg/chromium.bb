@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -65,9 +64,7 @@ void DownloadFilePicker::Init(DownloadManager* download_manager,
   InitSuggestedPath(item);
 
   DCHECK(download_manager_);
-  WebContents* web_contents = item->GetWebContents();
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_contents));
+  select_file_dialog_ = SelectFileDialog::Create(this);
   SelectFileDialog::FileTypeInfo file_type_info;
   FilePath::StringType extension = suggested_path_.Extension();
   if (!extension.empty()) {
@@ -76,18 +73,15 @@ void DownloadFilePicker::Init(DownloadManager* download_manager,
     file_type_info.extensions[0].push_back(extension);
   }
   file_type_info.include_all_files = true;
+  WebContents* web_contents = item->GetWebContents();
   gfx::NativeWindow owning_window = web_contents ?
       platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
 
-  select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_SAVEAS_FILE,
-      string16(),
-      suggested_path_,
-      &file_type_info,
-      0,
-      FILE_PATH_LITERAL(""),
-      owning_window,
-      NULL);
+  select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
+                                  string16(),
+                                  suggested_path_,
+                                  &file_type_info, 0, FILE_PATH_LITERAL(""),
+                                  web_contents, owning_window, NULL);
 }
 
 DownloadFilePicker::~DownloadFilePicker() {

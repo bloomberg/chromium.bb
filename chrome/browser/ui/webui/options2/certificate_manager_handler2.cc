@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -564,12 +563,11 @@ void CertificateManagerHandler::ExportPersonal(const ListValue* args) {
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  select_file_dialog_ = SelectFileDialog::Create(this);
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
-      GetParentWindow(),
+      web_ui()->GetWebContents(), GetParentWindow(),
       reinterpret_cast<void*>(EXPORT_PERSONAL_FILE_SELECTED));
 }
 
@@ -654,12 +652,11 @@ void CertificateManagerHandler::StartImportPersonal(const ListValue* args) {
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  select_file_dialog_ = SelectFileDialog::Create(this);
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE, string16(),
       FilePath(), &file_type_info, 1, FILE_PATH_LITERAL("p12"),
-      GetParentWindow(),
+      web_ui()->GetWebContents(), GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_PERSONAL_FILE_SELECTED));
 }
 
@@ -772,12 +769,12 @@ void CertificateManagerHandler::ImportExportCleanup() {
 }
 
 void CertificateManagerHandler::ImportServer(const ListValue* args) {
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  select_file_dialog_ = SelectFileDialog::Create(this);
   ShowCertSelectFileDialog(
       select_file_dialog_.get(),
       SelectFileDialog::SELECT_OPEN_FILE,
       FilePath(),
+      web_ui()->GetWebContents(),
       GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_SERVER_FILE_SELECTED));
 }
@@ -831,11 +828,11 @@ void CertificateManagerHandler::ImportServerFileRead(int read_errno,
 }
 
 void CertificateManagerHandler::ImportCA(const ListValue* args) {
-  select_file_dialog_ = SelectFileDialog::Create(
-      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
+  select_file_dialog_ = SelectFileDialog::Create(this);
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            SelectFileDialog::SELECT_OPEN_FILE,
                            FilePath(),
+                           web_ui()->GetWebContents(),
                            GetParentWindow(),
                            reinterpret_cast<void*>(IMPORT_CA_FILE_SELECTED));
 }
