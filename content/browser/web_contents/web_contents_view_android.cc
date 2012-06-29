@@ -128,9 +128,6 @@ void WebContentsViewAndroid::RestoreFocus() {
   NOTIMPLEMENTED();
 }
 
-void WebContentsViewAndroid::UpdatePreferredSize(const gfx::Size& pref_size) {
-}
-
 bool WebContentsViewAndroid::IsDoingDrag() const {
   NOTIMPLEMENTED();
   return false;
