@@ -501,6 +501,8 @@ bool AcceleratedPresenter::DoRealPresent(HDC dc)
                               window_,
                               NULL,
                               D3DPRESENT_INTERVAL_IMMEDIATE);
+    // For latency_tests.cc:
+    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
     if (FAILED(hr))
       return false;
   }
@@ -830,6 +832,8 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   {
     TRACE_EVENT0("gpu", "Present");
     hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
+    // For latency_tests.cc:
+    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
     if (FAILED(hr) &&
         FAILED(present_thread_->device()->CheckDeviceState(window_))) {
       present_thread_->ResetDevice();

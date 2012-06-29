@@ -473,12 +473,11 @@ double LatencyTest::CalculateLatency() {
           // Skip this SwapBuffers if the blit has already been consumed by a
           // previous SwapBuffers. This means the current frame did not receive
           // an update from WebGL.
-          EXPECT_GT(blit_pos, previous_blit_pos);
           if (blit_pos == previous_blit_pos) {
             if (verbose_)
-              printf(" %03d: ERROR\n", swap_count);
+              printf(" %03d: MISS_BLIT\n", swap_count);
             else
-              printf(" ERROR");
+              printf(" MISS_BLIT");
             continue;
           }
           previous_blit_pos = blit_pos;
