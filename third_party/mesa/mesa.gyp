@@ -526,11 +526,14 @@
               # texenvprogram.c converts '~0' to a bitfield, which causes clang
               # to warn that -1 is implicitly converted to 255.
               '-Wno-constant-conversion',
+              # https://bugs.freedesktop.org/show_bug.cgi?id=51574
+              '-Wno-self-assign-memvar',
             ],
           },
           'cflags': [
             '-Wno-unused-value',
             '-Wno-constant-conversion',
+            '-Wno-self-assign-memvar',
           ],
         }],
       ],
