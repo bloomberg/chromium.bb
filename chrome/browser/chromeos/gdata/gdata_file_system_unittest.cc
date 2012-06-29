@@ -1358,7 +1358,7 @@ void AsyncInitializationCallback(
     message_loop->Quit();
 }
 
-// Broken by rgk, disabled pending a fix (http://crbug.com/133004).
+// Broken by r144830, disabled pending a fix (http://crbug.com/133004).
 TEST_F(GDataFileSystemTest, DISABLED_DuplicatedAsyncInitialization) {
   int counter = 0;
   ReadDirectoryCallback callback = base::Bind(
