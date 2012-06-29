@@ -30,7 +30,7 @@ struct SpeechRecognitionSessionContext;
 // operations that must be carried out, that will be handled by inner classes.
 class SpeechRecognitionManager {
  public:
-  CONTENT_EXPORT static const int kSessionIDInvalid;
+  enum { kSessionIDInvalid = 0 };
 
   // Returns the singleton instance.
   static CONTENT_EXPORT SpeechRecognitionManager* GetInstance();

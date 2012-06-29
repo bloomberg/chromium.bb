@@ -31,8 +31,6 @@ using content::SpeechRecognitionSessionContext;
 using content::SpeechRecognitionSessionConfig;
 
 namespace content {
-const int SpeechRecognitionManager::kSessionIDInvalid = 0;
-
 SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
   return speech::SpeechRecognitionManagerImpl::GetInstance();
 }
