@@ -438,7 +438,8 @@ sub parselicense($) {
 	$license = "ISC $license";
     }
 
-    if ($licensetext =~ /THIS SOFTWARE IS PROVIDED .*AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY/) {
+    if ($licensetext =~ /THIS SOFTWARE IS PROVIDED .*AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY/ ||
+        $licensetext =~ /THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABIL- ITY/) {
 	if ($licensetext =~ /All advertising materials mentioning features or use of this software must display the following/) {
 	    $license = "BSD (4 clause) $license";
 	} elsif ($licensetext =~ /be used to endorse or promote products derived from this software/) {
