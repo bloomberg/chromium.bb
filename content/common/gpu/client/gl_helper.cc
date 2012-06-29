@@ -266,7 +266,7 @@ class GLHelper::CopyTextureToImpl {
   // (meaning it guarantees that the callback with be called).
   // In either case, the callback must be called exactly once, and the texture
   // must be deleted by the main thread context.
-  struct Request : public base::RefCounted<Request> {
+  struct Request : public base::RefCountedThreadSafe<Request> {
     Request(CopyTextureToImpl* impl,
             WebGLId texture_,
             const gfx::Size& size_,
@@ -291,7 +291,7 @@ class GLHelper::CopyTextureToImpl {
     unsigned char* pixels;
 
    private:
-    friend class base::RefCounted<Request>;
+    friend class base::RefCountedThreadSafe<Request>;
     ~Request() {}
   };
 
