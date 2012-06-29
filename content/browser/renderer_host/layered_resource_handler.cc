@@ -60,7 +60,7 @@ bool LayeredResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 }
 
-bool LayeredResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+bool LayeredResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                              bool* defer) {
   DCHECK(next_handler_.get());
   return next_handler_->OnReadCompleted(request_id, bytes_read, defer);

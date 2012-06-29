@@ -247,16 +247,10 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 }
 
 // Pass the buffer to the download file writer.
-bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                               bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!read_buffer_) {
-    // Ignore spurious OnReadCompleted!  Deferring from OnReadCompleted tells
-    // the ResourceDispatcherHost that we did not consume the data.
-    // ResumeDeferredRequest then repeats the last OnReadCompleted call.
-    // TODO(darin): Fix the ResourceDispatcherHost to avoid this hack!
-    return true;
-  }
+  DCHECK(read_buffer_);
 
   if (pause_count_ > 0) {
     *defer = was_deferred_ = true;
@@ -271,20 +265,20 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
       // divide-by-zero error and still record a very high potential bandwidth.
       seconds_since_last_read = 0.00001;
 
-    double actual_bandwidth = (*bytes_read)/seconds_since_last_read;
+    double actual_bandwidth = (bytes_read)/seconds_since_last_read;
     double potential_bandwidth = last_buffer_size_/seconds_since_last_read;
     download_stats::RecordBandwidth(actual_bandwidth, potential_bandwidth);
   }
   last_read_time_ = now;
 
-  if (!*bytes_read)
+  if (!bytes_read)
     return true;
-  bytes_read_ += *bytes_read;
+  bytes_read_ += bytes_read;
   DCHECK(read_buffer_);
 
   // Take the data ship it down the stream.  If the stream is full, pause the
   // request; the stream callback will resume it.
-  if (!stream_writer_->Write(read_buffer_, *bytes_read)) {
+  if (!stream_writer_->Write(read_buffer_, bytes_read)) {
     PauseRequest();
     *defer = was_deferred_ = true;
     last_stream_pause_time_ = now;

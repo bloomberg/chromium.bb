@@ -54,7 +54,7 @@ class AsyncResourceHandler : public ResourceHandler {
                           int* buf_size,
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
-                               int* bytes_read,
+                               int bytes_read,
                                bool* defer) OVERRIDE;
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
@@ -68,7 +68,7 @@ class AsyncResourceHandler : public ResourceHandler {
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it defers the request and returns false. In this
   // case the caller should not send the data.
-  bool WillSendData(bool* defer);
+  void WillSendData(bool* defer);
 
   void ResumeIfDeferred();
 

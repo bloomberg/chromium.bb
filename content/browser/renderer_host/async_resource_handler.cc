@@ -120,15 +120,8 @@ void AsyncResourceHandler::OnFollowRedirect(
 }
 
 void AsyncResourceHandler::OnDataReceivedACK() {
-  // If the pending data count was higher than the max, resume the request.
-  if (--pending_data_count_ == kMaxPendingDataMessages) {
-    // Decrement the pending data count one more time because we also
-    // incremented it before deferring the request.
-    --pending_data_count_;
-
-    // Resume the request.
+  if (pending_data_count_-- == kMaxPendingDataMessages)
     ResumeIfDeferred();
-  }
 }
 
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
@@ -234,23 +227,20 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                            bool* defer) {
-  if (!*bytes_read)
+  if (!bytes_read)
     return true;
   DCHECK(read_buffer_.get());
 
-  if (read_buffer_->buffer_size() == *bytes_read) {
+  if (read_buffer_->buffer_size() == bytes_read) {
     // The network layer has saturated our buffer. Next time, we should give it
     // a bigger buffer for it to fill, to minimize the number of round trips we
     // do with the renderer process.
     next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
   }
 
-  if (!WillSendData(defer)) {
-    // We should not send this data now, we have too many pending requests.
-    return true;
-  }
+  WillSendData(defer);
 
   base::SharedMemoryHandle handle;
   if (!read_buffer_->shared_memory()->GiveToProcess(
@@ -271,7 +261,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
   int encoded_data_length =
       DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
   filter_->Send(new ResourceMsg_DataReceived(
-      routing_id_, request_id, handle, *bytes_read, encoded_data_length));
+      routing_id_, request_id, handle, bytes_read, encoded_data_length));
 
   return true;
 }
@@ -322,16 +312,13 @@ void AsyncResourceHandler::GlobalCleanup() {
   }
 }
 
-bool AsyncResourceHandler::WillSendData(bool* defer) {
-  if (++pending_data_count_ > kMaxPendingDataMessages) {
+void AsyncResourceHandler::WillSendData(bool* defer) {
+  if (++pending_data_count_ >= kMaxPendingDataMessages) {
     // We reached the max number of data messages that can be sent to
     // the renderer for a given request. Pause the request and wait for
     // the renderer to start processing them before resuming it.
     *defer = did_defer_ = true;
-    return false;
   }
-
-  return true;
 }
 
 void AsyncResourceHandler::ResumeIfDeferred() {

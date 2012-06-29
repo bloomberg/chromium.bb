@@ -11,10 +11,11 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/layered_resource_handler.h"
+#include "content/public/browser/resource_controller.h"
 
 namespace net {
 class URLRequest;
-}  // namespace net
+}
 
 namespace webkit {
 struct WebPluginInfo;
@@ -26,6 +27,7 @@ class ResourceDispatcherHostImpl;
 // Used to buffer a request until enough data has been received.
 class BufferedResourceHandler
     : public LayeredResourceHandler,
+      public ResourceController,
       public base::SupportsWeakPtr<BufferedResourceHandler> {
  public:
   BufferedResourceHandler(scoped_ptr<ResourceHandler> next_handler,
@@ -33,7 +35,9 @@ class BufferedResourceHandler
                           net::URLRequest* request);
   virtual ~BufferedResourceHandler();
 
+ private:
   // ResourceHandler implementation:
+  virtual void SetController(ResourceController* controller) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
                                  ResourceResponse* response,
                                  bool* defer) OVERRIDE;
@@ -41,64 +45,66 @@ class BufferedResourceHandler
                           net::IOBuffer** buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+  virtual bool OnReadCompleted(int request_id, int bytes_read,
                                bool* defer) OVERRIDE;
+  virtual bool OnResponseCompleted(int request_id,
+                                   const net::URLRequestStatus& status,
+                                   const std::string& security_info) OVERRIDE;
 
- private:
-  // Returns true if we should delay OnResponseStarted forwarding.
-  bool DelayResponse();
+  // ResourceController implementation:
+  virtual void Resume() OVERRIDE;
+  virtual void Cancel() OVERRIDE;
 
-  // Returns true if there is enough information to process the DocType.
-  bool DidBufferEnough(int bytes_read);
+  bool ProcessResponse(bool* defer);
 
-  // Returns true if we have to keep buffering data.
-  bool KeepBuffering(int bytes_read);
+  bool ShouldSniffContent();
+  bool DetermineMimeType();
+  bool SelectNextHandler(bool* defer);
+  bool UseAlternateNextHandler(scoped_ptr<ResourceHandler> handler);
 
-  // Sends a pending OnResponseStarted notification.
-  bool CompleteResponseStarted(int request_id, bool* defer);
+  bool ReplayReadCompleted(bool* defer);
+  void CallReplayReadCompleted();
 
-  // Returns true if we have to wait until the plugin list is generated.
-  bool ShouldWaitForPlugins();
-
-  // A test to determining whether the request should be forwarded to the
-  // download thread.  If need_plugin_list was passed in and was set to true,
-  // that means that the check couldn't be fully done because the plugins aren't
-  // loaded.  The function should be called again after the plugin list is
-  // loaded.
-  bool ShouldDownload(bool* need_plugin_list);
-
-  // Informs the original ResourceHandler |next_handler_| that the response
-  // will be handled entirely by the new ResourceHandler |handler|.  A
-  // reference to |handler| is acquired.  Returns false to indicate an error,
-  // which will result in the request being cancelled.
-  bool UseAlternateResourceHandler(int request_id,
-                                   scoped_ptr<ResourceHandler> handler,
-                                   bool* defer);
-
-  // Forwards any queued events to |next_handler_|.  Returns false to indicate
-  // an error, which will result in the request being cancelled.
-  bool ForwardPendingEventsToNextHandler(int request_id, bool* defer);
+  bool MustDownload();
+  bool HasSupportingPlugin(bool* is_stale);
 
   // Copies data from |read_buffer_| to |next_handler_|.
-  void CopyReadBufferToNextHandler(int request_id);
+  bool CopyReadBufferToNextHandler(int request_id);
 
   // Called on the IO thread once the list of plugins has been loaded.
   void OnPluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
+
+  enum State {
+    STATE_STARTING,
+
+    // In this state, we are filling read_buffer_ with data for the purpose
+    // of sniffing the mime type of the response.
+    STATE_BUFFERING,
+
+    // In this state, we are select an appropriate downstream ResourceHandler
+    // based on the mime type of the response.  We are also potentially waiting
+    // for plugins to load so that we can determine if a plugin is available to
+    // handle the mime type.
+    STATE_PROCESSING,
+
+    // In this state, we are replaying buffered events (OnResponseStarted and
+    // OnReadCompleted) to the downstream ResourceHandler.
+    STATE_REPLAYING,
+
+    // In this state, we are just a blind pass-through ResourceHandler.
+    STATE_STREAMING
+  };
+  State state_;
 
   scoped_refptr<ResourceResponse> response_;
   ResourceDispatcherHostImpl* host_;
   net::URLRequest* request_;
   scoped_refptr<net::IOBuffer> read_buffer_;
-  scoped_refptr<net::IOBuffer> my_buffer_;
   int read_buffer_size_;
   int bytes_read_;
-  bool sniff_content_;
-  bool wait_for_plugins_;
-  bool deferred_waiting_for_plugins_;
-  bool buffering_;
-  bool next_handler_needs_response_started_;
-  bool next_handler_needs_will_read_;
-  bool finished_;
+
+  bool must_download_;
+  bool must_download_is_set_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceHandler);
 };

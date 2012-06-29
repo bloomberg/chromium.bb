@@ -63,7 +63,7 @@ class X509UserCertResourceHandler : public ResourceHandler {
 
   // A read was completed, maybe allocate a new buffer for further data.
   virtual bool OnReadCompleted(int request_id,
-                               int* bytes_read,
+                               int bytes_read,
                                bool* defer) OVERRIDE;
 
   // Done downloading the certificate.

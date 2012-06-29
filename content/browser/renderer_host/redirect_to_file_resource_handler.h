@@ -47,7 +47,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
                           int* buf_size,
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
-                               int* bytes_read,
+                               int bytes_read,
                                bool* defer) OVERRIDE;
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,

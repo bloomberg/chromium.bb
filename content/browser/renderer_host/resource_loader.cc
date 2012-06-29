@@ -59,11 +59,6 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
       delegate_(delegate),
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),
-      called_on_response_started_(false),
-      has_started_reading_(false),
-      is_paused_(false),
-      pause_count_(0),
-      paused_read_bytes_(0),
       is_transferring_(false) {
   request_->set_delegate(this);
   handler_->SetController(this);
@@ -213,10 +208,9 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
   if (!handler_->OnRequestRedirected(info->GetRequestID(), new_url, response,
                                      defer)) {
     Cancel();
+  } else if (*defer) {
+    deferred_stage_ = DEFERRED_REDIRECT;  // Follow redirect when resumed.
   }
-
-  if (*defer)
-    deferred_stage_ = DEFERRED_REDIRECT;
 }
 
 void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
@@ -292,29 +286,24 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
   VLOG(1) << "OnResponseStarted: " << request_->url().spec();
 
+  if (!request_->status().is_success()) {
+    ResponseCompleted();
+    return;
+  }
+
+  // We want to send a final upload progress message prior to sending the
+  // response complete message even if we're waiting for an ack to to a
+  // previous upload progress message.
+  waiting_for_upload_progress_ack_ = false;
+  ReportUploadProgress();
+
+  CompleteResponseStarted();
+
+  if (is_deferred())
+    return;
+
   if (request_->status().is_success()) {
-    if (PauseRequestIfNeeded()) {
-      VLOG(1) << "OnResponseStarted pausing: " << request_->url().spec();
-      return;
-    }
-
-    // We want to send a final upload progress message prior to sending the
-    // response complete message even if we're waiting for an ack to to a
-    // previous upload progress message.
-    waiting_for_upload_progress_ack_ = false;
-    ReportUploadProgress();
-
-    if (!CompleteResponseStarted()) {
-      Cancel();
-    } else {
-      // Check if the handler paused the request in their OnResponseStarted.
-      if (PauseRequestIfNeeded()) {
-        VLOG(1) << "OnResponseStarted pausing2: " << request_->url().spec();
-        return;
-      }
-
-      StartReading();
-    }
+    StartReading(false);  // Read the first chunk.
   } else {
     ResponseCompleted();
   }
@@ -325,63 +314,22 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
   VLOG(1) << "OnReadCompleted: \"" << request_->url().spec() << "\""
           << " bytes_read = " << bytes_read;
 
-  // bytes_read == -1 always implies an error, so we want to skip the pause
-  // checks and just call ResponseCompleted.
-  if (bytes_read == -1) {
-    DCHECK(!request_->status().is_success());
-
+  // bytes_read == -1 always implies an error.
+  if (bytes_read == -1 || !request_->status().is_success()) {
     ResponseCompleted();
     return;
   }
 
-  // OnReadCompleted can be called without Read (e.g., for chrome:// URLs).
-  // Make sure we know that a read has begun.
-  has_started_reading_ = true;
+  CompleteRead(bytes_read);
 
-  if (PauseRequestIfNeeded()) {
-    paused_read_bytes_ = bytes_read;
-    VLOG(1) << "OnReadCompleted pausing: \"" << request_->url().spec() << "\""
-            << " bytes_read = " << bytes_read;
+  if (is_deferred())
     return;
-  }
 
-  if (request_->status().is_success() && CompleteRead(&bytes_read)) {
-    // The request can be paused if we realize that the renderer is not
-    // servicing messages fast enough.
-    if (pause_count_ == 0 && ReadMore(&bytes_read) &&
-        request_->status().is_success()) {
-      if (bytes_read == 0) {
-        CompleteRead(&bytes_read);
-      } else {
-        // Force the next CompleteRead / Read pair to run as a separate task.
-        // This avoids a fast, large network request from monopolizing the IO
-        // thread and starving other IO operations from running.
-        VLOG(1) << "OnReadCompleted postponing: \""
-                << request_->url().spec() << "\""
-                << " bytes_read = " << bytes_read;
-
-        paused_read_bytes_ = bytes_read;
-        is_paused_ = true;
-
-        MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(&ResourceLoader::ResumeRequest, AsWeakPtr()));
-        return;
-      }
-    }
-  }
-
-  if (PauseRequestIfNeeded()) {
-    paused_read_bytes_ = bytes_read;
-    VLOG(1) << "OnReadCompleted (CompleteRead) pausing: \""
-            << request_->url().spec() << "\""
-            << " bytes_read = " << bytes_read;
-    return;
-  }
-
-  // If the status is not IO pending then we've either finished (success) or we
-  // had an error.  Either way, we're done!
-  if (!request_->status().is_io_pending())
+  if (request_->status().is_success() && bytes_read > 0) {
+    StartReading(true);  // Read the next chunk.
+  } else {
     ResponseCompleted();
+  }
 }
 
 void ResourceLoader::CancelSSLRequest(const GlobalRequestID& id,
@@ -425,9 +373,10 @@ void ResourceLoader::Resume() {
     case DEFERRED_REDIRECT:
       request_->FollowDeferredRedirect();
       break;
-    case DEFERRED_RESPONSE:
     case DEFERRED_READ:
-      PauseRequest(false);
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ResourceLoader::ResumeReading, AsWeakPtr()));
       break;
     case DEFERRED_FINISH:
       // Delay self-destruction since we don't know how we were reached.
@@ -460,6 +409,8 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   if (from_renderer && info->is_download())
     return;
 
+  // TODO(darin): Perhaps we should really be looking to see if the status is
+  // IO_PENDING?
   bool was_pending = request_->is_pending();
 
   if (login_delegate_) {
@@ -482,7 +433,7 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   }
 }
 
-bool ResourceLoader::CompleteResponseStarted() {
+void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
@@ -505,67 +456,77 @@ bool ResourceLoader::CompleteResponseStarted() {
   }
 
   delegate_->DidReceiveResponse(this);
-  called_on_response_started_ = true;
 
   bool defer = false;
-  if (!handler_->OnResponseStarted(info->GetRequestID(), response, &defer))
-    return false;
-
-  if (defer) {
-    deferred_stage_ = DEFERRED_RESPONSE;
-    PauseRequest(true);
+  if (!handler_->OnResponseStarted(info->GetRequestID(), response, &defer)) {
+    Cancel();
+  } else if (defer) {
+    deferred_stage_ = DEFERRED_READ;  // Read first chunk when resumed.
   }
-
-  return true;
 }
 
-void ResourceLoader::StartReading() {
+void ResourceLoader::StartReading(bool is_continuation) {
   int bytes_read = 0;
-  if (ReadMore(&bytes_read)) {
+  ReadMore(&bytes_read);
+
+  // If IO is pending, wait for the URLRequest to call OnReadCompleted.
+  if (request_->status().is_io_pending())
+    return;
+
+  if (!is_continuation || bytes_read <= 0) {
     OnReadCompleted(request_.get(), bytes_read);
-  } else if (!request_->status().is_io_pending()) {
-    DCHECK(!is_paused_);
-    // If the error is not an IO pending, then we're done reading.
+  } else {
+    // Else, trigger OnReadCompleted asynchronously to avoid starving the IO
+    // thread in case the URLRequest can provide data synchronously.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ResourceLoader::OnReadCompleted, AsWeakPtr(),
+                   request_.get(), bytes_read));
+  }
+}
+
+void ResourceLoader::ResumeReading() {
+  DCHECK(!is_deferred());
+
+  if (request_->status().is_success()) {
+    StartReading(false);  // Read the next chunk (OK to complete synchronously).
+  } else {
     ResponseCompleted();
   }
 }
 
-bool ResourceLoader::ReadMore(int* bytes_read) {
+void ResourceLoader::ReadMore(int* bytes_read) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
-  DCHECK(!is_paused_);
+  DCHECK(!is_deferred());
 
   net::IOBuffer* buf;
   int buf_size;
-  if (!handler_->OnWillRead(info->GetRequestID(), &buf, &buf_size, -1))
-    return false;
+  if (!handler_->OnWillRead(info->GetRequestID(), &buf, &buf_size, -1)) {
+    Cancel();
+    return;
+  }
 
   DCHECK(buf);
   DCHECK(buf_size > 0);
 
-  has_started_reading_ = true;
-  return request_->Read(buf, buf_size, bytes_read);
+  request_->Read(buf, buf_size, bytes_read);
+
+  // No need to check the return value here as we'll detect errors by
+  // inspecting the URLRequest's status.
 }
 
-bool ResourceLoader::CompleteRead(int* bytes_read) {
-  if (!request_.get() || !request_->status().is_success()) {
-    NOTREACHED();
-    return false;
-  }
+void ResourceLoader::CompleteRead(int bytes_read) {
+  DCHECK(bytes_read >= 0);
+  DCHECK(request_->status().is_success());
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   bool defer = false;
   if (!handler_->OnReadCompleted(info->GetRequestID(), bytes_read, &defer)) {
     Cancel();
-    return false;
+  } else if (defer) {
+    deferred_stage_ = DEFERRED_READ;  // Read next chunk when resumed.
   }
-
-  if (defer) {
-    deferred_stage_ = DEFERRED_READ;
-    PauseRequest(true);
-  }
-
-  return *bytes_read != 0;
 }
 
 void ResourceLoader::ResponseCompleted() {
@@ -590,55 +551,6 @@ void ResourceLoader::ResponseCompleted() {
     // The handler is not ready to die yet.  We will call DidFinishLoading when
     // we resume.
     deferred_stage_ = DEFERRED_FINISH;
-  }
-}
-
-bool ResourceLoader::PauseRequestIfNeeded() {
-  if (pause_count_ > 0)
-    is_paused_ = true;
-  return is_paused_;
-}
-
-void ResourceLoader::PauseRequest(bool pause) {
-  int pause_count = pause_count_ + (pause ? 1 : -1);
-  if (pause_count < 0) {
-    NOTREACHED();  // Unbalanced call to pause.
-    return;
-  }
-  pause_count_ = pause_count;
-
-  VLOG(1) << "To pause (" << pause << "): " << request_->url().spec();
-
-  // If we're resuming, kick the request to start reading again. Run the read
-  // asynchronously to avoid recursion problems.
-  if (pause_count_ == 0) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ResourceLoader::ResumeRequest, AsWeakPtr()));
-  }
-}
-
-void ResourceLoader::ResumeRequest() {
-  // We may already be unpaused, or the pause count may have increased since we
-  // posted the task to call ResumeRequest.
-  if (!is_paused_)
-    return;
-  is_paused_ = false;
-  if (PauseRequestIfNeeded())
-    return;
-
-  VLOG(1) << "Resuming: \"" << request_->url().spec() << "\""
-          << " paused_read_bytes = " << paused_read_bytes_
-          << " called response started = " << called_on_response_started_
-          << " started reading = " << has_started_reading_;
-
-  if (called_on_response_started_) {
-    if (has_started_reading_) {
-      OnReadCompleted(request_.get(), paused_read_bytes_);
-    } else {
-      StartReading();
-    }
-  } else {
-    OnResponseStarted(request_.get());
   }
 }
 

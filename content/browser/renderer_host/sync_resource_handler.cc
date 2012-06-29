@@ -103,11 +103,11 @@ bool SyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool SyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+bool SyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                           bool* defer) {
-  if (!*bytes_read)
+  if (!bytes_read)
     return true;
-  result_.data.append(read_buffer_->data(), *bytes_read);
+  result_.data.append(read_buffer_->data(), bytes_read);
   return true;
 }
 

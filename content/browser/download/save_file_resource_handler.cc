@@ -84,7 +84,7 @@ bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+bool SaveFileResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                               bool* defer) {
   DCHECK(read_buffer_);
   // We are passing ownership of this buffer to the save file manager.
@@ -93,7 +93,7 @@ bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::UpdateSaveProgress,
-          save_manager_, save_id_, buffer, *bytes_read));
+          save_manager_, save_id_, buffer, bytes_read));
   return true;
 }
 

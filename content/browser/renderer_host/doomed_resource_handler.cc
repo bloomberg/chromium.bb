@@ -54,7 +54,7 @@ bool DoomedResourceHandler::OnWillRead(int request_id,
 }
 
 bool DoomedResourceHandler::OnReadCompleted(int request_id,
-                                            int* bytes_read,
+                                            int bytes_read,
                                             bool* defer) {
   NOTREACHED();
   return true;

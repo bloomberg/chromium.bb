@@ -106,24 +106,14 @@ bool RedirectToFileResourceHandler::OnWillRead(int request_id,
 }
 
 bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
-                                                    int* bytes_read,
+                                                    int bytes_read,
                                                     bool* defer) {
-  if (!buf_write_pending_) {
-    // Ignore spurious OnReadCompleted!  Deferring from OnReadCompleted tells
-    // the ResourceDispatcherHost that we did not consume the data.
-    // ResumeDeferredRequest then repeats the last OnReadCompleted call.  We
-    // pause the request so that we can copy our buffer to disk, so we need to
-    // consume the data now.  The ResourceDispatcherHost pause mechanism does
-    // not fit our use case very well.  TODO(darin): Fix the
-    // ResourceDispatcherHost to avoid this hack!
-    return true;
-  }
-
+  DCHECK(buf_write_pending_);
   buf_write_pending_ = false;
 
   // We use the buffer's offset field to record the end of the buffer.
 
-  int new_offset = buf_->offset() + *bytes_read;
+  int new_offset = buf_->offset() + bytes_read;
   DCHECK(new_offset <= buf_->capacity());
   buf_->set_offset(new_offset);
 

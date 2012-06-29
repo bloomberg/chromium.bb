@@ -104,7 +104,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
 }
 
 bool CrossSiteResourceHandler::OnReadCompleted(int request_id,
-                                               int* bytes_read,
+                                               int bytes_read,
                                                bool* defer) {
   if (!in_cross_site_transition_) {
     return next_handler_->OnReadCompleted(request_id, bytes_read, defer);

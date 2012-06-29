@@ -77,21 +77,21 @@ bool X509UserCertResourceHandler::OnWillRead(int request_id,
 }
 
 bool X509UserCertResourceHandler::OnReadCompleted(int request_id,
-                                                  int* bytes_read,
+                                                  int bytes_read,
                                                   bool* defer) {
-  if (!*bytes_read)
+  if (!bytes_read)
     return true;
 
   // We have more data to read.
   DCHECK(read_buffer_);
-  content_length_ += *bytes_read;
+  content_length_ += bytes_read;
 
   // Release the ownership of the buffer, and store a reference
   // to it. A new one will be allocated in OnWillRead().
   net::IOBuffer* buffer = NULL;
   read_buffer_.swap(&buffer);
   // TODO(gauravsh): Should this be handled by a separate thread?
-  buffer_.push_back(std::make_pair(buffer, *bytes_read));
+  buffer_.push_back(std::make_pair(buffer, bytes_read));
 
   return true;
 }

@@ -76,10 +76,8 @@ class CONTENT_EXPORT ResourceHandler
   // out-params.  This call will be followed by either OnReadCompleted or
   // OnResponseCompleted, at which point the buffer may be recycled.
   //
-  // If this method returns false, then the request will not be read.  This is
-  // normally used in conjunction with ResourceDispatcherHost::PauseRequest to
-  // pause the processing of the request.  When the request is later resumed,
-  // OnWillRead will be called again.
+  // If the handler returns false, then the request is cancelled.  Otherwise,
+  // once data is available, OnReadCompleted will be called.
   virtual bool OnWillRead(int request_id,
                           net::IOBuffer** buf,
                           int* buf_size,
@@ -90,7 +88,7 @@ class CONTENT_EXPORT ResourceHandler
   // reading data.  Set |*defer| to true to defer reading more response data.
   // Call ResourceDispatcherHostImpl::ResumeDeferredRequest to continue reading
   // response data.
-  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+  virtual bool OnReadCompleted(int request_id, int bytes_read,
                                bool* defer) = 0;
 
   // The response is complete.  The final response status is given.  Returns
