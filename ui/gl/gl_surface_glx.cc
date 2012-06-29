@@ -9,7 +9,6 @@ extern "C" {
 #include "ui/gl/gl_surface_glx.h"
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -136,8 +135,6 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 
 bool NativeViewGLSurfaceGLX::SwapBuffers() {
   glXSwapBuffers(g_display, window_);
-  // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
   return true;
 }
 
