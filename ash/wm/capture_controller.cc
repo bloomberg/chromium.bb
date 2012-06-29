@@ -32,7 +32,6 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
   DCHECK(!capture_window_ || capture_window_->GetRootWindow());
 
   aura::Window* old_capture_window = capture_window_;
-  capture_window_ = new_capture_window;
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
@@ -40,8 +39,16 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
     aura::RootWindow* root_window = *iter;
     root_window->gesture_recognizer()->
         TransferEventsTo(old_capture_window, new_capture_window);
+  }
+
+  capture_window_ = new_capture_window;
+
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    aura::RootWindow* root_window = *iter;
     root_window->UpdateCapture(old_capture_window, new_capture_window);
   }
+
   return;
 }
 
