@@ -17,6 +17,7 @@
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/touch_point.h"
+#include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/common/android/command_line.h"
 #include "content/common/android/surface_callback.h"
 #include "content/common/android/trace_event_binding.h"
@@ -25,6 +26,8 @@ namespace content {
 namespace android {
 
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
+  { "AndroidLocationApiAdapter",
+     AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
   { "CommandLine", RegisterCommandLine },
   { "ContentSettings", ContentSettings::RegisterContentSettings },
