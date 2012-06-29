@@ -374,6 +374,10 @@ class ThroughputTest : public BrowserPerfTest {
 
     if (flags & kAllowExternalDNS)
       ResetAllowExternalDNS();
+
+    // Close the tab so that we can quit without timing out during the
+    // wait-for-idle stage in browser_test framework.
+    browser()->GetActiveWebContents()->Close();
   }
 
  private:
