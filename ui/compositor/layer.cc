@@ -422,7 +422,11 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip,
+#if defined(WEBCONTENTLAYERCLIENT_FLOAT_OPAQUE_RECT)
+                          WebKit::WebFloatRect& opaque) {
+#else
                           WebKit::WebRect& opaque) {
+#endif
   TRACE_EVENT0("ui", "Layer::paintContents");
   gfx::Canvas canvas(web_canvas,
       ui::GetScaleFactorFromScale(device_scale_factor_), scale_content_);

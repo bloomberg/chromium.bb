@@ -229,7 +229,11 @@ class COMPOSITOR_EXPORT Layer :
   // WebContentLayerClient
   virtual void paintContents(WebKit::WebCanvas*,
                              const WebKit::WebRect& clip,
+#if defined(WEBCONTENTLAYERCLIENT_FLOAT_OPAQUE_RECT)
+                             WebKit::WebFloatRect& opaque);
+#else
                              WebKit::WebRect& opaque);
+#endif
 
   WebKit::WebLayer web_layer() { return web_layer_; }
 
