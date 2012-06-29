@@ -23,6 +23,23 @@ using extensions::Extension;
 
 namespace {
 
+// TODO(hshi): Temporary workaround for http://crbug.com/134197.
+// If no user-set default service is found, use built-in QuickOffice Viewer as
+// default for MS office files. Remove this once full defaults is in place.
+const char kViewActionURL[] = "http://webintents.org/view";
+
+const char kQuickOfficeViewerServiceURL[] =
+  "chrome-extension://gbkeegbaiigmenfmjfclcdgdpimamgkj/views/appViewer.html";
+
+const char* kQuickOfficeViewerMimeType[] = {
+  "application/msword",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+};
+
 typedef WebIntentsRegistry::IntentServiceList IntentServiceList;
 
 // Compares two mime types for equality. Supports wild cards in both
@@ -284,6 +301,23 @@ void WebIntentsRegistry::OnWebDataServiceDefaultsRequestDone(
       default_service = *iter;
     else if (iter->url_pattern < default_service.url_pattern)
       default_service = *iter;
+  }
+
+  // TODO(hshi): Temporary workaround for http://crbug.com/134197.
+  // If no user-set default service is found, use built-in QuickOffice Viewer as
+  // default for MS office files. Remove this once full defaults is in place.
+  if (default_service.user_date <= 0) {
+    for (size_t i = 0; i < sizeof(kQuickOfficeViewerMimeType) / sizeof(char*);
+         ++i) {
+      DefaultWebIntentService qoviewer_service;
+      qoviewer_service.action = ASCIIToUTF16(kViewActionURL);
+      qoviewer_service.type = ASCIIToUTF16(kQuickOfficeViewerMimeType[i]);
+      qoviewer_service.service_url = kQuickOfficeViewerServiceURL;
+      if (WebIntentsTypesMatch(qoviewer_service.type, query->type_)) {
+        default_service = qoviewer_service;
+        break;
+      }
+    }
   }
 
   query->default_callback_.Run(default_service);
