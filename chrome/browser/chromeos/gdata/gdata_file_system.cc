@@ -2230,14 +2230,6 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
   }
   GDataFile* file = entry->AsGDataFile();
 
-  // TODO(satorux): Uploading of empty files are currently not supported.
-  // crbug.com/134552
-  if (file->file_info().size == 0) {
-    if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_FAILED);
-    return;
-  }
-
   uploader_->UploadExistingFile(
       file->upload_url(),
       file->GetFilePath(),

@@ -1059,11 +1059,7 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
   if (params_.upload_mode == UPLOAD_EXISTING_FILE) {
     // When uploading an existing file, the body is empty as we don't modify
     // the metadata.
-    //
-    // However, URLFetcher DCHECKs with an empty body with PUT request, hence
-    // sending "\r\n" instead.
-    // TODO(satorux): Remove the workaround: crbug.com/134261.
-    *upload_content = "\r\n";
+    *upload_content = "";
     // Even though the body is empty, Content-Type should be set to
     // "text/plain". Otherwise, the server won't accept.
     *upload_content_type = "text/plain";
@@ -1196,6 +1192,13 @@ URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
 }
 
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
+  if (params_.content_length == 0) {
+    // For uploading an empty document, just PUT an empty content.
+    DCHECK_EQ(params_.start_range, 0);
+    DCHECK_EQ(params_.end_range, -1);
+    return std::vector<std::string>();
+  }
+
   // The header looks like
   // Content-Range: bytes <start_range>-<end_range>/<content_length>
   // for example:

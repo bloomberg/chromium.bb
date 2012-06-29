@@ -111,6 +111,9 @@ class GDataUploader : public GDataUploaderInterface {
       int bytes_to_read,
       int bytes_read);
 
+  // Calls DocumentsService's ResumeUpload with the current upload info.
+  void ResumeUpload(int upload_id);
+
   // DocumentsService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(int upload_id,
                                       const ResumeUploadResponse& response,

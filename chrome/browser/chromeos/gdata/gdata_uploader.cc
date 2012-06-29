@@ -46,7 +46,6 @@ int GDataUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(upload_file_info.get());
   DCHECK_EQ(upload_file_info->upload_id, -1);
   DCHECK(!upload_file_info->file_path.empty());
-  DCHECK_NE(upload_file_info->file_size, 0);
   DCHECK(!upload_file_info->gdata_path.empty());
   DCHECK(!upload_file_info->title.empty());
   DCHECK(!upload_file_info->content_type.empty());
@@ -87,8 +86,9 @@ int GDataUploader::StartUploadFile(
   // Create a FileStream to make sure the file can be opened successfully.
   info->file_stream = new net::FileStream(NULL);
 
-  // Create buffer to hold upload data.
-  info->buf_len = std::min(info->file_size, kUploadChunkSize);
+  // Create buffer to hold upload data. The full file size may not be known at
+  // this point, so it may not be appropriate to use info->file_size.
+  info->buf_len = kUploadChunkSize;
   info->buf = new net::IOBuffer(info->buf_len);
 
   OpenFile(info);
@@ -105,7 +105,6 @@ int GDataUploader::UploadExistingFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!upload_location.is_empty());
   DCHECK(!local_file_path.empty());
-  DCHECK_NE(file_size, 0);
   DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
@@ -314,6 +313,29 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
     return;
   }
 
+  if (bytes_to_read == 0) {
+    // This should only happen when the actual file size is 0.
+    DCHECK(upload_file_info->all_bytes_present &&
+           upload_file_info->content_length == 0);
+
+    upload_file_info->start_range = 0;
+    upload_file_info->end_range = -1;
+    // Skips file_stream->Read and error checks for 0-byte case. Immediately
+    // proceeds to ResumeUpload.
+    // TODO(kinaba): http://crbug.com/134814
+    // Replace the following PostTask() to an direct method call. This is needed
+    // because we have to ResumeUpload after the previous InitiateUpload or
+    // ResumeUpload is completely finished; at this point, we are inside the
+    // callback function from the previous operation, which is not treated as
+    // finished yet.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&GDataUploader::ResumeUpload,
+                   uploader_factory_.GetWeakPtr(),
+                   upload_file_info->upload_id));
+    return;
+  }
+
   upload_file_info->file_stream->Read(
       upload_file_info->buf,
       bytes_to_read,
@@ -344,6 +366,14 @@ void GDataUploader::ReadCompletionCallback(
   upload_file_info->start_range = upload_file_info->end_range + 1;
   upload_file_info->end_range = upload_file_info->start_range +
                                 bytes_read - 1;
+
+  ResumeUpload(upload_id);
+}
+
+void GDataUploader::ResumeUpload(int upload_id) {
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
+  if (!upload_file_info)
+    return;
 
   documents_service_->ResumeUpload(
       ResumeUploadParams(upload_file_info->upload_mode,
