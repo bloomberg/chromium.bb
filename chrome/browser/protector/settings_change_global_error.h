@@ -12,7 +12,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error/global_error.h"
 
 class Browser;
 class Profile;

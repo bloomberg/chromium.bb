@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/global_error_bubble_view_base.h"
+#include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 

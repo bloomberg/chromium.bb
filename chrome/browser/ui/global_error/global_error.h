@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GLOBAL_ERROR_H_
-#define CHROME_BROWSER_UI_GLOBAL_ERROR_H_
+#ifndef CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_H_
+#define CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -75,4 +75,4 @@ class GlobalError : public base::SupportsWeakPtr<GlobalError> {
   DISALLOW_COPY_AND_ASSIGN(GlobalError);
 };
 
-#endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_H_
+#endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_H_

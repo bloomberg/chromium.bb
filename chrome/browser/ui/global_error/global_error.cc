@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error/global_error.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/global_error_bubble_view_base.h"
+#include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 

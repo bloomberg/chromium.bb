@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GLOBAL_ERROR_SERVICE_H_
-#define CHROME_BROWSER_UI_GLOBAL_ERROR_SERVICE_H_
+#ifndef CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_SERVICE_H_
+#define CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_SERVICE_H_
 #pragma once
 
 #include <vector>
@@ -66,4 +66,4 @@ class GlobalErrorService : public ProfileKeyedService {
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorService);
 };
 
-#endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_SERVICE_H_
+#endif  // CHROME_BROWSER_UI_GLOBAL_ERROR_GLOBAL_ERROR_SERVICE_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error/global_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

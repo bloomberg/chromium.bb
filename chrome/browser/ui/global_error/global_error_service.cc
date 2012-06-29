@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
 
 #include <algorithm>
 
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/global_error.h"
-#include "chrome/browser/ui/global_error_bubble_view_base.h"
+#include "chrome/browser/ui/global_error/global_error.h"
+#include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 

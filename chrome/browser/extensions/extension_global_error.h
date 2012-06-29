@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/global_error.h"
+#include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/common/extensions/extension.h"
 
 class Browser;
