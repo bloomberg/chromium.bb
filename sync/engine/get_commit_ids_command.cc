@@ -8,11 +8,12 @@
 #include <utility>
 #include <vector>
 
-#include "sync/engine/nigori_util.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_util.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
@@ -39,8 +40,8 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   // are not in the correct order for commit.
   std::set<int64> ready_unsynced_set;
   syncable::Directory::UnsyncedMetaHandles all_unsynced_handles;
-  SyncerUtil::GetUnsyncedEntries(session->write_transaction(),
-                                 &all_unsynced_handles);
+  GetUnsyncedEntries(session->write_transaction(),
+                     &all_unsynced_handles);
 
   syncable::ModelTypeSet encrypted_types;
   bool passphrase_missing = false;

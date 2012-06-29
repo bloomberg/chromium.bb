@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "sync/engine/nigori_util.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
@@ -19,6 +18,7 @@
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_util.h"
 #include "sync/util/cryptographer.h"
 
 using syncer::Cryptographer;

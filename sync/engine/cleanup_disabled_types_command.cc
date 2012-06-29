@@ -67,4 +67,3 @@ SyncerError CleanupDisabledTypesCommand::ExecuteImpl(
 }
 
 }  // namespace syncer
-

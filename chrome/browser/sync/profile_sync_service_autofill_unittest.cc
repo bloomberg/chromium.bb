@@ -694,7 +694,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
                                  wait_for_syncapi_);
 
       // Create actual entry based on autofill protobuf information.
-      // Simulates effects of SyncerUtil::UpdateLocalDataFromServerData
+      // Simulates effects of UpdateLocalDataFromServerData
       MutableEntry parent(&trans, GET_BY_SERVER_TAG,
                           syncable::ModelTypeToRootTag(syncable::AUTOFILL));
       MutableEntry item(&trans, CREATE, parent.Get(syncable::ID), tag);

@@ -9,16 +9,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "sync/engine/apply_updates_command.h"
-#include "sync/engine/nigori_util.h"
 #include "sync/engine/syncer.h"
-#include "sync/engine/syncer_util.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_util.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_id.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
@@ -634,7 +634,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_TRUE(handles.empty());
   }
 
@@ -677,7 +677,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
@@ -710,7 +710,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
@@ -750,7 +750,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 }
@@ -771,7 +771,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_TRUE(handles.empty());
   }
 
@@ -816,7 +816,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
@@ -851,7 +851,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     EXPECT_TRUE(cryptographer->has_pending_keys());
 
     Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    GetUnsyncedEntries(&trans, &handles);
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 }

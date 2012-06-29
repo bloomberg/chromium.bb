@@ -62,4 +62,3 @@ class DownloadUpdatesCommand : public SyncerCommand {
 }  // namespace syncer
 
 #endif  // SYNC_ENGINE_DOWNLOAD_UPDATES_COMMAND_H_
-

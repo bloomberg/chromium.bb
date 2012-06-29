@@ -152,7 +152,7 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
     }
   }
 
-  SyncerUtil::MarkDeletedChildrenSynced(dir, &deleted_folders);
+  MarkDeletedChildrenSynced(dir, &deleted_folders);
 
   int commit_count = static_cast<int>(proj.size());
   if (commit_count == successes) {

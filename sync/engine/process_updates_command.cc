@@ -79,12 +79,12 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
   const bool is_directory = entry.IsFolder();
   const syncable::ModelType model_type = entry.GetModelType();
 
-  return VERIFY_SUCCESS == SyncerUtil::VerifyUpdateConsistency(trans,
-                                                               entry,
-                                                               same_id,
-                                                               deleted,
-                                                               is_directory,
-                                                               model_type);
+  return VERIFY_SUCCESS == VerifyUpdateConsistency(trans,
+                                                   entry,
+                                                   same_id,
+                                                   deleted,
+                                                   is_directory,
+                                                   model_type);
 }
 }  // namespace
 
@@ -100,14 +100,14 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   // Look to see if there's a local item that should recieve this update,
   // maybe due to a duplicate client tag or a lost commit response.
-  syncable::Id local_id = SyncerUtil::FindLocalIdToUpdate(trans, update);
+  syncable::Id local_id = FindLocalIdToUpdate(trans, update);
 
   // FindLocalEntryToUpdate has veto power.
   if (local_id.IsNull()) {
     return SUCCESS_PROCESSED;  // The entry has become irrelevant.
   }
 
-  SyncerUtil::CreateNewEntry(trans, local_id);
+  CreateNewEntry(trans, local_id);
 
   // We take a two step approach. First we store the entries data in the
   // server fields of a local entry and then move the data to the local fields
@@ -177,7 +177,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
                      sync_pb::EntitySpecifics());
   }
 
-  SyncerUtil::UpdateServerFieldsFromUpdate(&target_entry, update, name);
+  UpdateServerFieldsFromUpdate(&target_entry, update, name);
 
   return SUCCESS_PROCESSED;
 }

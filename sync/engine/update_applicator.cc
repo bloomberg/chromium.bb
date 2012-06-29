@@ -65,7 +65,7 @@ bool UpdateApplicator::AttemptOneApplication(
   }
 
   syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
-  UpdateAttemptResponse updateResponse = SyncerUtil::AttemptToUpdateEntry(
+  UpdateAttemptResponse updateResponse = AttemptToUpdateEntry(
       trans, &entry, resolver_, cryptographer_);
   switch (updateResponse) {
     case SUCCESS:

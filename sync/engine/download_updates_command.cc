@@ -126,5 +126,4 @@ void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
   }
 }
 
-
 }  // namespace syncer

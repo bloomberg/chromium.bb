@@ -4,8 +4,8 @@
 
 // Various utility methods for nigori-based multi-type encryption.
 
-#ifndef SYNC_ENGINE_NIGORI_UTIL_H_
-#define SYNC_ENGINE_NIGORI_UTIL_H_
+#ifndef SYNC_SYNCABLE_NIGORI_UTIL_H_
+#define SYNC_SYNCABLE_NIGORI_UTIL_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -72,4 +72,4 @@ bool UpdateEntryWithEncryption(
 
 }  // namespace syncable
 
-#endif  // SYNC_ENGINE_NIGORI_UTIL_H_
+#endif  // SYNC_SYNCABLE_NIGORI_UTIL_H_

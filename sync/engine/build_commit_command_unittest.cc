@@ -103,5 +103,3 @@ TEST_F(BuildCommitCommandTest, InterpolatePosition) {
 }
 
 }  // namespace syncer
-
-

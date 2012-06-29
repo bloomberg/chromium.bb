@@ -13,7 +13,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "sync/engine/nigori_util.h"
+#include "sync/syncable/nigori_util.h"
 
 class GURL;
 

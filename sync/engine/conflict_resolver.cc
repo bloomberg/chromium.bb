@@ -353,7 +353,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     } else {
       // Otherwise, we've got to undelete by creating a new locally
       // uncommitted entry.
-      SyncerUtil::SplitServerInformationIntoNewEntry(trans, &entry);
+      SplitServerInformationIntoNewEntry(trans, &entry);
 
       MutableEntry server_update(trans, syncable::GET_BY_ID, id);
       CHECK(server_update.good());

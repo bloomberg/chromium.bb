@@ -25,12 +25,10 @@
 #include "build/build_config.h"
 #include "sync/engine/get_commit_ids_command.h"
 #include "sync/engine/net/server_connection_manager.h"
-#include "sync/engine/nigori_util.h"
 #include "sync/engine/process_updates_command.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/engine/syncer_util.h"
 #include "sync/engine/syncproto.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_recorder.h"
@@ -42,7 +40,9 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_util.h"
 #include "sync/syncable/read_transaction.h"
+#include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
@@ -570,7 +570,7 @@ TEST_F(SyncerTest, TestCallGatherUnsyncedEntries) {
     Syncer::UnsyncedMetaHandles handles;
     {
       syncable::ReadTransaction trans(FROM_HERE, directory());
-      SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+      GetUnsyncedEntries(&trans, &handles);
     }
     ASSERT_EQ(0u, handles.size());
   }
@@ -621,7 +621,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   vector<syncable::Id> expected_order;
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    SyncerUtil::GetUnsyncedEntries(&rtrans, &unsynced_handle_view);
+    GetUnsyncedEntries(&rtrans, &unsynced_handle_view);
   }
   // The expected order is "x", "b", "c", "d", "e", truncated appropriately.
   expected_order.push_back(ids_.MakeServer("x"));

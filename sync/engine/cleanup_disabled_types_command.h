@@ -43,4 +43,3 @@ class CleanupDisabledTypesCommand : public SyncerCommand {
 }  // namespace syncer
 
 #endif  // SYNC_ENGINE_CLEANUP_DISABLED_TYPES_COMMAND_H_
-

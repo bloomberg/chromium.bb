@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "sync/engine/conflict_resolver.h"
-#include "sync/engine/nigori_util.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncproto.h"
@@ -24,6 +23,7 @@
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_util.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_util.h"
@@ -70,18 +70,7 @@ using syncable::WriteTransaction;
 
 namespace syncer {
 
-// Returns the number of unsynced entries.
-// static
-int SyncerUtil::GetUnsyncedEntries(syncable::BaseTransaction* trans,
-                                   std::vector<int64> *handles) {
-  trans->directory()->GetUnsyncedMetaHandles(trans, handles);
-  DVLOG_IF(1, !handles->empty()) << "Have " << handles->size()
-                                 << " unsynced items.";
-  return handles->size();
-}
-
-// static
-syncable::Id SyncerUtil::FindLocalIdToUpdate(
+syncable::Id FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,
     const SyncEntity& update) {
   // Expected entry points of this function:
@@ -194,8 +183,7 @@ syncable::Id SyncerUtil::FindLocalIdToUpdate(
   return update.id();
 }
 
-// static
-UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
+UpdateAttemptResponse AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
     ConflictResolver* resolver,
@@ -323,7 +311,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
              << " update, applying normally.";
   }
 
-  SyncerUtil::UpdateLocalDataFromServerData(trans, entry);
+  UpdateLocalDataFromServerData(trans, entry);
 
   return SUCCESS;
 }
@@ -352,8 +340,7 @@ void UpdateBookmarkSpecifics(const std::string& singleton_tag,
 }  // namespace
 
 // Pass in name and checksum because of UTF8 conversion.
-// static
-void SyncerUtil::UpdateServerFieldsFromUpdate(
+void UpdateServerFieldsFromUpdate(
     MutableEntry* target,
     const SyncEntity& update,
     const std::string& name) {
@@ -424,9 +411,8 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
 }
 
 // Creates a new Entry iff no Entry exists with the given id.
-// static
-void SyncerUtil::CreateNewEntry(syncable::WriteTransaction *trans,
-                                const syncable::Id& id) {
+void CreateNewEntry(syncable::WriteTransaction *trans,
+                    const syncable::Id& id) {
   syncable::MutableEntry entry(trans, GET_BY_ID, id);
   if (!entry.good()) {
     syncable::MutableEntry new_entry(trans, syncable::CREATE_NEW_UPDATE_ITEM,
@@ -434,8 +420,7 @@ void SyncerUtil::CreateNewEntry(syncable::WriteTransaction *trans,
   }
 }
 
-// static
-void SyncerUtil::SplitServerInformationIntoNewEntry(
+void SplitServerInformationIntoNewEntry(
     syncable::WriteTransaction* trans,
     syncable::MutableEntry* entry) {
   syncable::Id id = entry->Get(ID);
@@ -452,8 +437,7 @@ void SyncerUtil::SplitServerInformationIntoNewEntry(
 
 // This function is called on an entry when we can update the user-facing data
 // from the server data.
-// static
-void SyncerUtil::UpdateLocalDataFromServerData(
+void UpdateLocalDataFromServerData(
     syncable::WriteTransaction* trans,
     syncable::MutableEntry* entry) {
   DCHECK(!entry->Get(IS_UNSYNCED));
@@ -487,9 +471,7 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   entry->Put(IS_UNAPPLIED_UPDATE, false);
 }
 
-// static
-VerifyCommitResult SyncerUtil::ValidateCommitEntry(
-    syncable::Entry* entry) {
+VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry) {
   syncable::Id id = entry->Get(ID);
   if (id == entry->Get(PARENT_ID)) {
     CHECK(id.IsRoot()) << "Non-root item is self parenting." << *entry;
@@ -508,8 +490,7 @@ VerifyCommitResult SyncerUtil::ValidateCommitEntry(
   return VERIFY_OK;
 }
 
-// static
-bool SyncerUtil::AddItemThenPredecessors(
+bool AddItemThenPredecessors(
     syncable::BaseTransaction* trans,
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
@@ -536,8 +517,7 @@ bool SyncerUtil::AddItemThenPredecessors(
   return true;
 }
 
-// static
-void SyncerUtil::AddPredecessorsThenItem(
+void AddPredecessorsThenItem(
     syncable::BaseTransaction* trans,
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
@@ -551,8 +531,7 @@ void SyncerUtil::AddPredecessorsThenItem(
   std::reverse(commit_ids->begin() + initial_size, commit_ids->end());
 }
 
-// static
-void SyncerUtil::MarkDeletedChildrenSynced(
+void MarkDeletedChildrenSynced(
     syncable::Directory* dir,
     std::set<syncable::Id>* deleted_folders) {
   // There's two options here.
@@ -593,8 +572,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
   }
 }
 
-// static
-VerifyResult SyncerUtil::VerifyNewEntry(
+VerifyResult VerifyNewEntry(
     const SyncEntity& update,
     syncable::Entry* target,
     const bool deleted) {
@@ -612,8 +590,7 @@ VerifyResult SyncerUtil::VerifyNewEntry(
 
 // Assumes we have an existing entry; check here for updates that break
 // consistency rules.
-// static
-VerifyResult SyncerUtil::VerifyUpdateConsistency(
+VerifyResult VerifyUpdateConsistency(
     syncable::WriteTransaction* trans,
     const SyncEntity& update,
     syncable::MutableEntry* target,
@@ -656,8 +633,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
       // when the server does not give us an update following the
       // commit of a delete, before undeleting.
       // Undeletion is common for items that reuse the client-unique tag.
-      VerifyResult result =
-          SyncerUtil::VerifyUndelete(trans, update, target);
+      VerifyResult result = VerifyUndelete(trans, update, target);
       if (VERIFY_UNDECIDED != result)
         return result;
     }
@@ -687,10 +663,9 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
 
 // Assumes we have an existing entry; verify an update that seems to be
 // expressing an 'undelete'
-// static
-VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
-                                        const SyncEntity& update,
-                                        syncable::MutableEntry* target) {
+VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
+                            const SyncEntity& update,
+                            syncable::MutableEntry* target) {
   // TODO(nick): We hit this path for items deleted items that the server
   // tells us to re-create; only deleted items with positive base versions
   // will hit this path.  However, it's not clear how such an undeletion

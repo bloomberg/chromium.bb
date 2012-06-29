@@ -5,6 +5,7 @@
 #include "sync/syncable/syncable_util.h"
 
 #include "base/location.h"
+#include "base/logging.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
@@ -12,6 +13,15 @@
 #include "sync/syncable/write_transaction.h"
 
 namespace syncable {
+
+// Returns the number of unsynced entries.
+int GetUnsyncedEntries(BaseTransaction* trans,
+                       std::vector<int64> *handles) {
+  trans->directory()->GetUnsyncedMetaHandles(trans, handles);
+  DVLOG_IF(1, !handles->empty()) << "Have " << handles->size()
+                                 << " unsynced items.";
+  return handles->size();
+}
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
                       const Id& new_parent_id) {
@@ -34,7 +44,7 @@ bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
 }
 
 // This function sets only the flags needed to get this entry to sync.
-bool MarkForSyncing(syncable::MutableEntry* e) {
+bool MarkForSyncing(MutableEntry* e) {
   DCHECK_NE(static_cast<MutableEntry*>(NULL), e);
   DCHECK(!e->IsRoot()) << "We shouldn't mark a permanent object for syncing.";
   if (!(e->Put(IS_UNSYNCED, true)))
@@ -44,10 +54,10 @@ bool MarkForSyncing(syncable::MutableEntry* e) {
 }
 
 void ChangeEntryIDAndUpdateChildren(
-    syncable::WriteTransaction* trans,
-    syncable::MutableEntry* entry,
-    const syncable::Id& new_id) {
-  syncable::Id old_id = entry->Get(ID);
+    WriteTransaction* trans,
+    MutableEntry* entry,
+    const Id& new_id) {
+  Id old_id = entry->Get(ID);
   if (!entry->Put(ID, new_id)) {
     Entry old_entry(trans, GET_BY_ID, new_id);
     CHECK(old_entry.good());
@@ -57,7 +67,7 @@ void ChangeEntryIDAndUpdateChildren(
   }
   if (entry->Get(IS_DIR)) {
     // Get all child entries of the old id.
-    syncable::Directory::ChildHandles children;
+    Directory::ChildHandles children;
     trans->directory()->GetChildHandlesById(trans, old_id, &children);
     Directory::ChildHandles::iterator i = children.begin();
     while (i != children.end()) {

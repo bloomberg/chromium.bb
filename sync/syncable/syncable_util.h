@@ -5,6 +5,10 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_UTIL_H_
 #define SYNC_SYNCABLE_SYNCABLE_UTIL_H_
 
+#include <vector>
+
+#include "base/basictypes.h"
+
 namespace tracked_objects {
 class Location;
 }
@@ -16,9 +20,9 @@ class WriteTransaction;
 class MutableEntry;
 class Id;
 
-void ChangeEntryIDAndUpdateChildren(syncable::WriteTransaction* trans,
-                                    syncable::MutableEntry* entry,
-                                    const syncable::Id& new_id);
+void ChangeEntryIDAndUpdateChildren(WriteTransaction* trans,
+                                    MutableEntry* entry,
+                                    const Id& new_id);
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
 
@@ -26,6 +30,10 @@ bool SyncAssert(bool condition,
                 const tracked_objects::Location& location,
                 const char* msg,
                 BaseTransaction* trans);
+
+int GetUnsyncedEntries(BaseTransaction* trans,
+                       std::vector<int64> *handles);
+
 }  // namespace syncable
 
 #endif  // SYNC_SYNCABLE_SYNCABLE_UTIL_H_

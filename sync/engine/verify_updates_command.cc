@@ -47,7 +47,7 @@ namespace {
 // that both clients will refer to the item using the same ID going forward.  In
 // this case, we're right to assume that the update is not a reflection.
 //
-// For more information, see SyncerUtil::FindLocalIdToUpdate().
+// For more information, see FindLocalIdToUpdate().
 bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
                               const SyncEntity &update) {
   int64 existing_version = -1; // The server always sends positive versions.
@@ -150,7 +150,7 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
   }
 
   syncable::MutableEntry same_id(trans, GET_BY_ID, id);
-  result.value = SyncerUtil::VerifyNewEntry(entry, &same_id, deleted);
+  result.value = VerifyNewEntry(entry, &same_id, deleted);
 
   syncable::ModelType placement_type = !deleted ? entry.GetModelType()
       : same_id.good() ? same_id.GetModelType() : syncable::UNSPECIFIED;
@@ -176,7 +176,7 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
   // If we have an existing entry, we check here for updates that break
   // consistency rules.
   if (VERIFY_UNDECIDED == result.value) {
-    result.value = SyncerUtil::VerifyUpdateConsistency(trans, entry, &same_id,
+    result.value = VerifyUpdateConsistency(trans, entry, &same_id,
         deleted, is_directory, model_type);
   }
 
