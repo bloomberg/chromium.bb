@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_COMPOSITOR_SCREEN_ROTATION_H_
-#define UI_COMPOSITOR_SCREEN_ROTATION_H_
+#ifndef ASH_SCREEN_ROTATION_H_
+#define ASH_SCREEN_ROTATION_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -16,12 +17,19 @@
 namespace ui {
 class InterpolatedTransform;
 class LayerAnimationDelegate;
+}
+
+namespace aura {
+class RootWindow;
+}
+
+namespace ash {
 
 // A screen rotation represents a single transition from one screen orientation
 // to another. The  intended usage is that a new instance of the class is
 // created for every transition. It is possible to update the target orientation
 // in the middle of a transition.
-class COMPOSITOR_EXPORT ScreenRotation : public LayerAnimationElement {
+class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
  public:
   // The screen rotation does not own the view or the listener, and these
   // objects are required to outlive the Screen rotation object.
@@ -29,18 +37,19 @@ class COMPOSITOR_EXPORT ScreenRotation : public LayerAnimationElement {
   virtual ~ScreenRotation();
 
  private:
-  // Implementation of LayerAnimationDelegate
-  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE;
+  // Implementation of ui::LayerAnimationDelegate
+  virtual void OnStart(ui::LayerAnimationDelegate* delegate) OVERRIDE;
   virtual bool OnProgress(double t,
-                          LayerAnimationDelegate* delegate) OVERRIDE;
+                          ui::LayerAnimationDelegate* delegate) OVERRIDE;
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE;
   virtual void OnAbort() OVERRIDE;
 
-  static const LayerAnimationElement::AnimatableProperties& GetProperties();
+  static const ui::LayerAnimationElement::AnimatableProperties&
+      GetProperties();
 
   // Generates the intermediate transformation matrices used during the
   // animation.
-  scoped_ptr<InterpolatedTransform> interpolated_transform_;
+  scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
 
   // The number of degrees to rotate.
   int degrees_;
@@ -51,6 +60,6 @@ class COMPOSITOR_EXPORT ScreenRotation : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(ScreenRotation);
 };
 
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_COMPOSITOR_SCREEN_ROTATION_H_
+#endif  // ASH_SCREEN_ROTATION_H_

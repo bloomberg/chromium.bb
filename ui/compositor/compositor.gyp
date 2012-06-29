@@ -53,8 +53,6 @@
         'layer_type.h',
         'scoped_layer_animation_settings.cc',
         'scoped_layer_animation_settings.h',
-        'screen_rotation.cc',
-        'screen_rotation.h',
         # UI tests need TestWebGraphicsContext3D, so we always build it.
         'test_web_graphics_context_3d.cc',
         'test_web_graphics_context_3d.h',

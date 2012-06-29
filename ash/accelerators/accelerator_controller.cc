@@ -19,6 +19,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/rotator/screen_rotation.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -40,7 +41,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/compositor/screen_rotation.h"
 #include "ui/oak/oak.h"
 
 #if defined(OS_CHROMEOS)
@@ -154,7 +154,7 @@ bool HandleRotateWindows() {
       Shell::GetPrimaryRootWindowController()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-      new ui::LayerAnimationSequence(new ui::ScreenRotation(360)));
+      new ui::LayerAnimationSequence(new ash::ScreenRotation(360)));
   target->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
   return true;
@@ -184,13 +184,14 @@ bool HandleRotateScreen() {
     case 13: delta = 180; break;
   }
   i = (i + 1) % 14;
-  Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  root_window->layer()->GetAnimator()->
       set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-      new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
-  screen_rotation->AddObserver(Shell::GetPrimaryRootWindow());
-  Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->StartAnimation(
-      screen_rotation.release());
+      new ui::LayerAnimationSequence(new ash::ScreenRotation(delta)));
+  screen_rotation->AddObserver(root_window);
+  root_window->layer()->GetAnimator()->
+      StartAnimation(screen_rotation.release());
   return true;
 }
 

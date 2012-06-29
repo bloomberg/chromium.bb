@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/compositor/screen_rotation.h"
+#include "ash/rotator/screen_rotation.h"
 
 #include "base/debug/trace_event.h"
 #include "base/time.h"
@@ -11,7 +11,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
-namespace ui {
+namespace ash {
 
 namespace {
 
@@ -32,19 +32,21 @@ base::TimeDelta GetTransitionDuration(int degrees) {
 }  // namespace
 
 ScreenRotation::ScreenRotation(int degrees)
-    : LayerAnimationElement(GetProperties(), GetTransitionDuration(degrees)),
+    : ui::LayerAnimationElement(GetProperties(),
+                                GetTransitionDuration(degrees)),
       degrees_(degrees) {
 }
 
 ScreenRotation::~ScreenRotation() {
 }
 
-void ScreenRotation::OnStart(LayerAnimationDelegate* delegate) {
+void ScreenRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
   // No rotation required.
   if (degrees_ == 0)
     return;
 
-  const Transform& current_transform = delegate->GetTransformForAnimation();
+  const ui::Transform& current_transform =
+      delegate->GetTransformForAnimation();
   const gfx::Rect& bounds = delegate->GetBoundsForAnimation();
 
   gfx::Point old_pivot;
@@ -72,26 +74,26 @@ void ScreenRotation::OnStart(LayerAnimationDelegate* delegate) {
   current_transform.TransformPoint(new_pivot);
   current_transform.TransformPoint(new_origin_);
 
-  scoped_ptr<InterpolatedTransform> rotation(
-      new InterpolatedTransformAboutPivot(
+  scoped_ptr<ui::InterpolatedTransform> rotation(
+      new ui::InterpolatedTransformAboutPivot(
           old_pivot,
-          new InterpolatedRotation(0, degrees_)));
+          new ui::InterpolatedRotation(0, degrees_)));
 
-  scoped_ptr<InterpolatedTransform> translation(
-      new InterpolatedTranslation(
+  scoped_ptr<ui::InterpolatedTransform> translation(
+      new ui::InterpolatedTranslation(
           gfx::Point(0, 0),
           gfx::Point(new_pivot.x() - old_pivot.x(),
                      new_pivot.y() - old_pivot.y())));
 
   float scale_factor = 0.9f;
-  scoped_ptr<InterpolatedTransform> scale_down(
-      new InterpolatedScale(1.0f, scale_factor, 0.0f, 0.5f));
+  scoped_ptr<ui::InterpolatedTransform> scale_down(
+      new ui::InterpolatedScale(1.0f, scale_factor, 0.0f, 0.5f));
 
-  scoped_ptr<InterpolatedTransform> scale_up(
-      new InterpolatedScale(1.0f, 1.0f / scale_factor, 0.5f, 1.0f));
+  scoped_ptr<ui::InterpolatedTransform> scale_up(
+      new ui::InterpolatedScale(1.0f, 1.0f / scale_factor, 0.5f, 1.0f));
 
   interpolated_transform_.reset(
-      new InterpolatedConstantTransform(current_transform));
+      new ui::InterpolatedConstantTransform(current_transform));
 
   scale_up->SetChild(scale_down.release());
   translation->SetChild(scale_up.release());
@@ -100,7 +102,7 @@ void ScreenRotation::OnStart(LayerAnimationDelegate* delegate) {
 }
 
 bool ScreenRotation::OnProgress(double t,
-                                LayerAnimationDelegate* delegate) {
+                                ui::LayerAnimationDelegate* delegate) {
   delegate->SetTransformFromAnimation(interpolated_transform_->Interpolate(t));
   return true;
 }
@@ -113,12 +115,12 @@ void ScreenRotation::OnAbort() {
 }
 
 // static
-const LayerAnimationElement::AnimatableProperties&
+const ui::LayerAnimationElement::AnimatableProperties&
 ScreenRotation::GetProperties() {
-  static LayerAnimationElement::AnimatableProperties properties;
+  static ui::LayerAnimationElement::AnimatableProperties properties;
   if (properties.empty())
-    properties.insert(LayerAnimationElement::TRANSFORM);
+    properties.insert(ui::LayerAnimationElement::TRANSFORM);
   return properties;
 }
 
-}  // namespace ui
+}  // namespace ash
