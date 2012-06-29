@@ -90,6 +90,7 @@ class GDataSyncClient
 
   // GDataFileSystemInterface overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
+  virtual void OnFeedFromServerLoaded() OVERRIDE;
 
   // GDataCache::Observer overrides.
   virtual void OnCachePinned(const std::string& resource_id,
@@ -102,6 +103,11 @@ class GDataSyncClient
   // dirty-but-not-uploaded files). Kicks off retrieval of the resource
   // IDs of these files, and then starts the sync loop.
   void StartProcessingBacklog();
+
+  // Starts checking the existing pinned files to see if these are
+  // up-to-date. If stale files are detected, the resource IDs of these files
+  // are added to the queue and the sync loop is started.
+  void StartCheckingExistingPinnedFiles();
 
   // Returns the resource IDs in |queue_| for the given sync type. Used only
   // for testing.
@@ -140,6 +146,32 @@ class GDataSyncClient
   void OnGetResourceIdsOfBacklog(
       const std::vector<std::string>& to_fetch,
       const std::vector<std::string>& to_upload);
+
+  // Called when the resource IDs of pinned files are obtained.
+  void OnGetResourceIdsOfExistingPinnedFiles(
+    const std::vector<std::string>& resource_ids);
+
+  // Called when a file entry is obtained.
+  void OnGetFileInfoByResourceId(const std::string& resource_id,
+                                 base::PlatformFileError error,
+                                 const FilePath& file_path,
+                                 scoped_ptr<GDataFileProto> file_proto);
+
+  // Called when a cache entry is obtained.
+  void OnGetCacheEntry(const std::string& resource_id,
+                       const std::string& latest_md5,
+                       bool success,
+                       const GDataCache::CacheEntry& cache_entry);
+
+  // Called when an existing cache entry and the local files are removed.
+  void OnRemove(base::PlatformFileError error,
+                const std::string& resource_id,
+                const std::string& md5);
+
+  // Called when a file is pinned.
+  void OnPinned(base::PlatformFileError error,
+                const std::string& resource_id,
+                const std::string& md5);
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.

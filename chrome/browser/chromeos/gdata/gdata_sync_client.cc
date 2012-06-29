@@ -16,6 +16,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -123,6 +124,14 @@ void GDataSyncClient::StartProcessingBacklog() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void GDataSyncClient::StartCheckingExistingPinnedFiles() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  cache_->GetResourceIdsOfExistingPinnedFilesOnUIThread(
+      base::Bind(&GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 std::vector<std::string> GDataSyncClient::GetResourceIdsForTesting(
     SyncType sync_type) const {
   std::vector<std::string> resource_ids;
@@ -224,6 +233,12 @@ void GDataSyncClient::OnInitialLoadFinished() {
   StartProcessingBacklog();
 }
 
+void GDataSyncClient::OnFeedFromServerLoaded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartCheckingExistingPinnedFiles();
+}
+
 void GDataSyncClient::OnCachePinned(const std::string& resource_id,
                                     const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -286,6 +301,97 @@ void GDataSyncClient::OnGetResourceIdsOfBacklog(
     AddTaskToQueue(SyncTask(FETCH, resource_id, base::Time::Now()));
   }
 
+  StartSyncLoop();
+}
+
+void GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
+    const std::vector<std::string>& resource_ids) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (size_t i = 0; i < resource_ids.size(); ++i) {
+    const std::string& resource_id = resource_ids[i];
+    file_system_->GetFileInfoByResourceId(
+        resource_id,
+        base::Bind(&GDataSyncClient::OnGetFileInfoByResourceId,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   resource_id));
+  }
+}
+
+void GDataSyncClient::OnGetFileInfoByResourceId(
+    const std::string& resource_id,
+    base::PlatformFileError error,
+    const FilePath& /* gdata_file_path */,
+    scoped_ptr<GDataFileProto> file_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    LOG(WARNING) << "Entry not found: " << resource_id;
+    return;
+  }
+
+  cache_->GetCacheEntryOnUIThread(
+      resource_id,
+      "" /* don't check MD5 */,
+      base::Bind(&GDataSyncClient::OnGetCacheEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_id,
+                 file_proto->file_md5()));
+}
+
+void GDataSyncClient::OnGetCacheEntry(
+    const std::string& resource_id,
+    const std::string& latest_md5,
+    bool success,
+    const GDataCache::CacheEntry& cache_entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!success) {
+    LOG(WARNING) << "Cache entry not found: " << resource_id;
+    return;
+  }
+
+  // If MD5s don't match, it indicates the local cache file is stale, unless
+  // the file is dirty (the MD5 is "local"). We should never re-fetch the
+  // file when we have a locally modified version.
+  if (latest_md5 != cache_entry.md5 && !cache_entry.IsDirty()) {
+    cache_->RemoveOnUIThread(
+        resource_id,
+        base::Bind(&GDataSyncClient::OnRemove,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void GDataSyncClient::OnRemove(base::PlatformFileError error,
+                               const std::string& resource_id,
+                               const std::string& md5) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    LOG(WARNING) << "Failed to remove cache entry: " << resource_id;
+    return;
+  }
+
+  // Before fetching, we should pin this file again, so that the fetched file
+  // is downloaded properly to the persistent directory and marked pinned.
+  cache_->PinOnUIThread(resource_id,
+                        md5,
+                        base::Bind(&GDataSyncClient::OnPinned,
+                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GDataSyncClient::OnPinned(base::PlatformFileError error,
+                               const std::string& resource_id,
+                               const std::string& /* md5 */) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    LOG(WARNING) << "Failed to pin cache entry: " << resource_id;
+    return;
+  }
+
+  // Finally, adding to the queue.
+  AddTaskToQueue(SyncTask(FETCH, resource_id, base::Time::Now()));
   StartSyncLoop();
 }
 

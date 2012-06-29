@@ -14,6 +14,7 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_file_system.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -39,6 +40,13 @@ ACTION_P4(MockGetFileByResourceId, error, local_path, mime_type, file_type) {
 // Action used to set mock expectations for UpdateFileByResourceId().
 ACTION_P(MockUpdateFileByResourceId, error) {
   arg1.Run(error);
+}
+
+// Action used to set mock expectations for GetFileInfoByResourceId().
+ACTION_P2(MockUpdateFileByResourceId, error, md5) {
+  scoped_ptr<GDataFileProto> file_proto(new GDataFileProto);
+  file_proto->set_file_md5(md5);
+  arg1.Run(error, FilePath(), file_proto.Pass());
 }
 
 class GDataSyncClientTest : public testing::Test {
@@ -185,7 +193,7 @@ class GDataSyncClientTest : public testing::Test {
 
     // Create a file in the persistent directory.
     const FilePath persistent_file_path =
-        persistent_dir.AppendASCII("resource_id_fetched");
+        persistent_dir.AppendASCII("resource_id_fetched.md5");
     const std::string content = "hello";
     ASSERT_TRUE(file_util::WriteFile(
         persistent_file_path, content.data(), content.size()));
@@ -207,6 +215,11 @@ class GDataSyncClientTest : public testing::Test {
         file_util::CreateSymbolicLink(
             dirty_file_path,
             outgoing_dir.AppendASCII("resource_id_dirty")));
+    // Create a symlink in the pinned directory to the dirty file.
+    ASSERT_TRUE(
+        file_util::CreateSymbolicLink(
+            dirty_file_path,
+            pinned_dir.AppendASCII("resource_id_dirty")));
   }
 
   // Sets the expectation for MockGDataFileSystem::GetFileByResourceId(),
@@ -230,6 +243,22 @@ class GDataSyncClientTest : public testing::Test {
         .WillOnce(MockUpdateFileByResourceId(base::PLATFORM_FILE_OK));
   }
 
+  // Sets the expectation for MockGDataFileSystem::GetFileInfoByResourceId(),
+  // that simulates successful retrieval of file info for the given resource
+  // ID.
+  //
+  // This is used for testing StartCheckingExistingPinnedFiles(), hence we
+  // are only interested in the MD5 value in GDataFileProto.
+  void SetExpectationForGetFileInfoByResourceId(
+      const std::string& resource_id,
+      const std::string& new_md5) {
+  EXPECT_CALL(*mock_file_system_,
+              GetFileInfoByResourceId(resource_id, _))
+      .WillOnce(MockUpdateFileByResourceId(
+          base::PLATFORM_FILE_OK,
+          new_md5));
+  }
+
   // Returns the resource IDs in the queue to be fetched.
   std::vector<std::string> GetResourceIdsToBeFetched() {
     return sync_client_->GetResourceIdsForTesting(
@@ -251,6 +280,49 @@ class GDataSyncClientTest : public testing::Test {
   void AddResourceIdToUpload(const std::string& resource_id) {
     sync_client_->AddResourceIdForTesting(GDataSyncClient::UPLOAD,
                                           resource_id);
+  }
+
+  // This class is used to monitor if any task is posted to a message loop.
+  //
+  // TODO(satorux): Move this class and RunBlockingPoolTask() to a common
+  // place so it can be used from with GDataFileSystemTest. crbug.com/134126.
+  class TaskObserver : public MessageLoop::TaskObserver {
+   public:
+    TaskObserver() : posted_(false) {}
+    virtual ~TaskObserver() {}
+
+    // MessageLoop::TaskObserver overrides.
+    virtual void WillProcessTask(base::TimeTicks time_posted) {}
+    virtual void DidProcessTask(base::TimeTicks time_posted) {
+      posted_ = true;
+    }
+
+    // Returns true if any task was posted.
+    bool posted() const { return posted_; }
+
+   private:
+    bool posted_;
+    DISALLOW_COPY_AND_ASSIGN(TaskObserver);
+  };
+
+  // Runs a task posted to the blocking pool, including subquent tasks posted
+  // to the UI message loop and the blocking pool.
+  //
+  // A task is often posted to the blocking pool with PostTaskAndReply(). In
+  // that case, a task is posted back to the UI message loop, which can again
+  // post a task to the blocking pool. This function processes these tasks
+  // repeatedly.
+  void RunBlockingPoolTask() {
+    while (true) {
+      content::BrowserThread::GetBlockingPool()->FlushForTesting();
+
+      TaskObserver task_observer;
+      MessageLoop::current()->AddTaskObserver(&task_observer);
+      MessageLoop::current()->RunAllPending();
+      MessageLoop::current()->RemoveTaskObserver(&task_observer);
+      if (!task_observer.posted())
+        break;
+    }
   }
 
  protected:
@@ -278,10 +350,7 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
-  // Wait until the resource IDs retrieval is done in the blocking pool.
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  // Run the message loop, to receive the resource IDs on UI thread.
-  message_loop_.RunAllPending();
+  RunBlockingPoolTask();
 
   // Check the contents of the queue for fetching.
   std::vector<std::string> resource_ids =
@@ -486,6 +555,45 @@ TEST_F(GDataSyncClientTest, Deduplication) {
   sync_client_->OnCachePinned("resource_id_not_fetched_foo", "md5");
 
   ASSERT_EQ(1U, GetResourceIdsToBeFetched().size());
+}
+
+TEST_F(GDataSyncClientTest, ExistingPinnedFiles) {
+  SetUpTestFiles();
+  // Connect to no network, so the sync loop won't spin.
+  ConnectToNone();
+
+  // Kick off the cache initialization. This will scan the contents in the
+  // test cache directory.
+  cache_->RequestInitializeOnUIThread();
+
+  // Set the expectation so that the MockGDataFileSystem returns "new_md5"
+  // for "resource_id_fetched". This simulates that the file is updated on
+  // the server side, and the new MD5 is obtained from the server (i.e. the
+  // local cach file is stale).
+  SetExpectationForGetFileInfoByResourceId("resource_id_fetched",
+                                           "new_md5");
+  // Set the expectation so that the MockGDataFileSystem returns "some_md5"
+  // for "resource_id_dirty". The MD5 on the server is always different from
+  // the MD5 of a dirty file, which is set to "local". We should not collect
+  // this by StartCheckingExistingPinnedFiles().
+  SetExpectationForGetFileInfoByResourceId("resource_id_dirty",
+                                           "some_md5");
+
+  // Start checking the existing pinned files. This will collect the resource
+  // IDs of pinned files, with stale local cache files.
+  sync_client_->StartCheckingExistingPinnedFiles();
+  RunBlockingPoolTask();
+
+  // Check the contents of the queue for fetching.
+  std::vector<std::string> resource_ids =
+      GetResourceIdsToBeFetched();
+  ASSERT_EQ(1U, resource_ids.size());
+  EXPECT_EQ("resource_id_fetched", resource_ids[0]);
+  // resource_id_dirty is not collected in the queue.
+
+  // Check the contents of the queue for uploading.
+  resource_ids = GetResourceIdsToBeUploaded();
+  ASSERT_TRUE(resource_ids.empty());
 }
 
 }  // namespace gdata

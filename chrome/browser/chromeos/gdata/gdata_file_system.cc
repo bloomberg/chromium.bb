@@ -1019,9 +1019,10 @@ void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
 
   // If we had someone to report this too, then this retrieval was done in a
   // context of search... so continue search.
-  if (!params->callback.is_null()) {
+  if (!params->callback.is_null())
     FindEntryByPathSyncOnUIThread(params->search_file_path, params->callback);
-  }
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnFeedFromServerLoaded());
 }
 
 void GDataFileSystem::TransferFileFromRemoteToLocal(

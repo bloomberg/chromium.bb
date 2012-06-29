@@ -136,6 +136,9 @@ class GDataFileSystemInterface {
     // tells the number of entries fetched so far.
     virtual void OnDocumentFeedFetched(int num_accumulated_entries) {}
 
+    // Triggered when the feed from the server is loaded.
+    virtual void OnFeedFromServerLoaded() {}
+
    protected:
     virtual ~Observer() {}
   };

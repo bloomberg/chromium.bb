@@ -303,6 +303,16 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
     to_upload->push_back(resource_id);
 }
 
+// Appends |resource_id| ID to |resource_ids| if the file is pinned and
+// present (cached locally).
+void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
+                               const std::string& resource_id,
+                               const GDataCache::CacheEntry& cache_entry) {
+  DCHECK(resource_ids);
+
+  if (cache_entry.IsPinned() && cache_entry.IsPresent())
+    resource_ids->push_back(resource_id);
+}
 
 // Runs callback with pointers dereferenced.
 // Used to implement SetMountedStateOnUIThread.
@@ -347,15 +357,28 @@ void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
 
 // Runs callback with pointers dereferenced.
 // Used to implement GetResourceIdsOfBacklogOnUIThread().
-void RunGetResourceIdsCallback(const GetResourceIdsCallback& callback,
-                               std::vector<std::string>* to_fetch,
-                               std::vector<std::string>* to_upload) {
+void RunGetResourceIdsOfBacklogCallback(
+    const GetResourceIdsOfBacklogCallback& callback,
+    std::vector<std::string>* to_fetch,
+    std::vector<std::string>* to_upload) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(to_fetch);
   DCHECK(to_upload);
 
   if (!callback.is_null())
     callback.Run(*to_fetch, *to_upload);
+}
+
+// Runs callback with pointers dereferenced.
+// Used to implement GetResourceIdsOfExistingPinnedFilesOnUIThread().
+void RunGetResourceIdsCallback(
+    const GetResourceIdsCallback& callback,
+    std::vector<std::string>* resource_ids) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(resource_ids);
+
+  if (!callback.is_null())
+    callback.Run(*resource_ids);
 }
 
 // Runs callback with pointers dereferenced.
@@ -481,7 +504,7 @@ void GDataCache::GetCacheEntryOnUIThread(
 }
 
 void GDataCache::GetResourceIdsOfBacklogOnUIThread(
-    const GetResourceIdsCallback& callback) {
+    const GetResourceIdsOfBacklogCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
@@ -492,10 +515,25 @@ void GDataCache::GetResourceIdsOfBacklogOnUIThread(
                  base::Unretained(this),
                  to_fetch,
                  to_upload),
-      base::Bind(&RunGetResourceIdsCallback,
+      base::Bind(&RunGetResourceIdsOfBacklogCallback,
                  callback,
                  base::Owned(to_fetch),
                  base::Owned(to_upload)));
+}
+
+void GDataCache::GetResourceIdsOfExistingPinnedFilesOnUIThread(
+    const GetResourceIdsCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::vector<std::string>* resource_ids = new std::vector<std::string>;
+  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataCache::GetResourceIdsOfExistingPinnedFiles,
+                 base::Unretained(this),
+                 resource_ids),
+      base::Bind(&RunGetResourceIdsCallback,
+                 callback,
+                 base::Owned(resource_ids)));
 }
 
 void GDataCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
@@ -784,6 +822,14 @@ void GDataCache::GetResourceIdsOfBacklog(
   DCHECK(to_upload);
 
   metadata_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload));
+}
+
+void GDataCache::GetResourceIdsOfExistingPinnedFiles(
+    std::vector<std::string>* resource_ids) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(resource_ids);
+
+  metadata_->Iterate(base::Bind(&CollectExistingPinnedFile, resource_ids));
 }
 
 void GDataCache::GetFile(const std::string& resource_id,

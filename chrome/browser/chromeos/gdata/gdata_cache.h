@@ -43,6 +43,10 @@ typedef base::Callback<void(base::PlatformFileError error,
 // |to_upload| is for resource IDs of dirty-but-not-uploaded files.
 typedef base::Callback<void(const std::vector<std::string>& to_fetch,
                             const std::vector<std::string>& to_upload)>
+    GetResourceIdsOfBacklogCallback;
+
+// Callback for GetResourceIdsOfExistingPinnedFilesOnUIThread.
+typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
     GetResourceIdsCallback;
 
 // GDataCache is used to maintain cache states of GDataFileSystem.
@@ -229,6 +233,12 @@ class GDataCache {
   //
   // Must be called on UI thread. |callback| is run on UI thread.
   void GetResourceIdsOfBacklogOnUIThread(
+      const GetResourceIdsOfBacklogCallback& callback);
+
+  // Gets the resource IDs of all pinned files, including pinned dirty files.
+  //
+  // Must be called on UI thread. |callback| is run on UI thread.
+  void GetResourceIdsOfExistingPinnedFilesOnUIThread(
       const GetResourceIdsCallback& callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
@@ -364,6 +374,10 @@ class GDataCache {
   void GetResourceIdsOfBacklog(
       std::vector<std::string>* to_fetch,
       std::vector<std::string>* to_upload);
+
+  // Used to implement GetResourceIdsOfExistingPinnedFilesOnUIThread.
+  void GetResourceIdsOfExistingPinnedFiles(
+      std::vector<std::string>* resource_ids);
 
   // Used to implement GetFileOnUIThread.
   void GetFile(const std::string& resource_id,
