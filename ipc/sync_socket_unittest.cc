@@ -53,7 +53,7 @@ const size_t kHelloStringLength = arraysize(kHelloString);
 
 // The SyncSocket server listener class processes two sorts of
 // messages from the client.
-class SyncSocketServerListener : public IPC::Channel::Listener {
+class SyncSocketServerListener : public IPC::Listener {
  public:
   SyncSocketServerListener() : chan_(NULL) {
   }
@@ -121,7 +121,7 @@ MULTIPROCESS_IPC_TEST_MAIN(RunSyncSocketServer) {
 
 // The SyncSocket client listener only processes one sort of message,
 // a response from the server.
-class SyncSocketClientListener : public IPC::Channel::Listener {
+class SyncSocketClientListener : public IPC::Listener {
  public:
   SyncSocketClientListener() {
   }

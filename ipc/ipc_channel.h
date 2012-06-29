@@ -18,7 +18,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 
-// TODO(brettw) remove this when the "typedef Sender" is removed below.
+// TODO(brettw) remove this and update files that depend on this being included
+// from here.
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
@@ -47,12 +48,6 @@ class IPC_EXPORT Channel : public Sender {
   friend class ChannelTest;
 
  public:
-  // IPC::Listener used to be IPC::Channel::Listener which prevented forward
-  // declarations. To keep existing code compiling, we provide this
-  // backwards-compatible definition. New code should use IPC::Listener.
-  // TODO(brettw) convert users of this and delete.
-  typedef IPC::Listener Listener;
-
   // Flags to test modes
   enum ModeFlags {
     MODE_NO_FLAG = 0x0,

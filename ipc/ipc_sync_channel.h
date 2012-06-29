@@ -70,7 +70,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
   // the channel will be initialized synchronously.
   SyncChannel(const IPC::ChannelHandle& channel_handle,
               Channel::Mode mode,
-              Channel::Listener* listener,
+              Listener* listener,
               base::MessageLoopProxy* ipc_message_loop,
               bool create_pipe_now,
               base::WaitableEvent* shutdown_event);
@@ -78,7 +78,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
   // Creates an uninitialized sync channel. Call ChannelProxy::Init to
   // initialize the channel. This two-step setup allows message filters to be
   // added before any messages are sent or received.
-  SyncChannel(Channel::Listener* listener,
+  SyncChannel(Listener* listener,
               base::MessageLoopProxy* ipc_message_loop,
               base::WaitableEvent* shutdown_event);
 
@@ -119,7 +119,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
   class SyncContext : public Context,
                       public base::WaitableEventWatcher::Delegate {
    public:
-    SyncContext(Channel::Listener* listener,
+    SyncContext(Listener* listener,
                 base::MessageLoopProxy* ipc_thread,
                 base::WaitableEvent* shutdown_event);
 

@@ -223,7 +223,7 @@ base::LazyInstance<base::ThreadLocalPointer<SyncChannel::ReceivedSyncMsgQueue> >
         LAZY_INSTANCE_INITIALIZER;
 
 SyncChannel::SyncContext::SyncContext(
-    Channel::Listener* listener,
+    Listener* listener,
     base::MessageLoopProxy* ipc_thread,
     WaitableEvent* shutdown_event)
     : ChannelProxy::Context(listener, ipc_thread),
@@ -387,7 +387,7 @@ void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
 SyncChannel::SyncChannel(
     const IPC::ChannelHandle& channel_handle,
     Channel::Mode mode,
-    Channel::Listener* listener,
+    Listener* listener,
     base::MessageLoopProxy* ipc_message_loop,
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
@@ -398,7 +398,7 @@ SyncChannel::SyncChannel(
 }
 
 SyncChannel::SyncChannel(
-    Channel::Listener* listener,
+    Listener* listener,
     base::MessageLoopProxy* ipc_message_loop,
     WaitableEvent* shutdown_event)
     : ChannelProxy(new SyncContext(listener, ipc_message_loop, shutdown_event)),

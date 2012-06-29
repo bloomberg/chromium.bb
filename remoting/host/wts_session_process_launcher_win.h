@@ -40,7 +40,7 @@ class WtsConsoleMonitor;
 
 class WtsSessionProcessLauncher
     : public base::win::ObjectWatcher::Delegate,
-      public IPC::Channel::Listener,
+      public IPC::Listener,
       public WtsConsoleObserver {
  public:
   // Constructs a WtsSessionProcessLauncher object. |host_binary| is the name of
@@ -58,7 +58,7 @@ class WtsSessionProcessLauncher
   // base::win::ObjectWatcher::Delegate implementation.
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WtsConsoleObserver implementation.

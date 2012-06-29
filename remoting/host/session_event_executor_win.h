@@ -29,7 +29,7 @@ class ChannelProxy;
 namespace remoting {
 
 class SessionEventExecutorWin : public EventExecutor,
-                                public IPC::Channel::Listener {
+                                public IPC::Listener {
  public:
   SessionEventExecutorWin(MessageLoop* message_loop,
                           base::MessageLoopProxy* io_message_loop,
@@ -47,7 +47,7 @@ class SessionEventExecutorWin : public EventExecutor,
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:

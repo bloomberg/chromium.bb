@@ -12,7 +12,8 @@
 #include "base/pickle.h"
 #include "ipc/ipc_export.h"
 
-// TODO(brettw) remove this when the "typedef Sender" is removed below.
+// TODO(brettw) remove this and update files that depend on this being included
+// from here.
 #include "ipc/ipc_sender.h"
 
 // Ipc logging adds a dependency from the 'chrome' target on all ipc message
@@ -42,12 +43,6 @@ struct LogData;
 
 class IPC_EXPORT Message : public Pickle {
  public:
-  // IPC::Sender used to be IPC::Message::Sender which prevented forward
-  // declarations. To keep existing code compiling, we provide this backwards-
-  // compatible definition. New code should use IPC::Sender.
-  // TODO(brettw) convert users of this and delete.
-  typedef IPC::Sender Sender;
-
   enum PriorityValue {
     PRIORITY_LOW = 1,
     PRIORITY_NORMAL,

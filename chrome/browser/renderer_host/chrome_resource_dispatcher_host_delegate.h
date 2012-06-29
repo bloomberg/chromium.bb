@@ -77,7 +77,7 @@ class ChromeResourceDispatcherHostDelegate
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::ResourceResponse* response,
-      IPC::Message::Sender* sender) OVERRIDE;
+      IPC::Sender* sender) OVERRIDE;
   virtual void OnRequestRedirected(
       net::URLRequest* request,
       content::ResourceContext* resource_context,

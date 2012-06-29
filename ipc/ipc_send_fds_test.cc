@@ -46,7 +46,7 @@ static void VerifyAndCloseDescriptor(int fd, ino_t inode_num) {
   ASSERT_EQ(inode_num, st.st_ino);
 }
 
-class MyChannelDescriptorListener : public IPC::Channel::Listener {
+class MyChannelDescriptorListener : public IPC::Listener {
  public:
   MyChannelDescriptorListener(ino_t expected_inode_num)
       : expected_inode_num_(expected_inode_num),

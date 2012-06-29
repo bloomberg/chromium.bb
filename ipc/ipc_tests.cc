@@ -182,7 +182,7 @@ static void Send(IPC::Sender* sender, const char* text) {
   sender->Send(message);
 }
 
-class MyChannelListener : public IPC::Channel::Listener {
+class MyChannelListener : public IPC::Listener {
  public:
   virtual bool OnMessageReceived(const IPC::Message& message) {
     IPC::MessageIterator iter(message);
@@ -329,7 +329,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
   thread.Stop();
 }
 
-class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
+class ChannelListenerWithOnConnectedSend : public IPC::Listener {
  public:
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
     SendNextMessage();
@@ -439,7 +439,7 @@ MULTIPROCESS_IPC_TEST_MAIN(RunTestClient) {
 // This channel listener just replies to all messages with the exact same
 // message. It assumes each message has one string parameter. When the string
 // "quit" is sent, it will exit.
-class ChannelReflectorListener : public IPC::Channel::Listener {
+class ChannelReflectorListener : public IPC::Listener {
  public:
   explicit ChannelReflectorListener(IPC::Channel *channel) :
     channel_(channel),
@@ -481,7 +481,7 @@ class ChannelReflectorListener : public IPC::Channel::Listener {
   int latency_messages_;
 };
 
-class ChannelPerfListener : public IPC::Channel::Listener {
+class ChannelPerfListener : public IPC::Listener {
  public:
   ChannelPerfListener(IPC::Channel* channel, int msg_count, int msg_size) :
        count_down_(msg_count),

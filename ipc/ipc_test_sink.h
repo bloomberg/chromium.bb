@@ -53,7 +53,7 @@ class Message;
 // This can be useful if you need to wait for a particular message that will
 // be posted asynchronously.  Example usage:
 //
-//   class MyListener : public IPC::Channel::Listener {
+//   class MyListener : public IPC::Listener {
 //    public:
 //     virtual bool OnMessageReceived(const IPC::Message& msg) {
 //       <do something with the message>
@@ -112,15 +112,15 @@ class TestSink : public Channel {
   // the filters, in the order they were added.  If a filter returns true
   // from OnMessageReceived, subsequent filters will not receive the message
   // and the TestSink will not store it.
-  void AddFilter(Channel::Listener* filter);
+  void AddFilter(Listener* filter);
 
   // Removes the given filter from the TestSink.
-  void RemoveFilter(Channel::Listener* filter);
+  void RemoveFilter(Listener* filter);
 
  private:
   // The actual list of received messages.
   std::vector<Message> messages_;
-  ObserverList<Channel::Listener> filter_list_;
+  ObserverList<Listener> filter_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSink);
 };
