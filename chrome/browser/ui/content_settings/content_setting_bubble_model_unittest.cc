@@ -4,13 +4,16 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
@@ -219,4 +222,110 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
   std::string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
   ASSERT_NE(std::string::npos, title.find(file_url));
+}
+
+TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
+  const GURL page_url("http://toplevel.example/");
+  NavigateAndCommit(page_url);
+  TabSpecificContentSettings* content_settings =
+      tab_contents()->content_settings();
+  content_settings->set_pending_protocol_handler(
+      ProtocolHandler::CreateProtocolHandler("mailto",
+          GURL("http://www.toplevel.example/"), ASCIIToUTF16("Handler")));
+
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          NULL, tab_contents(), profile(),
+          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model->bubble_content();
+  EXPECT_FALSE(bubble_content.title.empty());
+  EXPECT_FALSE(bubble_content.radio_group.radio_items.empty());
+  EXPECT_TRUE(bubble_content.popup_items.empty());
+  EXPECT_TRUE(bubble_content.domain_lists.empty());
+  EXPECT_TRUE(bubble_content.custom_link.empty());
+  EXPECT_FALSE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.manage_link.empty());
+}
+
+class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
+ public:
+  virtual void RegisterExternalHandler(const std::string& protocol) {
+    // Overrides in order to not register the handler with the
+    // ChildProcessSecurityPolicy. That has persistent and unalterable
+    // side effects on other tests.
+  }
+};
+
+TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
+  FakeDelegate delegate;
+  profile()->CreateProtocolHandlerRegistry(&delegate);
+
+  const GURL page_url("http://toplevel.example/");
+  NavigateAndCommit(page_url);
+  TabSpecificContentSettings* content_settings =
+      tab_contents()->content_settings();
+  ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
+      "mailto", GURL("http://www.toplevel.example/"),
+      ASCIIToUTF16("Handler"));
+  content_settings->set_pending_protocol_handler(test_handler);
+
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          NULL, tab_contents(), profile(),
+          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS));
+
+  {
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
+    EXPECT_TRUE(handler.IsEmpty());
+    EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+              content_settings->pending_protocol_handler_setting());
+  }
+
+  // "0" is the "Allow" radio button.
+  content_setting_bubble_model->OnRadioClicked(0);
+  {
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
+    ASSERT_FALSE(handler.IsEmpty());
+    EXPECT_EQ(ASCIIToUTF16("Handler"), handler.title());
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              content_settings->pending_protocol_handler_setting());
+  }
+
+  // "1" is the "Deny" radio button.
+  content_setting_bubble_model->OnRadioClicked(1);
+  {
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
+    EXPECT_TRUE(handler.IsEmpty());
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              content_settings->pending_protocol_handler_setting());
+  }
+
+  // "2" is the "Ignore button.
+  content_setting_bubble_model->OnRadioClicked(2);
+  {
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
+    EXPECT_TRUE(handler.IsEmpty());
+    EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+              content_settings->pending_protocol_handler_setting());
+    EXPECT_TRUE(profile()->GetProtocolHandlerRegistry()->IsIgnored(
+        test_handler));
+  }
+
+  // "0" is the "Allow" radio button.
+  content_setting_bubble_model->OnRadioClicked(0);
+  {
+    ProtocolHandler handler =
+        profile()->GetProtocolHandlerRegistry()->GetHandlerFor("mailto");
+    ASSERT_FALSE(handler.IsEmpty());
+    EXPECT_EQ(ASCIIToUTF16("Handler"), handler.title());
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              content_settings->pending_protocol_handler_setting());
+    EXPECT_FALSE(profile()->GetProtocolHandlerRegistry()->IsIgnored(
+        test_handler));
+  }
 }

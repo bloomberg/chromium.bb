@@ -17,6 +17,7 @@
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -169,6 +170,41 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
     return geolocation_settings_state_;
   }
 
+  // Call to indicate that there is a protocol handler pending user approval.
+  void set_pending_protocol_handler(const ProtocolHandler& handler) {
+    pending_protocol_handler_ = handler;
+  }
+
+  const ProtocolHandler& pending_protocol_handler() const {
+    return pending_protocol_handler_;
+  }
+
+  void ClearPendingProtocolHandler() {
+    pending_protocol_handler_ = ProtocolHandler::EmptyProtocolHandler();
+  }
+
+
+  // Sets the previous protocol handler which will be replaced by the
+  // pending protocol handler.
+  void set_previous_protocol_handler(const ProtocolHandler& handler) {
+    previous_protocol_handler_ = handler;
+  }
+
+  const ProtocolHandler& previous_protocol_handler() const {
+    return previous_protocol_handler_;
+  }
+
+  // Set whether the setting for the pending handler is DEFAULT (ignore),
+  // ALLOW, or DENY.
+  void set_pending_protocol_handler_setting(ContentSetting setting) {
+    pending_protocol_handler_setting_ = setting;
+  }
+
+  ContentSetting pending_protocol_handler_setting() const {
+    return pending_protocol_handler_setting_;
+  }
+
+
   // Returns a pointer to the |LocalSharedObjectsContainer| that contains all
   // allowed local shared objects like cookies, local storage, ... .
   const LocalSharedObjectsContainer& allowed_local_shared_objects() const {
@@ -279,6 +315,21 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
 
   // Manages information about Geolocation API usage in this page.
   GeolocationSettingsState geolocation_settings_state_;
+
+  // The pending protocol handler, if any. This can be set if
+  // registerProtocolHandler was invoked without user gesture.
+  // The |IsEmpty| method will be true if no protocol handler is
+  // pending registration.
+  ProtocolHandler pending_protocol_handler_;
+
+  // The previous protocol handler to be replaced by
+  // the pending_protocol_handler_, if there is one. Empty if
+  // there is no handler which would be replaced.
+  ProtocolHandler previous_protocol_handler_;
+
+  // The setting on the pending protocol handler registration. Persisted in case
+  // the user opens the bubble and makes changes multiple times.
+  ContentSetting pending_protocol_handler_setting_;
 
   // Stores whether the user can load blocked plugins on this page.
   bool load_plugins_link_enabled_;

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/timer.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace content {
@@ -97,6 +98,10 @@ class TestingProfile : public Profile {
   // Creates a ProtocolHandlerRegistry. If not invoked the protocol handler
   // registry is NULL.
   void CreateProtocolHandlerRegistry();
+
+  // Creates a ProtocolHandlerRegistry with the provided delegate.
+  void CreateProtocolHandlerRegistry(
+      ProtocolHandlerRegistry::Delegate* delegate);
 
   // Creates a WebDataService. If not invoked, the web data service is NULL.
   void CreateWebDataService();

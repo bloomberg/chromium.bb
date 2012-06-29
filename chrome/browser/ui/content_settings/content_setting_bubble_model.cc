@@ -8,6 +8,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -128,6 +129,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_LINK},
       {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_GEOLOCATION_BUBBLE_MANAGE_LINK},
       {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_LEARN_MORE},
+      {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, IDS_HANDLERS_BUBBLE_MANAGE_LINK}
     };
     set_manage_link(l10n_util::GetStringUTF8(
         GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -520,25 +522,187 @@ class ContentSettingMixedScriptBubbleModel
   ContentSettingMixedScriptBubbleModel(Delegate* delegate,
                                        TabContents* tab_contents,
                                        Profile* profile,
-                                       ContentSettingsType content_type)
-      : ContentSettingTitleLinkAndCustomModel(
-            delegate, tab_contents, profile, content_type) {
-    DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
-    set_custom_link_enabled(true);
-  }
+                                       ContentSettingsType content_type);
 
   virtual ~ContentSettingMixedScriptBubbleModel() {}
 
  private:
-  virtual void OnCustomLinkClicked() OVERRIDE {
-    content::RecordAction(UserMetricsAction("MixedScript_LoadAnyway_Bubble"));
-    DCHECK(tab_contents());
-    content::RenderViewHost* host =
-        tab_contents()->web_contents()->GetRenderViewHost();
-    host->Send(new ChromeViewMsg_SetAllowRunningInsecureContent(
-        host->GetRoutingID(), true));
-  }
+  virtual void OnCustomLinkClicked() OVERRIDE;
 };
+
+ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
+    Delegate* delegate,
+    TabContents* tab_contents,
+    Profile* profile,
+    ContentSettingsType content_type)
+    : ContentSettingTitleLinkAndCustomModel(
+        delegate, tab_contents, profile, content_type) {
+  DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+  set_custom_link_enabled(true);
+}
+
+void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
+  content::RecordAction(UserMetricsAction("MixedScript_LoadAnyway_Bubble"));
+  DCHECK(tab_contents());
+  content::RenderViewHost* host =
+      tab_contents()->web_contents()->GetRenderViewHost();
+  host->Send(new ChromeViewMsg_SetAllowRunningInsecureContent(
+      host->GetRoutingID(), true));
+}
+
+class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingRPHBubbleModel(Delegate* delegate,
+                               TabContents* tab_contents,
+                               Profile* profile,
+                               ContentSettingsType content_type);
+
+  virtual void OnCustomLinkClicked();
+  virtual void OnRadioClicked(int radio_index);
+
+ private:
+  enum RPHState {
+    RPH_ALLOW = 0,
+    RPH_BLOCK,
+    RPH_IGNORE,
+  };
+
+  void RegisterProtocolHandler();
+  void UnregisterProtocolHandler();
+  void IgnoreProtocolHandler();
+  void ClearOrSetPreviousHandler();
+
+  int selected_item_;
+  ProtocolHandler pending_handler_;
+  ProtocolHandler previous_handler_;
+};
+
+ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
+    Delegate* delegate,
+    TabContents* tab_contents,
+    Profile* profile,
+    ContentSettingsType content_type)
+    : ContentSettingTitleAndLinkModel(
+          delegate, tab_contents, profile, content_type),
+      selected_item_(0),
+      pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
+      previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
+  DCHECK_EQ(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, content_type);
+
+  TabSpecificContentSettings* content_settings =
+      tab_contents->content_settings();
+  pending_handler_ = content_settings->pending_protocol_handler();
+  previous_handler_ = content_settings->previous_protocol_handler();
+
+  string16 protocol;
+  if (pending_handler_.protocol() == "mailto") {
+    protocol = l10n_util::GetStringUTF16(
+        IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
+  } else if (pending_handler_.protocol() == "webcal") {
+    protocol = l10n_util::GetStringUTF16(
+        IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
+  } else {
+    protocol = UTF8ToUTF16(pending_handler_.protocol());
+  }
+
+  if (previous_handler_.IsEmpty()) {
+    set_title(l10n_util::GetStringFUTF8(
+        IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
+        pending_handler_.title(), UTF8ToUTF16(pending_handler_.url().host()),
+        protocol));
+  } else {
+    set_title(l10n_util::GetStringFUTF8(
+        IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
+        pending_handler_.title(), UTF8ToUTF16(pending_handler_.url().host()),
+        protocol, previous_handler_.title()));
+  }
+
+  std::string radio_allow_label =
+      l10n_util::GetStringFUTF8(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT,
+                                pending_handler_.title());
+  std::string radio_deny_label =
+      l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_DENY);
+  std::string radio_ignore_label =
+      l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_IGNORE);
+
+  GURL url = tab_contents->web_contents()->GetURL();
+  RadioGroup radio_group;
+  radio_group.url = url;
+
+  radio_group.radio_items.push_back(radio_allow_label);
+  radio_group.radio_items.push_back(radio_deny_label);
+  radio_group.radio_items.push_back(radio_ignore_label);
+  ContentSetting setting =
+      content_settings->pending_protocol_handler_setting();
+  if (setting == CONTENT_SETTING_ALLOW)
+    radio_group.default_item = RPH_ALLOW;
+  else if (setting == CONTENT_SETTING_BLOCK)
+    radio_group.default_item = RPH_BLOCK;
+  else
+    radio_group.default_item = RPH_IGNORE;
+
+  selected_item_ = radio_group.default_item;
+  set_radio_group_enabled(true);
+  set_radio_group(radio_group);
+}
+
+void ContentSettingRPHBubbleModel::OnCustomLinkClicked() {
+  RegisterProtocolHandler();
+}
+
+void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
+  if (selected_item_ == radio_index)
+    return;
+
+  selected_item_ = radio_index;
+
+  if (radio_index == RPH_ALLOW)
+    RegisterProtocolHandler();
+  else if (radio_index == RPH_BLOCK)
+    UnregisterProtocolHandler();
+  else if (radio_index == RPH_IGNORE)
+    IgnoreProtocolHandler();
+  else
+    NOTREACHED();
+}
+
+void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
+  // A no-op if the handler hasn't been ignored, but needed in case the user
+  // selects sequences like register/ignore/register.
+  profile()->GetProtocolHandlerRegistry()->RemoveIgnoredHandler(
+      pending_handler_);
+
+  profile()->GetProtocolHandlerRegistry()->OnAcceptRegisterProtocolHandler(
+      pending_handler_);
+  tab_contents()->content_settings()->set_pending_protocol_handler_setting(
+      CONTENT_SETTING_ALLOW);
+}
+
+void ContentSettingRPHBubbleModel::UnregisterProtocolHandler() {
+  profile()->GetProtocolHandlerRegistry()->OnDenyRegisterProtocolHandler(
+      pending_handler_);
+  tab_contents()->content_settings()->set_pending_protocol_handler_setting(
+      CONTENT_SETTING_BLOCK);
+  ClearOrSetPreviousHandler();
+}
+
+void ContentSettingRPHBubbleModel::IgnoreProtocolHandler() {
+  profile()->GetProtocolHandlerRegistry()->OnIgnoreRegisterProtocolHandler(
+      pending_handler_);
+  tab_contents()->content_settings()->set_pending_protocol_handler_setting(
+      CONTENT_SETTING_DEFAULT);
+  ClearOrSetPreviousHandler();
+}
+
+void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
+  if (previous_handler_.IsEmpty()) {
+    profile()->GetProtocolHandlerRegistry()->ClearDefault(
+        pending_handler_.protocol());
+  } else {
+    profile()->GetProtocolHandlerRegistry()->OnAcceptRegisterProtocolHandler(
+        previous_handler_);
+  }
+}
 
 // static
 ContentSettingBubbleModel*
@@ -566,6 +730,10 @@ ContentSettingBubbleModel*
   if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
     return new ContentSettingMixedScriptBubbleModel(delegate, tab_contents,
                                                     profile, content_type);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    return new ContentSettingRPHBubbleModel(delegate, tab_contents, profile,
+                                            content_type);
   }
   return new ContentSettingSingleRadioGroup(delegate, tab_contents, profile,
                                             content_type);
