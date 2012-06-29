@@ -3,6 +3,33 @@
     "namespace": "arrays",
     "types": [
       {
+        "id": "EnumArrayType",
+        "type": "object",
+        "properties": {
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["one", "two", "three"]
+            }
+          }
+        }
+      },
+      {
+        "id": "OptionalEnumArrayType",
+        "type": "object",
+        "properties": {
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["one", "two", "three"]
+            },
+            "optional": true
+          }
+        }
+      },
+      {
         "id": "BasicArrayType",
         "type": "object",
         "properties": {
