@@ -62,18 +62,18 @@ void ValidateExtensionInfo(const ExtensionBasicInfo extension,
   std::string extension_version;
   int extension_location;
 
-  ASSERT_TRUE(value->GetString("extension_description",
+  ASSERT_TRUE(value->GetString("extensionDescription",
                                &extension_description));
   ASSERT_EQ(extension.description, extension_description);
-  ASSERT_TRUE(value->GetString("extension_id", &extension_id));
+  ASSERT_TRUE(value->GetString("extensionId", &extension_id));
   ASSERT_EQ(extension.id, extension_id);
-  ASSERT_TRUE(value->GetString("extension_name", &extension_name));
+  ASSERT_TRUE(value->GetString("extensionName", &extension_name));
   ASSERT_EQ(extension.name, extension_name);
-  ASSERT_TRUE(value->GetString("extension_url", &extension_url));
+  ASSERT_TRUE(value->GetString("extensionUrl", &extension_url));
   ASSERT_EQ(extension.url, extension_url);
-  ASSERT_TRUE(value->GetString("extension_version", &extension_version));
+  ASSERT_TRUE(value->GetString("extensionVersion", &extension_version));
   ASSERT_EQ(extension.version, extension_version);
-  ASSERT_TRUE(value->GetInteger("extension_location", &extension_location));
+  ASSERT_TRUE(value->GetInteger("extensionLocation", &extension_location));
   ASSERT_EQ(extension.location, extension_location);
 }
 
@@ -88,7 +88,7 @@ void CheckExtensionEvents(std::vector<int> expected_event_types,
   for (size_t i = 0; i < expected_event_types.size(); ++i) {
     ValidateExtensionInfo(extension_infos[i], events[i]->data());
     int event_type;
-    ASSERT_TRUE(events[i]->data()->GetInteger("type", &event_type));
+    ASSERT_TRUE(events[i]->data()->GetInteger("eventType", &event_type));
     ASSERT_EQ(expected_event_types[i], event_type);
   }
 }
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
 
   // There will be an additional field on the unload event: Unload Reason.
   int unload_reason = -1;
-  ASSERT_TRUE(events[1]->data()->GetInteger("unload_reason", &unload_reason));
+  ASSERT_TRUE(events[1]->data()->GetInteger("unloadReason", &unload_reason));
   ASSERT_EQ(extension_misc::UNLOAD_REASON_DISABLE, unload_reason);
 }
 
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
 
   // There will be an additional field: The unload reason.
   int unload_reason = -1;
-  ASSERT_TRUE(events[2]->data()->GetInteger("unload_reason", &unload_reason));
+  ASSERT_TRUE(events[2]->data()->GetInteger("unloadReason", &unload_reason));
   ASSERT_EQ(extension_misc::UNLOAD_REASON_UPDATE, unload_reason);
 }
 

@@ -13,7 +13,8 @@ namespace performance_monitor {
 
 // IMPORTANT: This is used as an indication of the event type within the
 // performance monitor database; do not change the order! If you add new events
-// to this list, place them above EVENT_NUMBER_OF_EVENTS.
+// to this list, place them above EVENT_NUMBER_OF_EVENTS and add a string to
+// kEventTypeNames in the cc file.
 enum EventType {
   EVENT_UNDEFINED,
   EVENT_EXTENSION_INSTALL,
@@ -28,6 +29,8 @@ enum EventType {
   EVENT_UNCLEAN_SHUTDOWN,
   EVENT_NUMBER_OF_EVENTS
 };
+
+const char* EventTypeToString(EventType event_type);
 
 // The wrapper class for the JSON-generated event classes for the performance
 // monitor. This class is used so we can pass around events in a single class,

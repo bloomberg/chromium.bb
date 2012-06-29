@@ -19,7 +19,7 @@ namespace performance_monitor {
 
 // This class handles messages to and from the performance monitor page.
 // Incoming calls are handled by the Handle* functions and callbacks are made
-// from Return* functions.
+// from ReturnResults functions.
 class WebUIHandler : public content::WebUIMessageHandler,
                      public base::SupportsWeakPtr<WebUIHandler> {
  public:
@@ -31,11 +31,18 @@ class WebUIHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
+  // Returns |results| through the given |callback| string.
+  void ReturnResults(const std::string& callback,
+                     const base::ListValue* results);
+
   // Callback for the "getActiveIntervals" message.
   void HandleGetActiveIntervals(const base::ListValue* args);
 
-  // Returns results through callback for the "getActiveIntervals" message.
-  void ReturnActiveIntervals(const base::ListValue* results);
+  // Callback for the "getAllEventTypes" message.
+  void HandleGetAllEventTypes(const base::ListValue* args);
+
+  // Callback for the "getEvents" message.
+  void HandleGetEvents(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(WebUIHandler);
 };

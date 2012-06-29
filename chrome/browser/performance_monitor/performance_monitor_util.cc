@@ -59,7 +59,7 @@ scoped_ptr<Event> CreateExtensionInstallEvent(
     const std::string& version,
     const std::string& description) {
   events::ExtensionInstall event;
-  event.type = EVENT_EXTENSION_INSTALL;
+  event.event_type = EVENT_EXTENSION_INSTALL;
   event.time = static_cast<double>(time.ToInternalValue());
   event.extension_id = id;
   event.extension_name = name;
@@ -81,7 +81,7 @@ scoped_ptr<Event> CreateExtensionUninstallEvent(
     const std::string& version,
     const std::string& description) {
   events::ExtensionUninstall event;
-  event.type = EVENT_EXTENSION_UNINSTALL;
+  event.event_type = EVENT_EXTENSION_UNINSTALL;
   event.time = static_cast<double>(time.ToInternalValue());
   event.extension_id = id;
   event.extension_name = name;
@@ -104,7 +104,7 @@ scoped_ptr<Event> CreateExtensionUnloadEvent(
     const std::string& description,
     const extension_misc::UnloadedExtensionReason& reason) {
   events::ExtensionUnload event;
-  event.type = EVENT_EXTENSION_UNLOAD;
+  event.event_type = EVENT_EXTENSION_UNLOAD;
   event.time = static_cast<double>(time.ToInternalValue());
   event.extension_id = id;
   event.extension_name = name;
@@ -127,7 +127,7 @@ scoped_ptr<Event> CreateExtensionEnableEvent(
     const std::string& version,
     const std::string& description) {
   events::ExtensionEnable event;
-  event.type = EVENT_EXTENSION_ENABLE;
+  event.event_type = EVENT_EXTENSION_ENABLE;
   event.time = static_cast<double>(time.ToInternalValue());
   event.extension_id = id;
   event.extension_name = name;
@@ -149,7 +149,7 @@ scoped_ptr<Event> CreateExtensionUpdateEvent(
     const std::string& version,
     const std::string& description) {
   events::ExtensionUpdate event;
-  event.type = EVENT_EXTENSION_UPDATE;
+  event.event_type = EVENT_EXTENSION_UPDATE;
   event.time = static_cast<double>(time.ToInternalValue());
   event.extension_id = id;
   event.extension_name = name;
@@ -166,7 +166,7 @@ scoped_ptr<Event> CreateRendererFreezeEvent(
     const base::Time& time,
     const std::string& url) {
   events::RendererFreeze event;
-  event.type = EVENT_RENDERER_FREEZE;
+  event.event_type = EVENT_RENDERER_FREEZE;
   event.time = static_cast<double>(time.ToInternalValue());
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
@@ -178,7 +178,7 @@ scoped_ptr<Event> CreateCrashEvent(
     const EventType& type,
     const std::string& url) {
   events::RendererFreeze event;
-  event.type = type;
+  event.event_type = type;
   event.time = static_cast<double>(time.ToInternalValue());
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
@@ -187,7 +187,7 @@ scoped_ptr<Event> CreateCrashEvent(
 
 scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time) {
   events::UncleanShutdown event;
-  event.type = EVENT_UNCLEAN_SHUTDOWN;
+  event.event_type = EVENT_UNCLEAN_SHUTDOWN;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
       EVENT_UNCLEAN_SHUTDOWN, time, value.Pass()));
@@ -198,7 +198,7 @@ scoped_ptr<Event> CreateChromeUpdateEvent(
     const std::string& old_version,
     const std::string& new_version) {
   events::ChromeUpdate event;
-  event.type = EVENT_CHROME_UPDATE;
+  event.event_type = EVENT_CHROME_UPDATE;
   event.time = static_cast<double>(time.ToInternalValue());
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
