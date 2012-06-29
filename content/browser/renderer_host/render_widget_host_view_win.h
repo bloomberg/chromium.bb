@@ -386,6 +386,7 @@ class RenderWidgetHostViewWin
 
   LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
+  LRESULT OnQueryCharPosition(IMECHARPOSITION* position);
 
   // Displays the on screen keyboard for editable fields.
   void DisplayOnScreenKeyboardIfNeeded();

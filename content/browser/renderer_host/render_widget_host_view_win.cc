@@ -1841,6 +1841,8 @@ LRESULT RenderWidgetHostViewWin::OnImeRequest(
       return OnReconvertString(reinterpret_cast<RECONVERTSTRING*>(lparam));
     case IMR_DOCUMENTFEED:
       return OnDocumentFeed(reinterpret_cast<RECONVERTSTRING*>(lparam));
+    case IMR_QUERYCHARPOSITION:
+      return OnQueryCharPosition(reinterpret_cast<IMECHARPOSITION*>(lparam));
     default:
       handled = FALSE;
       return 0;
@@ -3115,6 +3117,30 @@ LRESULT RenderWidgetHostViewWin::OnReconvertString(RECONVERTSTRING* reconv) {
   // IMR_DOCUMENTFEED should return reconv, but some applications return
   // need_size.
   return reinterpret_cast<LRESULT>(reconv);
+}
+
+LRESULT RenderWidgetHostViewWin::OnQueryCharPosition(
+    IMECHARPOSITION* position) {
+  DCHECK(position);
+
+  if (!ime_input_.is_composing() || composition_range_.is_empty() ||
+      position->dwSize < sizeof(IMECHARPOSITION) ||
+      position->dwCharPos >= composition_character_bounds_.size()) {
+    return 0;
+  }
+
+  RECT target_rect =
+      composition_character_bounds_[position->dwCharPos].ToRECT();
+  ClientToScreen(&target_rect);
+
+  RECT document_rect = GetViewBounds().ToRECT();
+  ClientToScreen(&document_rect);
+
+  position->pt.x = target_rect.left;
+  position->pt.y = target_rect.top;
+  position->cLineHeight = target_rect.bottom - target_rect.top;
+  position->rcDocument = document_rect;
+  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
