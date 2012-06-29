@@ -106,6 +106,10 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest* request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // Performs series of actions when login prompt is considered
   // to be ready and visible.

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -321,6 +322,20 @@ bool WebUILoginView::TakeFocus(bool reverse) {
   }
 
   return true;
+}
+
+void WebUILoginView::RequestMediaAccessPermission(
+    WebContents* web_contents,
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  TabContents* tab = TabContents::FromWebContents(web_contents);
+  DCHECK(tab);
+
+  scoped_ptr<MediaStreamDevicesController>
+      controller(new MediaStreamDevicesController(
+          tab->profile(), request, callback));
+  if (!controller->DismissInfoBarAndTakeActionOnSettings())
+    NOTREACHED() << "Media stream not allowed for WebUI";
 }
 
 void WebUILoginView::OnLoginPromptVisible() {
