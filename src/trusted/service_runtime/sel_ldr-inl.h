@@ -172,17 +172,12 @@ static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
 #  error "What kind of x86 are we on anyway?!?"
 # endif
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  UNREFERENCED_PARAMETER(nap);
+  addr &= ~NACL_CONTROL_FLOW_MASK;
 # if defined(NACL_TARGET_ARM_THUMB2_MODE)
-  return ((addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000) | 0xF;
-# else
-  /*
-   * TODO(cbiffle): this hardcodes the size of code memory, and needs to become
-   * a parameter in NaClApp.  The simplest way to do this is with the change
-   * suggested in issue 244.  Then we could fold ARM and x86 impls together.
-   */
-
-  return (addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000;
+  addr |= 0xf;
 # endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
+  return addr;
 #else
 # error "What architecture are we on?!?"
 #endif
