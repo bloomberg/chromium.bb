@@ -20,9 +20,16 @@ using content::NavigationController;
 using content::WebContents;
 using extensions::Extension;
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// http://crbug.com/123851 flaky fails on win debug.
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#else
+#define MAYBE_PluginLoadUnload PluginLoadUnload
+#endif
+
 // Tests that a renderer's plugin list is properly updated when we load and
 // unload an extension that contains a plugin.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
