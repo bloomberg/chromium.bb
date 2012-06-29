@@ -13,12 +13,12 @@
 
 namespace gdata {
 
+class DocumentsServiceInterface;
 class DriveWebAppsRegistry;
 class GDataDownloadObserver;
 class GDataFileSystem;
 class GDataSyncClient;
 class GDataUploader;
-class DocumentsServiceInterface;
 
 // GDataSystemService runs the GData system, including the GData file system
 // implementation for the file manager, and some other sub systems.
@@ -66,10 +66,10 @@ class GDataSystemService : public ProfileKeyedService  {
   GDataCache* cache_;
   scoped_ptr<DocumentsServiceInterface> documents_service_;
   scoped_ptr<GDataUploader> uploader_;
+  scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<GDataFileSystem> file_system_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
-  scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataSystemService);
 };

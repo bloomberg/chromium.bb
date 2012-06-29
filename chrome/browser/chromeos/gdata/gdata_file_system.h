@@ -24,6 +24,7 @@
 namespace gdata {
 
 class DocumentsServiceInterface;
+class DriveWebAppsRegistryInterface;
 class GDataFileProto;
 struct UploadFileInfo;
 
@@ -394,6 +395,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataCache* cache,
       DocumentsServiceInterface* documents_service,
       GDataUploaderInterface* uploader,
+      DriveWebAppsRegistryInterface* webapps_registry,
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
   virtual ~GDataFileSystem();
 
@@ -1225,6 +1227,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // The document service owned by GDataSystemService.
   DocumentsServiceInterface* documents_service_;
+
+  // The webapps registry owned by GDataSystemService.
+  DriveWebAppsRegistryInterface* webapps_registry_;
 
   // Periodic timer for checking updates.
   base::Timer update_timer_;

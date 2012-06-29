@@ -46,26 +46,41 @@ struct DriveWebAppInfo {
   bool is_primary_selector;
 };
 
-// DriveWebAppsRegistry keeps the track of installed drive web application and
-// provider
-class DriveWebAppsRegistry  {
+// DriveWebAppsRegistry abstraction layer.
+// The interface is defined to make DriveWebAppsRegistry mockable.
+class DriveWebAppsRegistryInterface {
+ public:
+  virtual ~DriveWebAppsRegistryInterface() {}
+
+  // Gets the list of web |apps| matching |file| and it |mime_type|.
+  virtual void GetWebAppsForFile(const FilePath& file,
+                                 const std::string& mime_type,
+                                 ScopedVector<DriveWebAppInfo>* apps) = 0;
+
+  // Returns a set of filename extensions registered for the given
+  // |web_store_id|.
+  virtual std::set<std::string> GetExtensionsForWebStoreApp(
+      const std::string& web_store_id) = 0;
+
+  // Updates the list of drive-enabled WebApps with freshly fetched account
+  // metadata feed.
+  virtual void UpdateFromFeed(AccountMetadataFeed* metadata) = 0;
+};
+
+// The production implementation of DriveWebAppsRegistryInterface.
+// Keeps the track of installed drive web application and provider.
+class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
  public:
   DriveWebAppsRegistry();
   virtual ~DriveWebAppsRegistry();
 
-  // Gets the list of web |apps| matching |file| and it |mime_type|.
-  void GetWebAppsForFile(const FilePath& file,
-                         const std::string& mime_type,
-                         ScopedVector<DriveWebAppInfo>* apps);
-
-  // Returns a set of filename extensions registered for the given
-  // |web_store_id|.
-  std::set<std::string> GetExtensionsForWebStoreApp(
-      const std::string& web_store_id);
-
-  // Updates the list of drive-enabled WebApps with freshly fetched account
-  // metadata feed.
-  void UpdateFromFeed(AccountMetadataFeed* metadata);
+  // DriveWebAppsRegistry overrides.
+  virtual void GetWebAppsForFile(const FilePath& file,
+                                 const std::string& mime_type,
+                                 ScopedVector<DriveWebAppInfo>* apps) OVERRIDE;
+  virtual std::set<std::string> GetExtensionsForWebStoreApp(
+      const std::string& web_store_id) OVERRIDE;
+  virtual void UpdateFromFeed(AccountMetadataFeed* metadata) OVERRIDE;
 
  private:
   // Defines WebApp application details that are associated with a given

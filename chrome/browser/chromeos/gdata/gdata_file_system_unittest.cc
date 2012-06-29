@@ -23,6 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
@@ -197,6 +198,18 @@ class MockGDataUploader : public GDataUploaderInterface {
   MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));
 };
 
+class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
+ public:
+  virtual ~MockDriveWebAppsRegistry() {}
+
+  MOCK_METHOD3(GetWebAppsForFile, void(const FilePath& file,
+                                       const std::string& mime_type,
+                                       ScopedVector<DriveWebAppInfo>* apps));
+  MOCK_METHOD1(GetExtensionsForWebStoreApp,
+               std::set<std::string>(const std::string& web_store_id));
+  MOCK_METHOD1(UpdateFromFeed, void(AccountMetadataFeed* metadata));
+};
+
 class GDataFileSystemTest : public testing::Test {
  protected:
   GDataFileSystemTest()
@@ -207,6 +220,7 @@ class GDataFileSystemTest : public testing::Test {
         cache_(NULL),
         file_system_(NULL),
         mock_doc_service_(NULL),
+        mock_webapps_registry_(NULL),
         num_callback_invocations_(0),
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
@@ -240,12 +254,14 @@ class GDataFileSystemTest : public testing::Test {
         sequence_token_);
 
     mock_uploader_.reset(new StrictMock<MockGDataUploader>);
+    mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
                                        cache_,
                                        mock_doc_service_,
                                        mock_uploader_.get(),
+                                       mock_webapps_registry_.get(),
                                        sequence_token_);
 
     mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
@@ -1323,6 +1339,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
+  scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
   scoped_ptr<StrictMock<MockGDataSyncClient> > mock_sync_client_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
@@ -1371,6 +1388,8 @@ TEST_F(GDataFileSystemTest, DISABLED_DuplicatedAsyncInitialization) {
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_doc_service_,
               GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
+
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
 
   file_system_->ReadDirectoryByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);

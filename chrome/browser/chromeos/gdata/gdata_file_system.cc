@@ -677,11 +677,13 @@ GDataFileSystem::GDataFileSystem(
     GDataCache* cache,
     DocumentsServiceInterface* documents_service,
     GDataUploaderInterface* uploader,
+    DriveWebAppsRegistryInterface* webapps_registry,
     const base::SequencedWorkerPool::SequenceToken& sequence_token)
     : profile_(profile),
       cache_(cache),
       uploader_(uploader),
       documents_service_(documents_service),
+      webapps_registry_(webapps_registry),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
@@ -919,9 +921,7 @@ void GDataFileSystem::OnGetAccountMetadata(
     return;
   }
 
-  GDataSystemService* service =
-      GDataSystemServiceFactory::GetForProfile(profile_);
-  service->webapps_registry()->UpdateFromFeed(account_metadata.get());
+  webapps_registry_->UpdateFromFeed(account_metadata.get());
 
   bool changes_detected = true;
   if (local_changestamp >= account_metadata->largest_changestamp()) {

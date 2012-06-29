@@ -39,14 +39,15 @@ GDataSystemService::GDataSystemService(Profile* profile)
           sequence_token_)),
       documents_service_(new DocumentsService),
       uploader_(new GDataUploader(docs_service())),
+      webapps_registry_(new DriveWebAppsRegistry),
       file_system_(new GDataFileSystem(profile,
                                        cache(),
                                        docs_service(),
                                        uploader(),
+                                       webapps_registry(),
                                        sequence_token_)),
       download_observer_(new GDataDownloadObserver),
-      sync_client_(new GDataSyncClient(profile, file_system(), cache())),
-      webapps_registry_(new DriveWebAppsRegistry) {
+      sync_client_(new GDataSyncClient(profile, file_system(), cache())) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(satorux): The dependency to GDataFileSystem should be
@@ -83,10 +84,10 @@ void GDataSystemService::Shutdown() {
   RemoveDriveMountPoint();
 
   // Shut down the member objects in the reverse order of creation.
-  webapps_registry_.reset();
   sync_client_.reset();
   download_observer_.reset();
   file_system_.reset();
+  webapps_registry_.reset();
   uploader_.reset();
   documents_service_.reset();
 }
