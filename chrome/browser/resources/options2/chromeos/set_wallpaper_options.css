@@ -13,7 +13,8 @@
 
 #wallpaper-grid {
   margin: 0;
-  width: 640px;
+  overflow: hidden;
+  width: 580px;
 }
 
 #wallpaper-grid img {
