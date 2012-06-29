@@ -8,6 +8,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,12 +51,17 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
     stop_to_reload_timer_.Stop();
     SetToggled(mode == MODE_STOP);
     visible_mode_ = mode;
-    SetEnabled(true);
+    // For instant extended API, if mode is NTP, disable button state.
+    bool disabled = location_bar_ && location_bar_->search_model() &&
+        chrome::search::IsInstantExtendedAPIEnabled(location_bar_->profile()) &&
+        location_bar_->search_model()->mode().is_ntp();
+    SetEnabled(!disabled);
 
   // We want to disable the button if we're preventing a change from stop to
   // reload due to hovering, but not if we're preventing a change from reload to
-  // stop due to the double-click timer running.  (There is no disabled reload
-  // state.)
+  // stop due to the double-click timer running.  (Disabled reload state is only
+  // applicable when instant extended API is enabled and mode is NTP, which is
+  // handled just above.)
   } else if (visible_mode_ != MODE_RELOAD) {
     SetEnabled(false);
 

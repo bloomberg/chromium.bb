@@ -480,14 +480,6 @@ void ToolbarView::ModeChanged(const chrome::search::Mode& mode) {
 // ToolbarView, CommandObserver implementation:
 
 void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
-  // Special case the reload button at the NTP for extended instant.
-  if (id == IDC_RELOAD &&
-      chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()) &&
-      browser_->search_model()->mode().is_ntp()) {
-    reload_->SetEnabled(false);
-    return;
-  }
-
   views::Button* button = NULL;
   switch (id) {
     case IDC_BACK:
@@ -495,6 +487,9 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
       break;
     case IDC_FORWARD:
       button = forward_;
+      break;
+    case IDC_RELOAD:
+      button = reload_;
       break;
     case IDC_HOME:
       button = home_;

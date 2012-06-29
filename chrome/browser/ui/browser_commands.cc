@@ -36,6 +36,8 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -311,7 +313,9 @@ void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition) {
 }
 
 bool CanReload(const Browser* browser) {
-  return !browser->is_devtools();
+  return !browser->is_devtools() &&
+    !(chrome::search::IsInstantExtendedAPIEnabled(browser->profile()) &&
+      browser->search_model()->mode().is_ntp());
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
