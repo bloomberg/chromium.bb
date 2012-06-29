@@ -682,7 +682,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      '-perf.NetflixPerfTest',  # crosbug.com/p/8499.
       '-perf.PageCyclerNetSimTest',  # Investigate Web Page Replay on ChromeOS.
 
       # ===========================
