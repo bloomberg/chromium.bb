@@ -89,6 +89,12 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
   GetInsets(&insets);
   border_size.Enlarge(insets.width(), insets.height());
 
+  // Ensure the bubble has a minimum size that draws arrows correctly.
+  if (is_arrow_on_horizontal(arrow_location_))
+    border_size.set_width(std::max(border_size.width(), 2 * arrow_offset_));
+  else if (has_arrow(arrow_location_))
+    border_size.set_height(std::max(border_size.height(), 2 * arrow_offset_));
+
   // Screen position depends on the arrow location.
   // The arrow should overlap the target by some amount since there is space
   // for shadow between arrow tip and image bounds.
@@ -302,13 +308,10 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
         arrow_offset - start_y - images_->left_arrow->height() / 2;
     int after_arrow = height - tl_height - bl_height -
         images_->left_arrow->height() - before_arrow;
-    int tip_y = start_y + before_arrow + images_->left_arrow->height() / 2;
+    // Shift tip coordinates half pixel so that skia draws the tip correctly.
     DrawArrowInterior(canvas,
-                      false,
-                      images_->left_arrow->width() - kArrowInteriorHeight,
-                      tip_y,
-                      kArrowInteriorHeight,
-                      images_->left_arrow->height() / 2 - 1);
+        images_->left_arrow->width() - kArrowInteriorHeight - 0.5f,
+        start_y + before_arrow + images_->left_arrow->height() / 2 - 0.5f);
     DrawEdgeWithArrow(canvas,
                       false,
                       images_->left,
@@ -333,11 +336,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
     int after_arrow = width - tl_width - tr_width -
         images_->top_arrow->width() - before_arrow;
     DrawArrowInterior(canvas,
-                      true,
-                      start_x + before_arrow + images_->top_arrow->width() / 2,
-                      images_->top_arrow->height() - kArrowInteriorHeight,
-                      1 - images_->top_arrow->width() / 2,
-                      kArrowInteriorHeight);
+        start_x + before_arrow + images_->top_arrow->width() / 2,
+        images_->top_arrow->height() - kArrowInteriorHeight);
     DrawEdgeWithArrow(canvas,
                       true,
                       images_->top,
@@ -362,13 +362,10 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
         arrow_offset - start_y - images_->right_arrow->height() / 2;
     int after_arrow = height - tl_height - bl_height -
         images_->right_arrow->height() - before_arrow;
-    int tip_y = start_y + before_arrow + images_->right_arrow->height() / 2;
+    // Shift tip coordinates half pixel so that skia draws the tip correctly.
     DrawArrowInterior(canvas,
-                      false,
-                      right - r_width + kArrowInteriorHeight,
-                      tip_y,
-                      -kArrowInteriorHeight,
-                      images_->right_arrow->height() / 2 - 1);
+        right - r_width + kArrowInteriorHeight - 0.5f,
+        start_y + before_arrow + images_->right_arrow->height() / 2 - 0.5f);
     DrawEdgeWithArrow(canvas,
                       false,
                       images_->right,
@@ -395,13 +392,9 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
         arrow_offset - start_x - images_->bottom_arrow->width() / 2;
     int after_arrow = width - bl_width - br_width -
         images_->bottom_arrow->width() - before_arrow;
-    int tip_x = start_x + before_arrow + images_->bottom_arrow->width() / 2;
     DrawArrowInterior(canvas,
-                      true,
-                      tip_x,
-                      bottom - b_height + kArrowInteriorHeight,
-                      1 - images_->bottom_arrow->width() / 2,
-                      -kArrowInteriorHeight);
+        start_x + before_arrow + images_->bottom_arrow->width() / 2,
+        bottom - b_height + kArrowInteriorHeight);
     DrawEdgeWithArrow(canvas,
                       true,
                       images_->bottom,
@@ -460,36 +453,30 @@ void BubbleBorder::DrawEdgeWithArrow(gfx::Canvas* canvas,
 }
 
 void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
-                                     bool is_horizontal,
-                                     int tip_x,
-                                     int tip_y,
-                                     int shift_x,
-                                     int shift_y) const {
-  /* This function fills the interior of the arrow with background color.
-   * It draws isosceles triangle under semitransparent arrow tip.
-   *
-   * Here's what the parameters mean:
-   *
-   *    ┌──────── |tip_x|
-   * ┌─────┐
-   * │  ▲  │ ──── |tip y|
-   * │∙∙∙∙∙│ ┐
-   * └─────┘ └─── |shift_x| (offset from tip to vertexes of isosceles triangle)
-   *  └────────── |shift_y|
-   */
+                                     float tip_x,
+                                     float tip_y) const {
+  const int offset_to_next_vertex =
+      (is_arrow_on_left(arrow_location_) || is_arrow_on_top(arrow_location_)) ?
+      kArrowInteriorHeight : -kArrowInteriorHeight;
+
+  SkPath path;
+  path.incReserve(4);
+  path.moveTo(SkDoubleToScalar(tip_x), SkDoubleToScalar(tip_y));
+  path.lineTo(SkDoubleToScalar(tip_x + offset_to_next_vertex),
+              SkDoubleToScalar(tip_y + offset_to_next_vertex));
+  if (is_arrow_on_horizontal(arrow_location_)) {
+    path.lineTo(SkDoubleToScalar(tip_x - offset_to_next_vertex),
+                SkDoubleToScalar(tip_y + offset_to_next_vertex));
+  } else {
+    path.lineTo(SkDoubleToScalar(tip_x + offset_to_next_vertex),
+                SkDoubleToScalar(tip_y - offset_to_next_vertex));
+  }
+  path.close();
+
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(background_color_);
-  SkPath path;
-  path.incReserve(4);
-  path.moveTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
-  path.lineTo(SkIntToScalar(tip_x + shift_x),
-              SkIntToScalar(tip_y + shift_y));
-  if (is_horizontal)
-    path.lineTo(SkIntToScalar(tip_x - shift_x), SkIntToScalar(tip_y + shift_y));
-  else
-    path.lineTo(SkIntToScalar(tip_x + shift_x), SkIntToScalar(tip_y - shift_y));
-  path.close();
+
   canvas->DrawPath(path, paint);
 }
 

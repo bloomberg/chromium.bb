@@ -143,12 +143,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
                          int after_arrow,
                          int offset) const;
 
-  void DrawArrowInterior(gfx::Canvas* canvas,
-                         bool is_horizontal,
-                         int tip_x,
-                         int tip_y,
-                         int shift_x,
-                         int shift_y) const;
+  void DrawArrowInterior(gfx::Canvas* canvas, float tip_x, float tip_y) const;
 
   // Border graphics.
   struct BorderImages* images_;
