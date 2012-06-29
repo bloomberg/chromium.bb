@@ -1,0 +1,30 @@
+Overview
+
+This is a new iteration of the Chrome extension and app documentation
+server. It will replace the existing doc build system described in
+../README.txt.
+
+As with the previous version, the goals of the system are:
+
+* Docs are generated from API definitions; it isn't possible to add or
+modify APIs without creating stub reference documentation at the same
+time.
+* Docs are editable by anyone with Chrome commit access. Docs go live
+automatically and immediately.
+* Docs are branched automatically with Chrome's source code; it's
+always possible to see the current doc for any Chrome release channel.
+
+The main difference from the previous iteration is that this server
+implements all the generation dynamically on the server, thus
+eliminating the need for annoying and error-prone generation step at
+commit time.
+
+How to Use
+
+  1. Download the python Google App Engine SDK from:
+     https://developers.google.com/appengine/downloads
+
+  2. Run 'start_dev_server.py <path/to/dev_appserver.py>'
+     (dev_appserver.py is part of the App Engine)
+
+  3. View docs at http://localhost:8080
