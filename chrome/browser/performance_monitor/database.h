@@ -15,7 +15,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/event.h"
+#include "chrome/browser/performance_monitor/metric_info.h"
+#include "chrome/browser/performance_monitor/metric_details.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace performance_monitor {
@@ -67,7 +70,11 @@ struct TimeRange {
 // Value: Event in JSON
 //
 // Recent DB:
-// Stores the most recent metric statistics to go into the database. This
+// Stores the most recent metric statistics to go into the database. There is
+// only ever one entry per (metric, activity) pair. |recent_map_| keeps an
+// in-memory version of this table with a mapping from a concatenation of metric
+// and activity to the key used in the recent db. |recent_map_| allows us to
+// quickly find the key that must be replaced in the recent db. This
 // database becomes useful when it is necessary to find all the active metrics
 // within a timerange. Without it, all the metric databases would need to be
 // searched to see if that metric is active.
@@ -75,15 +82,17 @@ struct TimeRange {
 // Value: Statistic
 //
 // Metric DB:
-// Stores the statistics for different metrics. Having the activity before the
-// time in the key esures that all statistics for a specific acticity are
-// spatially local.
-// Key: Metric - Activity - Time
+// Stores the statistics for different metrics. Having the time before the
+// activity ensures that the search space can only be as large as the time
+// interval.
+// Key: Metric - Time - Activity
 // Value: Statistic
 class Database {
  public:
   typedef std::vector<linked_ptr<Event> > EventList;
   typedef std::set<EventType> EventTypeSet;
+  typedef std::vector<MetricInfo> MetricInfoVector;
+  typedef std::map<std::string, linked_ptr<MetricInfoVector> > MetricVectorMap;
 
   static const char kDatabaseSequenceToken[];
 
@@ -132,6 +141,58 @@ class Database {
     return GetEventTypes(base::Time(), clock_->GetTime());
   }
 
+  // Add a metric instance to the database.
+  bool AddMetric(const std::string& activity, const std::string& metric,
+                 const std::string& value);
+
+  bool AddMetric(const std::string& metric, const std::string& value) {
+    return AddMetric(kProcessChromeAggregate, metric, value);
+  }
+
+  void AddMetricDetails(const MetricDetails& details);
+
+  // Get the metrics that are active for the given process between |start|
+  // (inclusive) and |end| (exclusive).
+  std::vector<MetricDetails> GetActiveMetrics(const base::Time& start,
+                                              const base::Time& end);
+
+  // Get the activities that are active for the given metric after |start|.
+  std::vector<std::string> GetActiveActivities(const std::string& metric,
+                                               const base::Time& start);
+
+  // Query given metric and activity.
+  MetricInfoVector GetStatsForActivityAndMetric(const std::string& activity,
+                                                const std::string& metric,
+                                                const base::Time& start,
+                                                const base::Time& end);
+
+  MetricInfoVector GetStatsForActivityAndMetric(const std::string& metric,
+                                                const base::Time& start,
+                                                const base::Time& end) {
+    return GetStatsForActivityAndMetric(kProcessChromeAggregate, metric,
+                                        start, end);
+  }
+
+  MetricInfoVector GetStatsForActivityAndMetric(const std::string& activity,
+                                                const std::string& metric) {
+    return GetStatsForActivityAndMetric(activity, metric, base::Time(),
+                                        clock_->GetTime());
+  }
+
+  MetricInfoVector GetStatsForActivityAndMetric(const std::string& metric) {
+    return GetStatsForActivityAndMetric(kProcessChromeAggregate, metric,
+                                        base::Time(), clock_->GetTime());
+  }
+
+  // Query given metric. The returned map is keyed by activity.
+  MetricVectorMap GetStatsForMetricByActivity(const std::string& metric,
+                                              const base::Time& start,
+                                              const base::Time& end);
+
+  MetricVectorMap GetStatsForMetricByActivity(const std::string& metric) {
+    return GetStatsForMetricByActivity(metric, base::Time(), clock_->GetTime());
+  }
+
   // Returns the times for which there is data in the database.
   std::vector<TimeRange> GetActiveIntervals(const base::Time& start,
                                             const base::Time& end);
@@ -143,9 +204,11 @@ class Database {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, OpenCloseTest);
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest,
-                           ActiveIntervalTest);
+  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, OpenClose);
+  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, ActiveInterval);
+
+  typedef std::map<std::string, std::string> RecentMap;
+  typedef std::map<std::string, MetricDetails> MetricDetailsMap;
 
   // By default, the database uses a clock that simply returns the current time.
   class SystemClock : public Clock {
@@ -159,10 +222,24 @@ class Database {
 
   void InitDBs();
 
+  void InitMetricDetails();
+
   bool Close();
+
+  // Load recent info from the db into recent_map_.
+  void LoadRecents();
 
   // Mark the database as being active for the current time.
   void UpdateActiveInterval();
+
+  // A mapping of id,metric to the last inserted key for those parameters
+  // is maintained to prevent having to search through the recent db every
+  // insert.
+  RecentMap recent_map_;
+
+  // A mapping of a metric key to details about that metric. New metrics should
+  // modify InitMetricDetails to add an entry in this map.
+  MetricDetailsMap metric_details_map_;
 
   // The directory where all the databases will reside.
   FilePath path_;
@@ -190,6 +267,7 @@ class Database {
 
   DISALLOW_COPY_AND_ASSIGN(Database);
 };
+
 }  // namespace performance_monitor
 
 #endif  // CHROME_BROWSER_PERFORMANCE_MONITOR_DATABASE_H_

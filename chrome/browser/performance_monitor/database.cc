@@ -29,10 +29,50 @@ const char kActiveIntervalDb[] = "Active Interval";
 const char kMetricDb[] = "Metrics";
 const char kDelimiter = '!';
 
+struct RecentKey {
+  RecentKey(const std::string& recent_time, const std::string& recent_metric,
+           const std::string& recent_activity)
+      : time(recent_time),
+        metric(recent_metric),
+        activity(recent_activity) {}
+  ~RecentKey() {}
+
+  const std::string time;
+  const std::string metric;
+  const std::string activity;
+};
+
+struct MetricKey {
+  MetricKey(const std::string& metric_time, const std::string& metric_metric,
+           const std::string& metric_activity)
+      : time(metric_time),
+        metric(metric_metric),
+        activity(metric_activity) {}
+  ~MetricKey() {}
+
+  const std::string time;
+  const std::string metric;
+  const std::string activity;
+};
+
 // The position of different elements in the key for the event db.
 enum EventKeyPosition {
   EVENT_TIME,  // The time the event was generated.
   EVENT_TYPE  // The type of event.
+};
+
+// The position of different elements in the key for the recent db.
+enum RecentKeyPosition {
+  RECENT_TIME,  // The time the stat was gathered.
+  RECENT_METRIC,  // The unique identifier for the type of metric gathered.
+  RECENT_ACTIVITY  // The unique identifier for the activity.
+};
+
+// The position of different elements in the key for a metric db.
+enum MetricKeyPosition {
+  METRIC_METRIC,  // The unique identifier for the metric.
+  METRIC_TIME,  // The time the stat was gathered.
+  METRIC_ACTIVITY  // The unique identifier for the activity.
 };
 
 // If the db is quiet for this number of microseconds, then it is considered
@@ -40,15 +80,57 @@ enum EventKeyPosition {
 const base::TimeDelta kActiveIntervalTimeout = base::TimeDelta::FromSeconds(5);
 
 // Create the key used for internal active interval monitoring.
+// Key Schema: <Time>
 std::string CreateActiveIntervalKey(const base::Time& time) {
   return StringPrintf("%016" PRId64, time.ToInternalValue());
 }
 
 // Create the database key for a particular event.
+// Key Schema: <Time>-<Event Type>
+// Where '-' represents the delimiter.
 std::string CreateEventKey(const base::Time& time,
                            performance_monitor::EventType type) {
   return StringPrintf("%016" PRId64 "%c%04d", time.ToInternalValue(),
                       kDelimiter, static_cast<int>(type));
+}
+
+// Create the database key for a certain metric to go in the "Recent" database.
+// Key Schema: <Time>-<Metric>-<Activity>
+std::string CreateRecentKey(const base::Time& time,
+                            const std::string& metric,
+                            const std::string& activity) {
+  return StringPrintf("%016" PRId64 "%c%s%c%s", time.ToInternalValue(),
+                      kDelimiter, metric.c_str(), kDelimiter, activity.c_str());
+}
+
+RecentKey SplitRecentKey(const std::string& key) {
+  std::vector<std::string> split;
+  base::SplitString(key, kDelimiter, &split);
+  return RecentKey(split[RECENT_TIME], split[RECENT_METRIC],
+                   split[RECENT_ACTIVITY]);
+}
+
+// Create the database key for a statistic of a certain metric.
+// Key Schema: <Metric>-<Time>-<Activity>
+std::string CreateMetricKey(const base::Time& time,
+                            const std::string& metric,
+                            const std::string& activity) {
+  return StringPrintf("%s%c%016" PRId64 "%c%s", metric.c_str(), kDelimiter,
+                      time.ToInternalValue(), kDelimiter, activity.c_str());
+}
+
+MetricKey SplitMetricKey(const std::string& key) {
+  std::vector<std::string> split;
+  base::SplitString(key, kDelimiter, &split);
+  return MetricKey(split[METRIC_TIME], split[METRIC_METRIC],
+                   split[METRIC_ACTIVITY]);
+}
+
+// Create the key for recent_map_.
+// Key Schema: <Activity>-<Metric>
+std::string CreateRecentMapKey(const std::string& metric,
+                               const std::string& activity) {
+  return activity + kDelimiter + metric;
 }
 
 int EventKeyToType(const std::string& event_key) {
@@ -195,11 +277,153 @@ Database::EventTypeSet Database::GetEventTypes(const base::Time& start,
   return results;
 }
 
+bool Database::AddMetric(const std::string& activity, const std::string& metric,
+                         const std::string& value) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  UpdateActiveInterval();
+  base::Time timestamp = clock_->GetTime();
+  std::string recent_key = CreateRecentKey(timestamp, metric, activity);
+  std::string metric_key = CreateMetricKey(timestamp, metric, activity);
+  std::string recent_map_key = CreateRecentMapKey(metric, activity);
+  // Use recent_map_ to quickly find the key that must be removed.
+  RecentMap::iterator old_it = recent_map_.find(recent_map_key);
+  if (old_it != recent_map_.end())
+    recent_db_->Delete(write_options_, old_it->second);
+  recent_map_[recent_map_key] = recent_key;
+  leveldb::Status recent_status =
+      recent_db_->Put(write_options_, recent_key, value);
+  leveldb::Status metric_status =
+      metric_db_->Put(write_options_, metric_key, value);
+  return recent_status.ok() && metric_status.ok();
+}
+
+void Database::AddMetricDetails(const MetricDetails& details) {
+  UpdateActiveInterval();
+  metric_details_map_[details.name] = details;
+}
+
+std::vector<MetricDetails> Database::GetActiveMetrics(const base::Time& start,
+                                                      const base::Time& end) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  UpdateActiveInterval();
+  std::vector<MetricDetails> results;
+  std::string recent_start_key = CreateRecentKey(start, std::string(),
+                                                 std::string());
+  std::string recent_end_key = CreateRecentKey(end, std::string(),
+                                               std::string());
+  std::string recent_end_of_time_key = CreateRecentKey(clock_->GetTime(),
+                                                       std::string(),
+                                                       std::string());
+  std::set<std::string> active_metrics;
+  // Get all the guaranteed metrics.
+  scoped_ptr<leveldb::Iterator> recent_it(
+      recent_db_->NewIterator(read_options_));
+  for (recent_it->Seek(recent_start_key);
+       recent_it->Valid() && recent_it->key().ToString() <= recent_end_key;
+       recent_it->Next()) {
+    RecentKey split_key = SplitRecentKey(recent_it->key().ToString());
+    active_metrics.insert(split_key.metric);
+  }
+  // Get all the possible metrics (metrics that may have been updated after
+  // |end|).
+  std::set<std::string> possible_metrics;
+  for (recent_it->Seek(recent_end_key);
+       recent_it->Valid() &&
+       recent_it->key().ToString() <= recent_end_of_time_key;
+       recent_it->Next()) {
+    RecentKey split_key = SplitRecentKey(recent_it->key().ToString());
+    possible_metrics.insert(split_key.metric);
+  }
+  std::set<std::string>::iterator possible_it;
+  scoped_ptr<leveldb::Iterator> metric_it(
+      metric_db_->NewIterator(read_options_));
+  for (possible_it = possible_metrics.begin();
+       possible_it != possible_metrics.end();
+       ++possible_it) {
+    std::string metric_start_key = CreateMetricKey(start, *possible_it,
+                                                   std::string());
+    std::string metric_end_key = CreateMetricKey(end, *possible_it,
+                                                 std::string());
+    metric_it->Seek(metric_start_key);
+    // Stats in the timerange from any activity makes the metric active.
+    if (metric_it->Valid() && metric_it->key().ToString() <= metric_end_key) {
+      active_metrics.insert(*possible_it);
+    }
+  }
+  std::set<std::string>::iterator it;
+  for (it = active_metrics.begin(); it != active_metrics.end(); ++it) {
+    MetricDetailsMap::iterator metric_it;
+    metric_it = metric_details_map_.find(*it);
+    if (metric_it == metric_details_map_.end())
+      results.push_back(MetricDetails(*it, kMetricNotFoundError));
+    else
+      results.push_back(metric_it->second);
+  }
+  return results;
+}
+
+std::vector<std::string> Database::GetActiveActivities(
+    const std::string& metric, const base::Time& start) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  UpdateActiveInterval();
+  std::vector<std::string> results;
+  std::string start_key = CreateRecentKey(start, std::string(), std::string());
+  scoped_ptr<leveldb::Iterator> it(recent_db_->NewIterator(read_options_));
+  for (it->Seek(start_key); it->Valid(); it->Next()) {
+    RecentKey split_key = SplitRecentKey(it->key().ToString());
+    if (split_key.metric == metric)
+      results.push_back(split_key.activity);
+  }
+  return results;
+}
+
+Database::MetricInfoVector Database::GetStatsForActivityAndMetric(
+    const std::string& activity, const std::string& metric,
+    const base::Time& start, const base::Time& end) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  UpdateActiveInterval();
+  MetricInfoVector results;
+  std::string start_key = CreateMetricKey(start, metric, activity);
+  std::string end_key = CreateMetricKey(end, metric, activity);
+  scoped_ptr<leveldb::Iterator> it(metric_db_->NewIterator(read_options_));
+  for (it->Seek(start_key);
+       it->Valid() && it->key().ToString() <= end_key;
+       it->Next()) {
+    MetricKey split_key = SplitMetricKey(it->key().ToString());
+    if (split_key.activity == activity)
+      results.push_back(MetricInfo(split_key.time, it->value().ToString()));
+  }
+  return results;
+}
+
+Database::MetricVectorMap Database::GetStatsForMetricByActivity(
+    const std::string& metric, const base::Time& start, const base::Time& end) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  UpdateActiveInterval();
+  MetricVectorMap results;
+  std::string start_key = CreateMetricKey(start, metric, std::string());
+  std::string end_key = CreateMetricKey(end, metric, std::string());
+  scoped_ptr<leveldb::Iterator> it(metric_db_->NewIterator(read_options_));
+  for (it->Seek(start_key);
+       it->Valid() && it->key().ToString() <= end_key;
+       it->Next()) {
+    MetricKey split_key = SplitMetricKey(it->key().ToString());
+    if (!results[split_key.activity].get()) {
+      results[split_key.activity] =
+          linked_ptr<MetricInfoVector>(new MetricInfoVector());
+    }
+    results[split_key.activity]->push_back(
+        MetricInfo(split_key.time, it->value().ToString()));
+  }
+  return results;
+}
+
 Database::Database(const FilePath& path)
     : path_(path),
       read_options_(leveldb::ReadOptions()),
       write_options_(leveldb::WriteOptions()) {
   InitDBs();
+  LoadRecents();
   clock_ = scoped_ptr<Clock>(new SystemClock());
 }
 
@@ -248,6 +472,12 @@ void Database::InitDBs() {
 #endif
 }
 
+void Database::InitMetricDetails() {
+  // TODO(mtytel): Delete this sample metric when a real one is added.
+  metric_details_map_[kSampleMetricName] =
+      MetricDetails(kSampleMetricName, kSampleMetricDescription);
+}
+
 bool Database::Close() {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   metric_db_.reset();
@@ -258,8 +488,19 @@ bool Database::Close() {
   return true;
 }
 
-// TODO(eriq): Only update the active interval under certian circumstances eg.
-// every 10 times or when forced.
+void Database::LoadRecents() {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  recent_map_.clear();
+  scoped_ptr<leveldb::Iterator> it(recent_db_->NewIterator(read_options_));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    RecentKey split_key = SplitRecentKey(it->key().ToString());
+    recent_map_[CreateRecentMapKey(split_key.metric, split_key.activity)] =
+        it->key().ToString();
+  }
+}
+
+// TODO(chebert): Only update the active interval under certian circumstances
+// eg. every 10 times or when forced.
 void Database::UpdateActiveInterval() {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::Time current_time = clock_->GetTime();
@@ -274,4 +515,5 @@ void Database::UpdateActiveInterval() {
   }
   active_interval_db_->Put(write_options_, start_time_key_, end_time);
 }
+
 }  // namespace performance_monitor
