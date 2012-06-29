@@ -766,6 +766,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnGetDocuments(ContentOrigin initial_origin,
                       const LoadDocumentFeedCallback& callback,
                       GetDocumentsParams* params,
+                      base::TimeTicks start_time,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
 

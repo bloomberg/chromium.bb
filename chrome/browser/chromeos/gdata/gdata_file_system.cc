@@ -979,13 +979,11 @@ void GDataFileSystem::LoadFeedFromServer(
     const LoadDocumentFeedCallback& feed_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
-  // Kick off document feed fetching here if we don't have complete data
-  // to finish this call.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   documents_service_->GetDocuments(
       GURL(),   // root feed start.
       start_changestamp,
@@ -1002,7 +1000,8 @@ void GDataFileSystem::LoadFeedFromServer(
                                                     search_file_path,
                                                     search_query,
                                                     directory_resource_id,
-                                                    entry_found_callback))));
+                                                    entry_found_callback)),
+                 start_time));
 }
 
 void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
@@ -2535,9 +2534,15 @@ void GDataFileSystem::SearchAsyncOnUIThread(
 void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
                                      const LoadDocumentFeedCallback& callback,
                                      GetDocumentsParams* params,
+                                     base::TimeTicks start_time,
                                      GDataErrorCode status,
                                      scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (params->feed_list->empty()) {
+    UMA_HISTOGRAM_TIMES("Gdata.InitialFeedLoadTime",
+                        base::TimeTicks::Now() - start_time);
+  }
 
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK &&
@@ -2612,9 +2617,13 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
                            params->search_file_path,
                            params->search_query,
                            params->directory_resource_id,
-                           params->callback))));
+                           params->callback)),
+                   start_time));
     return;
   }
+
+  UMA_HISTOGRAM_TIMES("Gdata.EntireFeedLoadTime",
+                      base::TimeTicks::Now() - start_time);
 
   if (!callback.is_null())
     callback.Run(params, error);
