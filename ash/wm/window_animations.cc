@@ -6,6 +6,9 @@
 
 #include <math.h>
 
+#include <algorithm>
+#include <vector>
+
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
@@ -192,8 +195,8 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
 // visibility to 'false' when done. This doesn't need the complexity of
 // HidingWindowAnimationObserver as the window isn't closing, and if it does a
 // HidingWindowAnimationObserver will be created.
-class WorkspaceHidingWindowAnimationObserver :
-      public ui::ImplicitAnimationObserver {
+class WorkspaceHidingWindowAnimationObserver
+    : public ui::ImplicitAnimationObserver {
  public:
   explicit WorkspaceHidingWindowAnimationObserver(aura::Window* window)
       : layer_(window->layer()) {
@@ -563,6 +566,8 @@ class CrossFadeObserver : public ui::CompositorObserver,
   }
 
   // ui::CompositorObserver overrides:
+  virtual void OnCompositingWillStart(ui::Compositor* compositor) OVERRIDE {
+  }
   virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE {
   }
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE {

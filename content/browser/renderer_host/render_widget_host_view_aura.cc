@@ -564,8 +564,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       // If we are waiting for the resize, fast-track the ACK.
       InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id);
     } else {
-      // Add sending an ACK to the list of things to do OnCompositingStarted
-      on_compositing_started_callbacks_.push_back(
+      // Add sending an ACK to the list of things to do OnCompositingWillStart
+      on_compositing_will_start_callbacks_.push_back(
           base::Bind(&RenderWidgetHostViewAura::InsertSyncPointAndACK,
                      base::Unretained(this),
                      params_in_pixel.route_id,
@@ -605,8 +605,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
       // If we are waiting for the resize, fast-track the ACK.
       InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id);
     } else {
-      // Add sending an ACK to the list of things to do OnCompositingStarted
-      on_compositing_started_callbacks_.push_back(
+      // Add sending an ACK to the list of things to do OnCompositingWillStart
+      on_compositing_will_start_callbacks_.push_back(
           base::Bind(&RenderWidgetHostViewAura::InsertSyncPointAndACK,
                      base::Unretained(this),
                      params_in_pixel.route_id,
@@ -1213,10 +1213,15 @@ void RenderWidgetHostViewAura::OnLostActive() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::CompositorObserver implementation:
 
+
+void RenderWidgetHostViewAura::OnCompositingWillStart(
+    ui::Compositor* compositor) {
+  RunCompositingCallbacks();
+}
+
 void RenderWidgetHostViewAura::OnCompositingStarted(
     ui::Compositor* compositor) {
   locks_pending_draw_.clear();
-  RunCompositingCallbacks();
   compositor->RemoveObserver(this);
 }
 
@@ -1361,11 +1366,11 @@ bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
 
 void RenderWidgetHostViewAura::RunCompositingCallbacks() {
   for (std::vector< base::Callback<void(void)> >::const_iterator
-      it = on_compositing_started_callbacks_.begin();
-      it != on_compositing_started_callbacks_.end(); ++it) {
+      it = on_compositing_will_start_callbacks_.begin();
+      it != on_compositing_will_start_callbacks_.end(); ++it) {
     it->Run();
   }
-  on_compositing_started_callbacks_.clear();
+  on_compositing_will_start_callbacks_.clear();
 }
 
 void RenderWidgetHostViewAura::InsertSyncPointAndACK(int32 route_id,

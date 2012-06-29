@@ -15,6 +15,9 @@ class Compositor;
 // A compositor observer is notified when compositing completes.
 class COMPOSITOR_EXPORT CompositorObserver {
  public:
+  // Called when compositing will start.
+  virtual void OnCompositingWillStart(Compositor* compositor) = 0;
+
   // Called when compositing started: it has taken all the layer changes into
   // account and has issued the graphics commands.
   virtual void OnCompositingStarted(Compositor* compositor) = 0;
@@ -29,6 +32,6 @@ class COMPOSITOR_EXPORT CompositorObserver {
   virtual ~CompositorObserver() {}
 };
 
-} // namespace ui
+}  // namespace ui
 
 #endif  // UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_

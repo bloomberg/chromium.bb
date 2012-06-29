@@ -195,6 +195,7 @@ class RenderWidgetHostViewAura
   friend class WindowObserver;
 
   // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingWillStart(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE;
@@ -294,7 +295,8 @@ class RenderWidgetHostViewAura
   // Current tooltip text.
   string16 tooltip_;
 
-  std::vector< base::Callback<void(void)> > on_compositing_started_callbacks_;
+  std::vector< base::Callback<void(void)> >
+      on_compositing_will_start_callbacks_;
 
   std::map<uint64, scoped_refptr<ImageTransportClient> >
       image_transport_clients_;

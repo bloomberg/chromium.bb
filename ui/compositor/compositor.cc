@@ -4,6 +4,8 @@
 
 #include "ui/compositor/compositor.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/threading/thread_restrictions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
@@ -222,6 +224,9 @@ void Compositor::Draw(bool force_clear) {
     return;
 
   last_started_frame_++;
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnCompositingWillStart(this));
 
   // TODO(nduca): Temporary while compositor calls
   // compositeImmediately() directly.
@@ -259,7 +264,7 @@ bool Compositor::ReadPixels(SkBitmap* bitmap,
 }
 
 void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
-  DCHECK(scale > 0);
+  DCHECK_GT(scale, 0);
   if (size_in_pixel.IsEmpty() || scale <= 0)
     return;
   size_ = size_in_pixel;
@@ -325,8 +330,8 @@ WebKit::WebGraphicsContext3D* Compositor::createContext3D() {
   if (test_compositor_enabled) {
     ui::TestWebGraphicsContext3D* test_context =
       new ui::TestWebGraphicsContext3D();
-   test_context->Initialize();
-   return test_context;
+    test_context->Initialize();
+    return test_context;
   } else {
     return ContextFactory::GetInstance()->CreateContext(this);
   }
@@ -354,13 +359,13 @@ void Compositor::SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
                                           const gfx::Size& image_size) {
   // Swizzle from RGBA to BGRA
   size_t bitmap_size = 4 * image_size.width() * image_size.height();
-  for(size_t i = 0; i < bitmap_size; i += 4)
+  for (size_t i = 0; i < bitmap_size; i += 4)
     std::swap(pixels[i], pixels[i + 2]);
 
   // Vertical flip to transform from GL co-ords
   size_t row_size = 4 * image_size.width();
   scoped_array<unsigned char> tmp_row(new unsigned char[row_size]);
-  for(int row = 0; row < image_size.height() / 2; row++) {
+  for (int row = 0; row < image_size.height() / 2; row++) {
     memcpy(tmp_row.get(),
            &pixels[row * row_size],
            row_size);

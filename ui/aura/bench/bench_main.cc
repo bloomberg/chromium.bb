@@ -91,6 +91,8 @@ class BenchCompositorObserver : public ui::CompositorObserver {
         frames_(0),
         max_frames_(max_frames) {
   }
+  virtual void OnCompositingWillStart(Compositor* compositor) OVERRIDE {}
+
   virtual void OnCompositingStarted(Compositor* compositor) OVERRIDE {}
 
   virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {

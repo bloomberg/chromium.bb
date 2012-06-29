@@ -57,14 +57,14 @@ class TouchEvent;
 // responsiveness of the UI, so the compositor tree should be kept in a
 // "reasonable" state while the lock is held.
 // Don't instantiate this class directly, use RootWindow::GetCompositorLock.
-class AURA_EXPORT CompositorLock :
-    public base::RefCounted<CompositorLock>,
-    public base::SupportsWeakPtr<CompositorLock> {
+class AURA_EXPORT CompositorLock
+    : public base::RefCounted<CompositorLock>,
+      public base::SupportsWeakPtr<CompositorLock> {
  private:
   friend class base::RefCounted<CompositorLock>;
   friend class RootWindow;
 
-  CompositorLock(RootWindow* root_window);
+  explicit CompositorLock(RootWindow* root_window);
   ~CompositorLock();
 
   void CancelLock();
@@ -248,6 +248,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingWillStart(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingStarted(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingAborted(ui::Compositor*) OVERRIDE;
