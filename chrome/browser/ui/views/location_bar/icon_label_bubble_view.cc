@@ -62,6 +62,10 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
+void IconLabelBubbleView::SetLabelBackgroundColor(SkColor color) {
+  label_->SetBackgroundColor(color);
+}
+
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   background_painter_.Paint(canvas, size());
 }

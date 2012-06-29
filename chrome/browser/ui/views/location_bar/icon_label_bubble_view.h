@@ -41,6 +41,11 @@ class IconLabelBubbleView : public views::View {
     is_extension_icon_ = is_extension_icon;
   }
 
+  // Sets the label's text background color to |color|. Needed for correct
+  // sub-pixel text rendering.
+  void SetLabelBackgroundColor(SkColor color);
+
+  // views::View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;

@@ -40,7 +40,7 @@ class SearchDelegate : public SearchModelObserver {
   // tab's model.
   void OnTabDeactivated(TabContents* contents);
 
-  // When a tab is dettached, this class no longer observes changes to the
+  // When a tab is detached, this class no longer observes changes to the
   // tab's model.
   void OnTabDetached(TabContents* contents);
 

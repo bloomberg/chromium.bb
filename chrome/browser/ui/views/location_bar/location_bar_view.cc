@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
@@ -78,6 +80,11 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #endif
 
 using content::WebContents;
@@ -133,6 +140,20 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
 
+#if defined(USE_AURA)
+LocationBarView::FadeAnimationObserver::FadeAnimationObserver(
+    LocationBarView* location_bar_view)
+    : location_bar_view_(location_bar_view) {
+}
+
+LocationBarView::FadeAnimationObserver::~FadeAnimationObserver() {
+}
+
+void LocationBarView::FadeAnimationObserver::OnImplicitAnimationsCompleted() {
+  location_bar_view_->CleanupFadeAnimation();
+}
+#endif  // USE_AURA
+
 // LocationBarView -----------------------------------------------------------
 
 LocationBarView::LocationBarView(Profile* profile,
@@ -178,11 +199,17 @@ LocationBarView::LocationBarView(Profile* profile,
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
+
+  if (search_model_)
+    search_model_->AddObserver(this);
 }
 
 LocationBarView::~LocationBarView() {
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
+
+  if (search_model_)
+    search_model_->RemoveObserver(this);
 }
 
 void LocationBarView::Init(views::View* popup_parent_view) {
@@ -349,9 +376,22 @@ void LocationBarView::SetAnimationOffset(int offset) {
   animation_offset_ = offset;
 }
 
+void LocationBarView::ModeChanged(const chrome::search::Mode& mode) {
+#if defined(USE_AURA)
+  if (mode.is_search() && mode.animate) {
+    // Fade in so the icons don't pop.
+    StartFadeAnimation();
+  } else {
+    // Cancel any pending animations; switch to the final state immediately.
+    StopFadeAnimation();
+  }
+#endif
+}
+
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
+
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   if (star_view_)
     star_view_->SetVisible(star_enabled);
@@ -1382,3 +1422,44 @@ bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->text().empty();
 }
+
+#if defined(USE_AURA)
+void LocationBarView::StartFadeAnimation() {
+  // We do an opacity animation on this view, so it needs a layer.
+  SetPaintToLayer(true);
+  layer()->SetFillsBoundsOpaquely(false);
+
+  // Sub-pixel text rendering doesn't work properly on top of non-opaque
+  // layers, so disable it by setting a transparent background color on the
+  // bubble labels.
+  const SkColor kTransparentWhite = SkColorSetARGB(128, 255, 255, 255);
+  ev_bubble_view_->SetLabelBackgroundColor(kTransparentWhite);
+  selected_keyword_view_->SetLabelBackgroundColor(kTransparentWhite);
+
+  // Fade in opacity from 0 to 1.
+  layer()->SetOpacity(0.f);
+  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+  fade_animation_observer_.reset(new FadeAnimationObserver(this));
+  settings.AddObserver(fade_animation_observer_.get());
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(
+          200 * InstantUI::GetSlowAnimationScaleFactor()));
+  settings.SetTweenType(ui::Tween::LINEAR);
+  layer()->SetOpacity(1.f);
+}
+
+void LocationBarView::StopFadeAnimation() {
+  if (!layer())
+    return;
+  // Stop all animations.
+  layer()->GetAnimator()->StopAnimating();
+}
+
+void LocationBarView::CleanupFadeAnimation() {
+  // Since we're no longer animating we don't need our layer.
+  SetPaintToLayer(false);
+  // Bubble labels don't need a transparent background anymore.
+  ev_bubble_view_->SetLabelBackgroundColor(SK_ColorWHITE);
+  selected_keyword_view_->SetLabelBackgroundColor(SK_ColorWHITE);
+}
+#endif  // USE_AURA

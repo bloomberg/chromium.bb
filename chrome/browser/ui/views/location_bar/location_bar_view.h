@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
@@ -25,6 +26,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/drag_controller.h"
+
+#if defined(USE_AURA)
+#include "ui/compositor/layer_animation_observer.h"
+#endif
 
 class ActionBoxButtonView;
 class ChromeToMobileView;
@@ -71,6 +76,7 @@ class LocationBarView : public LocationBar,
                         public views::DragController,
                         public OmniboxEditController,
                         public DropdownBarHostDelegate,
+                        public chrome::search::SearchModelObserver,
                         public TemplateURLServiceObserver,
                         public content::NotificationObserver {
  public:
@@ -80,6 +86,9 @@ class LocationBarView : public LocationBar,
   // DropdownBarHostDelegate
   virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
   virtual void SetAnimationOffset(int offset) OVERRIDE;
+
+  // chrome::search::SearchModelObserver:
+  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
 
   // Returns the offset used while animating.
   int animation_offset() const { return animation_offset_; }
@@ -351,6 +360,24 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
+#if defined(USE_AURA)
+  // Observer that informs the LocationBarView when the animation is done.
+  class FadeAnimationObserver : public ui::ImplicitAnimationObserver {
+   public:
+    explicit FadeAnimationObserver(LocationBarView* location_bar_view);
+    virtual ~FadeAnimationObserver();
+
+    // ui::ImplicitAnimationObserver overrides:
+    virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
+   private:
+    // The location bar view being animated.  Not owned.
+    LocationBarView* location_bar_view_;
+
+    DISALLOW_COPY_AND_ASSIGN(FadeAnimationObserver);
+  };
+#endif  // USE_AURA
+
   // Returns the amount of horizontal space (in pixels) out of
   // |location_bar_width| that is not taken up by the actual text in
   // location_entry_.
@@ -395,6 +422,17 @@ class LocationBarView : public LocationBar,
   // Draw the background and the left border.
   void PaintActionBoxBackground(gfx::Canvas* canvas,
                                 const gfx::Rect& content_rect);
+
+#if defined(USE_AURA)
+  // Fade in the location bar view so the icons come in gradually.
+  void StartFadeAnimation();
+
+  // Stops the fade animation, if it is playing.  Otherwise does nothing.
+  void StopFadeAnimation();
+
+  // Cleans up layers used for the animation.
+  void CleanupFadeAnimation();
+#endif
 
   // The Autocomplete Edit field.
   scoped_ptr<OmniboxView> location_entry_;
@@ -500,6 +538,11 @@ class LocationBarView : public LocationBar,
   // The view to give focus to. This is either |this| or the
   // LocationBarContainer.
   views::View* view_to_focus_;
+
+#if defined(USE_AURA)
+  // Observer for a fade-in animation.
+  scoped_ptr<FadeAnimationObserver> fade_animation_observer_;
+#endif
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };
