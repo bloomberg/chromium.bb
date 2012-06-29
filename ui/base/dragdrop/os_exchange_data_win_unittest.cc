@@ -387,12 +387,12 @@ TEST(OSExchangeDataTest, Html) {
 
   // Check the CF_HTML too.
   std::string expected_cf_html(
-      "Version:0.9\r\nStartHTML:0000000139\r\nEndHTML:0000000292\r\n"
-      "StartFragment:0000000177\r\nEndFragment:0000000254\r\n"
+      "Version:0.9\r\nStartHTML:0000000139\r\nEndHTML:0000000288\r\n"
+      "StartFragment:0000000175\r\nEndFragment:0000000252\r\n"
       "SourceURL:http://www.google.com/\r\n<html>\r\n<body>\r\n"
-      "<!--StartFragment-->\r\n");
+      "<!--StartFragment-->");
   expected_cf_html += WideToUTF8(html);
-  expected_cf_html.append("\r\n<!--EndFragment-->\r\n</body>\r\n</html>");
+  expected_cf_html.append("<!--EndFragment-->\r\n</body>\r\n</html>");
 
   STGMEDIUM medium;
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);

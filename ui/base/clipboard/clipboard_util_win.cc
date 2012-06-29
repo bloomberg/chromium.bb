@@ -487,9 +487,9 @@ std::string ClipboardUtil::HtmlToCFHtml(const std::string& html,
   static const char* source_url_prefix = "SourceURL:";
 
   static const char* start_markup =
-      "<html>\r\n<body>\r\n<!--StartFragment-->\r\n";
+      "<html>\r\n<body>\r\n<!--StartFragment-->";
   static const char* end_markup =
-      "\r\n<!--EndFragment-->\r\n</body>\r\n</html>";
+      "<!--EndFragment-->\r\n</body>\r\n</html>";
 
   // Calculate offsets
   size_t start_html_offset = strlen(header) - strlen(NUMBER_FORMAT) * 4 +

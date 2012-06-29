@@ -96,10 +96,15 @@ bool TestFlashClipboard::ReadHTMLMatches(const std::string& expected) {
   for (int i = 0; i < kMaxIntervals; ++i) {
     std::string result;
     bool success = ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML, &result);
-    // Markup is inserted around the copied html, so just check that
-    // the pasted string contains the copied string.
-    if (success && result.find(expected) != std::string::npos)
+    // Harmless markup may be inserted around the copied html on some
+    // platforms, so just check that the pasted string contains the
+    // copied string. Also check that we only paste the copied fragment, see
+    // http://code.google.com/p/chromium/issues/detail?id=130827.
+    if (success && result.find(expected) != std::string::npos &&
+        result.find("<!--StartFragment-->") == std::string::npos &&
+        result.find("<!--EndFragment-->") == std::string::npos) {
       return true;
+    }
 
     PlatformSleep(kIntervalMs);
   }

@@ -226,7 +226,7 @@ TEST_F(ClipboardTest, UniodeHTMLTest) {
   EXPECT_EQ(url, url_result);
   // Make sure that fragment indices were adjusted when converting.
   EXPECT_EQ(36, fragment_start);
-  EXPECT_EQ(56, fragment_end);
+  EXPECT_EQ(52, fragment_end);
 }
 #endif  // defined(OS_WIN)
 

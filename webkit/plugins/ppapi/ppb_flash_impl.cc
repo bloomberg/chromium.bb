@@ -334,16 +334,17 @@ PP_Var PPB_Flash_Impl::ReadClipboardData(
       return PP_MakeNull();
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML: {
-      string16 html_stdstr;
+      string16 html;
       GURL gurl;
       uint32 fragment_start;
       uint32 fragment_end;
       clipboard_client_->ReadHTML(buffer_type,
-                                  &html_stdstr,
+                                  &html,
                                   &gurl,
                                   &fragment_start,
                                   &fragment_end);
-      return StringVar::StringToPPVar(UTF16ToUTF8(html_stdstr));
+      return StringVar::StringToPPVar(UTF16ToUTF8(
+          html.substr(fragment_start, fragment_end - fragment_start)));
     }
     case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
       std::string result;
