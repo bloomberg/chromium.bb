@@ -886,8 +886,10 @@ KERNELBASE.dll!TlsSetValue
 # Originally filed as: http://crbug.com/109281
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=778 b
-...
-*!base::ThreadLocalStorage::Initialize
+*!operator new
+*!operator new[]
+*!*::ConstructTlsVector
+*!base::ThreadLocalStorage::StaticSlot::Get
 
 # This is an NSS PRThread object installed in TLS.  Why isn't this detected as a
 # root?  See also http://crbug.com/32624
@@ -996,6 +998,17 @@ ntdll.dll!RtlInitializeCriticalSection
 *!std::_Mutex::_Mutex
 *!std::basic_streambuf<*>
 
+# stdext::hash_map<> seems to swap uninitialized floats.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=931
+*!std::swap<float>
+*!std::_Hash<*
+
+# syscall false positive on handling NtQuerySystemInformation, fix in soon.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=932
+KERNEL32.dll!K32GetPerformanceInfo
+
 # Seems to create a DC, sometimes.  GetTextMetrics returns no pointers, though.
 LEAK
 name=GDI SetBrushOrgEx leak
@@ -1023,7 +1036,7 @@ name=deliberate histogram leak
 LEAK
 name=deliberate LazyInstance leak
 ...
-*!*base::internal::LeakyLazyInstanceTraits*::*
+*!*LeakyLazyInstance*
 ...
 *!base::LazyInstance*::Pointer
 
