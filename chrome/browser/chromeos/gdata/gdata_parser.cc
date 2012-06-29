@@ -679,6 +679,15 @@ bool DocumentEntry::HasHostedDocumentExtension(const FilePath& file) {
 }
 
 // static
+std::vector<int> DocumentEntry::GetAllEntryKinds() {
+  std::vector<int> entry_kinds;
+  entry_kinds.push_back(UNKNOWN);
+  for (size_t i = 0; i < arraysize(kEntryKindMap); ++i)
+    entry_kinds.push_back(kEntryKindMap[i].kind);
+  return entry_kinds;
+}
+
+// static
 DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
     const std::string& term) {
   if (!StartsWithASCII(term, kTermPrefix, false)) {

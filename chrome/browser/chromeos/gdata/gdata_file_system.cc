@@ -631,7 +631,6 @@ GDataFileSystem::GetFileCompleteForOpenParams::GetFileCompleteForOpenParams(
 GDataFileSystem::GetFileCompleteForOpenParams::~GetFileCompleteForOpenParams() {
 }
 
-
 //=================== GetFileFromCacheParams implementation ===================
 
 GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
@@ -655,6 +654,19 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
 
 GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
 }
+
+// GDataFileSystem::FeedToFileResourceMapUmaStats implementation.
+struct GDataFileSystem::FeedToFileResourceMapUmaStats {
+  FeedToFileResourceMapUmaStats()
+      : num_regular_files(0),
+        num_hosted_documents(0) {}
+
+  typedef std::map<DocumentEntry::EntryKind, int> EntryKindToCountMap;
+  int num_regular_files;
+  int num_hosted_documents;
+  EntryKindToCountMap num_files_with_entry_kind;
+};
+
 
 // GDataFileSystem class implementation.
 
@@ -2106,14 +2118,12 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
   }
 
   int unused_delta_feed_changestamp = 0;
-  int unused_num_regular_files = 0;
-  int unused_num_hosted_documents = 0;
+  FeedToFileResourceMapUmaStats unused_uma_stats;
   FileResourceIdMap file_map;
   error = FeedToFileResourceMap(*params->feed_list,
                                 &file_map,
                                 &unused_delta_feed_changestamp,
-                                &unused_num_regular_files,
-                                &unused_num_hosted_documents);
+                                &unused_uma_stats);
   if (error != base::PLATFORM_FILE_OK) {
     LOG(ERROR) << "Failed to convert feed: " << directory_path.value()
                << ": " << error;
@@ -2977,15 +2987,12 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   root_->set_origin(origin);
 
   int delta_feed_changestamp = 0;
-  int num_regular_files = 0;
-  int num_hosted_documents = 0;
+  FeedToFileResourceMapUmaStats uma_stats;
   FileResourceIdMap file_map;
-  base::PlatformFileError error =
-      FeedToFileResourceMap(feed_list,
-                            &file_map,
-                            &delta_feed_changestamp,
-                            &num_regular_files,
-                            &num_hosted_documents);
+  base::PlatformFileError error = FeedToFileResourceMap(feed_list,
+                                                        &file_map,
+                                                        &delta_feed_changestamp,
+                                                        &uma_stats);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -2995,14 +3002,33 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
       &file_map);
 
   // Shouldn't record histograms when processing delta feeds.
-  if (!is_delta_feed) {
-    const int num_total_files = num_hosted_documents + num_regular_files;
-    UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles", num_regular_files);
-    UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
-                         num_hosted_documents);
-    UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
-  }
+  if (!is_delta_feed)
+    UpdateFileCountUmaHistograms(uma_stats);
+
   return base::PLATFORM_FILE_OK;
+}
+
+void GDataFileSystem::UpdateFileCountUmaHistograms(
+    const FeedToFileResourceMapUmaStats& uma_stats) const {
+  const int num_total_files =
+      uma_stats.num_hosted_documents + uma_stats.num_regular_files;
+  UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles",
+                       uma_stats.num_regular_files);
+  UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
+                       uma_stats.num_hosted_documents);
+  UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
+  const std::vector<int> all_entry_kinds = DocumentEntry::GetAllEntryKinds();
+  for (FeedToFileResourceMapUmaStats::EntryKindToCountMap::const_iterator iter =
+           uma_stats.num_files_with_entry_kind.begin();
+       iter != uma_stats.num_files_with_entry_kind.end();
+       ++iter) {
+    const DocumentEntry::EntryKind kind = iter->first;
+    const int count = iter->second;
+    for (int i = 0; i < count; ++i) {
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+          "GData.EntryKind", kind, all_entry_kinds);
+    }
+  }
 }
 
 void GDataFileSystem::ApplyFeedFromFileUrlMap(
@@ -3147,13 +3173,14 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
     int* feed_changestamp,
-    int* num_regular_files,
-    int* num_hosted_documents) {
+    FeedToFileResourceMapUmaStats* uma_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(uma_stats);
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  *num_regular_files = 0;
-  *num_hosted_documents = 0;
+  uma_stats->num_regular_files = 0;
+  uma_stats->num_hosted_documents = 0;
+  uma_stats->num_files_with_entry_kind.clear();
   for (size_t i = 0; i < feed_list.size(); ++i) {
     const DocumentFeed* feed = feed_list[i];
 
@@ -3181,9 +3208,10 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
       GDataFile* as_file = entry->AsGDataFile();
       if (as_file) {
         if (as_file->is_hosted_document())
-          ++(*num_hosted_documents);
+          ++uma_stats->num_hosted_documents;
         else
-          ++(*num_regular_files);
+          ++uma_stats->num_regular_files;
+        ++uma_stats->num_files_with_entry_kind[as_file->kind()];
       }
 
       FileResourceIdMap::iterator map_entry =

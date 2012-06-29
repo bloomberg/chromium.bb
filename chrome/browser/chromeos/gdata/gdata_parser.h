@@ -336,6 +336,7 @@ class FeedEntry {
 // Document feed entry.
 class DocumentEntry : public FeedEntry {
  public:
+  // kEntryKindMap should be also updated if you modify EntryKind.
   enum EntryKind {
     UNKNOWN       = 0x000000,
     // Special entries.
@@ -391,6 +392,9 @@ class DocumentEntry : public FeedEntry {
 
   // Returns true if |file| has one of the hosted document extensions.
   static bool HasHostedDocumentExtension(const FilePath& file);
+
+  // Returns a list of all entry kinds.
+  static std::vector<int> GetAllEntryKinds();
 
   // Document entry resource id.
   const std::string& resource_id() const { return resource_id_; }

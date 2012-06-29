@@ -567,6 +567,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
                               base::PlatformFileError error)>
       LoadDocumentFeedCallback;
 
+  // Struct used to record UMA stats with FeedToFileResourceMap().
+  struct FeedToFileResourceMapUmaStats;
+
   // Finds entry object by |file_path| and returns the entry object.
   // Returns NULL if it does not find the entry.
   GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
@@ -880,6 +883,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
       int largest_changestamp,
       int root_feed_changestamp);
 
+  // Updates UMA histograms about file counts.
+  void UpdateFileCountUmaHistograms(
+      const FeedToFileResourceMapUmaStats& uma_stats) const;
+
   // Applies the pre-processed feed from |file_map| map onto the file system.
   // All entries in |file_map| will be erased (i.e. the map becomes empty),
   // and values are deleted.
@@ -901,8 +908,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::vector<DocumentFeed*>& feed_list,
       FileResourceIdMap* file_map,
       int* feed_changestamp,
-      int* num_regular_files,
-      int* num_hosted_documents);
+      FeedToFileResourceMapUmaStats* uma_stats);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
