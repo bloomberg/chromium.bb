@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {
 // Times out sometimes on Linux. http://crbug.com/135115
 #if defined(OS_LINUX)
 #define MAYBE_EscapingMouseLockAndFullscreen \
-    DISABLED_EscapingMouseLockAndFullscreen
+    FLAKY_EscapingMouseLockAndFullscreen
 #else
 #define MAYBE_EscapingMouseLockAndFullscreen EscapingMouseLockAndFullscreen
 #endif
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 // Times out sometimes on Linux. http://crbug.com/135115
 #if defined(OS_LINUX)
-#define MAYBE_MouseLockAndFullscreen DISABLED_MouseLockAndFullscreen
+#define MAYBE_MouseLockAndFullscreen FLAKY_MouseLockAndFullscreen
 #else
 #define MAYBE_MouseLockAndFullscreen MouseLockAndFullscreen
 #endif
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 // Fails sometimes on Linux. http://crbug.com/135115
 #if defined(OS_LINUX)
-#define MAYBE_ToggleFullscreenModeForTab DISABLED_ToggleFullscreenModeForTab
+#define MAYBE_ToggleFullscreenModeForTab FLAKY_ToggleFullscreenModeForTab
 #else
 #define MAYBE_ToggleFullscreenModeForTab ToggleFullscreenModeForTab
 #endif
