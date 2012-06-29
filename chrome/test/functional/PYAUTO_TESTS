@@ -597,6 +597,9 @@
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       '-youtube.YoutubeTest.testPlayerResolution',
+      # crbug.com/135211
+      '-instant.InstantTest.testExtnPageCanDismissInstant',
+      '-instant.InstantSettingsTest.testEnableDisableInstant',
     ],
 
     'chromeos': [
