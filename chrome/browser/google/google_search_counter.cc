@@ -24,6 +24,15 @@ bool IsOmniboxGoogleSearchNavigation(const content::NavigationEntry& entry) {
   return stripped_transition == content::PAGE_TRANSITION_GENERATED;
 }
 
+// Returns true iff |entry| represents a Google search from the Google Search
+// App. This method assumes that we have already verified that |entry|'s URL is
+// a Google search URL.
+bool IsSearchAppGoogleSearchNavigation(const content::NavigationEntry& entry) {
+  DCHECK(google_util::IsGoogleSearchUrl(entry.GetURL().spec()));
+  return entry.GetURL().query().find("source=search_app") !=
+         std::string::npos;
+}
+
 }  // namespace
 
 // static
@@ -61,6 +70,8 @@ void GoogleSearchCounter::ProcessCommittedEntry(
     // transmit these counts to the server if the user has opted into sending
     // usage stats.
     search_metrics_->RecordGoogleSearch(GoogleSearchMetrics::AP_OMNIBOX);
+  } else if (IsSearchAppGoogleSearchNavigation(entry)) {
+    search_metrics_->RecordGoogleSearch(GoogleSearchMetrics::AP_SEARCH_APP);
   } else {
     // For all other cases that we have not yet implemented or care to measure,
     // we log a generic "catch-all" metric.

@@ -31,15 +31,16 @@ class GoogleSearchCounterTest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  // Test if |url| is a Google search for specific types.
-  // When |is_omnibox| is true, this method will append Omnibox identifiers to
-  // the simulated URL navigation. If |expect_metrics| is set, we'll also use
-  // the Search Metrics mock class to ensure that the type of metric recorded
-  // is correct. Note that when |expect_metrics| is false, we strictly forbid
-  // any metrics from being logged at all. See implementation below for details.
+  // Test if |url| is a Google search for specific types. When |is_omnibox| is
+  // true, this method will append Omnibox identifiers to the simulated URL
+  // navigation. If |expected_metric| is set and not AP_BOUNDARY, we'll also use
+  // the Search Metrics mock class to ensure that the type of metric recorded is
+  // correct. Note that when |expected_metric| is AP_BOUNDARY, we strictly
+  // forbid any metrics from being logged at all. See implementation below for
+  // details.
   void TestGoogleSearch(const std::string& url,
                         bool is_omnibox,
-                        bool expect_metrics);
+                        GoogleSearchMetrics::AccessPoint expected_metric);
 
  private:
   void ExpectMetricsLogged(GoogleSearchMetrics::AccessPoint ap);
@@ -67,9 +68,10 @@ void GoogleSearchCounterTest::TearDown() {
   mock_search_metrics_ = NULL;
 }
 
-void GoogleSearchCounterTest::TestGoogleSearch(const std::string& url,
-                                               bool is_omnibox,
-                                               bool expect_metrics) {
+void GoogleSearchCounterTest::TestGoogleSearch(
+    const std::string& url,
+    bool is_omnibox,
+    GoogleSearchMetrics::AccessPoint expected_metric) {
   content::LoadCommittedDetails details;
   scoped_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
@@ -82,12 +84,8 @@ void GoogleSearchCounterTest::TestGoogleSearch(const std::string& url,
   // false, the absence of this call to ExpectMetricsLogged will be noticed and
   // cause the test to complain, as expected. We use this behaviour to test
   // negative test cases (such as bad searches).
-  if (expect_metrics) {
-    if (is_omnibox)
-      ExpectMetricsLogged(GoogleSearchMetrics::AP_OMNIBOX);
-    else
-      ExpectMetricsLogged(GoogleSearchMetrics::AP_OTHER);
-  }
+  if (expected_metric != GoogleSearchMetrics::AP_BOUNDARY)
+    ExpectMetricsLogged(expected_metric);
 
   // For now we don't care about the notification source, but when we start
   // listening for additional access points, we will have to pass in a valid
@@ -104,27 +102,44 @@ void GoogleSearchCounterTest::ExpectMetricsLogged(
 }
 
 TEST_F(GoogleSearchCounterTest, EmptySearch) {
-  TestGoogleSearch(std::string(), false, false);
+  TestGoogleSearch(std::string(), false, GoogleSearchMetrics::AP_BOUNDARY);
 }
 
 TEST_F(GoogleSearchCounterTest, GoodOmniboxSearch) {
-  TestGoogleSearch("http://www.google.com/search?q=something", true, true);
+  TestGoogleSearch("http://www.google.com/search?q=something", true,
+                   GoogleSearchMetrics::AP_OMNIBOX);
 }
 
 TEST_F(GoogleSearchCounterTest, BadOmniboxSearch) {
-  TestGoogleSearch("http://www.google.com/search?other=something", true, false);
+  TestGoogleSearch("http://www.google.com/search?other=something", true,
+                   GoogleSearchMetrics::AP_BOUNDARY);
 }
 
 TEST_F(GoogleSearchCounterTest, EmptyOmniboxSearch) {
-  TestGoogleSearch(std::string(), true, false);
+  TestGoogleSearch(std::string(), true, GoogleSearchMetrics::AP_BOUNDARY);
 }
 
 TEST_F(GoogleSearchCounterTest, GoodOtherSearch) {
-  TestGoogleSearch("http://www.google.com/search?q=something", false, true);
+  TestGoogleSearch("http://www.google.com/search?q=something", false,
+                   GoogleSearchMetrics::AP_OTHER);
 }
 
 TEST_F(GoogleSearchCounterTest, BadOtherSearch) {
-  TestGoogleSearch("http://www.google.com/search?other=something", false, false);
+  TestGoogleSearch("http://www.google.com/search?other=something", false,
+                   GoogleSearchMetrics::AP_BOUNDARY);
+}
+
+TEST_F(GoogleSearchCounterTest, SearchAppSearch) {
+  TestGoogleSearch("http://www.google.com/webhp?source=search_app#q=something",
+                   false, GoogleSearchMetrics::AP_SEARCH_APP);
+}
+
+TEST_F(GoogleSearchCounterTest, SearchAppStart) {
+  // Starting the search app takes you to this URL, but it should not be
+  // considered an actual search event. Note that this URL is not considered an
+  // actual search because it has no query string parameter ("q").
+  TestGoogleSearch("http://www.google.com/webhp?source=search_app",
+                   false, GoogleSearchMetrics::AP_BOUNDARY);
 }
 
 // TODO(stevet): Add a regression test to protect against the particular
