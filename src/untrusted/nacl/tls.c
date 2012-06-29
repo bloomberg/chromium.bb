@@ -13,8 +13,6 @@
 #include <string.h>
 
 #include "native_client/src/include/elf32.h"
-#include "native_client/src/include/elf_auxv.h"
-#include "native_client/src/untrusted/nacl/nacl_auxv.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
@@ -27,7 +25,7 @@
  * references.  With a linker that provides them, they will always be
  * defined.  With another linker, they will always be zero and we rely
  * on such a linker using a layout wherein the phdrs are visible in the
- * address space and sel_ldr will give us AT_PHDR pointing at them.
+ * address space and the linker gives us __ehdr_start.
  */
 
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[3] */
@@ -85,25 +83,6 @@ static const struct tls_info *get_tls_info(void) {
       phnum = __ehdr_start.e_phnum;
       phdr = (const Elf32_Phdr *) ((const char *) &__ehdr_start +
                                    __ehdr_start.e_phoff);
-    } else if (__nacl_auxv != NULL) {
-      const Elf32_auxv_t *av;
-      for (av = __nacl_auxv; av->a_type != AT_NULL; ++av) {
-        switch (av->a_type) {
-          case AT_PHENT:
-            phentsize_ok = av->a_un.a_val == sizeof(Elf32_Phdr);
-            break;
-          case AT_PHDR:
-            phdr = (const Elf32_Phdr *) av->a_un.a_val;
-            break;
-          case AT_PHNUM:
-            phnum = av->a_un.a_val;
-            break;
-          default:
-            continue;
-        }
-        if (phentsize_ok && phdr != NULL && phnum != 0)
-          break;
-      }
     }
     if (phentsize_ok && phdr != NULL) {
       /*

@@ -10,21 +10,11 @@
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
-#include "native_client/src/untrusted/nacl/nacl_auxv.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
 void __libc_init_array(void);
-
-/*
- * We define this here because code shared with the generic application
- * environment (src/untrusted/nacl/tls.c) uses it.  But N.B. we don't
- * initialize it in _start because its use is to look for AT_PHDR inside
- * it, but when that's present it refers to the application image, not the
- * IRT image.
- */
-Elf32_auxv_t *__nacl_auxv;
 
 /*
  * This is the true entry point for untrusted code.
