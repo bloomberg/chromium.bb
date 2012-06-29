@@ -678,10 +678,11 @@ void NaClAddImcHandle(struct NaClApp  *nap,
           (uintptr_t) h,
           nacl_desc);
   dp = (struct NaClDescImcDesc *) malloc(sizeof *dp);
-  if (NULL == dp) {
+  if (NACL_FI_ERROR_COND("NaClAddImcHandle__malloc", NULL == dp)) {
     NaClLog(LOG_FATAL, "NaClAddImcHandle: no memory\n");
   }
-  if (!NaClDescImcDescCtor(dp, h)) {
+  if (NACL_FI_ERROR_COND("NaClAddImcHandle__ctor",
+                         !NaClDescImcDescCtor(dp, h))) {
     NaClLog(LOG_FATAL, ("NaClAddImcHandle: cannot construct"
                         " IMC descriptor object\n"));
   }
@@ -795,7 +796,8 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
   struct NaClDesc *pair[2];
 
   NaClLog(3, "Entered NaClCreateServiceSocket\n");
-  if (0 != NaClCommonDescMakeBoundSock(pair)) {
+  if (NACL_FI_ERROR_COND("NaClCreateServiceSocket__boundsock",
+                         0 != NaClCommonDescMakeBoundSock(pair))) {
     NaClLog(LOG_FATAL, "Cound not create service socket\n");
   }
   NaClLog(4,
@@ -874,6 +876,11 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
            ", error %"NACL_PRIdS"\n"),
           (uintptr_t) inherited_desc,
           rv);
+  if (NACL_FI_ERROR_COND("NaClSendServiceAddressTo__SendMsg", 0 != rv)) {
+    NaClLog(LOG_FATAL,
+            "NaClSendServiceAddressTo: SendMsg failed, rv = %"NACL_PRIdS"\n",
+            rv);
+  }
 }
 
 static void NaClSecureChannelShutdownRpc(
@@ -991,7 +998,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
    * corresponding entry here.  instead, we pretend that fall-through
    * from the switch is possible.
    */
-  if (NULL == load_src) {
+  if (NACL_FI_ERROR_COND("NaClLoadModuleRpc__typeTag", NULL == load_src)) {
     NaClLog(LOG_FATAL, "nexe_binary's typeTag has unsupported value: %d\n",
             NACL_VTBL(NaClDesc, nexe_binary)->typeTag);
   }
@@ -1213,12 +1220,15 @@ int NaClSecureServiceCtor(struct NaClSecureService          *self,
   NaClLog(4,
           "Entered NaClSecureServiceCtor: self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
-  if (!NaClSimpleServiceWithSocketCtor(&self->base,
-                                       srpc_handlers,
-                                       NaClThreadInterfaceThreadFactory,
-                                       (void *) NULL,
-                                       nap->service_port,
-                                       nap->service_address)) {
+  if (NACL_FI_ERROR_COND(
+          "NaClSecureServiceCtor__NaClSimpleServiceWithSocketCtor",
+          !NaClSimpleServiceWithSocketCtor(
+              &self->base,
+              srpc_handlers,
+              NaClThreadInterfaceThreadFactory,
+              (void *) NULL,
+              nap->service_port,
+              nap->service_address))) {
     goto failure_simple_ctor;
   }
   self->nap = nap;
@@ -1282,7 +1292,11 @@ static void NaClSecureReverseClientCallback(
   nap->reverse_quota_interface = (struct NaClReverseQuotaInterface *)
       malloc(sizeof *nap->reverse_quota_interface);
   if (NULL == nap->reverse_quota_interface ||
-      !NaClReverseQuotaInterfaceCtor(nap->reverse_quota_interface, nap)) {
+      NACL_FI_ERROR_COND(
+          ("NaClSecureReverseClientCallback"
+           "__NaClReverseQuotaInterfaceCtor"),
+          !NaClReverseQuotaInterfaceCtor(nap->reverse_quota_interface,
+                                         nap))) {
     NaClLog(LOG_FATAL, "Reverse quota interface Ctor failed\n");
   }
   nap->reverse_channel_initialization_state = NACL_REVERSE_CHANNEL_INITIALIZED;
@@ -1635,17 +1649,22 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
 
   secure_command_server = (struct NaClSecureService *) malloc(
       sizeof *secure_command_server);
-  if (NULL == secure_command_server) {
+  if (NACL_FI_ERROR_COND("NaClSecureCommandChannel__malloc",
+                         NULL == secure_command_server)) {
     NaClLog(LOG_FATAL, "Out of memory for secure command channel\n");
   }
-  if (!NaClSecureServiceCtor(secure_command_server, secure_handlers, nap)) {
+  if (NACL_FI_ERROR_COND("NaClSecureCommandChannel__NaClSecureServiceCtor",
+                         !NaClSecureServiceCtor(secure_command_server,
+                                                secure_handlers, nap))) {
     NaClLog(LOG_FATAL, "NaClSecureServiceCtor failed\n");
   }
   nap->secure_service = secure_command_server;
 
   NaClLog(4, "NaClSecureCommandChannel: starting service thread\n");
-  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
-                                           secure_command_server)) {
+  if (NACL_FI_ERROR_COND(
+          "NaClSecureCommandChannel__NaClSimpleServiceStartServiceThread",
+          !NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
+                                               secure_command_server))) {
     NaClLog(LOG_FATAL,
             "Could not start secure command channel service thread\n");
   }

@@ -14,20 +14,25 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
-#include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_bootstrap_channel_error_reporter.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
@@ -121,14 +126,21 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
     NaClSecureRngModuleSetUrandomFd(args->urandom_fd);
 #endif
 
+  /*
+   * Clear state so that NaClBootstrapChannelErrorReporter will be
+   * able to know if the bootstrap channel is available or not.
+   */
+  memset(&state, 0, sizeof state);
   NaClAllModulesInit();
+  NaClBootstrapChannelErrorReporterInit();
+  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, &state);
 
   /* to be passed to NaClMain, eventually... */
   av[0] = "NaClMain";
 
-  if (!NaClAppCtor(&state)) {
-    fprintf(stderr, "Error while constructing app state\n");
-    goto done_ctor;
+  if (NACL_FI_ERROR_COND("AppCtor", !NaClAppCtor(&state))) {
+    NaClLog(LOG_FATAL, "Error while constructing app state\n");
+    goto done;
   }
 
   errcode = LOAD_OK;
@@ -209,6 +221,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
    * be on the safe side.
    */
   if (!NACL_OSX) {
+    NACL_FI_FATAL("NaClSignalAssertNoHandlers");
     NaClSignalAssertNoHandlers();
   }
 
@@ -238,6 +251,8 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
   NaClCreateServiceSocket(nap);
   NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
+
+  NACL_FI_FATAL("BeforeSecureCommandChannel");
   /*
    * NB: Spawns a thread that uses the command channel.  We do this
    * after NaClAppLoadFile so that the NaClApp object is more fully
@@ -250,6 +265,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
   NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
           (uintptr_t) nap->secure_service);
+  NACL_FI_FATAL("BeforeWaitForStartModule");
 
   if (NULL != nap->secure_service) {
     NaClErrorCode start_result;
@@ -261,6 +277,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
       errcode = start_result;
     }
   }
+  NACL_FI_FATAL("BeforeLoadIrt");
 
   /*
    * error reporting done; can quit now if there was an error earlier.
@@ -286,15 +303,18 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
         "This is expected for PNaCl's translator nexes.\n");
   }
 
+  NACL_FI_FATAL("BeforeEnvCleanserCtor");
+
   NaClEnvCleanserCtor(&env_cleanser, 1);
   if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
 
-  if (!NaClAppLaunchServiceThreads(nap)) {
-    fprintf(stderr, "Launch service threads failed\n");
-    goto done;
+  if (NACL_FI_ERROR_COND("LaunchServiceThreads",
+                         !NaClAppLaunchServiceThreads(nap))) {
+    NaClLog(LOG_FATAL, "Launch service threads failed\n");
   }
+
   if (args->enable_debug_stub) {
     if (!NaClDebugInit(nap)) {
       goto done;
@@ -304,11 +324,13 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   free(args);
   args = NULL;
 
-  if (!NaClCreateMainThread(nap, ac, av,
-                            NaClEnvCleanserEnvironment(&env_cleanser))) {
-    fprintf(stderr, "creating main thread failed\n");
-    goto done;
+  if (NACL_FI_ERROR_COND(
+          "CreateMainThread",
+          !NaClCreateMainThread(nap, ac, av,
+                                NaClEnvCleanserEnvironment(&env_cleanser)))) {
+    NaClLog(LOG_FATAL, "creating main thread failed\n");
   }
+  NACL_FI_FATAL("BeforeEnvCleanserDtor");
 
   NaClEnvCleanserDtor(&env_cleanser);
 
@@ -335,8 +357,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   if (LOAD_OK != errcode) {
     NaClBlockIfCommandChannelExists(nap);
   }
-
- done_ctor:
 
   NaClAllModulesFini();
 

@@ -39,6 +39,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_bootstrap_channel_error_reporter.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -215,7 +216,10 @@ int main(int  argc,
   redir_queue = NULL;
   redir_qend = &redir_queue;
 
+  memset(&state, 0, sizeof state);
   NaClAllModulesInit();
+  NaClBootstrapChannelErrorReporterInit();
+  NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, &state);
 
   verbosity = NaClLogGetVerbosity();
 

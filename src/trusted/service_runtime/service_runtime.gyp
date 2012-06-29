@@ -38,6 +38,7 @@
           'elf_util.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',
+          'nacl_bootstrap_channel_error_reporter.c',
           'nacl_copy.c',
           'nacl_desc_effector_ldr.c',
           'nacl_desc_postmessage.c',

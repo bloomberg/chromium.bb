@@ -134,17 +134,40 @@ void NaClFaultInjectionModuleInternalFini(void);
 #define NACL_FI(site_name, funcall, error_value) \
   (NaClFaultInjectionFaultP(site_name) ? (error_value) : (funcall))
 /*
- * Note that the error_value parameter can be more complex, e.g., it
+ * Note that the |error_value| parameter can be more complex, e.g., it
  * can be an expression that invokes a factory function to obtain a
- * special error value.
+ * special error value.  Similarly, |funcall| can be an arbitrary
+ * expression, e.g., the guard to a conditional that leads to a
+ * LOG_FATAL.
  */
 
+/*
+ * if (NACL_FI_ERROR_COND("test", !NaClSecureServiceCtor(...))) {
+ *   error_handling_code();
+ * }
+ *
+ * This is a common case -- the error check guard to error handling
+ * code is wrapped with NACL_FI_ERROR_COND to pretend that the guard
+ * fired and force the error handling code to execute.
+ *
+ * NB: does NOT evaluate |expr| when the fault injection machinery
+ * triggers.
+ */
+#define NACL_FI_ERROR_COND(site_name, expr)     \
+  (NACL_FI(site_name, expr, 1))
+
+#define NACL_FI_FATAL(site_name)                                      \
+  do {                                                                \
+    if (NACL_FI(site_name, 0, 1)) {                                   \
+      NaClLog(LOG_FATAL, "NaCl Fault Injection: at %s\n", site_name); \
+    }                                                                 \
+  } while (0)
 
 /*
- * NaClErrorCode = NACL_FI_VAL("LoadModule", NaClErrorCode,
+ * NaClErrorCode = NACL_FI_VAL("load_module", NaClErrorCode,
  *                             NaClAppLoadFile(load_src, nap));
  *
- * NACL_FAULT_INJECTION=LoadModule=2 ./path/to/sel_ldr -args -- some.nexe
+ * NACL_FAULT_INJECTION=load_module=GF2 ./path/to/sel_ldr -args -- some.nexe
  * # error 2 is LOAD_UNSUPPORTED_OS_PLATFORM
  *
  * Since the type is a macro argument, we could inject in any integral
@@ -157,16 +180,16 @@ void NaClFaultInjectionModuleInternalFini(void);
  * pointer to user-controlled data regions rather than new memory.
  */
 
-#define NACL_FI_VAL(site_name, type, funcall)  \
-  (NaClFaultInjectionFaultP(site_name)         \
-   ? (type) NaClFaultInjectionValue() \
+#define NACL_FI_VAL(site_name, type, funcall) \
+  (NaClFaultInjectionFaultP(site_name)        \
+   ? (type) NaClFaultInjectionValue()         \
    : (funcall))
 
 /*
- * int syscall_ret = NACL_FI_SYSCALL("PlatformLinuxMmap5",
- *                                   mmap(d, ...))
+ * int syscall_ret = NACL_FI_SYSCALL("PlatformLinuxRead3",
+ *                                   read(d, ...))
  *
- * NACL_FAULT_INJECTION=PlatformLinuxMmap5=9 ./path/to/sel_ldr -args \
+ * NACL_FAULT_INJECTION=PlatformLinuxRead3=GF9 ./path/to/sel_ldr -args \
  *  -- some.nexe
  * # errno 9 on linux is EBADF.
  *
@@ -178,7 +201,14 @@ void NaClFaultInjectionModuleInternalFini(void);
    : (funcall))
 
 /*
- * mmap is like other syscalls, but return type is void *
+ * int syscall_ret = NACL_FI_TYPED_SYSCALL("PlatformLinuxMmap5",
+ *                                         void *, mmap(d, ...))
+ *
+ * NACL_FAULT_INJECTION=PlatformLinuxMmap5=GF9 ./path/to/sel_ldr -args \
+ *  -- some.nexe
+ * # errno 9 on linux is EBADF.
+ *
+ * This case causes the call to return -1 and sets errno to 9.
  */
 #define NACL_FI_TYPED_SYSCALL(site_name, type, funcall)     \
   (NaClFaultInjectionFaultP(site_name)                      \
