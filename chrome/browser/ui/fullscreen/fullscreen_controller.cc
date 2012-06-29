@@ -530,7 +530,7 @@ void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
   toggled_into_fullscreen_ = !window_->InPresentationMode();
   GURL url;
   if (for_tab) {
-    url = browser_->GetActiveWebContents()->GetURL();
+    url = chrome::GetActiveWebContents(browser_)->GetURL();
     tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   }
