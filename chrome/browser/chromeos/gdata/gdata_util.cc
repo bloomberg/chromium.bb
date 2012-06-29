@@ -98,18 +98,20 @@ void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
   }
 }
 
-// Invoked upon completion of FindEntryByResourceId initiated by
+// Invoked upon completion of GetFileInfoByResourceId initiated by
 // ModifyGDataFileResourceUrl.
-void OnFindEntryByResourceId(Profile* profile,
-                             const std::string& resource_id,
-                             base::PlatformFileError error,
-                             GDataEntry* entry) {
+void OnGetFileInfoByResourceId(Profile* profile,
+                               const std::string& resource_id,
+                               base::PlatformFileError error,
+                               const FilePath& /* gdata_file_path */,
+                               scoped_ptr<GDataFileProto> file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != base::PLATFORM_FILE_OK || !entry || !entry->AsGDataFile())
+  if (error != base::PLATFORM_FILE_OK)
     return;
 
-  const std::string& file_name = entry->AsGDataFile()->file_name();
+  DCHECK(file_proto.get());
+  const std::string& file_name = file_proto->gdata_entry().file_name();
   const GURL edit_url = GetFileResourceUrl(resource_id, file_name);
   OpenEditURLUIThread(profile, &edit_url);
   DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
@@ -224,10 +226,11 @@ void ModifyGDataFileResourceUrl(Profile* profile,
     // Handle all other gdata files.
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
-    file_system->FindEntryByResourceId(resource_id,
-                                       base::Bind(&OnFindEntryByResourceId,
-                                                  profile,
-                                                  resource_id));
+    file_system->GetFileInfoByResourceId(
+        resource_id,
+        base::Bind(&OnGetFileInfoByResourceId,
+                   profile,
+                   resource_id));
     *url = GURL();
   }
 }

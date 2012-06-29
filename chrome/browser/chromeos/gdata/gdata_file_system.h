@@ -61,6 +61,17 @@ typedef base::Callback<void(base::PlatformFileError error,
                             scoped_ptr<GDataFileProto> file_proto)>
     GetFileInfoCallback;
 
+// Used to get file info from the file system, with the gdata file path.
+// If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
+//
+// |gdata_file_path| parameter is provided as GDataFileProto does not contain
+// the gdata file path (i.e. only contains the base name without parent
+// directory names).
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& gdata_file_path,
+                            scoped_ptr<GDataFileProto> file_proto)>
+    GetFileInfoWithFilePathCallback;
+
 // Used to get entry info from the file system.
 // If |error| is not PLATFORM_FILE_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -144,12 +155,13 @@ class GDataFileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Finds file info by using |resource_id|. This call does not initiate
-  // content refreshing.
+  // Finds a file (not directory) by using |resource_id|. This call does not
+  // initiate content refreshing.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void FindEntryByResourceId(const std::string& resource_id,
-                                     const FindEntryCallback& callback) = 0;
+  virtual void GetFileInfoByResourceId(
+      const std::string& resource_id,
+      const GetFileInfoWithFilePathCallback& callback) = 0;
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the gdata file system.
@@ -379,9 +391,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
-  virtual void FindEntryByResourceId(
+  virtual void GetFileInfoByResourceId(
       const std::string& resource_id,
-      const FindEntryCallback& callback) OVERRIDE;
+      const GetFileInfoWithFilePathCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const SearchCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
@@ -1139,8 +1151,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetFileInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetFileInfoCallback& callback);
-  void FindEntryByResourceIdOnUIThread(const std::string& resource_id,
-                                       const FindEntryCallback& callback);
+  void GetFileInfoByResourceIdOnUIThread(
+      const std::string& resource_id,
+      const GetFileInfoWithFilePathCallback& callback);
   void ReadDirectoryByPathAsyncOnUIThread(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback);

@@ -26,9 +26,9 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD0(StartUpdates, void());
   MOCK_METHOD0(StopUpdates, void());
   MOCK_METHOD0(CheckForUpdates, void());
-  MOCK_METHOD2(FindEntryByResourceId,
+  MOCK_METHOD2(GetFileInfoByResourceId,
                void(const std::string& resource_id,
-                    const FindEntryCallback& callback));
+                    const GetFileInfoWithFilePathCallback& callback));
   MOCK_METHOD2(Search, void(const std::string& search_query,
                             const SearchCallback& callback));
   MOCK_METHOD3(TransferFileFromRemoteToLocal,

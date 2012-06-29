@@ -767,31 +767,35 @@ void GDataFileSystem::StopUpdates() {
   update_timer_.Stop();
 }
 
-void GDataFileSystem::FindEntryByResourceId(const std::string& resource_id,
-                                            const FindEntryCallback& callback) {
+void GDataFileSystem::GetFileInfoByResourceId(
+    const std::string& resource_id,
+    const GetFileInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
-      base::Bind(&GDataFileSystem::FindEntryByResourceIdOnUIThread,
+      base::Bind(&GDataFileSystem::GetFileInfoByResourceIdOnUIThread,
                  ui_weak_ptr_,
                  resource_id,
                  CreateRelayCallback(callback)));
 }
 
-void GDataFileSystem::FindEntryByResourceIdOnUIThread(
+void GDataFileSystem::GetFileInfoByResourceIdOnUIThread(
     const std::string& resource_id,
-    const FindEntryCallback& callback) {
+    const GetFileInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFile* file = NULL;
   GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
-  if (entry)
-    file = entry->AsGDataFile();
-
-  if (file)
-    callback.Run(base::PLATFORM_FILE_OK, file);
-  else
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+  if (entry && entry->AsGDataFile()) {
+    scoped_ptr<GDataFileProto> file_proto(new GDataFileProto);
+    entry->AsGDataFile()->ToProto(file_proto.get());
+    callback.Run(base::PLATFORM_FILE_OK,
+                 entry->GetFilePath(),
+                 file_proto.Pass());
+  } else {
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                 FilePath(),
+                 scoped_ptr<GDataFileProto>());
+  }
 }
 
 void GDataFileSystem::FindEntryByPathAsyncOnUIThread(

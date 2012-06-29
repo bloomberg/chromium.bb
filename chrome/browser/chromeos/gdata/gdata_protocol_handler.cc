@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
@@ -168,10 +169,11 @@ class GDataURLRequestJob : public net::URLRequestJob {
   // to |file_size|, and notifies result for Start().
   void OnGetFileSize(int64 *file_size);
 
-  // Helper callback for FindEntryByResourceId invoked by StartAsync.
-  void OnFindEntryByResourceId(const std::string& resource_id,
-                               base::PlatformFileError error,
-                               GDataEntry* entry);
+  // Helper callback for GetFileInfoByResourceId invoked by StartAsync.
+  void OnGetFileInfoByResourceId(const std::string& resource_id,
+                                 base::PlatformFileError error,
+                                 const FilePath& gdata_file_path,
+                                 scoped_ptr<GDataFileProto> file_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding
   // stream in a streaming fashion.
@@ -495,21 +497,23 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
     return;
   }
 
-  file_system_->FindEntryByResourceId(
+  file_system_->GetFileInfoByResourceId(
       resource_id,
-      base::Bind(&GDataURLRequestJob::OnFindEntryByResourceId,
+      base::Bind(&GDataURLRequestJob::OnGetFileInfoByResourceId,
                  weak_ptr_factory_->GetWeakPtr(),
                  resource_id));
 }
 
-void GDataURLRequestJob::OnFindEntryByResourceId(
+void GDataURLRequestJob::OnGetFileInfoByResourceId(
     const std::string& resource_id,
     base::PlatformFileError error,
-    GDataEntry* entry) {
-  if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
-    mime_type_ = entry->AsGDataFile()->content_mime_type();
-    gdata_file_path_ = entry->GetFilePath();
-    initial_file_size_ = entry->file_info().size;
+    const FilePath& gdata_file_path,
+    scoped_ptr<GDataFileProto> file_proto) {
+  if (error == base::PLATFORM_FILE_OK) {
+    DCHECK(file_proto.get());
+    mime_type_ = file_proto->content_mime_type();
+    gdata_file_path_ = gdata_file_path;
+    initial_file_size_ = file_proto->gdata_entry().file_info().size();
   } else {
     mime_type_.clear();
     gdata_file_path_.clear();
