@@ -67,6 +67,15 @@ Message& Message::operator=(const Message& other) {
   return *this;
 }
 
+void Message::SetHeaderValues(int32 routing, uint32 type, uint32 flags) {
+  // This should only be called when the message is already empty.
+  DCHECK(payload_size() == 0);
+
+  header()->routing = routing;
+  header()->type = type;
+  header()->flags = flags;
+}
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
 void Message::set_sent_time(int64 time) {
   DCHECK((header()->flags & HAS_SENT_TIME_BIT) == 0);
@@ -114,6 +123,10 @@ bool Message::ReadFileDescriptor(PickleIterator* iter,
   descriptor->auto_close = true;
 
   return descriptor->fd >= 0;
+}
+
+bool Message::HasFileDescriptors() const {
+  return file_descriptor_set_.get() && !file_descriptor_set_->empty();
 }
 
 void Message::EnsureFileDescriptorSet() {

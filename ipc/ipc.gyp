@@ -48,6 +48,7 @@
         'ipc_channel_posix_unittest.cc',
         'ipc_fuzzing_tests.cc',
         'ipc_message_unittest.cc',
+        'ipc_message_utils_unittest.cc',
         'ipc_send_fds_test.cc',
         'ipc_sync_channel_unittest.cc',
         'ipc_sync_message_unittest.cc',

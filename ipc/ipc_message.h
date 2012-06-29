@@ -149,6 +149,10 @@ class IPC_EXPORT Message : public Pickle {
     return header()->flags;
   }
 
+  // Sets all the given header values. The message should be empty at this
+  // call.
+  void SetHeaderValues(int32 routing, uint32 type, uint32 flags);
+
   template<class T, class S>
   static bool Dispatch(const Message* msg, T* obj, S* sender,
                        void (T::*func)()) {
@@ -191,12 +195,16 @@ class IPC_EXPORT Message : public Pickle {
   // On POSIX, a message supports reading / writing FileDescriptor objects.
   // This is used to pass a file descriptor to the peer of an IPC channel.
 
-  // Add a descriptor to the end of the set. Returns false iff the set is full.
+  // Add a descriptor to the end of the set. Returns false if the set is full.
   bool WriteFileDescriptor(const base::FileDescriptor& descriptor);
+
   // Get a file descriptor from the message. Returns false on error.
   //   iter: a Pickle iterator to the current location in the message.
   bool ReadFileDescriptor(PickleIterator* iter,
                           base::FileDescriptor* descriptor) const;
+
+  // Returns true if there are any file descriptors in this message.
+  bool HasFileDescriptors() const;
 #endif
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
