@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/url_constants.h"
 
 // The URL for when the user clicks "learn more" on the mixed scripting page
 // icon bubble.
@@ -36,13 +35,7 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     GURL url(google_util::AppendGoogleLocaleParam(
         GURL(kInsecureScriptHelpUrl)));
     browser_->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
-    return;
+  } else {
+    chrome::ShowContentSettings(browser_, type);
   }
-
-  if (type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-    chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
-    return;
-  }
-
-  chrome::ShowContentSettings(browser_, type);
 }

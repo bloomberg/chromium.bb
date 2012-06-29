@@ -787,7 +787,7 @@ void ExternalTabContainerWin::RegisterProtocolHandler(
     const string16& title,
     bool user_gesture) {
   Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title,
-                                         user_gesture, NULL);
+                                         user_gesture);
 }
 
 void ExternalTabContainerWin::RegisterIntentHandler(

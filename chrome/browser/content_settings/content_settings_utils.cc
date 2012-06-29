@@ -35,8 +35,7 @@ const char* kTypeNames[] = {
   "fullscreen",
   "mouselock",
   "mixed-script",
-  "media-stream",
-  "register-protocol-handler",
+  "media-stream"
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);

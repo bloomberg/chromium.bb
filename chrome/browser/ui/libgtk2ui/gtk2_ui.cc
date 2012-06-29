@@ -109,7 +109,6 @@ const int kAutocompleteImages[] = {
   IDR_OMNIBOX_TTS_DARK,
   IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON,
   IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON,
-  IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON,
 };
 
 // This table converts button ids into a pair of gtk-stock id and state.
@@ -683,8 +682,7 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_STAR:
     case IDR_OMNIBOX_TTS:
     case IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON:
-    case IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON:
-    case IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON: {
+    case IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON: {
       return GenerateTintedIcon(id, entry_tint_);
     }
     // In GTK mode, the dark versions of the omnibox icons only ever appear in

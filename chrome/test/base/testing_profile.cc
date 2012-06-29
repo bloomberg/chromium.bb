@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -357,13 +358,8 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
 }
 
 void TestingProfile::CreateProtocolHandlerRegistry() {
-  CreateProtocolHandlerRegistry(
+  protocol_handler_registry_ = new ProtocolHandlerRegistry(this,
       new ProtocolHandlerRegistry::Delegate());
-}
-
-void TestingProfile::CreateProtocolHandlerRegistry(
-    ProtocolHandlerRegistry::Delegate* delegate) {
-  protocol_handler_registry_ = new ProtocolHandlerRegistry(this, delegate);
 }
 
 static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
