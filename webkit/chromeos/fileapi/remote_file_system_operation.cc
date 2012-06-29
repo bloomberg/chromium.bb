@@ -80,7 +80,10 @@ void RemoteFileSystemOperation::CreateDirectory(
 void RemoteFileSystemOperation::CreateFile(const FileSystemURL& url,
                                            bool exclusive,
                                            const StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(SetPendingOperationType(kOperationCreateFile));
+  remote_proxy_->CreateFile(url, exclusive,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
 }
 
 void RemoteFileSystemOperation::Copy(const FileSystemURL& src_url,

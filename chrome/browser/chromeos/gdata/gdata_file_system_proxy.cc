@@ -287,6 +287,22 @@ void GDataFileSystemProxy::CreateDirectory(
   file_system_->CreateDirectory(file_path, exclusive, recursive, callback);
 }
 
+void GDataFileSystemProxy::CreateFile(
+    const FileSystemURL& file_url,
+    bool exclusive,
+    const FileSystemOperationInterface::StatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  file_system_->CreateFile(file_path, exclusive, callback);
+}
+
 void GDataFileSystemProxy::Truncate(
     const FileSystemURL& file_url, int64 length,
     const fileapi::FileSystemOperationInterface::StatusCallback& callback) {

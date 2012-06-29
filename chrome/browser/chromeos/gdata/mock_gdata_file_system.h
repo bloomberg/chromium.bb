@@ -57,6 +57,10 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     bool is_exclusive,
                     bool is_recursive,
                     const FileOperationCallback& callback));
+  MOCK_METHOD3(CreateFile,
+               void(const FilePath& file_path,
+                    bool is_exclusive,
+                    const FileOperationCallback& callback));
   MOCK_METHOD3(GetFileByPath,
                void(const FilePath& file_path,
                     const GetFileCallback& get_file_callback,

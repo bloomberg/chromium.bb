@@ -62,6 +62,15 @@ class RemoteFileSystemProxyInterface :
       bool recursive,
       const FileSystemOperationInterface::StatusCallback& callback) = 0;
 
+  // Creates a file at |url|. If the flag |is_exclusive| is true, an
+  // error is raised when a file already exists at the path. It is
+  // an error if a directory or a hosted document is already present at the
+  // path, or the parent directory of the path is not present yet.
+  virtual void CreateFile(
+      const FileSystemURL& url,
+      bool exclusive,
+      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+
   // Changes the length of an existing file at |url| to |length|. If |length|
   // is negative, an error is raised. If |length| is more than the current size
   // of the file, zero is padded for the extended part.

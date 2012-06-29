@@ -270,6 +270,16 @@ class GDataFileSystemInterface {
                                bool is_recursive,
                                const FileOperationCallback& callback) = 0;
 
+  // Creates a file at |file_path|. If the flag |is_exclusive| is true, an
+  // error is raised when a file already exists at the path. It is
+  // an error if a directory or a hosted document is already present at the
+  // path, or the parent directory of the path is not present yet.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread
+  virtual void CreateFile(const FilePath& file_path,
+                          bool is_exclusive,
+                          const FileOperationCallback& callback) = 0;
+
   // Gets |file_path| from the file system. The file entry represented by
   // |file_path| needs to be present in in-memory representation of the file
   // system in order to be retrieved. If the file is not cached, the file
@@ -421,6 +431,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                bool is_exclusive,
                                bool is_recursive,
                                const FileOperationCallback& callback) OVERRIDE;
+  virtual void CreateFile(const FilePath& file_path,
+                          bool is_exclusive,
+                          const FileOperationCallback& callback) OVERRIDE;
   virtual void GetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
@@ -617,6 +630,27 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void TransferRegularFile(const FilePath& local_file_path,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
+
+  // Invoked during the process of CreateFile.
+  // First, FindEntryByPathAsyncOnUIThread is called and the result is returned
+  // to OnGetEntryInfoForCreateFile. By using the information, CreateFile deals
+  // with the cases when an entry already existed at the path. If there was no
+  // entry, a new empty file is uploaded, and when it finishes
+  // DidUploadForCreateBrandNewFile does the final clean up.
+  void OnGetEntryInfoForCreateFile(
+      const FilePath& file_path,
+      bool is_exclusive,
+      const FileOperationCallback& callback,
+      base::PlatformFileError result,
+      GDataEntry* entry);
+  void DoUploadForCreateBrandNewFile(
+      const FilePath& remote_path,
+      FilePath* local_path,
+      const FileOperationCallback& callback);
+  void DidUploadForCreateBrandNewFile(
+      const FilePath& local_path,
+      const FileOperationCallback& callback,
+      base::PlatformFileError result);
 
   // Invoked upon completion of GetFileInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
@@ -1134,6 +1168,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  bool is_exclusive,
                                  bool is_recursive,
                                  const FileOperationCallback& callback);
+  void CreateFileOnUIThread(const FilePath& file_path,
+                            bool is_exclusive,
+                            const FileOperationCallback& callback);
   void GetFileByPathOnUIThread(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,

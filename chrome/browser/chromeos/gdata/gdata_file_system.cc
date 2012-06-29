@@ -47,6 +47,8 @@ const FilePath::CharType kAccountMetadataFile[] =
 const FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
 
+const char kEmptyFilePath[] = "/dev/null";
+
 // GData update check interval (in seconds).
 #ifndef NDEBUG
 const int kGDataUpdateCheckIntervalInSec = 5;
@@ -1626,6 +1628,74 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
                      is_exclusive,
                      is_recursive,
                      callback)));
+}
+
+void GDataFileSystem::CreateFile(const FilePath& file_path,
+                                 bool is_exclusive,
+                                 const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(base::Bind(&GDataFileSystem::CreateFileOnUIThread,
+                               ui_weak_ptr_,
+                               file_path,
+                               is_exclusive,
+                               CreateRelayCallback(callback)));
+}
+
+void GDataFileSystem::CreateFileOnUIThread(
+    const FilePath& file_path,
+    bool is_exclusive,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // First, checks the existence of a file at |file_path|.
+  FindEntryByPathAsyncOnUIThread(
+      file_path,
+      base::Bind(&GDataFileSystem::OnGetEntryInfoForCreateFile,
+                 ui_weak_ptr_,
+                 file_path,
+                 is_exclusive,
+                 callback));
+}
+
+void GDataFileSystem::OnGetEntryInfoForCreateFile(
+    const FilePath& file_path,
+    bool is_exclusive,
+    const FileOperationCallback& callback,
+    base::PlatformFileError result,
+    GDataEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // The |file_path| is invalid. It is an error.
+  if (result != base::PLATFORM_FILE_ERROR_NOT_FOUND &&
+      result != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(result);
+    return;
+  }
+
+  // An entry already exists at |file_path|.
+  if (result == base::PLATFORM_FILE_OK) {
+    // If an exclusive mode is requested, or the entry is not a regular file,
+    // it is an error.
+    if (is_exclusive ||
+        !entry->AsGDataFile() ||
+        entry->AsGDataFile()->is_hosted_document()) {
+      if (!callback.is_null())
+        callback.Run(base::PLATFORM_FILE_ERROR_EXISTS);
+      return;
+    }
+
+    // Otherwise nothing more to do. Succeeded.
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_OK);
+    return;
+  }
+
+  // No entry found at |file_path|. Let's create a brand new file.
+  // For now, it is implemented by uploading an empty file (/dev/null).
+  // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
+  TransferRegularFile(FilePath(kEmptyFilePath), file_path, callback);
 }
 
 void GDataFileSystem::GetFileByPath(
