@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -37,8 +37,6 @@
 
 /* For DYNAMIC_ANNOTATIONS_NAME() */
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
-
-#define INLINE __attribute__((always_inline))
 
 #include "native_client/src/third_party/valgrind/ts_valgrind_client_requests.h"
 
@@ -87,25 +85,25 @@ int have_nacl_valgrind_interceptors;
 
 #define VG_CREQ_v_v(_req)                                               \
   do {                                                                  \
-    uint64_t _res;                                                      \
+    uint64_t _res __attribute__((unused));                              \
     VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, 0, 0, 0, 0, 0);           \
   } while (0)
 
 #define VG_CREQ_v_W(_req, _arg1)                                        \
   do {                                                                  \
-    uint64_t _res;                                                      \
+    uint64_t _res __attribute__((unused));                              \
     VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, _arg1, 0, 0, 0, 0);   \
   } while (0)
 
 #define VG_CREQ_v_WW(_req, _arg1, _arg2)                                \
   do {                                                                  \
-    uint64_t _res;                                                      \
+    uint64_t _res __attribute__((unused));                              \
     VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, _arg1, _arg2, 0, 0, 0);   \
   } while (0)
 
 #define VG_CREQ_v_WWW(_req, _arg1, _arg2, _arg3)                        \
   do {                                                                  \
-    uint64_t _res;                                                      \
+    uint64_t _res __attribute__((unused));                              \
     VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, _arg1, _arg2, _arg3, 0, 0); \
   } while (0)
 
@@ -176,7 +174,7 @@ static spinlock_t drq_lock; /* Protects delay_reuse_queue. */
 /* size: user-requested allocation size
    returns: real allocation size
 */
-INLINE static size_t handle_malloc_before(size_t size) {
+static inline size_t handle_malloc_before(size_t size) {
   start_ignore_all_accesses_and_sync();
   return size + 2 * kRedZoneSize;
 }
@@ -186,7 +184,7 @@ INLINE static size_t handle_malloc_before(size_t size) {
    size: user-requested allocation size
    returns: address that should be returned to the caller
 */
-INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
+static inline size_t handle_malloc_after(size_t ptr, size_t size) {
   uint64_t base;
   /* Mark all memory as defined, put our own data at the beginning. */
   base = VALGRIND_SANDBOX_PTR(ptr);
@@ -209,7 +207,7 @@ INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
    ptr: the pointer to be deallocated, coming from the client code
    returns the pointer that should be passed to the underlying free()
 */
-INLINE static size_t handle_free_before(size_t ptr) {
+static inline size_t handle_free_before(size_t ptr) {
   uint64_t base;
   size_t size, old_ptr;
   size_t orig_ptr = ptr;
@@ -250,7 +248,7 @@ INLINE static size_t handle_free_before(size_t ptr) {
 }
 
 /* Second part of the free handler. */
-INLINE static void handle_free_after() {
+static inline void handle_free_after(void) {
   stop_ignore_all_accesses_and_sync();
 }
 
