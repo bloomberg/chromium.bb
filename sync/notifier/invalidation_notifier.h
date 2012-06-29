@@ -62,8 +62,7 @@ class InvalidationNotifier
       syncable::ModelTypeSet changed_types) OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
-  virtual void OnInvalidate(
-      const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE;
+  virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) OVERRIDE;
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;

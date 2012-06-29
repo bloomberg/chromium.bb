@@ -9,6 +9,7 @@
 #define SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -18,8 +19,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "jingle/notifier/listener/push_client_observer.h"
-#include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
@@ -37,14 +36,16 @@ class PushClient;
 
 namespace syncer {
 
-using invalidation::InvalidationListener;
-
 class RegistrationManager;
+
+typedef std::map<invalidation::ObjectId,
+                 std::string,
+                 ObjectIdLessThan> ObjectIdPayloadMap;
 
 // ChromeInvalidationClient is not thread-safe and lives on the sync
 // thread.
 class ChromeInvalidationClient
-    : public InvalidationListener,
+    : public invalidation::InvalidationListener,
       public StateWriter,
       public notifier::PushClientObserver,
       public base::NonThreadSafe {
@@ -53,8 +54,7 @@ class ChromeInvalidationClient
    public:
     virtual ~Listener();
 
-    virtual void OnInvalidate(
-        const syncable::ModelTypePayloadMap& type_payloads) = 0;
+    virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) = 0;
 
     virtual void OnNotificationsEnabled() = 0;
 
@@ -80,9 +80,9 @@ class ChromeInvalidationClient
 
   void UpdateCredentials(const std::string& email, const std::string& token);
 
-  // Register the sync types that we're interested in getting
+  // Register the object IDs that we're interested in getting
   // notifications for.  May be called at any time.
-  void RegisterTypes(syncable::ModelTypeSet types);
+  void RegisterIds(const ObjectIdSet& ids);
 
   // invalidation::InvalidationListener implementation.
   virtual void Ready(
@@ -101,7 +101,7 @@ class ChromeInvalidationClient
   virtual void InformRegistrationStatus(
       invalidation::InvalidationClient* client,
       const invalidation::ObjectId& object_id,
-      InvalidationListener::RegistrationState reg_state) OVERRIDE;
+      invalidation::InvalidationListener::RegistrationState reg_state) OVERRIDE;
   virtual void InformRegistrationFailure(
       invalidation::InvalidationClient* client,
       const invalidation::ObjectId& object_id,
@@ -134,8 +134,7 @@ class ChromeInvalidationClient
 
   void EmitStateChange();
 
-  void EmitInvalidation(
-      syncable::ModelTypeSet types, const std::string& payload);
+  void EmitInvalidation(const ObjectIdPayloadMap& id_payloads);
 
   // Owned by |chrome_system_resources_|.
   notifier::PushClient* const push_client_;
@@ -148,9 +147,6 @@ class ChromeInvalidationClient
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
   ObjectIdSet registered_ids_;
-  // TODO(dcheng): This is a mirror of the data in registered_ids_. It
-  // temporarily remains for convenience.
-  syncable::ModelTypeSet registered_types_;
 
   // The states of the ticl and the push client (with
   // NO_NOTIFICATION_ERROR meaning notifications are enabled).

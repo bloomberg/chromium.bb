@@ -77,8 +77,8 @@ TEST_F(InvalidationNotifierTest, Basic) {
 
   syncable::ModelTypePayloadMap type_payloads;
   type_payloads[syncable::PREFERENCES] = "payload";
-  type_payloads[syncable::BOOKMARKS] = "";
-  type_payloads[syncable::AUTOFILL] = "";
+  type_payloads[syncable::BOOKMARKS] = "payload";
+  type_payloads[syncable::AUTOFILL] = "payload";
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
@@ -99,7 +99,14 @@ TEST_F(InvalidationNotifierTest, Basic) {
 
   invalidation_notifier_->OnNotificationsEnabled();
 
-  invalidation_notifier_->OnInvalidate(type_payloads);
+  ObjectIdPayloadMap id_payloads;
+  for (syncable::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
+       it != type_payloads.end(); ++it) {
+    invalidation::ObjectId id;
+    ASSERT_TRUE(RealModelTypeToObjectId(it->first, &id));
+    id_payloads[id] = "payload";
+  }
+  invalidation_notifier_->OnInvalidate(id_payloads);
 
   invalidation_notifier_->OnNotificationsDisabled(
       TRANSIENT_NOTIFICATION_ERROR);

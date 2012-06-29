@@ -15,7 +15,6 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/registration_manager.h"
 
@@ -68,7 +67,7 @@ void ChromeInvalidationClient::Start(
 
   max_invalidation_versions_ = initial_max_invalidation_versions;
   if (max_invalidation_versions_.empty()) {
-    DVLOG(2) << "No initial max invalidation versions for any type";
+    DVLOG(2) << "No initial max invalidation versions for any id";
   } else {
     for (InvalidationVersionMap::const_iterator it =
              max_invalidation_versions_.begin();
@@ -102,21 +101,9 @@ void ChromeInvalidationClient::UpdateCredentials(
   chrome_system_resources_.network()->UpdateCredentials(email, token);
 }
 
-void ChromeInvalidationClient::RegisterTypes(syncable::ModelTypeSet types) {
+void ChromeInvalidationClient::RegisterIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
-  // TODO(dcheng): Even though these fields are redundant, we keep both around
-  // for convenience while the conversion is still in process.
-  registered_types_ = types;
-  registered_ids_.clear();
-  for (syncable::ModelTypeSet::Iterator it = types.First();
-       it.Good(); it.Inc()) {
-    invalidation::ObjectId id;
-    if (!RealModelTypeToObjectId(it.Get(), &id)) {
-      LOG(WARNING) << "Invalid model type: " << it.Get();
-      continue;
-    }
-    registered_ids_.insert(id);
-  }
+  registered_ids_ = ids;
   if (GetState() == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
     registration_manager_->SetRegisteredIds(registered_ids_);
   }
@@ -163,21 +150,14 @@ void ChromeInvalidationClient::Invalidate(
       &InvalidationStateTracker::SetMaxVersion,
       id, invalidation.version());
 
-  syncable::ModelType model_type;
-  if (!ObjectIdToRealModelType(id, &model_type)) {
-    LOG(WARNING) << "Could not get invalidation model type; "
-                 << "invalidating everything";
-    EmitInvalidation(registered_types_, std::string());
-    client->Acknowledge(ack_handle);
-    return;
-  }
-
   std::string payload;
   // payload() CHECK()'s has_payload(), so we must check it ourselves first.
   if (invalidation.has_payload())
     payload = invalidation.payload();
 
-  EmitInvalidation(syncable::ModelTypeSet(model_type), payload);
+  ObjectIdPayloadMap id_payloads;
+  id_payloads[id] = payload;
+  EmitInvalidation(id_payloads);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -190,16 +170,9 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "InvalidateUnknownVersion";
 
-  syncable::ModelType model_type;
-  if (!ObjectIdToRealModelType(object_id, &model_type)) {
-    LOG(WARNING) << "Could not get invalidation model type; "
-                 << "invalidating everything";
-    EmitInvalidation(registered_types_, std::string());
-    client->Acknowledge(ack_handle);
-    return;
-  }
-
-  EmitInvalidation(syncable::ModelTypeSet(model_type), "");
+  ObjectIdPayloadMap id_payloads;
+  id_payloads[object_id] = std::string();
+  EmitInvalidation(id_payloads);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -212,18 +185,22 @@ void ChromeInvalidationClient::InvalidateAll(
     const invalidation::AckHandle& ack_handle) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "InvalidateAll";
-  EmitInvalidation(registered_types_, std::string());
+
+  ObjectIdPayloadMap id_payloads;
+  for (ObjectIdSet::const_iterator it = registered_ids_.begin();
+       it != registered_ids_.end(); ++it) {
+    id_payloads[*it] = std::string();
+  }
+  EmitInvalidation(id_payloads);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/76482).
   client->Acknowledge(ack_handle);
 }
 
 void ChromeInvalidationClient::EmitInvalidation(
-    syncable::ModelTypeSet types, const std::string& payload) {
+    const ObjectIdPayloadMap& id_payloads) {
   DCHECK(CalledOnValidThread());
-  syncable::ModelTypePayloadMap type_payloads =
-      syncable::ModelTypePayloadMapFromEnumSet(types, payload);
-  listener_->OnInvalidate(type_payloads);
+  listener_->OnInvalidate(id_payloads);
 }
 
 void ChromeInvalidationClient::InformRegistrationStatus(

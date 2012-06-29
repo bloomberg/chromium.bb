@@ -90,7 +90,17 @@ void InvalidationNotifier::UpdateEnabledTypes(
     syncable::ModelTypeSet enabled_types) {
   DCHECK(CalledOnValidThread());
   CHECK(!invalidation_client_id_.empty());
-  invalidation_client_.RegisterTypes(enabled_types);
+  ObjectIdSet ids;
+  for (syncable::ModelTypeSet::Iterator it = enabled_types.First(); it.Good();
+       it.Inc()) {
+    invalidation::ObjectId id;
+    if (!RealModelTypeToObjectId(it.Get(), &id)) {
+      DLOG(WARNING) << "Invalid model type " << it.Get();
+      continue;
+    }
+    ids.insert(id);
+  }
+  invalidation_client_.RegisterIds(ids);
 }
 
 void InvalidationNotifier::SendNotification(
@@ -99,9 +109,19 @@ void InvalidationNotifier::SendNotification(
   // Do nothing.
 }
 
-void InvalidationNotifier::OnInvalidate(
-    const syncable::ModelTypePayloadMap& type_payloads) {
+void InvalidationNotifier::OnInvalidate(const ObjectIdPayloadMap& id_payloads) {
   DCHECK(CalledOnValidThread());
+  // TODO(dcheng): This should probably be a utility function somewhere...
+  syncable::ModelTypePayloadMap type_payloads;
+  for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
+       it != id_payloads.end(); ++it) {
+    syncable::ModelType model_type;
+    if (!ObjectIdToRealModelType(it->first, &model_type)) {
+      DLOG(WARNING) << "Invalid object ID: " << ObjectIdToString(it->first);
+      continue;
+    }
+    type_payloads[model_type] = it->second;
+  }
   FOR_EACH_OBSERVER(
       SyncNotifierObserver, observers_,
       OnIncomingNotification(type_payloads,
