@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/media/key_systems.h"
+#include "webkit/media/crypto/key_systems.h"
 
+#include "media/base/decryptor.h"
+#include "media/crypto/aes_decryptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace webkit_media {
@@ -73,6 +75,13 @@ bool IsSupportedKeySystemWithMediaMimeType(
   }
 
   return true;
+}
+
+scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system,
+                                             media::DecryptorClient* client) {
+  if (key_system == kClearKeyKeySystem)
+    return scoped_ptr<media::Decryptor>(new media::AesDecryptor(client));
+  return scoped_ptr<media::Decryptor>();
 }
 
 }  // namespace webkit_media

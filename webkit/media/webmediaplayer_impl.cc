@@ -22,7 +22,6 @@
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
-#include "media/crypto/aes_decryptor.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
@@ -34,7 +33,6 @@
 #include "v8/include/v8.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/filter_helpers.h"
-#include "webkit/media/key_systems.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webmediaplayer_util.h"
@@ -82,9 +80,9 @@ const float kMaxRate = 16.0f;
 
 namespace webkit_media {
 
-#define COMPILE_ASSERT_MATCHING_ENUM(name)                              \
+#define COMPILE_ASSERT_MATCHING_ENUM(name) \
   COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::CORSMode ## name) == \
-                 static_cast<int>(BufferedResourceLoader::k ## name),   \
+                 static_cast<int>(BufferedResourceLoader::k ## name), \
                  mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(Unspecified);
 COMPILE_ASSERT_MATCHING_ENUM(Anonymous);
@@ -130,7 +128,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       audio_source_provider_(audio_source_provider),
-      is_local_source_(false) {
+      is_local_source_(false),
+      decryptor_(proxy_.get()) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -164,8 +163,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Create default audio renderer.
   filter_collection_->AddAudioRenderer(
       new media::AudioRendererImpl(new media::NullAudioSink()));
-
-  decryptor_.reset(new media::AesDecryptor(proxy_.get()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -245,7 +242,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   if (BuildMediaSourceCollection(url, GetClient()->sourceURL(), proxy_,
                                  message_loop_factory_.get(),
                                  filter_collection_.get(),
-                                 decryptor_.get(),
+                                 &decryptor_,
                                  &video_decoder)) {
     proxy_->set_video_decoder(video_decoder);
     StartPipeline();
@@ -268,7 +265,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   BuildDefaultCollection(proxy_->data_source(),
                          message_loop_factory_.get(),
                          filter_collection_.get(),
-                         decryptor_.get(),
+                         &decryptor_,
                          &video_decoder);
   proxy_->set_video_decoder(video_decoder);
 }
@@ -710,12 +707,18 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
+  // We do not support run-time switching between key systems for now.
+  if (current_key_system_.isEmpty())
+    current_key_system_ = key_system;
+  else if (key_system != current_key_system_)
+    return WebKit::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
   DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
-  decryptor_->GenerateKeyRequest(key_system.utf8(),
-                                 init_data, init_data_length);
+  decryptor_.GenerateKeyRequest(key_system.utf8(),
+                                init_data, init_data_length);
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -732,6 +735,9 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
+  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+    return WebKit::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
   DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(key),
                           static_cast<size_t>(key_length)) << ", "
@@ -739,8 +745,8 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
                           static_cast<size_t>(init_data_length))
            << " [" << session_id.utf8().data() << "]";
 
-  decryptor_->AddKey(key_system.utf8(), key, key_length,
-                     init_data, init_data_length, session_id.utf8());
+  decryptor_.AddKey(key_system.utf8(), key, key_length,
+                    init_data, init_data_length, session_id.utf8());
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -750,7 +756,10 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
+  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+    return WebKit::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
+  decryptor_.CancelKeyRequest(key_system.utf8(), session_id.utf8());
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -890,6 +899,18 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
                          init_data.get(),
                          init_data_size);
 }
+
+#define COMPILE_ASSERT_MATCHING_ENUM(name) \
+  COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayerClient::name) == \
+                 static_cast<int>(media::Decryptor::k ## name), \
+                 mismatching_enums)
+COMPILE_ASSERT_MATCHING_ENUM(UnknownError);
+COMPILE_ASSERT_MATCHING_ENUM(ClientError);
+COMPILE_ASSERT_MATCHING_ENUM(ServiceError);
+COMPILE_ASSERT_MATCHING_ENUM(OutputError);
+COMPILE_ASSERT_MATCHING_ENUM(HardwareChangeError);
+COMPILE_ASSERT_MATCHING_ENUM(DomainError);
+#undef COMPILE_ASSERT_MATCHING_ENUM
 
 void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
                                     const std::string& session_id,

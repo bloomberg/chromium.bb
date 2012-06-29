@@ -64,6 +64,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "webkit/media/crypto/key_systems.h"
+#include "webkit/media/crypto/proxy_decryptor.h"
 
 class RenderAudioSourceProvider;
 
@@ -292,8 +294,9 @@ class WebMediaPlayerImpl
   scoped_refptr<media::Pipeline> pipeline_;
   bool started_;
 
-  // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<media::Decryptor> decryptor_;
+  // The currently selected key system. Empty string means that no key system
+  // has been selected.
+  WebKit::WebString current_key_system_;
 
   scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
 
@@ -338,6 +341,9 @@ class WebMediaPlayerImpl
   WebKit::WebAudioSourceProvider* audio_source_provider_;
 
   bool is_local_source_;
+
+  // The decryptor that manages decryption keys and decrypts encrypted frames.
+  ProxyDecryptor decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

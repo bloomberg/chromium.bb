@@ -10,7 +10,7 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/media/key_systems.h"
+#include "webkit/media/crypto/key_systems.h"
 
 using WebKit::WebString;
 using WebKit::WebMimeRegistry;
