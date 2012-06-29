@@ -480,6 +480,9 @@ def CheckChangeOnCommit(input_api, output_api):
 def GetPreferredTrySlaves(project, change):
   files = change.LocalPaths()
 
+  if not files:
+    return []
+
   if all(re.search('\.(m|mm)$|[/_]mac[/_.]', f) for f in files):
     return ['mac_rel']
   if all(re.search('[/_]win[/_.]', f) for f in files):
@@ -492,9 +495,7 @@ def GetPreferredTrySlaves(project, change):
   if any(re.search('[/_]aura', f) for f in files):
     trybots.append('linux_chromeos')
 
-  # Ensure CL contains some relevant files (i.e. not purely ^chrome)
-  if any(re.search('^(base|build|content|ipc|jingle|media|net|sql)/', f)
-         for f in files):
+  if not all(f.startswith('chrome/') for f in files):
     trybots.append('android')
 
   return trybots
