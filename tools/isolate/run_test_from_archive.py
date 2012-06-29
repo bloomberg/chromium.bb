@@ -223,7 +223,7 @@ class Cache(object):
       self.trim()
 
     logging.info('Number of files added to cache: %i',
-                 sum(item[0] for item in self.files_added))
+                 len(self.files_added))
     logging.info('Size of files added to cache: %i',
                  sum(item[1] for item in self.files_added))
     logging.info('Time taken (in seconds) to add files to cache: %s',
@@ -232,7 +232,7 @@ class Cache(object):
     logging.debug(self.files_added)
 
     logging.info('Number of files removed from cache: %i',
-                 sum(item[0] for item in self.files_removed))
+                 len(self.files_removed))
     logging.info('Size of files removed from cache: %i',
                  sum(item[1] for item in self.files_removed))
     logging.debug('All files remove:')
@@ -242,7 +242,7 @@ class Cache(object):
     try:
       filename = self.state.pop(0)
       logging.info('Trimming %s' % filename)
-      self.files_removed.append(filename, os.stat(filename).st_size)
+      self.files_removed.append((filename, os.stat(filename).st_size))
       os.remove(self.path(filename))
     except OSError as e:
       logging.error('Error attempting to delete a file\n%s' % e)
@@ -300,7 +300,7 @@ class Cache(object):
       download_or_copy(self.remote.rstrip('/') + '/' + item, out)
       if os.path.exists(out):
         self.state.append(item)
-        self.files_added.append(out, os.stat(out).st_size)
+        self.files_added.append((out, os.stat(out).st_size))
       else:
         logging.error('File, %s, not placed in cache' % item)
       self.time_retrieving_files += time.time() - start_retrieve
