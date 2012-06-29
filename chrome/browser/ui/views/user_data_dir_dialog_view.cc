@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -16,7 +17,8 @@
 
 UserDataDirDialogView::UserDataDirDialogView(const FilePath& user_data_dir)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          select_file_dialog_(SelectFileDialog::Create(this))),
+          select_file_dialog_(SelectFileDialog::Create(
+              this, new ChromeSelectFilePolicy(NULL)))),
       is_blocking_(true) {
   const int kDialogWidth = 400;
   views::MessageBoxView::InitParams params(
@@ -61,7 +63,7 @@ bool UserDataDirDialogView::Accept() {
       GetAncestor(message_box_view_->GetWidget()->GetNativeView(), GA_ROOT);
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_FOLDER,
                                   dialog_title, FilePath(), NULL, 0,
-                                  std::wstring(), NULL, owning_hwnd, NULL);
+                                  FilePath::StringType(), owning_hwnd, NULL);
   return false;
 }
 

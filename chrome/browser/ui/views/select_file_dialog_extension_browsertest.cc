@@ -82,7 +82,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
   virtual void SetUp() OVERRIDE {
     // Create the dialog wrapper object, but don't show it yet.
     listener_.reset(new MockSelectFileDialogListener());
-    dialog_ = new SelectFileDialogExtension(listener_.get());
+    dialog_ = new SelectFileDialogExtension(listener_.get(), NULL);
 
     // We have to provide at least one mount point.
     // File manager looks for "Downloads" mount point, so use this name.
@@ -136,7 +136,6 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
                         NULL /* file_types */,
                          0 /* file_type_index */,
                         FILE_PATH_LITERAL("") /* default_extension */,
-                        NULL /* source_contents */,
                         owning_window,
                         this /* params */);
 
@@ -155,7 +154,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   void TryOpeningSecondDialog(const gfx::NativeWindow& owning_window) {
     second_listener_.reset(new MockSelectFileDialogListener());
-    second_dialog_ = new SelectFileDialogExtension(second_listener_.get());
+    second_dialog_ = new SelectFileDialogExtension(second_listener_.get(),
+                                                   NULL);
 
     // At the moment we don't really care about dialog type, but we have to put
     // some dialog type.
@@ -165,11 +165,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
                                NULL /* file_types */,
                                0 /* file_type_index */,
                                FILE_PATH_LITERAL("") /* default_extension */,
-                               NULL /* source_contents */,
                                owning_window,
                                this /* params */);
-
-
   }
 
   void CloseDialog(DialogButtonType button_type,

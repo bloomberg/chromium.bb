@@ -17,6 +17,7 @@
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -337,12 +338,13 @@ void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
   if (select_trace_file_dialog_.get())
     return;
   select_trace_file_dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;
-  select_trace_file_dialog_ = SelectFileDialog::Create(this);
+  select_trace_file_dialog_ = SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_trace_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE,
       string16(),
       FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      NULL, 0, FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
@@ -368,12 +370,13 @@ void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
   trace_data_to_save_.reset(trace_data);
 
   select_trace_file_dialog_type_ = SelectFileDialog::SELECT_SAVEAS_FILE;
-  select_trace_file_dialog_ = SelectFileDialog::Create(this);
+  select_trace_file_dialog_ = SelectFileDialog::Create(
+      this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   select_trace_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_SAVEAS_FILE,
       string16(),
       FilePath(),
-      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      NULL, 0, FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 

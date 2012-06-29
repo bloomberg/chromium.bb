@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -79,7 +80,8 @@ class Exporter : public SelectFileDialog::Listener {
 Exporter::Exporter(WebContents* web_contents,
                    gfx::NativeWindow parent,
                    net::X509Certificate::OSCertHandle cert)
-    : select_file_dialog_(SelectFileDialog::Create(this)) {
+    : select_file_dialog_(SelectFileDialog::Create(
+        this, new ChromeSelectFilePolicy(web_contents))) {
   x509_certificate_model::GetCertChainFromCert(cert, &cert_chain_list_);
 
   // TODO(mattm): should this default to some directory?
@@ -92,7 +94,6 @@ Exporter::Exporter(WebContents* web_contents,
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            SelectFileDialog::SELECT_SAVEAS_FILE,
                            suggested_path,
-                           web_contents,
                            parent,
                            NULL);
 }
@@ -144,7 +145,6 @@ void Exporter::FileSelectionCanceled(void* params) {
 void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
                               SelectFileDialog::Type type,
                               const FilePath& suggested_path,
-                              WebContents* web_contents,
                               gfx::NativeWindow parent,
                               void* params) {
   SelectFileDialog::FileTypeInfo file_type_info;
@@ -170,7 +170,7 @@ void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
   select_file_dialog->SelectFile(
       type, string16(),
       suggested_path, &file_type_info, 1,
-      FILE_PATH_LITERAL("crt"), web_contents,
+      FILE_PATH_LITERAL("crt"),
       parent, params);
 }
 

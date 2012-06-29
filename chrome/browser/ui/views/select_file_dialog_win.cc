@@ -434,7 +434,8 @@ bool SaveFileAs(HWND owner,
 class SelectFileDialogImpl : public SelectFileDialog,
                              public BaseShellDialogImpl {
  public:
-  explicit SelectFileDialogImpl(Listener* listener);
+  explicit SelectFileDialogImpl(Listener* listener,
+                                ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation:
   virtual bool IsRunning(HWND owning_hwnd) const OVERRIDE;
@@ -542,8 +543,9 @@ class SelectFileDialogImpl : public SelectFileDialog,
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
-SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
-    : SelectFileDialog(listener),
+SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
+                                           ui::SelectFilePolicy* policy)
+    : SelectFileDialog(listener, policy),
       BaseShellDialogImpl(),
       has_multiple_file_type_choices_(false) {
 }
@@ -850,6 +852,7 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
 }
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
-  return new SelectFileDialogImpl(listener);
+SelectFileDialog* SelectFileDialog::Create(Listener* listener,
+                                           ui::SelectFilePolicy* policy) {
+  return new SelectFileDialogImpl(listener, policy);
 }

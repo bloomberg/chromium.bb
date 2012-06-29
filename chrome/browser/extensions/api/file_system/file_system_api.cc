@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -205,7 +206,8 @@ class FileSystemChooseFileFunction::FilePicker
       : suggested_path_(suggested_path),
         entry_type_(entry_type),
         function_(function) {
-    select_file_dialog_ = SelectFileDialog::Create(this);
+    select_file_dialog_ = SelectFileDialog::Create(
+        this, new ChromeSelectFilePolicy(web_contents));
     SelectFileDialog::FileTypeInfo file_type_info;
     FilePath::StringType extension = suggested_path.Extension();
     if (!extension.empty()) {
@@ -238,7 +240,7 @@ class FileSystemChooseFileFunction::FilePicker
                                     string16(),
                                     suggested_path,
                                     &file_type_info, 0, FILE_PATH_LITERAL(""),
-                                    web_contents, owning_window, NULL);
+                                    owning_window, NULL);
   }
 
   virtual ~FilePicker() {}
