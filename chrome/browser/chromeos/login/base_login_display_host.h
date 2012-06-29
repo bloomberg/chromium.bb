@@ -104,6 +104,11 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // Client for enterprise auto-enrollment check.
   scoped_ptr<policy::AutoEnrollmentClient> auto_enrollment_client_;
 
+  // Has ShutdownDisplayHost() already been called?  Used to avoid posting our
+  // own deletion to the message loop twice if the user logs out while we're
+  // still in the process of cleaning up after login (http://crbug.com/134463).
+  bool shutting_down_;
+
   DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
 };
 

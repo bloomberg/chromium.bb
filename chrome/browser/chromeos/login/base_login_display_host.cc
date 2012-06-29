@@ -130,7 +130,8 @@ LoginDisplayHost* BaseLoginDisplayHost::default_host_ = NULL;
 
 BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
-      ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)),
+      shutting_down_(false) {
   // We need to listen to APP_EXITING but not APP_TERMINATING because
   // APP_TERMINATING will never be fired as long as this keeps ref-count.
   // APP_EXITING is safe here because there will be no browser instance that
@@ -285,6 +286,10 @@ void BaseLoginDisplayHost::Observe(
 }
 
 void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
+  if (shutting_down_)
+    return;
+
+  shutting_down_ = true;
   registrar_.RemoveAll();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
