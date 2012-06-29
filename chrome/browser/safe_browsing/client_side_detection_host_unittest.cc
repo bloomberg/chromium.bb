@@ -588,7 +588,7 @@ TEST_F(ClientSideDetectionHostTest,
 
 #if defined(OS_WIN)
 // Flaky on Windows: crbug.com/134918
-#define MAYBE_NavigationCancelsShouldClassifyUrl FLAKY_NavigationCancelsShouldClassifyUrl
+#define MAYBE_NavigationCancelsShouldClassifyUrl DISABLED_NavigationCancelsShouldClassifyUrl
 #else
 #define MAYBE_NavigationCancelsShouldClassifyUrl NavigationCancelsShouldClassifyUrl
 #endif
