@@ -167,12 +167,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   virtual ~ChromotingHost();
 
-  std::string GenerateHostAuthToken(const std::string& encoded_client_token);
-
-  void AddAuthenticatedClient(ClientSession* client,
-                              const protocol::SessionConfig& config,
-                              const std::string& jid);
-
   void StopScreenRecorder();
   void OnScreenRecorderStopped();
 

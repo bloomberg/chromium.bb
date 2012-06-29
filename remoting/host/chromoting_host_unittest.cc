@@ -35,6 +35,7 @@ using testing::DeleteArg;
 using testing::DoAll;
 using testing::Expectation;
 using testing::InSequence;
+using testing::Invoke;
 using testing::InvokeArgument;
 using testing::InvokeWithoutArgs;
 using testing::Return;
@@ -53,6 +54,9 @@ void PostQuitTask(MessageLoop* message_loop) {
 // done callbacks.
 ACTION(RunDoneTask) {
   arg1.Run();
+}
+
+void NullTask() {
 }
 
 }  // namespace
@@ -107,30 +111,47 @@ class ChromotingHostTest : public testing::Test {
 
     session_ = new MockSession();
     session2_ = new MockSession();
+    session_unowned_.reset(new MockSession());
+    session2_unowned_.reset(new MockSession());
     session_config_ = SessionConfig::GetDefault();
     session_jid_ = "user@domain/rest-of-jid";
     session_config2_ = SessionConfig::GetDefault();
     session2_jid_ = "user2@domain/rest-of-jid";
+    session_unowned_config_ = SessionConfig::GetDefault();
+    session_unowned_jid_ = "user3@doman/rest-of-jid";
+    session2_unowned_config_ = SessionConfig::GetDefault();
+    session2_unowned_jid_ = "user4@doman/rest-of-jid";
+
     EXPECT_CALL(*session_, jid())
         .WillRepeatedly(ReturnRef(session_jid_));
     EXPECT_CALL(*session2_, jid())
         .WillRepeatedly(ReturnRef(session2_jid_));
+    EXPECT_CALL(*session_unowned_, jid())
+        .WillRepeatedly(ReturnRef(session_unowned_jid_));
+    EXPECT_CALL(*session2_unowned_, jid())
+        .WillRepeatedly(ReturnRef(session2_unowned_jid_));
     EXPECT_CALL(*session_, SetStateChangeCallback(_))
         .Times(AnyNumber());
     EXPECT_CALL(*session2_, SetStateChangeCallback(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*session_unowned_, SetStateChangeCallback(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(Invoke(
+            this, &ChromotingHostTest::SetSessionStateChangeCallback));
+    EXPECT_CALL(*session2_unowned_, SetStateChangeCallback(_))
         .Times(AnyNumber());
     EXPECT_CALL(*session_, SetRouteChangeCallback(_))
         .Times(AnyNumber());
     EXPECT_CALL(*session2_, SetRouteChangeCallback(_))
         .Times(AnyNumber());
+    EXPECT_CALL(*session_unowned_, SetRouteChangeCallback(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*session2_unowned_, SetRouteChangeCallback(_))
+        .Times(AnyNumber());
     EXPECT_CALL(*session_, config())
         .WillRepeatedly(ReturnRef(session_config_));
     EXPECT_CALL(*session2_, config())
         .WillRepeatedly(ReturnRef(session_config2_));
-    EXPECT_CALL(*session_, Close())
-        .Times(AnyNumber());
-    EXPECT_CALL(*session2_, Close())
-        .Times(AnyNumber());
 
     owned_connection_.reset(new MockConnectionToClient(
         session_, &host_stub_, desktop_environment_->event_executor()));
@@ -229,6 +250,17 @@ class ChromotingHostTest : public testing::Test {
     host_->OnSessionClosed(client2_);
   }
 
+  void SetSessionStateChangeCallback(
+      const protocol::Session::StateChangeCallback& callback) {
+    session_state_change_callback_ = callback;
+  }
+
+  void NotifyConnectionClosed() {
+    if (!session_state_change_callback_.is_null()) {
+      session_state_change_callback_.Run(protocol::Session::CLOSED);
+    }
+  }
+
   static void AddClientToHost(scoped_refptr<ChromotingHost> host,
                               ClientSession* session) {
     host->clients_.push_back(session);
@@ -274,6 +306,13 @@ class ChromotingHostTest : public testing::Test {
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
   MockHostStub host_stub2_;
+  scoped_ptr<MockSession> session_unowned_;  // Not owned by a connection.
+  SessionConfig session_unowned_config_;
+  std::string session_unowned_jid_;
+  scoped_ptr<MockSession> session2_unowned_;  // Not owned by a connection.
+  SessionConfig session2_unowned_config_;
+  std::string session2_unowned_jid_;
+  protocol::Session::StateChangeCallback session_state_change_callback_;
 
   // Owned by |host_|.
   MockDisconnectWindow* disconnect_window_;
@@ -518,6 +557,87 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
 
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
+}
+
+TEST_F(ChromotingHostTest, IncomingSessionDeclined) {
+  EXPECT_CALL(*disconnect_window_, Hide());
+  EXPECT_CALL(*continue_window_, Hide());
+
+  protocol::SessionManager::IncomingSessionResponse response =
+      protocol::SessionManager::ACCEPT;
+  host_->OnIncomingSession(session_, &response);
+  EXPECT_EQ(protocol::SessionManager::DECLINE, response);
+}
+
+TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
+  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  EXPECT_CALL(*disconnect_window_, Hide());
+  EXPECT_CALL(*continue_window_, Hide());
+  EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
+      protocol::CandidateSessionConfig::CreateEmpty().release()));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
+
+  host_->set_protocol_config(
+      protocol::CandidateSessionConfig::CreateDefault().release());
+  host_->Start();
+
+  protocol::SessionManager::IncomingSessionResponse response =
+      protocol::SessionManager::ACCEPT;
+  host_->OnIncomingSession(session_unowned_.get(), &response);
+  EXPECT_EQ(protocol::SessionManager::INCOMPATIBLE, response);
+
+  host_->Shutdown(base::Bind(&NullTask));
+}
+
+TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
+  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  EXPECT_CALL(*disconnect_window_, Hide());
+  EXPECT_CALL(*continue_window_, Hide());
+  EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
+      protocol::CandidateSessionConfig::CreateDefault().release()));
+  EXPECT_CALL(*session_unowned_, set_config(_));
+  EXPECT_CALL(*session_unowned_, Close()).WillOnce(InvokeWithoutArgs(
+      this, &ChromotingHostTest::NotifyConnectionClosed));
+  EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
+
+  host_->set_protocol_config(
+      protocol::CandidateSessionConfig::CreateDefault().release());
+  host_->Start();
+
+  protocol::SessionManager::IncomingSessionResponse response =
+      protocol::SessionManager::DECLINE;
+  host_->OnIncomingSession(session_unowned_.release(), &response);
+  EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
+
+  host_->Shutdown(base::Bind(&NullTask));
+}
+
+TEST_F(ChromotingHostTest, IncomingSessionOverload) {
+  EXPECT_CALL(*session_manager_, Init(_, host_.get()));
+  EXPECT_CALL(*disconnect_window_, Hide());
+  EXPECT_CALL(*continue_window_, Hide());
+  EXPECT_CALL(*session_unowned_, candidate_config()).WillOnce(Return(
+      protocol::CandidateSessionConfig::CreateDefault().release()));
+  EXPECT_CALL(*session_unowned_, set_config(_));
+  EXPECT_CALL(*session_unowned_, Close()).WillOnce(InvokeWithoutArgs(
+      this, &ChromotingHostTest::NotifyConnectionClosed));
+  EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
+  EXPECT_CALL(host_status_observer_, OnShutdown());
+
+  host_->set_protocol_config(
+      protocol::CandidateSessionConfig::CreateDefault().release());
+  host_->Start();
+
+  protocol::SessionManager::IncomingSessionResponse response =
+      protocol::SessionManager::DECLINE;
+  host_->OnIncomingSession(session_unowned_.release(), &response);
+  EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
+
+  host_->OnIncomingSession(session2_unowned_.get(), &response);
+  EXPECT_EQ(protocol::SessionManager::OVERLOAD, response);
+
+  host_->Shutdown(base::Bind(&NullTask));
 }
 
 }  // namespace remoting
