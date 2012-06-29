@@ -886,8 +886,13 @@ class IBusEngineControllerImpl : public IBusEngineController {
       g_object_unref(chromeos_engine->table);
       chromeos_engine->table = NULL;
     }
-    IBUS_OBJECT_CLASS(ibus_chromeos_engine_parent_class)
-        ->destroy(IBUS_OBJECT(chromeos_engine));
+    if (ibus_bus_is_connected(chromeos_engine->connection->ibus_)) {
+      // We can't call destroy function without ibus-daemon connection,
+      // otherwise browser goes into deadlock state.
+      // TODO(nona): investigate the reason of dead-lock.
+      IBUS_OBJECT_CLASS(ibus_chromeos_engine_parent_class)
+         ->destroy(IBUS_OBJECT(chromeos_engine));
+    }
   }
 
   IBusEngineController::Observer* observer_;
