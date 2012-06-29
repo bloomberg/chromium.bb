@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, InstallExtensionEvent) {
 // Test that PerformanceMonitor will correctly record events as an extension is
 // disabled and enabled.
 // Test is flaky on Windows, see http://crbug.com/135037.
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 #define MAYBE_DisableAndEnableExtensionEvent DISABLED_DisableAndEnableExtensionEvent
 #else
 #define MAYBE_DisableAndEnableExtensionEvent DisableAndEnableExtensionEvent
