@@ -769,6 +769,8 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 
 			if (is_interface && a->type == OBJECT)
 				printf("struct wl_resource *");
+			else if (!is_interface && a->type == NEW_ID)
+				printf("struct %s *", a->interface_name);
 			else
 				emit_type(a);
 

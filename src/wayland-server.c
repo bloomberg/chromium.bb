@@ -178,6 +178,25 @@ wl_resource_post_error(struct wl_resource *resource,
 			       WL_DISPLAY_ERROR, resource, code, buffer);
 }
 
+static void
+deref_new_objects(struct wl_closure *closure)
+{
+	const char *signature;
+	int i;
+
+	signature = closure->message->signature;
+	for (i = 0; signature[i]; i++) {
+		switch (signature[i]) {
+		case 'n':
+			closure->args[i + 2] = *(uint32_t **) closure->args[i + 2];
+			closure->types[i] = &ffi_type_uint32;
+			break;
+		}
+	}
+}
+
+
+
 static int
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
@@ -246,6 +265,8 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			wl_resource_post_no_memory(resource);
 			break;
 		}
+
+		deref_new_objects(closure);
 
 		if (wl_debug)
 			wl_closure_print(closure, object, false);

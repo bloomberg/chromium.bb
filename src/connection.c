@@ -375,6 +375,7 @@ wl_message_size_extra(const struct wl_message *message)
 		switch (message->signature[i]) {
 		case 's':
 		case 'o':
+		case 'n':
 			extra += sizeof (void *);
 			break;
 		case 'a':
@@ -574,7 +575,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			struct wl_map *objects,
 			const struct wl_message *message)
 {
-	uint32_t *p, *next, *end, length;
+	uint32_t *p, *next, *end, length, **id;
 	int *fd;
 	char *extra, **s;
 	unsigned int i, count, extra_space;
@@ -690,8 +691,12 @@ wl_connection_demarshal(struct wl_connection *connection,
 			p++;
 			break;
 		case 'n':
-			closure->types[i] = &ffi_type_uint32;
-			closure->args[i] = p;
+			closure->types[i] = &ffi_type_pointer;
+			id = (uint32_t **) extra;
+			extra += sizeof *id;
+			closure->args[i] = id;
+			*id = p;
+
 			object = wl_map_lookup(objects, *p);
 			if (object != NULL) {
 				printf("not a new object (%d), "

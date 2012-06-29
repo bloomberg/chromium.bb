@@ -462,6 +462,31 @@ wl_display_roundtrip(struct wl_display *display)
 		wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
+static int
+create_proxies(struct wl_display *display, struct wl_closure *closure)
+{
+	struct wl_proxy *proxy;
+	const char *signature;
+	uint32_t id;
+	int i;
+
+	signature = closure->message->signature;
+	for (i = 0; signature[i]; i++) {
+		switch (signature[i]) {
+		case 'n':
+			id = **(uint32_t **) closure->args[i + 2];
+			proxy = wl_proxy_create_for_id(&display->proxy, id,
+						       closure->message->types[i]);		       
+			if (proxy == NULL)
+				return -1;
+			*(void **) closure->args[i + 2] = proxy;
+			break;
+		}
+	}
+
+	return 0;
+}
+
 static void
 handle_event(struct wl_display *display,
 	     uint32_t id, uint32_t opcode, uint32_t size)
@@ -484,7 +509,7 @@ handle_event(struct wl_display *display,
 	closure = wl_connection_demarshal(display->connection, size,
 					  &display->objects, message);
 
-	if (closure == NULL) {
+	if (closure == NULL || create_proxies(display, closure) < 0) {
 		fprintf(stderr, "Error demarshalling event\n");
 		abort();
 	}
