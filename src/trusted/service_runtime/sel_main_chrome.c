@@ -134,17 +134,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   errcode = LOAD_OK;
 
 #if NACL_LINUX
-  /* TODO(arbenson): Drop this after changes to Chrome side. */
-  if (g_nacl_prereserved_sandbox_addr != NULL &&
-      args->prereserved_sandbox_size == 0) {
-# if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-    /* On x86-32 Linux, we reserve 1 GB */
-    args->prereserved_sandbox_size = 0x40000000;
-# elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-    /* On ARM, we reserve 1 GB plus an 8 KB guard */
-    args->prereserved_sandbox_size = 0x40002000;
-# endif
-  }
   g_prereserved_sandbox_size = args->prereserved_sandbox_size;
 #endif
 

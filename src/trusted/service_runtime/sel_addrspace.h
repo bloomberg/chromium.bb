@@ -20,11 +20,6 @@ struct NaClApp; /* fwd */
 EXTERN_C_BEGIN
 
 #if NACL_LINUX
-/*
- * TODO(arbenson): remove g_nacl_prereserved_sandbox_addr when Chromium no
- * longer sets the variable directly.
- */
-extern void *g_nacl_prereserved_sandbox_addr;
 extern size_t g_prereserved_sandbox_size;
 #endif
 

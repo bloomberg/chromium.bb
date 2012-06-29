@@ -11,10 +11,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
-/*
- * When we're built into Chromium's "nacl_helper", its main will set this.
- */
-void *g_nacl_prereserved_sandbox_addr = NULL;
 size_t g_prereserved_sandbox_size = 0;
 
 /*
@@ -23,9 +19,8 @@ size_t g_prereserved_sandbox_size = 0;
  * for use by Native Client.
  */
 int NaClFindPrereservedSandboxMemory(void **p, size_t num_bytes) {
-  NaClLog(2,
-          "NaClFindPrereservedSandboxMemory(, %#.8"NACL_PRIxPTR") => %p\n",
-          num_bytes, g_nacl_prereserved_sandbox_addr);
+  NaClLog(2, "NaClFindPrereservedSandboxMemory(, %#.8"NACL_PRIxPTR")\n",
+          num_bytes);
 
   *p = 0;
   return num_bytes == g_prereserved_sandbox_size;
