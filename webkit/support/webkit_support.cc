@@ -58,6 +58,7 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #if defined(OS_ANDROID)
+#include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #endif
 #include "webkit/media/webmediaplayer_impl.h"
@@ -76,6 +77,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/test/test_support_android.h"
+#include "webkit/support/test_stream_texture_factory_android.h"
 #endif
 
 using WebKit::WebCString;
@@ -370,8 +372,12 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     WebMediaPlayerClient* client,
     webkit_media::MediaStreamClient* media_stream_client) {
 #if defined(OS_ANDROID)
-  // TODO: Implement the WebMediaPlayer that will be used for Android.
-  return NULL;
+  return new webkit_media::WebMediaPlayerAndroid(
+      frame,
+      client,
+      GetWebKitPlatformSupport()->cookieJar(),
+      test_environment->media_player_manager(),
+      new webkit_support::TestStreamTextureFactory());
 #else
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactory());

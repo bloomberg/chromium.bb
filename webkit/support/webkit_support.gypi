@@ -49,6 +49,8 @@
         'platform_support_win.cc',
         'test_media_stream_client.cc',
         'test_media_stream_client.h',
+        'test_stream_texture_factory_android.cc',
+        'test_stream_texture_factory_android.h',
         'test_webkit_platform_support.cc',
         'test_webkit_platform_support.h',
         'test_webmessageportchannel.cc',
