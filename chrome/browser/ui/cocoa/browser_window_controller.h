@@ -111,10 +111,6 @@ class WebContents;
   // unless it's appropriate to show it.
   scoped_nsobject<AvatarButtonController> avatarButtonController_;
 
-  // The view that shows the presentation mode toggle when in Lion fullscreen
-  // mode.  Nil if not in fullscreen mode or not on Lion.
-  scoped_nsobject<NSButton> presentationModeToggleButton_;
-
   // Lazily created view which draws the background for the floating set of bars
   // in presentation mode (for window types having a floating bar; it remains
   // nil for those which don't).
@@ -392,11 +388,6 @@ class WebContents;
 
 // Returns fullscreen state.  This method is safe to call on all OS versions.
 - (BOOL)isFullscreen;
-
-// Toggles presentation mode without exiting fullscreen mode.  Should only be
-// called by the presentation mode toggle button.  This method should not be
-// called on Snow Leopard or earlier.
-- (void)togglePresentationModeForLionOrLater:(id)sender;
 
 // Enters (or exits) presentation mode.  Also enters fullscreen mode if this
 // window is not already fullscreen.  This method is safe to call on all OS

@@ -94,26 +94,6 @@ const CGFloat kLocBarBottomInset = 1;
           delegate:self]);
 }
 
-- (void)createAndInstallPresentationModeToggleButton {
-  DCHECK(base::mac::IsOSLionOrLater());
-  if (presentationModeToggleButton_.get())
-    return;
-
-  // TODO(rohitrao): Make this button prettier.
-  presentationModeToggleButton_.reset(
-      [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 25, 25)]);
-  NSButton* button = presentationModeToggleButton_.get();
-  [button setButtonType:NSMomentaryLightButton];
-  [button setBezelStyle:NSRegularSquareBezelStyle];
-  [button setBordered:NO];
-  [[button cell] setHighlightsBy:NSContentsCellMask];
-  [[button cell] setShowsStateBy:NSContentsCellMask];
-  [button setImage:[NSImage imageNamed:NSImageNameIChatTheaterTemplate]];
-  [button setTarget:self];
-  [button setAction:@selector(togglePresentationModeForLionOrLater:)];
-  [[[[self window] contentView] superview] addSubview:button];
-}
-
 - (void)saveWindowPositionIfNeeded {
   if (!chrome::ShouldSaveWindowPlacement(browser_.get()))
     return;
@@ -227,12 +207,6 @@ willPositionSheet:(NSWindow*)sheet
           [presentationModeController_ floatingBarVerticalOffset]) : 0;
   CGFloat maxY = NSMaxY(contentBounds) + yOffset;
 
-  CGFloat overlayMaxY =
-      NSMaxY([window frame]) +
-      std::floor((1 - floatingBarShownFraction_) * floatingBarHeight);
-  [self layoutPresentationModeToggleAtOverlayMaxX:NSMaxX([window frame])
-                                      overlayMaxY:overlayMaxY];
-
   if ([self hasTabStrip]) {
     // If we need to lay out the top tab strip, replace |maxY| with a higher
     // value, and then lay out the tab strip.
@@ -314,23 +288,6 @@ willPositionSheet:(NSWindow*)sheet
     totalHeight += NSHeight([[bookmarkBarController_ view] frame]);
 
   return totalHeight;
-}
-
-- (void)layoutPresentationModeToggleAtOverlayMaxX:(CGFloat)maxX
-                                      overlayMaxY:(CGFloat)maxY {
-  // Lay out the presentation mode toggle button at the very top of the
-  // tab strip.
-  if ([self shouldShowPresentationModeToggle]) {
-    [self createAndInstallPresentationModeToggleButton];
-
-    NSPoint origin =
-        NSMakePoint(maxX - NSWidth([presentationModeToggleButton_ frame]),
-                    maxY - NSHeight([presentationModeToggleButton_ frame]));
-    [presentationModeToggleButton_ setFrameOrigin:origin];
-  } else {
-    [presentationModeToggleButton_ removeFromSuperview];
-    presentationModeToggleButton_.reset();
-  }
 }
 
 - (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY

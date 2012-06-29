@@ -2000,13 +2000,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
          enteringFullscreen_;
 }
 
-- (void)togglePresentationModeForLionOrLater:(id)sender {
-  // Called only by the presentation mode toggle button.
-  DCHECK(base::mac::IsOSLionOrLater());
-  enteredPresentationModeFromFullscreen_ = YES;
-  chrome::ExecuteCommand(browser_.get(), IDC_PRESENTATION_MODE);
-}
-
 // On Lion, this function is called by either the presentation mode toggle
 // button or the "Enter Presentation Mode" menu item.  In the latter case, this
 // function also triggers the Lion machinery to enter fullscreen mode as well as
