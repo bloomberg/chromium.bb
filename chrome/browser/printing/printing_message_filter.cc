@@ -232,8 +232,10 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
     return;
   }
   print_job_manager_->PopPrinterQuery(0, &printer_query);
-  if (!printer_query.get())
+  if (!printer_query.get()) {
     printer_query = new printing::PrinterQuery;
+    printer_query->SetWorkerDestination(print_job_manager_->destination());
+  }
 
   // Loads default settings. This is asynchronous, only the IPC message sender
   // will hang until the settings are retrieved.
@@ -282,6 +284,7 @@ void PrintingMessageFilter::OnScriptedPrint(
   print_job_manager_->PopPrinterQuery(params.cookie, &printer_query);
   if (!printer_query.get()) {
     printer_query = new printing::PrinterQuery;
+    printer_query->SetWorkerDestination(print_job_manager_->destination());
   }
   GetPrintSettingsForRenderViewParams settings_params;
   settings_params.ask_user_for_settings = printing::PrinterQuery::ASK_USER;
@@ -331,9 +334,10 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
   }
 
   print_job_manager_->PopPrinterQuery(document_cookie, &printer_query);
-  if (!printer_query.get())
+  if (!printer_query.get()) {
     printer_query = new printing::PrinterQuery;
-
+    printer_query->SetWorkerDestination(print_job_manager_->destination());
+  }
   printer_query->SetSettings(
       job_settings,
       base::Bind(&PrintingMessageFilter::OnUpdatePrintSettingsReply, this,

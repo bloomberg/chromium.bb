@@ -51,6 +51,11 @@ class PrintViewManager : public content::NotificationObserver,
   // preview tab.
   bool AdvancedPrintNow();
 
+  // Same as PrintNow(), but for the case where we want to send the result to
+  // another destination.
+  // TODO(mad) Add an argument so we can pass the destination interface.
+  bool PrintToDestination();
+
   // Initiate print preview of the current document by first notifying the
   // renderer. Since this happens asynchronous, the print preview tab creation
   // will not be completed on the return of this function. Returns false if

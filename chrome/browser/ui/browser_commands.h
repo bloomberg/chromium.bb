@@ -104,6 +104,7 @@ void Print(Browser* browser);
 bool CanPrint(const Browser* browser);
 void AdvancedPrint(Browser* browser);
 bool CanAdvancedPrint(const Browser* browser);
+void PrintToDestination(Browser* browser);
 void EmailPageLocation(Browser* browser);
 bool CanEmailPageLocation(const Browser* browser);
 void Cut(Browser* browser);

@@ -59,6 +59,11 @@ void PrintJobManager::StopJobs(bool wait_for_finish) {
   current_jobs_.clear();
 }
 
+void PrintJobManager::SetPrintDestination(
+    PrintDestinationInterface* destination) {
+  destination_ = destination;
+}
+
 void PrintJobManager::QueuePrinterQuery(PrinterQuery* job) {
   base::AutoLock lock(lock_);
   DCHECK(job);
@@ -125,6 +130,7 @@ void PrintJobManager::OnPrintJobEvent(
       DCHECK(current_jobs_.end() == std::find(current_jobs_.begin(),
                                               current_jobs_.end(),
                                               print_job));
+      destination_ = NULL;
       break;
     }
     case JobEventDetails::FAILED: {

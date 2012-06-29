@@ -633,6 +633,10 @@ bool CanAdvancedPrint(const Browser* browser) {
   return PrintPreviewShowing(browser) || CanPrint(browser);
 }
 
+void PrintToDestination(Browser* browser) {
+  browser->GetActiveTabContents()->print_view_manager()->PrintToDestination();
+}
+
 void EmailPageLocation(Browser* browser) {
   content::RecordAction(UserMetricsAction("EmailPageLocation"));
   WebContents* wc = browser->GetActiveWebContents();

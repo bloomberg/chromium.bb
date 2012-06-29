@@ -31,6 +31,7 @@
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
+#include "printing/print_destination_interface.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -99,6 +100,13 @@ bool PrintViewManager::AdvancedPrintNow() {
   } else {
     return PrintNow();
   }
+}
+
+bool PrintViewManager::PrintToDestination() {
+  // TODO(mad): Use a passed in destination interface instead.
+  g_browser_process->print_job_manager()->SetPrintDestination(
+      printing::CreatePrintDestination());
+  return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
 }
 
 bool PrintViewManager::PrintPreviewNow() {
@@ -613,6 +621,8 @@ void PrintViewManager::ReleasePrinterQuery() {
 
   int cookie = cookie_;
   cookie_ = 0;
+  g_browser_process->print_job_manager()->SetPrintDestination(NULL);
+
 
   printing::PrintJobManager* print_job_manager =
       g_browser_process->print_job_manager();

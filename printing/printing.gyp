@@ -55,6 +55,9 @@
         'pdf_metafile_cg_mac.h',
         'pdf_metafile_skia.h',
         'pdf_metafile_skia.cc',
+        'print_destination_interface.h',
+        'print_destination_none.cc',
+        'print_destination_win.cc',
         'printed_document_gtk.cc',
         'printed_document.cc',
         'printed_document.h',
@@ -145,6 +148,9 @@
             'backend/win_helper.cc',
             'backend/win_helper.h',
             'backend/print_backend_win.cc',
+          ],
+          'sources!': [
+            'print_destination_none.cc',
           ],
         }],
         ['chromeos==1 or use_aura==1',{

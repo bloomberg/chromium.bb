@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "printing/print_destination_interface.h"
 
 class PrefService;
 
@@ -38,6 +39,9 @@ class PrintJobManager : public content::NotificationObserver {
   // a chance to complete before stopping them.
   void StopJobs(bool wait_for_finish);
 
+  // Sets the print destination to be set on the next print job.
+  void SetPrintDestination(PrintDestinationInterface* destination);
+
   // Queues a semi-initialized worker thread. Can be called from any thread.
   // Current use case is queuing from the I/O thread.
   // TODO(maruel):  Have them vanish after a timeout (~5 minutes?)
@@ -57,6 +61,9 @@ class PrintJobManager : public content::NotificationObserver {
   // Only accessed on the IO thread. UI thread can query
   // prefs::kPrintingEnabled via g_browser_process->local_state() directly.
   bool printing_enabled() const;
+
+  // May return NULL when no destination was set.
+  PrintDestinationInterface* destination() const { return destination_.get(); }
 
  private:
   typedef std::vector<scoped_refptr<PrintJob> > PrintJobs;
@@ -82,6 +89,8 @@ class PrintJobManager : public content::NotificationObserver {
   base::Lock lock_;
 
   PrinterQueries queued_queries_;
+
+  scoped_refptr<PrintDestinationInterface> destination_;
 
   // Current print jobs that are active.
   PrintJobs current_jobs_;

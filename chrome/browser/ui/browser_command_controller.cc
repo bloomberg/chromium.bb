@@ -371,6 +371,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_ADVANCED_PRINT:
       AdvancedPrint(browser_);
       break;
+    case IDC_PRINT_TO_DESTINATION:
+      PrintToDestination(browser_);
+      break;
     case IDC_CHROME_TO_MOBILE_PAGE:
       ShowChromeToMobileBubble(browser_);
       break;
@@ -1013,9 +1016,23 @@ void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
 }
 
 void BrowserCommandController::UpdatePrintingState() {
-  command_updater_.UpdateCommandEnabled(IDC_PRINT, CanPrint(browser_));
+  bool print_enabled = CanPrint(browser_);
+  command_updater_.UpdateCommandEnabled(IDC_PRINT, print_enabled);
   command_updater_.UpdateCommandEnabled(IDC_ADVANCED_PRINT,
                                         CanAdvancedPrint(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_PRINT_TO_DESTINATION,
+                                        print_enabled);
+#if defined(OS_WIN)
+  HMODULE metro_module = base::win::GetMetroModule();
+  if (metro_module != NULL) {
+    typedef void (*MetroEnablePrinting)(BOOL);
+    MetroEnablePrinting metro_enable_printing =
+        reinterpret_cast<MetroEnablePrinting>(
+            ::GetProcAddress(metro_module, "MetroEnablePrinting"));
+    if (metro_enable_printing)
+      metro_enable_printing(print_enabled);
+  }
+#endif
 }
 
 void BrowserCommandController::UpdateSaveAsState() {

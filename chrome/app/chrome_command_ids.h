@@ -77,6 +77,7 @@
 #define IDC_EMAIL_PAGE_LOCATION         35006
 #define IDC_ADVANCED_PRINT              35007
 #define IDC_CHROME_TO_MOBILE_PAGE       35008
+#define IDC_PRINT_TO_DESTINATION        35009
 
 // When adding a new encoding to this list, be sure to append it to the
 // EncodingMenuController::kValidEncodingIds array in

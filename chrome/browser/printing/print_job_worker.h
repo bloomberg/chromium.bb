@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "printing/page_number.h"
+#include "printing/print_destination_interface.h"
 #include "printing/printing_context.h"
 #include "printing/print_job_constants.h"
 #include "ui/gfx/native_widget_types.h"
@@ -38,6 +39,10 @@ class PrintJobWorker : public base::Thread {
   virtual ~PrintJobWorker();
 
   void SetNewOwner(PrintJobWorkerOwner* new_owner);
+
+  // Set a destination for print.
+  // This supercedes the document's rendering destination.
+  void SetPrintDestination(PrintDestinationInterface* destination);
 
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user his preference.
@@ -117,6 +122,9 @@ class PrintJobWorker : public base::Thread {
 
   // The printed document. Only has read-only access.
   scoped_refptr<PrintedDocument> document_;
+
+  // The print destination, may be NULL.
+  scoped_refptr<PrintDestinationInterface> destination_;
 
   // The print job owning this worker thread. It is guaranteed to outlive this
   // object.
