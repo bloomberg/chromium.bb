@@ -281,6 +281,14 @@ void SearchViewController::OnImplicitAnimationsCompleted() {
   DCHECK_EQ(STATE_ANIMATING, state_);
   state_ = STATE_SEARCH;
   ntp_view_->SetVisible(false);
+  // While |ntp_view_| was fading out, location bar was animating from the
+  // middle of the NTP page to the top toolbar, at the same rate.
+  // Suggestions need to be aligned with the final location of the location bar.
+  // So if omnibox popup view (InlineOmniboxPopupView) is visible, force a
+  // re-layout of its children (i.e. the suggestions) to align with the location
+  // bar's final bounds.
+  if (omnibox_popup_view_parent_->is_child_visible())
+    omnibox_popup_view_parent_->child_at(0)->Layout();
 }
 
 void SearchViewController::UpdateState() {
