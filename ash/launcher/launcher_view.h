@@ -41,6 +41,7 @@ namespace internal {
 
 class LauncherButton;
 class LauncherTooltipManager;
+class ShelfLayoutManager;
 
 class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherModelObserver,
@@ -50,7 +51,9 @@ class ASH_EXPORT LauncherView : public views::View,
                                 public views::FocusTraversable,
                                 public views::BoundsAnimatorObserver {
  public:
-  LauncherView(LauncherModel* model, LauncherDelegate* delegate);
+  LauncherView(LauncherModel* model,
+               LauncherDelegate* delegate,
+               ShelfLayoutManager* shelf_layout_manager);
   virtual ~LauncherView();
 
   LauncherTooltipManager* tooltip_manager() { return tooltip_.get(); }

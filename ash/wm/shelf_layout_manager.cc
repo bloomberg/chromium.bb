@@ -279,6 +279,8 @@ void ShelfLayoutManager::UpdateAutoHideState() {
     if (auto_hide_state == AUTO_HIDE_HIDDEN) {
       // Hides happen immediately.
       SetState(state_.visibility_state);
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        OnAutoHideStateChanged(auto_hide_state));
     } else {
       auto_hide_timer_.Stop();
       auto_hide_timer_.Start(
@@ -294,6 +296,14 @@ void ShelfLayoutManager::UpdateAutoHideState() {
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
   window_overlaps_shelf_ = value;
   UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+}
+
+void ShelfLayoutManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShelfLayoutManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,6 +354,9 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
 
   if (state_.Equals(state))
     return;  // Nothing changed.
+
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    WillVisibilityStateChange(visibility_state));
 
   if (state.visibility_state == AUTO_HIDE) {
     // When state is AUTO_HIDE we need to track when the mouse is over the
@@ -507,6 +520,8 @@ bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
   SetState(state_.visibility_state);
+  FOR_EACH_OBSERVER(Observer, observers_, OnAutoHideStateChanged(
+      CalculateAutoHideState(state_.visibility_state)));
 }
 
 ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
