@@ -50,6 +50,33 @@ NACL_PLATFORM_DIR_MAP = {
     },
 }
 
+NACL_TOOL_MAP = {
+    'arm': {
+        '32': {
+            'tooldir': 'arm-nacl',
+            'as_flag': '',
+            'cc_flag': '',
+            'ld_flag': '',
+            },
+        },
+    'x86': {
+        '32': {
+            'tooldir': 'i686-nacl',
+            'other_libdir': 'lib32',
+            'as_flag': '--32',
+            'cc_flag': '-m32',
+            'ld_flag': ' -melf_nacl',
+            },
+        '64': {
+            'tooldir': 'x86_64-nacl',
+            'other_libdir': 'lib64',
+            'as_flag': '--64',
+            'cc_flag': '-m64',
+            'ld_flag': ' -melf64_nacl',
+            },
+        },
+    }
+
 def _PlatformSubdirs(env):
   if env.Bit('bitcode'):
     os = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
@@ -121,64 +148,64 @@ def _SetEnvForNativeSdk(env, sdk_path):
   #       absolute path have been futile
   env.PrependENVPath('PATH', bin_path)
 
-  if os.path.exists(os.path.join(sdk_path, 'nacl64')):
-    arch = 'nacl64'
-    default_subarch = '64'
-  elif os.path.exists(os.path.join(sdk_path, 'x86_64-nacl')):
-    arch = 'x86_64-nacl'
-    default_subarch = '64'
-  elif os.path.exists(os.path.join(sdk_path, 'arm-nacl')):
-    arch = 'arm-nacl'
-    default_subarch = env['TARGET_SUBARCH']
-  else:
-    # This fallback allows the Scons build to work if we have a
-    # 32-bit-by-default toolchain that lacks "nacl64" compatibility
-    # symlinks.
-    arch = 'nacl'
-    default_subarch = '32'
-
-  # Although "lib32" is symlinked to "lib/32" and "lib64" is symlinked
-  # to "lib", we use the actual directories because, on Windows, Scons
-  # does not run under Cygwin and does not follow Cygwin symlinks.
-  if env['TARGET_SUBARCH'] == default_subarch:
-    libsuffix = 'lib'
+  tool_prefix = None
+  tool_map = NACL_TOOL_MAP[env['TARGET_ARCHITECTURE']]
+  subarch_spec = tool_map[env['TARGET_SUBARCH']]
+  tooldir = subarch_spec['tooldir']
+  if os.path.exists(os.path.join(sdk_path, tooldir)):
+    # The tooldir for the build target exists.
+    # The tools there do the right thing without special options.
+    tool_prefix = tooldir
+    libdir = os.path.join(tooldir, 'lib')
     as_mode_flag = ''
+    cc_mode_flag = ''
     ld_mode_flag = ''
   else:
-    libsuffix = 'lib%s' % env['TARGET_SUBARCH']
-    as_mode_flag = '--%s' % env['TARGET_SUBARCH']
-    if env['TARGET_SUBARCH'] == '64':
-      ld_mode_flag = ' -melf64_nacl'
-    else:
-      ld_mode_flag = ' -melf_nacl'
+    # We're building for a target for which there is no matching tooldir.
+    # For example, for x86-32 when only <sdk_path>/x86_64-nacl/ exists.
+    # Find a tooldir for a different subarch that does exist.
+    others_map = tool_map.copy()
+    del others_map[env['TARGET_SUBARCH']]
+    for subarch, tool_spec in others_map.iteritems():
+      tooldir = tool_spec['tooldir']
+      if os.path.exists(os.path.join(sdk_path, tooldir)):
+        # OK, this is the other subarch to use as tooldir.
+        tool_prefix = tooldir
+        # We need to pass it extra options for the subarch we are building.
+        as_mode_flag = subarch_spec['as_flag']
+        cc_mode_flag = subarch_spec['cc_flag']
+        ld_mode_flag = subarch_spec['ld_flag']
+        # The lib directory may have an alternate name, i.e.
+        # 'lib32' in the x86_64-nacl tooldir.
+        libdir = os.path.join(tooldir, subarch_spec.get('other_libdir', 'lib'))
+        break
 
-  if arch == 'arm-nacl':
-    cc_mode_flag = ''
-  else:
-    cc_mode_flag = '-m%s' % env['TARGET_SUBARCH']
+  if tool_prefix is None:
+    raise Exception("Cannot find a toolchain for %s in %s" %
+                    (env['TARGET_FULLARCH'], sdk_path))
 
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
               # TODO(robertm): switch to using the mechanism that
               #                passes arguments to scons
-              NACL_SDK_INCLUDE='%s/%s/include' % (sdk_path, arch),
+              NACL_SDK_INCLUDE='%s/%s/include' % (sdk_path, tool_prefix),
               # where to find/put nacl generic extra sdk libraries
-              NACL_SDK_LIB='%s/%s/%s' % (sdk_path, arch, libsuffix),
+              NACL_SDK_LIB='%s/%s' % (sdk_path, libdir),
               # Replace the normal unix tools with the NaCl ones.
-              CC=os.path.join(bin_path, '%s-gcc' % arch),
-              CXX=os.path.join(bin_path, '%s-g++' % arch),
-              AR=os.path.join(bin_path, '%s-ar' % arch),
-              AS=os.path.join(bin_path, '%s-as' % arch),
-              ASPP=os.path.join(bin_path, '%s-gcc' % arch),
-              GDB=os.path.join(bin_path, '%s-gdb' % arch),
+              CC=os.path.join(bin_path, '%s-gcc' % tool_prefix),
+              CXX=os.path.join(bin_path, '%s-g++' % tool_prefix),
+              AR=os.path.join(bin_path, '%s-ar' % tool_prefix),
+              AS=os.path.join(bin_path, '%s-as' % tool_prefix),
+              ASPP=os.path.join(bin_path, '%s-gcc' % tool_prefix),
+              GDB=os.path.join(bin_path, '%s-gdb' % tool_prefix),
               # NOTE: use g++ for linking so we can handle C AND C++.
-              LINK=os.path.join(bin_path, '%s-g++' % arch),
+              LINK=os.path.join(bin_path, '%s-g++' % tool_prefix),
               # Grrr... and sometimes we really need ld.
-              LD=os.path.join(bin_path, '%s-ld%s' % (arch, ld_mode_flag)),
-              RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
-              OBJDUMP=os.path.join(bin_path, '%s-objdump' % arch),
-              STRIP=os.path.join(bin_path, '%s-strip' % arch),
-              ADDR2LINE=os.path.join(bin_path, '%s-addr2line' % arch),
+              LD=os.path.join(bin_path, '%s-ld' % tool_prefix) + ld_mode_flag,
+              RANLIB=os.path.join(bin_path, '%s-ranlib' % tool_prefix),
+              OBJDUMP=os.path.join(bin_path, '%s-objdump' % tool_prefix),
+              STRIP=os.path.join(bin_path, '%s-strip' % tool_prefix),
+              ADDR2LINE=os.path.join(bin_path, '%s-addr2line' % tool_prefix),
               BASE_LINKFLAGS=[cc_mode_flag],
               BASE_CFLAGS=[cc_mode_flag],
               BASE_CXXFLAGS=[cc_mode_flag],
