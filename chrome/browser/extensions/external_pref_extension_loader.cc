@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 
 #include "base/bind.h"
-#include "base/dir_reader_posix.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
