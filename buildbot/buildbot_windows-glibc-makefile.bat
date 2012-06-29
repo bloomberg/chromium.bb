@@ -14,6 +14,8 @@ setlocal
 call "%~dp0msvs_env.bat" 64
 call "%~dp0cygwin_env.bat"
 set CYGWIN=nodosfilewarning %CYGWIN%
+call "%~dp0mingw_env.bat"
+
 bash buildbot/buildbot_windows-glibc-makefile.sh
 if errorlevel 1 exit 1
 endlocal

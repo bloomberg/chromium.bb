@@ -102,7 +102,11 @@ else
 ifeq ($(shell uname -o), Cygwin)
   PLATFORM = win
 else
+ifeq ($(shell uname -o), Msys)
+  PLATFORM = win
+else
   PLATFORM = linux
+endif
 endif
 endif
 
@@ -819,15 +823,28 @@ gcc: BUILD/stamp-$(CROSSARCH)-gcc
 # gdb:
 # Builds gdb.
 ##################################################################
-# TODO: Add 64-bit support.
-# Only linux is supported.
+# Only linux and windows are supported.
 BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
-	case $$(SRC/gdb/config.guess) in \
-	*-linux*) ;; \
-	*) echo "Unsupported host" >&2 ; false ;; \
-	esac
+ifeq ($(PLATFORM),mac)
+	echo "Unsupported host" >&2
+	false
+endif
 	rm -rf BUILD/build-gdb-$(CROSSARCH)
 	mkdir BUILD/build-gdb-$(CROSSARCH)
+ifeq ($(PLATFORM),win)
+	cd BUILD/build-gdb-$(CROSSARCH) && \
+	  CC="x86_64-w64-mingw32-gcc -m32" \
+	  CC_FOR_BUILD="x86_64-w64-mingw32-gcc -m32" \
+	  LDFLAGS="$(USER_LDFLAGS)" \
+	  CFLAGS="$(USER_CFLAGS)" \
+	  ../../SRC/gdb/configure \
+	    --prefix=$(PREFIX) \
+	    --without-python \
+	    --host=x86_64-w64-mingw32 \
+	    --target=x86_64-nacl
+	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
+	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
+else
 	cd BUILD/build-gdb-$(CROSSARCH) && \
 	  CC="gcc -m32" \
 	  LDFLAGS="$(USER_LDFLAGS)" \
@@ -837,6 +854,7 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	    --target=x86_64-nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
+endif
 	touch $@
 
 .PHONY: gdb
