@@ -51,6 +51,10 @@ def ProcessComment(comment):
       }
     )
   '''
+
+  # Escape double quotes.
+  comment = comment.replace('"', '\\"');
+
   # Find all the parameter comments of the form "|name|: comment".
   parameter_starts = list(re.finditer(r'\n *\|([^|]*)\| *: *', comment))
 

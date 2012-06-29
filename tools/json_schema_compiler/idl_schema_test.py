@@ -89,6 +89,10 @@ class IdlSchemaTest(unittest.TestCase):
           'name': 'arg',
           '$ref': 'idl_basics.MyType1'}],
         func['parameters'])
+    func = getFunction(schema, 'function4')
+    self.assertEquals(('This tests if \\\"double-quotes\\\" are escaped '
+                       'correctly.'),
+                      func['description'])
 
 if __name__ == '__main__':
   unittest.main()
