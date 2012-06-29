@@ -249,8 +249,10 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
   // special-casing this video card won't be necessary. See
   // http://crbug.com/134015
   if ((flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) ||
-      (gpu_info_.gpu.vendor_id == 0x8086 &&
-       gpu_info_.gpu.device_id == 0x0166) ||
+      (gpu_info_.gpu.vendor_id == 0x8086 &&  // Intel
+       gpu_info_.gpu.device_id == 0x0166) ||  // HD 4000
+      (gpu_info_.gpu.vendor_id == 0x10de &&  // NVidia
+       gpu_info_.gpu.device_id == 0x0fd5) ||  // GeForce GT 650M
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedCompositing)) {
     if (!command_line->HasSwitch(
