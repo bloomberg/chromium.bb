@@ -11,7 +11,6 @@
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_util.h"
 
@@ -46,19 +45,9 @@ AudioDevice::AudioDevice()
       stream_id_(0),
       play_on_start_(true),
       is_started_(false) {
-  filter_ = RenderThreadImpl::current()->audio_message_filter();
-}
-
-AudioDevice::AudioDevice(const media::AudioParameters& params,
-                         RenderCallback* callback)
-    : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
-      audio_parameters_(params),
-      callback_(callback),
-      volume_(1.0),
-      stream_id_(0),
-      play_on_start_(true),
-      is_started_(false) {
-  filter_ = RenderThreadImpl::current()->audio_message_filter();
+  // Use the filter instance already created on the main render thread.
+  CHECK(AudioMessageFilter::Get()) << "Invalid audio message filter.";
+  filter_ = AudioMessageFilter::Get();
 }
 
 void AudioDevice::Initialize(const media::AudioParameters& params,

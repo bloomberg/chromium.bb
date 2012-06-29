@@ -39,6 +39,9 @@ class CONTENT_EXPORT AudioMessageFilter
 
   AudioMessageFilter();
 
+  // Getter for the one AudioMessageFilter object.
+  static AudioMessageFilter* Get();
+
   // Add a delegate to the map and return id of the entry.
   int32 AddDelegate(Delegate* delegate);
 
@@ -74,6 +77,9 @@ class CONTENT_EXPORT AudioMessageFilter
   // Received when internal state of browser process' audio output device has
   // changed.
   void OnStreamStateChanged(int stream_id, AudioStreamState state);
+
+  // The singleton instance for this filter.
+  static AudioMessageFilter* filter_;
 
   // A map of stream ids to delegates.
   IDMap<Delegate> delegates_;

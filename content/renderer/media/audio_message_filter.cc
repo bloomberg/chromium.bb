@@ -9,11 +9,21 @@
 #include "base/time.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_logging.h"
+
+AudioMessageFilter* AudioMessageFilter::filter_ = NULL;
+
+// static
+AudioMessageFilter* AudioMessageFilter::Get() {
+  return filter_;
+}
 
 AudioMessageFilter::AudioMessageFilter()
     : channel_(NULL) {
   VLOG(1) << "AudioMessageFilter::AudioMessageFilter()";
+  DCHECK(!filter_);
+  filter_ = this;
 }
 
 int32 AudioMessageFilter::AddDelegate(Delegate* delegate) {
@@ -69,6 +79,8 @@ void AudioMessageFilter::OnChannelClosing() {
 
 AudioMessageFilter::~AudioMessageFilter() {
   VLOG(1) << "AudioMessageFilter::~AudioMessageFilter()";
+  DCHECK(filter_);
+  filter_ = NULL;
 }
 
 void AudioMessageFilter::OnStreamCreated(

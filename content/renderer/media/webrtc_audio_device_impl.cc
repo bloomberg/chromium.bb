@@ -8,12 +8,14 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
+#include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
 
+using content::AudioDeviceFactory;
 using media::AudioParameters;
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
@@ -140,9 +142,13 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       playing_(false),
       recording_(false),
       agc_is_enabled_(false) {
-    DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
-    DCHECK(RenderThreadImpl::current()) <<
-        "WebRtcAudioDeviceImpl must be constructed on the render thread";
+  DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
+  // TODO(henrika): remove this restriction when factory is used for the
+  // input side as well.
+  DCHECK(RenderThreadImpl::current()) <<
+      "WebRtcAudioDeviceImpl must be constructed on the render thread";
+  audio_output_device_ = AudioDeviceFactory::Create();
+  DCHECK(audio_output_device_);
 }
 
 WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
@@ -410,7 +416,6 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     return 0;
 
   DCHECK(!audio_input_device_);
-  DCHECK(!audio_output_device_);
   DCHECK(!input_buffer_.get());
   DCHECK(!output_buffer_.get());
 
@@ -583,11 +588,10 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   AddHistogramFramesPerBuffer(kAudioOutput, out_buffer_size);
   AddHistogramFramesPerBuffer(kAudioInput, in_buffer_size);
 
-  // Create and configure the audio rendering client.
-  audio_output_device_ = new AudioDevice(output_audio_parameters_, this);
+  // Configure the audio rendering client.
+  audio_output_device_->Initialize(output_audio_parameters_, this);
 
   DCHECK(audio_input_device_);
-  DCHECK(audio_output_device_);
 
   // Allocate local audio buffers based on the parameters above.
   // It is assumed that each audio sample contains 16 bits and each
@@ -627,13 +631,11 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
     return 0;
 
   DCHECK(audio_input_device_);
-  DCHECK(audio_output_device_);
   DCHECK(input_buffer_.get());
   DCHECK(output_buffer_.get());
 
   // Release all resources allocated in Init().
   audio_input_device_ = NULL;
-  audio_output_device_ = NULL;
   input_buffer_.reset();
   output_buffer_.reset();
 
@@ -697,7 +699,7 @@ int32_t WebRtcAudioDeviceImpl::SetRecordingDevice(WindowsDeviceType device) {
 
 int32_t WebRtcAudioDeviceImpl::PlayoutIsAvailable(bool* available) {
   DVLOG(1) << "PlayoutIsAvailable()";
-  *available = (audio_output_device_ != NULL);
+  *available = initialized();
   return 0;
 }
 
@@ -709,7 +711,7 @@ int32_t WebRtcAudioDeviceImpl::InitPlayout() {
 
 bool WebRtcAudioDeviceImpl::PlayoutIsInitialized() const {
   DVLOG(1) << "PlayoutIsInitialized()";
-  return (audio_output_device_ != NULL);
+  return initialized();
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingIsAvailable(bool* available) {

@@ -87,10 +87,9 @@ class CONTENT_EXPORT AudioDevice
  public:
   // Methods called on main render thread -------------------------------------
 
-  // Minimal constructor where Initialize() must be called later.
+  // Creates an uninitialized AudioDevice. Clients must call Initialize()
+  // before using.
   AudioDevice();
-
-  AudioDevice(const media::AudioParameters& params, RenderCallback* callback);
 
   // AudioRendererSink implementation.
   virtual void Initialize(const media::AudioParameters& params,

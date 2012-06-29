@@ -16,8 +16,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/audio_device.h"
 #include "content/renderer/media/audio_input_device.h"
+#include "media/base/audio_renderer_sink.h"
 #include "third_party/webrtc/modules/audio_device/main/interface/audio_device.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
@@ -220,7 +220,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // We need this one to support runnable method tasks.
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
 
-  // AudioDevice::RenderCallback implementation.
+  // media::AudioRendererSink::RenderCallback implementation.
   virtual int Render(const std::vector<float*>& audio_data,
                      int number_of_frames,
                      int audio_delay_milliseconds) OVERRIDE;
@@ -407,7 +407,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   scoped_refptr<AudioInputDevice> audio_input_device_;
 
   // Provides access to the native audio output layer in the browser process.
-  scoped_refptr<AudioDevice> audio_output_device_;
+  scoped_refptr<media::AudioRendererSink> audio_output_device_;
 
   // Weak reference to the audio callback.
   // The webrtc client defines |audio_transport_callback_| by calling

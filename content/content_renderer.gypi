@@ -92,6 +92,8 @@
     'renderer/load_progress_tracker.h',
     'renderer/media/audio_device.cc',
     'renderer/media/audio_device.h',
+    'renderer/media/audio_device_factory.cc',
+    'renderer/media/audio_device_factory.h',
     'renderer/media/audio_device_thread.cc',
     'renderer/media/audio_device_thread.h',
     'renderer/media/audio_hardware.cc',

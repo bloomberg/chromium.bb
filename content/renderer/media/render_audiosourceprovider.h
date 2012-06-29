@@ -24,7 +24,7 @@
 
 #include <vector>
 
-#include "content/renderer/media/audio_device.h"
+#include "base/synchronization/lock.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"

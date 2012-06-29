@@ -8,17 +8,17 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/renderer/media/audio_device.h"
+#include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 namespace media {
-class AudioParameters;
+class AudioRendererSink;
 }
 
 class RendererWebAudioDeviceImpl
     : public WebKit::WebAudioDevice,
-      public AudioDevice::RenderCallback {
+      public media::AudioRendererSink::RenderCallback {
  public:
   RendererWebAudioDeviceImpl(const media::AudioParameters& params,
                              WebKit::WebAudioDevice::RenderCallback* callback);
@@ -29,14 +29,14 @@ class RendererWebAudioDeviceImpl
   virtual void stop();
   virtual double sampleRate();
 
-  // AudioDevice::RenderCallback implementation.
+  // AudioRendererSink::RenderCallback implementation.
   virtual int Render(const std::vector<float*>& audio_data,
                      int number_of_frames,
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
  private:
-  scoped_refptr<AudioDevice> audio_device_;
+  scoped_refptr<media::AudioRendererSink> audio_device_;
   bool is_running_;
 
   // Weak reference to the callback into WebKit code.

@@ -6,8 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "content/renderer/media/audio_device_factory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProviderClient.h"
 
+using content::AudioDeviceFactory;
 using std::vector;
 using WebKit::WebVector;
 
@@ -19,12 +21,11 @@ RenderAudioSourceProvider::RenderAudioSourceProvider()
       volume_(1.0),
       renderer_(NULL),
       client_(NULL) {
-  // We create the AudioDevice here because it must be created in the
-  // main thread.  But we don't yet know the audio format (sample-rate, etc.)
-  // at this point.  Later, when Initialize() is called, we have
-  // the audio format information and call the AudioDevice::Initialize()
-  // method to fully initialize it.
-  default_sink_ = new AudioDevice();
+  // We create the AudioDevice here using the factory. But we don't yet know
+  // the audio format (sample-rate, etc.) at this point.  Later, when
+  // Initialize() is called, we have the audio format information and call
+  // the AudioDevice::Initialize() method to fully initialize it.
+  default_sink_ = AudioDeviceFactory::Create();
 }
 
 void RenderAudioSourceProvider::setClient(
