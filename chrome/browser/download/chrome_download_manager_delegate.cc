@@ -791,7 +791,7 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
     // Of the 6 categories above for which we overwrite the target, we only
     // exclude "Auto (Safe)" reliably. "Prompt (Safe)" downloads will be
     // excluded if the conflicting download has proceeded past
-    // the in-progress rename.  Ditto for "Forced" downloads. None of the
+    // RenameInProgressDownloadFile.  Ditto for "Forced" downloads. None of the
     // "Dangerous" types are excluded.
     // TODO(asanka): Fix this.
     int uniquifier =

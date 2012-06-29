@@ -82,7 +82,8 @@ class CONTENT_EXPORT DownloadFileManager
   typedef base::Callback<void(content::DownloadInterruptReason reason)>
       CreateDownloadFileCallback;
 
-  // Callback used with RenameDownloadFile().
+  // Callback used with RenameInProgressDownloadFile() and
+  // RenameCompletingDownloadFile().
   typedef base::Callback<void(const FilePath&)> RenameCompletionCallback;
 
   class DownloadFileFactory {
@@ -119,17 +120,33 @@ class CONTENT_EXPORT DownloadFileManager
   // download file, as far as the DownloadFileManager is concerned -- if
   // anything happens to the download file after they are called, it will
   // be ignored.
-  // We call back to the UI thread in the case of CompleteDownload so that
-  // we know when we can hand the file off to other consumers.
   virtual void CancelDownload(content::DownloadId id);
-  virtual void CompleteDownload(content::DownloadId id,
-                                const base::Closure& callback);
+  virtual void CompleteDownload(content::DownloadId id);
 
   // Called on FILE thread by DownloadManager at the beginning of its shutdown.
   virtual void OnDownloadManagerShutdown(content::DownloadManager* manager);
 
-  // Rename the download file, uniquifying if overwrite was not requested.
-  virtual void RenameDownloadFile(
+  // The DownloadManager in the UI thread has provided an intermediate name for
+  // the download specified by |id|. |overwrite_existing_file| indicates whether
+  // any existing file at |full_path| should be overwritten. If false, adds a
+  // uniquifier to |full_path| and uses the resulting name as the intermediate
+  // path for the download. Invokes |callback| with the new path on success. If
+  // the rename fails, calls CancelDownloadOnRename() and invokes |callback|
+  // with an empty FilePath().
+  virtual void RenameInProgressDownloadFile(
+      content::DownloadId id,
+      const FilePath& full_path,
+      bool overwrite_existing_file,
+      const RenameCompletionCallback& callback);
+
+  // The DownloadManager in the UI thread has provided a final name for the
+  // download specified by |id|. |overwrite_existing_file| prevents
+  // uniquification, and is used for SAFE downloads, as the user may have
+  // decided to overwrite the file.  Sent from the UI thread and run on the FILE
+  // thread. Invokes |callback| with the new path on success. If the rename
+  // fails, calls CancelDownloadOnRename() and invokes |callback| with an empty
+  // FilePath().
+  virtual void RenameCompletingDownloadFile(
       content::DownloadId id,
       const FilePath& full_path,
       bool overwrite_existing_file,
@@ -161,6 +178,12 @@ class CONTENT_EXPORT DownloadFileManager
 
   // Called only on the download thread.
   content::DownloadFile* GetDownloadFile(content::DownloadId global_id);
+
+  // Called only from RenameInProgressDownloadFile and
+  // RenameCompletingDownloadFile on the FILE thread.
+  // |rename_error| indicates what error caused the cancel.
+  void CancelDownloadOnRename(content::DownloadId global_id,
+                              net::Error rename_error);
 
   // Erases the download file with the given the download |id| and removes
   // it from the maps.

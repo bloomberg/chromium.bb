@@ -26,7 +26,6 @@ using content::WebContents;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Property;
-using ::testing::Return;
 
 DownloadId::Domain kValidDownloadItemIdDomain = "valid DownloadId::Domain";
 
@@ -85,10 +84,14 @@ class MockDownloadFileManager : public DownloadFileManager {
   MockDownloadFileManager();
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(CancelDownload, void(DownloadId));
-  MOCK_METHOD2(CompleteDownload, void(DownloadId, const base::Closure&));
+  MOCK_METHOD1(CompleteDownload, void(DownloadId));
   MOCK_METHOD1(OnDownloadManagerShutdown, void(DownloadManager*));
-  MOCK_METHOD4(RenameDownloadFile, void(DownloadId, const FilePath&, bool,
-                                        const RenameCompletionCallback&));
+  MOCK_METHOD4(RenameInProgressDownloadFile,
+               void(DownloadId, const FilePath&, bool,
+                    const RenameCompletionCallback&));
+  MOCK_METHOD4(RenameCompletingDownloadFile,
+               void(DownloadId, const FilePath&, bool,
+                    const RenameCompletionCallback&));
   MOCK_CONST_METHOD0(NumberOfActiveDownloads, int());
  private:
   ~MockDownloadFileManager() {}
@@ -98,16 +101,11 @@ class MockDownloadFileManager : public DownloadFileManager {
 // the UI thread. Should only be used as the action for
 // MockDownloadFileManager::Rename*DownloadFile as follows:
 //   EXPECT_CALL(mock_download_file_manager,
-//               RenameDownloadFile(_,_,_,_))
+//               RenameInProgressDownloadFile(_,_,_,_))
 //       .WillOnce(ScheduleRenameCallback(new_path));
 ACTION_P(ScheduleRenameCallback, new_path) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(arg3, new_path));
-}
-
-// Similarly for scheduling a completion callback.
-ACTION(ScheduleCompleteCallback) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(arg1));
 }
 
 MockDownloadFileManager::MockDownloadFileManager()
@@ -374,7 +372,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 }
 
 // DownloadItemImpl::OnIntermediatePathDetermined will schedule a task to run
-// DownloadFileManager::RenameDownloadFile(). Once the rename
+// DownloadFileManager::RenameInProgressDownloadFile(). Once the rename
 // completes, DownloadItemImpl receives a notification with the new file
 // name. Check that observers are updated when the new filename is available and
 // not before.
@@ -386,7 +384,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnIntermediatePathDetermined) {
   scoped_refptr<MockDownloadFileManager> file_manager(
       new MockDownloadFileManager);
   EXPECT_CALL(*file_manager.get(),
-              RenameDownloadFile(_,intermediate_path,false,_))
+              RenameInProgressDownloadFile(_,intermediate_path,false,_))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
 
   item->OnIntermediatePathDetermined(file_manager.get(), intermediate_path,
@@ -492,7 +490,7 @@ TEST_F(DownloadItemTest, ExternalData) {
 // download is renamed to the intermediate name.
 // Delegate::DownloadRenamedToFinalName() should be invoked after the final
 // rename.
-TEST_F(DownloadItemTest, CallbackAfterRename) {
+TEST_F(DownloadItemTest, CallbackAfterRenameToIntermediateName) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   FilePath intermediate_path(kDummyPath);
   FilePath new_intermediate_path(intermediate_path.AppendASCII("foo"));
@@ -500,8 +498,8 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   scoped_refptr<MockDownloadFileManager> file_manager(
       new MockDownloadFileManager);
   EXPECT_CALL(*file_manager.get(),
-              RenameDownloadFile(item->GetGlobalId(),
-                                 intermediate_path, false, _))
+              RenameInProgressDownloadFile(item->GetGlobalId(),
+                                           intermediate_path, false, _))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
   // DownloadItemImpl should invoke this callback on the delegate once the
   // download is renamed to the intermediate name. Also check that GetFullPath()
@@ -521,14 +519,11 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   ::testing::Mock::VerifyAndClearExpectations(file_manager.get());
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 
-  item->OnAllDataSaved(10, "");
   EXPECT_CALL(*file_manager.get(),
-              RenameDownloadFile(item->GetGlobalId(),
+              RenameCompletingDownloadFile(item->GetGlobalId(),
                                            final_path, true, _))
       .WillOnce(ScheduleRenameCallback(final_path));
-  EXPECT_CALL(*file_manager.get(),
-              CompleteDownload(item->GetGlobalId(), _))
-      .WillOnce(ScheduleCompleteCallback());
+  EXPECT_CALL(*file_manager.get(), CompleteDownload(item->GetGlobalId()));
   // DownloadItemImpl should invoke this callback on the delegate after the
   // final rename has completed. Also check that GetFullPath() and
   // GetTargetFilePath() return the final path at the time of the call.
@@ -538,9 +533,6 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
                         Property(&DownloadItem::GetFullPath, final_path),
                         Property(&DownloadItem::GetTargetFilePath,
                                  final_path))));
-  EXPECT_CALL(*mock_delegate(), DownloadCompleted(item));
-  EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item))
-      .WillOnce(Return(true));
   item->OnDownloadCompleting(file_manager.get());
   RunAllPendingInMessageLoops();
   ::testing::Mock::VerifyAndClearExpectations(file_manager.get());

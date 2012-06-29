@@ -31,7 +31,6 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::StrEq;
 
 namespace {
@@ -72,7 +71,7 @@ content::DownloadFile* MockDownloadFileFactory::CreateFile(
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
   DCHECK(files_.end() == files_.find(info->download_id));
-  MockDownloadFile* created_file = new StrictMock<MockDownloadFile>();
+  MockDownloadFile* created_file = new MockDownloadFile();
   files_[info->download_id] = created_file;
 
   ON_CALL(*created_file, GetDownloadManager())
@@ -104,8 +103,6 @@ content::DownloadManager* MockDownloadRequestHandle::GetDownloadManager()
     const {
   return manager_;
 }
-
-void NullCallback() { }
 
 }  // namespace
 
@@ -230,12 +227,23 @@ class DownloadFileManagerTest : public testing::Test {
           .Times(AtLeast(1));
       EXPECT_CALL(*file, GetDownloadManager())
           .Times(AtLeast(1));
+    } else if (state == COMPLETE) {
+#if defined(OS_MACOSX)
+      EXPECT_CALL(*file, AnnotateWithSourceInformation());
+#endif
     }
 
-    download_file_manager_->RenameDownloadFile(
-        id, new_path, (should_overwrite == OVERWRITE),
-        base::Bind(&TestDownloadManager::OnDownloadRenamed,
-                   download_manager_, id.local()));
+    if (state == IN_PROGRESS) {
+      download_file_manager_->RenameInProgressDownloadFile(
+          id, new_path, (should_overwrite == OVERWRITE),
+          base::Bind(&TestDownloadManager::OnDownloadRenamed,
+                     download_manager_, id.local()));
+    } else {  // state == COMPLETE
+      download_file_manager_->RenameCompletingDownloadFile(
+          id, new_path, (should_overwrite == OVERWRITE),
+          base::Bind(&TestDownloadManager::OnDownloadRenamed,
+                     download_manager_, id.local()));
+    }
 
     if (rename_error != net::OK) {
       EXPECT_CALL(*download_manager_,
@@ -257,22 +265,6 @@ class DownloadFileManagerTest : public testing::Test {
     }
   }
 
-  void Complete(DownloadId id) {
-    MockDownloadFile* file = download_file_factory_->GetExistingFile(id);
-    ASSERT_TRUE(file != NULL);
-
-    EXPECT_CALL(*file, AnnotateWithSourceInformation())
-        .WillOnce(Return());
-    EXPECT_CALL(*file, Detach())
-        .WillOnce(Return());
-    int num_downloads = download_file_manager_->NumberOfActiveDownloads();
-    EXPECT_LT(0, num_downloads);
-    download_file_manager_->CompleteDownload(id, base::Bind(NullCallback));
-    EXPECT_EQ(num_downloads - 1,
-              download_file_manager_->NumberOfActiveDownloads());
-    EXPECT_EQ(NULL, download_file_manager_->GetDownloadFile(id));
-  }
-
   void CleanUp(DownloadId id) {
     // Expected calls:
     //  DownloadFileManager::CancelDownload
@@ -287,7 +279,7 @@ class DownloadFileManagerTest : public testing::Test {
 
     download_file_manager_->CancelDownload(id);
 
-    EXPECT_EQ(NULL, download_file_manager_->GetDownloadFile(id));
+    EXPECT_TRUE(NULL == download_file_manager_->GetDownloadFile(id));
   }
 
  protected:
@@ -334,16 +326,6 @@ TEST_F(DownloadFileManagerTest, Cancel) {
   CreateDownloadFile(info.Pass());
 
   CleanUp(dummy_id);
-}
-
-TEST_F(DownloadFileManagerTest, Complete) {
-  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
-  info->download_id = dummy_id;
-
-  CreateDownloadFile(info.Pass());
-
-  Complete(dummy_id);
 }
 
 TEST_F(DownloadFileManagerTest, RenameInProgress) {
@@ -406,7 +388,7 @@ TEST_F(DownloadFileManagerTest, RenameWithUniquification) {
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   FilePath unique_foo(foo.InsertBeforeExtension(FILE_PATH_LITERAL(" (1)")));
   // Create a file at |foo|. Since we are specifying DONT_OVERWRITE,
-  // RenameDownloadFile() should pick "foo (1).txt" instead of
+  // RenameCompletingDownloadFile() should pick "foo (1).txt" instead of
   // overwriting this file.
   ASSERT_EQ(0, file_util::WriteFile(foo, "", 0));
   RenameFile(dummy_id, foo, unique_foo, net::OK, COMPLETE, DONT_OVERWRITE);
@@ -466,6 +448,7 @@ TEST_F(DownloadFileManagerTest, TwoDownloads) {
 
   CleanUp(dummy_id);
 }
+
 
 // TODO(ahendrickson) -- A test for download manager shutdown.
 // Expected call sequence:

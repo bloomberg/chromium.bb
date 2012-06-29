@@ -427,28 +427,10 @@ void DownloadItemImpl::ProgressComplete(int64 bytes_so_far,
     total_bytes_ = 0;
 }
 
-// Updates from the download thread may have been posted while this download
-// was being cancelled in the UI thread, so we'll accept them unless we're
-// complete.
 void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
-                                      int64 bytes_per_sec,
                                       const std::string& hash_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!IsInProgress()) {
-    // Ignore if we're no longer in-progress.  This can happen if we race a
-    // Cancel on the UI thread with an update on the FILE thread.
-    //
-    // TODO(rdsmith): Arguably we should let this go through, as this means
-    // the download really did get further than we know before it was
-    // cancelled.  But the gain isn't very large, and the code is more
-    // fragile if it has to support in progress updates in a non-in-progress
-    // state.  This issue should be readdressed when we revamp performance
-    // reporting.
-    return;
-  }
-  bytes_per_sec_ = bytes_per_sec;
   hash_state_ = hash_state;
+
   received_bytes_ = bytes_so_far;
 
   // If we've received more data than we were expecting (bad server info?),
@@ -461,7 +443,22 @@ void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
         net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
         net::NetLog::Int64Callback("bytes_so_far", received_bytes_));
   }
+}
 
+// Updates from the download thread may have been posted while this download
+// was being cancelled in the UI thread, so we'll accept them unless we're
+// complete.
+void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
+                                      int64 bytes_per_sec,
+                                      const std::string& hash_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsInProgress()) {
+    NOTREACHED();
+    return;
+  }
+  bytes_per_sec_ = bytes_per_sec;
+  UpdateProgress(bytes_so_far, hash_state);
   UpdateObservers();
 }
 
@@ -535,6 +532,12 @@ void DownloadItemImpl::Completed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
+
+  DCHECK(all_data_saved_);
+  end_time_ = base::Time::Now();
+  TransitionTo(COMPLETE);
+  delegate_->DownloadCompleted(this);
+  download_stats::RecordDownloadCompleted(start_tick_, received_bytes_);
 
   if (auto_opened_) {
     // If it was already handled by the delegate, do nothing.
@@ -710,8 +713,9 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
   DCHECK_NE(DANGEROUS, GetSafetyState());
   DCHECK(file_manager);
 
+  // TODO(asanka): Reduce code duplication across the NeedsRename() and
+  //               !NeedsRename() completion pathways.
   if (NeedsRename()) {
-    // Rename the Download file and call back to OnDownloadRenamedToFinalName.
     bool should_overwrite =
         (GetTargetDisposition() != DownloadItem::TARGET_DISPOSITION_UNIQUIFY);
     DownloadFileManager::RenameCompletionCallback callback =
@@ -720,17 +724,15 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
                    base::Unretained(file_manager));
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::RenameDownloadFile,
+        base::Bind(&DownloadFileManager::RenameCompletingDownloadFile,
                    file_manager, GetGlobalId(), GetTargetFilePath(),
                    should_overwrite, callback));
   } else {
-    // Complete the download and release the DownloadFile.
+    Completed();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadFileManager::CompleteDownload,
-                   file_manager, GetGlobalId(),
-                   base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
-                              weak_ptr_factory_.GetWeakPtr())));
+                   file_manager, download_id_));
   }
 }
 
@@ -745,36 +747,22 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
            << " " << DebugString(false);
   DCHECK(NeedsRename());
 
-  if (full_path.empty())
-    // Indicates error; also reported
-    // by DownloadManagerImpl::OnDownloadInterrupted.
-    return;
+  if (!full_path.empty()) {
+    // full_path is now the current and target file path.
+    target_path_ = full_path;
+    SetFullPath(full_path);
+    delegate_->DownloadRenamedToFinalName(this);
 
-  // full_path is now the current and target file path.
-  target_path_ = full_path;
-  SetFullPath(full_path);
-  delegate_->DownloadRenamedToFinalName(this);
+    if (delegate_->ShouldOpenDownload(this))
+      Completed();
+    else
+      delegate_delayed_complete_ = true;
 
-  // Complete the download and release the DownloadFile.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CompleteDownload,
-                 file_manager, GetGlobalId(),
-                 base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
-                            weak_ptr_factory_.GetWeakPtr())));
-}
-
-void DownloadItemImpl::OnDownloadFileReleased() {
-  DCHECK(all_data_saved_);
-  end_time_ = base::Time::Now();
-  TransitionTo(COMPLETE);
-  delegate_->DownloadCompleted(this);
-  download_stats::RecordDownloadCompleted(start_tick_, received_bytes_);
-
-  if (delegate_->ShouldOpenDownload(this))
-    Completed();
-  else
-    delegate_delayed_complete_ = true;
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DownloadFileManager::CompleteDownload,
+                   file_manager, GetGlobalId()));
+  }
 }
 
 void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
@@ -904,7 +892,7 @@ void DownloadItemImpl::OnIntermediatePathDetermined(
                  weak_ptr_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::RenameDownloadFile,
+      base::Bind(&DownloadFileManager::RenameInProgressDownloadFile,
                  file_manager, GetGlobalId(), intermediate_path,
                  ok_to_overwrite, callback));
 }

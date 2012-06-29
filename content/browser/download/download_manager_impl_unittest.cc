@@ -114,13 +114,18 @@ class MockDownloadFileManager : public DownloadFileManager {
       const CreateDownloadFileCallback& callback));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(CancelDownload, void(content::DownloadId));
-  MOCK_METHOD2(CompleteDownload, void(content::DownloadId,
-                                      const base::Closure&));
+  MOCK_METHOD1(CompleteDownload, void(content::DownloadId));
   MOCK_METHOD1(OnDownloadManagerShutdown, void(content::DownloadManager*));
-  MOCK_METHOD4(RenameDownloadFile, void(content::DownloadId,
-                                        const FilePath&,
-                                        bool,
-                                        const RenameCompletionCallback&));
+  MOCK_METHOD4(RenameInProgressDownloadFile,
+               void(content::DownloadId,
+                    const FilePath&,
+                    bool,
+                    const RenameCompletionCallback&));
+  MOCK_METHOD4(RenameCompletingDownloadFile,
+               void(content::DownloadId,
+                    const FilePath&,
+                    bool,
+                    const RenameCompletionCallback&));
   MOCK_CONST_METHOD0(NumberOfActiveDownloads, int());
  protected:
   virtual ~MockDownloadFileManager();
