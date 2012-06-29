@@ -6,9 +6,11 @@
 
 #include <set>
 
+#include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_implementation.h"
 #if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
@@ -167,6 +169,10 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
           lstr.find("ati") != std::string::npos;
     }
   }
+
+  feature_flags_.disable_workarounds =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuDriverBugWorkarounds);
 
   bool npot_ok = false;
 
@@ -531,8 +537,10 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool ext_occlusion_query_disallowed = false;
 
 #if defined(OS_LINUX)
-  // Intel drivers on Linux appear to be buggy.
-  ext_occlusion_query_disallowed = feature_flags_.is_intel;
+  if (!feature_flags_.disable_workarounds) {
+    // Intel drivers on Linux appear to be buggy.
+    ext_occlusion_query_disallowed = feature_flags_.is_intel;
+  }
 #endif
 
   if (!ext_occlusion_query_disallowed &&

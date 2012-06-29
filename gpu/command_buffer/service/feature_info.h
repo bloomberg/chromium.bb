@@ -37,6 +37,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
           occlusion_query_boolean(false),
           use_arb_occlusion_query2_for_occlusion_query_boolean(false),
           use_arb_occlusion_query_for_occlusion_query_boolean(false),
+          disable_workarounds(false),
           is_intel(false),
           is_nvidia(false),
           is_amd(false) {
@@ -57,6 +58,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool occlusion_query_boolean;
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
+    bool disable_workarounds;
     bool is_intel;
     bool is_nvidia;
     bool is_amd;
