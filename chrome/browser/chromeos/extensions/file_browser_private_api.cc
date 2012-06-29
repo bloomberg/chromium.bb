@@ -1819,7 +1819,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
     }
   }
 
-  system_service->file_system()->GetCacheState(
+  system_service->cache()->GetCacheEntryOnUIThread(
       file_proto->gdata_entry().resource_id(),
       file_proto->file_md5(),
       base::Bind(
@@ -1829,8 +1829,10 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
 
 void GetGDataFilePropertiesFunction::CacheStateReceived(
     base::DictionaryValue* property_dict,
-    base::PlatformFileError error,
-    int cache_state) {
+    bool success,
+    const gdata::GDataCache::CacheEntry& cache_entry) {
+  const int cache_state = (success ? cache_entry.cache_state :
+                           gdata::GDataCache::CACHE_STATE_NONE);
   property_dict->SetBoolean(
       "isPinned",
       gdata::GDataCache::IsCachePinned(cache_state));

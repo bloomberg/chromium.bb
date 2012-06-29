@@ -122,9 +122,9 @@ class GDataCache {
     CacheEntry(const std::string& md5,
                CacheSubDirectoryType sub_dir_type,
                int cache_state)
-    : md5(md5),
-      sub_dir_type(sub_dir_type),
-      cache_state(cache_state) {
+        : md5(md5),
+          sub_dir_type(sub_dir_type),
+          cache_state(cache_state) {
     }
 
     bool IsPresent() const { return IsCachePresent(cache_state); }
@@ -139,6 +139,16 @@ class GDataCache {
     CacheSubDirectoryType sub_dir_type;
     int cache_state;
   };
+
+  // Callback for GetCacheEntryOnUIThread.
+  // |success| indicates if the operation was successful.
+  // |cache_entry| is the obtained cache entry.
+  //
+  // TODO(satorux): Unlike other callback types, this has to be defined
+  // inside GDataCache as CacheEntry is inside GDataCache. We should get them
+  // outside of GDataCache.
+  typedef base::Callback<void(bool success, const CacheEntry& cache_entry)>
+      GetCacheEntryCallback;
 
   static bool IsCachePresent(int cache_state) {
     return cache_state & CACHE_STATE_PRESENT;
@@ -204,6 +214,15 @@ class GDataCache {
   // Removes observer.
   // Must be called on UI thread.
   void RemoveObserver(Observer* observer);
+
+  // Gets the cache entry by the given resource ID and MD5.
+  // See also GetCacheEntry().
+  //
+  // Must be called on UI thread. |callback| is run on UI thread.
+  void GetCacheEntryOnUIThread(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetCacheEntryCallback& callback);
 
   // Gets the resource IDs of pinned-but-not-fetched files and
   // dirty-but-not-uploaded files.
@@ -417,6 +436,12 @@ class GDataCache {
                      const std::string& resource_id,
                      const std::string& md5,
                      const CacheOperationCallback& callback);
+
+  // Helper function to implement GetCacheEntryOnUIThread().
+  void GetCacheEntryHelper(const std::string& resource_id,
+                           const std::string& md5,
+                           bool* success,
+                           GDataCache::CacheEntry* cache_entry);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;

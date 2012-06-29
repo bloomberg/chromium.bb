@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "googleurl/src/url_util.h"
@@ -450,8 +451,8 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
                      scoped_ptr<gdata::GDataFileProto> file_proto);
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
-                          base::PlatformFileError error,
-                          int cache_state);
+                          bool success,
+                          const gdata::GDataCache::CacheEntry& cache_entry);
 
   size_t current_index_;
   base::ListValue* path_list_;

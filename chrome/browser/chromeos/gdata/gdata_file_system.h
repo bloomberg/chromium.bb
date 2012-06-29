@@ -103,10 +103,6 @@ typedef base::Callback<void(base::PlatformFileError error,
 typedef base::Callback<void(const std::string& resource_id)>
     GetDocumentResourceIdCallback;
 
-// Callback for GetCacheState operation.
-typedef base::Callback<void(base::PlatformFileError error,
-                            int cache_state)> GetCacheStateCallback;
-
 // GData file system abstraction layer.
 // The interface is defined to make GDataFileSystem mockable.
 class GDataFileSystemInterface {
@@ -297,16 +293,6 @@ class GDataFileSystemInterface {
       const std::string& resource_id,
       const FileOperationCallback& callback) = 0;
 
-  // Gets the cache state of file corresponding to |resource_id| and |md5| if it
-  // exists on disk.
-  // Initializes cache if it has not been initialized.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called with the cache state if file exists in cache or CACHE_STATE_NONE
-  // otherwise.
-  virtual void GetCacheState(const std::string& resource_id,
-                             const std::string& md5,
-                             const GetCacheStateCallback& callback) = 0;
-
   // Finds an entry (a file or a directory) by |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
   //
@@ -434,9 +420,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
       const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetCacheState(const std::string& resource_id,
-                             const std::string& md5,
-                             const GetCacheStateCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByPath(
       const FilePath& file_path,
       const GetEntryInfoCallback& callback) OVERRIDE;
@@ -846,8 +829,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Unpins file if cache entry is pinned.
   void UnpinIfPinned(const std::string& resource_id,
                      const std::string& md5,
-                     GDataCache::CacheEntry* cache_entry,
-                     bool* cache_entry_is_valid);
+                     bool success,
+                     const GDataCache::CacheEntry& cache_entry);
 
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.
@@ -1159,9 +1142,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,
                                  base::PlatformFileError error);
-  void GetCacheStateOnUIThread(const std::string& resource_id,
-                               const std::string& md5,
-                               const GetCacheStateCallback& callback);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
                                  const FilePath& virtual_dir_path,

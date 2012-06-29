@@ -346,7 +346,7 @@ void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
 }
 
 // Runs callback with pointers dereferenced.
-// Used to implement GetResourceIdsOfBacklog().
+// Used to implement GetResourceIdsOfBacklogOnUIThread().
 void RunGetResourceIdsCallback(const GetResourceIdsCallback& callback,
                                std::vector<std::string>* to_fetch,
                                std::vector<std::string>* to_upload) {
@@ -356,6 +356,19 @@ void RunGetResourceIdsCallback(const GetResourceIdsCallback& callback,
 
   if (!callback.is_null())
     callback.Run(*to_fetch, *to_upload);
+}
+
+// Runs callback with pointers dereferenced.
+// Used to implement GetCacheEntryOnUIThread().
+void RunGetCacheEntryCallback(
+    const GDataCache::GetCacheEntryCallback& callback,
+    bool* success,
+    GDataCache::CacheEntry* cache_entry) {
+  DCHECK(success);
+  DCHECK(cache_entry);
+
+  if (!callback.is_null())
+    callback.Run(*success, *cache_entry);
 }
 
 }  // namespace
@@ -443,6 +456,28 @@ void GDataCache::AddObserver(Observer* observer) {
 void GDataCache::RemoveObserver(Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
+}
+
+void GDataCache::GetCacheEntryOnUIThread(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetCacheEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  bool* success = new bool(false);
+  GDataCache::CacheEntry* cache_entry = new GDataCache::CacheEntry;
+  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataCache::GetCacheEntryHelper,
+                 base::Unretained(this),
+                 resource_id,
+                 md5,
+                 success,
+                 cache_entry),
+      base::Bind(&RunGetCacheEntryCallback,
+                 callback,
+                 base::Owned(success),
+                 base::Owned(cache_entry)));
 }
 
 void GDataCache::GetResourceIdsOfBacklogOnUIThread(
@@ -1461,6 +1496,20 @@ void GDataCache::OnCommitDirty(base::PlatformFileError* error,
 
   if (*error == base::PLATFORM_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCacheCommitted(resource_id));
+}
+
+void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
+                                     const std::string& md5,
+                                     bool* success,
+                                     GDataCache::CacheEntry* cache_entry) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(success);
+  DCHECK(cache_entry);
+
+  scoped_ptr<GDataCache::CacheEntry> value(GetCacheEntry(resource_id, md5));
+  *success = value.get();
+  if (*success)
+    *cache_entry = *value;
 }
 
 // static

@@ -211,6 +211,7 @@ class GDataFileSystemTest : public testing::Test {
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(GDataCache::CACHE_TYPE_META),
+        expected_success_(true),
         expect_outgoing_symlink_(false),
         root_feed_changestamp_(0) {
   }
@@ -731,26 +732,29 @@ class GDataFileSystemTest : public testing::Test {
     RunAllPendingForIO();  // Post FreeDiskSpaceIfNeededFor to blocking pool.
   }
 
-  void TestGetCacheState(const std::string& resource_id, const std::string& md5,
-                         base::PlatformFileError expected_error,
-                         int expected_cache_state, GDataFile* expected_file) {
-    expected_error_ = expected_error;
+  void TestGetCacheState(const std::string& resource_id,
+                         const std::string& md5,
+                         bool expected_success,
+                         int expected_cache_state,
+                         GDataFile* expected_file) {
+    expected_success_ = expected_success;
     expected_cache_state_ = expected_cache_state;
 
-    file_system_->GetCacheState(resource_id, md5,
+    cache_->GetCacheEntryOnUIThread(resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyGetCacheState,
                    base::Unretained(this)));
 
     RunAllPendingForIO();
   }
 
-  void VerifyGetCacheState(base::PlatformFileError error, int cache_state) {
+  void VerifyGetCacheState(bool success,
+                           const GDataCache::CacheEntry& cache_entry) {
     ++num_callback_invocations_;
 
-    EXPECT_EQ(expected_error_, error);
+    EXPECT_EQ(expected_success_, success);
 
-    if (error == base::PLATFORM_FILE_OK) {
-      EXPECT_EQ(expected_cache_state_, cache_state);
+    if (success) {
+      EXPECT_EQ(expected_cache_state_, cache_entry.cache_state);
     }
   }
 
@@ -1327,6 +1331,7 @@ class GDataFileSystemTest : public testing::Test {
   base::PlatformFileError expected_error_;
   int expected_cache_state_;
   GDataCache::CacheSubDirectoryType expected_sub_dir_type_;
+  bool expected_success_;
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
   int root_feed_changestamp_;
@@ -2970,7 +2975,7 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
 
     // Get its cache state.
     num_callback_invocations_ = 0;
-    TestGetCacheState(resource_id, md5, base::PLATFORM_FILE_OK,
+    TestGetCacheState(resource_id, md5, true,
                       GDataCache::CACHE_STATE_PRESENT, file);
     EXPECT_EQ(1, num_callback_invocations_);
   }
@@ -3000,14 +3005,14 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
 
     // Get its cache state.
     num_callback_invocations_ = 0;
-    TestGetCacheState(resource_id, md5, base::PLATFORM_FILE_OK,
+    TestGetCacheState(resource_id, md5, true,
                       expected_cache_state, file);
     EXPECT_EQ(1, num_callback_invocations_);
   }
 
   {  // Test cache state of a non-existent file.
     num_callback_invocations_ = 0;
-    TestGetCacheState("pdf:12345", "abcd", base::PLATFORM_FILE_ERROR_NOT_FOUND,
+    TestGetCacheState("pdf:12345", "abcd", false,
                       0, NULL);
     EXPECT_EQ(1, num_callback_invocations_);
   }

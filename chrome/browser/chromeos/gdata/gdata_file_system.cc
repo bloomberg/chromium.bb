@@ -190,21 +190,6 @@ void OnTransferRegularFileCompleteForCopy(
     relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
 }
 
-// Gets a cache entry from a GDataCache, must be called on the blocking pool.
-// The result value is copied to cache_entry on success.
-void GetCacheEntryOnBlockingPool(
-    GDataCache* cache,
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::CacheEntry* cache_entry,
-    bool* success) {
-  scoped_ptr<GDataCache::CacheEntry> value(
-      cache->GetCacheEntry(resource_id, md5));
-  *success = value.get();
-  if (*success)
-    *cache_entry = *value;
-}
-
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
 void RunGetFileCallbackHelper(const GetFileCallback& callback,
@@ -251,21 +236,6 @@ void OnAddUploadFileCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
     callback.Run(error);
-}
-
-// Used to implement GetCacheState.
-void RunGetCacheStateCallbackHelper(
-    const GetCacheStateCallback& callback,
-    GDataCache::CacheEntry* cache_entry,
-    bool* success) {
-  DCHECK(cache_entry);
-  DCHECK(success);
-  if (callback.is_null())
-    return;
-
-  callback.Run(
-      base::PLATFORM_FILE_OK,
-      *success ? cache_entry->cache_state : GDataCache::CACHE_STATE_NONE);
 }
 
 // The class to wait for the initial load of root feed and runs the callback
@@ -2291,62 +2261,6 @@ void GDataFileSystem::OnUpdatedFileUploaded(
                              base::Passed(&upload_file_info)));
 }
 
-void GDataFileSystem::GetCacheState(const std::string& resource_id,
-                                    const std::string& md5,
-                                    const GetCacheStateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Always post a task to the UI thread to call GetCacheStateOnUIThread even if
-  // GetCacheState is called on the UI thread. This ensures that, regardless of
-  // whether GDataFileSystem is locked or not, GDataFileSystem is unlocked when
-  // GetCacheStateOnUIThread is called.
-  const bool posted = BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::GetCacheStateOnUIThread,
-                 ui_weak_ptr_,
-                 resource_id,
-                 md5,
-                 CreateRelayCallback(callback)));
-  DCHECK(posted);
-}
-
-void GDataFileSystem::GetCacheStateOnUIThread(
-    const std::string& resource_id,
-    const std::string& md5,
-    const GetCacheStateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
-  if (!entry || !entry->AsGDataFile()) {
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(callback,
-                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                   GDataCache::CACHE_STATE_NONE));
-    DCHECK(posted);
-    return;
-  }
-
-  GDataCache::CacheEntry* cache_entry = new GDataCache::CacheEntry;
-  bool* success = new bool(false);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      sequence_token_,
-      base::Bind(&GetCacheEntryOnBlockingPool,
-                 cache_,
-                 resource_id,
-                 md5,
-                 cache_entry,
-                 success),
-      base::Bind(&RunGetCacheStateCallbackHelper,
-                 callback,
-                 base::Owned(cache_entry),
-                 base::Owned(success)));
-}
-
 void GDataFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -2856,23 +2770,13 @@ void GDataFileSystem::OnFileDownloaded(
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
   if (status == GDATA_CANCELLED) {
-    GDataCache::CacheEntry* cache_entry = new GDataCache::CacheEntry;
-    bool* success = new bool(false);
-    PostBlockingPoolSequencedTaskAndReply(
-        FROM_HERE,
-        sequence_token_,
-        base::Bind(&GetCacheEntryOnBlockingPool,
-                   cache_,
-                   params.resource_id,
-                   params.md5,
-                   cache_entry,
-                   success),
+    cache_->GetCacheEntryOnUIThread(
+        params.resource_id,
+        params.md5,
         base::Bind(&GDataFileSystem::UnpinIfPinned,
                    ui_weak_ptr_,
                    params.resource_id,
-                   params.md5,
-                   base::Owned(cache_entry),
-                   base::Owned(success)));
+                   params.md5));
   }
 
   // At this point, the disk can be full or nearly full for several reasons:
@@ -2900,14 +2804,15 @@ void GDataFileSystem::OnFileDownloaded(
                  base::Owned(has_enough_space)));
 }
 
-void GDataFileSystem::UnpinIfPinned(const std::string& resource_id,
-                                    const std::string& md5,
-                                    GDataCache::CacheEntry* cache_entry,
-                                    bool* cache_entry_is_valid) {
+void GDataFileSystem::UnpinIfPinned(
+    const std::string& resource_id,
+    const std::string& md5,
+    bool success,
+    const GDataCache::CacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
-  if (*cache_entry_is_valid && cache_entry->IsPinned())
+  if (success && cache_entry.IsPinned())
     cache_->UnpinOnUIThread(resource_id, md5, CacheOperationCallback());
 }
 

@@ -68,9 +68,6 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD2(UpdateFileByResourceId,
                void(const std::string& resource_id,
                     const FileOperationCallback& callback));
-  MOCK_METHOD3(GetCacheState, void(const std::string& resource_id,
-                                   const std::string& md5,
-                                   const GetCacheStateCallback& callback));
   MOCK_METHOD2(GetFileInfoByPath, void(const FilePath& file_path,
                                        const GetFileInfoCallback& callback));
   MOCK_METHOD2(GetEntryInfoByPath, void(const FilePath& file_path,
