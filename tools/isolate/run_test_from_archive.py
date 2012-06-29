@@ -197,6 +197,11 @@ class Cache(object):
     # oldest item.
     self.state = []
 
+    # Profiling values.
+    self.files_added = None
+    self.files_removed = None
+    self.time_retrieving_files = None
+
     if not os.path.isdir(self.cache_dir):
       os.makedirs(self.cache_dir)
     if os.path.isfile(self.state_file):
@@ -205,7 +210,45 @@ class Cache(object):
       except ValueError:
         # Too bad. The file will be overwritten and the cache cleared.
         pass
-    self.trim()
+    with Profiler('SetupTrimming'):
+      self.trim()
+
+  def __enter__(self):
+    # The files added and removed are stored as tuples of the filename and
+    # the file size.
+    self.files_added = []
+    self.files_removed = []
+    self.time_retrieving_files = 0
+    return self
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    with Profiler('CleanupTrimming'):
+      self.trim()
+
+    logging.info('Number of files added to cache: %i',
+                 sum(item[0] for item in self.files_added))
+    logging.info('Size of files added to cache: %i',
+                 sum(item[1] for item in self.files_added))
+    logging.info('Time taken (in seconds) to add files to cache: %s',
+                 self.time_retrieving_files)
+    logging.debug('All files added:')
+    logging.debug(self.files_added)
+
+    logging.info('Number of files removed from cache: %i',
+                 sum(item[0] for item in self.files_removed))
+    logging.info('Size of files removed from cache: %i',
+                 sum(item[1] for item in self.files_removed))
+    logging.debug('All files remove:')
+    logging.debug(self.files_added)
+
+  def remove_lru_file(self):
+    try:
+      filename = self.state.pop(0)
+      logging.info('Trimming %s' % filename)
+      self.files_removed.append(filename, os.stat(filename).st_size)
+      os.remove(self.path(filename))
+    except OSError as e:
+      logging.error('Error attempting to delete a file\n%s' % e)
 
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
@@ -228,12 +271,7 @@ class Cache(object):
         self.min_free_space and
         self.state and
         get_free_space(self.cache_dir) < self.min_free_space):
-      try:
-        filename = self.state.pop(0)
-        logging.info('Trimming %s' % filename)
-        os.remove(self.path(filename))
-      except OSError as e:
-        logging.error('Error attempting to delete a file\n%s' % e)
+      self.remove_lru_file()
 
     # Ensure maximum cache size.
     if self.max_cache_size and self.state:
@@ -245,13 +283,7 @@ class Cache(object):
         raise
 
       while sizes and sum(sizes) > self.max_cache_size:
-        # Delete the oldest item.
-        try:
-          filename = self.state.pop(0)
-          logging.info('Trimming %s' % filename)
-          os.remove(self.path(filename))
-        except OSError as e:
-          logging.error('Error attempting to delete a file\n%s' % e)
+        self.remove_lru_file()
         sizes.pop(0)
 
     self.save()
@@ -267,11 +299,14 @@ class Cache(object):
       return False
     except ValueError:
       out = self.path(item)
+      start_retrieve = time.time()
       download_or_copy(self.remote.rstrip('/') + '/' + item, out)
       if os.path.exists(out):
         self.state.append(item)
+        self.files_added.append(out, os.stat(out).st_size)
       else:
         logging.error('File, %s, not placed in cache' % item)
+      self.time_retrieving_files += time.time() - start_retrieve
       return True
     finally:
       self.save()
@@ -304,60 +339,47 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
   """
-  cache = Cache(cache_dir, remote, max_cache_size, min_free_space)
+  with Cache(cache_dir, remote, max_cache_size, min_free_space) as cache:
+    base_temp_dir = None
+    if not is_same_filesystem(cache_dir, tempfile.gettempdir()):
+      # Do not use tempdir since it's a separate filesystem than cache_dir. It
+      # could be tmpfs for example. This would mean copying up to 100mb of data
+      # there, when a simple tree of hardlinks would do.
+      base_temp_dir = os.path.dirname(cache_dir)
+    outdir = tempfile.mkdtemp(prefix='run_tha_test', dir=base_temp_dir)
 
-  base_temp_dir = None
-  if not is_same_filesystem(cache_dir, tempfile.gettempdir()):
-    # Do not use tempdir since it's a separate filesystem than cache_dir. It
-    # could be tmpfs for example. This would mean copying up to 100mb of data
-    # there, when a simple tree of hardlinks would do.
-    base_temp_dir = os.path.dirname(cache_dir)
-  outdir = tempfile.mkdtemp(prefix='run_tha_test', dir=base_temp_dir)
-
-  try:
-    with Profiler('GetFiles') as _prof:
-      for filepath, properties in manifest['files'].iteritems():
-        outfile = os.path.join(outdir, filepath)
-        outfiledir = os.path.dirname(outfile)
-        if not os.path.isdir(outfiledir):
-          os.makedirs(outfiledir)
-        if 'sha-1' in properties:
-          # A normal directory.
-          infile = properties['sha-1']
-          cache.retrieve(infile)
-          link_file(outfile, cache.path(infile), HARDLINK)
-        elif 'link' in properties:
-          # A symlink.
-          os.symlink(properties['link'], outfile)
-        else:
-          raise ValueError('Unexpected entry: %s' % properties)
-        if 'mode' in properties:
-          # It's not set on Windows.
-          os.chmod(outfile, properties['mode'])
-
-    cwd = os.path.join(outdir, manifest['relative_cwd'])
-    if not os.path.isdir(cwd):
-      os.makedirs(cwd)
-    if manifest.get('read_only'):
-      make_writable(outdir, True)
-    cmd = manifest['command']
-    # Ensure paths are correctly separated on windows.
-    cmd[0] = cmd[0].replace('/', os.path.sep)
-    cmd = fix_python_path(cmd)
-    logging.info('Running %s, cwd=%s' % (cmd, cwd))
     try:
-      with Profiler('RunTest') as _prof:
-        return subprocess.call(cmd, cwd=cwd)
-    except OSError:
-      print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
-      raise
-  finally:
-    # Save first, in case an exception occur in the following lines, then clean
-    # up.
-    with Profiler('Cleanup') as _prof:
-      cache.save()
+      with Profiler('GetFiles') as _prof:
+        for filepath, properties in manifest['files'].iteritems():
+          infile = properties['sha-1']
+          outfile = os.path.join(outdir, filepath)
+          cache.retrieve(infile)
+          outfiledir = os.path.dirname(outfile)
+          if not os.path.isdir(outfiledir):
+            os.makedirs(outfiledir)
+          link_file(outfile, cache.path(infile), HARDLINK)
+          if 'mode' in properties:
+            # It's not set on Windows.
+            os.chmod(outfile, properties['mode'])
+
+      cwd = os.path.join(outdir, manifest['relative_cwd'])
+      if not os.path.isdir(cwd):
+        os.makedirs(cwd)
+      if manifest.get('read_only'):
+        make_writable(outdir, True)
+      cmd = manifest['command']
+      # Ensure paths are correctly separated on windows.
+      cmd[0] = cmd[0].replace('/', os.path.sep)
+      cmd = fix_python_path(cmd)
+      logging.info('Running %s, cwd=%s' % (cmd, cwd))
+      try:
+        with Profiler('RunTest') as _prof:
+          return subprocess.call(cmd, cwd=cwd)
+      except OSError:
+        print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
+        raise
+    finally:
       rmtree(outdir)
-      cache.trim()
 
 
 def main():
