@@ -9,14 +9,20 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+using content::BrowserThread;
 
 LRESULT GetVolumeName(LPCWSTR drive,
                       LPWSTR volume_name,
@@ -29,23 +35,52 @@ LRESULT GetVolumeName(LPCWSTR drive,
 
 }  // namespace
 
+using chrome::MediaDeviceNotificationsWindowWin;
+using testing::_;
+
 class MediaDeviceNotificationsWindowWinTest : public testing::Test {
  public:
-  MediaDeviceNotificationsWindowWinTest() : window_(&GetVolumeName) { }
+  MediaDeviceNotificationsWindowWinTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE) { }
   virtual ~MediaDeviceNotificationsWindowWinTest() { }
 
  protected:
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    file_thread_.Start();
+    window_ = new MediaDeviceNotificationsWindowWin(&GetVolumeName);
     system_monitor_.AddDevicesChangedObserver(&observer_);
+  }
+
+  virtual void TearDown() {
+    system_monitor_.RemoveDevicesChangedObserver(&observer_);
+    WaitForFileThread();
+  }
+
+  static void PostQuitToUIThread() {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            MessageLoop::QuitClosure());
+  }
+
+  static void WaitForFileThread() {
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            base::Bind(&PostQuitToUIThread));
+    MessageLoop::current()->Run();
   }
 
   void DoDevicesAttachedTest(const std::vector<int>& device_indices);
   void DoDevicesDetachedTest(const std::vector<int>& device_indices);
 
   MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+
   base::SystemMonitor system_monitor_;
   base::MockDevicesChangedObserver observer_;
-  chrome::MediaDeviceNotificationsWindowWin window_;
+  scoped_refptr<MediaDeviceNotificationsWindowWin> window_;
 };
 
 void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
@@ -65,13 +100,14 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
       drive[0] = 'A' + *it;
       std::string name("V");
       name.append(base::SysWideToUTF8(drive));
-      EXPECT_CALL(observer_, OnMediaDeviceAttached(*it, name, FilePath(drive)));
+      EXPECT_CALL(observer_, OnMediaDeviceAttached(*it, name, FilePath(drive))).
+          Times(0);
     }
   }
-  window_.OnDeviceChange(DBT_DEVICEARRIVAL,
-                         reinterpret_cast<DWORD>(&volume_broadcast));
+  window_->OnDeviceChange(DBT_DEVICEARRIVAL,
+                          reinterpret_cast<DWORD>(&volume_broadcast));
   message_loop_.RunAllPending();
-};
+}
 
 void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
     const std::vector<int>& device_indices) {
@@ -89,13 +125,13 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
       EXPECT_CALL(observer_, OnMediaDeviceDetached(*it));
     }
   }
-  window_.OnDeviceChange(DBT_DEVICEREMOVECOMPLETE,
-                         reinterpret_cast<DWORD>(&volume_broadcast));
+  window_->OnDeviceChange(DBT_DEVICEREMOVECOMPLETE,
+                          reinterpret_cast<DWORD>(&volume_broadcast));
   message_loop_.RunAllPending();
-};
+}
 
 TEST_F(MediaDeviceNotificationsWindowWinTest, RandomMessage) {
-  window_.OnDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
+  window_->OnDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
   message_loop_.RunAllPending();
 }
 

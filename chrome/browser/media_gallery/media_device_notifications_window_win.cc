@@ -13,6 +13,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
+#include "chrome/browser/media_gallery/media_device_notifications_utils.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -85,7 +89,7 @@ MediaDeviceNotificationsWindowWin::~MediaDeviceNotificationsWindowWin() {
 
 LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
                                                           DWORD data) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (event_type) {
     case DBT_DEVICEARRIVAL: {
       DWORD unitmask = GetVolumeBitMaskFromBroadcastHeader(data);
@@ -95,8 +99,11 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
           drive[0] = L'A' + i;
           WCHAR volume_name[MAX_PATH + 1];
           if ((*volume_name_func_)(drive.c_str(), volume_name, MAX_PATH + 1)) {
-            monitor->ProcessMediaDeviceAttached(
-                i, base::SysWideToUTF8(volume_name), FilePath(drive));
+            BrowserThread::PostTask(
+                BrowserThread::FILE, FROM_HERE,
+                base::Bind(&MediaDeviceNotificationsWindowWin::
+                    CheckDeviceTypeOnFileThread, this, i,
+                    FilePath::StringType(volume_name), FilePath(drive)));
           }
         }
       }
@@ -106,6 +113,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
       DWORD unitmask = GetVolumeBitMaskFromBroadcastHeader(data);
       for (int i = 0; unitmask; ++i, unitmask >>= 1) {
         if (unitmask & 0x01) {
+          base::SystemMonitor* monitor = base::SystemMonitor::Get();
           monitor->ProcessMediaDeviceDetached(i);
         }
       }
@@ -113,6 +121,33 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
     }
   }
   return TRUE;
+}
+
+void MediaDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
+    unsigned int id,
+    const FilePath::StringType& device_name,
+    const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!IsMediaDevice(path.value()))
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &MediaDeviceNotificationsWindowWin::
+              ProcessMediaDeviceAttachedOnUIThread,
+          this, id, device_name, path));
+}
+
+void MediaDeviceNotificationsWindowWin::ProcessMediaDeviceAttachedOnUIThread(
+    unsigned int id,
+    const FilePath::StringType& device_name,
+    const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const std::string device_name_utf8(base::SysWideToUTF8(device_name));
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  monitor->ProcessMediaDeviceAttached(id, device_name_utf8, path);
 }
 
 LRESULT CALLBACK MediaDeviceNotificationsWindowWin::WndProc(

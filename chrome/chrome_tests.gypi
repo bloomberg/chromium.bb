@@ -1322,6 +1322,7 @@
         'browser/managed_mode_unittest.cc',
         'browser/media/media_internals_unittest.cc',
         'browser/media_gallery/media_device_notifications_linux_unittest.cc',
+        'browser/media_gallery/media_device_notifications_utils_unittest.cc',
         'browser/media_gallery/media_device_notifications_window_win_unittest.cc',
         'browser/media_gallery/media_gallery_database_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',

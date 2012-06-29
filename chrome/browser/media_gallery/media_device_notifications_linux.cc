@@ -13,13 +13,10 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/media_gallery/media_device_notifications_utils.h"
 
 namespace {
-
-const char kDCIMDirName[] = "DCIM";
 
 // List of file systems we care about.
 const char* const kKnownFileSystems[] = {
@@ -214,20 +211,6 @@ void MediaDeviceNotificationsLinux::ReadMtab(MountMap* mtab) {
     existing_device = device;
     existing_position = position;
   }
-}
-
-bool MediaDeviceNotificationsLinux::IsMediaDevice(
-    const std::string& mount_point) {
-  FilePath dcim_path(mount_point);
-  FilePath::StringType dcim_dir = kDCIMDirName;
-  if (!file_util::DirectoryExists(dcim_path.Append(dcim_dir))) {
-    // Check for lowercase 'dcim' as well.
-    FilePath dcim_path_lower(dcim_path.Append(StringToLowerASCII(dcim_dir)));
-    if (!file_util::DirectoryExists(dcim_path_lower)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 void MediaDeviceNotificationsLinux::AddNewDevice(

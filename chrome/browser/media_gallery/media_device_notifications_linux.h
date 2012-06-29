@@ -67,13 +67,6 @@ class MediaDeviceNotificationsLinux
   // Read the mtab file entries into |mtab|.
   void ReadMtab(MountMap* mtab);
 
-  // For a new device mounted at |mount_point|, see if it is a media device by
-  // checking for the existence of a DCIM directory.
-  // If it is a media device, return true, otherwise return false.
-  // Mac OS X behaves similarly, but this is not the only heuristic it uses.
-  // TODO(vandebo) Try to figure out how Mac OS X decides this.
-  bool IsMediaDevice(const std::string& mount_point);
-
   // Add a media device with a given device and mount device. Assign it a device
   // id as well.
   void AddNewDevice(const std::string& mount_device,
@@ -92,7 +85,7 @@ class MediaDeviceNotificationsLinux
   // Watcher for |mtab_path_|.
   base::files::FilePathWatcher file_watcher_;
 
-  // Mapping of relevent mount points and their corresponding mount devices.
+  // Mapping of relevant mount points and their corresponding mount devices.
   // Keep in mind on Linux, a device can be mounted at multiple mount points,
   // and multiple devices can be mounted at a mount point.
   MountMap mtab_;

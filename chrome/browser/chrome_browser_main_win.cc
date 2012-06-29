@@ -184,8 +184,8 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
-  media_device_notifications_window_.reset(
-      new chrome::MediaDeviceNotificationsWindowWin());
+  media_device_notifications_window_ =
+    new chrome::MediaDeviceNotificationsWindowWin();
 }
 
 // static

@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class CommandLine;
@@ -66,7 +66,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   static void SetupInstallerUtilStrings();
 
  private:
-  scoped_ptr<chrome::MediaDeviceNotificationsWindowWin>
+  scoped_refptr<chrome::MediaDeviceNotificationsWindowWin>
       media_device_notifications_window_;
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };
