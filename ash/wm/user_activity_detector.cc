@@ -5,7 +5,9 @@
 #include "ash/wm/user_activity_detector.h"
 
 #include "ash/wm/user_activity_observer.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -27,12 +29,18 @@ void UserActivityDetector::RemoveObserver(UserActivityObserver* observer) {
 
 bool UserActivityDetector::PreHandleKeyEvent(aura::Window* target,
                                              aura::KeyEvent* event) {
+  // Ignore input events on secondary displays in non extended desktop
+  // mode.  Remove this once this mode is gone. crbug.com/135245.
+  if (!wm::GetRootWindowController(target->GetRootWindow()))
+    return true;
   MaybeNotify();
   return false;
 }
 
 bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
                                                aura::MouseEvent* event) {
+  if (!wm::GetRootWindowController(target->GetRootWindow()))
+    return true;
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
     MaybeNotify();
   return false;
@@ -41,6 +49,8 @@ bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus UserActivityDetector::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
+  if (!wm::GetRootWindowController(target->GetRootWindow()))
+    return ui::TOUCH_STATUS_END;
   MaybeNotify();
   return ui::TOUCH_STATUS_UNKNOWN;
 }
@@ -48,6 +58,8 @@ ui::TouchStatus UserActivityDetector::PreHandleTouchEvent(
 ui::GestureStatus UserActivityDetector::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
+  if (!wm::GetRootWindowController(target->GetRootWindow()))
+    return ui::GESTURE_STATUS_CONSUMED;
   MaybeNotify();
   return ui::GESTURE_STATUS_UNKNOWN;
 }
