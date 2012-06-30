@@ -1095,6 +1095,8 @@
         'browser/google/google_util.h',
         'browser/gpu_blacklist.cc',
         'browser/gpu_blacklist.h',
+        'browser/gpu_feature_checker.cc',
+        'browser/gpu_feature_checker.h',
         'browser/gpu_util.cc',
         'browser/gpu_util.h',
         'browser/hang_monitor/hang_crash_dump_win.cc',

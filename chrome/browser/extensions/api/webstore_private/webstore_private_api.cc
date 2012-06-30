@@ -576,32 +576,13 @@ bool SetStoreLoginFunction::RunImpl() {
   return true;
 }
 
-GetWebGLStatusFunction::GetWebGLStatusFunction() {}
+GetWebGLStatusFunction::GetWebGLStatusFunction() {
+  feature_checker_ = new GPUFeatureChecker(
+      content::GPU_FEATURE_TYPE_WEBGL,
+      base::Bind(&GetWebGLStatusFunction::OnFeatureCheck, this));
+}
+
 GetWebGLStatusFunction::~GetWebGLStatusFunction() {}
-
-// static
-bool GetWebGLStatusFunction::IsWebGLAllowed(GpuDataManager* manager) {
-  bool webgl_allowed = true;
-  if (!manager->GpuAccessAllowed()) {
-    webgl_allowed = false;
-  } else {
-    uint32 blacklist_type = manager->GetGpuFeatureType();
-    if (blacklist_type & content::GPU_FEATURE_TYPE_WEBGL)
-      webgl_allowed = false;
-  }
-  return webgl_allowed;
-}
-
-void GetWebGLStatusFunction::OnGpuInfoUpdate() {
-  GpuDataManager* manager = GpuDataManager::GetInstance();
-  manager->RemoveObserver(this);
-  bool webgl_allowed = IsWebGLAllowed(manager);
-  CreateResult(webgl_allowed);
-  SendResponse(true);
-
-  // Matches the AddRef in RunImpl().
-  Release();
-}
 
 void GetWebGLStatusFunction::CreateResult(bool webgl_allowed) {
   result_.reset(Value::CreateStringValue(
@@ -609,33 +590,13 @@ void GetWebGLStatusFunction::CreateResult(bool webgl_allowed) {
 }
 
 bool GetWebGLStatusFunction::RunImpl() {
-  bool finalized = true;
-#if defined(OS_LINUX)
-  // On Windows and Mac, so far we can always make the final WebGL blacklisting
-  // decision based on partial GPU info; on Linux, we need to launch the GPU
-  // process to collect full GPU info and make the final decision.
-  finalized = false;
-#endif
-
-  GpuDataManager* manager = GpuDataManager::GetInstance();
-  if (manager->IsCompleteGPUInfoAvailable())
-    finalized = true;
-
-  bool webgl_allowed = IsWebGLAllowed(manager);
-  if (!webgl_allowed)
-    finalized = true;
-
-  if (finalized) {
-    CreateResult(webgl_allowed);
-    SendResponse(true);
-  } else {
-    // Matched with a Release in OnGpuInfoUpdate.
-    AddRef();
-
-    manager->AddObserver(this);
-    manager->RequestCompleteGpuInfoIfNeeded();
-  }
+  feature_checker_->CheckGPUFeatureAvailability();
   return true;
+}
+
+void GetWebGLStatusFunction::OnFeatureCheck(bool feature_allowed) {
+  CreateResult(feature_allowed);
+  SendResponse(true);
 }
 
 }  // namespace extensions

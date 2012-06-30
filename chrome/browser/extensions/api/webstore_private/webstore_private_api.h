@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/gpu_feature_checker.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -231,18 +232,16 @@ class SetStoreLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetWebGLStatusFunction : public AsyncExtensionFunction,
-                               public content::GpuDataManagerObserver {
+class GetWebGLStatusFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getWebGLStatus");
 
   GetWebGLStatusFunction();
 
-  // content::GpuDataManagerObserver:
-  virtual void OnGpuInfoUpdate() OVERRIDE;
-
  protected:
   virtual ~GetWebGLStatusFunction();
+
+  void OnFeatureCheck(bool feature_allowed);
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -250,9 +249,7 @@ class GetWebGLStatusFunction : public AsyncExtensionFunction,
  private:
   void CreateResult(bool webgl_allowed);
 
-  // A false return value is always valid, but a true one is only valid if full
-  // GPU info has been collected in a GPU process.
-  static bool IsWebGLAllowed(content::GpuDataManager* manager);
+  scoped_refptr<GPUFeatureChecker> feature_checker_;
 };
 
 }  // namespace extensions
