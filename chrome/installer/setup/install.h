@@ -8,10 +8,13 @@
 #define CHROME_INSTALLER_SETUP_INSTALL_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "base/version.h"
+#include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -33,6 +36,28 @@ void EscapeXmlAttributeValueInSingleQuotes(string16* att_value);
 // Returns true unless the manifest is supposed to be created, but fails to be.
 bool CreateVisualElementsManifest(const FilePath& src_path,
                                   const Version& version);
+
+// This method creates Chrome shortcuts in various places for all users or only
+// for current user depending on whether it is a system wide install or a
+// user-level install.
+// Shortcuts that have been deleted since first install are not recreated during
+// update.
+// |options|: bitfield for which the options come from ChromeShortcutOptions.
+void CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
+                                   const FilePath& setup_path,
+                                   const Version& new_version,
+                                   installer::InstallStatus install_status,
+                                   const Product& product,
+                                   uint32 options);
+
+// Registers Chrome on this machine.
+// If |make_chrome_default|, also attempts to make Chrome default (potentially
+// popping a UAC if the user is not an admin and HKLM registrations are required
+// to register Chrome's capabilities on this version of Windows (i.e.
+// pre-Win8)).
+void RegisterChromeOnMachine(const InstallerState& installer_state,
+                             const Product& product,
+                             bool make_chrome_default);
 
 // This function installs or updates a new version of Chrome. It returns
 // install status (failed, new_install, updated etc).
