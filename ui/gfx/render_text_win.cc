@@ -224,6 +224,17 @@ void DeriveFontIfNecessary(int font_size,
     *font = font->DeriveFont(font_size - current_size, font_style);
 }
 
+// Returns true if |c| is a Unicode BiDi control character.
+bool IsUnicodeBidiControlCharacter(char16 c) {
+  return c == base::i18n::kRightToLeftMark ||
+         c == base::i18n::kLeftToRightMark ||
+         c == base::i18n::kLeftToRightEmbeddingMark ||
+         c == base::i18n::kRightToLeftEmbeddingMark ||
+         c == base::i18n::kPopDirectionalFormatting ||
+         c == base::i18n::kLeftToRightOverride ||
+         c == base::i18n::kRightToLeftOverride;
+}
+
 }  // namespace
 
 namespace internal {
@@ -844,7 +855,8 @@ bool RenderTextWin::HasMissingGlyphs(internal::TextRun* run) const {
     // See: http://crbug.com/125629
     if (run->glyphs[glyph_index] == properties.wgBlank &&
         run->visible_attributes[glyph_index].fZeroWidth &&
-        !IsWhitespace(run_text[char_index])) {
+        !IsWhitespace(run_text[char_index]) &&
+        !IsUnicodeBidiControlCharacter(run_text[char_index])) {
       return true;
     }
   }
