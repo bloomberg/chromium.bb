@@ -31,14 +31,12 @@ IsolatedContext* isolated_context() {
   return IsolatedContext::GetInstance();
 }
 
-FilePath GetPathFromURL(const FileSystemURL& url, bool for_writing) {
+FilePath GetPathFromURL(const FileSystemURL& url) {
   if (!url.is_valid() || url.type() != kFileSystemTypeIsolated)
     return FilePath();
   std::string fsid;
   FilePath path;
   if (!isolated_context()->CrackIsolatedPath(url.path(), &fsid, NULL, &path))
-    return FilePath();
-  if (for_writing && !isolated_context()->IsWritable(fsid))
     return FilePath();
   return path;
 }
@@ -118,7 +116,7 @@ IsolatedMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  FilePath path = GetPathFromURL(url, false);
+  FilePath path = GetPathFromURL(url);
   return path.empty() ? NULL : new webkit_blob::LocalFileStreamReader(
       context->file_task_runner(), path, offset, base::Time());
 }
@@ -127,7 +125,7 @@ FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  FilePath path = GetPathFromURL(url, true);
+  FilePath path = GetPathFromURL(url);
   return path.empty() ? NULL : new LocalFileStreamWriter(path, offset);
 }
 

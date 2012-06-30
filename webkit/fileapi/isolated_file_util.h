@@ -94,12 +94,6 @@ class FILEAPI_EXPORT_PRIVATE IsolatedFileUtil : public FileSystemFileUtil {
   // Returns false if the given |url| is not a valid path.
   bool GetPlatformPath(const FileSystemURL& url,
                        FilePath* platform_path) const;
-
-  // Returns false if the given |url| is not a valid path, or
-  // the file system is not writable.
-  bool GetPlatformPathForWrite(const FileSystemURL& url,
-                               FilePath* platform_path) const;
-
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtil);
 };
 

@@ -402,7 +402,6 @@ void ChildProcessSecurityPolicyImpl::GrantReadFileSystem(
 
 void ChildProcessSecurityPolicyImpl::GrantReadWriteFileSystem(
     int child_id, const std::string& filesystem_id) {
-  fileapi::IsolatedContext::GetInstance()->SetWritable(filesystem_id, true);
   GrantPermissionsForFileSystem(child_id, filesystem_id,
                                 kReadFilePermissions |
                                 kWriteFilePermissions);

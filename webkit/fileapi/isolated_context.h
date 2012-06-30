@@ -96,13 +96,6 @@ class FILEAPI_EXPORT IsolatedContext {
   FilePath CreateVirtualPath(const std::string& filesystem_id,
                              const FilePath& relative_path) const;
 
-  // Set the filesystem writable if |writable| is true, non-writable
-  // if it is false. Returns false if the |filesystem_id| is not valid.
-  bool SetWritable(const std::string& filesystem_id, bool writable);
-
-  // Returns true if the |filesystem_id| is writable.
-  bool IsWritable(const std::string& filesystem_id) const;
-
  private:
   friend struct base::DefaultLazyInstanceTraits<IsolatedContext>;
 
@@ -126,13 +119,6 @@ class FILEAPI_EXPORT IsolatedContext {
 
   // Maps the toplevel entries to the filesystem id.
   IDToPathMap toplevel_map_;
-
-  // Holds a set of writable ids.
-  // Isolated file systems are created read-only by default, and this set
-  // holds a list of exceptions.
-  // Detailed filesystem permission may be provided by an external
-  // security policy manager, e.g. ChildProcessSecurityPolicy.
-  std::set<std::string> writable_ids_;
 
   // Reference counts. Note that an isolated filesystem is created with ref==0.
   // and will get deleted when the ref count reaches <=0.

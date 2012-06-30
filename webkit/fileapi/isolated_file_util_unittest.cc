@@ -466,15 +466,6 @@ TEST_F(IsolatedFileUtilTest, TouchTest) {
     base::Time last_access_time = base::Time::FromTimeT(1000);
     base::Time last_modified_time = base::Time::FromTimeT(2000);
 
-    // Set the filesystem non-writable and try calling Touch.
-    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), false));
-    EXPECT_EQ(base::PLATFORM_FILE_ERROR_SECURITY,
-              file_util()->Touch(GetOperationContext().get(), url,
-                                 last_access_time,
-                                 last_modified_time));
-
-    // Set the filesystem writable and try calling Touch.
-    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), true));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               file_util()->Touch(GetOperationContext().get(), url,
                                  last_access_time,
@@ -500,18 +491,9 @@ TEST_F(IsolatedFileUtilTest, TruncateTest) {
     SCOPED_TRACE(testing::Message() << test_case.path);
     FileSystemURL url = GetFileSystemURL(FilePath(test_case.path));
 
-    // Set the filesystem non-writable and try calling Truncate.
-    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), false));
-    EXPECT_EQ(base::PLATFORM_FILE_ERROR_SECURITY,
-              file_util()->Truncate(GetOperationContext().get(), url, 0));
-
+    // Truncate to 0.
     base::PlatformFileInfo info;
     FilePath platform_path;
-
-    // Set the filesystem writable.
-    ASSERT_TRUE(isolated_context()->SetWritable(filesystem_id(), true));
-
-    // Truncate to 0.
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               file_util()->Truncate(GetOperationContext().get(), url, 0));
     ASSERT_EQ(base::PLATFORM_FILE_OK,

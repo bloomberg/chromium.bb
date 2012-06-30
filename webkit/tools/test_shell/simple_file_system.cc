@@ -120,65 +120,112 @@ void SimpleFileSystem::OpenFileSystem(
 void SimpleFileSystem::move(
     const WebURL& src_path,
     const WebURL& dest_path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(src_path)->Move(FileSystemURL(src_path),
-                                  FileSystemURL(dest_path),
-                                  FinishHandler(callbacks));
+  FileSystemURL src_url(src_path);
+  FileSystemURL dest_url(dest_path);
+  if (!HasFilePermission(src_url, FILE_PERMISSION_WRITE) ||
+      !HasFilePermission(dest_url, FILE_PERMISSION_CREATE)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(src_url)->Move(src_url, dest_url,
+                                 FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::copy(
     const WebURL& src_path, const WebURL& dest_path,
     WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(src_path)->Copy(FileSystemURL(src_path),
-                                  FileSystemURL(dest_path),
-                                  FinishHandler(callbacks));
+  FileSystemURL src_url(src_path);
+  FileSystemURL dest_url(dest_path);
+  if (!HasFilePermission(src_url, FILE_PERMISSION_READ) ||
+      !HasFilePermission(dest_url, FILE_PERMISSION_CREATE)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(src_url)->Copy(src_url, dest_url,
+                                 FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::remove(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->Remove(FileSystemURL(path), false /* recursive */,
-                                FinishHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_WRITE)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->Remove(url, false /* recursive */,
+                               FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::removeRecursively(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->Remove(FileSystemURL(path), true /* recursive */,
-                                FinishHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_WRITE)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->Remove(url, true /* recursive */,
+                               FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::readMetadata(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->GetMetadata(FileSystemURL(path),
-                                     GetMetadataHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->GetMetadata(url, GetMetadataHandler(callbacks));
 }
 
 void SimpleFileSystem::createFile(
     const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->CreateFile(FileSystemURL(path), exclusive,
-                                    FinishHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_CREATE)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->CreateFile(url, exclusive, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::createDirectory(
     const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->CreateDirectory(FileSystemURL(path), exclusive, false,
-                                         FinishHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_CREATE)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->CreateDirectory(url, exclusive, false,
+                                        FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::fileExists(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->FileExists(FileSystemURL(path),
-                                    FinishHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->FileExists(url, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::directoryExists(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->DirectoryExists(FileSystemURL(path),
-                                         FinishHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->DirectoryExists(url, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::readDirectory(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->ReadDirectory(FileSystemURL(path),
-                                       ReadDirectoryHandler(callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->ReadDirectory(url, ReadDirectoryHandler(callbacks));
 }
 
 WebFileWriter* SimpleFileSystem::createFileWriter(
@@ -190,8 +237,13 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& blobURL,
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
-  GetNewOperation(path)->CreateSnapshotFile(
-      FileSystemURL(path), SnapshotFileHandler(blobURL, callbacks));
+  FileSystemURL url(path);
+  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->CreateSnapshotFile(
+      url, SnapshotFileHandler(blobURL, callbacks));
 }
 
 // static
@@ -207,9 +259,16 @@ void SimpleFileSystem::CleanupOnIOThread() {
   g_blob_storage_controller = NULL;
 }
 
+bool SimpleFileSystem::HasFilePermission(
+    const fileapi::FileSystemURL& url, FilePermission permission) {
+  // Disallow writing on isolated file system, otherwise return ok.
+  return (url.type() != fileapi::kFileSystemTypeIsolated ||
+          permission == FILE_PERMISSION_READ);
+}
+
 FileSystemOperationInterface* SimpleFileSystem::GetNewOperation(
-    const WebURL& url) {
-  return file_system_context_->CreateFileSystemOperation(FileSystemURL(url));
+    const fileapi::FileSystemURL& url) {
+  return file_system_context_->CreateFileSystemOperation(url);
 }
 
 FileSystemOperationInterface::StatusCallback
