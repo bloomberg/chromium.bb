@@ -60,7 +60,9 @@ struct FormatType {
 
 }  // anonymous namespace
 
-TEST_F(DepthTextureTest, RenderTo) {
+// Temporarily marked disabled due to failure on gpu bots.
+// https://code.google.com/p/chromium/issues/detail?id=135229
+TEST_F(DepthTextureTest, DISABLED_RenderTo) {
   if (!GLTestHelper::HasExtension("GL_CHROMIUM_depth_texture")) {
     return;
   }
