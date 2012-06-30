@@ -1,6 +1,6 @@
-# liblouis: Letters with accents (without ‰ ˆ ¸) - Germany, Austria
+# liblouis: Letters with accents (without √§ √∂ √º) - Germany, Austria
 #
-#  Copyright (C) 2009 SBS Schweizerische Bibliothek f¸r Blinde und Sehbehinderte
+#  Copyright (C) 2009 SBS Schweizerische Bibliothek f√ºr Blinde und Sehbehinderte
 #
 #  This file is part of liblouis.
 #
@@ -20,44 +20,44 @@
 #
 #-------------------------------------------------------------------------------
 #
-#  Letters with accents (without ‰ ˆ ¸) - Germany, Austria
+#  Letters with accents (without √§ √∂ √º) - Germany, Austria
 #
 #  Version 11-17-09
 #  christian.waldvogel@sbszh.ch
 #
 #-------------------------------------------------------------------------------
 
-uplow ¿‡ 4-1 \x00C0 &#192;  LATIN LETTER A WITH GRAVE
-uplow ¡· 4-1 \x00C1 &#193;  LATIN LETTER A WITH ACUTE
-uplow ¬‚ 4-1 \x00C2 &#194;  LATIN LETTER A WITH CIRCUMFLEX
-uplow √„ 4-1 \x00C3 &#195;  LATIN LETTER A WITH TILDE
+uplow √Ä√† 4-1 \x00C0 &#192;  LATIN LETTER A WITH GRAVE
+uplow √Å√° 4-1 \x00C1 &#193;  LATIN LETTER A WITH ACUTE
+uplow √Ç√¢ 4-1 \x00C2 &#194;  LATIN LETTER A WITH CIRCUMFLEX
+uplow √É√£ 4-1 \x00C3 &#195;  LATIN LETTER A WITH TILDE
 
-uplow ≈Â 4-1 \x00C5 &#197;  LATIN LETTER A WITH RING ABOVE
-uplow ∆Ê 1-15 \x00C6 &#198;  LATIN LETTER AE
-uplow «Á 4-14 \x00C7 &#199;  LATIN LETTER C WITH CEDILLA
-uplow »Ë 4-15 \x00C8 &#200;  LATIN LETTER E WITH GRAVE
-uplow …È 4-15 \x00C9 &#201;  LATIN LETTER E WITH ACUTE
-uplow  Í 4-15 \x00CA &#202;  LATIN LETTER E WITH CIRCUMFLEX
-uplow ÀÎ 4-15 \x00CB &#203;  LATIN LETTER E WITH DIAERESIS
-uplow ÃÏ 4-24 \x00CC &#204;  LATIN LETTER I WITH GRAVE
-uplow ÕÌ 4-24 \x00CD &#205;  LATIN LETTER I WITH ACUTE
-uplow ŒÓ 4-24 \x00CE &#206;  LATIN LETTER I WITH CIRCUMFLEX
-uplow œÔ 4-24 \x00CF &#207;  LATIN LETTER I WITH DIAERESIS
-uplow – 4-145 \x00D0 &#208;  LATIN LETTER ETH
-uplow —Ò 4-1345 \x00D1 &#209;  LATIN LETTER N WITH TILDE
-uplow “Ú 4-135 \x00D2 &#210;  LATIN LETTER O WITH GRAVE
-uplow ”Û 4-135 \x00D3 &#211;  LATIN LETTER O WITH ACUTE
-uplow ‘Ù 4-135 \x00D4 &#212;  LATIN LETTER O WITH CIRCUMFLEX
-uplow ’ı 4-135 \x00D5 &#213;  LATIN LETTER O WITH TILDE
+uplow √Ö√• 4-1 \x00C5 &#197;  LATIN LETTER A WITH RING ABOVE
+uplow √Ü√¶ 1-15 \x00C6 &#198;  LATIN LETTER AE
+uplow √á√ß 4-14 \x00C7 &#199;  LATIN LETTER C WITH CEDILLA
+uplow √à√® 4-15 \x00C8 &#200;  LATIN LETTER E WITH GRAVE
+uplow √â√© 4-15 \x00C9 &#201;  LATIN LETTER E WITH ACUTE
+uplow √ä√™ 4-15 \x00CA &#202;  LATIN LETTER E WITH CIRCUMFLEX
+uplow √ã√´ 4-15 \x00CB &#203;  LATIN LETTER E WITH DIAERESIS
+uplow √å√¨ 4-24 \x00CC &#204;  LATIN LETTER I WITH GRAVE
+uplow √ç√≠ 4-24 \x00CD &#205;  LATIN LETTER I WITH ACUTE
+uplow √é√Æ 4-24 \x00CE &#206;  LATIN LETTER I WITH CIRCUMFLEX
+uplow √è√Ø 4-24 \x00CF &#207;  LATIN LETTER I WITH DIAERESIS
+uplow √ê√∞ 4-145 \x00D0 &#208;  LATIN LETTER ETH
+uplow √ë√± 4-1345 \x00D1 &#209;  LATIN LETTER N WITH TILDE
+uplow √í√≤ 4-135 \x00D2 &#210;  LATIN LETTER O WITH GRAVE
+uplow √ì√≥ 4-135 \x00D3 &#211;  LATIN LETTER O WITH ACUTE
+uplow √î√¥ 4-135 \x00D4 &#212;  LATIN LETTER O WITH CIRCUMFLEX
+uplow √ï√µ 4-135 \x00D5 &#213;  LATIN LETTER O WITH TILDE
 
-uplow ÿ¯ 4-135 \x00D8 &#216;  LATIN LETTER O WITH STROKE
-uplow Ÿ˘ 4-136 \x00D9 &#217;  LATIN LETTER U WITH GRAVE
-uplow ⁄˙ 4-136 \x00DA &#218;  LATIN LETTER U WITH ACUTE
-uplow €˚ 4-136 \x00DB &#219;  LATIN LETTER U WITH CIRCUMFLEX
+uplow √ò√∏ 4-135 \x00D8 &#216;  LATIN LETTER O WITH STROKE
+uplow √ô√π 4-136 \x00D9 &#217;  LATIN LETTER U WITH GRAVE
+uplow √ö√∫ 4-136 \x00DA &#218;  LATIN LETTER U WITH ACUTE
+uplow √õ√ª 4-136 \x00DB &#219;  LATIN LETTER U WITH CIRCUMFLEX
 
-uplow ›˝ 4-13456 \x00DD &#221;  LATIN LETTER Y WITH ACUTE
-uplow ﬁ˛ 4-2345 \x00DE &#222;  LATIN LETTER THORN
+uplow √ù√Ω 4-13456 \x00DD &#221;  LATIN LETTER Y WITH ACUTE
+uplow √û√æ 4-2345 \x00DE &#222;  LATIN LETTER THORN
 
-lowercase ˇ 4-13456 \x00FF &#255;  LATIN SMALL LETTER Y WITH DIAERESIS
+lowercase √ø 4-13456 \x00FF &#255;  LATIN SMALL LETTER Y WITH DIAERESIS
 
 uplow \x0152\x0153 135-15 &#338;  LATIN LIGATURE OE

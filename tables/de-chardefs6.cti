@@ -1,6 +1,6 @@
 # liblouis: Character definitions for german tables
 #
-#  Copyright (C) 2009 SBS Schweizerische Bibliothek für Blinde und Sehbehinderte
+#  Copyright (C) 2009 SBS Schweizerische Bibliothek fÃ¼r Blinde und Sehbehinderte
 #
 #  This file is part of liblouis.
 #
@@ -78,43 +78,43 @@ sign          \x005F 4-456           #95    _  LOW LINE
 # ===== LATIN-1 SUPPLEMENT: 0080-00FF ==========================================
 
 space         \x00A0 0               #160   NO-BREAK SPACE
-punctuation   \x00A1 0               #161   ¡ INVERTED EXCLAMATION MARK
-sign          \x00A2 4-14            #162   ¢ CENT SIGN
-sign          \x00A3 4-123           #163   £ POUND SIGN
-sign          \x00A4 0               #164   ¤ CURRENCY SIGN
-sign          \x00A5 4-13456         #165   ¥ YEN SIGN
-sign          \x00A6 0-456-123-0     #166   ¦ BROKEN BAR
-sign          \x00A7 4-346           #167   § SECTION SIGN
-sign          \x00A8 0               #168   ¨ DIAERESIS
-sign          \x00A9 2356-45-14-2356 #169   © COPYRIGHT SIGN
-lowercase     \x00AA 1               #170   ª FEMININE ORDINAL INDICATOR
-punctuation   \x00AB 236             #171   « LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-sign          \x00AC 0               #172   ¬ NOT SIGN
-sign          \x00AD 0               #173   ­ SOFT HYPHEN
-sign          \x00AE 2356-45-1235-2356   #174 ® REGISTERED SIGN
-sign          \x00AF 0               #175   ¯ MACRON
-sign          \x00B0 4-356           #176   ° DEGREE SIGN
-math          \x00B1 235-36          #177   ± PLUS-MINUS SIGN
-sign          \x00B2 0               #178   ² SUPERSCRIPT TWO
-sign          \x00B3 0               #179   ³ SUPERSCRIPT THREE
-sign          \x00B4 0               #180   ´ ACUTE ACCENT
-sign          \x00B5 56-134          #181   µ MICRO SIGN
-sign          \x00B6 0               #182   ¶ PILCROW SIGN
-sign          \x00B7 0               #183   · MIDDLE DOT
-sign          \x00B8 0               #184   ¸ CEDILLA
-sign          \x00B9 0               #185   ¹ SUPERSCRIPT ONE
-lowercase     \x00BA 135             #186   º MASCULINE ORDINAL INDICATOR
-punctuation   \x00BB 356             #187   » RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-math          \x00BC 3456-1-256      #188   ¼ VULGAR FRACTION ONE QUARTER
-math          \x00BD 3456-1-23       #189   ½ VULGAR FRACTION ONE HALF
-math          \x00BE 3456-14-256     #190   ¾ VULGAR FRACTION THREE QUARTERS
-punctuation   \x00BF 0               #191   ¿ INVERTED QUESTION MARK
-uplow         \x00C4\x00E4  345      #196 #228  Ää LATIN CAPITAL LETTER A WITH DIAERESIS
-uplow         \x00D6\x00F6  246      #214 #246  Öö LATIN CAPITAL LETTER O WITH DIAERESIS
-math          \x00D7 236             #215   × MULTIPLICATION SIGN
-uplow         \x00DC\x00FC  1256     #220 #252   Üü LATIN CAPITAL LETTER U WITH DIAERESIS
-lowercase     \x00DF 2346            #223   ß LATIN SMALL LETTER SHARP S
-math          \x00F7 0               #247   ÷ DIVISION SIGN
+punctuation   \x00A1 0               #161   Â¡ INVERTED EXCLAMATION MARK
+sign          \x00A2 4-14            #162   Â¢ CENT SIGN
+sign          \x00A3 4-123           #163   Â£ POUND SIGN
+sign          \x00A4 0               #164   Â¤ CURRENCY SIGN
+sign          \x00A5 4-13456         #165   Â¥ YEN SIGN
+sign          \x00A6 0-456-123-0     #166   Â¦ BROKEN BAR
+sign          \x00A7 4-346           #167   Â§ SECTION SIGN
+sign          \x00A8 0               #168   Â¨ DIAERESIS
+sign          \x00A9 2356-45-14-2356 #169   Â© COPYRIGHT SIGN
+lowercase     \x00AA 1               #170   Âª FEMININE ORDINAL INDICATOR
+punctuation   \x00AB 236             #171   Â« LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+sign          \x00AC 0               #172   Â¬ NOT SIGN
+sign          \x00AD 0               #173   Â­ SOFT HYPHEN
+sign          \x00AE 2356-45-1235-2356   #174 Â® REGISTERED SIGN
+sign          \x00AF 0               #175   Â¯ MACRON
+sign          \x00B0 4-356           #176   Â° DEGREE SIGN
+math          \x00B1 235-36          #177   Â± PLUS-MINUS SIGN
+sign          \x00B2 0               #178   Â² SUPERSCRIPT TWO
+sign          \x00B3 0               #179   Â³ SUPERSCRIPT THREE
+sign          \x00B4 0               #180   Â´ ACUTE ACCENT
+sign          \x00B5 56-134          #181   Âµ MICRO SIGN
+sign          \x00B6 0               #182   Â¶ PILCROW SIGN
+sign          \x00B7 0               #183   Â· MIDDLE DOT
+sign          \x00B8 0               #184   Â¸ CEDILLA
+sign          \x00B9 0               #185   Â¹ SUPERSCRIPT ONE
+lowercase     \x00BA 135             #186   Âº MASCULINE ORDINAL INDICATOR
+punctuation   \x00BB 356             #187   Â» RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+math          \x00BC 3456-1-256      #188   Â¼ VULGAR FRACTION ONE QUARTER
+math          \x00BD 3456-1-23       #189   Â½ VULGAR FRACTION ONE HALF
+math          \x00BE 3456-14-256     #190   Â¾ VULGAR FRACTION THREE QUARTERS
+punctuation   \x00BF 0               #191   Â¿ INVERTED QUESTION MARK
+uplow         \x00C4\x00E4  345      #196 #228  Ã„Ã¤ LATIN CAPITAL LETTER A WITH DIAERESIS
+uplow         \x00D6\x00F6  246      #214 #246  Ã–Ã¶ LATIN CAPITAL LETTER O WITH DIAERESIS
+math          \x00D7 236             #215   Ã— MULTIPLICATION SIGN
+uplow         \x00DC\x00FC  1256     #220 #252   ÃœÃ¼ LATIN CAPITAL LETTER U WITH DIAERESIS
+lowercase     \x00DF 2346            #223   ÃŸ LATIN SMALL LETTER SHARP S
+math          \x00F7 0               #247   Ã· DIVISION SIGN
 
 # ===== GENERAL PUNCTUATION: 2000-206F =========================================
 
