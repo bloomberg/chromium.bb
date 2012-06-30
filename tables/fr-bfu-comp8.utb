@@ -16,9 +16,9 @@
 # This software is maintained by Dave Mielke <dave@mielke.cc>.
 ###############################################################################
 
-# Définitions pour code braille français international unifié
+# DÃ©finitions pour code braille franÃ§ais international unifiÃ©
 # Par Nicolas Pitre <nico@cam.org>
-# Référence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
+# RÃ©fÃ©rence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
 
 # Uncontracted Unified French Table
 # ----------------------------------
@@ -30,7 +30,7 @@ space \x000A 0          # lf
 space \x000D 0          # cr
 space \X00A0 7          # no-break space
 
-digit 0 3456				zéro
+digit 0 3456				zÃ©ro
 digit 1 16					un
 digit 2 126					deux
 digit 3 146					trois
@@ -43,29 +43,29 @@ digit 9 246					neuf
 
 include latinLetterDef8Dots.uti
 
-uplow Çç 123467,12346		c cédille
-uplow Éé 1234567,123456		e accent aigu
+uplow Ã‡Ã§ 123467,12346		c cÃ©dille
+uplow Ã‰Ã© 1234567,123456		e accent aigu
 
-uplow Àà 123567,12356		a accent grave
-uplow Èè 23467,2346			e accent grave
-uplow Ùù 234567,23456		u accent grave
+uplow Ã€Ã  123567,12356		a accent grave
+uplow ÃˆÃ¨ 23467,2346			e accent grave
+uplow Ã™Ã¹ 234567,23456		u accent grave
 
-uplow Ââ 167,168				a accent circonflexe
-uplow Êê 1267,1268			e accent circonflexe
-uplow Îî 1467,1468			i accent circonflexe
-uplow Ôô 14567,14568			o accent circonflexe
-uplow Ûû 1567,1568			u accent circonflexe
+uplow Ã‚Ã¢ 167,168				a accent circonflexe
+uplow ÃŠÃª 1267,1268			e accent circonflexe
+uplow ÃÃ® 1467,1468			i accent circonflexe
+uplow Ã”Ã´ 14567,14568			o accent circonflexe
+uplow Ã›Ã» 1567,1568			u accent circonflexe
 
-uplow Ää 34567,34578       a tréma
-uplow Ëë 12467,12468			e tréma
-uplow Ïï 124567,124568		i tréma
-uplow Öö 24678,358         o tréma
-uplow Üü 12567,12568			u tréma
-uplow \x009F\x00FF 145678,2568     y tréma
+uplow Ã„Ã¤ 34567,34578       a trÃ©ma
+uplow Ã‹Ã« 12467,12468			e trÃ©ma
+uplow ÃÃ¯ 124567,124568		i trÃ©ma
+uplow Ã–Ã¶ 24678,358         o trÃ©ma
+uplow ÃœÃ¼ 12567,12568			u trÃ©ma
+uplow \x009F\x00FF 145678,2568     y trÃ©ma
 
 uplow \x00B4\x00B8 135678,13568     z avec caron
-uplow \x008C\x009C 2467,2468     oe liés
-uplow \x0152\x0153 2467,2468     oe liés
+uplow \x008C\x009C 2467,2468     oe liÃ©s
+uplow \x0152\x0153 2467,2468     oe liÃ©s
 uplow \x00C1\x00E1 1235678,123568     a accent aigu
 uplow \x00CD\x00ED 347,3478     i accent aigu
 uplow \x00D3\x00F3 3467,346     o accent aigu
@@ -86,8 +86,8 @@ punctuation . 256		point
 punctuation ? 26		point d'interrogation
 punctuation ! 235		point d'exclamation
 punctuation " 2356 	guillemt
-punctuation ( 236		parenthèse ouvrante
-punctuation ) 356		parenthèse fermante
+punctuation ( 236		parenthÃ¨se ouvrante
+punctuation ) 356		parenthÃ¨se fermante
 punctuation ' 3			apostrophe
 punctuation \X0091 68   # [left signle quotation mark] (private use one)
 punctuation \X0092 37   # [right single quotation mark] (private use two)
@@ -108,12 +108,12 @@ sign \Xf0b7 124578
 punctuation \X00AB 23568   # left-pointing double angle quotation mark
 punctuation \X00BB 23567   # right-pointing double angle quotation mark
 
-sign * 35						astérisque
-sign \\ 348						barre oblique invers‚e
+sign * 35						astÃ©risque
+sign \\ 348						barre oblique inversÂ‚e
 sign @ 345					arobas
 sign % 3468					pourcent
-sign _ 578								souligné
-sign # 34568					dièse
+sign _ 578								soulignÃ©
+sign # 34568					diÃ¨se
 sign ^ 4					accent circonflexe
 sign \X007E   38     #126 ~    tilde
 sign \X007C 4568   # vertical bar
@@ -179,36 +179,36 @@ sign \X00FE 2458   # latin small letter thorn
 sign \x00A8 268			diaeresis sign
 
 math + 23578				plus
-math = 235678				égal
-math × 3578					multiplié par
-math < 238				inférieur à
-math > 567				supérieur à
+math = 235678				Ã©gal
+math Ã— 3578					multipliÃ© par
+math < 238				infÃ©rieur Ã 
+math > 567				supÃ©rieur Ã 
 math / 34						barre oblique
 math \x0060 6
-math \x00F7 34		divisé par
+math \x00F7 34		divisÃ© par
 
-sign © 148							copyright
-sign ° 267						degré
-sign & 1234568					perluète (et commercial)
-sign ¢ 1478						cent
-sign ¤ 45						euro
-sign £ 237						livre
-sign § 12347					paragraphe
+sign Â© 148							copyright
+sign Â° 267						degrÃ©
+sign & 1234568					perluÃ¨te (et commercial)
+sign Â¢ 1478						cent
+sign Â¤ 45						euro
+sign Â£ 237						livre
+sign Â§ 12347					paragraphe
 sign $ 357						dollar
-sign ¥ 25678					yen
-punctuation « 23568		guillemet français ouvrant
-punctuation » 23567		guillemet français fermant
+sign Â¥ 25678					yen
+punctuation Â« 23568		guillemet franÃ§ais ouvrant
+punctuation Â» 23567		guillemet franÃ§ais fermant
 punctuation [ 23678		crochet droit ouvrant
 punctuation ] 35678	 	crochet droit fermant
 punctuation { 2378			accolade de gauche
 punctuation } 5678			accolade de droite
 
-sign ¹ 47						exposant 1
-sign ² 457					exposant 2
-sign ³ 4567					exposant 3
-sign ¼ 1368			un quart
-sign ½ 137			un demi
-sign ¾ 134678		trois quarts
+sign Â¹ 47						exposant 1
+sign Â² 457					exposant 2
+sign Â³ 4567					exposant 3
+sign Â¼ 1368			un quart
+sign Â½ 137			un demi
+sign Â¾ 134678		trois quarts
 
 midnum \s 0								espace entre les chiffres
 midnum , 2

@@ -16,10 +16,10 @@
 # This software is maintained by Dave Mielke <dave@mielke.cc>.
 ###############################################################################
 
-# Définitions pour code braille français international unifié
+# DÃ©finitions pour code braille franÃ§ais international unifiÃ©
 # Par Nicolas Pitre <nico@cam.org>
 # et Michel Such <michel.such@free.fr>
-# Référence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
+# RÃ©fÃ©rence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
 
 # Uncontracted Unified French Table
 # ----------------------------------
@@ -32,7 +32,7 @@ space \x000c 0
 space \x000D 0          # cr
 space \x00A0 a          # no-break space
 
-digit 0 3456				zéro
+digit 0 3456				zÃ©ro
 digit 1 16					un
 digit 2 126					deux
 digit 3 146					trois
@@ -45,24 +45,24 @@ digit 9 246					neuf
 
 include latinLetterDef6Dots.uti
 
-uplow Çç 12346		c cédille
-uplow Éé 123456		e accent aigu
-uplow Àà 12356		a accent grave
-uplow Èè 2346			e accent grave
-uplow Ùù 23456		u accent grave
+uplow Ã‡Ã§ 12346		c cÃ©dille
+uplow Ã‰Ã© 123456		e accent aigu
+uplow Ã€Ã  12356		a accent grave
+uplow ÃˆÃ¨ 2346			e accent grave
+uplow Ã™Ã¹ 23456		u accent grave
 
-uplow Ââ 16				a accent circonflexe
-uplow Êê 126			e accent circonflexe
-uplow Îî 146			i accent circonflexe
-uplow Ôô 1456			o accent circonflexe
-uplow Ûû 156			u accent circonflexe
+uplow Ã‚Ã¢ 16				a accent circonflexe
+uplow ÃŠÃª 126			e accent circonflexe
+uplow ÃÃ® 146			i accent circonflexe
+uplow Ã”Ã´ 1456			o accent circonflexe
+uplow Ã›Ã» 156			u accent circonflexe
 
-uplow Ëë 1246			e tréma
-uplow Ïï 12456		i tréma
-uplow Üü 1256			u tréma
+uplow Ã‹Ã« 1246			e trÃ©ma
+uplow ÃÃ¯ 12456		i trÃ©ma
+uplow ÃœÃ¼ 1256			u trÃ©ma
 
-uplow \X008C\X009C 246    oe liés
-uplow \X0152\X0153 246    oe liés
+uplow \X008C\X009C 246    oe liÃ©s
+uplow \X0152\X0153 246    oe liÃ©s
 uplow \x00B4\x00B8 1356     z avec caron
 uplow \x00C1\x00E1 12356     a accent aigu
 uplow \x00CD\x00ED 34     i accent aigu
@@ -71,9 +71,9 @@ uplow \x00DA\x00FA 23456     u accent aigu
 uplow \x00DD\x00FD 13456     y accent aigu
 uplow \x00CC\x00EC 24     i accent grave
 uplow \x00D2\x00F2 135     o accent grave
-uplow \x00C4\x00E4 345   a tréma
-uplow \x00D6\x00F6 246,35     o tréma
-uplow \x009F\x00FF 13456,256     y tréma
+uplow \x00C4\x00E4 345   a trÃ©ma
+uplow \x00D6\x00F6 246,35     o trÃ©ma
+uplow \x009F\x00FF 13456,256     y trÃ©ma
 uplow \x00C3\x00E3 1     a tilde
 uplow \X00D1\x00F1 1345,12456     n tilde
 uplow \x00D5\x00F5 13,46     o tilde
@@ -86,8 +86,8 @@ punctuation . 256		point
 punctuation ? 26		point d'interrogation
 punctuation ! 235		point d'exclamation
 punctuation " 2356 	guillemet
-punctuation ( 236		parenthèse ouvrante
-punctuation ) 356		parenthèse fermante
+punctuation ( 236		parenthÃ¨se ouvrante
+punctuation ) 356		parenthÃ¨se fermante
 punctuation ' 3			apostrophe
 punctuation \X0091 6   # [left signle quotation mark] (private use one)
 punctuation \X0092 3   # [right single quotation mark] (private use two)
@@ -109,13 +109,13 @@ sign \Xf0b7 1245
 punctuation \X00AB 2356
 punctuation \X00BB 2356
 
-sign \\ 34 						barre oblique invers‚e
+sign \\ 34 						barre oblique inversÂ‚e
 sign @ 345					arobase
-sign # 3456					dièse
+sign # 3456					diÃ¨se
 sign ^ 4					accent circonflexe
 sign % 346					pourcent
-sign * 35						astérisque
-sign _ 5								souligné
+sign * 35						astÃ©risque
+sign _ 5								soulignÃ©
 sign \X007C 456   # barre verticale
 sign \X0082 6   # [single low-9 quotation mark (break permitted here)
 sign \X0083 124   # [latin small letter f with hook (no break here)
@@ -176,36 +176,36 @@ sign \X00FE 245   # latin small letter thorn
 
 
 math + 235				plus
-math = 2356				égal
-math × 35					multiplié par
+math = 2356				Ã©gal
+math Ã— 35					multipliÃ© par
 math / 34						barre oblique
 math \x0060 6
-math \x00F7 34		divisé par
-math < 23				inférieur à
-math > 56				supérieur à
+math \x00F7 34		divisÃ© par
+math < 23				infÃ©rieur Ã 
+math > 56				supÃ©rieur Ã 
 
-sign © 14							copyright
-sign ° 26						degré
-sign & 123456					perluète (et commercial)
-sign ¢ 14						cent
-sign ¤ 45						euro
-sign £ 23						livre
-sign § 1234					paragraphe
+sign Â© 14							copyright
+sign Â° 26						degrÃ©
+sign & 123456					perluÃ¨te (et commercial)
+sign Â¢ 14						cent
+sign Â¤ 45						euro
+sign Â£ 23						livre
+sign Â§ 1234					paragraphe
 sign $ 35						dollar
-sign ¥ 236					yen
-punctuation « 2356		guillemet français ouvrant
-punctuation » 2356		guillemet français fermant
+sign Â¥ 236					yen
+punctuation Â« 2356		guillemet franÃ§ais ouvrant
+punctuation Â» 2356		guillemet franÃ§ais fermant
 punctuation [ 236		crochet droit ouvrant
 punctuation ] 356		crochet droit fermant
 punctuation { 23			accolade de gauche
 punctuation } 56			accolade de droite
 
-sign ¹ 4						exposant 1
-sign ² 45					exposant 2
-sign ³ 456					exposant 3
-sign ¼ 136			un quart
-sign ½ 46			cent
-sign ¾ 1346		trois quarts
+sign Â¹ 4						exposant 1
+sign Â² 45					exposant 2
+sign Â³ 456					exposant 3
+sign Â¼ 136			un quart
+sign Â½ 46			cent
+sign Â¾ 1346		trois quarts
 sign \X007E   45     #126 ~    tilde
 
 midnum \s 0								espace entre les chiffres
@@ -214,12 +214,12 @@ midnum . 256
 midnum - 36
 hyphen - 36
 midnum + 235							plus
-midnum = 2356				égal
+midnum = 2356				Ã©gal
 midnum / 34
-midnum * 35						astérisque
+midnum * 35						astÃ©risque
 midnum : 25
-midnum < 23				inférieur à
-midnum > 56				supérieur à
+midnum < 23				infÃ©rieur Ã 
+midnum > 56				supÃ©rieur Ã 
 endnum # 3456
 
 # Braille indicators
@@ -233,7 +233,7 @@ singleletterital 456
 firstwordbold 456-456
 lastwordboldbefore 456
 
-litdigit 0 3456				zéro
+litdigit 0 3456				zÃ©ro
 litdigit 1 16					un
 litdigit 2 126					deux
 litdigit 3 146					trois

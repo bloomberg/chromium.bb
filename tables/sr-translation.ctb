@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2011 by Peter Engström <peter.engstrom@indexbraille.com>
+#  Copyright (C) 2011 by Peter EngstrÃ¶m <peter.engstrom@indexbraille.com>
 #  Copyright (C) 2011 by Monk Jeremiah, Manastir Decani <visokidecani@gmail.com>
 #
 #  This file is part of liblouis.
@@ -22,7 +22,7 @@
 #
 # 	SERBIAN
 #	=======
-# 	Authors:	Peter Engström, Index Braille <peter.engstrom@indexbraille.com>
+# 	Authors:	Peter EngstrÃ¶m, Index Braille <peter.engstrom@indexbraille.com>
 #				Monk Jeremiah, Manastir Decani <visokidecani@gmail.com>
 #
 # 	Date: 		Note:
@@ -44,12 +44,12 @@ repeated \x00a0 0 							# no break space
 repeated ... 256-256-256
 
 
-always \s­\s 36-36
-always \s­\scom 36-36-14-135-134
+always \sÂ­\s 36-36
+always \sÂ­\scom 36-36-14-135-134
 
 always ... 256-256-256
 always .\s.\s. 256-256-256 . . .
-#always \s­\s 36-36
+#always \sÂ­\s 36-36
 
 #----------- SPECIAL SYLLABLES ------------------------------------------------
 always \x0044\x017D 12456			# LATIN CAPITAL LETTER D + LATIN CAPITAL LETTER Z WITH CARON
@@ -68,14 +68,14 @@ word injekc 24-1345-245-15-13-14
 word injekt 24-1345-245-15-13-2345
 word konjunk 13-135-1345-245-136-1345-13
 word konjug 13-135-1345-245-136-1245
-word nad¾iv 1345-1-145-2346-24-1236
-word od¾iv 135-145-2346-24-1236
-word pred¾ivot 1234-1235-15-145-2346-24-1236-135-2345
+word nadÂ¾iv 1345-1-145-2346-24-1236
+word odÂ¾iv 135-145-2346-24-1236
+word predÂ¾ivot 1234-1235-15-145-2346-24-1236-135-2345
 word tanjug 2345-1-1345-245-136-1245
 #-----------------------------------------------------------------------------
 
 # mathematical symbols
-midnum ­ 36
+midnum Â­ 36
 endnum % 3456-245-356 #46
 
 

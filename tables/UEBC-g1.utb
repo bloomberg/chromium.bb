@@ -135,9 +135,9 @@ always .\s.\s. 256-256-256 . . .
 always  \x2026 256-256-256 # 8230			MS Word smart ellipsis
 
 # the hyphen
-# always ­ 36
-repeated ­­­ 36-36-36
-always \s­\s 36-36
+# always Â­ 36
+repeated Â­Â­Â­ 36-36-36
+always \sÂ­\s 36-36
 
 # accented letters
 
@@ -164,7 +164,7 @@ uplow \x00D3\x00F3 135			# o with acute above
 uplow \x00D4\x00F4 135			# o with circumflex
 uplow \x00D5\x00F5 135			# o with tilde
 uplow \x00D6\x00F6 135			# o with dieresis
-# \x00D7	× multiplication sign	----------------------
+# \x00D7	Ã— multiplication sign	----------------------
 uplow \x00D8\x00F8 135			# o with stroke
 uplow \x00D9\x00F9 136			# u with grave above
 uplow \x00DA\x00FA 136			# u with acute above
@@ -306,25 +306,25 @@ always + 5-235
 midnum + 5-235-3456
 midnum - 36-3456
 always - 36
-always × 5-236
-midnum × 5-236-3456
-midnum ÷ 5-34-3456 division sign
-always ÷ 5-34
+always Ã— 5-236
+midnum Ã— 5-236-3456
+midnum Ã· 5-34-3456 division sign
+always Ã· 5-34
 
 
 
 # other special characters
-always © 45-14 copyright
-sign ™ 45-2345 trademark
-sign ® 45-1235 registered
-always ¶ 45-1234 paragraph
-always § 45-234 section
-always ° 45-245 degrees
-always £ 4-123 pounds
+always Â© 45-14 copyright
+sign Â™ 45-2345 trademark
+sign Â® 45-1235 registered
+always Â¶ 45-1234 paragraph
+always Â§ 45-234 section
+always Â° 45-245 degrees
+always Â£ 4-123 pounds
 always $ 4-234
-always ¢ 4-14 cents
-sign € 4-15	euro
-always € 4-15	euro
-always ¥ 4-13456 yen
-always µ 46-134 mu
+always Â¢ 4-14 cents
+sign Â€ 4-15	euro
+always Â€ 4-15	euro
+always Â¥ 4-13456 yen
+always Âµ 46-134 mu
 

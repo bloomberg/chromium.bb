@@ -139,9 +139,9 @@ always .\s.\s. 3-3-3 . . .
 # always  \x2026 3-3-3 # 8230			MS Word smart ellipsis
 
 # the hyphen
-# always ­ 36
-repeated ­­­ 36-36-36
-always \s­\s 36-36
+# always Â­ 36
+repeated Â­Â­Â­ 36-36-36
+always \sÂ­\s 36-36
 
 # accented letters
 
@@ -169,7 +169,7 @@ uplow \x00D4\x00F4 135			# o with circumflex
 uplow \x00D5\x00F5 135			# o with tilde
 uplow \x00D6\x00F6 135			# o with dieresis
 
-# \x00D7	× multiplication sign	----------------------
+# \x00D7	Ã— multiplication sign	----------------------
 
 uplow \x00D8\x00F8 135			# o with stroke
 uplow \x00D9\x00F9 136			# u with grave above
@@ -315,28 +315,28 @@ joinnum + 56-235
 joinword + 56-235
 midnum - 36-3456
 always - 36
-joinnum × 56-236
-joinword × 56-236
-midnum ÷ 0-56-256-3456 division sign
-joinnum ÷ 56-256
-joinword ÷ 56-256
-begnum £ 123
-always £ 4-123 pounds
+joinnum Ã— 56-236
+joinword Ã— 56-236
+midnum Ã· 0-56-256-3456 division sign
+joinnum Ã· 56-256
+joinword Ã· 56-256
+begnum Â£ 123
+always Â£ 4-123 pounds
 
 # other special characters
-always © 45-14 copyright
-sign ™ 45-2345 trademark
-sign ® 45-1235 registered
-always ¶ 1234-345 paragraph
-always § 234-3 section
-always ° 356 degrees
+always Â© 45-14 copyright
+sign Â™ 45-2345 trademark
+sign Â® 45-1235 registered
+always Â¶ 1234-345 paragraph
+always Â§ 234-3 section
+always Â° 356 degrees
 begnum $ 256
 always $ 4-256
-always ¢ 4-14 cents
-sign € 4-15	euro
-always € 4-15	euro
-always ¥ 4-13456 yen
-always µ 2-134 mu
+always Â¢ 4-14 cents
+sign Â€ 4-15	euro
+always Â€ 4-15	euro
+always Â¥ 4-13456 yen
+always Âµ 2-134 mu
 
 # special character sequences
 literal :// URLs

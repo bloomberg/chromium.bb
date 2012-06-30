@@ -105,57 +105,57 @@ sign \x0080 15				euro sign									x0080
 punctuation \x0092 3	single right quotation mark		x0092
 
 space \X00A0 0		no-break space																x00A0
-sign ¢ 14					cent sign																			x00A2
-sign £ 123-3456		pound sign																		x00A3
-sign ¤ 45-15			currency sign																	x00A4
-sign ¥ 13456			yen	sign																			x00A5
-sign § 346				paragraph	sign																x00A7
-sign © 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
-sign ª 46					feminine ordinal indicator										x00AA
-sign « 236				left-pointing double angle quotation mark			x00AB
-sign ® 5-1235			registerd sign																x00AE
-sign ° 356				degree sign																		x00B0
-sign ² 4-6-126		superscript 2 sign														x00B2
-sign ³ 4-6-146		superscript 3 sign														x00B3
-sign µ 123456																										x00B5
-sign ¹ 4-6-16			superscript 1 sign														x00B9
-sign » 356				right-pointing double angle quotation mark		x00BB
-sign ¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
-sign ½ 6-16-34-126		vulgar fraction one half									x00BD
-sign ¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
-letter ¿ 35						inverted question mark										x00BF
+sign Â¢ 14					cent sign																			x00A2
+sign Â£ 123-3456		pound sign																		x00A3
+sign Â¤ 45-15			currency sign																	x00A4
+sign Â¥ 13456			yen	sign																			x00A5
+sign Â§ 346				paragraph	sign																x00A7
+sign Â© 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
+sign Âª 46					feminine ordinal indicator										x00AA
+sign Â« 236				left-pointing double angle quotation mark			x00AB
+sign Â® 5-1235			registerd sign																x00AE
+sign Â° 356				degree sign																		x00B0
+sign Â² 4-6-126		superscript 2 sign														x00B2
+sign Â³ 4-6-146		superscript 3 sign														x00B3
+sign Âµ 123456																										x00B5
+sign Â¹ 4-6-16			superscript 1 sign														x00B9
+sign Â» 356				right-pointing double angle quotation mark		x00BB
+sign Â¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
+sign Â½ 6-16-34-126		vulgar fraction one half									x00BD
+sign Â¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
+letter Â¿ 35						inverted question mark										x00BF
 
-uplow \x00C0\x00E0 12356	letter a with grave	(à)		x00C0 / 00E0
-uplow Áá 1					letter a with acute							x00C1 / 00E1
-uplow Ââ 16					letter a with circumflex				x00C2 / 00E2
+uplow \x00C0\x00E0 12356	letter a with grave	(Ã )		x00C0 / 00E0
+uplow ÃÃ¡ 1					letter a with acute							x00C1 / 00E1
+uplow Ã‚Ã¢ 16					letter a with circumflex				x00C2 / 00E2
 uplow \x00C3\x00E3 345		letter a with tilde				x00C3
-uplow Ää 345				A with diaeresis				x00C4 / 00E4
-uplow Åå 246				A with ring above				x00C5 / 00E5
-uplow Ææ 345																				x00C6 / 00E6
-uplow Çç 12346			letter c with cedilla						x00C7
-uplow Èè 2346																				x00C8
-uplow Éé 123456			small e with acute							x00C9
-uplow \x00CA\x00EA 126		e with circumflex (ê)			x00CA
-uplow Ëë 1246																				x00CB
-uplow Ññ 12456			N with tilde						x00D1
-uplow Öö 246				O with diaeresis				x00D6
-math × 56-236				multiplication sign							x00D7
+uplow Ã„Ã¤ 345				A with diaeresis				x00C4 / 00E4
+uplow Ã…Ã¥ 246				A with ring above				x00C5 / 00E5
+uplow Ã†Ã¦ 345																				x00C6 / 00E6
+uplow Ã‡Ã§ 12346			letter c with cedilla						x00C7
+uplow ÃˆÃ¨ 2346																				x00C8
+uplow Ã‰Ã© 123456			small e with acute							x00C9
+uplow \x00CA\x00EA 126		e with circumflex (Ãª)			x00CA
+uplow Ã‹Ã« 1246																				x00CB
+uplow Ã‘Ã± 12456			N with tilde						x00D1
+uplow Ã–Ã¶ 246				O with diaeresis				x00D6
+math Ã— 56-236				multiplication sign							x00D7
 
-letter ì 24																					x00EC
-letter í 24					small i with acute							x00ED
-letter î 146																				x00EE
-letter ï 12456																			x00EF
-letter ñ 12456			small n with tilde							x00F1
-letter ò 135																				x00F2
-letter ó 346				small o with acute							x00F3
-letter ô 1456				small o with circumflex					x00F4
+letter Ã¬ 24																					x00EC
+letter Ã­ 24					small i with acute							x00ED
+letter Ã® 146																				x00EE
+letter Ã¯ 12456																			x00EF
+letter Ã± 12456			small n with tilde							x00F1
+letter Ã² 135																				x00F2
+letter Ã³ 346				small o with acute							x00F3
+letter Ã´ 1456				small o with circumflex					x00F4
 letter \x00F5 246		small o with tilde							x00F5
-letter ö 246				small o with diaeresis					x00F6
-math ÷ 0-56-256				division sign									x00F7
-letter ù 12356																			x00F9
-letter ú 136				small u with acute							x00FA
-letter û 156																				x00FB
-letter ü 1256				small u with diaeresis					x00FC
+letter Ã¶ 246				small o with diaeresis					x00F6
+math Ã· 0-56-256				division sign									x00F7
+letter Ã¹ 12356																			x00F9
+letter Ãº 136				small u with acute							x00FA
+letter Ã» 156																				x00FB
+letter Ã¼ 1256				small u with diaeresis					x00FC
 
 letter \x0192 124		small F with hook								x0192
 
@@ -173,7 +173,7 @@ punctuation	\x201E 6-236					# 8222	smart double low quotation mark
 punctuation	\x201F 356-6					# 8223	smart double high reverse quotation mark
 punctuation  \x2026 3-3-3				# 8230	smart ellipsis
 
-sign	\x2030 3456-245-356-356			per mile sign ‰
+sign	\x2030 3456-245-356-356			per mile sign Â‰
 
 sign \x20AC 15				euro sign									x0080	Suzanne's correction
 
@@ -278,7 +278,7 @@ postpunc " 356
 
 repeated \s 0					espaces
 repeated \t 0					tabulations
-repeated \x00A0 0			espaces insécables
+repeated \x00A0 0			espaces insÃ©cables
 
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36
@@ -585,6 +585,6 @@ always ' 3								apostrophe								x0027
 always = 56-2356					equal sign								x003D
 always \\ 5-16						reverse solidus						x005C
 always ~ 5-26							tilde											x007E
-always © 5-14							copyright									x00A9
+always Â© 5-14							copyright									x00A9
 
 
