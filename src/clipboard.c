@@ -251,6 +251,7 @@ clipboard_create(struct weston_seat *seat)
 	clipboard = malloc(sizeof *clipboard);
 	if (clipboard == NULL)
 		return NULL;
+	memset(clipboard, 0, sizeof *clipboard);
 
 	clipboard->seat = seat;
 	clipboard->selection_listener.notify = clipboard_set_selection;
