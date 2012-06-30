@@ -51,6 +51,8 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // browser side.
   virtual bool IsPlugin() const = 0;
 
+  void AddFilter(IPC::Listener* listener);
+
   VarSerializationRules* serialization_rules() const {
     return serialization_rules_.get();
   }
@@ -95,6 +97,9 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   bool disallow_trusted_interfaces() const {
     return disallow_trusted_interfaces_;
   }
+
+ protected:
+  std::vector<IPC::Listener*> filters_;
 
  private:
   friend class HostDispatcherTest;

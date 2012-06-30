@@ -25,6 +25,7 @@
   },
   'includes': [
     'ppapi_sources.gypi',
+    'ppapi_host.gypi',
     'ppapi_proxy.gypi',
     'ppapi_shared.gypi',
     'ppapi_tests.gypi',
