@@ -71,6 +71,7 @@ const char kCategoryTagParameter[] = "categoryTag=";
 const char kDescriptionParameter[] = "description=";
 const char kSessionIDParameter[] = "session_id=";
 const char kTabIndexParameter[] = "tab_index=";
+const char kCustomPageUrlParameter[] = "customPageUrl=";
 
 #if defined(OS_CHROMEOS)
 const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
@@ -347,6 +348,7 @@ bool FeedbackHandler::Init() {
   int index = -1;
 
   std::vector<std::string> params;
+  std::string custom_page_url;
   if (Tokenize(query, std::string("&"), &params)) {
     for (std::vector<std::string>::iterator it = params.begin();
          it != params.end(); ++it) {
@@ -365,34 +367,44 @@ bool FeedbackHandler::Init() {
           return false;
         continue;
       }
+      if (StartsWithASCII(*it, std::string(kCustomPageUrlParameter), true)) {
+        ReplaceFirstSubstringAfterOffset(
+            &query_str, 0, kCustomPageUrlParameter, "");
+        custom_page_url = query_str;
+        continue;
+      }
 #if defined(OS_CHROMEOS)
       if (StartsWithASCII(*it, std::string(kTimestampParameter), true)) {
-        timestamp_ = *it;
-        ReplaceFirstSubstringAfterOffset(&timestamp_,
-                                         0,
-                                         kTimestampParameter,
-                                         "");
+        ReplaceFirstSubstringAfterOffset(
+            &query_str, 0, kTimestampParameter, "");
+        timestamp_ = query_str;
         continue;
       }
 #endif
     }
   }
 
-  if (session_id == -1 || index == -1)
-    return false;
+  // If we don't have a page url specified, get it from the tab index.
+  if (custom_page_url.empty()) {
+    if (session_id == -1 || index == -1)
+      return false;
 
-  Browser* browser = browser::FindBrowserWithID(session_id);
-  // Sanity checks.
-  if (!browser || index >= browser->tab_count())
-    return false;
+    Browser* browser = browser::FindBrowserWithID(session_id);
+    // Sanity checks.
+    if (!browser || index >= browser->tab_count())
+      return false;
 
-  WebContents* target_tab = chrome::GetWebContentsAt(browser, index);
-  if (target_tab) {
-    target_tab_url_ = target_tab->GetURL().spec();
+    WebContents* target_tab = chrome::GetWebContentsAt(browser, index);
+    if (target_tab)
+      target_tab_url_ = target_tab->GetURL().spec();
+
+    // Note: We don't need to setup a screenshot source if we're using a
+    // custom page URL since we were invoked from JS/an extension, in which
+    // case we don't actually have a screenshot anyway.
+    SetupScreenshotsSource();
+  } else {
+    target_tab_url_ = custom_page_url;
   }
-
-  // Setup the screenshot source after we've verified input is legit.
-  SetupScreenshotsSource();
 
   return true;
 }
