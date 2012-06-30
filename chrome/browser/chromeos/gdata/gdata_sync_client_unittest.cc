@@ -381,7 +381,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will be fetched by GetFileByResourceId(), once
+  // These files will be fetched or uploaded by GDataFileSystem, once
   // StartSyncLoop() starts.
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
@@ -400,9 +400,8 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_Offline) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will not be fetched by GetFileByResourceId(), as
-  // network is not connected.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
+  // These files will be neither fetched nor uploaded not by GDataFileSystem,
+  // as network is not connected.
 
   sync_client_->StartSyncLoop();
 }
@@ -416,9 +415,8 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarDisabled) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will not be fetched by GetFileByResourceId(), as
-  // fetching over cellular network is disabled by default.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
+  // These files will be neither fetched nor uploaded not by GDataFileSystem,
+  // as fetching over cellular network is disabled by default.
 
   // Then connect to cellular. This will kick off StartSyncLoop().
   ConnectToCellular();
@@ -436,7 +434,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabled) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will be fetched by GetFileByResourceId(), as fetching
+  // These files will be fetched or uploaded by GDataFileSystem, as syncing
   // over cellular network is explicitly enabled.
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
@@ -456,9 +454,8 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_WimaxDisabled) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will not be fetched by GetFileByResourceId(), as
-  // fetching over wimax network is disabled by default.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
+  // These files will be neither fetched nor uploaded not by GDataFileSystem,
+  // as syncing over wimax network is disabled by default.
 
   // Then connect to wimax. This will kick off StartSyncLoop().
   ConnectToWimax();
@@ -476,7 +473,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will be fetched by GetFileByResourceId(), as fetching
+  // These files will be fetched or uploaded by GDataFileSystem, as syncing
   // over cellular network, which includes wimax, is explicitly enabled.
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
@@ -499,9 +496,8 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_GDataDisabled) {
   AddResourceIdToFetch("resource_id_not_fetched_baz");
   AddResourceIdToUpload("resource_id_dirty");
 
-  // The three files will not be fetched by GetFileByResourceId(), as the
-  // GData feature is disabled.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
+  // These files will be neither fetched nor uploaded not by GDataFileSystem,
+  // as the GData feature is disabled.
 
   sync_client_->StartSyncLoop();
 }
