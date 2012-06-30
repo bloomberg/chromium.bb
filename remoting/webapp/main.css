@@ -243,6 +243,7 @@ h2 {
   line-height:24px;
   font-weight: normal;
   color: #222;
+  margin-bottom: 10px;
 }
 
 section > h2 {
@@ -295,6 +296,21 @@ section {
 
 .box {
   display: -webkit-box;
+}
+
+.host-list-empty-instructions {
+  padding-__MSG_@@bidi_start_edge__: 36px;
+  color: #666;
+  background-image: url('host_setup_instructions.png');
+  background-repeat: no-repeat;
+  background-position: -3px -2px;
+}
+
+#host-list-empty-hosting-supported {
+  margin-top: 14px;
+  padding-top: 20px;
+  border-top: 1px solid #E5E5E5;
+  background-position-y: 18px;
 }
 
 .selectable {
@@ -369,11 +385,6 @@ section {
 
 .mode-select-button-column button {
   min-width: 72px;
-}
-
-.host-list-table {
-  width: 100%;
-  border-spacing: 0;
 }
 
 td {
@@ -561,7 +572,7 @@ button {
 }
 
 #webapp-description {
-  margin: 10px 0;
+  margin-bottom: 10px;
 }
 
 #why-is-this-safe {

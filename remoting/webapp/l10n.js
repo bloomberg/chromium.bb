@@ -59,19 +59,26 @@ l10n.localize = function() {
   var elements = document.querySelectorAll('[i18n-content]');
   for (var i = 0; i < elements.length; ++i) {
     /** @type {Element} */ var element = elements[i];
-    var substitutions = null;
+    var substitutions = [];
     for (var j = 1; j < 9; ++j) {
-      var attr = 'i18n-value-' + j;
-      if (element.hasAttribute(attr)) {
-        if (!substitutions) {
-          substitutions = [];
+      var value = 'i18n-value-' + j;
+      var valueName = 'i18n-value-name-' + j;
+      if (element.hasAttribute(value)) {
+        substitutions.push(element.getAttribute(value));
+      } else if (element.hasAttribute(valueName)) {
+        var name = element.getAttribute(valueName);
+        var translation = chrome.i18n.getMessage(name);
+        if (translation) {
+          substitutions.push(translation);
+        } else {
+          console.error('Missing translation for substitution: ' + name);
+          substitutions.push(name);
         }
-        substitutions.push(element.getAttribute(attr));
       } else {
         break;
       }
     }
-    l10n.localizeElement(element, substitutions, !!substitutions);
+    l10n.localizeElement(element, substitutions, substitutions.length != 0);
     // Localize tool-tips
     // TODO(jamiewalch): Move this logic to the html document.
     var editButton = document.getElementById('this-host-rename');

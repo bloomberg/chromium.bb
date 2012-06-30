@@ -94,7 +94,7 @@
     "placeholders": {
       "url": {
         "content": "$1",
-        "example": "<a href=http://g.co/remote>g.co/remote</a>"
+        "example": "<a href=http://chrome.google.com/remotedesktop>chrome.google.com/remotedesktop</a>"
       }
     }
   },
@@ -210,10 +210,6 @@
     "message": "Change PIN",
     "description": "Hyperlink displayed immediately after the message indicating that the current computer is accepting remote connectins. Clicking this link allows the user to change the PIN (personal identification number) for accessing this host."
   },
-  "HOME_DAEMON_DISABLED_MESSAGE": {
-    "message": "Sharing this computer for any-time access is not yet supported on this platform\u2026 stay tuned.",
-    "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
-  },
   "HOME_DAEMON_STOP_BUTTON": {
     "message": "Disable remote connections",
     "description": "Button displayed when the current computer is accepting remote connections. Clicking this button causes it to stop accepting remote connections."
@@ -225,6 +221,26 @@
   "HOME_DAEMON_START_MESSAGE": {
     "message": "You must enable remote connections if you want to use Chromoting to access this computer.",
     "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
+  },
+  "HOST_LIST_EMPTY_HOSTING_SUPPORTED": {
+    "message": "To enable remote connections to a different computer, install Chromoting there and click \u201c$buttonName$\u201d.",
+    "description": "Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer.",
+    "placeholders": {
+      "buttonName": {
+        "content": "$1",
+        "example": "Enable remote connections"
+      }
+    }
+  },
+  "HOST_LIST_EMPTY_HOSTING_UNSUPPORTED": {
+    "message": "You have no computers registered. To enable remote connections to a computer, install Chromoting there and click \u201c$buttonName$\u201d.",
+    "description": "Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer.",
+    "placeholders": {
+      "buttonName": {
+        "content": "$1",
+        "example": "Enable remote connections"
+      }
+    }
   },
   "HOST_SETUP_CRASH_REPORTING_MESSAGE": {
     "message": "Help us improve Chromoting by allowing us to collect usage statistics and crash reports.",

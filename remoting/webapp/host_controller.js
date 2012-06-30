@@ -80,21 +80,14 @@ remoting.HostController.prototype.getConsent = function(callback) {
 remoting.HostController.prototype.updateDom = function() {
   var match = '';
   var state = this.state();
-  switch (state) {
-    case remoting.HostController.State.STARTED:
-      remoting.updateModalUi('enabled', 'data-daemon-state');
-      break;
-    case remoting.HostController.State.NOT_IMPLEMENTED:
-      document.getElementById('start-daemon').disabled = true;
-      document.getElementById('start-daemon-message').innerText =
-          chrome.i18n.getMessage(
-              /*i18n-content*/'HOME_DAEMON_DISABLED_MESSAGE');
-      // No break;
-    case remoting.HostController.State.STOPPED:
-    case remoting.HostController.State.NOT_INSTALLED:
-      remoting.updateModalUi('disabled', 'data-daemon-state');
-      break;
-  }
+  var enabled = (state == remoting.HostController.State.STARTED);
+  var supported = (state != remoting.HostController.State.NOT_IMPLEMENTED);
+  remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
+  document.getElementById('daemon-control').hidden = !supported;
+  var element = document.getElementById('host-list-empty-hosting-supported');
+  element.hidden = !supported;
+  element = document.getElementById('host-list-empty-hosting-unsupported');
+  element.hidden = supported;
 };
 
 /**

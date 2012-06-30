@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,6 +13,7 @@ annotated with the string "i18n-content", for example:
 This script also recognises localized strings in HTML and manifest.json files:
 
   HTML:          <span i18n-content="PRODUCT_NAME"></span>
+              or ...i18n-value-name-1="BUTTON_NAME"...
   manifest.json: __MSG_PRODUCT_NAME__
 
 Note that these forms must be exact; extra spaces are not permitted, though
@@ -39,8 +40,11 @@ prefix /*i18n-content*/
 
 def ExtractTagFromLine(line):
   """Extract a tag from a line of HTML, C++, JS or JSON."""
-  # HTML-style
+  # HTML-style (tags)
   m = re.search('i18n-content=[\'"]([^\'"]*)[\'"]', line)
+  if m: return m.group(1)
+  # HTML-style (substitutions)
+  m = re.search('i18n-value-name-[1-9]=[\'"]([^\'"]*)[\'"]', line)
   if m: return m.group(1)
   # C++/Javascript style
   m = re.search('/\*i18n-content\*/[\'"]([^\`"]*)[\'"]', line)

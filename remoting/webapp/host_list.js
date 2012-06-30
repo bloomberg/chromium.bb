@@ -18,17 +18,25 @@ var remoting = remoting || {};
  * if the host-list is empty.
  *
  * @constructor
- * @param {Element} table The HTML <table> to contain host-list.
+ * @param {Element} table The HTML <div> to contain host-list.
+ * @param {Element} noHosts The HTML <div> containing the "no hosts" message.
  * @param {Element} errorMsg The HTML <div> to display error messages.
  * @param {Element} errorButton The HTML <button> to display the error
  *     resolution action.
  */
-remoting.HostList = function(table, errorMsg, errorButton) {
+remoting.HostList = function(table, noHosts, errorMsg, errorButton) {
   /**
    * @type {Element}
    * @private
    */
   this.table_ = table;
+  /**
+   * @type {Element}
+   * @private
+   * TODO(jamiewalch): This should be doable using CSS's sibling selector,
+   * but it doesn't work right now (crbug.com/135050).
+   */
+  this.noHosts_ = noHosts;
   /**
    * @type {Element}
    * @private
@@ -185,7 +193,9 @@ remoting.HostList.prototype.display = function(thisHostId) {
   this.errorMsg_.innerText = '';
   this.hostTableEntries_ = [];
 
-  this.table_.hidden = (this.hosts_.length == 0);
+  var noHostsRegistered = (this.hosts_.length == 0);
+  this.table_.hidden = noHostsRegistered;
+  this.noHosts_.hidden = !noHostsRegistered;
 
   for (var i = 0; i < this.hosts_.length; ++i) {
     /** @type {remoting.Host} */
