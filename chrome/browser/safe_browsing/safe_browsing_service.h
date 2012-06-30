@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -162,6 +163,8 @@ class SafeBrowsingService
   static void RegisterFactory(SafeBrowsingServiceFactory* factory) {
     factory_ = factory;
   }
+
+  static FilePath GetCookieFilePathForTesting();
 
   // Create an instance of the safe browsing service.
   static SafeBrowsingService* CreateSafeBrowsingService();
@@ -340,6 +343,7 @@ class SafeBrowsingService
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<SafeBrowsingService>;
   friend class SafeBrowsingServiceTest;
+  friend class SafeBrowsingServiceCookieTest;
   friend class SafeBrowsingURLRequestContextGetter;
 
   void InitURLRequestContextOnIOThread(
@@ -407,6 +411,8 @@ class SafeBrowsingService
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 
   void DatabaseUpdateFinished(bool update_succeeded);
+
+  void NotifyDatabaseUpdateFinished(bool update_succeeded);
 
   // Start up SafeBrowsing objects. This can be called at browser start, or when
   // the user checks the "Enable SafeBrowsing" option in the Advanced options

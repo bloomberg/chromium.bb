@@ -221,6 +221,7 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
   context->set_throttler_manager(globals->throttler_manager.get());
+  context->set_network_delegate(globals->system_network_delegate.get());
   return context;
 }
 

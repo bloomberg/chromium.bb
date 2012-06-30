@@ -591,6 +591,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
     SetTestStep(step);
     safe_browsing_helper->ForceUpdate();
 
+    // TODO(mattm): use NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE instead.
     do {
       // Periodically pull the status.
       safe_browsing_helper->WaitForStatusUpdate(
