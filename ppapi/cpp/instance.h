@@ -141,12 +141,22 @@ class Instance {
   /// Having focus means that keyboard events will be sent to the instance.
   /// An instance's default condition is that it will not have focus.
   ///
+  /// The focus flag takes into account both browser tab and window focus as
+  /// well as focus of the plugin element on the page. In order to be deemed
+  /// to have focus, the browser window must be topmost, the tab must be
+  /// selected in the window, and the instance must be the focused element on
+  /// the page.
+  ///
   /// <strong>Note:</strong>Clicks on instances will give focus only if you
-  /// handle the click event. Return <code>true</code> from HandleInputEvent to
-  /// signal that the click event was handled. Otherwise the browser will bubble
-  /// the event and give focus to the element on the page that actually did end
-  /// up consuming it. If you're not getting focus, check to make sure you're
-  /// returning true from the mouse click in <code>HandleInputEvent</code>.
+  /// handle the click event. Return <code>true</code> from
+  /// <code>HandleInputEvent</code> in <code>PPP_InputEvent</code> (or use
+  /// unfiltered events) to signal that the click event was handled. Otherwise,
+  /// the browser will bubble the event and give focus to the element on the
+  /// page that actually did end up consuming it. If you're not getting focus,
+  /// check to make sure you're either requesting them via
+  /// <code>RequestInputEvents()<code> (which implicitly marks all input events
+  /// as consumed) or via <code>RequestFilteringInputEvents()</code> and
+  /// returning true from your event handler.
   ///
   /// @param[in] has_focus Indicates the new focused state of the instance.
   virtual void DidChangeFocus(bool has_focus);

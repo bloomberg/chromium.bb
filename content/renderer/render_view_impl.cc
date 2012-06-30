@@ -5210,9 +5210,9 @@ void RenderViewImpl::OnSetFocus(bool enable) {
       (*plugin_it)->SetContentAreaFocus(enable);
     }
 
-    // Notify all Pepper plugins.
-    pepper_delegate_.OnSetFocus(enable);
   }
+  // Notify all Pepper plugins.
+  pepper_delegate_.OnSetFocus(enable);
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {

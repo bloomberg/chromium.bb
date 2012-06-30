@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Mon Feb  6 14:04:52 2012. */
+/* From ppp_instance.idl modified Thu Jun 28 15:08:39 2012. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -121,14 +121,22 @@ struct PPP_Instance_1_1 {
    * Having focus means that keyboard events will be sent to the instance.
    * An instance's default condition is that it will not have focus.
    *
+   * The focus flag takes into account both browser tab and window focus as
+   * well as focus of the plugin element on the page. In order to be deemed
+   * to have focus, the browser window must be topmost, the tab must be
+   * selected in the window, and the instance must be the focused element on
+   * the page.
+   *
    * <strong>Note:</strong>Clicks on instances will give focus only if you
    * handle the click event. Return <code>true</code> from
    * <code>HandleInputEvent</code> in <code>PPP_InputEvent</code> (or use
    * unfiltered events) to signal that the click event was handled. Otherwise,
    * the browser will bubble the event and give focus to the element on the page
    * that actually did end up consuming it. If you're not getting focus, check
-   * to make sure you're returning true from the mouse click in
-   * <code>HandleInputEvent</code>.
+   * to make sure you're either requesting them via
+   * <code>RequestInputEvents()<code> (which implicitly marks all input events
+   * as consumed) or via <code>RequestFilteringInputEvents()</code> and
+   * returning true from your event handler.
    *
    * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * receiving the input event.
