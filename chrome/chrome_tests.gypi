@@ -1099,6 +1099,8 @@
         'browser/chromeos/gdata/gdata_parser_unittest.cc',
         'browser/chromeos/gdata/gdata_sync_client_unittest.cc',
         'browser/chromeos/gdata/gdata_util_unittest.cc',
+        'browser/chromeos/gdata/gdata_test_util.cc',
+        'browser/chromeos/gdata/gdata_test_util.h',
         'browser/chromeos/gdata/mock_directory_change_observer.cc',
         'browser/chromeos/gdata/mock_directory_change_observer.h',
         'browser/chromeos/gdata/mock_gdata_documents_service.cc',

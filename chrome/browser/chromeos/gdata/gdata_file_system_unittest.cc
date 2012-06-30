@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
@@ -272,10 +273,7 @@ class GDataFileSystemTest : public testing::Test {
 
     file_system_->Initialize();
     cache_->RequestInitializeOnUIThread();
-    // Initialize() initiates the cache initialization on the blocking thread
-    // pool. Block until it's done to ensure that the cache initialization is
-    // done for every test. Otherwise, completion timing is nondeterministic.
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -287,23 +285,8 @@ class GDataFileSystemTest : public testing::Test {
     mock_doc_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->DestroyOnUIThread();
-
-    // Run the remaining tasks on both the main thread and the IO thread, so
-    // that all PostTaskAndReply round trip finish (that is, both the 1st and
-    // the 2nd callbacks of PostTaskAndReply are run). Otherwise, there will be
-    // a leak from PostTaskAndReply() as it deletes an internal object when the
-    // reply task is run. Note that actual reply tasks on the file system will
-    // be canceled, as these are bound to weak pointers, which are invalidated
-    // in ShutdownOnUIThread().
-    //
-    // Note that looping only on the main thread here is not enough. The test
-    // code may have already posted a task to the IO thread as in:
-    //   io_thread->PostTaskAndReply(TaskOnIO, ReplyOnUI); // on UI thread
-    // For freeing the internal object of PostTaskAndReply, we need to run the
-    // task on IO thread and then the reply on UI thread. Although file system
-    // will wait for all IO tasks issued inside it before deleted, it is not the
-    // case for other IO, like the one in GDataSyncClient::StartInitialScan().
-    RunAllPendingForIO();
+    // The cache destruction requires to post a task to the blocking pool.
+    test_util::RunBlockingPoolTask();
 
     profile_.reset(NULL);
     chromeos::CrosLibrary::Shutdown();
@@ -479,7 +462,6 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Helper function to call GetCacheEntry from origin thread.
-  // Note: This method calls RunAllPendingForIO.
   scoped_ptr<GDataCache::CacheEntry> GetCacheEntryFromOriginThread(
       const std::string& resource_id,
       const std::string& md5) {
@@ -493,7 +475,7 @@ class GDataFileSystemTest : public testing::Test {
                 resource_id,
                 md5,
                 &cache_entry));
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
     return cache_entry.Pass();
   }
 
@@ -563,7 +545,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void TestGetFileFromCacheByResourceIdAndMd5(
@@ -579,7 +561,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void VerifyGetFromCache(base::PlatformFileError error,
@@ -613,7 +595,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyRemoveFromCache,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void VerifyRemoveFromCache(base::PlatformFileError error,
@@ -726,7 +708,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void TestUnpin(
@@ -744,8 +726,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();  // Post Unpin() to blocking pool.
-    RunAllPendingForIO();  // Post FreeDiskSpaceIfNeededFor to blocking pool.
+    test_util::RunBlockingPoolTask();
   }
 
   void TestGetCacheState(const std::string& resource_id,
@@ -760,7 +741,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyGetCacheState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void VerifyGetCacheState(bool success,
@@ -790,7 +771,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyMarkDirty,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void VerifyMarkDirty(base::PlatformFileError error,
@@ -827,7 +808,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void TestClearDirty(
@@ -845,7 +826,7 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   // Verify the file identified by |resource_id| and |md5| is in the expected
@@ -910,12 +891,10 @@ class GDataFileSystemTest : public testing::Test {
         base::Bind(&GDataFileSystemTest::VerifySetMountedState,
                    base::Unretained(this), resource_id, md5, to_mount));
 
-    RunAllPendingForIO();
+    test_util::RunBlockingPoolTask();
   }
 
   void PrepareForInitCacheTest() {
-    RunAllPendingForIO();  // Allow InitializeCacheOnBlockingPool to finish.
-
     DVLOG(1) << "PrepareForInitCacheTest start";
     // Create gdata cache sub directories.
     ASSERT_TRUE(file_util::CreateDirectory(
@@ -983,7 +962,7 @@ class GDataFileSystemTest : public testing::Test {
     }
     DVLOG(1) << "PrepareForInitCacheTest finished";
     cache_->RequestInitializeOnUIThread();  // Force a re-scan.
-    RunAllPendingForIO();  // Wait until the initialization is done.
+    test_util::RunBlockingPoolTask();
   }
 
   void TestInitializeCache() {
@@ -1093,18 +1072,6 @@ class GDataFileSystemTest : public testing::Test {
                                           const std::string& resource_id) {
     EXPECT_CALL(*mock_doc_service_, GetDocumentEntry(resource_id, _))
         .WillOnce(MockGetDocumentEntryCallback(gdata::HTTP_SUCCESS, document));
-  }
-
-  // Used to wait for the result from an operation that involves file IO,
-  // that runs on the blocking pool thread.
-  void RunAllPendingForIO() {
-    // We should first flush tasks on UI thread, as it can require some
-    // tasks to be run before IO tasks start.
-    message_loop_.RunAllPending();
-    BrowserThread::GetBlockingPool()->FlushForTesting();
-    // Once IO tasks are done, flush UI thread again so the results from IO
-    // tasks are processed.
-    message_loop_.RunAllPending();
   }
 
   // Loads serialized proto file from GCache, and makes sure the root
@@ -1782,10 +1749,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path, local_dest_file_path, callback);
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
-  RunAllPendingForIO();  // Check if we have space after downloading.
-  RunAllPendingForIO();  // Copy downloaded file from cache to destination.
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
@@ -1812,8 +1776,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path, local_dest_file_path, callback);
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Copy downloaded file from cache to destination.
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
@@ -2258,7 +2221,7 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
   EXPECT_FALSE(RemoveEntry(FilePath(FILE_PATH_LITERAL("drive"))));
 
   // Need this to ensure OnDirectoryChanged() is run.
-  RunAllPendingForIO();
+  test_util::RunBlockingPoolTask();
 }
 
 TEST_F(GDataFileSystemTest, CreateDirectory) {
@@ -3112,9 +3075,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 
   file_system_->GetFileByPath(file_in_root, callback,
                               GetDownloadDataCallback());
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
-  RunAllPendingForIO();  // Check if we have space after downloading.
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
@@ -3154,8 +3115,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
 
   file_system_->GetFileByPath(file_in_root, callback,
                               GetDownloadDataCallback());
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
             callback_helper_->last_error_);
@@ -3208,9 +3168,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 
   file_system_->GetFileByPath(file_in_root, callback,
                               GetDownloadDataCallback());
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
-  RunAllPendingForIO();  // Check if we have space after downloading
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
@@ -3260,9 +3218,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
 
   file_system_->GetFileByPath(file_in_root, callback,
                               GetDownloadDataCallback());
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
-  RunAllPendingForIO();  // Check if we have space after downloading.
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
             callback_helper_->last_error_);
@@ -3301,7 +3257,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
 
   file_system_->GetFileByPath(file_in_root, callback,
                               GetDownloadDataCallback());
-  RunAllPendingForIO();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),
@@ -3321,7 +3277,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
 
   file_system_->GetFileByPath(file_in_root, callback,
                               GetDownloadDataCallback());
-  RunAllPendingForIO();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
   EXPECT_FALSE(callback_helper_->download_path_.empty());
@@ -3361,9 +3317,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
 
   file_system_->GetFileByResourceId(file->resource_id(), callback,
                                     GetDownloadDataCallback());
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
-  RunAllPendingForIO();  // Check if we have space after downloading.
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),
@@ -3397,7 +3351,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
 
   file_system_->GetFileByResourceId(file->resource_id(), callback,
                                     GetDownloadDataCallback());
-  RunAllPendingForIO();
+  test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),
@@ -3526,8 +3480,8 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   const size_t num_files_in_root = root_directory->child_files().size();
 
   file_system_->UpdateFileByResourceId(kResourceId, callback);
-  RunAllPendingForIO();  // Get the file from the cache.
-  RunAllPendingForIO();  // Storing back the file to the cache.
+  test_util::RunBlockingPoolTask();
+
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
   // Make sure that the number of files did not change (i.e. we updated an
   // existing file, rather than adding a new file. The number of files
@@ -3553,7 +3507,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
                  callback_helper_.get());
 
   file_system_->UpdateFileByResourceId(kResourceId, callback);
-  RunAllPendingForIO();  // Get the file from the cache.
+  test_util::RunBlockingPoolTask();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 }
 
