@@ -2312,6 +2312,16 @@ bool GLES2DecoderImpl::Initialize(
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+  // AMD drivers apparently get gl_PointCoord backward from the spec
+  // and this setting makes them work correctly.
+#if defined(OS_MACOSX)
+  if (!feature_info_->feature_flags().disable_workarounds &&
+      feature_info_->feature_flags().is_amd &&
+      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+    glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
+  }
+#endif
+
   return true;
 }
 

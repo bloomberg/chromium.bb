@@ -304,6 +304,8 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
 
+  MOCK_METHOD2(PointParameteri, void(GLenum pname, GLint param));
+
   MOCK_METHOD2(PolygonOffset, void(GLfloat factor, GLfloat units));
 
   MOCK_METHOD2(QueryCounter, void(GLuint id, GLenum target));

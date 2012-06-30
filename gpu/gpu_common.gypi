@@ -237,6 +237,7 @@
         'command_buffer/tests/gl_depth_texture_unittest.cc',
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
+        'command_buffer/tests/gl_pointcoord_unittest.cc',
         'command_buffer/tests/gl_tests_main.cc',
         'command_buffer/tests/gl_test_utils.cc',
         'command_buffer/tests/gl_test_utils.h',

@@ -395,6 +395,8 @@ class GL_EXPORT GLInterface {
 
   virtual void PixelStorei(GLenum pname, GLint param) = 0;
 
+  virtual void PointParameteri(GLenum pname, GLint param) = 0;
+
   virtual void PolygonOffset(GLfloat factor, GLfloat units) = 0;
 
   virtual void QueryCounter(GLuint id, GLenum target) = 0;
