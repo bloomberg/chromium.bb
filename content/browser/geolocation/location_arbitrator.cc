@@ -117,7 +117,7 @@ void GeolocationArbitrator::RegisterProvider(
   provider->RegisterListener(this);
   if (is_permission_granted_)
     provider->OnPermissionGranted();
-  providers_->push_back(provider);
+  providers_.push_back(provider);
 }
 
 void GeolocationArbitrator::LocationUpdateAvailable(

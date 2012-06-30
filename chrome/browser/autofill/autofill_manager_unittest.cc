@@ -98,11 +98,11 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   void AddProfile(AutofillProfile* profile) {
-    web_profiles_->push_back(profile);
+    web_profiles_.push_back(profile);
   }
 
   void AddCreditCard(CreditCard* credit_card) {
-    credit_cards_->push_back(credit_card);
+    credit_cards_.push_back(credit_card);
   }
 
   virtual void RemoveProfile(const std::string& guid) OVERRIDE {
@@ -136,7 +136,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                      "4234567890654321", // Visa
                                      month, year);
     credit_card->set_guid("00000000-0000-0000-0000-000000000007");
-    credit_cards_->push_back(credit_card);
+    credit_cards_.push_back(credit_card);
   }
 
  private:

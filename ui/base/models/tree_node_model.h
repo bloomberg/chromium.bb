@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,25 +81,25 @@ class TreeNode : public TreeModelNode {
     if (parent)
       parent->Remove(node);
     node->parent_ = static_cast<NodeType*>(this);
-    children_->insert(children_->begin() + index, node);
+    children_.insert(children_.begin() + index, node);
   }
 
   // Removes |node| from this node and returns it. It's up to the caller to
   // delete it.
   virtual NodeType* Remove(NodeType* node) {
     typename std::vector<NodeType*>::iterator i =
-        std::find(children_->begin(), children_->end(), node);
-    DCHECK(i != children_->end());
+        std::find(children_.begin(), children_.end(), node);
+    DCHECK(i != children_.end());
     node->parent_ = NULL;
-    children_->erase(i);
+    children_.weak_erase(i);
     return node;
   }
 
   // Removes all the children from this node. This does NOT delete the nodes.
   void RemoveAll() {
-    for (size_t i = 0; i < children_->size(); ++i)
+    for (size_t i = 0; i < children_.size(); ++i)
       children_[i]->parent_ = NULL;
-    children_->clear();
+    children_.clear();
   }
 
   // Returns the parent node, or NULL if this is the root node.
@@ -110,16 +110,16 @@ class TreeNode : public TreeModelNode {
   bool is_root() const { return parent_ == NULL; }
 
   // Returns the number of children.
-  int child_count() const { return static_cast<int>(children_->size()); }
+  int child_count() const { return static_cast<int>(children_.size()); }
 
   // Returns true if this node has no children.
-  bool empty() const { return children_->empty(); }
+  bool empty() const { return children_.empty(); }
 
   // Returns the number of all nodes in the subtree rooted at this node,
   // including this node.
   int GetTotalNodeCount() const {
     int count = 1;  // Start with one to include the node itself.
-    for (size_t i = 0; i < children_->size(); ++i)
+    for (size_t i = 0; i < children_.size(); ++i)
       count += children_[i]->GetTotalNodeCount();
     return count;
   }
@@ -139,9 +139,8 @@ class TreeNode : public TreeModelNode {
   int GetIndexOf(const NodeType* node) const {
     DCHECK(node);
     typename std::vector<NodeType*>::const_iterator i =
-        std::find(children_->begin(), children_->end(), node);
-    return
-        i != children_->end() ? static_cast<int>(i - children_->begin()) : -1;
+        std::find(children_.begin(), children_.end(), node);
+    return i != children_.end() ? static_cast<int>(i - children_.begin()) : -1;
   }
 
   // Sets the title of the node.

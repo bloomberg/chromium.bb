@@ -928,7 +928,7 @@ InstalledApp::IconList InstalledApp::GetIconsForCategory(
     AppIcon::IconCategory category) const {
   IconList result;
 
-  for (ScopedVector<AppIcon>::const_iterator icon_iter = app_icons_->begin();
+  for (ScopedVector<AppIcon>::const_iterator icon_iter = app_icons_.begin();
        icon_iter != app_icons_.end(); ++icon_iter) {
     if ((*icon_iter)->category() != category)
       continue;
@@ -945,7 +945,7 @@ InstalledApp::IconList InstalledApp::GetIconsForCategory(
 }
 
 GURL InstalledApp::GetProductUrl() const {
-  for (ScopedVector<Link>::const_iterator it = links_->begin();
+  for (ScopedVector<Link>::const_iterator it = links_.begin();
        it != links_.end(); ++it) {
     const Link* link = *it;
     if (link->type() == Link::PRODUCT)

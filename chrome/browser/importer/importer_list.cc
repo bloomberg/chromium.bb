@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,7 +206,7 @@ void ImporterList::DetectSourceProfilesWorker() {
         FROM_HERE,
         base::Bind(&ImporterList::SourceProfilesLoaded, this, profiles));
   } else {
-    source_profiles_->assign(profiles.begin(), profiles.end());
+    source_profiles_.assign(profiles.begin(), profiles.end());
     source_profiles_loaded_ = true;
   }
 }
@@ -221,7 +221,7 @@ void ImporterList::SourceProfilesLoaded(
   BrowserThread::GetCurrentThreadIdentifier(&current_thread_id);
   DCHECK_EQ(current_thread_id, source_thread_id_);
 
-  source_profiles_->assign(profiles.begin(), profiles.end());
+  source_profiles_.assign(profiles.begin(), profiles.end());
   source_profiles_loaded_ = true;
   source_thread_id_ = BrowserThread::UI;
 

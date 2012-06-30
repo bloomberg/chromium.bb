@@ -276,22 +276,22 @@ void TemplateURLFetcher::ScheduleDownload(
   }
 
   // Make sure we aren't already downloading this request.
-  for (Requests::iterator i = requests_->begin(); i != requests_->end(); ++i) {
+  for (Requests::iterator i = requests_.begin(); i != requests_.end(); ++i) {
     if (((*i)->url() == osdd_url) ||
         ((provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER) &&
          ((*i)->keyword() == keyword)))
       return;
   }
 
-  requests_->push_back(
+  requests_.push_back(
       new RequestDelegate(this, keyword, osdd_url, favicon_url, web_contents,
                           owned_callbacks.release(), provider_type));
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {
   Requests::iterator i =
-      std::find(requests_->begin(), requests_->end(), request);
-  DCHECK(i != requests_->end());
-  requests_->erase(i);
+      std::find(requests_.begin(), requests_.end(), request);
+  DCHECK(i != requests_.end());
+  requests_.weak_erase(i);
   delete request;
 }

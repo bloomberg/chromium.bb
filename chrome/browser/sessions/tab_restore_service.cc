@@ -864,7 +864,7 @@ void TabRestoreService::CreateEntriesFromCommands(
         current_window = new Window();
         current_window->selected_tab_index = payload.selected_tab_index;
         current_window->timestamp = Time::FromInternalValue(payload.timestamp);
-        entries->push_back(current_window);
+        entries.push_back(current_window);
         id_to_entry[payload.window_id] = current_window;
         break;
       }
@@ -897,7 +897,7 @@ void TabRestoreService::CreateEntriesFromCommands(
           current_tab = new Tab();
           id_to_entry[payload.id] = current_tab;
           current_tab->timestamp = Time::FromInternalValue(payload.timestamp);
-          entries->push_back(current_tab);
+          entries.push_back(current_tab);
         }
         current_tab->current_navigation_index = payload.index;
         break;

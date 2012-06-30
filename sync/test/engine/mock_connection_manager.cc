@@ -470,8 +470,8 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
   map <string, string> changed_ids;
   const CommitMessage& commit_message = csm->commit();
   CommitResponse* commit_response = response_buffer->mutable_commit();
-  commit_messages_->push_back(new CommitMessage);
-  commit_messages_->back()->CopyFrom(commit_message);
+  commit_messages_.push_back(new CommitMessage);
+  commit_messages_.back()->CopyFrom(commit_message);
   map<string, CommitResponse_EntryResponse*> response_map;
   for (int i = 0; i < commit_message.entries_size() ; i++) {
     const sync_pb::SyncEntity& entry = commit_message.entries(i);
@@ -513,7 +513,7 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
       er->set_id_string(new_id);
     }
   }
-  commit_responses_->push_back(new CommitResponse(*commit_response));
+  commit_responses_.push_back(new CommitResponse(*commit_response));
 }
 
 SyncEntity* MockConnectionManager::AddUpdateDirectory(
@@ -544,12 +544,12 @@ void MockConnectionManager::NextUpdateBatch() {
 
 const CommitMessage& MockConnectionManager::last_sent_commit() const {
   EXPECT_TRUE(!commit_messages_.empty());
-  return *commit_messages_->back();
+  return *commit_messages_.back();
 }
 
 const CommitResponse& MockConnectionManager::last_commit_response() const {
   EXPECT_TRUE(!commit_responses_.empty());
-  return *commit_responses_->back();
+  return *commit_responses_.back();
 }
 
 bool MockConnectionManager::IsModelTypePresentInSpecifics(

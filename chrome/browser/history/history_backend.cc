@@ -1494,12 +1494,12 @@ void HistoryBackend::QueryFilteredURLs(
   // currently 24 hours) to use it directly instead of using visits database,
   // which is considerably slower.
   ScopedVector<PageUsageData> data;
-  data->reserve(score_map.size());
+  data.reserve(score_map.size());
   for (std::map<URLID, double>::iterator it = score_map.begin();
        it != score_map.end(); ++it) {
     PageUsageData* pud = new PageUsageData(it->first);
     pud->SetScore(it->second);
-    data->push_back(pud);
+    data.push_back(pud);
   }
 
   // Limit to the top |result_count| results.

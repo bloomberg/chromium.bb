@@ -535,7 +535,7 @@ void PluginList::GetPluginGroups(
 PluginGroup* PluginList::GetPluginGroup(
     const webkit::WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
-  for (size_t i = 0; i < plugin_groups_->size(); ++i) {
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& plugins =
         plugin_groups_[i]->web_plugin_infos();
     for (size_t j = 0; j < plugins.size(); ++j) {
@@ -561,7 +561,7 @@ void PluginList::AddHardcodedPluginGroups(
     const PluginGroupDefinition* group_definitions,
     size_t num_group_definitions) {
   for (size_t i = 0; i < num_group_definitions; ++i) {
-    hardcoded_plugin_groups_->push_back(
+    hardcoded_plugin_groups_.push_back(
         PluginGroup::FromPluginGroupDefinition(group_definitions[i]));
   }
 }

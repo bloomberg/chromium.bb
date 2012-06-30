@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -886,8 +886,8 @@ void FormStructure::ParseAutocompletetypeAttributes(bool* found_attribute,
                                                     bool* found_sections) {
   *found_attribute = false;
   *found_sections = false;
-  for (std::vector<AutofillField*>::iterator field = fields_->begin();
-       field != fields_->end(); ++field) {
+  for (std::vector<AutofillField*>::iterator field = fields_.begin();
+       field != fields_.end(); ++field) {
     if ((*field)->autocomplete_type.empty())
       continue;
 
@@ -917,14 +917,14 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
 
   if (!has_author_specified_sections) {
     // Name sections after the first field in the section.
-    string16 current_section = fields_->front()->unique_name();
+    string16 current_section = fields_.front()->unique_name();
 
     // Keep track of the types we've seen in this section.
     std::set<AutofillFieldType> seen_types;
     AutofillFieldType previous_type = UNKNOWN_TYPE;
 
-    for (std::vector<AutofillField*>::iterator field = fields_->begin();
-         field != fields_->end(); ++field) {
+    for (std::vector<AutofillField*>::iterator field = fields_.begin();
+         field != fields_.end(); ++field) {
       const AutofillFieldType current_type =
           AutofillType::GetEquivalentFieldType((*field)->type());
 
@@ -963,8 +963,8 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
 
   // Ensure that credit card and address fields are in separate sections.
   // This simplifies the section-aware logic in autofill_manager.cc.
-  for (std::vector<AutofillField*>::iterator field = fields_->begin();
-       field != fields_->end(); ++field) {
+  for (std::vector<AutofillField*>::iterator field = fields_.begin();
+       field != fields_.end(); ++field) {
     AutofillType::FieldTypeGroup field_type_group =
         AutofillType((*field)->type()).group();
     if (field_type_group == AutofillType::CREDIT_CARD)

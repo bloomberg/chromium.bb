@@ -323,7 +323,7 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   EXPECT_EQ(GG_LONGLONG(6789012345), feed->quota_bytes_used());
   EXPECT_EQ(GG_LONGLONG(9876543210), feed->quota_bytes_total());
   EXPECT_EQ(654321, feed->largest_changestamp());
-  EXPECT_EQ(2U, feed->installed_apps()->size());
+  EXPECT_EQ(2U, feed->installed_apps().size());
   const InstalledApp* first_app = feed->installed_apps()[0];
   const InstalledApp* second_app = feed->installed_apps()[1];
 
@@ -333,26 +333,26 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
     EXPECT_TRUE(first_app->supports_create());
     EXPECT_EQ("https://chrome.google.com/webstore/detail/abcdefabcdef",
               first_app->GetProductUrl().spec());
-    IF_EXPECT_EQ(2U, first_app->primary_mimetypes()->size()) {
+    IF_EXPECT_EQ(2U, first_app->primary_mimetypes().size()) {
       EXPECT_EQ("application/test_type_1",
-                *first_app->primary_mimetypes()->at(0));
+                *first_app->primary_mimetypes()[0]);
       EXPECT_EQ("application/vnd.google-apps.drive-sdk.11111111",
-                *first_app->primary_mimetypes()->at(1));
+                *first_app->primary_mimetypes()[1]);
     }
-    IF_EXPECT_EQ(1U, first_app->secondary_mimetypes()->size()) {
-      EXPECT_EQ("image/jpeg", *first_app->secondary_mimetypes()->at(0));
+    IF_EXPECT_EQ(1U, first_app->secondary_mimetypes().size()) {
+      EXPECT_EQ("image/jpeg", *first_app->secondary_mimetypes()[0]);
     }
-    IF_EXPECT_EQ(2U, first_app->primary_extensions()->size()) {
-      EXPECT_EQ("ext_1", *first_app->primary_extensions()->at(0));
-      EXPECT_EQ("ext_2", *first_app->primary_extensions()->at(1));
+    IF_EXPECT_EQ(2U, first_app->primary_extensions().size()) {
+      EXPECT_EQ("ext_1", *first_app->primary_extensions()[0]);
+      EXPECT_EQ("ext_2", *first_app->primary_extensions()[1]);
     }
-    IF_EXPECT_EQ(1U, first_app->secondary_extensions()->size()) {
-      EXPECT_EQ("ext_3", *first_app->secondary_extensions()->at(0));
+    IF_EXPECT_EQ(1U, first_app->secondary_extensions().size()) {
+      EXPECT_EQ("ext_3", *first_app->secondary_extensions()[0]);
     }
-    IF_EXPECT_EQ(1U, first_app->app_icons()->size()) {
-      EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()->at(0)->category());
-      EXPECT_EQ(16, first_app->app_icons()->at(0)->icon_side_length());
-      GURL icon_url = first_app->app_icons()->at(0)->GetIconURL();
+    IF_EXPECT_EQ(1U, first_app->app_icons().size()) {
+      EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()[0]->category());
+      EXPECT_EQ(16, first_app->app_icons()[0]->icon_side_length());
+      GURL icon_url = first_app->app_icons()[0]->GetIconURL();
       EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
                 icon_url.spec());
       InstalledApp::IconList icons =
@@ -370,10 +370,10 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
     EXPECT_EQ("https://chrome.google.com/webstore/detail/deadbeefdeadbeef",
               second_app->GetProductUrl().spec());
     EXPECT_FALSE(second_app->supports_create());
-    EXPECT_EQ(2U, second_app->primary_mimetypes()->size());
-    EXPECT_EQ(0U, second_app->secondary_mimetypes()->size());
-    EXPECT_EQ(1U, second_app->primary_extensions()->size());
-    EXPECT_EQ(0U, second_app->secondary_extensions()->size());
+    EXPECT_EQ(2U, second_app->primary_mimetypes().size());
+    EXPECT_EQ(0U, second_app->secondary_mimetypes().size());
+    EXPECT_EQ(1U, second_app->primary_extensions().size());
+    EXPECT_EQ(0U, second_app->secondary_extensions().size());
   }
 }
 

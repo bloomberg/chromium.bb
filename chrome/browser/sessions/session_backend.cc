@@ -104,9 +104,9 @@ bool SessionFileReader::Read(BaseSessionService::SessionType type,
   ScopedVector<SessionCommand> read_commands;
   SessionCommand* command;
   while ((command = ReadCommand()) && !errored_)
-    read_commands->push_back(command);
+    read_commands.push_back(command);
   if (!errored_)
-    read_commands->swap(*commands);
+    read_commands.swap(*commands);
   if (type == BaseSessionService::TAB_RESTORE) {
     UMA_HISTOGRAM_TIMES("TabRestore.read_session_file_time",
                         TimeTicks::Now() - start_time);

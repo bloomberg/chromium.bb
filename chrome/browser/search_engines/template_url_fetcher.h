@@ -55,7 +55,7 @@ class TemplateURLFetcher : public ProfileKeyedService {
                         ProviderType provider_type);
 
   // The current number of outstanding requests.
-  int requests_count() const { return requests_->size(); }
+  int requests_count() const { return requests_.size(); }
 
  private:
   // A RequestDelegate is created to download each OSDD. When done downloading

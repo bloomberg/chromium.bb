@@ -427,8 +427,8 @@ void PersonalDataManager::RemoveProfile(const std::string& guid) {
 
 AutofillProfile* PersonalDataManager::GetProfileByGUID(
     const std::string& guid) {
-  for (std::vector<AutofillProfile*>::iterator iter = web_profiles_->begin();
-       iter != web_profiles_->end(); ++iter) {
+  for (std::vector<AutofillProfile*>::iterator iter = web_profiles_.begin();
+       iter != web_profiles_.end(); ++iter) {
     if ((*iter)->guid() == guid)
       return *iter;
   }

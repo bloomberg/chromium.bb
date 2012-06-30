@@ -133,8 +133,8 @@ void DriveWebAppsRegistry::UpdateFromFeed(AccountMetadataFeed* metadata) {
   STLDeleteValues(&webapp_extension_map_);
   STLDeleteValues(&webapp_mimetypes_map_);
   for (ScopedVector<InstalledApp>::const_iterator it =
-           metadata->installed_apps()->begin();
-       it != metadata->installed_apps()->end(); ++it) {
+           metadata->installed_apps().begin();
+       it != metadata->installed_apps().end(); ++it) {
     const InstalledApp* app = *it;
     GURL product_url = app->GetProductUrl();
     if (product_url.is_empty())

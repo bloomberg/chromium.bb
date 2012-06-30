@@ -122,7 +122,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     ScopedVector<SessionWindow> windows;
     ReadWindows(&(windows.get()));
 
-    EXPECT_EQ(1U, windows->size());
+    EXPECT_EQ(1U, windows.size());
     if (HasFatalFailure())
       return false;
     EXPECT_EQ(1U, windows[0]->tabs.size());
@@ -169,7 +169,7 @@ TEST_F(SessionServiceTest, Basic) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_TRUE(window_bounds == windows[0]->bounds);
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
@@ -223,7 +223,7 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
@@ -254,7 +254,7 @@ TEST_F(SessionServiceTest, Pruning) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
@@ -295,7 +295,7 @@ TEST_F(SessionServiceTest, TwoWindows) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(2U, windows->size());
+  ASSERT_EQ(2U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(0, windows[1]->selected_tab_index);
   ASSERT_EQ(1U, windows[0]->tabs.size());
@@ -349,7 +349,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(1U, windows[0]->tabs.size());
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
@@ -382,7 +382,7 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(2U, windows[0]->tabs.size());
@@ -428,7 +428,7 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
@@ -470,7 +470,7 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
@@ -512,7 +512,7 @@ TEST_F(SessionServiceTest, RestorePopup) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(2U, windows->size());
+  ASSERT_EQ(2U, windows.size());
   int tabbed_index = windows[0]->type == Browser::TYPE_TABBED ?
       0 : 1;
   int popup_index = tabbed_index == 0 ? 1 : 0;
@@ -564,7 +564,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(2U, windows->size());
+  ASSERT_EQ(2U, windows.size());
   int tabbed_index = windows[0]->type == Browser::TYPE_TABBED ?
       0 : 1;
   int app_index = tabbed_index == 0 ? 1 : 0;
@@ -611,7 +611,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
@@ -654,7 +654,7 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_EQ(0U, windows->size());
+  ASSERT_EQ(0U, windows.size());
 }
 
 // Don't set the pinned state and make sure the pinned value is false.
@@ -745,7 +745,7 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
 
-  ASSERT_TRUE(windows->empty());
+  ASSERT_TRUE(windows.empty());
 }
 
 // Verifies SetWindowBounds maps SHOW_STATE_DEFAULT to SHOW_STATE_NORMAL.
@@ -765,7 +765,7 @@ TEST_F(SessionServiceTest, DontPersistDefault) {
 
   ScopedVector<SessionWindow> windows;
   ReadWindows(&(windows.get()));
-  ASSERT_EQ(1U, windows->size());
+  ASSERT_EQ(1U, windows.size());
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
 }
 

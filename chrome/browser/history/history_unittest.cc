@@ -127,7 +127,7 @@ class HistoryTest : public testing::Test {
 
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
                                std::vector<PageUsageData*>* data) {
-    page_usage_data_->swap(*data);
+    page_usage_data_.swap(*data);
     MessageLoop::current()->Quit();
   }
 
@@ -723,7 +723,7 @@ TEST_F(HistoryTest, Segments) {
   // Wait for processing.
   MessageLoop::current()->Run();
 
-  ASSERT_EQ(1U, page_usage_data_->size());
+  ASSERT_EQ(1U, page_usage_data_.size());
   EXPECT_TRUE(page_usage_data_[0]->GetURL() == existing_url);
   EXPECT_DOUBLE_EQ(3.0, page_usage_data_[0]->GetScore());
 
@@ -743,7 +743,7 @@ TEST_F(HistoryTest, Segments) {
   MessageLoop::current()->Run();
 
   // Make sure we still have one segment.
-  ASSERT_EQ(1U, page_usage_data_->size());
+  ASSERT_EQ(1U, page_usage_data_.size());
   EXPECT_TRUE(page_usage_data_[0]->GetURL() == existing_url);
 
   // Add a page linked from existing_url.
@@ -761,7 +761,7 @@ TEST_F(HistoryTest, Segments) {
   MessageLoop::current()->Run();
 
   // Make sure we still have one segment.
-  ASSERT_EQ(1U, page_usage_data_->size());
+  ASSERT_EQ(1U, page_usage_data_.size());
   EXPECT_TRUE(page_usage_data_[0]->GetURL() == existing_url);
 
   // However, the score should have increased.

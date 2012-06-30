@@ -285,7 +285,7 @@ Product* InstallerState::AddProductInDirectory(const FilePath* product_dir,
     state_key_ = the_product.distribution()->GetStateKey();
 
   products_.push_back(product->release());
-  return products_[products_->size() - 1];
+  return products_[products_.size() - 1];
 }
 
 Product* InstallerState::AddProduct(scoped_ptr<Product>* product) {
@@ -350,7 +350,7 @@ bool InstallerState::RemoveProduct(const Product* product) {
   ScopedVector<Product>::iterator it =
       std::find(products_.begin(), products_.end(), product);
   if (it != products_.end()) {
-    products_->erase(it);
+    products_.weak_erase(it);
     return true;
   }
   return false;
