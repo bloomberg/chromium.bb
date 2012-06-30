@@ -583,9 +583,43 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
       gfx::Point(all_area.x() - 1, all_area.y())));
   EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x(), all_area.y() - 1 )));
+      gfx::Point(all_area.x(), all_area.y() - 1)));
   EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
       gfx::Point(all_area.x(), all_area.bottom())));
+}
+
+// Resizing launcher view while an add animation without fade-in is running,
+// which happens when overflow happens. App list button should end up in its
+// new ideal bounds.
+TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add buttons until overflow. Let the non-overflow add animations finish but
+  // leave the last running.
+  AddTabbedBrowserNoWait();
+  while (!test_api_->IsOverflowButtonVisible()) {
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    AddTabbedBrowserNoWait();
+  }
+
+  // Resize launcher view with that animation running and stay overflown.
+  gfx::Rect bounds = launcher_view_->bounds();
+  bounds.set_width(bounds.width() - kLauncherPreferredSize);
+  launcher_view_->SetBoundsRect(bounds);
+  ASSERT_TRUE(test_api_->IsOverflowButtonVisible());
+
+  // Finish the animation.
+  test_api_->RunMessageLoopUntilAnimationsDone();
+
+  // App list button should ends up in its new ideal bounds.
+  const int app_list_button_index = test_api_->GetButtonCount() - 1;
+  const gfx::Rect& app_list_ideal_bounds =
+      test_api_->GetIdealBoundsByIndex(app_list_button_index);
+  const gfx::Rect& app_list_bounds =
+      test_api_->GetBoundsByIndex(app_list_button_index);
+  EXPECT_EQ(app_list_bounds, app_list_ideal_bounds);
 }
 
 }  // namespace test

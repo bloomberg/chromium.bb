@@ -8,6 +8,10 @@
 
 #include "base/basictypes.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ash {
 
 namespace internal {
@@ -31,6 +35,10 @@ class LauncherViewTestAPI {
 
   // Last visible button index.
   int GetLastVisibleIndex();
+
+  // Gets current/ideal bounds for button at |index|.
+  const gfx::Rect& GetBoundsByIndex(int index);
+  const gfx::Rect& GetIdealBoundsByIndex(int index);
 
   // Returns true if overflow button is visible.
   bool IsOverflowButtonVisible();

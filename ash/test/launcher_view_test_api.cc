@@ -63,6 +63,14 @@ bool LauncherViewTestAPI::IsOverflowButtonVisible() {
   return launcher_view_->overflow_button_->visible();
 }
 
+const gfx::Rect& LauncherViewTestAPI::GetBoundsByIndex(int index) {
+  return launcher_view_->view_model_->view_at(index)->bounds();
+}
+
+const gfx::Rect& LauncherViewTestAPI::GetIdealBoundsByIndex(int index) {
+  return launcher_view_->view_model_->ideal_bounds(index);
+}
+
 void LauncherViewTestAPI::SetAnimationDuration(int duration_ms) {
   launcher_view_->bounds_animator_->SetAnimationDuration(duration_ms);
 }
