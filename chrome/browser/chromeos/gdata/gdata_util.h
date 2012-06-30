@@ -28,6 +28,9 @@ const char kLocallyModifiedFileExtension[] = "local";
 // "<resource-id>.<md5>.mounted".
 const char kMountedArchiveFileExtension[] = "mounted";
 const char kWildCard[] = "*";
+// The path is used for creating a symlink in "pinned" directory for a file
+// which is not yet fetched.
+const char kSymLinkToDevNull[] = "/dev/null";
 
 // Returns the GData mount point path, which looks like "/special/gdata".
 const FilePath& GetGDataMountPointPath();
@@ -90,6 +93,15 @@ void ParseCacheFilePath(const FilePath& path,
                         std::string* resource_id,
                         std::string* md5,
                         std::string* extra_extension);
+
+// Removes a symlink.
+//
+// Cannot use file_util::Delete which uses stat64 to check if path exists
+// before deleting it.  If path is a symlink, stat64 dereferences it to the
+// target file, so it's in essence checking if the target file exists.
+// TODO(satorux): Remove this: http://crbug.com/119430.
+bool DeleteSymlink(const FilePath& file_path);
+
 }  // namespace util
 }  // namespace gdata
 
