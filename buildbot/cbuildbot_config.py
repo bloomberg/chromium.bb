@@ -567,6 +567,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
+  hw_tests=['PGO_record'],
   upload_hw_test_artifacts=True,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
 )
@@ -756,6 +757,7 @@ internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
   hw_tests_pool='cq-bvt',
+  hw_tests=['bvt'],
   upload_hw_test_artifacts=True,
 )
 
@@ -768,6 +770,7 @@ internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
   hw_tests_pool='cq-bvt',
+  hw_tests=['bvt'],
   upload_hw_test_artifacts=True,
 )
 
@@ -810,6 +813,7 @@ internal_paladin.add_config('unified-lumpy-paladin',
   vm_tests=None,
   prebuilts=None,
   hw_tests_pool='cq-bvt',
+  hw_tests=['bvt'],
   upload_hw_test_artifacts=True,
   important=False,
 )
@@ -879,11 +883,13 @@ _release = full.derive(official, internal,
 
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
+  hw_tests=['bvt'],
 )
 
 _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
+    hw_tests=['bvt'],
   ),
   _release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
@@ -908,6 +914,7 @@ _config.add_group('x86-alex32-release-group',
 _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
+    hw_tests=['bvt'],
   ),
   _release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
@@ -931,10 +938,12 @@ _config.add_group('x86-zgb32-release-group',
 
 _release.add_config('stumpy-release',
   boards=['stumpy'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('lumpy-release',
   boards=['lumpy'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('link-release',
@@ -966,6 +975,7 @@ _arm_release.add_config('arm-tegra2_seaboard-release',
 
 _arm_release.add_config('arm-tegra2_kaen-release',
   boards=['tegra2_kaen'],
+  hw_tests=['kaen_bvt'],
 )
 
 _arm_release.add_config('arm-daisy-release',
