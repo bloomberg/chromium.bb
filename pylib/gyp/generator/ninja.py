@@ -153,9 +153,15 @@ class Target:
     """Return true if this is a target that can be linked against."""
     return self.type in ('static_library', 'shared_library')
 
-  def PreActionInput(self):
+  def SharedLinkable(self):
+    """Return true if this is a shared library/module."""
+    return self.type in ('shared_library', 'loadable_module')
+
+  def PreActionInput(self, flavor):
     """Return the path, if any, that should be used as a dependency of
     any dependent action step."""
+    if self.SharedLinkable() and flavor not in ['mac', 'win']:
+      return self.FinalOutput() + '.TOC'
     return self.FinalOutput() or self.preaction_stamp
 
   def PreCompileInput(self):
@@ -362,7 +368,7 @@ class NinjaWriter:
       for dep in spec['dependencies']:
         if dep in self.target_outputs:
           target = self.target_outputs[dep]
-          actions_depends.append(target.PreActionInput())
+          actions_depends.append(target.PreActionInput(self.flavor))
           compile_depends.append(target.PreCompileInput())
       actions_depends = filter(None, actions_depends)
       compile_depends = filter(None, compile_depends)
@@ -814,6 +820,7 @@ class NinjaWriter:
     }[spec['type']]
 
     implicit_deps = set()
+    solibs = set()
 
     if 'dependencies' in spec:
       # Two kinds of dependencies:
@@ -833,6 +840,9 @@ class NinjaWriter:
             extra_link_deps |= set(target.component_objs)
           elif self.flavor == 'win' and target.import_lib:
             extra_link_deps.add(target.import_lib)
+          elif target.SharedLinkable() and self.flavor not in ['mac', 'win']:
+            solibs.add(target.binary)
+            implicit_deps.add(target.binary + '.TOC')
           else:
             extra_link_deps.add(target.binary)
 
@@ -879,11 +889,17 @@ class NinjaWriter:
 
     if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
+      extra_bindings.append(('lib', output))
       if self.flavor == 'win':
         self.target.import_lib = output + '.lib'
         extra_bindings.append(('dll', output))
         extra_bindings.append(('implib', self.target.import_lib))
         output = [output, self.target.import_lib]
+      elif self.flavor != 'mac':
+        output = [output, output + '.TOC']
+
+    if len(solibs):
+      extra_bindings.append(('solibs', ' '.join(solibs)))
 
     self.ninja.build(output, command, link_deps,
                      implicit=list(implicit_deps),
@@ -1374,21 +1390,42 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'alink',
       description='AR $out',
       command='rm -f $out && $ar rcsT $out $in')
+
+    # This allows targets that only need to depend on $lib's API to declare an
+    # order-only dependency on $lib.TOC and avoid relinking such downstream
+    # dependencies when $lib changes only in non-public ways.
+    # The resulting string leaves an uninterpolated %{suffix} which
+    # is used in the final substitution below.
+    mtime_preserving_solink_base = (
+        'if [ ! -e $lib -o ! -e ${lib}.TOC ]; then '
+        '%(solink)s && %(extract_toc)s > ${lib}.TOC; else '
+        '%(solink)s && %(extract_toc)s > ${lib}.tmp && '
+        'if ! cmp -s ${lib}.tmp ${lib}.TOC; then mv ${lib}.tmp ${lib}.TOC ; '
+        'fi; fi'
+        % { 'solink':
+              '$ld -shared $ldflags -o $lib -Wl,-soname=$soname %(suffix)s',
+            'extract_toc':
+              ('{ readelf -d ${lib} | grep SONAME ; '
+               'nm -gD -f p ${lib} |cut -f1-2 -d\' \'; }')})
+
     master_ninja.rule(
       'solink',
-      description='SOLINK $out',
-      command=('$ld -shared $ldflags -o $out -Wl,-soname=$soname '
-               '-Wl,--whole-archive $in -Wl,--no-whole-archive $libs'))
+      description='SOLINK $lib',
+      restat=True,
+      command=(mtime_preserving_solink_base % {
+          'suffix': '-Wl,--whole-archive $in $solibs -Wl,--no-whole-archive '
+          '$libs'}))
     master_ninja.rule(
       'solink_module',
-      description='SOLINK(module) $out',
-      command=('$ld -shared $ldflags -o $out -Wl,-soname=$soname '
-               '-Wl,--start-group $in -Wl,--end-group $libs'))
+      description='SOLINK(module) $lib',
+      restat=True,
+      command=(mtime_preserving_solink_base % {
+          'suffix': '-Wl,--start-group $in $solibs -Wl,--end-group $libs'}))
     master_ninja.rule(
       'link',
       description='LINK $out',
       command=('$ld $ldflags -o $out -Wl,-rpath=\$$ORIGIN/lib '
-               '-Wl,--start-group $in -Wl,--end-group $libs'))
+               '-Wl,--start-group $in $solibs -Wl,--end-group $libs'))
   elif flavor == 'win':
     master_ninja.rule(
         'alink',
