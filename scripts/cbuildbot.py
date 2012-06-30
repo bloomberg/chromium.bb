@@ -1180,9 +1180,10 @@ def main(argv):
       stack.Add(osutils.TempDirContextManager, 'cbuildbot-tmp')
       logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
 
+    options.preserve_paths = set()
     if log_file is not None:
       stack.Add(tee.Tee, log_file)
-      options.preserve_paths = set([_DEFAULT_LOG_DIR])
+      options.preserve_paths.add(_DEFAULT_LOG_DIR)
 
     if options.cgroups:
       stack.Add(cgroups.SimpleContainChildren, 'cbuildbot')
