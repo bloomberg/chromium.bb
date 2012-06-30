@@ -229,8 +229,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }
 
+// This test is disabled on MAC. See bug http://crbug.com/135336
+#if defined(OS_MACOSX)
+#define MAYBE_SetPassphraseAndThenSetupSync \
+    DISABLED_SetPassphraseAndThenSetupSync
+#else
+#define MAYBE_SetPassphraseAndThenSetupSync SetPassphraseAndThenSetupSync
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
+                       MAYBE_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
