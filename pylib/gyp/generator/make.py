@@ -43,8 +43,6 @@ generator_default_variables = {
   'RULE_INPUT_PATH': '$(abspath $<)',
   'RULE_INPUT_EXT': '$(suffix $<)',
   'RULE_INPUT_NAME': '$(notdir $<)',
-
-  # This appears unused --- ?
   'CONFIGURATION_NAME': '$(BUILDTYPE)',
 }
 
