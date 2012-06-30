@@ -247,9 +247,9 @@ class FrameRateTest
     perf_test::PrintResultMeanAndError(name, "", trace_name, mean_and_error,
                                        "milliseconds-per-frame", true);
 
-    // Close the tab so that we can quit without timing out during the
-    // wait-for-idle stage in browser_test framework.
-    EXPECT_TRUE(tab->Close());
+    // Navigate back to NTP so that we can quit without timing out during the
+    // wait-for-idle stage in test framework.
+    EXPECT_EQ(tab->GoBack(), AUTOMATION_MSG_NAVIGATION_SUCCESS);
   }
 };
 
