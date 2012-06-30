@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/win/scoped_bstr.h"
 #include "chrome_frame/buggy_bho_handling.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
@@ -72,6 +73,7 @@ void Bho::FinalRelease() {
 STDMETHODIMP Bho::SetSite(IUnknown* site) {
   HRESULT hr = S_OK;
   if (site) {
+    base::TimeTicks start = base::TimeTicks::Now();
     base::win::ScopedComPtr<IWebBrowser2> web_browser2;
     web_browser2.QueryFrom(site);
     if (web_browser2) {
@@ -101,6 +103,9 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
       DLOG(WARNING) << "Failed to bump up HTTP connections. Error:"
                     << ::GetLastError();
     }
+
+    base::TimeDelta delta = base::TimeTicks::Now() - start;
+    UMA_HISTOGRAM_TIMES("ChromeFrame.BhoLoadSetSite", delta);
   } else {
     UnregisterThreadInstance();
     buggy_bho::BuggyBhoTls::DestroyInstance();
