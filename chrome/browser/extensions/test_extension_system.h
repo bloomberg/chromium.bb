@@ -71,6 +71,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<extensions::ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<extensions::AlarmManager> alarm_manager_;
+  scoped_refptr<ExtensionInfoMap> info_map_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_

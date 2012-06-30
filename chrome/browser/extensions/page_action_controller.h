@@ -11,6 +11,7 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class ExtensionService;
 class TabContents;
@@ -19,7 +20,8 @@ namespace extensions {
 
 // A LocationBarController which populates the location bar with icons based
 // on the page_action extension API.
-class PageActionController : public LocationBarController {
+class PageActionController : public LocationBarController,
+                             public content::WebContentsObserver {
  public:
   explicit PageActionController(TabContents* tab_contents);
   virtual ~PageActionController();
@@ -29,6 +31,11 @@ class PageActionController : public LocationBarController {
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;
+
+  // content::WebContentsObserver implementation.
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
   // Gets the ExtensionService for |tab_contents_|.

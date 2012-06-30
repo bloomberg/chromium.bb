@@ -19,7 +19,8 @@
 namespace extensions {
 
 PageActionController::PageActionController(TabContents* tab_contents)
-    : tab_contents_(tab_contents) {}
+    : content::WebContentsObserver(tab_contents->web_contents()),
+      tab_contents_(tab_contents) {}
 
 PageActionController::~PageActionController() {}
 
@@ -79,6 +80,22 @@ LocationBarController::Action PageActionController::OnClicked(
 void PageActionController::NotifyChange() {
   tab_contents_->web_contents()->NotifyNavigationStateChanged(
       content::INVALIDATE_TYPE_PAGE_ACTIONS);
+}
+
+void PageActionController::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  const std::vector<ExtensionAction*> current_actions = GetCurrentActions();
+
+  if (current_actions.empty())
+    return;
+
+  for (size_t i = 0; i < current_actions.size(); ++i) {
+    current_actions[i]->ClearAllValuesForTab(
+        tab_contents_->extension_tab_helper()->tab_id());
+  }
+
+  NotifyChange();
 }
 
 ExtensionService* PageActionController::GetExtensionService() const {

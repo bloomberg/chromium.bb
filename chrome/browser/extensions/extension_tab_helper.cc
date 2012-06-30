@@ -154,15 +154,6 @@ void ExtensionTabHelper::DidNavigateMainFrame(
           content::Source<ExtensionAction>(browser_action),
           content::NotificationService::NoDetails());
     }
-
-    // TODO(jyasskin): Have PageActionController observe DidNavigateMainFrame,
-    // and move this code there.
-    ExtensionAction* page_action = (*it)->page_action();
-    if (page_action) {
-      page_action->ClearAllValuesForTab(
-          tab_contents_->restore_tab_helper()->session_id().id());
-      location_bar_controller()->NotifyChange();
-    }
   }
 }
 

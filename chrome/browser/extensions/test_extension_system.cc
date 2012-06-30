@@ -22,7 +22,8 @@
 
 
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      info_map_(new ExtensionInfoMap()) {
 }
 
 TestExtensionSystem::~TestExtensionSystem() {
@@ -111,7 +112,7 @@ extensions::StateStore* TestExtensionSystem::state_store() {
 }
 
 ExtensionInfoMap* TestExtensionSystem::info_map() {
-  return NULL;
+  return info_map_.get();
 }
 
 extensions::LazyBackgroundTaskQueue*
