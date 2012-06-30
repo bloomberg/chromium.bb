@@ -323,6 +323,13 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   virtual std::string GetClassName() const OVERRIDE;
 
+  // Returns the preferred size (and padding) of any children.
+  virtual gfx::Size GetChildPreferredSize();
+
+  // Returns the various margins.
+  int GetTopMargin();
+  int GetBottomMargin();
+
  private:
   friend class internal::MenuRunnerImpl;  // For access to ~MenuItemView.
 
@@ -383,13 +390,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the accelerator text.
   string16 GetAcceleratorText();
-
-  // Returns the various margins.
-  int GetTopMargin();
-  int GetBottomMargin();
-
-  // Returns the preferred size (and padding) of any children.
-  gfx::Size GetChildPreferredSize();
 
   // Calculates the preferred size.
   gfx::Size CalculatePreferredSize();

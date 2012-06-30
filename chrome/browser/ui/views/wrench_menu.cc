@@ -28,6 +28,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -71,11 +72,16 @@ const SkColor kTouchBackgroundColor = SkColorSetARGB(247, 255, 255, 255);
 const SkColor kHotTouchBackgroundColor = SkColorSetARGB(247, 242, 242, 242);
 const SkColor kPushedTouchBackgroundColor = SkColorSetARGB(247, 235, 235, 235);
 
+const SkColor kTouchButtonText = 0xff5a5a5a;
+const SkColor kTouchImageBrighten = 0x80ffffff;
 
 // Horizontal padding on the edges of the buttons.
 const int kHorizontalPadding = 6;
 // Horizontal padding for a touch enabled menu.
 const int kHorizontalTouchPadding = 15;
+
+// For touch menu items we want to have this height in pixels.
+const int kTouchItemHeight = 47;
 
 // Subclass of ImageButton whose preferred size includes the size of the border.
 class FullscreenButton : public ImageButton {
@@ -162,11 +168,16 @@ class MenuButtonBackground : public views::Background {
     // for that.
 #if !defined(OS_WIN)
     if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
-      // Note: the right side of the button is always filled by the next button
-      // and / or the border of the menu.
-      canvas->FillRect(gfx::Rect(0, 0, 1, h),
-                       border_color(CustomButton::BS_NORMAL));
-      canvas->FillRect(gfx::Rect(1, 0, w - 1, h),
+      // Normal buttons get a border drawn on the right side and the rest gets
+      // filled in. The left button however does not get a line to combine
+      // buttons.
+      int border = 0;
+      if (type_ != RIGHT_BUTTON) {
+        border = 1;
+        canvas->FillRect(gfx::Rect(0, 0, border, h),
+                         border_color(CustomButton::BS_NORMAL));
+      }
+      canvas->FillRect(gfx::Rect(border, 0, w - border, h),
                        touch_background_color(state));
       return;
     }
@@ -355,6 +366,50 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuView);
 };
 
+class ButtonContainerMenuItemView : public MenuItemView {
+ public:
+  // Constructor for use with button containing menu items which have a
+  // different height then .
+  explicit ButtonContainerMenuItemView(MenuItemView* parent,
+                                       int id,
+                                       int height)
+      : MenuItemView(parent, id, MenuItemView::NORMAL),
+        height_(height) {
+  };
+
+  gfx::Size GetChildPreferredSize() OVERRIDE {
+    gfx::Size size = MenuItemView::GetChildPreferredSize();
+    // When there is a height override given, we need to deduct our spacing
+    // above and below to get to the correct height to return here for the
+    // child item.
+    int height = height_ - GetTopMargin() - GetBottomMargin();
+    if (height > size.height())
+      size.set_height(height);
+    return size;
+  }
+
+ private:
+  int height_;
+
+  DISALLOW_COPY_AND_ASSIGN(ButtonContainerMenuItemView);
+};
+
+gfx::ImageSkia* TintImage(gfx::ImageSkia* image, SkColor tint_value) {
+  // In case of touch, the menu needs to be brightened up a bit.
+  // Create a new bitmap since we do not want to change the original image.
+  SkBitmap bitmap_copy;
+  image->bitmap()->copyTo(&bitmap_copy, SkBitmap::kARGB_8888_Config);
+  SkCanvas canvas(bitmap_copy);
+  SkPaint paint;
+  // We leave the old alpha alone and add the new color multiplied
+  // with the source alpha to the existing alpha. Thus: We brighten
+  // the image up - but only the non transparent pixels.
+  paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
+  paint.setColor(tint_value);
+  canvas.drawPaint(paint);
+  return new gfx::ImageSkia(bitmap_copy);
+}
+
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
@@ -372,13 +427,25 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
         IDS_CUT, MenuButtonBackground::LEFT_BUTTON, cut_index, NULL);
 
     MenuButtonBackground* copy_background = NULL;
-    CreateAndConfigureButton(
+    TextButton* copy = CreateAndConfigureButton(
         IDS_COPY, MenuButtonBackground::CENTER_BUTTON, copy_index,
         &copy_background);
 
-    TextButton* paste = CreateAndConfigureButton(
-        IDS_PASTE, MenuButtonBackground::RIGHT_BUTTON, paste_index, NULL);
+    bool is_touch = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
 
+    TextButton* paste = CreateAndConfigureButton(
+        IDS_PASTE,
+#if !defined(OS_WIN)
+        is_touch ? MenuButtonBackground::CENTER_BUTTON :
+#endif
+            MenuButtonBackground::RIGHT_BUTTON,
+        paste_index,
+        NULL);
+    if (is_touch) {
+      cut->SetEnabledColor(kTouchButtonText);
+      copy->SetEnabledColor(kTouchButtonText);
+      paste->SetEnabledColor(kTouchButtonText);
+    }
     copy_background->SetOtherButtons(cut, paste);
   }
 
@@ -443,13 +510,19 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     zoom_label_ = new Label(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
     zoom_label_->SetAutoColorReadabilityEnabled(false);
-    zoom_label_->SetEnabledColor(MenuConfig::instance().text_color);
     zoom_label_->SetHorizontalAlignment(Label::ALIGN_RIGHT);
-    MenuButtonBackground* center_bg =
-        new MenuButtonBackground(MenuButtonBackground::CENTER_BUTTON);
+
+    bool is_touch = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+
+    MenuButtonBackground* center_bg = new MenuButtonBackground(
+#if !defined(OS_WIN)
+        is_touch ? MenuButtonBackground::RIGHT_BUTTON :
+#endif
+            MenuButtonBackground::CENTER_BUTTON);
     zoom_label_->set_background(center_bg);
     zoom_label_->set_border(new MenuButtonBorder());
     zoom_label_->SetFont(MenuConfig::instance().font);
+
     AddChildView(zoom_label_);
     zoom_label_width_ = MaxWidthForZoomLabel();
 
@@ -460,10 +533,25 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     center_bg->SetOtherButtons(decrement_button_, increment_button_);
 
     fullscreen_button_ = new FullscreenButton(this);
-    fullscreen_button_->SetImage(
-        ImageButton::BS_NORMAL,
+    gfx::ImageSkia* full_screen_image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_FULLSCREEN_MENU_BUTTON));
+            IDR_FULLSCREEN_MENU_BUTTON);
+    if (is_touch) {
+      tinted_fullscreen_image_.reset(TintImage(full_screen_image,
+                                               kTouchImageBrighten));
+      fullscreen_button_->SetImage(ImageButton::BS_NORMAL,
+          tinted_fullscreen_image_.get());
+    } else {
+      fullscreen_button_->SetImage(ImageButton::BS_NORMAL, full_screen_image);
+    }
+    if (is_touch) {
+      zoom_label_->SetEnabledColor(kTouchButtonText);
+      decrement_button_->SetEnabledColor(kTouchButtonText);
+      increment_button_->SetEnabledColor(kTouchButtonText);
+    } else {
+      zoom_label_->SetEnabledColor(MenuConfig::instance().text_color);
+    }
+
     fullscreen_button_->set_focusable(true);
     fullscreen_button_->set_request_focus_on_press(false);
     fullscreen_button_->set_tag(fullscreen_index);
@@ -497,7 +585,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     int fullscreen_width = fullscreen_button_->GetPreferredSize().width() +
                            zoom_padding;
     // Returned height doesn't matter as MenuItemView forces everything to the
-    // height of the menuitemview.
+    // height of the menuitemview. Note that we have overridden the height when
+    // constructing the menu.
     return gfx::Size(button_width + zoom_label_width_ + button_width +
                      fullscreen_width, 0);
   }
@@ -605,6 +694,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   TextButton* decrement_button_;
 
   ImageButton* fullscreen_button_;
+
+  // The tinted bitmap of the fullscreen button.
+  scoped_ptr<gfx::ImageSkia> tinted_fullscreen_image_;
 
   // Width given to |zoom_label_|. This is the width at 100%.
   int zoom_label_width_;
@@ -862,12 +954,22 @@ void WrenchMenu::Observe(int type,
 void WrenchMenu::PopulateMenu(MenuItemView* parent,
                               MenuModel* model,
                               int* next_id) {
+  bool is_touch = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+
   int index_offset = model->GetFirstItemIndex(NULL);
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     int index = i + index_offset;
 
-    MenuItemView* item =
-        AppendMenuItem(parent, model, index, model->GetTypeAt(index), next_id);
+    // The button container menu items have a special height which we have to
+    // use instead of the normal height.
+    int height = 0;
+    if (is_touch &&
+        (model->GetCommandIdAt(index) == IDC_CUT ||
+         model->GetCommandIdAt(index) == IDC_ZOOM_MINUS))
+      height = kTouchItemHeight;
+
+    MenuItemView* item = AppendMenuItem(
+        parent, model, index, model->GetTypeAt(index), next_id, height);
 
     if (model->GetTypeAt(index) == MenuModel::TYPE_SUBMENU)
       PopulateMenu(item, model->GetSubmenuModelAt(index), next_id);
@@ -915,13 +1017,23 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
                                          MenuModel* model,
                                          int index,
                                          MenuModel::ItemType menu_type,
-                                         int* next_id) {
+                                         int* next_id,
+                                         int height) {
   int id = (*next_id)++;
 
   id_to_entry_[id].first = model;
   id_to_entry_[id].second = index;
 
-  MenuItemView* menu_item = parent->AppendMenuItemFromModel(model, index, id);
+  MenuItemView* menu_item = NULL;
+  if (height > 0) {
+    // For menu items with a special menu height we use our special class to be
+    // able to modify the item height.
+    menu_item = new ButtonContainerMenuItemView(parent, id, height);
+    parent->GetSubmenu()->AddChildView(menu_item);
+  } else {
+    // For all other cases we use the more generic way to add menu items.
+    menu_item = parent->AppendMenuItemFromModel(model, index, id);
+  }
 
   if (menu_item) {
     // Flush all buttons to the right side of the menu for touch menus.

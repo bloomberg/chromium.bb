@@ -978,6 +978,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
           Too&amp;ls
         </message>
+        <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
+          More too&amp;ls
+        </message>
         <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
           &amp;Zoom
         </message>
@@ -1057,6 +1060,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_TOOLS_MENU" desc="The text label of the Tools submenu">
           Too&amp;ls
+        </message>
+        <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
+          More too&amp;ls
         </message>
         <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
           &amp;Zoom

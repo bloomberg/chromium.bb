@@ -468,8 +468,11 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
   tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
-  AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_TOOLS_MENU,
-                         tools_menu_model_.get());
+  // In case of touch this is the last item.
+  if (!is_touch_menu) {
+    AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_TOOLS_MENU,
+                           tools_menu_model_.get());
+  }
 
   if (is_touch_menu)
     CreateZoomMenu();
@@ -524,6 +527,11 @@ void WrenchMenuModel::Build() {
     AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
 
   AddGlobalErrorMenuItems();
+
+  if (is_touch_menu) {
+    AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_MORE_TOOLS_MENU,
+                           tools_menu_model_.get());
+  }
 
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();

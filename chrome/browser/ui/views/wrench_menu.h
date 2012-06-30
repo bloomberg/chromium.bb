@@ -96,11 +96,14 @@ class WrenchMenu : public views::MenuDelegate,
 
   // Adds a new menu to |parent| to represent the MenuModel/index pair passed
   // in.
+  // Fur button containing menu items a |height| override can be specified with
+  // a number bigger then 0.
   views::MenuItemView* AppendMenuItem(views::MenuItemView* parent,
                                       ui::MenuModel* model,
                                       int index,
                                       ui::MenuModel::ItemType menu_type,
-                                      int* next_id);
+                                      int* next_id,
+                                      int height);
 
   // Invoked from the cut/copy/paste menus. Cancels the current active menu and
   // activates the menu item in |model| at |index|.
