@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
+#include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -55,6 +56,7 @@ bool PerformanceMonitor::SetDatabasePath(const FilePath& path) {
 void PerformanceMonitor::FinishInit() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   RegisterForNotifications();
+  CheckForVersionUpdate();
 }
 
 void PerformanceMonitor::RegisterForNotifications() {
@@ -85,6 +87,60 @@ void PerformanceMonitor::AddEvent(scoped_ptr<Event> event) {
 
 void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
   database_->AddEvent(*event.get());
+}
+
+void PerformanceMonitor::GetStateValueOnBackgroundThread(
+    std::string key, base::Callback<void(std::string)> callback) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::string state_value = database_->GetStateValue(key);
+
+  callback.Run(state_value);
+}
+
+void PerformanceMonitor::CheckForVersionUpdate() {
+  base::Callback<void(std::string)> callback =
+      base::Bind(&PerformanceMonitor::CheckForVersionUpdateHelper,
+                 base::Unretained(this));
+
+  content::BrowserThread::PostBlockingPoolSequencedTask(
+      Database::kDatabaseSequenceToken,
+      FROM_HERE,
+      base::Bind(&PerformanceMonitor::GetStateValueOnBackgroundThread,
+                 base::Unretained(this),
+                 std::string(kStateChromeVersion),
+                 callback));
+}
+
+void PerformanceMonitor::CheckForVersionUpdateHelper(
+    std::string previous_version) {
+  chrome::VersionInfo version;
+  DCHECK(version.is_valid());
+
+  std::string current_version = version.Version();
+
+  // We should never have a current_version which is older than the
+  // previous_version.
+  DCHECK(current_version >= previous_version);
+
+  // If this is the first run, there will not be a stored value for Chrome
+  // version; we insert the current version and will insert an event for the
+  // next update of Chrome. If the previous version is older than the current
+  // version, update the state in the database and insert an event.
+  if (current_version > previous_version) {
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        Database::kDatabaseSequenceToken,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&Database::AddStateValue),
+                   base::Unretained(database_.get()),
+                   std::string(kStateChromeVersion),
+                   current_version));
+    if (!previous_version.empty()) {
+      AddEvent(util::CreateChromeUpdateEvent(
+          base::Time::Now(),
+          previous_version,
+          current_version));
+    }
+  }
 }
 
 void PerformanceMonitor::Observe(int type,

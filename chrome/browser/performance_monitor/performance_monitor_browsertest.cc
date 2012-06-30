@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
@@ -270,6 +272,43 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   int unload_reason = -1;
   ASSERT_TRUE(events[2]->data()->GetInteger("unloadReason", &unload_reason));
   ASSERT_EQ(extension_misc::UNLOAD_REASON_UPDATE, unload_reason);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
+  const char kOldVersion[] = "0.0";
+
+  content::BrowserThread::PostBlockingPoolSequencedTask(
+      Database::kDatabaseSequenceToken,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&Database::AddStateValue),
+                 base::Unretained(performance_monitor()->database()),
+                 std::string(kStateChromeVersion),
+                 std::string(kOldVersion)));
+
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+
+  performance_monitor()->CheckForVersionUpdate();
+
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+
+  chrome::VersionInfo version;
+  ASSERT_TRUE(version.is_valid());
+  std::string version_string = version.Version();
+
+  std::vector<linked_ptr<Event> > events = GetEvents();
+  ASSERT_EQ(1u, events.size());
+  ASSERT_EQ(EVENT_CHROME_UPDATE, events[0]->type());
+
+  const base::DictionaryValue* value;
+  ASSERT_TRUE(events[0]->data()->GetAsDictionary(&value));
+
+  std::string previous_version;
+  std::string current_version;
+
+  ASSERT_TRUE(value->GetString("previousVersion", &previous_version));
+  ASSERT_EQ(kOldVersion, previous_version);
+  ASSERT_TRUE(value->GetString("currentVersion", &current_version));
+  ASSERT_EQ(version_string, current_version);
 }
 
 }  // namespace performance_monitor

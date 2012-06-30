@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -37,6 +38,10 @@ class PerformanceMonitor : public content::NotificationObserver {
   // start collecting data.
   void Start();
 
+  // Check the previous Chrome version from the Database and determine if
+  // it has been updated. If it has, insert an event in the database.
+  void CheckForVersionUpdate();
+
   // content::NotificationObserver
   // Wait for various notifications; insert events into the database upon
   // occurance.
@@ -61,6 +66,13 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   // Register for the apprioriate notifications as a NotificationObserver.
   void RegisterForNotifications();
+
+  // Gets the corresponding value of |key| from the database, and then runs
+  // |callback| with that value as a parameter.
+  void GetStateValueOnBackgroundThread(
+      std::string key, base::Callback<void(std::string)> callback);
+
+  void CheckForVersionUpdateHelper(std::string previous_version);
 
   // Wrapper function for inserting events into the database.
   void AddEvent(scoped_ptr<Event> event);

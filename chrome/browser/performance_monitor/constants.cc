@@ -6,6 +6,9 @@
 
 namespace performance_monitor {
 
+// The key to insert/retrieve information about the chrome version from the
+// database.
+const char kStateChromeVersion[] = "chrome_version";
 const char kMetricNotFoundError[] = "Mertic details not found.";
 const char kProcessChromeAggregate[] = "chrome_aggregate";
 const char kSampleMetricDescription[] = "A sample metric.";

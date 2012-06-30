@@ -181,13 +181,13 @@ scoped_ptr<Event> CreateCrashEvent(
   event.event_type = type;
   event.time = static_cast<double>(time.ToInternalValue());
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
-  return scoped_ptr<Event>(new Event(
-      type, time, value.Pass()));
+  return scoped_ptr<Event>(new Event(type, time, value.Pass()));
 }
 
 scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time) {
   events::UncleanShutdown event;
   event.event_type = EVENT_UNCLEAN_SHUTDOWN;
+  event.time = static_cast<double>(time.ToInternalValue());
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
       EVENT_UNCLEAN_SHUTDOWN, time, value.Pass()));
@@ -195,11 +195,13 @@ scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time) {
 
 scoped_ptr<Event> CreateChromeUpdateEvent(
     const base::Time& time,
-    const std::string& old_version,
-    const std::string& new_version) {
+    const std::string& previous_version,
+    const std::string& current_version) {
   events::ChromeUpdate event;
   event.event_type = EVENT_CHROME_UPDATE;
   event.time = static_cast<double>(time.ToInternalValue());
+  event.previous_version = previous_version;
+  event.current_version = current_version;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
       EVENT_CHROME_UPDATE, time, value.Pass()));

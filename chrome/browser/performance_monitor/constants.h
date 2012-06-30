@@ -18,6 +18,7 @@ extern const char kProcessChromeAggregate[];
 // TODO(mtytel): When you make real metrics, delete the sample metric.
 extern const char kSampleMetricDescription[];
 extern const char kSampleMetricName[];
+extern const char kStateChromeVersion[];
 
 }  // namespace performance_monitor
 

@@ -87,8 +87,8 @@ scoped_ptr<Event> CreateUncleanShutdownEvent(const base::Time& time);
 
 scoped_ptr<Event> CreateChromeUpdateEvent(
     const base::Time& time,
-    const std::string& old_version,
-    const std::string& new_version);
+    const std::string& previous_version,
+    const std::string& current_version);
 
 }  // namespace util
 }  // namespace performance_monitor
