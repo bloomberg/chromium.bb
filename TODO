@@ -14,11 +14,10 @@ file, with a bit of extra info.
    Harness updated to include functionality, harness files regenerated easely using Attilas harness generator.
 ** [mh] Document the test harness with its use of json
    Should enclude unicode braille info.
-** [mh] (google issue 9) bindings should provide variable to pick up table location at runtime.
-
-* near term
 ** all table files should be unicode encoded.
 
+* near term
+** [mh] (google issue 9) bindings should provide variable to pick up table location at runtime.
 ** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
    Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
 
