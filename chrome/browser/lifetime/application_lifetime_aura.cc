@@ -9,14 +9,28 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ui/aura/client/capture_client.h"
+#endif
+
 namespace browser {
 
 void HandleAppExitingForPlatform() {
-  // Close All non browser windows now. Those includes notifications
+  // Close all non browser windows now. Those includes notifications
   // and windows created by Ash (launcher, background, etc).
   g_browser_process->notification_ui_manager()->CancelAll();
+
+#if defined(USE_ASH)
+  // Releasing the capture will close any menus that might be open:
+  // http://crbug.com/134472
+  aura::client::GetCaptureClient(ash::Shell::GetPrimaryRootWindow())->
+      SetCapture(NULL);
+#endif
+
   // TODO(oshima): Close all non browser windows here while
   // the message loop is still alive.
+
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {
