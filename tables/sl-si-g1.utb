@@ -51,15 +51,15 @@ punctuation } 12456				# 125
 math ~ 45									# 126
 
 space \X00A0 0						# 160 no-break space
-sign \x00A2 4-14					# 162 ¢ cents sign
-sign \x00A3 4-123					# 163 £ pounds sign
+sign \x00A2 4-14					# 162 Â¢ cents sign
+sign \x00A3 4-123					# 163 Â£ pounds sign
 sign \x20A4 4-123  # lira sign
-sign \x00A5 4-13456				#	165 ¥ yen sign
-sign § 4-234-3                                          # 167 
-begnum § 234-3						# 167
-always § 4-234-3                                          # 167 
+sign \x00A5 4-13456				#	165 Â¥ yen sign
+sign Â§ 4-234-3                                          # 167 
+begnum Â§ 234-3						# 167
+always Â§ 4-234-3                                          # 167 
 sign \x2022 36-36-0 # bullet
-sign \x00A9 45-14 # 169        © copyright sign
+sign \x00A9 45-14 # 169        Â© copyright sign
 sign \x00AE 45-1235    # Registered
 sign \x2665 2356-125-15-345-2345-2356 # heart symbol
 sign \x21FD 246-25-25 # LEFTWARDS OPEN-HEADED ARROW 
@@ -74,11 +74,11 @@ sign \x00B0 56-145-1245 degrees
 sign \x00B4 4
 always \x00B4 4 # acute accent sign
 sign \x00B5 2-134 # micro sign, (mu)
-sign \x00B6 4-1234-345		#	182	  ¶ pilcrow sign
-math \x00D7 4-16				# 215		× multiplication sign
+sign \x00B6 4-1234-345		#	182	  Â¶ pilcrow sign
+math \x00D7 4-16				# 215		Ã— multiplication sign
 midnum \x00D7 4-16
 
-math \x00F7 46-34                              # 247           ÷ division sign
+math \x00F7 46-34                              # 247           Ã· division sign
 midnum \x00F7 46-34
 punctuation \x2010 36			# 8208  hyphen
 punctuation \x2011 23478	# 8209  non-breaking hyphen
@@ -151,7 +151,7 @@ uplow \x00D3\x00F3 135			# o with acute above
 uplow \x00D4\x00F4 135			# o with circumflex
 uplow \x00D5\x00F5 135			# o with tilde
 uplow \x00D6\x00F6 135			# o with dieresis
-# \x00D7	× multiplication sign	----------------------
+# \x00D7	Ã— multiplication sign	----------------------
 uplow \x00D8\x00F8 135			# o with stroke
 uplow \x00D9\x00F9 136			# u with grave above
 uplow \x00DA\x00FA 136			# u with acute above

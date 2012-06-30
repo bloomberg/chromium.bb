@@ -62,14 +62,14 @@ sign \X2026 6 elipsis
 punctuation \X201E 2378 open quotation symbol, used in Icelandic quotes
 sign ~ 457 tilde
 math ` 4
-math ° 256 degrees
-sign ¨ 38 dieresis
+math Â° 256 degrees
+sign Â¨ 38 dieresis
 sign \X2022 37 bullet
 punctuation \x2014 367 em dash
 punctuation \X2013 368 en dash, long dash
-sign © 1478 copyright
+sign Â© 1478 copyright
 sign \X2122 234578 trademark
-sign ® 123578 registerred
+sign Â® 123578 registerred
 sign \X20AC 1578 Euro symbol
 sign \x00A3 123478 pound sign
 sign \X00AB 2578 cents

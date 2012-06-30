@@ -87,14 +87,14 @@ punctuation } 12456				# 125
 math ~ 45									# 126
 
 space \X00A0 0						# 160 no-break space
-sign \x00A2 4-14					# 162 ¢ cents sign
-sign \x00A3 4-123					# 163 £ pounds sign
+sign \x00A2 4-14					# 162 Â¢ cents sign
+sign \x00A3 4-123					# 163 Â£ pounds sign
 
-sign \x00A5 4-13456				#	165 ¥ yen sign
+sign \x00A5 4-13456				#	165 Â¥ yen sign
 
-sign § 4-234-3						# 167 section sign \x00A7
+sign Â§ 4-234-3						# 167 section sign \x00A7
 
-sign \x00A9 2356-6-14-2356 # 169	© copyright sign
+sign \x00A9 2356-6-14-2356 # 169	Â© copyright sign
 sign \x00AE 2356-6-1235-2356	# Registered
 sign \X2116 1345 NUMERO SIGN 
 punctuation \x00Ad 36			# 173	  soft hyphen
@@ -102,10 +102,10 @@ sign \x00B0 356 degrees
 sign \x00B4 4
 always \x00B4 4 # acute accent sign
 sign \x00B5 2-134 # micro sign, (mu)
-sign \x00B6 4-1234-345		#	182	  ¶ pilcrow sign
-math \x00D7 56-236				# 215		× multiplication sign
+sign \x00B6 4-1234-345		#	182	  Â¶ pilcrow sign
+math \x00D7 56-236				# 215		Ã— multiplication sign
 
-math \x00F7 56-256				# 247		÷ division sign
+math \x00F7 56-256				# 247		Ã· division sign
 
 punctuation \x2010 36			# 8208  hyphen
 punctuation \x2011 23478	# 8209  non-breaking hyphen
@@ -173,7 +173,7 @@ uplow \x00D3\x00F3 135			# o with acute above
 uplow \x00D4\x00F4 135			# o with circumflex
 uplow \x00D5\x00F5 135			# o with tilde
 uplow \x00D6\x00F6 135			# o with dieresis
-# \x00D7	× multiplication sign	----------------------
+# \x00D7	Ã— multiplication sign	----------------------
 uplow \x00D8\x00F8 135			# o with stroke
 uplow \x00D9\x00F9 136			# u with grave above
 uplow \x00DA\x00FA 136			# u with acute above
@@ -302,8 +302,8 @@ word 'em =
 word 'tis =
 word 'twas =
 begnum # 1345 print number sign before number
-begnum ° 145-1245 degrees sign
-endnum ° 56-145-1245 ;dg degrees sign
+begnum Â° 145-1245 degrees sign
+endnum Â° 56-145-1245 ;dg degrees sign
 begnum  \x20AC 15       # euro sign at beginning of number
 endnum  \x20AC 4-15       # euro sign atend  of number
 postpunc , 2

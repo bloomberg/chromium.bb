@@ -1,6 +1,6 @@
 # liblouis: Norwegian contracted braille, level 2.
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com> with
-# help and guidance from Lars Bjørndal <lars@handytech.no>.
+# help and guidance from Lars BjÃ¸rndal <lars@handytech.no>.
 # Modified Sep 30, 2005 by LU
 
 # Heavily overworked by lars@handytech.no, 2009.
@@ -31,7 +31,7 @@ word etter 1356
 begword etter 1356
 word etterat 1356-1
 word ettersom 1356-234
-word etterpå 1356-1234
+word etterpÃ¥ 1356-1234
 
 word for 1246											# level 1 contractions
 endword for 1246
@@ -49,11 +49,11 @@ word forholdsvis 12346-1236
 word fra 124											# level 1 contractions
 word fram 124-134
 begword fram 124-134
-word før 246
+word fÃ¸r 246
 word gjennom 12456
 begword gjennom 12456
 endword gjennom 12456
-word gjennomfør 12456-246
+word gjennomfÃ¸r 12456-246
 
 #word han 125
 word hans 125-234
@@ -70,21 +70,21 @@ word like 123
 word mange 134
 word med 146
 word mye 13456
-word når 1345
+word nÃ¥r 1345
 
 word og 14												# level 1 contractions
-word også 14-234
+word ogsÃ¥ 14-234
 word oss 135										
 word over 1346
 begword over 1346
 word overfor 1346-1246
-word overpå 1346-1234
+word overpÃ¥ 1346-1234
 word overunder 1346-12345
-word overfør 1346-246
-word overvære 1346-345
+word overfÃ¸r 1346-246
+word overvÃ¦re 1346-345
 word overvar 1346-3456
 
-word på 1234
+word pÃ¥ 1234
 word som 234
 word til 2345
 word under 12345
@@ -97,7 +97,7 @@ word undertil 12345-2345
 
 word var 3456
 word ved 1236
-word være 345											# level 1 contractions
+word vÃ¦re 345											# level 1 contractions
 
 # -------------------------------------------------------------------
 
@@ -108,7 +108,7 @@ word alles 1-15-234
 word allerede 1-123-1235
 word alltid 1-2345-145
 word altfor 1-1246
-word altså 1-16
+word altsÃ¥ 1-16
 
 word andre 1-12356
 word andres 1-12356-234
@@ -155,10 +155,10 @@ word derblant 23456-12-123
 word deriblant 23456-24-12-123
 word deretter 23456-1356
 word derfra 23456-124
-word derfør 23456-246
+word derfÃ¸r 23456-246
 word dergjennom 23456-12456
 word derover 23456-1346
-word derpå 23456-1234
+word derpÃ¥ 23456-1234
 word dersom 23456-234
 word dertil 23456-2345
 word derunder 23456-12345
@@ -195,7 +195,7 @@ word enda 15-1
 word ende 126-1456
 word endes 126-1456-234
 word enno 15-135
-word ennå 15-16
+word ennÃ¥ 15-16
 
 # er															# defined in level 1
 endword ers 156-234								# level 2 contractions
@@ -250,20 +250,20 @@ endword forskjellar 1246-14-3456
 # word fra 124												# defined in level 1
 
 word fulgte 124-1245-1256
-word følg 124-1245
-begword følg 124-1245
+word fÃ¸lg 124-1245
+begword fÃ¸lg 124-1245
 
-word følge 124-1245-15
-begword følge 124-1245-15
-endword følge 124-1245-15
-word følgende 124-1245-126-1456
-begword følgende 124-1245-126-1456
+word fÃ¸lge 124-1245-15
+begword fÃ¸lge 124-1245-15
+endword fÃ¸lge 124-1245-15
+word fÃ¸lgende 124-1245-126-1456
+begword fÃ¸lgende 124-1245-126-1456
 
-word først 124-234-2345
-begword først 124-234-2345
-word første 124-234-1256
-begword første 124-234-1256
-word fått 124-2345
+word fÃ¸rst 124-234-2345
+begword fÃ¸rst 124-234-2345
+word fÃ¸rste 124-234-1256
+begword fÃ¸rste 124-234-1256
+word fÃ¥tt 124-2345
 
 word gang 1245-1245								# level 2 contractions
 begword gang 1245-1245
@@ -279,7 +279,7 @@ word gjorde 1245-245-1456
 endword gjorde 1245-245-1456
 word gjort 1245-245-2345
 endword gjort 1245-245-2345
-word gjør 1245-245
+word gjÃ¸r 1245-245
 
 word hadde 125-1456								# level 2 contractions
 # word han 125
@@ -302,7 +302,7 @@ word hvordan 2456-145
 word hvoretter 2456-1356
 word hvorfra 2456-124
 word hvorledes 2456-123
-word hvorpå 2456-1234
+word hvorpÃ¥ 2456-1234
 word hvorved 2456-1236
 
 
@@ -353,9 +353,9 @@ word min 134-1345
 word mitt 134-2345
 word mye 13456
 word mykje 134-13
-word måtta 134-2345-1
-word måtte 134-1256
-word måttet 134-2345-346
+word mÃ¥tta 134-2345-1
+word mÃ¥tte 134-1256
+word mÃ¥ttet 134-2345-346
 
 word natur 1345-2345
 begword natur 1345-2345
@@ -376,10 +376,10 @@ begword noen 1345-1345
 word noko 1345-13
 word nokon 1345-13-1345
 word nokre 1345-13-12356
-# word når 1345
+# word nÃ¥r 1345
 
 # word og 14											# defined in level 1
-# word også												# defined in level 1
+# word ogsÃ¥												# defined in level 1
 # word oss												# defined in level 1
 word ovenfor 135-1246
 word ovenfra 135-124
@@ -395,7 +395,7 @@ begword overgang 1346-1245-1245
 word punkt 1234-13-2345
 begword punkt 1234-13-2345
 endword punkt 1234-13-2345
-# word på 1234										# defined in level 1
+# word pÃ¥ 1234										# defined in level 1
 
 word re 12356
 word res 12356-234
@@ -412,21 +412,21 @@ word seg 234-1245
 word selv 234-1236
 word sin 234-1345
 word sitt 234-2345
-word sjøl 234-245
+word sjÃ¸l 234-245
 
-word sjølv 234-245-1236
-word sjølve 234-245-1236-15
-begword sjølv 234-245-1236
-begword usjølv 136-234-245-1236
+word sjÃ¸lv 234-245-1236
+word sjÃ¸lve 234-245-1236-15
+begword sjÃ¸lv 234-245-1236
+begword usjÃ¸lv 136-234-245-1236
 
 word skal 123456									# level 2 contractions
 word skulla 123456-1
 word skulle 123456-15
 word skullet 123456-346
 word snart 234-1235
-word spørsmål 234-1234-134
-begword spørsmål 234-1234-134
-endword spørsmål 234-1234-134
+word spÃ¸rsmÃ¥l 234-1234-134
+begword spÃ¸rsmÃ¥l 234-1234-134
+endword spÃ¸rsmÃ¥l 234-1234-134
 
 word takk 2345-13									# level 2 contractions
 begword utakk 136-2345-13
@@ -461,7 +461,7 @@ word uviss 136-1236-234
 begword uviss 136-1236-234
 begword viss 1236-234
 
-word vært 1236-2345
+word vÃ¦rt 1236-2345
 
 # ------------------------------------------------------
 # Words with problems - should be converted this way:

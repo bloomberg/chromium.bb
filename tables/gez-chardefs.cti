@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2011 by Peter Engström <peter.engstrom@indexbraille.com>
+#  Copyright (C) 2011 by Peter EngstrÃ¶m <peter.engstrom@indexbraille.com>
 #  Copyright (C) 2011 by Dr. Tamru E. Belay <tamru@sympatico.ca>
 #
 #  This file is part of liblouis.
@@ -22,7 +22,7 @@
 #
 # 	ETHIOPIC
 #	========
-# 	Authors:	Peter Engström, Index Braille <peter.engstrom@indexbraille.com>
+# 	Authors:	Peter EngstrÃ¶m, Index Braille <peter.engstrom@indexbraille.com>
 #
 #				Dr. Tamru E. Belay <tamru@sympatico.ca>, <atcb@sympatico.ca>
 #				Adaptive Technology Specialist
@@ -84,19 +84,19 @@ sign | 345							# 124
 punctuation } 2356-3				# 125
 math ~ 45-25						# 126
 space \X00A0 0						# 160 no-break space
-sign \x00A2 4-14					# 162 ¢ cents sign
-sign \x00A3 4-123					# 163 £ pounds sign
-sign \x00A5 4-13456					# 165 ¥ yen sign
+sign \x00A2 4-14					# 162 Â¢ cents sign
+sign \x00A3 4-123					# 163 Â£ pounds sign
+sign \x00A5 4-13456					# 165 Â¥ yen sign
 sign \x00A7 4-234					# 167 section sign \x00A7
-sign \x00A9 2356-14-2356 			# 169 © copyright sign
-sign \x00AE 2356-1235-2356	 		# 174 ® Registered mark
+sign \x00A9 2356-14-2356 			# 169 Â© copyright sign
+sign \x00AE 2356-1235-2356	 		# 174 Â® Registered mark
 punctuation \x00Ad 36				# 173 soft hyphen
-sign \x00B0 356						# 176 ° degrees sign
-sign \x00B5 46-134					# 181 µ micro sign
-sign \x00B6 4-1234-345				# 182 ¶ pilcrow sign
+sign \x00B0 356						# 176 Â° degrees sign
+sign \x00B5 46-134					# 181 Âµ micro sign
+sign \x00B6 4-1234-345				# 182 Â¶ pilcrow sign
 sign \x00BF 236						# 191 inverted question mark
 math \x00D7 12346-1346				# 215 multiplication sign
-math \x00F7 56-256					# 247 · division sign
+math \x00F7 56-256					# 247 Â· division sign
 punctuation \x2010 36				# 8208 hyphen
 punctuation \x2011 23478			# 8209 non-breaking hyphen
 punctuation \x2013 246				# 8211 en dash	
@@ -120,7 +120,7 @@ letter \x1204 125-15				# ETHIOPIC SYLLABLE HEE
 letter \x1205 125					# ETHIOPIC SYLLABLE HE 
 letter \x1206 125-135				# ETHIOPIC SYLLABLE HO 
 
-#letter \x1207 ETHIOPIC SYLLABLE HOA - Not used in Braille /Peter Engström
+#letter \x1207 ETHIOPIC SYLLABLE HOA - Not used in Braille /Peter EngstrÃ¶m
 
 #L 123
 letter \x1208 123-26				# ETHIOPIC SYLLABLE LA 
@@ -202,7 +202,7 @@ letter \x1244 12345-15				# ETHIOPIC SYLLABLE QEE
 letter \x1245 12345					# ETHIOPIC SYLLABLE QE 
 letter \x1246 12345-135				# ETHIOPIC SYLLABLE QO 
 
-#letter \x1247 ETHIOPIC SYLLABLE QOA - Not used in Braille /Peter Engström
+#letter \x1247 ETHIOPIC SYLLABLE QOA - Not used in Braille /Peter EngstrÃ¶m
 
 letter \x1248 12345-2456-26			# ETHIOPIC SYLLABLE QWA 
 
@@ -278,7 +278,7 @@ letter \x1284 125-15				# ETHIOPIC SYLLABLE XEE
 letter \x1285 125					# ETHIOPIC SYLLABLE XE 
 letter \x1286 125-135				# ETHIOPIC SYLLABLE XO 
 
-#letter \x1287 ETHIOPIC SYLLABLE XOA - Not used in Braille /Peter Engström
+#letter \x1287 ETHIOPIC SYLLABLE XOA - Not used in Braille /Peter EngstrÃ¶m
 
 letter \x1288 125-2456-26			# ETHIOPIC SYLLABLE XWA 
 
@@ -328,7 +328,7 @@ letter \x12AC 13-15					# ETHIOPIC SYLLABLE KEE
 letter \x12AD 13					# ETHIOPIC SYLLABLE KE 
 letter \x12AE 13-135				# ETHIOPIC SYLLABLE KO 
 
-#letter \x12AF ETHIOPIC SYLLABLE KOA - Not used in Braille /Peter Engström
+#letter \x12AF ETHIOPIC SYLLABLE KOA - Not used in Braille /Peter EngstrÃ¶m
 
 letter \x12B0 13-2456-26			# ETHIOPIC SYLLABLE KWA 
 
@@ -366,7 +366,7 @@ letter \x12CC 2456-15				# ETHIOPIC SYLLABLE WEE
 letter \x12CD 2456					# ETHIOPIC SYLLABLE WE 
 letter \x12CE 2456-135				# ETHIOPIC SYLLABLE WO 
 
-#letter \x12CF ETHIOPIC SYLLABLE WOA - Not used in Braille /Peter Engström
+#letter \x12CF ETHIOPIC SYLLABLE WOA - Not used in Braille /Peter EngstrÃ¶m
 
 #\ 1256
 letter \x12D0 12356-26				# ETHIOPIC SYLLABLE PHARYNGEAL A 
@@ -406,7 +406,7 @@ letter \x12EC 13456-15				# ETHIOPIC SYLLABLE YEE
 letter \x12ED 13456					# ETHIOPIC SYLLABLE YE 
 letter \x12EE 13456-135				# ETHIOPIC SYLLABLE YO 
 
-#letter \x12EF ETHIOPIC SYLLABLE YOA - Not used in Braille /Peter Engström
+#letter \x12EF ETHIOPIC SYLLABLE YOA - Not used in Braille /Peter EngstrÃ¶m
 
 #D 145
 letter \x12F0 145-26				# ETHIOPIC SYLLABLE DA 
@@ -447,7 +447,7 @@ letter \x130C 1245-15				# ETHIOPIC SYLLABLE GEE
 letter \x130D 1245					# ETHIOPIC SYLLABLE GE 
 letter \x130E 1245-135				# ETHIOPIC SYLLABLE GO 
 
-#letter \x130F ETHIOPIC SYLLABLE GOA - Not used in Braille /Peter Engström
+#letter \x130F ETHIOPIC SYLLABLE GOA - Not used in Braille /Peter EngstrÃ¶m
 
 letter \x1310 1245-2456-26			# ETHIOPIC SYLLABLE GWA 
 
@@ -465,7 +465,7 @@ letter \x131C 1245-15				# ETHIOPIC SYLLABLE GGEE
 letter \x131D 1245					# ETHIOPIC SYLLABLE GGE 
 letter \x131E 1256-135				# ETHIOPIC SYLLABLE GGO 
 
-#letter \x131F ETHIOPIC SYLLABLE GGWAA  - Not used in Braille /Peter Engström
+#letter \x131F ETHIOPIC SYLLABLE GGWAA  - Not used in Braille /Peter EngstrÃ¶m
 
 #) 23456
 letter \x1320 23456-26				# ETHIOPIC SYLLABLE THA 
@@ -516,7 +516,7 @@ letter \x1344 12346-15				# ETHIOPIC SYLLABLE TZEE
 letter \x1345 12346					# ETHIOPIC SYLLABLE TZE 
 letter \x1346 12346-135				# ETHIOPIC SYLLABLE TZO 
 
-#letter \x1347 ETHIOPIC SYLLABLE TZOA - Not used in Braille /Peter Engström
+#letter \x1347 ETHIOPIC SYLLABLE TZOA - Not used in Braille /Peter EngstrÃ¶m
 
 #F 124
 letter \x1348 124-26				# ETHIOPIC SYLLABLE FA 

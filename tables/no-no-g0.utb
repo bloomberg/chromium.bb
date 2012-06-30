@@ -1,7 +1,7 @@
 # liblouis: Norwegian Grade 0 Braille Table, uncontracted braille
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com> with
-# help and guidance from Lars Bjørndal <lars@handytech.no>
-# Updated June 2009 by Lars Bjørndal <lars@handytech.no>
+# help and guidance from Lars BjÃ¸rndal <lars@handytech.no>
+# Updated June 2009 by Lars BjÃ¸rndal <lars@handytech.no>
 
 #include no-no-generic.dis # e.g. for printing with embosser set up for Euro braille
 
@@ -27,18 +27,18 @@ sign # 3456				number sign										x0023
 sign $ 256				dollar sign										x0024
 sign % 46 				percent sign									x0025
 # sign & 12346			ampersand											z0026
-uplow \x00C8\x00E8 2346		e with grave è					x00C8 / 00E8
-uplow \x00C9\x00E9 123456 e with acute é					x00C9 / 00E9
+uplow \x00C8\x00E8 2346		e with grave Ã¨					x00C8 / 00E8
+uplow \x00C9\x00E9 123456 e with acute Ã©					x00C9 / 00E9
 uplow \x00CA\x00EA 126		e with circumflex				x00CA /	00EA
-uplow \x00CB\x00EB 1246		e with diaeresis ë			x00CB	/	00EB
+uplow \x00CB\x00EB 1246		e with diaeresis Ã«			x00CB	/	00EB
 
 
 
 
 uplow \x00CE\x00EE 146		i with circumflex				x00CE	/ 00EE
 uplow \x00CF\x00EF 12456	i with diaeresis				x00CF	/ 00EF
-uplow \x00D3\x00F3 346		o with acute ó					x00D3 / 00F3
-uplow \x00D4\x00F4 1456		o with circumflex ô			x00D4 / 00F4
+uplow \x00D3\x00F3 346		o with acute Ã³					x00D3 / 00F3
+uplow \x00D4\x00F4 1456		o with circumflex Ã´			x00D4 / 00F4
 
 sign & 346				ampersand											z0026
 punctuation ' 5		apostrophe										x0027
@@ -89,7 +89,7 @@ sign ` 45							grave accent							x0060
 
 # a - z																					x0061 - x007A
 
-uplow Åå 16								A with ring above				x00C5 / 00E5
+uplow Ã…Ã¥ 16								A with ring above				x00C5 / 00E5
 
 punctuation { 246			left curly bracket				x007B
 sign | 56							vertical line							x007C
@@ -100,38 +100,38 @@ sign ~ 256						tilde											x007E
 sign \x0080 15-136-1235-135	Euro sign						x0080
 
 # sign \X00A1					inverted exclamation mark									x00A1
-sign ¢ 4-14						cent sign																	x00A2
-sign £ 45-123					pound sign																x00A3
-sign ¤ 45-15					currency sign																x00A4
-sign ¥ 45-13456				yen	sign																		x00A5
-sign § 346						section sign																x00A7
-sign © 236-14-356		copyright			x00A9
-# sign « 45-2356				left-pointing double angle quotation mark		x00AB
-sign « 256				left-pointing double angle quotation mark		x00AB
-sign ° 5-356					degree sign																	x00B0
+sign Â¢ 4-14						cent sign																	x00A2
+sign Â£ 45-123					pound sign																x00A3
+sign Â¤ 45-15					currency sign																x00A4
+sign Â¥ 45-13456				yen	sign																		x00A5
+sign Â§ 346						section sign																x00A7
+sign Â© 236-14-356		copyright			x00A9
+# sign Â« 45-2356				left-pointing double angle quotation mark		x00AB
+sign Â« 256				left-pointing double angle quotation mark		x00AB
+sign Â° 5-356					degree sign																	x00B0
 
-sign ² 4-6-126				superscript 2 sign													x00B2
-sign ³ 4-6-146				superscript 3 sign													x00B3
+sign Â² 4-6-126				superscript 2 sign													x00B2
+sign Â³ 4-6-146				superscript 3 sign													x00B3
 sign \x00B4 6					acute sign dec-180
-sign ¹ 1-27						superscript 1 sign													x00B9
-# sign » 2356-12				right-pointing double angle quotation mark	x00BB
-sign » 256				right-pointing double angle quotation mark	x00BB
-math ¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
+sign Â¹ 1-27						superscript 1 sign													x00B9
+# sign Â» 2356-12				right-pointing double angle quotation mark	x00BB
+sign Â» 256				right-pointing double angle quotation mark	x00BB
+math Â¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
 
-math ½ 6-16-34-126		vulgar fraction one half									x00BD
-math ¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
+math Â½ 6-16-34-126		vulgar fraction one half									x00BD
+math Â¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
 
 uplow \x00C0\x00E0 12356	a with grave						x00C0 / 00E0
 
 uplow \x00C2\x00E2 16			a with circumflex				x00C2 / 00E2
 uplow \x00CA\x00EA 126		e with circumflex						x00CA / 00EA
 uplow \x00C3\x00E3 126		a with tilde   x00C3 / 00E3
-uplow Ää 345							A with diaeresis				x00C4 / 00E4
-uplow \x00C7\x00E7 12346	c with cedilla ç				x00C7 / 00E7
+uplow Ã„Ã¤ 345							A with diaeresis				x00C4 / 00E4
+uplow \x00C7\x00E7 12346	c with cedilla Ã§				x00C7 / 00E7
 uplow \x00D5\x00F5 246		o with tilde						x00D5 / 00F5
-uplow Öö 246						O with diaeresis				x00D6 / 00F6
-math × 236						multiplication sign			x00D7
-math ÷ 256								division sign									 x00F7
+uplow Ã–Ã¶ 246						O with diaeresis				x00D6 / 00F6
+math Ã— 236						multiplication sign			x00D7
+math Ã· 256								division sign									 x00F7
 
 punctuation	\x2010 46		 # 8208			hyphen
 punctuation	\x2011 46		 # 8209			non-breaking hyphen
@@ -151,9 +151,9 @@ punctuation \x2026 3-3-3				# 8230	smart ellipsis
 sign \x20AC 15-136-1235-135			Euro sign						x0080
 
 
-uplow \x00D2\x00F2 4-135 DEC 242 ò
-lowercase \x00F3 4-135 DEC 243 ó
-lowercase \x00F4 4-135 DEC 244 ô
+uplow \x00D2\x00F2 4-135 DEC 242 Ã²
+lowercase \x00F3 4-135 DEC 243 Ã³
+lowercase \x00F4 4-135 DEC 244 Ã´
 
 
 # ------------------- End char definitions --------------------
@@ -204,7 +204,7 @@ endnum i 56-24
 endnum j 56-245
 repeated \s 0		espaces
 repeated \t 0		tabulations
-repeated \x00a0 0		espaces insécables
+repeated \x00a0 0		espaces insÃ©cables
 
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36

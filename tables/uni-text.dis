@@ -196,128 +196,128 @@ display \X001E 4578 #30^^record separator
 display \X001F 45678 #31^_unit separator
 
 				#Hex	 Dots			Dec	Char	Description
-display \X00A1 23467  #	161 °			inverted exclamation mark
-display \X00A2 58			#162	¢			cent sign 
-display \X00A3 34567  # 163	£			pound sign
-display \X00A4 1467		# 164	§			currency sign
-display \X00A5 123467 # 165	•			yen sign
-display \X00A6 1567		# 166	¶			broken bar
-display \X00A7 357		# 167	ß			section sign
-display \X00A8  57		# 168	®			diaeresis
-display \X00A9  23567 # 169	©			copyright sign
-display \X00AA 8			# 170	™			feminine ordinal indicator
-display \X00AB 1267		# 171	´			left-pointing double angle quotation mark
-display \X00AC  2567  # 172	¨			not sign
-display \X00AD 367		# 173	≠			soft hyphen
-display \X00AE  2367  # 174	Æ			registered sign
-display \X00AF  267		# 175	Ø			macron
-display \X00B0 3567		# 176	∞			degree sign
+display \X00A1 23467  #	161 ¬°			inverted exclamation mark
+display \X00A2 58			#162	¬¢			cent sign 
+display \X00A3 34567  # 163	¬£			pound sign
+display \X00A4 1467		# 164	¬§			currency sign
+display \X00A5 123467 # 165	¬•			yen sign
+display \X00A6 1567		# 166	¬¶			broken bar
+display \X00A7 357		# 167	¬ß			section sign
+display \X00A8  57		# 168	¬®			diaeresis
+display \X00A9  23567 # 169	¬©			copyright sign
+display \X00AA 8			# 170	¬™			feminine ordinal indicator
+display \X00AB 1267		# 171	¬´			left-pointing double angle quotation mark
+display \X00AC  2567  # 172	¬¨			not sign
+display \X00AD 367		# 173	¬≠			soft hyphen
+display \X00AE  2367  # 174	¬Æ			registered sign
+display \X00AF  267		# 175	¬Ø			macron
+display \X00B0 3567		# 176	¬∞			degree sign
 
-display \X00C0  23578		# 192		¿		Latin capital letter a with grave
-display \X00C1	1678		# 193		¡		Latin capital letter a with acute
-display \X00C2	16			# 194		¬		Latin capital letter a with circumflex
-display \X00C3	578 # 195√ Latin capital letter a with tilde
-display \X00C4	1234678 # 196ƒ Latin capital letter a with diaeresis
-display \X00C5	34578 # 197≈ Latin capital letter a with ring above
-display \X00C6	378 # 198∆ Latin capital letter ae
-display \X00C7	34678 # 199« Latin capital letter c with cedilla
-display \X00C8  23567		#	200		»		Latin capital letter e with grave
-display \X00C9	12678		# 201… Latin capital letter e with acute
-display \X00CA  2378	# 202		 		Latin capital letter e with circumflex
-display \X00CB 12345678 # 203À Latin capital letter e with diaeresis
-display \X00CC  23678 # 204Ã Latin capital letter i with grave
-display \X00CD 14678 # 205Õ Latin capital letter i with acute
-display \X00CE  2578	# 206		Œ		Latin capital letter i with circumflex
-display \X00CF 1235678 # 207œ Latin capital letter i with diaeresis
-display \X00D0 678 # 208– Latin capital letter eth
-display \X00D1 4678 # 209— Latin capital letter n with tilde
-display \X00D2 3578 # 210“ Latin capital letter o with grave
-display \X00D3 145678 # 211” Latin capital letter o with acute
-display \X00D4  25678 # 212		‘		Latin capital letter o with circumflex
-display \X00D5  5678 # 213’ Latin capital letter o with tilde
-display \X00D6  234678 # 214÷ Latin capital letter o with diaeresis
-display \X00D7 167  # 215◊multiplication sign
-display \X00D8 3478 # 216ÿ Latin capital letter o with stroke
-display \X00D9 35678 # 217Ÿ Latin capital letter u with grave
-display \X00DA 15678 # 218⁄ Latin capital letter u with acute
-display \X00DB  2678	# 219		€		Latin capital letter u with circumflex
-display \X00DC  2345678 # 220‹ Latin capital letter u with diaeresis
-display \X00DD 124678 # 221› Latin capital letter y with acute
-display \X00DE 3678 # 222ﬁ Latin capital letter thorn
-display \X00DF 345678 # 223ﬂ Latin small letter sharp s
-display \X00E0  2358 # 224‡ Latin small letter a with grave
-display \X00E1 168 # 225· Latin small letter a with acute
-display \X00E2	16		# 226		‚		Latin small letter a with circumflex
-display \X00E3 58 # 227„ Latin small letter a with tilde
-display \X00E4 123468 # 228‰ Latin small letter a with diaeresis
-display \X00E5 3458 # 229Â Latin small letter a with ring above
-display \X00E6 38 # 230Ê Latin small letter ae
-display \X00E7 3468 # 231Á Latin small letter c with cedilla
-display \X00E8  23568 # 232Ë Latin small letter e with grave
-display \X00E9 1268 # 233È Latin small letter e with acute
-display \X00EA  238		# 234		Í		Latin small letter e with circumflex
-display \X00EB 1234568 # 235Î Latin small letter e with diaeresis
-display \X00EC  2368 # 236Ï Latin small letter i with grave
-display \X00ED 1468 # 237Ì Latin small letter i with acute
-display \X00EE  258		# 238		Ó		Latin small letter i with circumflex
-display \X00EF 123568 # 239Ô Latin small letter i with diaeresis
-display \X00F0 68 # 240 Latin small letter eth
-display \X00F1 468 # 241Ò Latin small letter n with tilde
-display \X00F2 358 # 242Ú Latin small letter o with grave
-display \X00F3 14568 # 243Û Latin small letter o with acute
-display \X00F4  2568	# 244		Ù		Latin small letter o with circumflex
-display \X00F5  568 # 245ı Latin small letter o with tilde
-display \X00F6  23468 # 246ˆ Latin small letter o with diaeresis
-display \X00F7 347  # 247˜division sign
-display \X00F8 348 # 248¯ Latin small letter o with stroke
-display \X00F9 3568 # 249˘ Latin small letter u with grave
-display \X00FA 1568 # 250˙ Latin small letter u with acute
-display \X00FB  268		# 251		˚		Latin small letter u with circumflex
-display \X00FC  234568 # 252¸ Latin small letter u with diaeresis
-display \X00FD 12468 # 253˝ Latin small letter y with acute
-display \X00FE 368 # 254˛ Latin small letter thorn
-display \X00FF 34568 # 255ˇ Latin small letter y with diaeresis
-
-
-display \X00BB 3457  # 187ªright-pointing double angle quotation mark
-display \X00B9  27  # 185πsuperscript one
-display \X00B2 237  # 178≤superscript two
-display \X00B3 257  # 179≥superscript three
-display \X00B1 3467  # 177±plus-minus sign
-display \X00D7 167  # 215◊multiplication sign
-
-display \X00B7 467  # 183∑middle dot
-
-display \X00BF 14567  # 191øinverted question mark
+display \X00C0  23578		# 192		√Ä		Latin capital letter a with grave
+display \X00C1	1678		# 193		√Å		Latin capital letter a with acute
+display \X00C2	16			# 194		√Ç		Latin capital letter a with circumflex
+display \X00C3	578 # 195√É Latin capital letter a with tilde
+display \X00C4	1234678 # 196√Ñ Latin capital letter a with diaeresis
+display \X00C5	34578 # 197√Ö Latin capital letter a with ring above
+display \X00C6	378 # 198√Ü Latin capital letter ae
+display \X00C7	34678 # 199√á Latin capital letter c with cedilla
+display \X00C8  23567		#	200		√à		Latin capital letter e with grave
+display \X00C9	12678		# 201√â Latin capital letter e with acute
+display \X00CA  2378	# 202		√ä		Latin capital letter e with circumflex
+display \X00CB 12345678 # 203√ã Latin capital letter e with diaeresis
+display \X00CC  23678 # 204√å Latin capital letter i with grave
+display \X00CD 14678 # 205√ç Latin capital letter i with acute
+display \X00CE  2578	# 206		√é		Latin capital letter i with circumflex
+display \X00CF 1235678 # 207√è Latin capital letter i with diaeresis
+display \X00D0 678 # 208√ê Latin capital letter eth
+display \X00D1 4678 # 209√ë Latin capital letter n with tilde
+display \X00D2 3578 # 210√í Latin capital letter o with grave
+display \X00D3 145678 # 211√ì Latin capital letter o with acute
+display \X00D4  25678 # 212		√î		Latin capital letter o with circumflex
+display \X00D5  5678 # 213√ï Latin capital letter o with tilde
+display \X00D6  234678 # 214√ñ Latin capital letter o with diaeresis
+display \X00D7 167  # 215√ómultiplication sign
+display \X00D8 3478 # 216√ò Latin capital letter o with stroke
+display \X00D9 35678 # 217√ô Latin capital letter u with grave
+display \X00DA 15678 # 218√ö Latin capital letter u with acute
+display \X00DB  2678	# 219		√õ		Latin capital letter u with circumflex
+display \X00DC  2345678 # 220√ú Latin capital letter u with diaeresis
+display \X00DD 124678 # 221√ù Latin capital letter y with acute
+display \X00DE 3678 # 222√û Latin capital letter thorn
+display \X00DF 345678 # 223√ü Latin small letter sharp s
+display \X00E0  2358 # 224√† Latin small letter a with grave
+display \X00E1 168 # 225√° Latin small letter a with acute
+display \X00E2	16		# 226		√¢		Latin small letter a with circumflex
+display \X00E3 58 # 227√£ Latin small letter a with tilde
+display \X00E4 123468 # 228√§ Latin small letter a with diaeresis
+display \X00E5 3458 # 229√• Latin small letter a with ring above
+display \X00E6 38 # 230√¶ Latin small letter ae
+display \X00E7 3468 # 231√ß Latin small letter c with cedilla
+display \X00E8  23568 # 232√® Latin small letter e with grave
+display \X00E9 1268 # 233√© Latin small letter e with acute
+display \X00EA  238		# 234		√™		Latin small letter e with circumflex
+display \X00EB 1234568 # 235√´ Latin small letter e with diaeresis
+display \X00EC  2368 # 236√¨ Latin small letter i with grave
+display \X00ED 1468 # 237√≠ Latin small letter i with acute
+display \X00EE  258		# 238		√Æ		Latin small letter i with circumflex
+display \X00EF 123568 # 239√Ø Latin small letter i with diaeresis
+display \X00F0 68 # 240√∞ Latin small letter eth
+display \X00F1 468 # 241√± Latin small letter n with tilde
+display \X00F2 358 # 242√≤ Latin small letter o with grave
+display \X00F3 14568 # 243√≥ Latin small letter o with acute
+display \X00F4  2568	# 244		√¥		Latin small letter o with circumflex
+display \X00F5  568 # 245√µ Latin small letter o with tilde
+display \X00F6  23468 # 246√∂ Latin small letter o with diaeresis
+display \X00F7 347  # 247√∑division sign
+display \X00F8 348 # 248√∏ Latin small letter o with stroke
+display \X00F9 3568 # 249√π Latin small letter u with grave
+display \X00FA 1568 # 250√∫ Latin small letter u with acute
+display \X00FB  268		# 251		√ª		Latin small letter u with circumflex
+display \X00FC  234568 # 252√º Latin small letter u with diaeresis
+display \X00FD 12468 # 253√Ω Latin small letter y with acute
+display \X00FE 368 # 254√æ Latin small letter thorn
+display \X00FF 34568 # 255√ø Latin small letter y with diaeresis
 
 
-display \X00B6  2357  # 182	∂		pilcrow sign
+display \X00BB 3457  # 187¬ªright-pointing double angle quotation mark
+display \X00B9  27  # 185¬πsuperscript one
+display \X00B2 237  # 178¬≤superscript two
+display \X00B3 257  # 179¬≥superscript three
+display \X00B1 3467  # 177¬±plus-minus sign
+display \X00D7 167  # 215√ómultiplication sign
+
+display \X00B7 467  # 183¬∑middle dot
+
+display \X00BF 14567  # 191¬øinverted question mark
+
+
+display \X00B6  2357  # 182	¬∂		pilcrow sign
 
 
 #Hex Dots Dec Char Description
-display \X00BC 123567  # 188ºvulgar fraction one quarter
-display \X00BD 1234567  # 189Ωvulgar fraction one half
-display \X00BE  234567  # 190ævulgar fraction three quarters
+display \X00BC 123567  # 188¬ºvulgar fraction one quarter
+display \X00BD 1234567  # 189¬Ωvulgar fraction one half
+display \X00BE  234567  # 190¬ævulgar fraction three quarters
 
 # Each of the three extended accent characters is the same as its conventional
 # compose character but with dot7 added:
 
 #Hex Dots Dec Char Description
-display \X00B4 37  # 180¥acute accent
-display \X00B8 67  # 184∏cedilla
+display \X00B4 37  # 180¬¥acute accent
+display \X00B8 67  # 184¬∏cedilla
 
 
 # The two gender symbols are:
 
 #Hex Dots Dec Char Description
-display \X00BA 7  # 186∫masculine ordinal indicator
+display \X00BA 7  # 186¬∫masculine ordinal indicator
 
 
 # The three remaining characters are:
 
 #Hex Dots Dec Char Description
 
-display \X00B5  567  # 181µmicro sign
+display \X00B5  567  # 181¬µmicro sign
 
 
 # The nonbreaking space is dots 7 and 8 because this presents a sequence of

@@ -45,7 +45,7 @@
 # 5. Numbers are defined as in the American standard. This means dot-2 for
 #    number '1', and so on. This will conflict with the cyrillic comma which is
 #    also dot-2.
-# 4. Special characters like !"#¤%&/()=? follow the American standard if 
+# 4. Special characters like !"#Â¤%&/()=? follow the American standard if 
 #    possible.
 # 2. Control characters are often used on Linux. These are not very well 
 #    implemented. More work should be done.

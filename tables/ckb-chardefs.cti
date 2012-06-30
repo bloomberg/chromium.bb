@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2011 by Peter Engström <peter.engstrom@indexbraille.com>
+#  Copyright (C) 2011 by Peter EngstrÃ¶m <peter.engstrom@indexbraille.com>
 #
 #  This file is part of liblouis.
 #
@@ -21,7 +21,7 @@
 #
 # 	SORANI (KURDISH)
 #	================
-# 	Author:		Peter Engström
+# 	Author:		Peter EngstrÃ¶m
 # 	Company:	Index Braille
 #
 # 	Date: 		Note:
@@ -39,70 +39,70 @@ space \x000A 0
 space \x000D 0
 space \s 0 blank						# 32
 
-#--BEGIN--------------------------------------------[Peter Engström 2011-03-23]
+#--BEGIN--------------------------------------------[Peter EngstrÃ¶m 2011-03-23]
 # Remove U+200C three-per-em space = thick space but let it be a virtual space.
 space \x200C 9							# Assign x200C to virtual dot 9.
 pass2 @9 ?								# Remove virtual dot 9 during second pass.
-#--END----------------------------------------------[Peter Engström 2011-03-23]
+#--END----------------------------------------------[Peter EngstrÃ¶m 2011-03-23]
 
 punctuation ! 235						# 33
-punctuation " 236						# 34	[Peter Engström 2011-03-15]
+punctuation " 236						# 34	[Peter EngstrÃ¶m 2011-03-15]
 sign # 3456								# 35
-sign $ 1246								# 36	[Peter Engström 2011-03-15]
-sign % 1234								# 37	[Peter Engström 2011-03-15]
-sign & 12346							# 38	[Peter Engström 2011-03-15]
+sign $ 1246								# 36	[Peter EngstrÃ¶m 2011-03-15]
+sign % 1234								# 37	[Peter EngstrÃ¶m 2011-03-15]
+sign & 12346							# 38	[Peter EngstrÃ¶m 2011-03-15]
 punctuation ' 3							# 39 apostrophe
 punctuation ) 356						# 40
 punctuation ( 236						# 41
-sign * 16								# 42	[Peter Engström 2011-03-15]
-math + 346								# 43	[Peter Engström 2011-03-15]
+sign * 16								# 42	[Peter EngstrÃ¶m 2011-03-15]
+math + 346								# 43	[Peter EngstrÃ¶m 2011-03-15]
 punctuation , 46						# 44
 punctuation - 36						# 45
 punctuation \x06D4 256					# Arabic Full stop
-punctuation . 256						# 46	[Peter Engström 2011-03-15]
+punctuation . 256						# 46	[Peter EngstrÃ¶m 2011-03-15]
 math / 34								# 47
 include loweredDigits6Dots.uti
-punctuation : 5-2						# 58	[Peter Engström 2011-03-15]
-punctuation ; 5							# 59	[Peter Engström 2011-03-15]
-math < 0-126-0							# 60	[Peter Engström 2011-03-15]
-math = 123456							# 61	[Peter Engström 2011-03-15]
+punctuation : 5-2						# 58	[Peter EngstrÃ¶m 2011-03-15]
+punctuation ; 5							# 59	[Peter EngstrÃ¶m 2011-03-15]
+math < 0-126-0							# 60	[Peter EngstrÃ¶m 2011-03-15]
+math = 123456							# 61	[Peter EngstrÃ¶m 2011-03-15]
 letter > 0-246-0
-math > 0-345-0							# 62	[Peter Engström 2011-03-15]
+math > 0-345-0							# 62	[Peter EngstrÃ¶m 2011-03-15]
 punctuation ? 1456						# 63
 sign @ 4								# 64
 
 include latinLetterDef6Dots.uti
 
-punctuation [ 13456						# 91	[Peter Engström 2011-03-15]
-sign \\ 1256							# 92	[Peter Engström 2011-03-15]
-punctuation ] 12346						# 93	[Peter Engström 2011-03-15]
-sign ^ 45								# 94 circumflex accent	[Peter Engström 2011-03-15]
+punctuation [ 13456						# 91	[Peter EngstrÃ¶m 2011-03-15]
+sign \\ 1256							# 92	[Peter EngstrÃ¶m 2011-03-15]
+punctuation ] 12346						# 93	[Peter EngstrÃ¶m 2011-03-15]
+sign ^ 45								# 94 circumflex accent	[Peter EngstrÃ¶m 2011-03-15]
 sign _ 456								# 95 underscore
 sign ` 4								# 96 grave accent
 # a - z									# 97 - 122
-punctuation { 135						# 123	[Peter Engström 2011-03-15]
+punctuation { 135						# 123	[Peter EngstrÃ¶m 2011-03-15]
 sign | 1245								# 124
-punctuation } 246						# 125	[Peter Engström 2011-03-15]
+punctuation } 246						# 125	[Peter EngstrÃ¶m 2011-03-15]
 math ~ 45								# 126
 space \X00A0 0							# 160 no-break space
-sign \x00A2 4-14						# 162 ¢ cents sign
-sign \x00A3 4-123						# 163 £ pounds sign
-sign \x00A5 4-13456						# 165 ¥ yen sign
-sign § 4-234-3							# 167 section sign \x00A7
-sign \x00A9 2356-6-14-2356 				# 169 © copyright sign
-sign \x00AE 16-256				 		# ® Registered mark
+sign \x00A2 4-14						# 162 Â¢ cents sign
+sign \x00A3 4-123						# 163 Â£ pounds sign
+sign \x00A5 4-13456						# 165 Â¥ yen sign
+sign Â§ 4-234-3							# 167 section sign \x00A7
+sign \x00A9 2356-6-14-2356 				# 169 Â© copyright sign
+sign \x00AE 16-256				 		# Â® Registered mark
 punctuation \x00Ad 36					# 173 soft hyphen
-sign \x00B0 356							# 176 ° degrees sign
-sign \x00B5 46-134						# 181 µ micro sign
-sign \x00B6 4-1234-345					# 182 ¶ pilcrow sign
+sign \x00B0 356							# 176 Â° degrees sign
+sign \x00B5 46-134						# 181 Âµ micro sign
+sign \x00B6 4-1234-345					# 182 Â¶ pilcrow sign
 sign \x00BF 236							# 191 inverted question mark
-math \x00D7 56-236						# 215 × multiplication sign
-math \x00F7 56-256						# 247 ÷ division sign
+math \x00D7 56-236						# 215 Ã— multiplication sign
+math \x00F7 56-256						# 247 Ã· division sign
 
 punctuation \x2010 36					# 8208 hyphen
 punctuation \x2011 23478				# 8209 non-breaking hyphen
-punctuation \x2013 246					# 8211 en dash	[Peter Engström 2011-03-15]
-punctuation \x2014 246					# 8212	[Peter Engström 2011-03-15]
+punctuation \x2013 246					# 8211 en dash	[Peter EngstrÃ¶m 2011-03-15]
+punctuation \x2014 246					# 8212	[Peter EngstrÃ¶m 2011-03-15]
 punctuation	\x2018 3					# 8216 smart single left quotation mark
 punctuation	\x2019 3					# 8217 smart single right quotation mark
 punctuation	\x201C 2356					# 8220 smart opening double quote
@@ -117,11 +117,11 @@ sign \x060C 5							# Arabic comma
 sign \x061B 56							# Arabic semicolon
 sign \x061F 236							# Arabic question mark
 
-letter \x0621 345						# Hamza	[Peter Engström 2011-03-15]
+letter \x0621 345						# Hamza	[Peter EngstrÃ¶m 2011-03-15]
 letter \x0622 345						# Alef with madda above
 letter \x0623 34						# Alef with hamza above
 letter \x0624 1256						# Waw with hamza above
-letter \x0625 34						# Alef with hamza below	[Peter Engström 2011-03-15]
+letter \x0625 34						# Alef with hamza below	[Peter EngstrÃ¶m 2011-03-15]
 letter \x0626 345						# Yeh with hamza above 
 letter \x0627 1							# Alef
 letter \x0628 12						# Beh
@@ -133,7 +133,7 @@ letter \x062D 156						# Hah
 letter \x062E 1346						# Khah
 letter \x062F 145						# Dal
 letter \x0630 2346						# Thal
-letter \x0631 246						# Reh	[Peter Engström 2011-03-15]
+letter \x0631 246						# Reh	[Peter EngstrÃ¶m 2011-03-15]
 letter \x0632 1356						# Zain
 letter \x0633 234						# Seen
 letter \x0634 146						# Sheen
@@ -151,12 +151,12 @@ letter \x0644 123						# Lam
 letter \x0645 134						# Meem
 letter \x0646 1345						# Noon
 
-#--BEGIN--------------------------------------------[Peter Engström 2011-02-08]
+#--BEGIN--------------------------------------------[Peter EngstrÃ¶m 2011-02-08]
 letter \x0647 15						# Heh
 begword \x0647 125						
 midword \x0647 125						
 endword \x0647 15						
-#--END----------------------------------------------[Peter Engström 2011-02-08]
+#--END----------------------------------------------[Peter EngstrÃ¶m 2011-02-08]
 
 letter \x0648 2456						# Waw
 letter \x0649 135						# Alef maksura
@@ -170,7 +170,7 @@ letter \x0650 15						# Kasra
 letter \x0651 6							# Shadda
 letter \x0652 25						# Sukun
 
-#--BEGIN--------------------------------------------[Peter Engström 2011-02-08]
+#--BEGIN--------------------------------------------[Peter EngstrÃ¶m 2011-02-08]
 sign \x02C7 456							# Caron (=hacek)
 sign \x032C 56							# Combinding caron below
 sign \x065A 456							# Vowel sign small v above
@@ -220,4 +220,4 @@ letter \xFEEF 24						# Alef maksura isolated form
 letter \xFEFB 123-1						# Ligature lam with alef with hamza below isolated form 
 letter \xFEFC 123-1						# Ligature lam with alef with hamza below final form 
 
-#--END----------------------------------------------[Peter Engström 2011-02-08]
+#--END----------------------------------------------[Peter EngstrÃ¶m 2011-02-08]

@@ -16,9 +16,9 @@
 # This software is maintained by Dave Mielke <dave@mielke.cc>.
 ###############################################################################
 
-# Définitions pour code braille français international unifié
+# DÃ©finitions pour code braille franÃ§ais international unifiÃ©
 # Par Nicolas Pitre <nico@cam.org>
-# Référence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
+# RÃ©fÃ©rence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
 
 # Uncontracted Unified French Table
 # ----------------------------------
@@ -32,19 +32,19 @@ space \x00A0 0
 space \s 0 blank				# 32
 
 include latinLetterDef6Dots.uti
-uplow Çç 12346		c cédille
-uplow Éé 123456		e accent aigu
-uplow Àà 12356		a accent grave
-uplow Èè 2346			e accent grave
-uplow Ùù 23456		u accent grave
-uplow Ââ 16				a accent circonflexe
-uplow Êê 126			e accent circonflexe
-uplow Îî 146			i accent circonflexe
-uplow Ôô 1456			o accent circonflexe
-uplow Ûû 156			u accent circonflexe
-uplow Ëë 1246			e tréma
-uplow Ïï 12456		i tréma
-uplow Üü 1256			u tréma
+uplow Ã‡Ã§ 12346		c cÃ©dille
+uplow Ã‰Ã© 123456		e accent aigu
+uplow Ã€Ã  12356		a accent grave
+uplow ÃˆÃ¨ 2346			e accent grave
+uplow Ã™Ã¹ 23456		u accent grave
+uplow Ã‚Ã¢ 16				a accent circonflexe
+uplow ÃŠÃª 126			e accent circonflexe
+uplow ÃÃ® 146			i accent circonflexe
+uplow Ã”Ã´ 1456			o accent circonflexe
+uplow Ã›Ã» 156			u accent circonflexe
+uplow Ã‹Ã« 1246			e trÃ©ma
+uplow ÃÃ¯ 12456		i trÃ©ma
+uplow ÃœÃ¼ 1256			u trÃ©ma
 
 #	uplow oe 246		oe ligatur
 uplow \x0152\x0153 246
@@ -57,17 +57,17 @@ punctuation . 256		point
 punctuation ? 26		point d'interrogation
 punctuation ! 235		point d'exclamation
 punctuation " 2356 	guillemt			
-punctuation ( 236		parenthèse ouvrante
-sign * 35						astérisque
-punctuation ) 356		parenthèse fermante
+punctuation ( 236		parenthÃ¨se ouvrante
+sign * 35						astÃ©risque
+punctuation ) 356		parenthÃ¨se fermante
 punctuation ' 3			apostrophe
 math / 34						barre oblique
 sign @ 345					arobas
 sign % 346					pour cent
 punctuation - 36		trait d'union
-sign # 3456					dièse
+sign # 3456					diÃ¨se
 
-digit 0 3456				zéro				
+digit 0 3456				zÃ©ro				
 digit 1 16					un	
 digit 2 126					deux
 digit 3 146					trois
@@ -79,41 +79,41 @@ digit 8 1256				huit
 digit 9 246					neuf
 
 sign \x00A8 46			diaeresis sign
-math \x00F7 6-256		divisé par
+math \x00F7 6-256		divisÃ© par
 	
 math + 6-235				plus		
-math = 6-2356				égal		
-math × 6-35					multiplié par
-math < 46-126				inférieur à
-math > 46-345				supérieur à
+math = 6-2356				Ã©gal		
+math Ã— 6-35					multipliÃ© par
+math < 46-126				infÃ©rieur Ã 
+math > 46-345				supÃ©rieur Ã 
 
-sign © 5-14							copyright
-sign ° 5-135						degré
-sign & 5-123456					perluète (et commercial)
-sign ¢ 45-14						cent
-sign ¤ 45-15						euro                         
-sign £ 45-123						livre			
-sign § 45-1234					paragraphe		
+sign Â© 5-14							copyright
+sign Â° 5-135						degrÃ©
+sign & 5-123456					perluÃ¨te (et commercial)
+sign Â¢ 45-14						cent
+sign Â¤ 45-15						euro                         
+sign Â£ 45-123						livre			
+sign Â§ 45-1234					paragraphe		
 sign $ 4-234						dollar			
-sign ¥ 45-13456					yen			
-punctuation « 45-2356		guillemet français ouvrant  
-punctuation » 2356-12		guillemet français fermant  
+sign Â¥ 45-13456					yen			
+punctuation Â« 45-2356		guillemet franÃ§ais ouvrant  
+punctuation Â» 2356-12		guillemet franÃ§ais fermant  
 punctuation [ 45-236		crochet droit ouvrant   
 punctuation ] 356-12		crochet droit fermant   
 punctuation { 6-236			accolade de gauche  
 punctuation } 356-3			accolade de droite   
 
-sign ¹ 4-6-16						exposant 1			
-sign ² 4-6-126					exposant 2	
-sign ³ 4-6-146					exposant 3
-sign ¼ 6-16-34-1456			un quart	
-sign ½ 6-16-34-126			un demi		
-sign ¾ 6-126-34-1456		trois quarts   
+sign Â¹ 4-6-16						exposant 1			
+sign Â² 4-6-126					exposant 2	
+sign Â³ 4-6-146					exposant 3
+sign Â¼ 6-16-34-1456			un quart	
+sign Â½ 6-16-34-126			un demi		
+sign Â¾ 6-126-34-1456		trois quarts   
 
 capsign 46								indicateur de majuscule
 begcaps 46-46							succession de majuscules
 
-numsign 3456							préfixe pour les chiffres
+numsign 3456							prÃ©fixe pour les chiffres
 midnum \s 3								espace entre les chiffres
 midnum , 2
 midnum . 256
@@ -126,11 +126,11 @@ sign \x00B7 56
 sign \x00B8 45
 endnum # 56-3456
 
-sign _ 456								souligné
+sign _ 456								soulignÃ©
 
 repeated \s 0							espaces
 repeated \t 0							tabulations
-repeated \x00a0 0					espaces insécables
+repeated \x00a0 0					espaces insÃ©cables
 
 repeated ... 3-3-3				points de suite
 repeated --- 36-36-36

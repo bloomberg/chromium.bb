@@ -19,7 +19,7 @@ punctuation *	35					42
 sign + 235								43
 midnum + 235							43
 punctuation , 2						44
-punctuation ­ 36					45  the hyphen-minus
+punctuation Â­ 36					45  the hyphen-minus
 punctuation . 256						46
 sign / 256								47
 
@@ -50,27 +50,27 @@ sign ~ 2346			126
 sign \x0080 15-136-1235-135										x0080
 
 space \X00A0 0				# no-break space													x00A0
-sign ¢ 4-14						cent sign																	x00A2
-sign £ 45-123					pound sign																x00A3
-sign ¤ 45-15					currency sign															x00A4
-sign ¥ 45-13456				yen	sign																	x00A5
-sign § 234-234				paragraph	sign														x00A7
-sign © 2356-6-14-2356 copyright																	x00A9
-punctuation « 236		left-pointing double quotation mark				x00AB
-sign ° 356						degree sign																x00B0
-sign ² 4-6-126				superscript 2 sign												x00B2
-sign ³ 4-6-146				superscript 3 sign												x00B3
+sign Â¢ 4-14						cent sign																	x00A2
+sign Â£ 45-123					pound sign																x00A3
+sign Â¤ 45-15					currency sign															x00A4
+sign Â¥ 45-13456				yen	sign																	x00A5
+sign Â§ 234-234				paragraph	sign														x00A7
+sign Â© 2356-6-14-2356 copyright																	x00A9
+punctuation Â« 236		left-pointing double quotation mark				x00AB
+sign Â° 356						degree sign																x00B0
+sign Â² 4-6-126				superscript 2 sign												x00B2
+sign Â³ 4-6-146				superscript 3 sign												x00B3
 sign \x00B4 1256			acute accent
-sign \x00B5 46-134		# 181				µ micro sign									x00B5
-sign \x00B6 4-1234-345						¶ pilcrow sign								x00B6
-sign ¹ 4-6-16					superscript 1 sign												x00B9
-punctuation » 356		right-pointing double quotation mark			x00BB
-sign ¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
-sign ½ 6-16-34-126		vulgar fraction one half									x00BD
-sign ¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
+sign \x00B5 46-134		# 181				Âµ micro sign									x00B5
+sign \x00B6 4-1234-345						Â¶ pilcrow sign								x00B6
+sign Â¹ 4-6-16					superscript 1 sign												x00B9
+punctuation Â» 356		right-pointing double quotation mark			x00BB
+sign Â¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
+sign Â½ 6-16-34-126		vulgar fraction one half									x00BD
+sign Â¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
 uplow	\x00D3\x00F3 346
-math × 46-16 multiplication sign														hex 0x00d7
-math ÷ 46-34 division sign																	hex 0x00f7
+math Ã— 46-16 multiplication sign														hex 0x00d7
+math Ã· 46-34 division sign																	hex 0x00f7
 
 uplow	\x0104\x0105 16
 uplow \x0106\x0107 146
@@ -101,17 +101,17 @@ repeated ___ 46-46-46
 repeated ::: 25-25-25
 repeated === 46-13-46-13-46-13
 repeated ~~~ 4-156-4-156-4-156
-always \s­\s 36-36
-always \s­\scom 36-36-14-135-134
+always \sÂ­\s 36-36
+always \sÂ­\scom 36-36-14-135-134
 always ... 3-3-3
 always .\s.\s. 3-3-3 . . .
 
-repeated ­­­ 36-36-36
-always \s­\s 36-36
+repeated Â­Â­Â­ 36-36-36
+always \sÂ­\s 36-36
 
 
 # mathematical symbols
-midnum ­ 36
+midnum Â­ 36
 endnum % 46
 # special character sequences
 literal :// URLs

@@ -43,25 +43,25 @@ punctuation } 12456				# 125
 math ~ 45									# 126
 
 space \X00A0 0						# 160 no-break space
-sign \x00A2 4-14					# 162 ¢ cents sign
-sign \x00A3 4-123					# 163 £ pounds sign
+sign \x00A2 4-14					# 162 Â¢ cents sign
+sign \x00A3 4-123					# 163 Â£ pounds sign
 
-sign \x00A5 4-13456				#	165 ¥ yen sign
+sign \x00A5 4-13456				#	165 Â¥ yen sign
 
-sign § 4-234-3					# 167 section sign \x00A7
+sign Â§ 4-234-3					# 167 section sign \x00A7
 
-sign \x00A9 2356-6-14-2356 # 169	© copyright sign
+sign \x00A9 2356-6-14-2356 # 169	Â© copyright sign
 
 punctuation \x00Ad 36			# 173	  soft hyphen
 
-sign \x00B0 356						# 176	  ° degrees sign
+sign \x00B0 356						# 176	  Â° degrees sign
 
-sign \x00B5 46-134				# 181		µ micro sign
-sign \x00B6 4-1234-345		#	182	  ¶ pilcrow sign
+sign \x00B5 46-134				# 181		Âµ micro sign
+sign \x00B6 4-1234-345		#	182	  Â¶ pilcrow sign
 
-math \x00D7 56-236				# 215		× multiplication sign
+math \x00D7 56-236				# 215		Ã— multiplication sign
 
-math \x00F7 56-256				# 247		÷ division sign
+math \x00F7 56-256				# 247		Ã· division sign
 
 punctuation \x2010 36			# 8208  hyphen
 punctuation \x2013 6-36		# 8211	en dash

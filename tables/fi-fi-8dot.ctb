@@ -162,91 +162,91 @@ letter \x007f  7
 
 
 #Hex Dots Dec Char Description
-letter \X00C2 24578 # 194¬ Latin capital letter a with circumflex
-letter \X00CA  1267 # 202  Latin capital letter e with circumflex
-letter \X00CE  1467 # 206Œ Latin capital letter i with circumflex
-letter \X00D4  14567 # 212‘ Latin capital letter o with circumflex
-letter \X00DB  1567 # 219€ Latin capital letter u with circumflex
-letter \X00E2 1678 # 226‚ Latin small letter a with circumflex
-letter \X00EA  12678 # 234Í Latin small letter e with circumflex
-letter \X00EE  14678 # 238Ó Latin small letter i with circumflex
-letter \X00F4  145678 # 244Ù Latin small letter o with circumflex
-letter \X00FB  15678 # 251˚ Latin small letter u with circumflex
+letter \X00C2 24578 # 194√Ç Latin capital letter a with circumflex
+letter \X00CA  1267 # 202√ä Latin capital letter e with circumflex
+letter \X00CE  1467 # 206√é Latin capital letter i with circumflex
+letter \X00D4  14567 # 212√î Latin capital letter o with circumflex
+letter \X00DB  1567 # 219√õ Latin capital letter u with circumflex
+letter \X00E2 1678 # 226√¢ Latin small letter a with circumflex
+letter \X00EA  12678 # 234√™ Latin small letter e with circumflex
+letter \X00EE  14678 # 238√Æ Latin small letter i with circumflex
+letter \X00F4  145678 # 244√¥ Latin small letter o with circumflex
+letter \X00FB  15678 # 251√ª Latin small letter u with circumflex
 
 # The 5 letters with a grave accent `) use the [6-0] dot combinations:
 
 #Hex Dots Dec Char Description
-letter \X00C0  235678 # 192¿ Latin capital letter a with grave
-letter \X00C8  3578 # 200» Latin capital letter e with grave
-letter \X00CC  57 # 204Ã Latin capital letter i with grave
-letter \X00D2 578 # 210“ Latin capital letter o with grave
-letter \X00D9 35678 # 217Ÿ Latin capital letter u with grave
-letter \X00E0  123568 # 224‡ Latin small letter a with grave
-letter \X00E8  23468 # 232Ë Latin small letter e with grave
-letter \X00EC  348 # 236Ï Latin small letter i with grave
-letter \X00F2 3468 # 242Ú Latin small letter o with grave
-letter \X00F9 234568 # 249˘ Latin small letter u with grave
+letter \X00C0  235678 # 192√Ä Latin capital letter a with grave
+letter \X00C8  3578 # 200√à Latin capital letter e with grave
+letter \X00CC  57 # 204√å Latin capital letter i with grave
+letter \X00D2 578 # 210√í Latin capital letter o with grave
+letter \X00D9 35678 # 217√ô Latin capital letter u with grave
+letter \X00E0  123568 # 224√† Latin small letter a with grave
+letter \X00E8  23468 # 232√® Latin small letter e with grave
+letter \X00EC  348 # 236√¨ Latin small letter i with grave
+letter \X00F2 3468 # 242√≤ Latin small letter o with grave
+letter \X00F9 234568 # 249√π Latin small letter u with grave
 
 # The6 letters with an acute accent ') use the [a-f] dot combinations with
 # dots 3 and 6 added:
 
 #Hex Dots Dec Char Description
-letter \X00C1 28 # 193¡ Latin capital letter a with acute
-letter \X00C9 1234567 # 201… Latin capital letter e with acute
-letter \X00CD 258 # 205Õ Latin capital letter i with acute
-letter \X00D3 267 # 211” Latin capital letter o with acute
-letter \X00DA 268 # 218⁄ Latin capital letter u with acute
-letter \X00DD 3568 # 221› Latin capital letter y with acute
-letter \X00E1 168 # 225· Latin small letter a with acute
-letter \X00E9 123456 # 233È Latin small letter e with acute
-letter \X00ED 2478 # 237Ì Latin small letter i with acute
-letter \X00F3 13578 # 243Û Latin small letter o with acute
-letter \X00FA 13678 # 250˙ Latin small letter u with acute
-letter \X00FD 24568 # 253˝ Latin small letter y with acute
+letter \X00C1 28 # 193√Å Latin capital letter a with acute
+letter \X00C9 1234567 # 201√â Latin capital letter e with acute
+letter \X00CD 258 # 205√ç Latin capital letter i with acute
+letter \X00D3 267 # 211√ì Latin capital letter o with acute
+letter \X00DA 268 # 218√ö Latin capital letter u with acute
+letter \X00DD 3568 # 221√ù Latin capital letter y with acute
+letter \X00E1 168 # 225√° Latin small letter a with acute
+letter \X00E9 123456 # 233√© Latin small letter e with acute
+letter \X00ED 2478 # 237√≠ Latin small letter i with acute
+letter \X00F3 13578 # 243√≥ Latin small letter o with acute
+letter \X00FA 13678 # 250√∫ Latin small letter u with acute
+letter \X00FD 24568 # 253√Ω Latin small letter y with acute
 
 # The 6 letters with a dieresis accent ") use the [f-j] dot combinations with
 # dots 3 and 6 added, and the number sign because it fits the sequence
 # reasonably well):
 
 #Hex Dots Dec Char Description
-letter \X00C4 3457 # 196ƒ Latin capital letter a with diaeresis
-letter \X00CB 2358 # 203À Latin capital letter e with diaeresis
-letter \X00CF 23568 # 207œ Latin capital letter i with diaeresis
-letter \X00D6  2467 # 214÷ Latin capital letter o with diaeresis
-letter \X00DC  12567 # 220‹ Latin capital letter u with diaeresis
-letter \X00E4 345 # 228‰ Latin small letter a with diaeresis
-letter \X00EB 12468 # 235Î Latin small letter e with diaeresis
-letter \X00EF 124568 # 239Ô Latin small letter i with diaeresis
-letter \X00F6  246 # 246ˆ Latin small letter o with diaeresis
-letter \X00FC  1256 # 252¸ Latin small letter u with diaeresis
-letter \X00FF 134568 # 255ˇ Latin small letter y with diaeresis
+letter \X00C4 3457 # 196√Ñ Latin capital letter a with diaeresis
+letter \X00CB 2358 # 203√ã Latin capital letter e with diaeresis
+letter \X00CF 23568 # 207√è Latin capital letter i with diaeresis
+letter \X00D6  2467 # 214√ñ Latin capital letter o with diaeresis
+letter \X00DC  12567 # 220√ú Latin capital letter u with diaeresis
+letter \X00E4 345 # 228√§ Latin small letter a with diaeresis
+letter \X00EB 12468 # 235√´ Latin small letter e with diaeresis
+letter \X00EF 124568 # 239√Ø Latin small letter i with diaeresis
+letter \X00F6  246 # 246√∂ Latin small letter o with diaeresis
+letter \X00FC  1256 # 252√º Latin small letter u with diaeresis
+letter \X00FF 134568 # 255√ø Latin small letter y with diaeresis
 
 # There is no uppercase y-dieresis in the  Latin 1 character set. The German
 # lowercase double-s, which also doesn't have an uppercase counterpart in the
 #  Latin 1 character set, uses its representation:
 
 #Hex Dots Dec Char Description
-letter \X00DF 34568 # 223ﬂ Latin small letter sharp s
+letter \X00DF 34568 # 223√ü Latin small letter sharp s
 
 # The remaining accented letters are:
 
 #Hex Dots Dec Char Description
-letter \X00C3 3467 # 195√ Latin capital letter a with tilde
-letter \X00D1 2567 # 209— Latin capital letter n with tilde
-letter \X00D5  267 # 213’ Latin capital letter o with tilde
-letter \X00C5 167 # 197≈ Latin capital letter a with ring above
-letter \X00C7 1578 # 199« Latin capital letter c with cedilla
-letter \X00D8 1567 # 216ÿ Latin capital letter o with stroke
-letter \X00C6 47 # 198∆ Latin capital letter ae
-letter \X00D0 3567 # 208– Latin capital letter eth
-letter \X00DE 2357 # 222ﬁ Latin capital letter thorn
-letter \X00E3 13678 # 227„ Latin small letter a with tilde
-letter \X00F1 13458 # 241Ò Latin small letter n with tilde
-letter \X00F5  1358 # 245ı Latin small letter o with tilde
-letter \X00E5 16 # 229Â Latin small letter a with ring above
-letter \X00E7 1234678 # 231Á Latin small letter c with cedilla
-letter \X00F8 24678 # 248¯ Latin small letter o with stroke
-letter \X00E6 34578 # 230Ê Latin small letter ae
-letter \X00F0 23458 # 240 Latin small letter eth
-letter \X00FE 12348 # 254˛ Latin small letter thorn
+letter \X00C3 3467 # 195√É Latin capital letter a with tilde
+letter \X00D1 2567 # 209√ë Latin capital letter n with tilde
+letter \X00D5  267 # 213√ï Latin capital letter o with tilde
+letter \X00C5 167 # 197√Ö Latin capital letter a with ring above
+letter \X00C7 1578 # 199√á Latin capital letter c with cedilla
+letter \X00D8 1567 # 216√ò Latin capital letter o with stroke
+letter \X00C6 47 # 198√Ü Latin capital letter ae
+letter \X00D0 3567 # 208√ê Latin capital letter eth
+letter \X00DE 2357 # 222√û Latin capital letter thorn
+letter \X00E3 13678 # 227√£ Latin small letter a with tilde
+letter \X00F1 13458 # 241√± Latin small letter n with tilde
+letter \X00F5  1358 # 245√µ Latin small letter o with tilde
+letter \X00E5 16 # 229√• Latin small letter a with ring above
+letter \X00E7 1234678 # 231√ß Latin small letter c with cedilla
+letter \X00F8 24678 # 248√∏ Latin small letter o with stroke
+letter \X00E6 34578 # 230√¶ Latin small letter ae
+letter \X00F0 23458 # 240√∞ Latin small letter eth
+letter \X00FE 12348 # 254√æ Latin small letter thorn
 sign \X25CF 35

@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2011 by Peter Engström <peter.engstrom@indexbraille.com>
+#  Copyright (C) 2011 by Peter EngstrÃ¶m <peter.engstrom@indexbraille.com>
 #  Copyright (C) 2011 by Monk Jeremiah, Manastir Decani <visokidecani@gmail.com>
 #
 #  This file is part of liblouis.
@@ -22,7 +22,7 @@
 #
 # 	SERBIAN
 #	=======
-# 	Authors:	Peter Engström, Index Braille <peter.engstrom@indexbraille.com>
+# 	Authors:	Peter EngstrÃ¶m, Index Braille <peter.engstrom@indexbraille.com>
 #				Monk Jeremiah, Manastir Decani <visokidecani@gmail.com>
 #
 # 	Date: 		Note:
@@ -46,7 +46,7 @@ sign \x2026 3-3-3					# HORIZONTAL ELLIPSIS
 punctuation , 2						# COMMA
 punctuation ;	23					# SEMICOLON
 punctuation : 25					# COLON
-punctuation ­ 36					# HYPHEN-MINUS
+punctuation Â­ 36					# HYPHEN-MINUS
 punctuation ' 3	  					# APOSTROPHE
 punctuation *	35					# ASTERISK
 sign / 34							# SOLIDUS
@@ -98,8 +98,8 @@ math \x00F7 1256 					# DIVISION SIGN
 #------------- NOT ASSIGNED ---------------------------------- 
 #sign \x00A5 45-13456					# YEN SIGN
 #sign \x00B4 1256						# ACUTE ACCENT
-#sign \x00B5 46-134						# µ MICRO SIGN
-#sign \x00B6 4-1234-345					# ¶ PILCROW SIGN
+#sign \x00B5 46-134						# Âµ MICRO SIGN
+#sign \x00B6 4-1234-345					# Â¶ PILCROW SIGN
 #uplow	\x00D3\x00F3 346				# LATIN CAPITAL LETTER O WITH ACUTE
 
 

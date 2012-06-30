@@ -196,98 +196,98 @@ sign         \x2122 234578             \x2122  &#153;  [Trademark]
 #                   235678          \x009E &#158;  <control> [PRIVACY MESSAGE]
 #                   12345678        \x009F &#159;  <control> [APPLICATION PROGRAM COMMAND]
 space        \x00a0 0               \x00A0 &#160;  NO-BREAK SPACE
-punctuation  °      3568             \x00A1 &#161;  INVERTED EXCLAMATION MARK
-sign         ¢      2578              \x00A2 &#162;  CENT SIGN
-sign         £      123478             \x00A3 &#163;  POUND SIGN
-sign         §      134678            \x00A4 &#164;  CURRENCY SIGN
-sign         •      1345678             \x00A5 &#165;  YEN SIGN
-sign         ¶      3478             \x00A6 &#166;  BROKEN BAR
-sign         ß      2348             \x00A7 &#167;  SECTION SIGN
-sign         ®      578              \x00A8 &#168;  DIAERESIS
-sign         ©      1478          \x00A9 &#169;  COPYRIGHT SIGN
-sign         ™      234678            \x00AA &#170;  FEMININE ORDINAL INDICATOR
-punctuation  ´      57            \x00AB &#171;  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-sign         ¨      34567           \x00AC &#172;  NOT SIGN
-sign         ≠      378             \x00AD &#173;  SOFT HYPHEN
-sign         Æ      123578           \x00AE &#174;  REGISTERED SIGN
-sign         Ø      23567             \x00AF &#175;  MACRON
-sign         ∞      256            \x00B0 &#176;  DEGREE SIGN
-math         ±      123458           \x00B1 &#177;  PLUS-MINUS SIGN
-sign         ≤      238             \x00B2 &#178;  SUPERSCRIPT TWO
-sign         ≥      258             \x00B3 &#179;  SUPERSCRIPT THREE
-sign         ¥      468             \x00B4 &#180;  ACUTE ACCENT
-sign         µ      23678            \x00B5 &#181;  MICRO SIGN
-sign         ∂      345678            \x00B6 &#182;  PILCROW SIGN
-sign         ∑      38              \x00B7 &#183;  MIDDLE DOT
-sign         ∏      245678              \x00B8 &#184;  CEDILLA
-sign         π      28              \x00B9 &#185;  SUPERSCRIPT ONE
-sign         ∫      12345678            \x00BA &#186;  MASCULINE ORDINAL INDICATOR
-punctuation  ª      567            \x00BB &#187;  RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-math         º      13458            \x00BC &#188;  VULGAR FRACTION ONE QUARTER
-math         Ω      458           \x00BD &#189;  VULGAR FRACTION ONE HALF
-math         æ      34568           \x00BE &#190;  VULGAR FRACTION THREE QUARTERS
-punctuation  ø      67              \x00BF &#191;  INVERTED QUESTION MARK
-uppercase    ¿      13678           \x00C0 &#192;  LATIN CAPITAL LETTER A WITH GRAVE
-uppercase    ¡      167              \x00C1 &#193;  LATIN CAPITAL LETTER A WITH ACUTE #IA
-uppercase    ¬      1678             \x00C2 &#194;  LATIN CAPITAL LETTER A WITH CIRCUMFLEX
-uppercase    √      14678            \x00C3 &#195;  LATIN CAPITAL LETTER A WITH TILDE
-uppercase    ƒ      34578             \x00C4 &#196;  LATIN CAPITAL LETTER A WITH DIAERESIS
-uppercase    ≈      1235678           \x00C5 &#197;  LATIN CAPITAL LETTER A WITH RING ABOVE
-uppercase    ∆      3457              \x00C6 &#198;  LATIN CAPITAL LETTER AE #IA
-uppercase    «      125678          \x00C7 &#199;  LATIN CAPITAL LETTER C WITH CEDILLA
-uppercase    »      478            \x00C8 &#200;  LATIN CAPITAL LETTER E WITH GRAVE
-uppercase    …      23467         \x00C9 &#201;  LATIN CAPITAL LETTER E WITH ACUTE #IA
-uppercase           1234567            \x00CA &#202;  LATIN CAPITAL LETTER E WITH CIRCUMFLEX
-uppercase    À      35678            \x00CB &#203;  LATIN CAPITAL LETTER E WITH DIAERESIS
-uppercase    Ã      15678              \x00CC &#204;  LATIN CAPITAL LETTER I WITH GRAVE
-uppercase    Õ      1267             \x00CD &#205;  LATIN CAPITAL LETTER I WITH ACUTE #IA
-uppercase    Œ      1467            \x00CE &#206;  LATIN CAPITAL LETTER I WITH CIRCUMFLEX
-uppercase    œ      12678           \x00CF &#207;  LATIN CAPITAL LETTER I WITH DIAERESIS
-uppercase    –      1567            \x00D0 &#208;  LATIN CAPITAL LETTER ETH #IA
-uppercase    —      1245678            \x00D1 &#209;  LATIN CAPITAL LETTER N WITH TILDE
-uppercase    “      124678             \x00D2 &#210;  LATIN CAPITAL LETTER O WITH GRAVE
-uppercase    ”      14567            \x00D3 &#211;  LATIN CAPITAL LETTER O WITH ACUTE #IA
-uppercase    ‘      34678           \x00D4 &#212;  LATIN CAPITAL LETTER O WITH CIRCUMFLEX
-uppercase    ’      145678             \x00D5 &#213;  LATIN CAPITAL LETTER O WITH TILDE
-uppercase    ÷      2467             \x00D6 &#214;  LATIN CAPITAL LETTER O WITH DIAERESIS #IA
-math         ◊      13468            \x00D7 &#215;  MULTIPLICATION SIGN
-uppercase    ÿ      24678            \x00D8 &#216;  LATIN CAPITAL LETTER O WITH STROKE
-uppercase    Ÿ      234567           \x00D9 &#217;  LATIN CAPITAL LETTER U WITH GRAVE
-uppercase    ⁄      124567             \x00DA &#218;  LATIN CAPITAL LETTER U WITH ACUTE #IA
-uppercase    €      348            \x00DB &#219;  LATIN CAPITAL LETTER U WITH CIRCUMFLEX
-uppercase    ‹      12567            \x00DC &#220;  LATIN CAPITAL LETTER U WITH DIAERESIS
-uppercase    ›      123467            \x00DD &#221;  LATIN CAPITAL LETTER Y WITH ACUTE #IA
-uppercase    ﬁ      12467            \x00DE &#222;  LATIN CAPITAL LETTER THORN #IA
-lowercase    ﬂ      23468           \x00DF &#223;  LATIN SMALL LETTER SHARP S
-lowercase    ‡      1378          \x00E0 &#224;  LATIN SMALL LETTER A WITH GRAVE
-lowercase    ·      16             \x00E1 &#225;  LATIN SMALL LETTER A WITH ACUTE #IA
-lowercase    ‚      168            \x00E2 &#226;  LATIN SMALL LETTER A WITH CIRCUMFLEX
-lowercase    „      1468           \x00E3 &#227;  LATIN SMALL LETTER A WITH TILDE
-lowercase    ‰      3458            \x00E4 &#228;  LATIN SMALL LETTER A WITH DIAERESIS
-lowercase    Â      123568          \x00E5 &#229;  LATIN SMALL LETTER A WITH RING ABOVE
-lowercase    Ê      345             \x00E6 &#230;  LATIN SMALL LETTER AE #IA
-lowercase    Á      1348         \x00E7 &#231;  LATIN SMALL LETTER C WITH CEDILLA
-lowercase    Ë      23568           \x00E8 &#232;  LATIN SMALL LETTER E WITH GRAVE
-lowercase    È      2346         \x00E9 &#233;  LATIN SMALL LETTER E WITH ACUTE #IA
-lowercase    Í      1268           \x00EA &#234;  LATIN SMALL LETTER E WITH CIRCUMFLEX
-lowercase    Î      138           \x00EB &#235;  LATIN SMALL LETTER E WITH DIAERESIS
-lowercase    Ï      1568             \x00EC &#236;  LATIN SMALL LETTER I WITH GRAVE
-lowercase    Ì      126            \x00ED &#237;  LATIN SMALL LETTER I WITH ACUTE #IA
-lowercase    Ó      24578           \x00EE &#238;  LATIN SMALL LETTER I WITH CIRCUMFLEX
-lowercase    Ô      12568          \x00EF &#239;  LATIN SMALL LETTER I WITH DIAERESIS
-lowercase          156           \x00F0 &#240;  LATIN SMALL LETTER ETH
-lowercase    Ò      124568           \x00F1 &#241;  LATIN SMALL LETTER N WITH TILDE
-lowercase    Ú      12468            \x00F2 &#242;  LATIN SMALL LETTER O WITH GRAVE
-lowercase    Û      1456           \x00F3 &#243;  LATIN SMALL LETTER O WITH ACUTE #IA
-lowercase    Ù      3468          \x00F4 &#244;  LATIN SMALL LETTER O WITH CIRCUMFLEX
-lowercase    ı      14568            \x00F5 &#245;  LATIN SMALL LETTER O WITH TILDE
-lowercase    ˆ      246            \x00F6 &#246;  LATIN SMALL LETTER O WITH DIAERESIS
-math         ˜      1256          \x00F7 &#247;  DIVISION SIGN
-lowercase    ¯      2468           \x00F8 &#248;  LATIN SMALL LETTER O WITH STROKE
-lowercase    ˘      2368          \x00F9 &#249;  LATIN SMALL LETTER U WITH GRAVE
-lowercase    ˙      12456            \x00FA &#250;  LATIN SMALL LETTER U WITH ACUTE #IA
-lowercase    ˚      12348           \x00FB &#251;  LATIN SMALL LETTER U WITH CIRCUMFLEX
-lowercase    ¸      12568           \x00FC &#252;  LATIN SMALL LETTER U WITH DIAERESIS
-lowercase    ˝      12346           \x00FD &#253;  LATIN SMALL LETTER Y WITH ACUTE #IA
-lowercase    ˛      1246           \x00FE &#254;  LATIN SMALL LETTER THORN #IA
-lowercase    ˇ      234568          \x00FF &#255;  LATIN SMALL LETTER Y WITH DIAERESIS
+punctuation  ¬°      3568             \x00A1 &#161;  INVERTED EXCLAMATION MARK
+sign         ¬¢      2578              \x00A2 &#162;  CENT SIGN
+sign         ¬£      123478             \x00A3 &#163;  POUND SIGN
+sign         ¬§      134678            \x00A4 &#164;  CURRENCY SIGN
+sign         ¬•      1345678             \x00A5 &#165;  YEN SIGN
+sign         ¬¶      3478             \x00A6 &#166;  BROKEN BAR
+sign         ¬ß      2348             \x00A7 &#167;  SECTION SIGN
+sign         ¬®      578              \x00A8 &#168;  DIAERESIS
+sign         ¬©      1478          \x00A9 &#169;  COPYRIGHT SIGN
+sign         ¬™      234678            \x00AA &#170;  FEMININE ORDINAL INDICATOR
+punctuation  ¬´      57            \x00AB &#171;  LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+sign         ¬¨      34567           \x00AC &#172;  NOT SIGN
+sign         ¬≠      378             \x00AD &#173;  SOFT HYPHEN
+sign         ¬Æ      123578           \x00AE &#174;  REGISTERED SIGN
+sign         ¬Ø      23567             \x00AF &#175;  MACRON
+sign         ¬∞      256            \x00B0 &#176;  DEGREE SIGN
+math         ¬±      123458           \x00B1 &#177;  PLUS-MINUS SIGN
+sign         ¬≤      238             \x00B2 &#178;  SUPERSCRIPT TWO
+sign         ¬≥      258             \x00B3 &#179;  SUPERSCRIPT THREE
+sign         ¬¥      468             \x00B4 &#180;  ACUTE ACCENT
+sign         ¬µ      23678            \x00B5 &#181;  MICRO SIGN
+sign         ¬∂      345678            \x00B6 &#182;  PILCROW SIGN
+sign         ¬∑      38              \x00B7 &#183;  MIDDLE DOT
+sign         ¬∏      245678              \x00B8 &#184;  CEDILLA
+sign         ¬π      28              \x00B9 &#185;  SUPERSCRIPT ONE
+sign         ¬∫      12345678            \x00BA &#186;  MASCULINE ORDINAL INDICATOR
+punctuation  ¬ª      567            \x00BB &#187;  RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+math         ¬º      13458            \x00BC &#188;  VULGAR FRACTION ONE QUARTER
+math         ¬Ω      458           \x00BD &#189;  VULGAR FRACTION ONE HALF
+math         ¬æ      34568           \x00BE &#190;  VULGAR FRACTION THREE QUARTERS
+punctuation  ¬ø      67              \x00BF &#191;  INVERTED QUESTION MARK
+uppercase    √Ä      13678           \x00C0 &#192;  LATIN CAPITAL LETTER A WITH GRAVE
+uppercase    √Å      167              \x00C1 &#193;  LATIN CAPITAL LETTER A WITH ACUTE #IA
+uppercase    √Ç      1678             \x00C2 &#194;  LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+uppercase    √É      14678            \x00C3 &#195;  LATIN CAPITAL LETTER A WITH TILDE
+uppercase    √Ñ      34578             \x00C4 &#196;  LATIN CAPITAL LETTER A WITH DIAERESIS
+uppercase    √Ö      1235678           \x00C5 &#197;  LATIN CAPITAL LETTER A WITH RING ABOVE
+uppercase    √Ü      3457              \x00C6 &#198;  LATIN CAPITAL LETTER AE #IA
+uppercase    √á      125678          \x00C7 &#199;  LATIN CAPITAL LETTER C WITH CEDILLA
+uppercase    √à      478            \x00C8 &#200;  LATIN CAPITAL LETTER E WITH GRAVE
+uppercase    √â      23467         \x00C9 &#201;  LATIN CAPITAL LETTER E WITH ACUTE #IA
+uppercase    √ä      1234567            \x00CA &#202;  LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+uppercase    √ã      35678            \x00CB &#203;  LATIN CAPITAL LETTER E WITH DIAERESIS
+uppercase    √å      15678              \x00CC &#204;  LATIN CAPITAL LETTER I WITH GRAVE
+uppercase    √ç      1267             \x00CD &#205;  LATIN CAPITAL LETTER I WITH ACUTE #IA
+uppercase    √é      1467            \x00CE &#206;  LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+uppercase    √è      12678           \x00CF &#207;  LATIN CAPITAL LETTER I WITH DIAERESIS
+uppercase    √ê      1567            \x00D0 &#208;  LATIN CAPITAL LETTER ETH #IA
+uppercase    √ë      1245678            \x00D1 &#209;  LATIN CAPITAL LETTER N WITH TILDE
+uppercase    √í      124678             \x00D2 &#210;  LATIN CAPITAL LETTER O WITH GRAVE
+uppercase    √ì      14567            \x00D3 &#211;  LATIN CAPITAL LETTER O WITH ACUTE #IA
+uppercase    √î      34678           \x00D4 &#212;  LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+uppercase    √ï      145678             \x00D5 &#213;  LATIN CAPITAL LETTER O WITH TILDE
+uppercase    √ñ      2467             \x00D6 &#214;  LATIN CAPITAL LETTER O WITH DIAERESIS #IA
+math         √ó      13468            \x00D7 &#215;  MULTIPLICATION SIGN
+uppercase    √ò      24678            \x00D8 &#216;  LATIN CAPITAL LETTER O WITH STROKE
+uppercase    √ô      234567           \x00D9 &#217;  LATIN CAPITAL LETTER U WITH GRAVE
+uppercase    √ö      124567             \x00DA &#218;  LATIN CAPITAL LETTER U WITH ACUTE #IA
+uppercase    √õ      348            \x00DB &#219;  LATIN CAPITAL LETTER U WITH CIRCUMFLEX
+uppercase    √ú      12567            \x00DC &#220;  LATIN CAPITAL LETTER U WITH DIAERESIS
+uppercase    √ù      123467            \x00DD &#221;  LATIN CAPITAL LETTER Y WITH ACUTE #IA
+uppercase    √û      12467            \x00DE &#222;  LATIN CAPITAL LETTER THORN #IA
+lowercase    √ü      23468           \x00DF &#223;  LATIN SMALL LETTER SHARP S
+lowercase    √†      1378          \x00E0 &#224;  LATIN SMALL LETTER A WITH GRAVE
+lowercase    √°      16             \x00E1 &#225;  LATIN SMALL LETTER A WITH ACUTE #IA
+lowercase    √¢      168            \x00E2 &#226;  LATIN SMALL LETTER A WITH CIRCUMFLEX
+lowercase    √£      1468           \x00E3 &#227;  LATIN SMALL LETTER A WITH TILDE
+lowercase    √§      3458            \x00E4 &#228;  LATIN SMALL LETTER A WITH DIAERESIS
+lowercase    √•      123568          \x00E5 &#229;  LATIN SMALL LETTER A WITH RING ABOVE
+lowercase    √¶      345             \x00E6 &#230;  LATIN SMALL LETTER AE #IA
+lowercase    √ß      1348         \x00E7 &#231;  LATIN SMALL LETTER C WITH CEDILLA
+lowercase    √®      23568           \x00E8 &#232;  LATIN SMALL LETTER E WITH GRAVE
+lowercase    √©      2346         \x00E9 &#233;  LATIN SMALL LETTER E WITH ACUTE #IA
+lowercase    √™      1268           \x00EA &#234;  LATIN SMALL LETTER E WITH CIRCUMFLEX
+lowercase    √´      138           \x00EB &#235;  LATIN SMALL LETTER E WITH DIAERESIS
+lowercase    √¨      1568             \x00EC &#236;  LATIN SMALL LETTER I WITH GRAVE
+lowercase    √≠      126            \x00ED &#237;  LATIN SMALL LETTER I WITH ACUTE #IA
+lowercase    √Æ      24578           \x00EE &#238;  LATIN SMALL LETTER I WITH CIRCUMFLEX
+lowercase    √Ø      12568          \x00EF &#239;  LATIN SMALL LETTER I WITH DIAERESIS
+lowercase    √∞      156           \x00F0 &#240;  LATIN SMALL LETTER ETH
+lowercase    √±      124568           \x00F1 &#241;  LATIN SMALL LETTER N WITH TILDE
+lowercase    √≤      12468            \x00F2 &#242;  LATIN SMALL LETTER O WITH GRAVE
+lowercase    √≥      1456           \x00F3 &#243;  LATIN SMALL LETTER O WITH ACUTE #IA
+lowercase    √¥      3468          \x00F4 &#244;  LATIN SMALL LETTER O WITH CIRCUMFLEX
+lowercase    √µ      14568            \x00F5 &#245;  LATIN SMALL LETTER O WITH TILDE
+lowercase    √∂      246            \x00F6 &#246;  LATIN SMALL LETTER O WITH DIAERESIS
+math         √∑      1256          \x00F7 &#247;  DIVISION SIGN
+lowercase    √∏      2468           \x00F8 &#248;  LATIN SMALL LETTER O WITH STROKE
+lowercase    √π      2368          \x00F9 &#249;  LATIN SMALL LETTER U WITH GRAVE
+lowercase    √∫      12456            \x00FA &#250;  LATIN SMALL LETTER U WITH ACUTE #IA
+lowercase    √ª      12348           \x00FB &#251;  LATIN SMALL LETTER U WITH CIRCUMFLEX
+lowercase    √º      12568           \x00FC &#252;  LATIN SMALL LETTER U WITH DIAERESIS
+lowercase    √Ω      12346           \x00FD &#253;  LATIN SMALL LETTER Y WITH ACUTE #IA
+lowercase    √æ      1246           \x00FE &#254;  LATIN SMALL LETTER THORN #IA
+lowercase    √ø      234568          \x00FF &#255;  LATIN SMALL LETTER Y WITH DIAERESIS

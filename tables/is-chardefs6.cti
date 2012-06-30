@@ -29,16 +29,16 @@
 
 
 # Icelandic characters, in Icelandic alphabetical order
-uplow \x00C1\x00E1 16 # ¡·, a acute
-uplow \x00D0\x00F0 156 # –, eth
-uplow \x00C9\x00E9 2346 # …È, e acute
-uplow \x00CD\x00ED 126 # ÕÌ, i acute 
-uplow \x00D3\x00F3 1456 # ”Û, o acute
-uplow \x00DA\x00FA 12456 # ⁄˙, u acute
-uplow \x00DD\x00FD 12346 # ›˝, y acute
-uplow \x00DE\x00FE 1246 # ﬁ˛, thorn
-uplow \x00C6\x00E6 345 # ∆Ê, ae
-uplow \x00D6\x00F6 246 # ÷ˆ o umlaut
+uplow \x00C1\x00E1 16 # √Å√°, a acute
+uplow \x00D0\x00F0 156 # √ê√∞, eth
+uplow \x00C9\x00E9 2346 # √â√©, e acute
+uplow \x00CD\x00ED 126 # √ç√≠, i acute 
+uplow \x00D3\x00F3 1456 # √ì√≥, o acute
+uplow \x00DA\x00FA 12456 # √ö√∫, u acute
+uplow \x00DD\x00FD 12346 # √ù√Ω, y acute
+uplow \x00DE\x00FE 1246 # √û√æ, thorn
+uplow \x00C6\x00E6 345 # √Ü√¶, ae
+uplow \x00D6\x00F6 246 # √ñ√∂ o umlaut
 
 # ===== BASIC LATIN - 0000-007F ================================================
 
@@ -97,24 +97,24 @@ punctuation   \x005D 23456          #93    ]  RIGHT SQUARE BRACKET
 sign          \x005F 45-36           #95    _  LOW LINE
 
 # ===== LATIN-1 SUPPLEMENT: 0080-00FF ==========================================
-sign          \x00A2 45-14            #162   ¢ CENT SIGN
-sign          \x00A3 45-1234           #163   £ POUND SIGN
-sign          \x00A4 45-1346               #164   § CURRENCY SIGN
-sign          \x00A5 45-13456         #165   • YEN SIGN
-sign          \x00A6 0-456-123-0     #166   ¶ BROKEN BAR
-sign          \x00A7 45-346           #167   ß SECTION SIGN
-sign          \x00A9 236-14-356 #169   © COPYRIGHT SIGN
-lowercase     \x00AA 4-1               #170   ™ FEMININE ORDINAL INDICATOR
-punctuation   \x00AB 45-236             #171   ´ LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-sign          \x00AD 36               #173   ≠ SOFT HYPHEN
-sign          \x00AE 236-1235-356   #174 Æ REGISTERED SIGN
-sign          \x00B0 256           #176   ∞ DEGREE SIGN
-math          \x00B1 235-36          #177   ± PLUS-MINUS SIGN
-sign          \x00B5 45-134          #181   µ MICRO SIGN
-lowercase     \x00BA 4-2             #186   ∫ MASCULINE ORDINAL INDICATOR
-punctuation   \x00BB 45-356             #187   ª RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-math          \x00D7 45-24             #215   ◊ MULTIPLICATION SIGN
-math          \x00F7 1256               #247   ˜ DIVISION SIGN
+sign          \x00A2 45-14            #162   ¬¢ CENT SIGN
+sign          \x00A3 45-1234           #163   ¬£ POUND SIGN
+sign          \x00A4 45-1346               #164   ¬§ CURRENCY SIGN
+sign          \x00A5 45-13456         #165   ¬• YEN SIGN
+sign          \x00A6 0-456-123-0     #166   ¬¶ BROKEN BAR
+sign          \x00A7 45-346           #167   ¬ß SECTION SIGN
+sign          \x00A9 236-14-356 #169   ¬© COPYRIGHT SIGN
+lowercase     \x00AA 4-1               #170   ¬™ FEMININE ORDINAL INDICATOR
+punctuation   \x00AB 45-236             #171   ¬´ LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+sign          \x00AD 36               #173   ¬≠ SOFT HYPHEN
+sign          \x00AE 236-1235-356   #174 ¬Æ REGISTERED SIGN
+sign          \x00B0 256           #176   ¬∞ DEGREE SIGN
+math          \x00B1 235-36          #177   ¬± PLUS-MINUS SIGN
+sign          \x00B5 45-134          #181   ¬µ MICRO SIGN
+lowercase     \x00BA 4-2             #186   ¬∫ MASCULINE ORDINAL INDICATOR
+punctuation   \x00BB 45-356             #187   ¬ª RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+math          \x00D7 45-24             #215   √ó MULTIPLICATION SIGN
+math          \x00F7 1256               #247   √∑ DIVISION SIGN
 
 # ===== GENERAL PUNCTUATION: 2000-206F =========================================
 

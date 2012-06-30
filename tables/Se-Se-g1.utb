@@ -54,36 +54,36 @@ sign | 456					vertical line					x007C
 punctuation } 6-356	right curly bracket		x007D
 math ~ 45-2					tilde									x007E
 space \X00A0 0			no-break space				x00A0
-sign ¢ 4-14					cent sign							x00A2
-sign £ 45-123				pound sign						x00A3
-sign ¤ 45-15				currency sign					x00A4
-sign ¥ 45-13456			yen										x00A5
-sign § 346					paragraph							x00A7
+sign Â¢ 4-14					cent sign							x00A2
+sign Â£ 45-123				pound sign						x00A3
+sign Â¤ 45-15				currency sign					x00A4
+sign Â¥ 45-13456			yen										x00A5
+sign Â§ 346					paragraph							x00A7
 
-sign © 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
-punctuation « 45-2356	left pointing double angle								x00AB
+sign Â© 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
+punctuation Â« 45-2356	left pointing double angle								x00AB
 
-sign ° 4-356					degree sign									x00B0
-sign ² 4-6-126				superscript 2								x00B2
-sign ³ 4-6-146				superscript 3								x00B3
-sign ¹ 4-6-16					superscript 1								x00B9
-punctuation » 2356-12	right pointing double angle	x00BB
-math ¼ 6-16-34-1456		vulgar fraction 1 quarter		x00BC
-math ½ 6-16-34-126		vulgar fraction one half		x00BD
-math ¾ 6-126-34-1456	vulgar fraction 3 quarters	x00BE
+sign Â° 4-356					degree sign									x00B0
+sign Â² 4-6-126				superscript 2								x00B2
+sign Â³ 4-6-146				superscript 3								x00B3
+sign Â¹ 4-6-16					superscript 1								x00B9
+punctuation Â» 2356-12	right pointing double angle	x00BB
+math Â¼ 6-16-34-1456		vulgar fraction 1 quarter		x00BC
+math Â½ 6-16-34-126		vulgar fraction one half		x00BD
+math Â¾ 6-126-34-1456	vulgar fraction 3 quarters	x00BE
 
 uplow \x00C0\x00E0 12356			A with grave				x00C0
-uplow Ää 345							a with diaeresis		x00C4
-uplow Åå 16										A with ring above		x00C5
+uplow Ã„Ã¤ 345							a with diaeresis		x00C4
+uplow Ã…Ã¥ 16										A with ring above		x00C5
 uplow \x00C8\x00E8	2346			E with grave above	x00C8
-uplow Éé 123456								E with acute above	x00C9
+uplow Ã‰Ã© 123456								E with acute above	x00C9
 
-uplow Öö 246																			x00D6
-math × 1346						multiplication sign					x00D7
+uplow Ã–Ã¶ 246																			x00D6
+math Ã— 1346						multiplication sign					x00D7
 
-uplow Üü 1256-1256						U with diaeresis		x00DC
+uplow ÃœÃ¼ 1256-1256						U with diaeresis		x00DC
 
-math ÷ 34							division sign								x00F7
+math Ã· 34							division sign								x00F7
 
 punctuation	\x2010 46		 # 8208			hyphen
 punctuation	\x2011 46		 # 8209			non-breaking hyphen
@@ -119,7 +119,7 @@ endnum # 56-3456
 
 repeated \s 0		spaces
 repeated \t 0		tabulations
-repeated \x00a0 0		espaces insécables
+repeated \x00a0 0		espaces insÃ©cables
 
 repeated ... 3-3-3		ellipsis
 repeated --- 36-36-36

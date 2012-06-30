@@ -71,53 +71,53 @@ sign ~ 5						tilde										x007E
 sign \x0080 15-136-1235-135										x0080
 
 space \X00A0 0				# no-break space													x00A0
-sign ¢ 4-14						cent sign																	x00A2
-sign £ 4-123					pound sign																x00A3
-sign § 45-15					currency sign															x00A4
-sign • 45-13456				yen	sign																	x00A5
-sign ß 234-234				paragraph	sign														x00A7
-sign © 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
+sign ¬¢ 4-14						cent sign																	x00A2
+sign ¬£ 4-123					pound sign																x00A3
+sign ¬§ 45-15					currency sign															x00A4
+sign ¬• 45-13456				yen	sign																	x00A5
+sign ¬ß 234-234				paragraph	sign														x00A7
+sign ¬© 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
 sign \x00AA 1					feminine ordinal indicator
-punctuation ´ 6-236		left-pointing double quotation mark			x00AB
-sign ∞ 356						degree sign																x00B0
-sign ≤ 16-3456-12				superscript 2 sign												x00B2
-sign ≥ 16-3456-14				superscript 3 sign												x00B3
+punctuation ¬´ 6-236		left-pointing double quotation mark			x00AB
+sign ¬∞ 356						degree sign																x00B0
+sign ¬≤ 16-3456-12				superscript 2 sign												x00B2
+sign ¬≥ 16-3456-14				superscript 3 sign												x00B3
 # sign \x00B4 35			acute accent
 sign \x00B4 35					acute accent
-sign \x00B5 46-134		# 181				µ micro sign									x00B5
-sign \x00B6 346				#						∂ pilcrow sign								x00B6
-sign π 16-3456-1					superscript 1 sign												x00B9
+sign \x00B5 46-134		# 181				¬µ micro sign									x00B5
+sign \x00B6 346				#						¬∂ pilcrow sign								x00B6
+sign ¬π 16-3456-1					superscript 1 sign												x00B9
 sign \x00BA 135				masculine ordinal indicator
-punctuation ª 6-236		right-pointing double quotation mark		x00BB
-sign º 3456-2-145			vulgar fraction one quarter								x00BC
-sign Ω 3456-2-12			vulgar fraction one half									x00BD
-sign æ 3456-25-145		vulgar fraction 3 quarters				x00BE
+punctuation ¬ª 6-236		right-pointing double quotation mark		x00BB
+sign ¬º 3456-2-145			vulgar fraction one quarter								x00BC
+sign ¬Ω 3456-2-12			vulgar fraction one half									x00BD
+sign ¬æ 3456-25-145		vulgar fraction 3 quarters				x00BE
 
 uplow \x00C0\x00E0 1246			a with grave						x00C0 / 00E0
-uplow ¡· 12356							A with acute						x00C1 / 00E1
-uplow ¬‚ 16									a with circumflex				x00C2 / 00E2
+uplow √Å√° 12356							A with acute						x00C1 / 00E1
+uplow √Ç√¢ 16									a with circumflex				x00C2 / 00E2
 uplow \x00C3\x00E3 345			a with tilde						x00C3 / 00E3
-uplow ≈Â 16									A with ring above				x00C5 / 00C4
-uplow ƒ‰ 345								A with diaeresis				x00C4 / 00E4
-uplow «Á 12346							letter c with cedilla		x00C7 / 00E7
-uplow \x00C8\x00E8 2346		e with grave Ë					x00C8 / 00E8
-uplow \x00C9\x00E9 123456		e with acute È					x00C9 / 00E9
+uplow √Ö√• 16									A with ring above				x00C5 / 00C4
+uplow √Ñ√§ 345								A with diaeresis				x00C4 / 00E4
+uplow √á√ß 12346							letter c with cedilla		x00C7 / 00E7
+uplow \x00C8\x00E8 2346		e with grave √®					x00C8 / 00E8
+uplow \x00C9\x00E9 123456		e with acute √©					x00C9 / 00E9
 uplow \x00CA\x00EA 126			e with circumflex				x00CA /	00EA
 uplow \x00CC\x00EC 146				i with grave						x00CC	/ 00EC
 uplow \x00CD\x00ED 34				i with acute						x00CD	/ 00ED
-uplow \x00D2\x00F2 2456			o with grave Ú					x00D2 / 00F2
-uplow \x00D3\x00F3 346			o with acute Û					x00D3 / 00F3
-uplow \x00D4\x00F4 1456			o with circumflex Ù			x00D4 / 00F4
+uplow \x00D2\x00F2 2456			o with grave √≤					x00D2 / 00F2
+uplow \x00D3\x00F3 346			o with acute √≥					x00D3 / 00F3
+uplow \x00D4\x00F4 1456			o with circumflex √¥			x00D4 / 00F4
 uplow \x00D5\x00F5 246			o with tilde						x00D5 / 00F5
-uplow ÷ˆ 246								O with diaeresis				x00D6 / 00F6
+uplow √ñ√∂ 246								O with diaeresis				x00D6 / 00F6
 uplow \X00DA\x00FA 23456		u with acute						x00DA / 00FA
 uplow \x00DC\x00FC 1256			u with diaeresis				x00FC
 
 uplow \x00D1\x00F1 12456			n with tilde
 
 
-math ˜ 256			division sign															x00F7
-math ◊ 236			multiplication sign												x00D7
+math √∑ 256			division sign															x00F7
+math √ó 236			multiplication sign												x00D7
 
 # this is for compiler
 uplow \x0104\x0105 6			# a with ogonek
@@ -180,7 +180,7 @@ endnum # 56-3456
 repeated \s 0		spaces
 
 repeated \t 0		tabulations
-repeated \x00a0 0		espaces insÈcables
+repeated \x00a0 0		espaces ins√©cables
 
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36

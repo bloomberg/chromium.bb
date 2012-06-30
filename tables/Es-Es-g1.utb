@@ -52,47 +52,47 @@ sign ~ 256						tilde										x007E
 sign \x0080 15-136-1235-135										x0080
 
 space \X00A0 0				# no-break space													x00A0
-sign ¢ 4-14						cent sign																	x00A2
-sign £ 45-123					pound sign																x00A3
-sign § 45-15					currency sign															x00A4
-sign • 45-13456				yen	sign																	x00A5
-sign ß 346						paragraph	sign														x00A7
-sign © 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
-punctuation ´ 45-2356		left-pointing double quotation mark			x00AB
-sign ∞ 4-356					degree sign																x00B0
-sign ≤ 4-6-126				superscript 2 sign												x00B2
-sign ≥ 4-6-146				superscript 3 sign												x00B3
-sign \x00B5 46-134		# 181				µ micro sign									x00B5
-sign \x00B6 346				#						∂ pilcrow sign								x00B6
-sign π 4-6-16					superscript 1 sign												x00B9
-punctuation ª 2356-12		right-pointing double quotation mark		x00BB
-sign º 6-16-34-1456		vulgar fraction one quarter								x00BC
-sign Ω 6-16-34-126		vulgar fraction one half									x00BD
-sign æ 6-126-34-1456					vulgar fraction 3 quarters				x00BE
+sign ¬¢ 4-14						cent sign																	x00A2
+sign ¬£ 45-123					pound sign																x00A3
+sign ¬§ 45-15					currency sign															x00A4
+sign ¬• 45-13456				yen	sign																	x00A5
+sign ¬ß 346						paragraph	sign														x00A7
+sign ¬© 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
+punctuation ¬´ 45-2356		left-pointing double quotation mark			x00AB
+sign ¬∞ 4-356					degree sign																x00B0
+sign ¬≤ 4-6-126				superscript 2 sign												x00B2
+sign ¬≥ 4-6-146				superscript 3 sign												x00B3
+sign \x00B5 46-134		# 181				¬µ micro sign									x00B5
+sign \x00B6 346				#						¬∂ pilcrow sign								x00B6
+sign ¬π 4-6-16					superscript 1 sign												x00B9
+punctuation ¬ª 2356-12		right-pointing double quotation mark		x00BB
+sign ¬º 6-16-34-1456		vulgar fraction one quarter								x00BC
+sign ¬Ω 6-16-34-126		vulgar fraction one half									x00BD
+sign ¬æ 6-126-34-1456					vulgar fraction 3 quarters				x00BE
 
 uplow \x00C0\x00E0 12356			a with grave						x00C0 / 00E0
-uplow ¡· 12356								A with acute						x00C1 / 00E1
-uplow ¬‚ 16										a with circumflex				x00C2 / 00E2
+uplow √Å√° 12356								A with acute						x00C1 / 00E1
+uplow √Ç√¢ 16										a with circumflex				x00C2 / 00E2
 uplow \x00C3\x00E3 345				a with tilde						x00C3 / 00E3
-uplow ƒ‰ 345									A with diaeresis				x00C4 / 00E4
-uplow ≈Â 16										A with ring above				x00C5 / 00C4
+uplow √Ñ√§ 345									A with diaeresis				x00C4 / 00E4
+uplow √Ö√• 16										A with ring above				x00C5 / 00C4
 uplow \x00C6\x00E6 345				ae											x00C6 / 00E6
-uplow «Á 12346								letter c with cedilla		x00C7 / 00E7
-uplow …È 2346									E with acute						x00C9 / 00E9
+uplow √á√ß 12346								letter c with cedilla		x00C7 / 00E7
+uplow √â√© 2346									E with acute						x00C9 / 00E9
 uplow \x00CA\x00EA 126				e with circumflex				x00CA / 00EA
-uplow ÕÌ 34										i with acute						x00CD / 00ED
+uplow √ç√≠ 34										i with acute						x00CD / 00ED
 uplow \x00D1\x00F1 12456			N with tilde						x00D1 / 00F1
-uplow ”Û 346									o with acute						x00D3 / 00F3
-uplow ‘Ù 1456									o with circumflex				x00D4 / 00F4
+uplow √ì√≥ 346									o with acute						x00D3 / 00F3
+uplow √î√¥ 1456									o with circumflex				x00D4 / 00F4
 uplow \x00D5\x00F5 246				o with tilde						x00D5 / 00F5
-uplow ÷ˆ 246									O with diaeresis				x00D6 / 00F6
-math ◊ 236										multiplication sign			x00D7
+uplow √ñ√∂ 246									O with diaeresis				x00D6 / 00F6
+math √ó 236										multiplication sign			x00D7
 uplow \x00D8\x00F8 246				o with stroke						x00D8 //00F8
-#	uplow ⁄˙ 46-23456							U with acute						x00DA / 00FA
-uplow ⁄˙ 23456								U with acute						x00DA / 00FA
-#	uplow ‹¸ 46-1256							U with diaeresis				x00DC / 00FC
-uplow ‹¸ 1256									U with diaeresis				x00DC / 00FC
-math ˜ 256										division sign						x00F7
+#	uplow √ö√∫ 46-23456							U with acute						x00DA / 00FA
+uplow √ö√∫ 23456								U with acute						x00DA / 00FA
+#	uplow √ú√º 46-1256							U with diaeresis				x00DC / 00FC
+uplow √ú√º 1256									U with diaeresis				x00DC / 00FC
+math √∑ 256										division sign						x00F7
 
 punctuation	\x2010 46						# 8208			hyphen
 punctuation	\x2011 46						# 8209			non-breaking hyphen
@@ -125,7 +125,7 @@ endnum # 56-3456
 
 repeated \s 0		espaces
 repeated \t 0		tabulations
-repeated \x00a0 0		espaces insÈcables
+repeated \x00a0 0		espaces ins√©cables
 
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36

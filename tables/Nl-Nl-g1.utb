@@ -71,56 +71,56 @@ punctuation \x0092 3	single right quotation mark		x0092
 
 space \X00A0 0				no-break space								x00A0
 
-sign ¢ 4-14				cent sign													x00A2
-# sign £ 123-3456		pound sign											x00A3
-sign £ 1234		pound sign														x00A3	Suzanne's correction
+sign ¬¢ 4-14				cent sign													x00A2
+# sign ¬£ 123-3456		pound sign											x00A3
+sign ¬£ 1234		pound sign														x00A3	Suzanne's correction
 
-sign § 45-15			currency sign											x00A4
-# sign • 45-13456		yen	sign												x00A5
-sign • 13456			yen	sign													x00A5	Suzanne's correction
-sign ß 346				paragraph	sign																x00A7
-sign © 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
-sign ´ 45-2356		left-pointing double angle quotation mark			x00AB
-sign ∞ 34-356			degree sign																		x00B0
-sign ≤ 4-6-126		superscript 2 sign														x00B2
-sign ≥ 4-6-146		superscript 3 sign														x00B3
-sign π 4-6-16			superscript 1 sign														x00B9
-sign ª 2356-12		right-pointing double angle quotation mark		x00BB
-math º 6-16-34-1456		vulgar fraction one quarter								x00BC
-math Ω 6-16-34-126		vulgar fraction one half									x00BD
-math æ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
+sign ¬§ 45-15			currency sign											x00A4
+# sign ¬• 45-13456		yen	sign												x00A5
+sign ¬• 13456			yen	sign													x00A5	Suzanne's correction
+sign ¬ß 346				paragraph	sign																x00A7
+sign ¬© 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
+sign ¬´ 45-2356		left-pointing double angle quotation mark			x00AB
+sign ¬∞ 34-356			degree sign																		x00B0
+sign ¬≤ 4-6-126		superscript 2 sign														x00B2
+sign ¬≥ 4-6-146		superscript 3 sign														x00B3
+sign ¬π 4-6-16			superscript 1 sign														x00B9
+sign ¬ª 2356-12		right-pointing double angle quotation mark		x00BB
+math ¬º 6-16-34-1456		vulgar fraction one quarter								x00BC
+math ¬Ω 6-16-34-126		vulgar fraction one half									x00BD
+math ¬æ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
 
-uplow \x00C0\x00E0 12356	letter a with grave	(‡)		x00C0 / 00E0
-uplow ¡· 12356						letter a with acute				x00C1 / 00E1
-uplow ¬‚ 16								letter a with circumflex	x00C2 / 00E2
+uplow \x00C0\x00E0 12356	letter a with grave	(√†)		x00C0 / 00E0
+uplow √Å√° 12356						letter a with acute				x00C1 / 00E1
+uplow √Ç√¢ 16								letter a with circumflex	x00C2 / 00E2
 uplow \x00C3\x00E3 345		letter a with tilde				x00C3
-uplow ƒ‰ 345							A with diaeresis					x00C4 / 00E4
-uplow ≈Â 16								A with ring above					x00C5 / 00E5
-uplow ∆Ê 345																				x00C6 / 00E6
-uplow «Á 12346						letter c with cedilla			x00C7
-uplow »Ë 2346																				x00C8
-uplow …È 123456						small e with acute				x00C9
-uplow \x00CA\x00EA 126		e with circumflex (Í)			x00CA
+uplow √Ñ√§ 345							A with diaeresis					x00C4 / 00E4
+uplow √Ö√• 16								A with ring above					x00C5 / 00E5
+uplow √Ü√¶ 345																				x00C6 / 00E6
+uplow √á√ß 12346						letter c with cedilla			x00C7
+uplow √à√® 2346																				x00C8
+uplow √â√© 123456						small e with acute				x00C9
+uplow \x00CA\x00EA 126		e with circumflex (√™)			x00CA
 uplow \x00DC\x00FC 1256		u with diaeresis
-uplow ÀÎ 1246																				x00CB
-uplow —Ò 12456						N with tilde							x00D1
-uplow ÷ˆ 123456						O with diaeresis					x00D6
-math ◊ 236								multiplication sign				x00D7
+uplow √ã√´ 1246																				x00CB
+uplow √ë√± 12456						N with tilde							x00D1
+uplow √ñ√∂ 123456						O with diaeresis					x00D6
+math √ó 236								multiplication sign				x00D7
 
-letter Ï 24																					x00EC
-letter Ì 34					small i with acute							x00ED
-letter Ó 146																				x00EE
-letter Ô 12456																			x00EF
-letter Ò 12456			small n with tilde							x00F1
-letter Ú 135																				x00F2
-letter Û 346				small o with acute							x00F3
-letter Ù 1456				small o with circumflex					x00F4
+letter √¨ 24																					x00EC
+letter √≠ 34					small i with acute							x00ED
+letter √Æ 146																				x00EE
+letter √Ø 12456																			x00EF
+letter √± 12456			small n with tilde							x00F1
+letter √≤ 135																				x00F2
+letter √≥ 346				small o with acute							x00F3
+letter √¥ 1456				small o with circumflex					x00F4
 letter \x00F5 246		small o with tilde							x00F5
-letter ˆ 123456			small o with diaeresis					x00F6
-math ˜ 256				division sign										x00F7
-letter ˘ 12356																			x00F9
-letter ˙ 23456				small u with acute							x00FA
-letter ˚ 156																				x00FB
+letter √∂ 123456			small o with diaeresis					x00F6
+math √∑ 256				division sign										x00F7
+letter √π 12356																			x00F9
+letter √∫ 23456				small u with acute							x00FA
+letter √ª 156																				x00FB
 
 letter \x0192 124		small F with hook								x0192
 

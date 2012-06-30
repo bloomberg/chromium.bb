@@ -284,31 +284,31 @@ sign \X00FF 12568 	# 255 latin small letter y with diaeresis
 # Added 21.02.2012
 
 sign \x20ac 2678	# Euro-tegn       \200
-sign \x201a 67		# Enkelt nedre anførselstegn      \202
+sign \x201a 67		# Enkelt nedre anfÃ¸rselstegn      \202
 sign \x0192 45678	# Liten latinsk bokstav f med krok        \203
 sign \x200e 0		# left to right marker
 sign \x200f 0		# right to left marker
-sign \x201e 3567 	# Dobbelt nedre anførselstegn    \204
+sign \x201e 3567 	# Dobbelt nedre anfÃ¸rselstegn    \204
 sign \x2026 37		# Horisontal ellipse (tre prikker)        \205
 sign \x2020 47		# Dagger  \206
 sign \x2021 457		# Dobbel dagger   \207
 sign \x02c6 468		# Liten cirkumfleks (over bokstav)        \210
 sign \x2030 4568	# Promille-tegn   \211
 sign \x0160 15678	# Stor latinsk bokstav S med caron        \212
-sign \x2039 378		# Enkelt anførselstegn med vinkelen mot venstre    \213
+sign \x2039 378		# Enkelt anfÃ¸rselstegn med vinkelen mot venstre    \213
 sign \x0152 12345678	# Stor latinsk bokstav OE \214
 sign \x017d 234678	# Stor latinsk bokstav Z med caron        \216
-sign \x2018 367		# Enkelt øvre anførselstegn    \221
-sign \x2019 368		# Enkelt øvre anførselstegn    \222
-sign \x201c 23567	# Dobbelt øvre anførselstegn   \223
-sign \x201d 23568	# Dobbelt øvre anførselstegn   \224
+sign \x2018 367		# Enkelt Ã¸vre anfÃ¸rselstegn    \221
+sign \x2019 368		# Enkelt Ã¸vre anfÃ¸rselstegn    \222
+sign \x201c 23567	# Dobbelt Ã¸vre anfÃ¸rselstegn   \223
+sign \x201d 23568	# Dobbelt Ã¸vre anfÃ¸rselstegn   \224
 sign \x2022 3678	# Kulepunkt       \225
 sign \x2013 68		# En dash (n-tankestrek)  \226
 sign \x2014 568		# Em dash (m-tankestrek)  \227
 sign \x02dc 2568	# Liten tilde (over bokstav)      \230
 sign \x2122 23458	# Trademark-tegn (varemerke)      \231
 sign \x0161 1568	# Liten latinsk bokstav s med caron       \232
-sign \x203a 678		# Enkelt anførselstegn med vinkelen mot høyre     \233
+sign \x203a 678		# Enkelt anfÃ¸rselstegn med vinkelen mot hÃ¸yre     \233
 sign \x0153 1234568	# Liten latinsk bokstav oe        \234
 sign \x017e 23468	# Liten latinsk bokstav z med caron       \236
 sign \x0178 125678	# Stor latinsk bokstav Y med trema        \237
