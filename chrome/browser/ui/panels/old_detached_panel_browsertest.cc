@@ -58,7 +58,15 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnInactive) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_DrawAttentionOnInactive DISABLED_DrawAttentionOnInactive
+#else
+#define MAYBE_DrawAttentionOnInactive DrawAttentionOnInactive
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
+                       MAYBE_DrawAttentionOnInactive) {
   // Create an inactive detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   panel->Deactivate();
@@ -117,7 +125,14 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, ClickTitlebar) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_ClickTitlebar DISABLED_ClickTitlebar
+#else
+#define MAYBE_ClickTitlebar ClickTitlebar
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));

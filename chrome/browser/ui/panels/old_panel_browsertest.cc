@@ -256,7 +256,14 @@ class OldPanelBrowserTest : public OldBasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CheckDockedPanelProperties) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_CheckDockedPanelProperties DISABLED_CheckDockedPanelProperties
+#else
+#define MAYBE_CheckDockedPanelProperties CheckDockedPanelProperties
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -345,7 +352,14 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreatePanel) {
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreateBigPanel) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_CreateBigPanel DISABLED_CreateBigPanel
+#else
+#define MAYBE_CreateBigPanel CreateBigPanel
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreateBigPanel) {
   gfx::Rect work_area = PanelManager::GetInstance()->
       display_settings_provider()->GetDisplayArea();
   Panel* panel = CreatePanelWithBounds("BigPanel", work_area);
