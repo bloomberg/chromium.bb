@@ -1434,9 +1434,6 @@ class EmergeQueue(object):
         if self._retry_queue:
           self._Retry()
         else:
-          # The dependency map is helpful for debugging failures.
-          PrintDepsMap(self._deps_map)
-
           # Tell the user why we're exiting.
           if self._failed:
             print "Packages failed: %s" % " ,".join(self._failed)
