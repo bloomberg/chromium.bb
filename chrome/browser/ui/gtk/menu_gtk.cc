@@ -145,7 +145,6 @@ GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
       break;
 
     case IDC_COPY:
-    case IDC_COPY_URL:
     case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
     case IDC_CONTENT_CONTEXT_COPYAVLOCATION:

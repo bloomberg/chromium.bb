@@ -83,7 +83,6 @@ void SelectNumberedTab(Browser* browser, int index);
 void SelectLastTab(Browser* browser);
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
-void WriteCurrentURLToClipboard(Browser* browser);
 void ConvertPopupToTabbedBrowser(Browser* browser);
 void Exit();
 void BookmarkCurrentPage(Browser* browser);

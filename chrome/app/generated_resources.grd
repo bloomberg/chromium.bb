@@ -7751,9 +7751,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_APP_MENU_RELOAD" desc="The reload menu in application windows">
           Reload
         </message>
-        <message name="IDS_APP_MENU_COPY_URL" desc="The copy url menu in application windows">
-          Copy URL
-        </message>
         <message name="IDS_APP_MENU_NEW_WEB_PAGE" desc="The new webpage menu in application windows">
           Open browser window
         </message>
@@ -7761,9 +7758,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_APP_MENU_RELOAD" desc="In Title Case: The reload menu in application windows">
           Reload
-        </message>
-        <message name="IDS_APP_MENU_COPY_URL" desc="In Title Case: The copy url menu in application windows">
-          Copy URL
         </message>
         <message name="IDS_APP_MENU_NEW_WEB_PAGE" desc="In Title Case: The new webpage menu in application windows">
           Open Browser Window
@@ -12422,9 +12416,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_COPY_MAC" desc="The Mac menu item for copy in the edit menu.">
           Copy
-        </message>
-        <message name="IDS_EDIT_COPY_URL_MAC" desc="The Mac menu item copy url in the edit menu.">
-          Copy URL
         </message>
         <message name="IDS_PASTE_MAC" desc="The Mac menu item for paste in the edit menu.">
           Paste

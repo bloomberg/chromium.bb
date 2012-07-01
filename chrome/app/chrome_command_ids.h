@@ -124,7 +124,6 @@
 // Clipboard commands
 #define IDC_CUT                         36000
 #define IDC_COPY                        36001
-#define IDC_COPY_URL                    36002
 #define IDC_PASTE                       36003
 #define IDC_EDIT_MENU                   36004
 

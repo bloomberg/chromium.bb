@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
@@ -475,21 +474,6 @@ void DuplicateTab(Browser* browser) {
 bool CanDuplicateTab(const Browser* browser) {
   WebContents* contents = GetActiveWebContents(browser);
   return contents && contents->GetController().GetLastCommittedEntry();
-}
-
-void WriteCurrentURLToClipboard(Browser* browser) {
-  // TODO(ericu): There isn't currently a metric for this.  Should there be?
-  // We don't appear to track the action when it comes from the
-  // RenderContextViewMenu.
-
-  WebContents* contents = GetActiveWebContents(browser);
-  if (!browser->toolbar_model()->ShouldDisplayURL())
-    return;
-
-  chrome_common_net::WriteURLToClipboard(
-      contents->GetURL(),
-      browser->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      g_browser_process->clipboard());
 }
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {

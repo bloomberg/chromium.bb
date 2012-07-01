@@ -452,8 +452,6 @@ void BrowserFrameWin::BuildSystemMenuForAppOrPopupWindow() {
     system_menu_contents_->AddItemWithStringId(IDC_SHOW_AS_TAB,
                                                IDS_SHOW_AS_TAB);
   }
-  system_menu_contents_->AddItemWithStringId(IDC_COPY_URL,
-                                             IDS_APP_MENU_COPY_URL);
   system_menu_contents_->AddSeparator();
   system_menu_contents_->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
   system_menu_contents_->AddItemWithStringId(IDC_FORWARD,

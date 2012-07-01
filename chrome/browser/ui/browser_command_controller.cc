@@ -321,9 +321,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_RESTORE_TAB:
       RestoreTab(browser_);
       break;
-    case IDC_COPY_URL:
-      WriteCurrentURLToClipboard(browser_);
-      break;
     case IDC_SHOW_AS_TAB:
       ConvertPopupToTabbedBrowser(browser_);
       break;
@@ -788,9 +785,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
       !(browser_->is_type_panel() && browser_->is_app()));
 #endif
-
-  // Clipboard commands
-  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, !browser_->is_devtools());
 
   // Find-in-page
   command_updater_.UpdateCommandEnabled(IDC_FIND, !browser_->is_devtools());
