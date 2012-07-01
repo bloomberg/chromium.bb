@@ -317,7 +317,14 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CheckDockedPanelProperties) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreatePanel) {
+// http://crbug.com/135377
+#if defined(OS_LINUX)
+#define MAYBE_CreatePanel DISABLED_CreatePanel
+#else
+#define MAYBE_CreatePanel CreatePanel
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
