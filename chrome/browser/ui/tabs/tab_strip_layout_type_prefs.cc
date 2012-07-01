@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/common/pref_names.h"
 
-namespace browser {
+namespace chrome {
 
 void RegisterTabStripLayoutTypePrefs(PrefService* prefs) {
   // This value is device dependant, so it goes in local state.
@@ -17,4 +17,4 @@ void RegisterTabStripLayoutTypePrefs(PrefService* prefs) {
       static_cast<int>(TAB_STRIP_LAYOUT_SHRINK));
 }
 
-}  // namespace browser
+}  // namespace chrome

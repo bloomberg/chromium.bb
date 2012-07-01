@@ -16,7 +16,7 @@ class Image;
 // An interface implemented by objects wishing to control an ConfirmBubbleView.
 // To use this class to implement a bubble menu, we need two steps:
 // 1. Implement a class derived from this class.
-// 2. Call browser::ShowConfirmBubble() with the class implemented in 1.
+// 2. Call chrome::ShowConfirmBubble() with the class implemented in 1.
 class ConfirmBubbleModel {
  public:
   enum BubbleButton {

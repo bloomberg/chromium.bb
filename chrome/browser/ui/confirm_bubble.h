@@ -14,7 +14,7 @@ namespace gfx {
 class Point;
 }
 
-namespace browser {
+namespace chrome {
 
 // Creates a bubble and shows it with its top center at the specified
 // |origin|. A bubble created by this function takes ownership of the
@@ -23,6 +23,6 @@ void ShowConfirmBubble(gfx::NativeView view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_CONFIRM_BUBBLE_H_

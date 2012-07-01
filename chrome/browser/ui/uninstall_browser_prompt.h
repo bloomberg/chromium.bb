@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_UNINSTALL_BROWSER_PROMPT_H_
 #pragma once
 
-namespace browser {
+namespace chrome {
 
 // Asks user for uninstall confirmation and returns one of these values:
 // content::RESULT_CODE_NORMAL_EXIT,
@@ -14,6 +14,6 @@ namespace browser {
 // chrome::RESULT_CODE_UNINSTALL_USER_CANCEL.
 int ShowUninstallBrowserPrompt();
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_UNINSTALL_BROWSER_PROMPT_H_

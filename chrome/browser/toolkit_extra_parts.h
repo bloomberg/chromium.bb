@@ -10,7 +10,7 @@
 
 class ChromeBrowserMainParts;
 
-namespace browser {
+namespace chrome {
 
 #if defined(TOOLKIT_GTK)
 void AddGtkToolkitExtraParts(ChromeBrowserMainParts* main_parts);
@@ -28,6 +28,6 @@ void AddAshToolkitExtraParts(ChromeBrowserMainParts* main_parts);
 void AddAuraToolkitExtraParts(ChromeBrowserMainParts* main_parts);
 #endif
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_TOOLKIT_EXTRA_PARTS_H_

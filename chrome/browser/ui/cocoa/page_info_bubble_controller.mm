@@ -155,7 +155,7 @@ class PageInfoModelBubbleBridge : public PageInfoModelObserver {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowPageInfoBubble(gfx::NativeWindow parent,
                         WebContents* web_contents,
@@ -178,7 +178,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [controller showWindow:nil];
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 @implementation PageInfoBubbleController
 

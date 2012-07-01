@@ -230,11 +230,11 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
-      browser::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
-                                 gfx::Point(rect.CenterPoint().x(), rect.y()),
-                                 new SpellingBubbleModel(
-                                     proxy_->GetProfile(),
-                                     proxy_->GetWebContents()));
+      chrome::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
+                                gfx::Point(rect.CenterPoint().x(), rect.y()),
+                                new SpellingBubbleModel(
+                                    proxy_->GetProfile(),
+                                    proxy_->GetWebContents()));
     } else {
       Profile* profile = proxy_->GetProfile();
       if (profile)

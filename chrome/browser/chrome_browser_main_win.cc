@@ -115,7 +115,7 @@ int DoUninstallTasks(bool chrome_still_running) {
     ShowCloseBrowserFirstMessageBox();
     return chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE;
   }
-  int result = browser::ShowUninstallBrowserPrompt();
+  int result = chrome::ShowUninstallBrowserPrompt();
   if (browser_util::IsBrowserAlreadyRunning()) {
     ShowCloseBrowserFirstMessageBox();
     return chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE;

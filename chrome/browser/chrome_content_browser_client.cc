@@ -379,19 +379,19 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
 #if defined(TOOLKIT_GTK)
-  browser::AddGtkToolkitExtraParts(main_parts);
+  chrome::AddGtkToolkitExtraParts(main_parts);
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  browser::AddViewsToolkitExtraParts(main_parts);
+  chrome::AddViewsToolkitExtraParts(main_parts);
 #endif
 
 #if defined(USE_ASH)
-  browser::AddAshToolkitExtraParts(main_parts);
+  chrome::AddAshToolkitExtraParts(main_parts);
 #endif
 
 #if defined(USE_AURA)
-  browser::AddAuraToolkitExtraParts(main_parts);
+  chrome::AddAuraToolkitExtraParts(main_parts);
 #endif
 
   return main_parts;

@@ -80,10 +80,10 @@ void ChromeBrowserMainExtraPartsGtk::ShowMessageBox(const char* message) {
   gtk_widget_destroy(dialog);
 }
 
-namespace browser {
+namespace chrome {
 
 void AddGtkToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
   main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
 }
 
-}  // namespace browser
+}  // namespace chrome

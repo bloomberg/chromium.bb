@@ -164,7 +164,7 @@ string16 UninstallView::GetItemAt(int index) {
   return WideToUTF16Hack(i->first);
 }
 
-namespace browser {
+namespace chrome {
 
 int ShowUninstallBrowserPrompt() {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
@@ -177,4 +177,4 @@ int ShowUninstallBrowserPrompt() {
   return result;
 }
 
-}  // namespace browser
+}  // namespace chrome

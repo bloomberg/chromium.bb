@@ -248,7 +248,7 @@ void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowPageInfoBubble(gfx::NativeWindow parent,
                         WebContents* web_contents,
@@ -260,4 +260,4 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
       parent, web_contents, url, ssl, show_history, navigator);
 }
 
-}  // namespace browser
+}  // namespace chrome

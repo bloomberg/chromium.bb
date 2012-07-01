@@ -7,8 +7,8 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/ash/ash_init.h"
-#include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/desktop/desktop_screen.h"
+#include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
@@ -36,10 +36,10 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   chrome::CloseAsh();
 }
 
-namespace browser {
+namespace chrome {
 
 void AddAshToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 }
 
-}  // namespace browser
+}  // namespace chrome

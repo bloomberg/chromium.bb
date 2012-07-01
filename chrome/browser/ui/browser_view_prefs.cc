@@ -17,7 +17,7 @@ const int kDefaultHungPluginDetectFrequency = 2000;
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void RegisterBrowserViewPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
@@ -26,4 +26,4 @@ void RegisterBrowserViewPrefs(PrefService* prefs) {
                              kDefaultHungPluginDetectFrequency);
 }
 
-}  // namespace browser
+}  // namespace chrome

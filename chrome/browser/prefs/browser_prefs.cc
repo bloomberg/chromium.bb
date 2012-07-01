@@ -141,8 +141,8 @@ void RegisterLocalState(PrefService* local_state) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 #if defined(TOOLKIT_VIEWS)
-  browser::RegisterBrowserViewPrefs(local_state);
-  browser::RegisterTabStripLayoutTypePrefs(local_state);
+  chrome::RegisterBrowserViewPrefs(local_state);
+  chrome::RegisterTabStripLayoutTypePrefs(local_state);
 #endif
 
 #if !defined(OS_ANDROID)
@@ -210,7 +210,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  browser::RegisterInvertBubbleUserPrefs(user_prefs);
+  chrome::RegisterInvertBubbleUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif

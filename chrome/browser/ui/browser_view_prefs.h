@@ -8,11 +8,11 @@
 
 class PrefService;
 
-namespace browser {
+namespace chrome {
 
 // Register local state preferences specific to BrowserView.
 void RegisterBrowserViewPrefs(PrefService* prefs);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_VIEW_PREFS_H_

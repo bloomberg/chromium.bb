@@ -98,7 +98,7 @@ void UserDataDirDialogView::FileSelected(const FilePath& path,
 void UserDataDirDialogView::FileSelectionCanceled(void* params) {
 }
 
-namespace browser {
+namespace chrome {
 
 FilePath ShowUserDataDirDialog(const FilePath& user_data_dir) {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
@@ -110,4 +110,4 @@ FilePath ShowUserDataDirDialog(const FilePath& user_data_dir) {
   return dialog->user_data_dir();
 }
 
-}  // namespace browser
+}  // namespace chrome

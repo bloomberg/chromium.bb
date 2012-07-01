@@ -16,8 +16,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 #if defined(OS_LINUX)
-#include "ui/base/linux_ui.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
+#include "ui/base/linux_ui.h"
 #endif
 #endif  // !USE_ASH
 
@@ -49,10 +49,10 @@ void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   // after the metrics service is deleted.
 }
 
-namespace browser {
+namespace chrome {
 
 void AddAuraToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
 }
 
-}  // namespace browser
+}  // namespace chrome

@@ -18,10 +18,10 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 }
 
-namespace browser {
+namespace chrome {
 
 void AddViewsToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 }
 
-}  // namespace browser
+}  // namespace chrome

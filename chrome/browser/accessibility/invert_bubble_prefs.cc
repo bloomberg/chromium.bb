@@ -7,7 +7,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
-namespace browser {
+namespace chrome {
 
 void RegisterInvertBubbleUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInvertNotificationShown,
@@ -15,4 +15,4 @@ void RegisterInvertBubbleUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
 }
 
-}  // namespace browser
+}  // namespace chrome

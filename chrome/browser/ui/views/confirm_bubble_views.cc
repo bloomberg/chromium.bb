@@ -150,7 +150,7 @@ void ConfirmBubbleViews::Init() {
   }
 }
 
-namespace browser {
+namespace chrome {
 
 void ShowConfirmBubble(gfx::NativeView view,
                        const gfx::Point& origin,
@@ -160,4 +160,4 @@ void ShowConfirmBubble(gfx::NativeView view,
   bubble->Show();
 }
 
-}  // namespace browser
+}  // namespace chrome
