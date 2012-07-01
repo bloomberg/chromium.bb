@@ -98,7 +98,7 @@ deps = {
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
     'src/third_party/sfntly/cpp/src':
-        Var('git_url') + '/external/sfntly/cpp/src.git@127cef2a54a5b6e6777761d550c1ec90e736383f',
+        Var('git_url') + '/external/sfntly/cpp/src.git@0f57ae889297f20b96a4770602c5d611054194bd',
     'src/third_party/skia/include':
         Var('git_url') + '/external/skia/include.git@3237738f6e559ea0df92453ebac4a31e32c34327',
     'src/third_party/skia/src':
