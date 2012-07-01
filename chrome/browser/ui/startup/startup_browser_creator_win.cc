@@ -6,12 +6,11 @@
 
 #include "base/logging.h"
 #include "base/win/metro.h"
-
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 
-namespace browser {
+namespace chrome {
 
 // Metro driver exports for getting the launch type, initial url, initial
 // search term, etc.
@@ -60,4 +59,4 @@ GURL GetURLToOpen(Profile* profile) {
   return GURL();
 }
 
-}  // namespace browser
+}  // namespace chrome

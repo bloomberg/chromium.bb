@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 
-namespace browser {
+namespace chrome {
 
 #if !defined(TOOLKIT_GTK) && !defined(OS_MACOSX)
 void ShowObsoleteOSPrompt(Browser* browser) {
@@ -12,4 +12,4 @@ void ShowObsoleteOSPrompt(Browser* browser) {
 }
 #endif
 
-}  // namespace browser
+}  // namespace chrome

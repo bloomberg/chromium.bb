@@ -6,16 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace browser {
+namespace chrome {
 
 void ShowBadFlagsPrompt(Browser* browser) {
   // Unsupported flags for which to display a warning that "stability and
@@ -51,4 +51,4 @@ void ShowBadFlagsPrompt(Browser* browser) {
   }
 }
 
-}  // namespace browser
+}  // namespace chrome

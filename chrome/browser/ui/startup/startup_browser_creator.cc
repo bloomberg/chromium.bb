@@ -174,11 +174,11 @@ bool StartupBrowserCreator::LaunchBrowser(
     const CommandLine& command_line,
     Profile* profile,
     const FilePath& cur_dir,
-    browser::startup::IsProcessStartup process_startup,
-    browser::startup::IsFirstRun is_first_run,
+    chrome::startup::IsProcessStartup process_startup,
+    chrome::startup::IsFirstRun is_first_run,
     int* return_code) {
   in_synchronous_profile_launch =
-      process_startup == browser::startup::IS_PROCESS_STARTUP;
+      process_startup == chrome::startup::IS_PROCESS_STARTUP;
   DCHECK(profile);
 
   // Continue with the incognito profile from here on if Incognito mode
@@ -314,7 +314,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // If we are in Windows 8 metro mode and were launched as a result of the
     // search charm or via a url navigation in metro, then fetch the
     // corresponding url.
-    GURL url = browser::GetURLToOpen(profile);
+    GURL url = chrome::GetURLToOpen(profile);
     if (url.is_valid())
       urls.push_back(GURL(url));
   }
@@ -450,11 +450,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // If we don't want to launch a new browser window or tab (in the case
   // of an automation request), we are done here.
   if (!silent_launch) {
-    browser::startup::IsProcessStartup is_process_startup = process_startup ?
-        browser::startup::IS_PROCESS_STARTUP :
-        browser::startup::IS_NOT_PROCESS_STARTUP;
-    browser::startup::IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
-        browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
+    chrome::startup::IsProcessStartup is_process_startup = process_startup ?
+        chrome::startup::IS_PROCESS_STARTUP :
+        chrome::startup::IS_NOT_PROCESS_STARTUP;
+    chrome::startup::IsFirstRun is_first_run = first_run::IsChromeFirstRun() ?
+        chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
     // |last_opened_profiles| will be empty in the following circumstances:
     // - This is the first launch. |last_used_profile| is the initial profile.
     // - The user exited the browser by closing all windows for all
@@ -496,7 +496,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
             is_process_startup, is_first_run, return_code))
           return false;
         // We've launched at least one browser.
-        is_process_startup = browser::startup::IS_NOT_PROCESS_STARTUP;
+        is_process_startup = chrome::startup::IS_NOT_PROCESS_STARTUP;
       }
     }
   }

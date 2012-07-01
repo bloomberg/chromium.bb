@@ -9,9 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -34,7 +34,7 @@ using content::BrowserThread;
 
 namespace {
 
-static const int kMaxInfobarShown = 5;
+const int kMaxInfobarShown = 5;
 
 // The delegate for the infobar shown when Chrome was auto-launched.
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -169,7 +169,7 @@ void CheckAutoLaunchCallback(Profile* profile) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 bool ShowAutolaunchPrompt(Profile* profile) {
   if (!auto_launch_trial::IsInAutoLaunchGroup())
@@ -204,5 +204,4 @@ void RegisterAutolaunchPrefs(PrefService* prefs) {
       prefs::kShownAutoLaunchInfobar, 0, PrefService::UNSYNCABLE_PREF);
 }
 
-}  // namespace browser
-
+}  // namespace chrome

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 
-namespace browser {
+namespace chrome {
 
 bool ShowAutolaunchPrompt(Profile* profile) {
   // Autolaunch is only implemented on Windows right now.
@@ -15,4 +15,4 @@ void RegisterAutolaunchPrefs(PrefService* prefs) {
   // Autolaunch is only implemented on Windows right now.
 }
 
-}  // namespace browser
+}  // namespace chrome

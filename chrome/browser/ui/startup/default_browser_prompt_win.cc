@@ -70,7 +70,7 @@ void SetMetroBrowserFlowLauncher::Observe(
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
   if ((ShellIntegration::IsDefaultBrowser() ==
@@ -83,4 +83,4 @@ void ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
   }
 }
 
-}  // namespace browser
+}  // namespace chrome

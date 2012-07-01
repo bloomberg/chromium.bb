@@ -8,7 +8,7 @@
 
 class Profile;
 
-namespace browser {
+namespace chrome {
 
 // Shows a prompt UI to set the default browser if necessary.
 void ShowDefaultBrowserPrompt(Profile* profile);
@@ -17,6 +17,6 @@ void ShowDefaultBrowserPrompt(Profile* profile);
 // (if necessary and permitted).
 void ShowFirstRunDefaultBrowserPrompt(Profile* profile);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_STARTUP_DEFAULT_BROWSER_PROMPT_H_

@@ -550,7 +550,7 @@ void AutoImport(
   process_singleton->Unlock();
   CreateSentinel();
 #endif  // !defined(USE_AURA)
-  browser::ShowFirstRunDefaultBrowserPrompt(profile);
+  chrome::ShowFirstRunDefaultBrowserPrompt(profile);
 }
 
 int ImportNow(Profile* profile, const CommandLine& cmdline) {

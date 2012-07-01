@@ -827,9 +827,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN :
-      browser::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.OpenApplicationWindow(browser()->profile(), NULL));
 
@@ -932,8 +931,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Simulate launching again.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
   launch.profile_ = browser()->profile();
   launch.ProcessStartupURLs(std::vector<GURL>());

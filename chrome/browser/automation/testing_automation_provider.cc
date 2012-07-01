@@ -1230,19 +1230,19 @@ void TestingAutomationProvider::OpenProfileWindow(
   if (browser) {
     // Already have browser.  Need to just activate.
     ProfileManager::FindOrCreateNewWindowForProfile(
-            profile,
-            browser::startup::IS_NOT_PROCESS_STARTUP,
-            browser::startup::IS_NOT_FIRST_RUN,
-            0);
+        profile,
+        chrome::startup::IS_NOT_PROCESS_STARTUP,
+        chrome::startup::IS_NOT_FIRST_RUN,
+        0);
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   } else {
     new BrowserOpenedWithExistingProfileNotificationObserver(
         this, reply_message, num_loads);
     ProfileManager::FindOrCreateNewWindowForProfile(
-            profile,
-            browser::startup::IS_NOT_PROCESS_STARTUP,
-            browser::startup::IS_NOT_FIRST_RUN,
-            0);
+        profile,
+        chrome::startup::IS_NOT_PROCESS_STARTUP,
+        chrome::startup::IS_NOT_FIRST_RUN,
+        0);
   }
 }
 

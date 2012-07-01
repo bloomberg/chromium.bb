@@ -229,24 +229,24 @@ void RecordAppLaunches(Profile* profile,
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
     const FilePath& cur_dir,
     const CommandLine& command_line,
-    browser::startup::IsFirstRun is_first_run)
-        : cur_dir_(cur_dir),
-          command_line_(command_line),
-          profile_(NULL),
-          browser_creator_(NULL),
-          is_first_run_(is_first_run == browser::startup::IS_FIRST_RUN) {
+    chrome::startup::IsFirstRun is_first_run)
+    : cur_dir_(cur_dir),
+      command_line_(command_line),
+      profile_(NULL),
+      browser_creator_(NULL),
+      is_first_run_(is_first_run == chrome::startup::IS_FIRST_RUN) {
 }
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
     const FilePath& cur_dir,
     const CommandLine& command_line,
     StartupBrowserCreator* browser_creator,
-    browser::startup::IsFirstRun is_first_run)
-        : cur_dir_(cur_dir),
-          command_line_(command_line),
-          profile_(NULL),
-          browser_creator_(browser_creator),
-          is_first_run_(is_first_run == browser::startup::IS_FIRST_RUN) {
+    chrome::startup::IsFirstRun is_first_run)
+    : cur_dir_(cur_dir),
+      command_line_(command_line),
+      profile_(NULL),
+      browser_creator_(browser_creator),
+      is_first_run_(is_first_run == chrome::startup::IS_FIRST_RUN) {
 }
 
 StartupBrowserCreatorImpl::~StartupBrowserCreatorImpl() {
@@ -300,7 +300,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       !browser_defaults::kAppRestoreSession) {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   } else {
-    RecordLaunchModeHistogram(urls_to_open.empty()?
+    RecordLaunchModeHistogram(urls_to_open.empty() ?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
 
     // Notify user if the Preferences backup is invalid or changes to settings
@@ -320,8 +320,8 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
           !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
-        if (!browser::ShowAutolaunchPrompt(profile))
-          browser::ShowDefaultBrowserPrompt(profile);
+        if (!chrome::ShowAutolaunchPrompt(profile))
+          chrome::ShowDefaultBrowserPrompt(profile);
       }
 #if defined(OS_MACOSX)
       // Check whether the auto-update system needs to be promoted from user
@@ -489,9 +489,9 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
     return;
   }
 
-  browser::startup::IsProcessStartup is_process_startup = process_startup ?
-      browser::startup::IS_PROCESS_STARTUP :
-      browser::startup::IS_NOT_PROCESS_STARTUP;
+  chrome::startup::IsProcessStartup is_process_startup = process_startup ?
+      chrome::startup::IS_PROCESS_STARTUP :
+      chrome::startup::IS_NOT_PROCESS_STARTUP;
   if (!process_startup) {
     // Even if we're not starting a new process, this may conceptually be
     // "startup" for the user and so should be handled in a similar way.  Eg.,
@@ -569,7 +569,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
                                                       NULL,
                                                       restore_behavior,
                                                       urls_to_open);
-    AddInfoBarsIfNecessary(browser, browser::startup::IS_PROCESS_STARTUP);
+    AddInfoBarsIfNecessary(browser, chrome::startup::IS_PROCESS_STARTUP);
     return true;
   }
 
@@ -577,7 +577,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
   if (!browser)
     return false;
 
-  AddInfoBarsIfNecessary(browser, browser::startup::IS_PROCESS_STARTUP);
+  AddInfoBarsIfNecessary(browser, chrome::startup::IS_PROCESS_STARTUP);
   return true;
 }
 
@@ -729,20 +729,20 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 
 void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     Browser* browser,
-    browser::startup::IsProcessStartup is_process_startup) {
+    chrome::startup::IsProcessStartup is_process_startup) {
   if (!browser || !profile_ || browser->tab_count() == 0)
     return;
 
   if (HasPendingUncleanExit(browser->profile()))
-    browser::ShowSessionCrashedPrompt(browser);
+    chrome::ShowSessionCrashedPrompt(browser);
 
   // The bad flags info bar and the obsolete system info bar are only added to
   // the first profile which is launched. Other profiles might be restoring the
   // browsing sessions asynchronously, so we cannot add the info bars to the
   // focused tabs here.
-  if (is_process_startup == browser::startup::IS_PROCESS_STARTUP) {
-    browser::ShowBadFlagsPrompt(browser);
-    browser::ShowObsoleteOSPrompt(browser);
+  if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
+    chrome::ShowBadFlagsPrompt(browser);
+    chrome::ShowObsoleteOSPrompt(browser);
   }
 }
 

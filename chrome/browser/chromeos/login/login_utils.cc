@@ -398,13 +398,12 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   VLOG(1) << "Launching browser...";
   StartupBrowserCreator browser_creator;
   int return_code;
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN :
-      browser::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                                 profile,
                                 FilePath(),
-                                browser::startup::IS_PROCESS_STARTUP,
+                                chrome::startup::IS_PROCESS_STARTUP,
                                 first_run,
                                 &return_code);
 

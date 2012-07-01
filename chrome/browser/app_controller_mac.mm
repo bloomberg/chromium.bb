@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
@@ -44,8 +43,6 @@
 #include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -53,10 +50,13 @@
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/profile_menu_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -1005,8 +1005,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     StartupBrowserCreator browser_creator;
     browser_creator.LaunchBrowser(
         command_line, [self lastProfile], FilePath(),
-        browser::startup::IS_NOT_PROCESS_STARTUP,
-        browser::startup::IS_NOT_FIRST_RUN, &return_code);
+        chrome::startup::IS_NOT_PROCESS_STARTUP,
+        chrome::startup::IS_NOT_FIRST_RUN, &return_code);
   }
 
   // We've handled the reopen event, so return NO to tell AppKit not
@@ -1111,8 +1111,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   }
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
   launch.OpenURLsInBrowser(browser, false, urls);
 }

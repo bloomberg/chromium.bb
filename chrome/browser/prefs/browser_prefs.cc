@@ -173,7 +173,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
 
 #if defined(OS_MACOSX)
-  browser::RegisterObsoleteOSInfobarPrefs(local_state);
+  chrome::RegisterObsoleteOSInfobarPrefs(local_state);
   confirm_quit::RegisterLocalState(local_state);
 #endif
 }
@@ -230,7 +230,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);
   chrome::RegisterBrowserUserPrefs(user_prefs);
-  browser::RegisterAutolaunchPrefs(user_prefs);
+  chrome::RegisterAutolaunchPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   PepperFlashSettingsManager::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);

@@ -6,19 +6,16 @@
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_WIN_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/string16.h"
-#include "googleurl/src/gurl.h"
-
+class GURL;
 class Profile;
 
-namespace browser {
+namespace chrome {
 
-  // If we are in Windows 8 metro mode and were launched as a result of the
-// search charm or via a url navigation in metro, then this function fetches
-// the url/search term from the metro driver.
+// If we are in Windows 8 metro mode and were launched as a result of the search
+// charm or via a url navigation in metro, then this function fetches the
+// url/search term from the metro driver.
 GURL GetURLToOpen(Profile* profile);
 
-}  // namespace browser;
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_WIN_H_

@@ -8,7 +8,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace browser {
+namespace chrome {
 
 string16 LocalizedObsoleteOSString() {
   // TODO(mark): Change kEndOfTheLine to true immediately prior to the last
@@ -21,4 +21,4 @@ string16 LocalizedObsoleteOSString() {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
-}  // namespace browser
+}  // namespace chrome

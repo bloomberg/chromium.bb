@@ -147,8 +147,8 @@ class ProfileManager : public base::NonThreadSafe,
   // creation of a window from the multi-profile dropdown menu.
   static void FindOrCreateNewWindowForProfile(
       Profile* profile,
-      browser::startup::IsProcessStartup process_startup,
-      browser::startup::IsFirstRun is_first_run,
+      chrome::startup::IsProcessStartup process_startup,
+      chrome::startup::IsFirstRun is_first_run,
       bool always_create);
 
   // Profile::Delegate implementation:

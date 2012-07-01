@@ -8,11 +8,11 @@
 
 class Browser;
 
-namespace browser {
+namespace chrome {
 
 // Shows the session crashed prompt for |browser| if required.
 void ShowSessionCrashedPrompt(Browser* browser);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_

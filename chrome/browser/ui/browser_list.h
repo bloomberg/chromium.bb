@@ -14,10 +14,6 @@
 class Browser;
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 namespace browser {
 class BrowserActivityObserver;
 #if defined(OS_MACOSX)
@@ -26,6 +22,9 @@ Browser* GetLastActiveBrowser();
 #if defined(TOOLKIT_GTK)
 class ExtensionInstallDialog;
 #endif
+}
+
+namespace chrome {
 namespace internal {
 void NotifyNotDefaultBrowserCallback();
 }
@@ -36,6 +35,10 @@ namespace chromeos {
 class ScreenLocker;
 }
 #endif
+
+namespace content {
+class WebContents;
+}
 
 #if defined(USE_ASH)
 content::WebContents* GetActiveWebContents();
@@ -125,7 +128,7 @@ class BrowserList {
 #if defined(USE_ASH)
   friend content::WebContents* GetActiveWebContents();
 #endif
-  friend void browser::internal::NotifyNotDefaultBrowserCallback();
+  friend void chrome::internal::NotifyNotDefaultBrowserCallback();
   // DO NOT ADD MORE FRIENDS TO THIS LIST.
 
   // Returns the Browser object whose window was most recently active.  If the

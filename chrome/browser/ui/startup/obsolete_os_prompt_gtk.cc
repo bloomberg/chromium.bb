@@ -15,7 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace browser {
+namespace chrome {
 
 void ShowObsoleteOSPrompt(Browser* browser) {
   // We've deprecated support for Ubuntu Hardy.  Rather than attempting to
@@ -41,4 +41,4 @@ void ShowObsoleteOSPrompt(Browser* browser) {
   }
 }
 
-}  // namespace browser
+}  // namespace chrome

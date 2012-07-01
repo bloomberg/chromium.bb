@@ -156,8 +156,8 @@ void OnOpenWindowForNewProfile(Profile* profile,
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     ProfileManager::FindOrCreateNewWindowForProfile(
         profile,
-        browser::startup::IS_PROCESS_STARTUP,
-        browser::startup::IS_FIRST_RUN,
+        chrome::startup::IS_PROCESS_STARTUP,
+        chrome::startup::IS_FIRST_RUN,
         false);
   }
 }
@@ -475,8 +475,8 @@ Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
 // static
 void ProfileManager::FindOrCreateNewWindowForProfile(
     Profile* profile,
-    browser::startup::IsProcessStartup process_startup,
-    browser::startup::IsFirstRun is_first_run,
+    chrome::startup::IsProcessStartup process_startup,
+    chrome::startup::IsFirstRun is_first_run,
     bool always_create) {
   DCHECK(profile);
 

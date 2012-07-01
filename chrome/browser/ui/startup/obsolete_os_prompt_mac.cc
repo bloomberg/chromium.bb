@@ -16,7 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 
-namespace browser {
+namespace chrome {
 
 void RegisterObsoleteOSInfobarPrefs(PrefService* local_state) {
   local_state->RegisterDoublePref(
@@ -59,4 +59,4 @@ void ShowObsoleteOSPrompt(Browser* browser) {
       time_now.ToDoubleT());
 }
 
-}  // namespace browser
+}  // namespace chrome

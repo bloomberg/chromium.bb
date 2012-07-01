@@ -8,10 +8,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -86,8 +86,7 @@ bool SessionCrashedInfoBarDelegate::Accept() {
 
 }  // namespace
 
-
-namespace browser {
+namespace chrome {
 
 void ShowSessionCrashedPrompt(Browser* browser) {
   // Assume that if the user is launching incognito they were previously
@@ -109,5 +108,4 @@ void ShowSessionCrashedPrompt(Browser* browser) {
       new SessionCrashedInfoBarDelegate(tab->infobar_tab_helper()));
 }
 
-}  // namespace browser
-
+}  // namespace chrome

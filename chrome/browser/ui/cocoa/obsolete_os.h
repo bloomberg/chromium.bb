@@ -9,7 +9,7 @@
 #include "base/mac/mac_util.h"
 #include "base/string16.h"
 
-namespace browser {
+namespace chrome {
 
 // Returns true if the OS will either be unsupported by future versions of the
 // application in the near future, or if this is the last version of the
@@ -25,6 +25,6 @@ inline bool IsOSObsoleteOrNearlySo() {
 // true.
 string16 LocalizedObsoleteOSString();
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_OBSOLETE_OS_H_

@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "googleurl/src/gurl.h"
 
 class Browser;
@@ -71,8 +71,8 @@ class StartupBrowserCreator {
   bool LaunchBrowser(const CommandLine& command_line,
                      Profile* profile,
                      const FilePath& cur_dir,
-                     browser::startup::IsProcessStartup is_process_startup,
-                     browser::startup::IsFirstRun is_first_run,
+                     chrome::startup::IsProcessStartup is_process_startup,
+                     chrome::startup::IsFirstRun is_first_run,
                      int* return_code);
 
   // When called the first time, reads the value of the preference kWasRestarted

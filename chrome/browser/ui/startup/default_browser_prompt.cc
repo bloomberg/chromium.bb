@@ -170,14 +170,14 @@ void CheckDefaultBrowserCallback() {
 
     if (default_change_mode != ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&browser::internal::NotifyNotDefaultBrowserCallback));
+          base::Bind(&chrome::internal::NotifyNotDefaultBrowserCallback));
     }
   }
 }
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void ShowDefaultBrowserPrompt(Profile* profile) {
   // We do not check if we are the default browser if:
@@ -239,4 +239,4 @@ void NotifyNotDefaultBrowserCallback() {
 }
 
 }  // namespace internal
-}  // namespace browser
+}  // namespace chrome

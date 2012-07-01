@@ -172,7 +172,7 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
 #if defined(OS_MACOSX)
   localized_strings->SetString("updateObsoleteOS",
-                               browser::LocalizedObsoleteOSString());
+                               chrome::LocalizedObsoleteOSString());
   localized_strings->SetString("updateObsoleteOSURL",
                                chrome::kMacLeopardObsoleteURL);
 #endif
@@ -296,7 +296,7 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 
 #if defined(OS_MACOSX)
   scoped_ptr<base::Value> is_os_obsolete(
-      base::Value::CreateBooleanValue(browser::IsOSObsoleteOrNearlySo()));
+      base::Value::CreateBooleanValue(chrome::IsOSObsoleteOrNearlySo()));
   web_ui()->CallJavascriptFunction("help.HelpPage.setObsoleteOS",
                                    *is_os_obsolete);
 #endif

@@ -13,7 +13,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 
-namespace browser {
+namespace chrome {
 
 ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarTabHelper* infobar_helper,
                                      const string16& message,
@@ -46,4 +46,4 @@ bool ObsoleteOSInfoBar::LinkClicked(WindowOpenDisposition disposition) {
   return false;
 }
 
-}  // namespace browser
+}  // namespace chrome
