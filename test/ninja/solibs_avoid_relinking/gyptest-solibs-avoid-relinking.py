@@ -21,8 +21,8 @@ import TestGyp
 # if this was extended to other generators).
 test = TestGyp.TestGyp(formats=['ninja'])
 
-# The optimization being tested for is only implemented on linux.
-if sys.platform in ['win32', 'cygwin', 'darwin']:
+# The optimization being tested for is only implemented on linux and mac.
+if sys.platform in ['win32', 'cygwin']:
   test.pass_test()
   sys.exit(0)
 

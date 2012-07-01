@@ -153,14 +153,20 @@ class Target:
     """Return true if this is a target that can be linked against."""
     return self.type in ('static_library', 'shared_library')
 
-  def SharedLinkable(self):
-    """Return true if this is a shared library/module."""
+  def UsesToc(self, flavor):
+    """Return true if the target should produce a restat rule based on a TOC
+    file."""
+    # For bundles, the .TOC should be produced for the binary, not for
+    # FinalOutput(). But the naive approach would put the TOC file into the
+    # bundle, so don't do this for bundles for now.
+    if flavor == 'win' or self.bundle:
+      return False
     return self.type in ('shared_library', 'loadable_module')
 
   def PreActionInput(self, flavor):
     """Return the path, if any, that should be used as a dependency of
     any dependent action step."""
-    if self.SharedLinkable() and flavor not in ['mac', 'win']:
+    if self.UsesToc(flavor):
       return self.FinalOutput() + '.TOC'
     return self.FinalOutput() or self.preaction_stamp
 
@@ -840,7 +846,7 @@ class NinjaWriter:
             extra_link_deps |= set(target.component_objs)
           elif self.flavor == 'win' and target.import_lib:
             extra_link_deps.add(target.import_lib)
-          elif target.SharedLinkable() and self.flavor not in ['mac', 'win']:
+          elif target.UsesToc(self.flavor):
             solibs.add(target.binary)
             implicit_deps.add(target.binary + '.TOC')
           else:
@@ -889,17 +895,18 @@ class NinjaWriter:
 
     if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
-      extra_bindings.append(('lib', output))
+      extra_bindings.append(('lib',
+                            gyp.common.EncodePOSIXShellArgument(output)))
       if self.flavor == 'win':
         self.target.import_lib = output + '.lib'
         extra_bindings.append(('dll', output))
         extra_bindings.append(('implib', self.target.import_lib))
         output = [output, self.target.import_lib]
-      elif self.flavor != 'mac':
+      else:
         output = [output, output + '.TOC']
 
     if len(solibs):
-      extra_bindings.append(('solibs', ' '.join(solibs)))
+      extra_bindings.append(('solibs', gyp.common.EncodePOSIXShellList(solibs)))
 
     self.ninja.build(output, command, link_deps,
                      implicit=list(implicit_deps),
@@ -1406,7 +1413,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$ld -shared $ldflags -o $lib -Wl,-soname=$soname %(suffix)s',
             'extract_toc':
               ('{ readelf -d ${lib} | grep SONAME ; '
-               'nm -gD -f p ${lib} |cut -f1-2 -d\' \'; }')})
+               'nm -gD -f p ${lib} | cut -f1-2 -d\' \'; }')})
 
     master_ninja.rule(
       'solink',
@@ -1476,23 +1483,47 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command='rm -f $out && '
               './gyp-mac-tool filter-libtool libtool -static -o $out $in'
               '$postbuilds')
+
+    # Record the public interface of $lib in $lib.TOC. See the corresponding
+    # comment in the posix section above for details.
+    mtime_preserving_solink_base = (
+        'if [ ! -e $lib -o ! -e ${lib}.TOC ] || '
+             # Always force dependent targets to relink if this library
+             # reexports something. Handling this correctly would require
+             # recursive TOC dumping but this is rare in practice, so punt.
+             'otool -l $lib | grep -q LC_REEXPORT_DYLIB ; then '
+          '%(solink)s && %(extract_toc)s > ${lib}.TOC; '
+        'else '
+          '%(solink)s && %(extract_toc)s > ${lib}.tmp && '
+          'if ! cmp -s ${lib}.tmp ${lib}.TOC; then '
+            'mv ${lib}.tmp ${lib}.TOC ; '
+          'fi; '
+        'fi'
+        % { 'solink': '$ld -shared $ldflags -o $lib %(suffix)s',
+            'extract_toc':
+              '{ otool -l $lib | grep LC_ID_DYLIB -A 5; '
+              'nm -gP $lib | cut -f1-2 -d\' \' | grep -v U$$; true; }'})
+
     # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
     # -bundle -single_module here (for osmesa.so).
     master_ninja.rule(
       'solink',
-      description='SOLINK $out, POSTBUILDS',
-      command=('$ld -shared $ldflags -o $out '
-               '$in $libs$postbuilds'))
+      description='SOLINK $lib, POSTBUILDS',
+      restat=True,
+      command=(mtime_preserving_solink_base % {
+          'suffix': '$in $solibs $libs$postbuilds'}))
     master_ninja.rule(
       'solink_module',
-      description='SOLINK(module) $out, POSTBUILDS',
-      command=('$ld -shared $ldflags -o $out '
-               '$in $libs$postbuilds'))
+      description='SOLINK(module) $lib, POSTBUILDS',
+      restat=True,
+      command=(mtime_preserving_solink_base % {
+          'suffix': '$in $solibs $libs$postbuilds'}))
+
     master_ninja.rule(
       'link',
       description='LINK $out, POSTBUILDS',
       command=('$ld $ldflags -o $out '
-               '$in $libs$postbuilds'))
+               '$in $solibs $libs$postbuilds'))
     master_ninja.rule(
       'infoplist',
       description='INFOPLIST $out',
